@@ -1,0 +1,26 @@
+﻿{
+	"version": "1.0.0-beta",
+	"authors":
+	[
+		"Novar"
+	],
+	"copyright": "© 2014-2016",
+	"buildOptions":
+	{
+		"xmlDoc": true
+	},
+	"frameworks":
+	{
+		"netstandard1.3":
+		{
+			"dependencies":
+			{
+				"NETStandard.Library": "1.6.0",
+				"System.Data.Common": "4.1.0",
+				"System.Diagnostics.Contracts": "4.0.1",
+				"System.IO.Pipes": "4.0.0",
+				"System.Runtime.Serialization.Primitives": "4.1.1"
+			}
+		}
+	}
+}

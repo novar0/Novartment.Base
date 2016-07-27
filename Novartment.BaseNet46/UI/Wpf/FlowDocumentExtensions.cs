@@ -1,0 +1,81 @@
+﻿using System;
+using System.Text.RegularExpressions;
+using System.Collections.Generic;
+using System.Windows;
+using System.Windows.Documents;
+using System.Globalization;
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.Contracts;
+using Novartment.Base.Collections;
+
+namespace Novartment.Base.UI.Wpf
+{
+	/// <summary>
+	/// Методы расширения для FlowDocument.
+	/// </summary>
+	public static class FlowDocumentExtensions
+	{
+		/// <summary>
+		/// Преобразует части текста, являющиейся ссылками в работающие ссылки.
+		/// </summary>
+		/// <param name="document">Документ, в котором надо преобразовать ссылки.</param>
+		public static void ConvertFlowDocumentUrlsToLinks (this FlowDocument document)
+		{
+			if (document == null)
+			{
+				throw new ArgumentNullException (nameof (document));
+			}
+			Contract.EndContractBlock ();
+
+			var links = GetLinksInDocument (document);
+			foreach (var item in links)
+			{
+				var link = new Hyperlink (item.Start, item.Finish);
+				link.NavigateUri = new Uri (item.Text);
+				link.ToolTip = string.Format (CultureInfo.InvariantCulture, Resources.OpenLinkTooltip, item.Text);
+				link.Click += HyperLinkClickHandler;
+			}
+		}
+
+		private static void HyperLinkClickHandler (object sender, RoutedEventArgs e)
+		{
+			var uri = (sender as Hyperlink)?.NavigateUri;
+			if (uri != null)
+			{
+				Process.Start (uri.ToString ());
+			}
+		}
+
+		internal struct LinkData
+		{
+			internal TextPointer Start;
+			internal TextPointer Finish;
+			internal string Text;
+		}
+
+		[SuppressMessage ("Microsoft.Performance",
+			"CA1802:UseLiteralsWhereAppropriate",
+			Justification = "No performance gain could be achieved.")]
+		private static readonly string _UrlRegex = @"(?<Protocol>\w+):\/\/(?<Domain>[\w@][\w.:@]+)\/?[\w\.?=%&=\-@/$,]*";
+		private static IReadOnlyList<LinkData> GetLinksInDocument (FlowDocument document)
+		{
+			var result = new ArrayList<LinkData> ();
+			var regex = new Regex (_UrlRegex);
+			foreach (var run in new BlockCollectionRunsIterator (document.Blocks))
+			{
+				var tr = new TextRange (run.ContentStart, run.ContentEnd);
+				var match = regex.Match (tr.Text);
+				if (match.Success)
+				{
+					var startPointer = run.ContentStart.GetPositionAtOffset (match.Index);
+					var endPointer = startPointer.GetPositionAtOffset (match.Index + match.Length);
+					var url = match.Value;
+					var linkData = new LinkData () { Start = startPointer, Finish = endPointer, Text = url };
+					result.Add (linkData);
+				}
+			}
+			return result;
+		}
+	}
+}

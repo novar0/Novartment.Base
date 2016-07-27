@@ -1,0 +1,22 @@
+﻿{
+	"version": "1.0.0-beta",
+	"authors":
+	[
+		"Novar"
+	],
+	"copyright": "© 2014-2016",
+	"buildOptions":
+	{
+		"xmlDoc": true
+	},
+	"dependencies":
+	{
+		"Novartment.Base.Net": "1.0.0-*"
+	},
+	"frameworks":
+	{
+		"netstandard1.3":
+		{
+		}
+	}
+}

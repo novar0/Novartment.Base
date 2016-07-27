@@ -1,0 +1,297 @@
+﻿using System;
+using System.Text;
+using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.Contracts;
+
+namespace Novartment.Base.Text
+{
+	/// <summary>
+	/// Кодирует 'encoded-word' способом 'Q' согласно RFC 2047.
+	/// </summary>
+	public class EncodedWordQEstimatingEncoder :
+		IEstimatingEncoder
+	{
+		private readonly Encoding _encoding;
+		private readonly AsciiCharClasses _enabledClasses;
+
+		/// <summary>
+		/// Получает количество байтов, которые кодировщик записывает в качестве пролога перед данными.
+		/// </summary>
+		public int PrologSize => _encoding.WebName.Length + 5;
+
+		/// <summary>
+		/// Получает количество байтов, которые кодировщик записывает в качестве эпилога после данных.
+		/// </summary>
+		[SuppressMessage ("Microsoft.Performance",
+			"CA1822:MarkMembersAsStatic",
+			Justification = "Cant be static because implements interface memeber.")]
+		public int EpilogSize => 2;
+
+		/// <summary>
+		/// Инициализирует новый экземпляр класса EncodedWordQEstimatingEncoder с указанием используемой кодировки.
+		/// </summary>
+		/// <param name="encoding">Кодировка, используемая для двоичного представления символов.</param>
+		/// <param name="enabledClasses">Комбинация классов символов, разрешённых для прямого представления (без кодирования).</param>
+		public EncodedWordQEstimatingEncoder (Encoding encoding, AsciiCharClasses enabledClasses)
+		{
+			if (encoding == null)
+			{
+				throw new ArgumentNullException (nameof (encoding));
+			}
+			Contract.EndContractBlock ();
+
+			_encoding = encoding;
+			_enabledClasses = enabledClasses;
+		}
+
+		/// <summary>
+		/// Проверяет что указанный сегмент массива байтов с исходными данными выглядит как результат кодирования.
+		/// В ситуациях где метод кодирования определяется по виду данных, приведёт к ошибочному декодированию.
+		/// </summary>
+		/// <param name="source">Массив байтов для проверки.</param>
+		/// <param name="offset">Позиция начала данных в массиве.</param>
+		/// <param name="count">Количество байтов в массиве.</param>
+		/// <returns>True если указанный сегмент массива байтов с исходными данными выглядит как результат кодирования.</returns>
+		[SuppressMessage ("Microsoft.Maintainability",
+			"CA1502:AvoidExcessiveComplexity",
+			Justification = "Not possible to refactor with less complexity.")]
+		public bool MayConfuseDecoder (byte[] source, int offset, int count)
+		{
+			if (source == null)
+			{
+				throw new ArgumentNullException (nameof (source));
+			}
+			if ((offset < 0) || (offset > source.Length) || ((offset == source.Length) && (count > 0)))
+			{
+				throw new ArgumentOutOfRangeException (nameof (offset));
+			}
+			if ((count < 0) || (count > source.Length))
+			{
+				throw new ArgumentOutOfRangeException (nameof (count));
+			}
+			Contract.EndContractBlock ();
+
+			int minCharCount = 9;
+			if (count < minCharCount)
+			{
+				return false;
+			}
+			var endPos = offset + count;
+			while (offset <= (endPos - minCharCount))
+			{
+				if ((source[offset] == '=') && (source[offset + 1] == '?'))
+				{
+					var offset2 = offset + 2;
+
+					//charset + language
+					var start = offset2;
+					while ((offset2 < endPos) && AsciiCharSet.IsCharOfClass ((char)source[offset2], AsciiCharClasses.ExtendedToken))
+					{
+						offset2++;
+					}
+					if (offset2 > start)
+					{
+						//encoding
+						if ((offset2 <= (endPos - 3)) && (source[offset2] == '?') && (source[offset2 + 2] == '?'))
+						{
+							var encoding = source[offset2 + 1];
+							if ((encoding == 'Q') || (encoding == 'q'))
+							{
+								offset2 += 3;
+
+								//value
+								while ((offset2 < endPos) && (source[offset2] != ' ') && (source[offset2] != '?'))
+								{
+									offset2++;
+								}
+								if ((offset2 <= (endPos - 2)) && (source[offset2] == '?') && (source[offset2 + 1] == '='))
+								{
+									return true;
+								}
+							}
+						}
+					}
+				}
+				offset++;
+			}
+			return false;
+		}
+
+		/// <summary>
+		/// В указанном массиве байтов ищет ближайшую позицию данных,
+		/// подходящих для кодировщика.
+		/// </summary>
+		/// <param name="source">Исходный массив байтов.</param>
+		/// <param name="offset">Позиция начала исходных данных в массиве.</param>
+		/// <param name="count">Количество байтов исходных данных в массиве.</param>
+		/// <returns>Ближайшая позиция данных, подходящих для кодировщика,
+		/// либо -1 если подходящих данных не найдено.</returns>
+		public int FindValid (byte[] source, int offset, int count)
+		{
+			if (source == null)
+			{
+				throw new ArgumentNullException (nameof (source));
+			}
+			if ((offset < 0) || (offset > source.Length) || ((offset == source.Length) && (count > 0)))
+			{
+				throw new ArgumentOutOfRangeException (nameof (offset));
+			}
+			Contract.EndContractBlock ();
+
+			return offset;
+		}
+
+		/// <summary>
+		/// Оценивает потенциальный результат кодирования указанной порции массива байтов.
+		/// </summary>
+		/// <param name="source">Массив байтов, содержащий порцию исходных данных.</param>
+		/// <param name="offset">Позиция начала порции исходных данных.</param>
+		/// <param name="count">Количество байтов в порции исходных данных.</param>
+		/// <param name="maxOutCount">Максимальное количество байтов, которое может содержать результат кодирования.</param>
+		/// <param name="segmentNumber">Не используется.</param>
+		/// <param name="isLastSegment">Не используется.</param>
+		/// <returns>Кортеж из количества байтов, необходимых для результата кодирования и
+		/// количества байтов источника, которое было использовано для кодирования.</returns>
+		public EncodingBalance Estimate (byte[] source, int offset, int count, int maxOutCount, int segmentNumber, bool isLastSegment)
+		{
+			if (source == null)
+			{
+				throw new ArgumentNullException (nameof (source));
+			}
+			if ((offset < 0) || (offset > source.Length) || ((offset == source.Length) && (count > 0)))
+			{
+				throw new ArgumentOutOfRangeException (nameof (offset));
+			}
+			if ((count < 0) || (count > source.Length))
+			{
+				throw new ArgumentOutOfRangeException (nameof (count));
+			}
+			if (maxOutCount < 0)
+			{
+				throw new ArgumentOutOfRangeException (nameof (maxOutCount));
+			}
+			Contract.EndContractBlock ();
+
+			int srcPos = 0;
+			var dstPos = this.PrologSize;
+			maxOutCount -= 2; // уменьшаем лимит на размер эпилога
+			if (dstPos >= maxOutCount)
+			{ // ничего кроме пролога не влезет
+				return new EncodingBalance (0, 0);
+			}
+			while ((srcPos < count) && (dstPos < maxOutCount))
+			{
+				var c = source[offset + srcPos];
+				var isEnabledClass = AsciiCharSet.IsCharOfClass ((char)c, _enabledClasses);
+				if (isEnabledClass)
+				{
+					dstPos++;
+				}
+				else
+				{
+					if ((dstPos + 3) > maxOutCount)
+					{
+						break;
+					}
+					dstPos += 3; // знак процента вместо символа, потом два шест.знака
+				}
+				srcPos++;
+			}
+			dstPos += this.EpilogSize; // эпилог
+			return new EncodingBalance (dstPos, srcPos);
+		}
+
+		/// <summary>
+		/// Кодирует указанную порцию массива байтов.
+		/// </summary>
+		/// <param name="source">Массив байтов, содержащий порцию исходных данных.</param>
+		/// <param name="offset">Позиция начала порции исходных данных.</param>
+		/// <param name="count">Количество байтов в порции исходных данных.</param>
+		/// <param name="destination">Массив байтов, куда будет записываться результат кодирования.</param>
+		/// <param name="outOffset">Позиция в destination куда будет записываться результат кодирования.</param>
+		/// <param name="maxOutCount">Максимальное количество байтов, которое может содержать результат кодирования.</param>
+		/// <param name="segmentNumber">Не используется.</param>
+		/// <param name="isLastSegment">Не используется.</param>
+		/// <returns>Кортеж из количества байтов, записанных в массив для результата кодирования и
+		/// количества байтов источника, которое было использовано для кодирования.</returns>
+		public EncodingBalance Encode (
+			byte[] source, int offset, int count,
+			byte[] destination, int outOffset, int maxOutCount,
+			int segmentNumber, bool isLastSegment)
+		{
+			if (source == null)
+			{
+				throw new ArgumentNullException (nameof (source));
+			}
+			if ((offset < 0) || (offset > source.Length) || ((offset == source.Length) && (count > 0)))
+			{
+				throw new ArgumentOutOfRangeException (nameof (offset));
+			}
+			if ((count < 0) || (count > source.Length))
+			{
+				throw new ArgumentOutOfRangeException (nameof (count));
+			}
+			if (destination == null)
+			{
+				throw new ArgumentNullException (nameof (destination));
+			}
+			if ((outOffset < 0) || (outOffset > destination.Length) || ((outOffset == destination.Length) && (maxOutCount > 0)))
+			{
+				throw new ArgumentOutOfRangeException (nameof (outOffset));
+			}
+			if ((maxOutCount < 0) || (maxOutCount > destination.Length))
+			{
+				throw new ArgumentOutOfRangeException (nameof (maxOutCount));
+			}
+			Contract.EndContractBlock ();
+
+			var outStartOffset = outOffset;
+			destination[outOffset++] = (byte)'=';
+			destination[outOffset++] = (byte)'?';
+			AsciiCharSet.GetBytes (_encoding.WebName, 0, _encoding.WebName.Length, destination, outOffset);
+			outOffset += _encoding.WebName.Length;
+			destination[outOffset++] = (byte)'?';
+			destination[outOffset++] = (byte)'Q';
+			destination[outOffset++] = (byte)'?';
+			maxOutCount -= 2; // уменьшаем лимит на размер эпилога
+			if ((outOffset - outStartOffset) >= maxOutCount)
+			{ // ничего кроме пролога не влезет
+				return new EncodingBalance (0, 0);
+			}
+			int srcPos = 0;
+			while ((srcPos < count) && ((outOffset - outStartOffset) < maxOutCount))
+			{
+				var c = source[offset + srcPos];
+				if (c == 32)
+				{
+					destination[outOffset++] = (byte)'_';
+				}
+				else
+				{
+					var isEnabledClass = AsciiCharSet.IsCharOfClass ((char)c, _enabledClasses);
+					if (isEnabledClass)
+					{
+						destination[outOffset++] = c;
+					}
+					else
+					{
+						// знак процента вместо символа, потом два шест.знака
+						if ((outOffset - outStartOffset + 3) > maxOutCount) break;
+						destination[outOffset++] = (byte)'=';
+						var hex = Hex.OctetsUpper[c];
+						destination[outOffset++] = (byte)hex[0];
+						destination[outOffset++] = (byte)hex[1];
+					}
+				}
+				srcPos++;
+			}
+			if (srcPos < 1)
+			{ // не влезло ничего кроме пролога и эпилога
+				return new EncodingBalance (0, 0);
+			}
+			destination[outOffset++] = (byte)'?'; // эпилог
+			destination[outOffset++] = (byte)'=';
+			return new EncodingBalance (outOffset - outStartOffset, srcPos);
+		}
+	}
+}

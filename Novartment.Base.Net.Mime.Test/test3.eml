@@ -1,0 +1,84 @@
+From: postmaster@itc-serv01.chmk.mechelgroup.ru
+To: dbserver%espc6@mailinator.com
+Date: Sun, 13 May 2012 12:48:25 +0600
+MIME-Version: 1.0
+Content-Type: multipart/report; report-type=delivery-status;
+	boundary="9B095B5ADSN=_01CD2A60C2F9F3000000298Ditc?serv01.chmk."
+X-DSNContext: 7ce717b1 - 1160 - 00000002 - 00000000
+Message-ID: <2V1WYw6Z100000137@itc-serv01.chmk.mechelgroup.ru>
+Subject: Delivery Status Notification (Failure)
+
+This is a MIME-formatted message.  
+Portions of this message may be unreadable without a MIME-capable mail program.
+
+--9B095B5ADSN=_01CD2A60C2F9F3000000298Ditc?serv01.chmk.
+Content-Type: text/plain; charset=unicode-1-1-utf-7
+
+This is an automatically generated Delivery Status Notification.
+
+Delivery to the following recipients failed.
+
+       quality@itc-serv01.chmk.mechelgroup.ru
+
+
+
+
+--9B095B5ADSN=_01CD2A60C2F9F3000000298Ditc?serv01.chmk.
+Content-Type: message/delivery-status
+
+Reporting-MTA: dns;itc-serv01.chmk.mechelgroup.ru
+Received-From-MTA: dns;ChelMKMail.mailinator.com
+Arrival-Date: Sun, 13 May 2012 12:48:25 +0600
+
+Final-Recipient: rfc822;quality@itc-serv01.chmk.mechelgroup.ru
+Action: failed
+Status: 5.0.0
+
+Final-Recipient: rfc822;sspp@raport.mechel.com
+Action: failed
+Status: 5.0.0
+
+
+--9B095B5ADSN=_01CD2A60C2F9F3000000298Ditc?serv01.chmk.
+Content-Type: message/rfc822
+
+Received: from ChelMKMail.mailinator.com ([10.2.6.173]) by itc-serv01.chmk.mechelgroup.ru with Microsoft SMTPSVC(6.0.3790.4675);
+	 Sun, 13 May 2012 12:48:25 +0600
+Received: from asu15.espc6.mechel.com ([10.2.19.215])
+          by CMK-SLNS06.chmk.mechelgroup.ru (Lotus Domino Release 8.5.2FP4)
+          with ESMTP id 2012051312482536-45974 ;
+          Sun, 13 May 2012 12:48:25 +0600 
+Received: by asu15.espc6.mechel.com (8.8.8/1.37)
+	id NAA05952; Sun, 13 May 2012 13:47:55 +0100
+Date: Sun, 13 May 2012 13:47:55 +0100
+Message-Id: <201205131247.NAA05952@asu15.espc6.mechel.com>
+From: =?koi8-r?B?68/O09TBztTJziD0xczJ3svP?= <espc6@mailinator.com>
+To: <quality@itc-serv01.chmk.mechelgroup.ru>
+Subject: raport from espc6
+X-MIMETrack: Itemize by SMTP Server on ChelMKMail2/SRV/MechelSG(Release 8.5.2FP4|November
+ 17, 2011) at 13.05.2012 12:48:25,
+	Serialize by Router on ChelMKGate1/SRV/MechelSG(Release 8.5.2FP4|November
+ 17, 2011) at 13.05.2012 12:48:25,
+	Serialize complete at 13.05.2012 12:48:25
+Return-Path: dbserver%espc6@mailinator.com
+X-OriginalArrivalTime: 13 May 2012 06:48:25.0831 (UTC) FILETIME=[65894F70:01CD30D4]
+
+Using QNX
+--------------------
+Home  script=//15/home/dbserver/script/itc/.send_enpl
+Sending File=raport_espc6h.xml
+Current Date=Sun May 13 12:47:44 2012
+--------------------
+
+begin 644 raport_espc6h.xml
+M/#]X;6P@=F5R<VEO;CTB,2XP(B!E;F-O9&EN9STB8W X-C8B(#\^/&1A=&%B
+M87-E('AM;&YS/2)U<FDZ.FUE8VAE;"YR87!O<G0N1&%T85-C:&5M82(^/&5S
+M<&,V7VAE870^/&AE871?;G5M8F5R/C$Y,34W,SPO:&5A=%]N=6UB97(^/&5S
+M<&,V7V-H96UI<W1R>3X\=&EM93XR,#$R+3 U+3$S5#$R.C0W.C T/"]T:6UE
+M/CQP<F]B95]N=6UB97(^-C4\+W!R;V)E7VYU;6)E<CX\+V5S<&,V7V-H96UI
+><W1R>3X\+V5S<&,V7VAE870^/"]D871A8F%S93X*
+ 
+end
+
+
+--9B095B5ADSN=_01CD2A60C2F9F3000000298Ditc?serv01.chmk.--

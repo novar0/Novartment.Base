@@ -1,0 +1,50 @@
+﻿using System;
+using Novartment.Base.Text;
+using Xunit;
+
+namespace Novartment.Base.Test
+{
+	public class InternetDateTimeTests
+	{
+		[Fact, Trait ("Category", "Text.InternetDateTime")]
+		public void Parse ()
+		{
+			Assert.Equal (
+				new DateTimeOffset (2012, 5, 15, 2, 49, 22, new TimeSpan (1, 0, 0)),
+				InternetDateTime.Parse ("Tue, 15 May 2012 02:49:22 +0100"));
+			Assert.Equal (
+				new DateTimeOffset (2012, 5, 15, 2, 49, 22, new TimeSpan (1, 0, 0)),
+				InternetDateTime.Parse ("15 May 2012 02:49:22 A"));
+			Assert.Equal (
+				new DateTimeOffset (1892, 6, 15, 23, 12, 0, new TimeSpan (-6, -30, 0)),
+				InternetDateTime.Parse ("15 Jun 1892 23:12 -0630"));
+		}
+
+		[Fact, Trait ("Category", "Text.InternetDateTime")]
+		public void ParseException ()
+		{
+			Assert.Throws<FormatException> (() => InternetDateTime.Parse (""));
+			Assert.Throws<FormatException> (() => InternetDateTime.Parse ("first May 2012 02:49:22 +0100"));
+			Assert.Throws<FormatException> (() => InternetDateTime.Parse ("Tue, 15"));
+			Assert.Throws<FormatException> (() => InternetDateTime.Parse ("15 July 2012 02:49:22 +0100"));
+			Assert.Throws<FormatException> (() => InternetDateTime.Parse ("15 May millenium 02:49:22 +0100"));
+			Assert.Throws<FormatException> (() => InternetDateTime.Parse ("Tue, 15 May 2012"));
+			Assert.Throws<FormatException> (() => InternetDateTime.Parse ("15 May 2012 a2:49:22 +0100"));
+			Assert.Throws<FormatException> (() => InternetDateTime.Parse ("15 May 2012 02:b9:22 +0100"));
+			Assert.Throws<FormatException> (() => InternetDateTime.Parse ("15 May 2012 02:49:c2 +0100"));
+			Assert.Throws<FormatException> (() => InternetDateTime.Parse ("15 May 2012 02:49:22"));
+			Assert.Throws<FormatException> (() => InternetDateTime.Parse ("15 May 2012 02:49:22 Moscow"));
+		}
+
+		[Fact, Trait ("Category", "Text.InternetDateTime")]
+		public void ToInternetString ()
+		{
+			Assert.Equal (
+				"15 May 2012 07:49:22 +0600",
+				new DateTimeOffset (2012, 5, 15, 7, 49, 22, new TimeSpan (6, 0, 0)).ToInternetString ());
+			Assert.Equal (
+				"15 May 2012 07:49:22 +0000",
+				new DateTimeOffset (2012, 5, 15, 7, 49, 22, TimeSpan.Zero).ToInternetString ());
+		}
+	}
+}

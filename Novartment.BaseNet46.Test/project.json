@@ -1,0 +1,20 @@
+﻿{
+	"version": "1.0.0-beta",
+	"testRunner": "xunit",
+	"dependencies":
+	{
+		"Novartment.BaseNet46": "1.0.0-*",
+		"xunit": "2.2.0-*",
+		"dotnet-test-xunit": "2.2.0-*"
+	},
+	"frameworks":
+	{
+		"net46":
+		{
+			"dependencies":
+			{
+				"Microsoft.NETCore.Platforms": "1.0.1"
+			}
+		}
+	}
+}

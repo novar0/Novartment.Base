@@ -1,0 +1,26 @@
+To: "sp@mychel.ru", <postmaster@domain.org>
+CC: no.name@mychel.ru,
+	"Recipient A.B. \"First\"" <sp1@[some strange domain]>,
+	=?windows-1251?Q?new_=F1=EE=E2=F1=E5=EC_one_222?= <"namewith,comma"@mychel.ru>,
+	=?windows-1251?Q?=C8=E4=E5=FF_=F1=EE=F1=F2=EE=E8=F2_=E2_=F2=EE=EC=2C_=F7?=
+ =?windows-1251?Q?=F2=EE=E1=FB_=EF=E8=F1=E0=F2=FC_=F2=E5=F1=F2=FB_=E4=EB=FF_?=
+ =?windows-1251?Q?=EA=E0=E6=E4=EE=E9_=ED=E5=F2=F0=E8=E2=E8=E0=EB=FC=ED=EE=E9?=
+ =?windows-1251?Q?_=F4=F3=ED=EA=F6=E8=E8_=E8=EB=E8_=EC=E5=F2=EE=E4=E0?= <sp3@mychel.ru>
+Subject: =?utf-8?B?0YLQtdC80LAg0YHQvtC+0LHRidC10L3QuNGPINGC0LXQutGB0YIg0YHQvtC+0LHRidC10L3QuNGP?=
+ =?utf-8?B?INC/0LDRgNGB0LjQvCDRgdC+0L7QsdGJ0LXQvdC40LUg0YLQtdC80LAg0YHQvtC+0LHRidC10L0=?=
+ =?utf-8?B?0LjRjyDRgtC10LrRgdGCINGB0L7QvtCx0YnQtdC90LjRjyDQv9Cw0YDRgdC40Lwg0YHQvtC+0LE=?=
+ =?utf-8?B?0YnQtdC90LjQtQ==?=
+Date: Tue, 15 May 2012 14:16:26 +0600
+From: "Some Person" <some-addr@server.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	format=flowed;
+	charset="koi8-r";
+	reply-type=original
+Content-Transfer-Encoding: 8bit
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Unsent: 1
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.3790.4913
+
+текст сообщения 

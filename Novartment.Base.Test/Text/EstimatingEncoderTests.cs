@@ -1,0 +1,245 @@
+﻿using System.Text;
+using Novartment.Base.Text;
+using Xunit;
+
+namespace Novartment.Base.Net.Mime.Test
+{
+	public class EstimatingEncoderTests
+	{
+		private static readonly string Template1 = "token#numer_one2001";
+		private static readonly string Template2 = " two\tthree";
+		private static readonly string Template3 = " \\^ between SLASHES ^\\ \"quoted\"";
+		private static readonly string Template4 = "кириллица";
+
+		public EstimatingEncoderTests ()
+		{
+			Encoding.RegisterProvider (CodePagesEncodingProvider.Instance);
+		}
+
+		[Fact, Trait ("Category", "Text.EstimatingEncoder")]
+		public void AsciiCharClass_EstimateEncode ()
+		{
+			var encoding = Encoding.UTF8;
+			var buf = encoding.GetBytes (Template1 + Template2 + Template3);
+			var encoder = new AsciiCharClassEstimatingEncoder (AsciiCharClasses.Token);
+			var encodedBuf = new byte[999];
+
+			// неподходящие элементы в начале
+			var tuple = encoder.Estimate (buf, Template1.Length, buf.Length - Template1.Length, encodedBuf.Length, 0, false);
+			Assert.Equal (0, tuple.BytesProduced);
+			Assert.Equal (0, tuple.BytesConsumed);
+			tuple = encoder.Encode (buf, Template1.Length, buf.Length - Template1.Length, encodedBuf, 0, encodedBuf.Length, 0, false);
+			Assert.Equal (0, tuple.BytesProduced);
+			Assert.Equal (0, tuple.BytesConsumed);
+
+			// полная строка, неподходящие начинаются с середины
+			tuple = encoder.Estimate (buf, 0, buf.Length, 99999, 0, false);
+			Assert.Equal (Template1.Length, tuple.BytesProduced);
+			Assert.Equal (Template1.Length, tuple.BytesConsumed);
+			tuple = encoder.Encode (buf, 0, buf.Length, encodedBuf, 0, encodedBuf.Length, 0, false);
+			Assert.Equal (Template1, Encoding.UTF8.GetString (encodedBuf, 0, tuple.BytesProduced));
+			Assert.Equal (Template1.Length, tuple.BytesConsumed);
+
+			// ограничение по размеру входа
+			tuple = encoder.Estimate (buf, 0, 7, 99999, 0, false);
+			Assert.Equal (7, tuple.BytesProduced);
+			Assert.Equal (7, tuple.BytesConsumed);
+			tuple = encoder.Encode (buf, 0, 7, encodedBuf, 0, encodedBuf.Length, 0, false);
+			Assert.Equal (Template1.Substring (0, 7), Encoding.UTF8.GetString (encodedBuf, 0, tuple.BytesProduced));
+			Assert.Equal (7, tuple.BytesConsumed);
+
+			// ограничение по размеру выхода
+			tuple = encoder.Estimate (buf, 0, buf.Length, 7, 0, false);
+			Assert.Equal (7, tuple.BytesProduced);
+			Assert.Equal (7, tuple.BytesConsumed);
+			tuple = encoder.Encode (buf, 0, buf.Length, encodedBuf, 0, 7, 0, false);
+			Assert.Equal (Template1.Substring (0, 7), Encoding.UTF8.GetString (encodedBuf, 0, tuple.BytesProduced));
+			Assert.Equal (7, tuple.BytesConsumed);
+		}
+
+		[Fact, Trait ("Category", "Text.EstimatingEncoder")]
+		public void QuotedString_EstimateEncode ()
+		{
+			var encoding = Encoding.UTF8;
+			var buf = encoding.GetBytes (Template1 + Template2 + Template3 + Template4);
+			var encoder = new QuotedStringEstimatingEncoder ();
+			var encodedBuf = new byte[999];
+
+			var bytes = encoding.GetBytes ("");
+			Assert.False (encoder.MayConfuseDecoder (bytes, 0, bytes.Length));
+			bytes = encoding.GetBytes ("\"ss");
+			Assert.False (encoder.MayConfuseDecoder (bytes, 0, bytes.Length));
+			bytes = encoding.GetBytes (" ss\"");
+			Assert.False (encoder.MayConfuseDecoder (bytes, 0, bytes.Length));
+			bytes = encoding.GetBytes ("\"s\rs\"");
+			Assert.False (encoder.MayConfuseDecoder (bytes, 0, bytes.Length));
+			bytes = encoding.GetBytes ("\"sЖs\"");
+			Assert.False (encoder.MayConfuseDecoder (bytes, 0, bytes.Length));
+
+			bytes = encoding.GetBytes ("\"\"");
+			Assert.True (encoder.MayConfuseDecoder (bytes, 0, bytes.Length));
+			bytes = encoding.GetBytes ("sss \"ss\" ddd");
+			Assert.True (encoder.MayConfuseDecoder (bytes, 0, bytes.Length));
+			bytes = encoding.GetBytes ("\"ss \\\"tt\tuu\"");
+			Assert.True (encoder.MayConfuseDecoder (bytes, 0, bytes.Length));
+
+			// неподходящие элементы в начале
+			var tuple = encoder.Estimate (buf, (Template1.Length + Template2.Length + Template3.Length), buf.Length - (Template1.Length + Template2.Length + Template3.Length), 99999, 0, false);
+			Assert.Equal (0, tuple.BytesProduced);
+			Assert.Equal (0, tuple.BytesConsumed);
+			tuple = encoder.Encode (
+					buf,
+					(Template1.Length + Template2.Length + Template3.Length),
+					buf.Length - (Template1.Length + Template2.Length + Template3.Length),
+					encodedBuf,
+					0,
+					encodedBuf.Length,
+					0, false);
+			Assert.Equal (0, tuple.BytesProduced);
+			Assert.Equal (0, tuple.BytesConsumed);
+
+			// полная строка, неподходящие начинаются с середины
+			var tmpl = "\"" + (Template1 + Template2 + Template3).Replace (@"\", @"\\").Replace ("\"", "\\\"") + "\"";
+			tuple = encoder.Estimate (buf, 0, buf.Length, 99999, 0, false);
+			Assert.Equal (tmpl.Length, tuple.BytesProduced);
+			Assert.Equal (Template1.Length + Template2.Length + Template3.Length, tuple.BytesConsumed);
+			tuple = encoder.Encode (buf, 0, buf.Length, encodedBuf, 0, encodedBuf.Length, 0, false);
+			Assert.Equal (tmpl, Encoding.UTF8.GetString (encodedBuf, 0, tuple.BytesProduced));
+			Assert.Equal (Template1.Length + Template2.Length + Template3.Length, tuple.BytesConsumed);
+
+			// ограничение по размеру входа
+			tuple = encoder.Estimate (buf, 0, 7, 99999, 0, false);
+			Assert.Equal (9, tuple.BytesProduced);
+			Assert.Equal (7, tuple.BytesConsumed);
+			tuple = encoder.Encode (buf, 0, 7, encodedBuf, 0, encodedBuf.Length, 0, false);
+			Assert.Equal ("\"" + Template1.Substring (0, 7) + "\"", Encoding.UTF8.GetString (encodedBuf, 0, tuple.BytesProduced));
+			Assert.Equal (7, tuple.BytesConsumed);
+
+			// ограничение по размеру выхода
+			tuple = encoder.Estimate (buf, Template1.Length + Template2.Length, buf.Length, 4, 0, false);
+			Assert.Equal (3, tuple.BytesProduced);
+			Assert.Equal (1, tuple.BytesConsumed);
+			tuple = encoder.Encode (buf, Template1.Length + Template2.Length, buf.Length, encodedBuf, 0, 4, 0, false);
+			Assert.Equal ("\"" + Template3[0] + "\"", Encoding.UTF8.GetString (encodedBuf, 0, tuple.BytesProduced));
+			Assert.Equal (1, tuple.BytesConsumed);
+		}
+
+		private static readonly string Template10 = "Идея stop2020 состоит в том";
+		private static readonly string Template10ResultEncoded = "=?windows-1251?Q?=C8=E4=E5=FF_stop2020_=F1=EE=F1=F2=EE=E8=F2_=E2_=F2=EE=EC?=";
+		[Fact, Trait ("Category", "Text.EstimatingEncoder")]
+		public void EncodedWordQ_EstimateEncode ()
+		{
+			var encoding = Encoding.GetEncoding ("windows-1251");
+			var buf = encoding.GetBytes (Template10);
+			var encoder = new EncodedWordQEstimatingEncoder (encoding, AsciiCharClasses.QEncodingAllowedInUnstructured);
+			var encodedBuf = new byte[999];
+
+			var bytes = encoding.GetBytes ("");
+			Assert.False (encoder.MayConfuseDecoder (bytes, 0, bytes.Length));
+			bytes = encoding.GetBytes ("=??=");
+			Assert.False (encoder.MayConfuseDecoder (bytes, 0, bytes.Length));
+			bytes = encoding.GetBytes ("=??Q?=C8=E4=E5=FF_stop2020_=F1=EE=F1=F2=EE=E8=F2_=E2_=F2=EE=EC?=");
+			Assert.False (encoder.MayConfuseDecoder (bytes, 0, bytes.Length));
+			bytes = encoding.GetBytes ("=?utf-8?B?0YLQtdC80LAg0YHQvtC+0LHRidC10L3QuNGPINGC0LXQutGB0YIg0YHQvtC+0LHRidC10L3QuNGP?=");
+			Assert.False (encoder.MayConfuseDecoder (bytes, 0, bytes.Length));
+			bytes = encoding.GetBytes ("=?windows-1251?Q?_stop 2020_?=");
+			Assert.False (encoder.MayConfuseDecoder (bytes, 0, bytes.Length));
+
+			bytes = encoding.GetBytes ("=?windows-1251?Q?Ж?=");
+			Assert.True (encoder.MayConfuseDecoder (bytes, 0, bytes.Length));
+			bytes = encoding.GetBytes ("ss =?us-ascii?q?stop2020?= dd");
+			Assert.True (encoder.MayConfuseDecoder (bytes, 0, bytes.Length));
+			bytes = encoding.GetBytes ("=??=\t=?windows-1251?Q?=C8=E4=E5=FF_stop2020_=F1=EE=F1=F2=EE=E8=F2_=E2_=F2=EE=EC?= 200");
+			Assert.True (encoder.MayConfuseDecoder (bytes, 0, bytes.Length));
+
+			// полная строка
+			var tuple = encoder.Estimate (buf, 0, buf.Length, 99999, 0, false);
+			Assert.Equal (Template10ResultEncoded.Length, tuple.BytesProduced);
+			Assert.Equal (buf.Length, tuple.BytesConsumed);
+			tuple = encoder.Encode (buf, 0, buf.Length, encodedBuf, 0, encodedBuf.Length, 0, false);
+			Assert.Equal (Template10ResultEncoded, Encoding.UTF8.GetString (encodedBuf, 0, tuple.BytesProduced));
+			Assert.Equal (buf.Length, tuple.BytesConsumed);
+
+			// ограничение по размеру входа
+			tuple = encoder.Estimate (buf, 0, 3, 99999, 0, false);
+			Assert.Equal (28, tuple.BytesProduced);
+			Assert.Equal (3, tuple.BytesConsumed);
+			tuple = encoder.Encode (buf, 0, 3, encodedBuf, 0, encodedBuf.Length, 0, false);
+			Assert.Equal (Template10ResultEncoded.Substring (0, 26) + "?=", Encoding.UTF8.GetString (encodedBuf, 0, tuple.BytesProduced));
+			Assert.Equal (3, tuple.BytesConsumed);
+
+			// ограничение по размеру выхода
+			tuple = encoder.Estimate (buf, 0, buf.Length, 24, 0, false);
+			Assert.Equal (22, tuple.BytesProduced);
+			Assert.Equal (1, tuple.BytesConsumed);
+			tuple = encoder.Encode (buf, 0, buf.Length, encodedBuf, 0, 24, 0, false);
+			Assert.Equal (Template10ResultEncoded.Substring (0, 20) + "?=", Encoding.UTF8.GetString (encodedBuf, 0, tuple.BytesProduced));
+			Assert.Equal (1, tuple.BytesConsumed);
+			tuple = encoder.Estimate (buf, 0, buf.Length, 25, 0, false);
+			Assert.Equal (25, tuple.BytesProduced);
+			Assert.Equal (2, tuple.BytesConsumed);
+			tuple = encoder.Encode (buf, 0, buf.Length, encodedBuf, 0, 25, 0, false);
+			Assert.Equal (Template10ResultEncoded.Substring (0, 23) + "?=", Encoding.UTF8.GetString (encodedBuf, 0, tuple.BytesProduced));
+			Assert.Equal (2, tuple.BytesConsumed);
+		}
+
+		private static readonly string Template20 = "тема сообщения текст сообщения";
+		private static readonly string Template20ResultEncoded = "=?utf-8?B?0YLQtdC80LAg0YHQvtC+0LHRidC10L3QuNGPINGC0LXQutGB0YIg0YHQvtC+0LHRidC10L3QuNGP?=";
+		[Fact, Trait ("Category", "Text.EstimatingEncoder")]
+		public void EncodedWordB_EstimateEncode ()
+		{
+			var encoding = Encoding.UTF8;
+			var buf = encoding.GetBytes (Template20);
+			var encoder = new EncodedWordBEstimatingEncoder (encoding);
+			var encodedBuf = new byte[999];
+
+			var bytes = encoding.GetBytes ("");
+			Assert.False (encoder.MayConfuseDecoder (bytes, 0, bytes.Length));
+			bytes = encoding.GetBytes ("=??=");
+			Assert.False (encoder.MayConfuseDecoder (bytes, 0, bytes.Length));
+			bytes = encoding.GetBytes ("=??Q?=C8=E4=E5=FF_stop2020_=F1=EE=F1=F2=EE=E8=F2_=E2_=F2=EE=EC?=");
+			Assert.False (encoder.MayConfuseDecoder (bytes, 0, bytes.Length));
+			bytes = encoding.GetBytes ("=?windows-1251?Q?_stop 2020_?=");
+			bytes = encoding.GetBytes ("=?utf-8?Q?0YLQtdC80LAg0YHQvtC+0LHRidC10L3QuNGPINGC0LXQutGB0YIg0YHQvtC+0LHRidC10L3QuNGP?=");
+			Assert.False (encoder.MayConfuseDecoder (bytes, 0, bytes.Length));
+			Assert.False (encoder.MayConfuseDecoder (bytes, 0, bytes.Length));
+			bytes = encoding.GetBytes ("=?windows-1251?Q?Ж?=");
+			Assert.False (encoder.MayConfuseDecoder (bytes, 0, bytes.Length));
+
+			bytes = encoding.GetBytes ("ss =?KOI8-R?B?29XNztnKIM3VzNjULmF2cw==?= dd");
+			Assert.True (encoder.MayConfuseDecoder (bytes, 0, bytes.Length));
+			bytes = encoding.GetBytes ("=??=\t=?utf-8?b?0YLQtdC80LAg0YHQvtC+0LHRidC10L3QuNGPINGC0LXQutGB0YIg0YHQvtC+0LHRidC10L3QuNGP?= 200");
+			Assert.True (encoder.MayConfuseDecoder (bytes, 0, bytes.Length));
+
+			// полная строка
+			var tuple = encoder.Estimate (buf, 0, buf.Length, 99999, 0, false);
+			Assert.Equal (Template20ResultEncoded.Length, tuple.BytesProduced);
+			Assert.Equal (buf.Length, tuple.BytesConsumed);
+			tuple = encoder.Encode (buf, 0, buf.Length, encodedBuf, 0, encodedBuf.Length, 0, false);
+			Assert.Equal (Template20ResultEncoded, Encoding.UTF8.GetString (encodedBuf, 0, tuple.BytesProduced));
+			Assert.Equal (buf.Length, tuple.BytesConsumed);
+
+			// ограничение по размеру входа
+			tuple = encoder.Estimate (buf, 0, 3, 99999, 0, false);
+			Assert.Equal (16, tuple.BytesProduced);
+			Assert.Equal (3, tuple.BytesConsumed);
+			tuple = encoder.Encode (buf, 0, 3, encodedBuf, 0, encodedBuf.Length, 0, false);
+			Assert.Equal (Template20ResultEncoded.Substring (0, 14) + "?=", Encoding.UTF8.GetString (encodedBuf, 0, tuple.BytesProduced));
+			Assert.Equal (3, tuple.BytesConsumed);
+
+			// ограничение по размеру выхода
+			tuple = encoder.Estimate (buf, 0, buf.Length, 19, 0, false);
+			Assert.Equal (16, tuple.BytesProduced);
+			Assert.Equal (3, tuple.BytesConsumed);
+			tuple = encoder.Encode (buf, 0, buf.Length, encodedBuf, 0, 19, 0, false);
+			Assert.Equal (Template20ResultEncoded.Substring (0, 14) + "?=", Encoding.UTF8.GetString (encodedBuf, 0, tuple.BytesProduced));
+			Assert.Equal (3, tuple.BytesConsumed);
+			tuple = encoder.Estimate (buf, 0, buf.Length, 20, 0, false);
+			Assert.Equal (20, tuple.BytesProduced);
+			Assert.Equal (6, tuple.BytesConsumed);
+			tuple = encoder.Encode (buf, 0, buf.Length, encodedBuf, 0, 20, 0, false);
+			Assert.Equal (Template20ResultEncoded.Substring (0, 18) + "?=", Encoding.UTF8.GetString (encodedBuf, 0, tuple.BytesProduced));
+			Assert.Equal (6, tuple.BytesConsumed);
+		}
+	}
+}
