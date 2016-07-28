@@ -1,0 +1,92 @@
+﻿<Window
+	x:Class="Novartment.Base.SampleWpf.MainWindow"
+	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:diag="clr-namespace:System.Diagnostics;assembly=WindowsBase"
+	xmlns:sys="clr-namespace:System;assembly=mscorlib"
+	xmlns:bcl="clr-namespace:Novartment.Base.UI.Wpf;assembly=Novartment.BaseNet46"
+	diag:PresentationTraceSources.TraceLevel="High"
+	Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}"
+	bcl:ResxExtension.DefaultResxName="Novartment.Base.SampleWpf.View.MainWindow">
+	<Window.Title>
+		<bcl:Binding Path="Version" StringFormat="Заготовка приложения {0}" />
+	</Window.Title>
+
+	<Window.Resources>
+		<ResourceDictionary>
+			<ResourceDictionary.MergedDictionaries>
+				<ResourceDictionary Source="../Skins/MainSkin.xaml" />
+			</ResourceDictionary.MergedDictionaries>
+			<bcl:CommandReference x:Key="CopyItemTaskStartCommandReference" Command="{Binding CopyItemTask.StartCommand}" />
+			<bcl:CommandReference x:Key="ClearItemsTaskStartCommandReference" Command="{Binding ClearItemsTask.StartCommand}" />
+			<ContextMenu x:Key="ListMenu">
+				<ContextMenu.Items>
+					<MenuItem
+						Command="{StaticResource ClearItemsTaskStartCommandReference}"
+						CommandParameter="{Binding Path=PlacementTarget, RelativeSource={RelativeSource AncestorType={x:Type ContextMenu}}}"
+						Header="{bcl:Resx ResxName=Novartment.Base.SampleWpf.View.MainWindow, Key=ClearMenuItem}"/>
+				</ContextMenu.Items>
+			</ContextMenu>
+			<ContextMenu x:Key="ListItemMenu">
+				<ContextMenu.Items>
+					<MenuItem
+						Command="{StaticResource CopyItemTaskStartCommandReference}"
+						CommandParameter="{Binding Path=PlacementTarget, RelativeSource={RelativeSource AncestorType={x:Type ContextMenu}}}"
+						Header="{bcl:Resx ResxName=Novartment.Base.SampleWpf.View.MainWindow, Key=CopyMenuItem}"/>
+					<MenuItem
+						Command="{StaticResource ClearItemsTaskStartCommandReference}"
+						CommandParameter="{Binding Path=PlacementTarget, RelativeSource={RelativeSource AncestorType={x:Type ContextMenu}}}"
+						Header="{bcl:Resx ResxName=Novartment.Base.SampleWpf.View.MainWindow, Key=ClearMenuItem}"/>
+				</ContextMenu.Items>
+			</ContextMenu>
+			<Style x:Key="ListStyle" TargetType="{x:Type ListView}">
+				<Setter Property="ContextMenu" Value="{StaticResource ListMenu}" />
+			</Style>
+			<Style x:Key="ListItemStyle" TargetType="{x:Type ListViewItem}">
+				<Setter Property="ContextMenu" Value="{StaticResource ListItemMenu}" />
+			</Style>
+		</ResourceDictionary>
+	</Window.Resources>
+
+	<Grid>
+		<Grid.RowDefinitions>
+			<RowDefinition Height="Auto" />
+			<RowDefinition Height="*" />
+		</Grid.RowDefinitions>
+		<Grid.ColumnDefinitions>
+			<ColumnDefinition Width="Auto" />
+			<ColumnDefinition Width="*" />
+		</Grid.ColumnDefinitions>
+		<WrapPanel>
+			<Button Command="{Binding RrefreshDataTask.StartCommand}" Content="{bcl:Resx RefreshButton}" />
+			<TextBlock x:Name="DropSourceArea" Height="20" Width="90" Background="Aqua" Margin="10" Text="{bcl:Resx DragThisLabel}" />
+			<TextBlock x:Name="DropTargetArea" AllowDrop="True" Height="160" Width="320" Background="Pink" Text="{Binding Path=DataFormats}" />
+		</WrapPanel>
+		<ListView Grid.Row="1"
+			ItemsSource="{Binding Path=EventsList}"
+			Style="{StaticResource ListStyle}"
+			ItemContainerStyle="{StaticResource ListItemStyle}">
+			<ListView.ItemsPanel>
+				<ItemsPanelTemplate>
+					<bcl:ViewAddedItemVirtualizingStackPanel />
+				</ItemsPanelTemplate>
+			</ListView.ItemsPanel>
+			<ListView.View>
+				<GridView AllowsColumnReorder="False">
+					<GridViewColumn Header="" DisplayMemberBinding="{Binding Path=Time, StringFormat={}{0:HH:mm:ss}}" />
+					<GridViewColumn DisplayMemberBinding="{Binding Path=Message}" Width="400">
+						<GridViewColumn.Header>
+							<GridViewColumnHeader Content="{bcl:Resx ResxName=Novartment.Base.SampleWpf.View.MainWindow, Key=ActionColumn}" HorizontalContentAlignment="Left"/>
+						</GridViewColumn.Header>
+					</GridViewColumn>
+					<GridViewColumn DisplayMemberBinding="{Binding Path=Parameter}" Width="500">
+						<GridViewColumn.Header>
+							<GridViewColumnHeader Content="{bcl:Resx ResxName=Novartment.Base.SampleWpf.View.MainWindow, Key=DetailsColumn}" HorizontalContentAlignment="Left"/>
+						</GridViewColumn.Header>
+					</GridViewColumn>
+				</GridView>
+			</ListView.View>
+		</ListView>
+	</Grid>
+
+</Window>

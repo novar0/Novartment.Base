@@ -1,0 +1,77 @@
+﻿<bcl:DialogWindow
+	x:Class="Novartment.Base.SampleWpf.ExceptionDetailsForm"
+	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:diag="clr-namespace:System.Diagnostics;assembly=WindowsBase"
+	xmlns:sys="clr-namespace:System;assembly=mscorlib"
+	xmlns:bcl="clr-namespace:Novartment.Base.UI.Wpf;assembly=Novartment.BaseNet46"
+	diag:PresentationTraceSources.TraceLevel="High"
+	ResizeMode="NoResize"
+	SizeToContent="WidthAndHeight"
+	WindowStartupLocation="CenterOwner"
+	Title="{bcl:Resx WindowTitle}"
+	Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}"
+	bcl:ResxExtension.DefaultResxName="Novartment.Base.SampleWpf.View.ExceptionDetailsForm">
+
+	<Grid x:Name="MainContent" Margin="12">
+		<Grid.ColumnDefinitions>
+			<ColumnDefinition Width="Auto" />
+			<ColumnDefinition Width="*" />
+		</Grid.ColumnDefinitions>
+		<Grid.RowDefinitions>
+			<RowDefinition Height="Auto" />
+			<RowDefinition Height="Auto" />
+			<RowDefinition Height="Auto" />
+			<RowDefinition Height="Auto" />
+			<RowDefinition Height="Auto" />
+		</Grid.RowDefinitions>
+		<StackPanel Grid.ColumnSpan="2" Orientation="Horizontal" Margin="0,0,0,12">
+			<Image x:Name="InformationalImage" />
+			<StackPanel Margin="12,0,0,0">
+				<TextBlock Text="{bcl:Resx IntroductionLabelText}" FontWeight="Bold" />
+				<TextBlock Text="{Binding Path=FailedAction, Mode=OneWay}" HorizontalAlignment="Stretch" TextTrimming="CharacterEllipsis" />
+			</StackPanel>
+		</StackPanel>
+		<TextBlock Grid.Column="0" Grid.Row="1" Text="{bcl:Resx MessageLabelText}" FontWeight="Bold" VerticalAlignment="Top" Margin="0,0,12,12" />
+		<TextBox Grid.Column="1" Grid.Row="1"
+			BorderThickness="0"
+			Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}"
+			Text="{Binding Path=Message, Mode=OneWay}"
+			IsReadOnly="True"
+			VerticalAlignment="Top"
+			HorizontalAlignment="Stretch"
+			TextWrapping="Wrap"/>
+		<TextBlock Grid.Column="0" Grid.Row="2" Text="{bcl:Resx ReccomendationsLabelText}" FontWeight="Bold" VerticalAlignment="Top" Margin="0,0,12,12" />
+		<TextBox Grid.Column="1" Grid.Row="2"
+			BorderThickness="0"
+			Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}"
+			Text="{Binding Path=RecommendedSoltion, Mode=OneWay}"
+			IsReadOnly="True"
+			VerticalAlignment="Top"
+			HorizontalAlignment="Stretch"
+			TextWrapping="Wrap"/>
+		<Expander Grid.Row="3" Grid.ColumnSpan="2"
+			Margin="0,0,0,12"
+			Header="{bcl:Resx DetailsTitleText}">
+			<Grid>
+				<Grid.RowDefinitions>
+					<RowDefinition Height="Auto" />
+					<RowDefinition Height="*" />
+				</Grid.RowDefinitions>
+				<Button Grid.Row="0" Margin="0,6,0,6" Padding="6,3,6,3" Click="CopyButtonClick" HorizontalAlignment="Left" Content="{bcl:Resx CopyButtonText}" />
+				<TextBox Grid.Row="1" x:Name="BigText"
+					Text="{Binding Path=Details, Mode=OneWay}"
+					IsReadOnly="True"
+					ScrollViewer.HorizontalScrollBarVisibility="Auto"
+					ScrollViewer.VerticalScrollBarVisibility="Auto"
+					HorizontalAlignment="Stretch"
+					VerticalAlignment="Stretch" />
+			</Grid>
+		</Expander>
+		<Button Grid.Row="4" Padding="6,3,6,3" Grid.ColumnSpan="2" HorizontalAlignment="Center" IsDefault="True" Content="{bcl:Resx CloseButtonText}" />
+		<Button Width="0" IsCancel="True" />
+		<TextBlock x:Name="MinWidthTemplate" Grid.ColumnSpan="2" Visibility="Hidden" Text="Some" Foreground="Transparent" />
+		<TextBlock x:Name="AverageWidthTemplate" Grid.ColumnSpan="2" Visibility="Hidden" Text="Some text 2000" Foreground="Transparent" />
+		<TextBlock x:Name="MaxWidthTemplate" Grid.ColumnSpan="2" Visibility="Hidden" Text="Сидоровский Александр Семёнович" Foreground="Transparent" HorizontalAlignment="Left" />
+	</Grid>
+</bcl:DialogWindow>
