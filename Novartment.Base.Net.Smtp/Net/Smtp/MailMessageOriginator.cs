@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Diagnostics.Contracts;
@@ -14,9 +15,10 @@ namespace Novartment.Base.Net.Smtp
 	{
 		/// <summary>
 		/// Асинхронно создаёт и выполняет транзакцию по передаче почтового сообщения.
+		/// Может использоваться как исполнитель транзакций при создании экземпляра <see cref="Novartment.Base.Net.Smtp.SmtpOriginatorProtocol"/>.
 		/// </summary>
 		/// <param name="message">Сообщение для передачи.</param>
-		/// <param name="transactionFactory">Фабрика для создания транзакций, поддерживающих указанную кодировку передачи содержимого.</param>
+		/// <param name="transactionFactory">Фабрика для создания транзакций.</param>
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
 		/// <returns>Задача, представляющая процесс выполнения транзакций.</returns>
 		public static Task OriginateTransaction (
@@ -53,7 +55,7 @@ namespace Novartment.Base.Net.Smtp
 		private static async Task OriginateTransactionStateMachine (
 			this IMailMessage<AddrSpec> message,
 			TransactionFactory transactionFactory,
-			ArrayList<AddrSpec> recipients,
+			IReadOnlyCollection<AddrSpec> recipients,
 			CancellationToken cancellationToken)
 		{
 			using (var transaction = transactionFactory.Invoke (message.TransferEncoding))
@@ -71,7 +73,7 @@ namespace Novartment.Base.Net.Smtp
 			}
 		}
 
-		private static async Task WriteToChannelAsync (IMailMessage<AddrSpec> source, BufferedChannel channel, CancellationToken cancellationToken)
+		private static async Task WriteToChannelAsync (IBinarySerializable source, BufferedChannel channel, CancellationToken cancellationToken)
 		{
 			try
 			{
@@ -92,7 +94,8 @@ namespace Novartment.Base.Net.Smtp
 			}
 			finally
 			{
-				// забираем записанные остатки даже если запись отменена или прервалась с исключением, иначе запись может оcтаться навечно заблокированной
+				// забираем записанные остатки даже если чтение отменено или прервалось с исключением,
+				// иначе чтение может оcтаться навечно заблокированной
 				await channel.SkipToEndAsync (CancellationToken.None).ConfigureAwait (false);
 			}
 		}

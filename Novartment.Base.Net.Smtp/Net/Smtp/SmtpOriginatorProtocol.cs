@@ -11,7 +11,7 @@ namespace Novartment.Base.Net.Smtp
 	/// <summary>
 	/// Фабрика для создания транзакций, поддерживающих указанную кодировку передачи содержимого.
 	/// </summary>
-	/// <param name="contentTransferEncoding">Кодировку передачи содержимого, которую должны использовать создаваемая транзакция.</param>
+	/// <param name="contentTransferEncoding">Кодировка передачи содержимого, которую должна использовать создаваемая транзакция.</param>
 	/// <returns>Вновь созданная транзакция для передачи содержимого в указанной кодировке.</returns>
 	public delegate IMailDataTransferTransaction TransactionFactory (ContentTransferEncoding contentTransferEncoding);
 
