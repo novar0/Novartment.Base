@@ -8,12 +8,15 @@ namespace Novartment.Base
 	/// </summary>
 	public static class ByteArrayExtensions
 	{
+
 		/// <summary>
 		/// Вычисляет позицию в массиве байтов первого найденного соответствия образцу.
 		/// </summary>
 		/// <param name="source">Исходный массив, в котором производится поиск.</param>
 		/// <param name="pattern">Массив-образец, который ищется.</param>
 		/// <returns>Позиция в исходном массиве, где был найден образец, или -1 если образец не найден.</returns>
+		/// <remarks>Осуществляет поиск по алгоритму КМП (Knuth–Morris–Pratt algorithm).
+		/// Время работы линейно зависит от (source.Length + pattern.Length).</remarks>
 		public static int IndexOf (this byte[] source, byte[] pattern)
 		{
 			if (source == null)
@@ -46,6 +49,8 @@ namespace Novartment.Base
 		/// <param name="startIndex">Начальная для поиска позиция в исходном массиве.</param>
 		/// <param name="count">Количество элементов в исходном массиве, которыми будет ограничен поиск.</param>
 		/// <returns>Позиция в исходном массиве, где был найден образец, или -1 если образец не найден.</returns>
+		/// <remarks>Осуществляет поиск по алгоритму КМП (Knuth–Morris–Pratt algorithm).
+		/// Время работы линейно зависит от (source.Length + pattern.Length).</remarks>
 		public static int IndexOf (this byte[] source, byte[] pattern, int startIndex, int count)
 		{
 			if (source == null)
@@ -70,28 +75,66 @@ namespace Novartment.Base
 			}
 			Contract.EndContractBlock ();
 
-			if (count >= pattern.Length)
+			var data = KmpBuildTable (pattern);
+
+			int m = startIndex;
+			int i = 0;
+			var endIndex = startIndex + count;
+			while ((m + i) < endIndex)
 			{
-				var patternLength = pattern.Length;
-				var maxPatternPosition = startIndex + count - pattern.Length;
-				if (maxPatternPosition < 0)
+				if (pattern[i] == source[m + i])
 				{
-					return -1;
-				}
-				for (var i = startIndex; i <= maxPatternPosition; i++)
-				{
-					var j = 0;
-					while ((j < patternLength) && (source[i + j] == pattern[j]))
+					if (i == (pattern.Length - 1))
 					{
-						j++;
+						return m;
 					}
-					if (j >= patternLength)
+					i++;
+				}
+				else
+				{
+					m = m + i - data[i];
+					if (data[i] > -1)
 					{
-						return i;
+						i = data[i];
+					}
+					else
+					{
+						i = 0;
 					}
 				}
 			}
-			return -1;
+			return -1;  // not found
+		}
+
+		private static int[] KmpBuildTable (byte[] pattern)
+		{
+			var result = new int[pattern.Length];
+			int pos = 2;
+			int cnd = 0;
+			result[0] = -1;
+			result[1] = 0;
+			while (pos < pattern.Length)
+			{
+				if (pattern[pos - 1] == pattern[cnd])
+				{
+					cnd++;
+					result[pos] = cnd;
+					pos++;
+				}
+				else
+				{
+					if (cnd > 0)
+					{
+						cnd = result[cnd];
+					}
+					else
+					{
+						result[pos] = 0;
+						pos++;
+					}
+				}
+			}
+			return result;
 		}
 	}
 }
