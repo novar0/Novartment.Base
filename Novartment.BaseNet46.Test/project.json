@@ -1,4 +1,4 @@
-﻿{
+{
 	"version": "1.0.0-beta",
 	"testRunner": "xunit",
 	"dependencies":
@@ -13,7 +13,7 @@
 		{
 			"dependencies":
 			{
-				"Microsoft.NETCore.Platforms": "1.0.1"
+				"Microsoft.NETCore.Platforms": "1.1.0"
 			}
 		}
 	}

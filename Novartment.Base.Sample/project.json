@@ -1,4 +1,4 @@
-﻿{
+{
 	"version": "1.0.0-beta",
 	"buildOptions":
 	{
@@ -10,7 +10,7 @@
 		"Novartment.Base.Media": "1.0.0-*",
 		"Novartment.Base.Net.Mime": "1.0.0-*",
 		"Novartment.Base.Net.Smtp": "1.0.0-*",
-		"System.Text.Encoding.CodePages": "4.0.1"
+		"System.Text.Encoding.CodePages": "4.3.0"
 	},
 	"frameworks":
 	{
@@ -21,7 +21,7 @@
 				"Microsoft.NETCore.App":
 				{
 					"type": "platform",
-					"version": "1.0.0"
+					"version": "1.1.0"
 				}
 			}
 		}

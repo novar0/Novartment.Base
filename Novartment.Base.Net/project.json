@@ -1,4 +1,4 @@
-﻿{
+{
 	"version": "1.0.0-beta",
 	"authors":
 	[
@@ -19,9 +19,9 @@
 		{
 			"dependencies":
 			{
-				"System.Net.Security": "4.0.0",
-				"System.Net.NameResolution": "4.0.0",
-				"System.Net.NetworkInformation": "4.1.0"
+				"System.Net.NetworkInformation": "4.3.0",
+				"System.Net.NameResolution": "4.3.0",
+				"System.Net.Security": "4.3.0"
 			}
 		}
 	}

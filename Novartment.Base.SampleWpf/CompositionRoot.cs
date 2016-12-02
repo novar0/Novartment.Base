@@ -2,7 +2,6 @@
 using Autofac;
 using Autofac.Features.OwnedInstances;
 using System.ServiceModel;
-using Novartment.Base;
 using Novartment.Base.UI;
 using Novartment.Base.UI.Wpf;
 
