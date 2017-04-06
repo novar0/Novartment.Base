@@ -1,39 +1,37 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.26403.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Novartment.Base", "Novartment.Base\Novartment.Base.xproj", "{5A42A950-3E21-4D81-8CF0-25298DB5C116}"
-EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Novartment.Base.Test", "Novartment.Base.Test\Novartment.Base.Test.xproj", "{33FF4678-82F3-4FF2-92C8-08B8507B0D9C}"
-EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Novartment.Base.Media", "Novartment.Base.Media\Novartment.Base.Media.xproj", "{89BFC2FA-20CD-48F1-846C-D218C2AD7EE7}"
-EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Novartment.Base.Media.Test", "Novartment.Base.Media.Test\Novartment.Base.Media.Test.xproj", "{30F2EA17-2839-4A17-974D-D1FDE5D2112D}"
-EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Novartment.Base.Net.Mime", "Novartment.Base.Net.Mime\Novartment.Base.Net.Mime.xproj", "{19656047-4107-4CD4-823D-7313450EB494}"
-EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Novartment.Base.Net.Mime.Test", "Novartment.Base.Net.Mime.Test\Novartment.Base.Net.Mime.Test.xproj", "{CD9E9466-9191-4226-9A1B-1FD646A10EBC}"
-EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Novartment.Base.Net.Smtp", "Novartment.Base.Net.Smtp\Novartment.Base.Net.Smtp.xproj", "{23C68E17-0D9C-4540-A9B6-6AB8F6423AC7}"
-EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Novartment.Base.Net.Smtp.Test", "Novartment.Base.Net.Smtp.Test\Novartment.Base.Net.Smtp.Test.xproj", "{5B187E80-B058-4A12-9436-6667590FCDA6}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{D3FA3D4C-72D6-4DA4-9D65-F6609A3D725D}"
-EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Novartment.BaseNet46", "Novartment.BaseNet46\Novartment.BaseNet46.xproj", "{DB02CE76-2DE7-4706-8959-FC287CCB7332}"
-EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Novartment.BaseNet46.Test", "Novartment.BaseNet46.Test\Novartment.BaseNet46.Test.xproj", "{BA247AA9-0409-4A7B-913E-38C8ACB876A6}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{8D94124A-521F-42AC-B83C-D68321306257}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Novartment.Base.Sample", "Novartment.Base.Sample\Novartment.Base.Sample.xproj", "{5AA8C329-697C-47F7-A8B8-FAE5C8B89018}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Novartment.Base", "Novartment.Base\Novartment.Base.csproj", "{5A42A950-3E21-4D81-8CF0-25298DB5C116}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{35A965B0-0E32-438A-AAC3-55EB8C4C6BE8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Novartment.Base.Test", "Novartment.Base.Test\Novartment.Base.Test.csproj", "{33FF4678-82F3-4FF2-92C8-08B8507B0D9C}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Novartment.Base.Net", "Novartment.Base.Net\Novartment.Base.Net.xproj", "{7D48432B-7047-4E64-8250-74C16DB097EB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Novartment.Base.Media", "Novartment.Base.Media\Novartment.Base.Media.csproj", "{89BFC2FA-20CD-48F1-846C-D218C2AD7EE7}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Novartment.Base.Net.Test", "Novartment.Base.Net.Test\Novartment.Base.Net.Test.xproj", "{957193A1-16B7-4DEA-B4C4-93C088E9B821}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Novartment.Base.Media.Test", "Novartment.Base.Media.Test\Novartment.Base.Media.Test.csproj", "{30F2EA17-2839-4A17-974D-D1FDE5D2112D}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Novartment.Base.Net.Mime", "Novartment.Base.Net.Mime\Novartment.Base.Net.Mime.csproj", "{19656047-4107-4CD4-823D-7313450EB494}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Novartment.Base.Net.Mime.Test", "Novartment.Base.Net.Mime.Test\Novartment.Base.Net.Mime.Test.csproj", "{CD9E9466-9191-4226-9A1B-1FD646A10EBC}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Novartment.Base.Net.Smtp", "Novartment.Base.Net.Smtp\Novartment.Base.Net.Smtp.csproj", "{23C68E17-0D9C-4540-A9B6-6AB8F6423AC7}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Novartment.Base.Net.Smtp.Test", "Novartment.Base.Net.Smtp.Test\Novartment.Base.Net.Smtp.Test.csproj", "{5B187E80-B058-4A12-9436-6667590FCDA6}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Novartment.BaseNet46", "Novartment.BaseNet46\Novartment.BaseNet46.csproj", "{DB02CE76-2DE7-4706-8959-FC287CCB7332}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Novartment.BaseNet46.Test", "Novartment.BaseNet46.Test\Novartment.BaseNet46.Test.csproj", "{BA247AA9-0409-4A7B-913E-38C8ACB876A6}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Novartment.Base.Sample", "Novartment.Base.Sample\Novartment.Base.Sample.csproj", "{5AA8C329-697C-47F7-A8B8-FAE5C8B89018}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Novartment.Base.Net", "Novartment.Base.Net\Novartment.Base.Net.csproj", "{7D48432B-7047-4E64-8250-74C16DB097EB}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Novartment.Base.Net.Test", "Novartment.Base.Net.Test\Novartment.Base.Net.Test.csproj", "{957193A1-16B7-4DEA-B4C4-93C088E9B821}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Novartment.Base.SampleWpf", "Novartment.Base.SampleWpf\Novartment.Base.SampleWpf.csproj", "{9B6E6713-F1C9-4FBA-8A92-21370396AA41}"
 EndProject

@@ -1,0 +1,33 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <VersionPrefix>1.0.0-beta</VersionPrefix>
+    <TargetFramework>net46</TargetFramework>
+    <AssemblyName>Novartment.BaseNet46.Test</AssemblyName>
+    <PackageId>Novartment.BaseNet46.Test</PackageId>
+    <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Novartment.BaseNet46\Novartment.BaseNet46.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.0.0" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.2.0" />
+    <PackageReference Include="xunit" Version="2.2.0" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net46' ">
+    <PackageReference Include="Microsoft.NETCore.Platforms" Version="1.1.0" />
+    <Reference Include="System" />
+		<Reference Include="WindowsBase" />
+		<Reference Include="Microsoft.CSharp" />
+		<Reference Include="PresentationFramework" />
+	</ItemGroup>
+
+  <ItemGroup>
+    <Service Include="{82a7f48d-3b50-4b1e-b82e-3ada8210c358}" />
+  </ItemGroup>
+
+</Project>
