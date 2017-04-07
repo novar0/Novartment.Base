@@ -10,7 +10,7 @@ namespace Novartment.Base.IO
 	/// <summary>
 	/// Методы расширения ICryptoTransform для работы с файлами.
 	/// </summary>
-	public static class CryptoTransformFileExtensions
+	public static class HashFileExtensions
 	{
 		/// <summary>
 		/// Вычисляет хэш-функцию для файла, используя указанный алгоритм хэширования
@@ -21,9 +21,10 @@ namespace Novartment.Base.IO
 		/// <param name="progress">Объект, получающий уведомления о прогрессе операции.
 		/// Укажите null если отслеживать прогресс не требуется.</param>
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
-		/// <returns>Задача, представляющая асинхронную операцию хэширования.</returns>
-		public static Task HashFileAsync (
-			this ICryptoTransform hashAlgorithm,
+		/// <returns>Задача, представляющая асинхронную операцию хэширования,
+		/// результатом которой будет вычисленный хэш.</returns>
+		public static Task<byte[]> HashFileAsync (
+			this IncrementalHash hashAlgorithm,
 			string fileName,
 			IProgress<FileStreamStatus> progress,
 			CancellationToken cancellationToken)
@@ -40,73 +41,73 @@ namespace Novartment.Base.IO
 
 			if (cancellationToken.IsCancellationRequested)
 			{
-				return Task.FromCanceled (cancellationToken);
+				return Task.FromCanceled<byte[]> (cancellationToken);
 			}
 
-			ObservableStream readStream = null;
-			CryptoStream cryptoStream = null;
-			IDisposable subscription = null;
+			FileStream readStream = null;
+			long length = 0L;
 			try
 			{
-				readStream = new ObservableStream (new FileStream (fileName, FileMode.Open, FileAccess.Read, FileShare.Read));
-				cryptoStream = new CryptoStream (readStream, hashAlgorithm, CryptoStreamMode.Read);
-				if (progress != null)
-				{
-					subscription = readStream.Subscribe (progress.AsObserver ());
-				}
-				// TODO: сделать конфигурируемым размер буфера
-				var task = cryptoStream.CopyToAsync (Stream.Null, 0x14000, cancellationToken);
-				return HashFileAsyncFinalizer (task, readStream, cryptoStream, subscription);
+				readStream = new FileStream (fileName, FileMode.Open, FileAccess.Read, FileShare.Read);
+				length = readStream.Length;
+				progress?.Report (new FileStreamStatus (0L, length, null));
+				return HashFileImplementation ();
 			}
 			catch
 			{
-				subscription?.Dispose ();
-				cryptoStream?.Dispose ();
 				readStream?.Dispose ();
 				throw;
 			}
-		}
 
-		private static async Task HashFileAsyncFinalizer (Task task,
-			IDisposable disposable1,
-			IDisposable disposable2,
-			IDisposable disposable3)
-		{
-			try
+			async Task<byte[]> HashFileImplementation ()
 			{
 				// TODO: сделать конфигурируемым размер буфера
-				await task.ConfigureAwait (false);
-			}
-			finally
-			{
-				disposable3?.Dispose ();
-				disposable2?.Dispose ();
-				disposable1?.Dispose ();
+				var buffer = new byte[0x14000];
+				long position = 0L;
+				try
+				{
+					while (true)
+					{
+						int bytesRead = await readStream.ReadAsync (buffer, 0, buffer.Length, cancellationToken).ConfigureAwait (false);
+						if (bytesRead == 0)
+						{
+							return hashAlgorithm.GetHashAndReset ();
+						}
+						hashAlgorithm.AppendData (buffer, 0, bytesRead);
+						position += bytesRead;
+						progress?.Report (new FileStreamStatus (position, length, null));
+					}
+				}
+				finally
+				{
+					readStream?.Dispose ();
+				}
 			}
 		}
 
 		/// <summary>
 		/// Копирует существующий файл в новый файл
-		/// с применением крипто-трансформации к содержимому и с
-		/// поддержкой уведомления о прогрессе.
+		/// с вычислением указанной хэш-функции по содержимому.
+		/// Опционально посылает уведомления о прогрессе в указанный получатель уведомлений.
 		/// </summary>
-		/// <param name="cryptoTransform">Алгоритм крипто-транформации.</param>
+		/// <param name="hashAlgorithm">Алгоритм хэш-функции.</param>
 		/// <param name="sourceFileName">Имя исходного файла для копирования.</param>
 		/// <param name="destinationFileName">Имя нового файла, в который будет выполняться копирование.</param>
 		/// <param name="progress">Объект, получающий уведомления о прогрессе операции.
 		/// Укажите null если отслеживать прогресс не требуется.</param>
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
-		/// <returns>Задача, представляющая асинхронную операцию копирования.</returns>
-		public static Task TransformFileAsync (
-			this ICryptoTransform cryptoTransform,
+		/// <returns>Задача, представляющая асинхронную операцию копирования,
+		/// результатом которой будет вычисленный хэш.</returns>
+		public static Task<byte[]> CopyFileWithHashingAsync (
+			this IncrementalHash hashAlgorithm,
 			string sourceFileName,
 			string destinationFileName,
 			IProgress<FileStreamStatus> progress,
 			CancellationToken cancellationToken)
 		{
-			if (cryptoTransform == null)
+			if (hashAlgorithm == null)
 			{
-				throw new ArgumentNullException (nameof (cryptoTransform));
+				throw new ArgumentNullException (nameof (hashAlgorithm));
 			}
 			if (sourceFileName == null)
 			{
@@ -120,53 +121,52 @@ namespace Novartment.Base.IO
 
 			if (cancellationToken.IsCancellationRequested)
 			{
-				return Task.FromCanceled (cancellationToken);
+				return Task.FromCanceled<byte[]> (cancellationToken);
 			}
 
-			ObservableStream readStream = null;
+			FileStream readStream = null;
 			FileStream writeStream = null;
-			CryptoStream cryptoStream = null;
-			IDisposable subscription = null;
+			long length = 0L;
 			try
 			{
-				readStream = new ObservableStream (new FileStream (sourceFileName, FileMode.Open, FileAccess.Read, FileShare.Read));
+				readStream = new FileStream (sourceFileName, FileMode.Open, FileAccess.Read, FileShare.Read);
+				length = readStream.Length;
+				progress?.Report (new FileStreamStatus (0L, length, null));
 				writeStream = new FileStream (destinationFileName, FileMode.Create, FileAccess.Write, FileShare.None);
-				cryptoStream = new CryptoStream (readStream, cryptoTransform, CryptoStreamMode.Read);
-				if (progress != null)
-				{
-					subscription = readStream.Subscribe (progress.AsObserver ());
-				}
-				// TODO: сделать конфигурируемым размер буфера
-				var task = cryptoStream.CopyToAsync (writeStream, 0x14000, cancellationToken);
-				return TransformFileAsyncFinalizer (task, readStream, writeStream, cryptoStream, subscription);
+				return CopyFileWithHashingImplementation ();
 			}
 			catch
 			{
-				subscription?.Dispose ();
-				cryptoStream?.Dispose ();
 				writeStream?.Dispose ();
 				readStream?.Dispose ();
 				throw;
 			}
-		}
 
-		private static async Task TransformFileAsyncFinalizer (Task task,
-			IDisposable disposable1,
-			IDisposable disposable2,
-			IDisposable disposable3,
-			IDisposable disposable4)
-		{
-			try
+			async Task<byte[]> CopyFileWithHashingImplementation ()
 			{
 				// TODO: сделать конфигурируемым размер буфера
-				await task.ConfigureAwait (false);
-			}
-			finally
-			{
-				disposable4?.Dispose ();
-				disposable3?.Dispose ();
-				disposable2?.Dispose ();
-				disposable1?.Dispose ();
+				var buffer = new byte[0x14000];
+				long position = 0L;
+				try
+				{
+					while (true)
+					{
+						int bytesRead = await readStream.ReadAsync (buffer, 0, buffer.Length, cancellationToken).ConfigureAwait (false);
+						if (bytesRead == 0)
+						{
+							return hashAlgorithm.GetHashAndReset ();
+						}
+						hashAlgorithm.AppendData (buffer, 0, bytesRead);
+						await writeStream.WriteAsync (buffer, 0, bytesRead, cancellationToken).ConfigureAwait (false);
+						position += bytesRead;
+						progress?.Report (new FileStreamStatus (position, length, null));
+					}
+				}
+				finally
+				{
+					writeStream?.Dispose ();
+					readStream?.Dispose ();
+				}
 			}
 		}
 	}

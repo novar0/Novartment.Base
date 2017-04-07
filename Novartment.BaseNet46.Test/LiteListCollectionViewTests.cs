@@ -7,7 +7,7 @@ using System.Threading;
 using Xunit;
 using Novartment.Base.UI.Wpf;
 
-namespace Novartment.Base.Net45.Test
+namespace Novartment.Base.Net46.Test
 {
 	public class LiteListCollectionViewTests
 	{
