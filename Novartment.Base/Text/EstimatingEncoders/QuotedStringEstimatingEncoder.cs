@@ -46,62 +46,6 @@ namespace Novartment.Base.Text
 		}
 
 		/// <summary>
-		/// Проверяет что указанный сегмент массива байтов с исходными данными выглядит как результат кодирования.
-		/// В ситуациях где метод кодирования определяется по виду данных, приведёт к ошибочному декодированию.
-		/// </summary>
-		/// <param name="source">Массив байтов для проверки.</param>
-		/// <param name="offset">Позиция начала данных в массиве.</param>
-		/// <param name="count">Количество байтов в массиве.</param>
-		/// <returns>True если указанный сегмент массива байтов с исходными данными выглядит как результат кодирования.</returns>
-		public bool MayConfuseDecoder (byte[] source, int offset, int count)
-		{
-			if (source == null)
-			{
-				throw new ArgumentNullException (nameof (source));
-			}
-			if ((offset < 0) || (offset > source.Length) || ((offset == source.Length) && (count > 0)))
-			{
-				throw new ArgumentOutOfRangeException (nameof (offset));
-			}
-			if ((count < 0) || (count > source.Length))
-			{
-				throw new ArgumentOutOfRangeException (nameof (count));
-			}
-			Contract.EndContractBlock ();
-
-			if (count < 2)
-			{
-				return false;
-			}
-			var endPos = offset + count;
-			while (offset <= (endPos - 2))
-			{
-				if (source[offset] == (byte)'"')
-				{
-					var offset2 = offset + 1;
-					while (offset2 < endPos)
-					{
-						if (source[offset2] == (byte)'"')
-						{
-							return true;
-						}
-						var c = (char)source[offset2++];
-						if (c != '\\')
-						{
-							var isEnabledClass = AsciiCharSet.IsCharOfClass (c, _enabledClasses);
-							if (!isEnabledClass)
-							{
-								break;
-							}
-						}
-					}
-				}
-				offset++;
-			}
-			return false;
-		}
-
-		/// <summary>
 		/// В указанном массиве байтов ищет ближайшую позицию данных,
 		/// подходящих для кодировщика.
 		/// </summary>

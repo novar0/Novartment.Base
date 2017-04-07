@@ -57,16 +57,24 @@ namespace Novartment.Base.Net.Mime
 
 			// создаем общую коллекцию, содержащую части значения и все параметры
 			var parts = _valueParts.DuplicateToList ();
+
+			// если есть параметры то последнюю часть значения дополняем знаком ';'
 			if (_parameters.Count > 0)
 			{
 				parts[parts.Count - 1] = parts[parts.Count - 1] + ';';
 			}
+
+			// для каждого парамтра добавляем его части в общую коллекцию
 			for (var i = 0; i < _parameters.Count; i++)
 			{
-				HeaderEncoder.EncodeHeaderFieldParameter (
-					parts,
-					_parameters[i],
-					(i == (_parameters.Count - 1)));
+				HeaderEncoder.EncodeHeaderFieldParameter (parts, _parameters[i]);
+				var isLastParameter = i == (_parameters.Count - 1);
+				// если часть не последняя, то дополняем знаком ';'
+				if (!isLastParameter)
+				{
+					parts[parts.Count - 1] = parts[parts.Count - 1] + ';';
+				}
+
 			}
 
 			// формируем склеенную из частей строку вставляя где надо переводы строки и пробелы

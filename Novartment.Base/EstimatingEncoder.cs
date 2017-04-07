@@ -13,105 +13,6 @@ namespace Novartment.Base
 	public static class EstimatingEncoder
 	{
 		/// <summary>
-		/// Выбранный кодировщик и количество байтов, которые будут произведены в результате его применения.
-		/// </summary>
-		public struct EncoderSelection
-		{
-			/// <summary>
-			/// Выбранный кодировщик.
-			/// </summary>
-			public IEstimatingEncoder Encoder;
-
-			/// <summary>
-			/// Количество байтов, которые будут произведены в результате применения выбранного кодировщика.
-			/// </summary>
-			public int BytesProduced;
-		}
-
-		/// <summary>
-		/// Выбирает оптимальный кодировщик для указанного сегмента массива байтов.
-		/// </summary>
-		/// <param name="encoders">Список кодировщиков, которые будут использованы для подбора оптимального результата.
-		/// Должны идти в порядке предпочтения (сначала предпочитаемые, в конце - нежелательные).</param>
-		/// <param name="source">Массив байтов для проверки.</param>
-		/// <param name="offset">Позиция начала данных в массиве.</param>
-		/// <param name="count">Количество байтов в массиве.</param>
-		/// <param name="maxOutCount">Максимальное количество байтов, которое может содержать результат кодирования.</param>
-		/// <param name="segmentNumber">Номер порции с результирующими данными.</param>
-		/// <param name="isLastSegment">Признако того, что указанная порция исходных данных является последней.</param>
-		/// <returns>Кортеж из выбранного кодировщика (либо null если данные не пригодны ни для одного из кодировщиков)
-		/// и количества байтов результата кодирования.</returns>
-		public static EncoderSelection SelectOptimalEncoder (
-			IReadOnlyCollection<IEstimatingEncoder> encoders,
-			byte[] source,
-			int offset,
-			int count,
-			int maxOutCount,
-			int segmentNumber,
-			bool isLastSegment)
-		{
-			if (encoders == null)
-			{
-				throw new ArgumentNullException (nameof (encoders));
-			}
-			if (source == null)
-			{
-				throw new ArgumentNullException (nameof (source));
-			}
-			if ((offset < 0) || (offset > source.Length) || ((offset == source.Length) && (count > 0)))
-			{
-				throw new ArgumentOutOfRangeException (nameof (offset));
-			}
-			if ((count < 0) || (count > source.Length))
-			{
-				throw new ArgumentOutOfRangeException (nameof (count));
-			}
-			if (maxOutCount < 0)
-			{
-				throw new ArgumentOutOfRangeException (nameof (maxOutCount));
-			}
-			Contract.EndContractBlock ();
-
-			// если данные похожи на уже закодированные кодировщиком
-			// то пусть он их и кодирует во избежание конфуза
-			var isDataConfusing = false;
-			foreach (var encoder in encoders.Where (encoder => encoder.MayConfuseDecoder (source, offset, count)))
-			{
-				isDataConfusing = true;
-				var tuple = encoder.Estimate (
-					source, offset, count,
-					maxOutCount,
-					segmentNumber,
-					isLastSegment);
-				if (tuple.BytesConsumed >= count)
-				{
-					return new EncoderSelection () { Encoder = encoder, BytesProduced = tuple.BytesProduced };
-				}
-			}
-			if (isDataConfusing)
-			{
-				return new EncoderSelection () { Encoder = null, BytesProduced = 0 };
-			}
-
-			IEstimatingEncoder bestEncoder = null;
-			int bestSize = maxOutCount;
-			foreach (var encoder in encoders)
-			{
-				var tuple = encoder.Estimate (
-					source, offset, count,
-					bestSize, // ограничиваем размер лучшим результатом чтобы кодировщики зря не просчитывали заведомо слишком длинный вариант
-					segmentNumber,
-					isLastSegment);
-				if ((tuple.BytesConsumed >= count) && ((bestEncoder == null) || (tuple.BytesProduced < bestSize)))
-				{
-					bestEncoder = encoder;
-					bestSize = tuple.BytesProduced;
-				}
-			}
-			return new EncoderSelection () { Encoder = bestEncoder, BytesProduced = bestSize };
-		}
-
-		/// <summary>
 		/// Позиция/размер порции данных и выбранный для неё кодировщик.
 		/// </summary>
 		public struct ChunkEncoderSelection
@@ -119,17 +20,44 @@ namespace Novartment.Base
 			/// <summary>
 			/// Кодировщик, который выбран для порции.
 			/// </summary>
-			public IEstimatingEncoder Encoder;
+			public IEstimatingEncoder Encoder { get; }
 
 			/// <summary>
 			/// Начальная позиция порции в исходных данных.
 			/// </summary>
-			public int Offset;
+			public int Offset { get; }
 
 			/// <summary>
 			/// Размер порции.
 			/// </summary>
-			public int Count;
+			public int Count { get; }
+
+			/// <summary>
+			/// Инициализирует новый экземпляр класса ChunkEncoderSelection с указанным
+			/// кодировщиком, начальной позицией и размером порции.
+			/// </summary>
+			/// <param name="encoder">Получает кодировщик, который выбран для порции.</param>
+			/// <param name="offset">Получает начальная позиция порции в исходных данных.</param>
+			/// <param name="count">Получает размер порции.</param>
+			public ChunkEncoderSelection (IEstimatingEncoder encoder, int offset, int count)
+			{
+				this.Encoder = encoder;
+				this.Offset = offset;
+				this.Count = count;
+			}
+
+			/// <summary>
+			/// Деконструирует данные.
+			/// </summary>
+			/// <param name="encoder">Получает количество байтов, произведённых в результате кодирования.</param>
+			/// <param name="offset">Получает количество байтов, использованных при кодировании.</param>
+			/// <param name="count">Получает количество байтов, использованных при кодировании.</param>
+			public void Deconstruct (out IEstimatingEncoder encoder, out int offset, out int count)
+			{
+				encoder = this.Encoder;
+				offset = this.Offset;
+				count = this.Count;
+			}
 		}
 
 		/// <summary>
@@ -198,15 +126,15 @@ namespace Novartment.Base
 				foreach (var encoder in encoders)
 				{
 					var pieceExtraLength = funcExtraLength.Invoke (segmentNumber, encoder);
-					var tuple = encoder.Estimate (
+					var (bytesProduced, bytesConsumed) = encoder.Estimate (
 						source,
 						variant.SourceOffset + variant.EncodedSource,
 						variant.SourceCount - variant.EncodedSource,
 						maxOutCount - pieceExtraLength,
 						segmentNumber, true);
-					if (tuple.BytesConsumed > 0)
+					if (bytesConsumed > 0)
 					{
-						var newEncodedDestination = tuple.BytesProduced + variant.EncodedDestination + pieceExtraLength;
+						var newEncodedDestination = bytesProduced + variant.EncodedDestination + pieceExtraLength;
 						if ((bestResultOverall == null) || (newEncodedDestination < bestResultOverall.EncodedDestination))
 						{
 							var resultVariant = new EncodeResult
@@ -216,7 +144,7 @@ namespace Novartment.Base
 								Encoder = encoder,
 								SourceOffset = variant.SourceOffset + variant.EncodedSource,
 								SourceCount = variant.SourceCount - variant.EncodedSource,
-								EncodedSource = tuple.BytesConsumed,
+								EncodedSource = bytesConsumed,
 								EncodedDestination = newEncodedDestination
 							};
 							if (resultVariant.EncodedSource < resultVariant.SourceCount)
@@ -251,9 +179,7 @@ namespace Novartment.Base
 			while ((part != null) && (part.EncodedSource > 0))
 			{
 				var idx = part.Index;
-				resultValues[idx].Encoder = part.Encoder;
-				resultValues[idx].Offset = part.SourceOffset;
-				resultValues[idx].Count = part.EncodedSource;
+				resultValues[idx] = new ChunkEncoderSelection (part.Encoder, part.SourceOffset, part.EncodedSource);
 				part = part.Parent;
 			}
 

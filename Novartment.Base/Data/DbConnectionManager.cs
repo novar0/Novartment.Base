@@ -303,8 +303,7 @@ namespace Novartment.Base.Data
 				{
 					var placeHolder = string.Format (CultureInfo.InvariantCulture, _parameterPlaceholder, _globalParamNumber++);
 
-					var dbValueInfo = param.GetDbValue ();
-					var dbType = dbValueInfo.Type;
+					var (dbValue, dbType) = param.GetDbValue ();
 					DbType newDbType;
 					var isReplacementFound = _dbTypeReplacements.TryGetValue (dbType, out newDbType);
 					if (isReplacementFound)
@@ -316,7 +315,7 @@ namespace Novartment.Base.Data
 					param.Placeholder = placeHolder;
 					dataParam.ParameterName = useRealParameterNames ? param.Name : placeHolder;
 					dataParam.DbType = dbType;
-					dataParam.Value = dbValueInfo.Value;
+					dataParam.Value = dbValue;
 					dbCommand.Parameters.Add (dataParam);
 
 					var type = (param.Value == null) ? "null" : param.Value.GetType ().Name;

@@ -12,5 +12,5 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible (false)]
 [assembly: InternalsVisibleTo ("Novartment.Base.Net.Mime.Test")]
 [assembly: AssemblyVersion ("3.1")]
-[assembly: AssemblyFileVersion ("3.1.10.0")]
-[assembly: AssemblyInformationalVersion ("3.1.10-beta")]
+[assembly: AssemblyFileVersion ("3.1.11.0")]
+[assembly: AssemblyInformationalVersion ("3.1.11-beta")]

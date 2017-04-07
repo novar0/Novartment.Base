@@ -15,12 +15,38 @@ namespace Novartment.Base.Net.Mime.Test
 			Assert.Equal (HeaderFieldName.Supersedes, headerField.Name);
 			Assert.Equal ("short\r\n.   \tvalue  ЮУЖД", headerField.Value);
 
+			// folding
+			headerField = HeaderFieldBuilder.CreateExactValue (HeaderFieldName.OriginalEncodedInformationTypes, "really.very.long.value.20000000000000000")
+				.ToHeaderField (170);
+			Assert.Equal (HeaderFieldName.OriginalEncodedInformationTypes, headerField.Name);
+			Assert.Equal ("really.very.long.value.20000000000000000", headerField.Value);
+			headerField = HeaderFieldBuilder.CreateExactValue (HeaderFieldName.OriginalEncodedInformationTypes, "really.very.long.value.20000000000000000")
+				.ToHeaderField (70);
+			Assert.Equal (HeaderFieldName.OriginalEncodedInformationTypes, headerField.Name);
+			Assert.Equal ("\r\n really.very.long.value.20000000000000000", headerField.Value);
+		}
+
+		[Fact, Trait ("Category", "Mime.HeaderEncoder")]
+		public void CreateWithParameters ()
+		{
 			// one parameter
 			var headerFieldBuilder = HeaderFieldBuilder.CreateExactValue (HeaderFieldName.Supersedes, "short.value");
 			headerFieldBuilder.AddParameter ("charset", "koi8-r");
-			headerField = headerFieldBuilder.ToHeaderField (int.MaxValue);
+			var headerField = headerFieldBuilder.ToHeaderField (int.MaxValue);
 			Assert.Equal (HeaderFieldName.Supersedes, headerField.Name);
 			Assert.Equal ("short.value; charset=koi8-r", headerField.Value);
+
+			headerFieldBuilder = HeaderFieldBuilder.CreateExactValue (HeaderFieldName.Supersedes, "short.value");
+			headerFieldBuilder.AddParameter ("charset", "koi8 r");
+			headerField = headerFieldBuilder.ToHeaderField (int.MaxValue);
+			Assert.Equal (HeaderFieldName.Supersedes, headerField.Name);
+			Assert.Equal ("short.value; charset=\"koi8 r\"", headerField.Value);
+
+			headerFieldBuilder = HeaderFieldBuilder.CreateExactValue (HeaderFieldName.Supersedes, "short.value");
+			headerFieldBuilder.AddParameter ("charset", "функции");
+			headerField = headerFieldBuilder.ToHeaderField (int.MaxValue);
+			Assert.Equal (HeaderFieldName.Supersedes, headerField.Name);
+			Assert.Equal ("short.value; charset*0*=utf-8''%D1%84%D1%83%D0%BD%D0%BA%D1%86%D0%B8%D0%B8", headerField.Value);
 
 			// many parameters
 			headerFieldBuilder = HeaderFieldBuilder.CreateExactValue (HeaderFieldName.Supersedes, "short.value");
@@ -31,29 +57,13 @@ namespace Novartment.Base.Net.Mime.Test
 			Assert.Equal (HeaderFieldName.Supersedes, headerField.Name);
 			Assert.Equal ("short.value; name1=value1; charset=koi8-r; name2=value2", headerField.Value);
 
-			// failed folding
-			headerField = HeaderFieldBuilder.CreateExactValue (HeaderFieldName.OriginalEncodedInformationTypes, "really.very.long.value.20000000000000000")
-				.ToHeaderField (70);
-			Assert.Equal (HeaderFieldName.OriginalEncodedInformationTypes, headerField.Name);
-			Assert.Equal ("\r\n really.very.long.value.20000000000000000", headerField.Value);
-
-			// successful folding
-			headerField = HeaderFieldBuilder.CreateExactValue (HeaderFieldName.OriginalEncodedInformationTypes, "really.very.long.value.20000000000000000")
-				.ToHeaderField (70);
-			Assert.Equal (HeaderFieldName.OriginalEncodedInformationTypes, headerField.Name);
-			Assert.Equal ("\r\n really.very.long.value.20000000000000000", headerField.Value);
-
-			//
+			// оптимальное кодирования длинного значения параметра
 			headerFieldBuilder = HeaderFieldBuilder.CreateExactValue (HeaderFieldName.Supersedes, "value");
-			headerFieldBuilder.AddParameter ("charset", "koi8-r");
-			headerFieldBuilder.AddParameter ("boundary", "NextPart_fc40ea2198d04f01a1f390890c44e614");
 			headerFieldBuilder.AddParameter ("filename", "This document specifies an Internet standards track protocol for the функции and requests discussion and suggestions.txt");
 			headerField = headerFieldBuilder.ToHeaderField (78);
 			Assert.Equal (HeaderFieldName.Supersedes, headerField.Name);
 			Assert.Equal (
-				"value; charset=koi8-r;\r\n" +
-				" boundary=NextPart_fc40ea2198d04f01a1f390890c44e614;\r\n" +
-				" filename*0*=utf-8''This%20document%20specifies%20an%20Internet%20standards;\r\n" +
+				"value;\r\n filename*0*=utf-8''This%20document%20specifies%20an%20Internet%20standards;\r\n" +
 				" filename*1=\" track protocol for the \";\r\n" +
 				" filename*2*=%D1%84%D1%83%D0%BD%D0%BA%D1%86%D0%B8%D0%B8;\r\n" +
 				" filename*3=\" and requests discussion and suggestions.txt\"",

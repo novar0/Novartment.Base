@@ -29,6 +29,17 @@ namespace Novartment.Base.Reflection
 		}
 
 		/// <summary>
+		/// Деконструирует данные.
+		/// </summary>
+		/// <param name="name">Получает имя аргумента.</param>
+		/// <param name="value">Получает значение аргумента.</param>
+		public void Deconstruct (out string name, out object value)
+		{
+			name = this.Name;
+			value = this.Value;
+		}
+
+		/// <summary>
 		/// Преобразовывает значение объекта в эквивалентное ему строковое представление.
 		/// </summary>
 		/// <returns>Строковое представление значения объекта.</returns>

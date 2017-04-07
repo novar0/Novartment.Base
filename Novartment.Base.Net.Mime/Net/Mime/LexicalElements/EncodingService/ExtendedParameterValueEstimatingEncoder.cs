@@ -29,29 +29,6 @@ namespace Novartment.Base.Net.Mime
 		}
 
 		/// <summary>
-		/// Проверяет что указанный сегмент массива байтов с исходными данными выглядит как результат кодирования.
-		/// В ситуациях где метод кодирования определяется по виду данных, приведёт к ошибочному декодированию.
-		/// </summary>
-		/// <param name="source">Массив байтов для проверки.</param>
-		/// <param name="offset">Позиция начала данных в массиве.</param>
-		/// <param name="count">Количество байтов в массиве.</param>
-		/// <returns>True если указанный сегмент массива байтов с исходными данными выглядит как результат кодирования.</returns>
-		public bool MayConfuseDecoder (byte[] source, int offset, int count)
-		{
-			if (source == null)
-			{
-				throw new ArgumentNullException (nameof (source));
-			}
-			if ((offset < 0) || (offset > source.Length) || ((offset == source.Length) && (count > 0)))
-			{
-				throw new ArgumentOutOfRangeException (nameof (offset));
-			}
-			Contract.EndContractBlock ();
-
-			return false;
-		}
-
-		/// <summary>
 		/// В указанном массиве байтов ищет ближайшую позицию данных,
 		/// подходящих для кодировщика.
 		/// </summary>

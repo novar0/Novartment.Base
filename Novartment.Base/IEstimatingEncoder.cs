@@ -9,16 +9,6 @@ namespace Novartment.Base
 	public interface IEstimatingEncoder
 	{
 		/// <summary>
-		/// Проверяет что указанный сегмент массива байтов с исходными данными выглядит как результат кодирования.
-		/// В ситуациях где метод кодирования определяется по виду данных, приведёт к ошибочному декодированию.
-		/// </summary>
-		/// <param name="source">Массив байтов для проверки.</param>
-		/// <param name="offset">Позиция начала данных в массиве.</param>
-		/// <param name="count">Количество байтов в массиве.</param>
-		/// <returns>True если указанный сегмент массива байтов с исходными данными выглядит как результат кодирования.</returns>
-		bool MayConfuseDecoder (byte[] source, int offset, int count);
-
-		/// <summary>
 		/// В указанном массиве байтов ищет ближайшую позицию данных,
 		/// подходящих для кодировщика.
 		/// </summary>
@@ -38,8 +28,7 @@ namespace Novartment.Base
 		/// <param name="maxOutCount">Максимальное количество байтов, которое может содержать результат кодирования.</param>
 		/// <param name="segmentNumber">Номер порции с результирующими данными.</param>
 		/// <param name="isLastSegment">Признако того, что указанная порция исходных данных является последней.</param>
-		/// <returns>Кортеж из количества байтов, необходимых для результата кодирования и
-		/// количества байтов источника, которое было использовано для кодирования.</returns>
+		/// <returns>Баланс потенциальной операции кодирования.</returns>
 		EncodingBalance Estimate (
 			byte[] source, int offset, int count,
 			int maxOutCount,
@@ -57,8 +46,7 @@ namespace Novartment.Base
 		/// <param name="maxOutCount">Максимальное количество байтов, которое может содержать результат кодирования.</param>
 		/// <param name="segmentNumber">Номер порции с результирующими данными.</param>
 		/// <param name="isLastSegment">Признако того, что указанная порция исходных данных является последней.</param>
-		/// <returns>Кортеж из количества байтов, записанных в массив для результата кодирования и
-		/// количества байтов источника, которое было использовано для кодирования.</returns>
+		/// <returns>Баланс операции кодирования.</returns>
 		EncodingBalance Encode (
 			byte[] source, int offset, int count,
 			byte[] destination, int outOffset, int maxOutCount,
@@ -91,6 +79,17 @@ namespace Novartment.Base
 		{
 			this.BytesProduced = bytesProduced;
 			this.BytesConsumed = bytesConsumed;
+		}
+
+		/// <summary>
+		/// Деконструирует данные.
+		/// </summary>
+		/// <param name="bytesProduced">Получает количество байтов, произведённых в результате кодирования.</param>
+		/// <param name="bytesConsumed">Получает количество байтов, использованных при кодировании.</param>
+		public void Deconstruct (out int bytesProduced, out int bytesConsumed)
+		{
+			bytesProduced = this.BytesProduced;
+			bytesConsumed = this.BytesConsumed;
 		}
 	}
 }

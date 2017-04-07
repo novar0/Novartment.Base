@@ -13,12 +13,34 @@ namespace Novartment.Base.Data
 		/// <summary>
 		/// Значение.
 		/// </summary>
-		public object Value;
+		public object Value { get; }
 
 		/// <summary>
 		/// Тип значения.
 		/// </summary>
-		public DbType Type;
+		public DbType Type { get; }
+
+		/// <summary>
+		/// Инициализирует новый экземпляр класса DbValue с указанным значением и типом.
+		/// </summary>
+		/// <param name="value">Значение.</param>
+		/// <param name="type">Тип значения.</param>
+		public DbValue (object value, DbType type)
+		{
+			this.Value = value;
+			this.Type = type;
+		}
+
+		/// <summary>
+		/// Деконструирует данные.
+		/// </summary>
+		/// <param name="value">Получает значение.</param>
+		/// <param name="type">Получает тип значения.</param>
+		public void Deconstruct (out object value, out DbType type)
+		{
+			value = this.Value;
+			type = this.Type;
+		}
 	}
 
 	/// <summary>
@@ -67,12 +89,12 @@ namespace Novartment.Base.Data
 		{
 			if ((this.Value == null) || (this.Value == DBNull.Value))
 			{
-				return new DbValue () { Type = DbType.String };
+				return new DbValue (null, DbType.String);
 			}
 			var type = this.Value.GetType ();
 			if (this.Value is Array)
 			{
-				return new DbValue () { Value = this.Value, Type = DbType.Binary };
+				return new DbValue (this.Value, DbType.Binary);
 			}
 			if (this.Value is Enum) // перечисление конвертируем в тип-значение
 			{
@@ -119,7 +141,7 @@ namespace Novartment.Base.Data
 				default:
 					throw new InvalidOperationException ("Type [" + this.Value.GetType ().FullName + "] can not be converted to DbType.");
 			}
-			return new DbValue () { Value = dbValue, Type = dbType };
+			return new DbValue (dbValue, dbType);
 		}
 	}
 }

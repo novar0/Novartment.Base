@@ -21,6 +21,19 @@ namespace Novartment.Base.IO
 			this.State = state;
 		}
 
+		/// <summary>
+		/// Деконструирует данные.
+		/// </summary>
+		/// <param name="position">Получает позицию в потоке.</param>
+		/// <param name="length">Получает размер потока в байтах.</param>
+		/// <param name="state">Получает пользовательский объект-состояние, связанный с потоком.</param>
+		public void Deconstruct (out long position, out long length, out object state)
+		{
+			position = this.Position;
+			length = this.Length;
+			state = this.State;
+		}
+
 		/// <summary>Получает позицию в потоке.</summary>
 		public long Position { get; }
 

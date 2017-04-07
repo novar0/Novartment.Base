@@ -65,24 +65,6 @@ namespace Novartment.Base.Net.Mime.Test
 			var encoder = new QuotedStringEstimatingEncoder ();
 			var encodedBuf = new byte[999];
 
-			var bytes = encoding.GetBytes ("");
-			Assert.False (encoder.MayConfuseDecoder (bytes, 0, bytes.Length));
-			bytes = encoding.GetBytes ("\"ss");
-			Assert.False (encoder.MayConfuseDecoder (bytes, 0, bytes.Length));
-			bytes = encoding.GetBytes (" ss\"");
-			Assert.False (encoder.MayConfuseDecoder (bytes, 0, bytes.Length));
-			bytes = encoding.GetBytes ("\"s\rs\"");
-			Assert.False (encoder.MayConfuseDecoder (bytes, 0, bytes.Length));
-			bytes = encoding.GetBytes ("\"sЖs\"");
-			Assert.False (encoder.MayConfuseDecoder (bytes, 0, bytes.Length));
-
-			bytes = encoding.GetBytes ("\"\"");
-			Assert.True (encoder.MayConfuseDecoder (bytes, 0, bytes.Length));
-			bytes = encoding.GetBytes ("sss \"ss\" ddd");
-			Assert.True (encoder.MayConfuseDecoder (bytes, 0, bytes.Length));
-			bytes = encoding.GetBytes ("\"ss \\\"tt\tuu\"");
-			Assert.True (encoder.MayConfuseDecoder (bytes, 0, bytes.Length));
-
 			// неподходящие элементы в начале
 			var tuple = encoder.Estimate (buf, (Template1.Length + Template2.Length + Template3.Length), buf.Length - (Template1.Length + Template2.Length + Template3.Length), 99999, 0, false);
 			Assert.Equal (0, tuple.BytesProduced);
@@ -134,24 +116,6 @@ namespace Novartment.Base.Net.Mime.Test
 			var encoder = new EncodedWordQEstimatingEncoder (encoding, AsciiCharClasses.QEncodingAllowedInUnstructured);
 			var encodedBuf = new byte[999];
 
-			var bytes = encoding.GetBytes ("");
-			Assert.False (encoder.MayConfuseDecoder (bytes, 0, bytes.Length));
-			bytes = encoding.GetBytes ("=??=");
-			Assert.False (encoder.MayConfuseDecoder (bytes, 0, bytes.Length));
-			bytes = encoding.GetBytes ("=??Q?=C8=E4=E5=FF_stop2020_=F1=EE=F1=F2=EE=E8=F2_=E2_=F2=EE=EC?=");
-			Assert.False (encoder.MayConfuseDecoder (bytes, 0, bytes.Length));
-			bytes = encoding.GetBytes ("=?utf-8?B?0YLQtdC80LAg0YHQvtC+0LHRidC10L3QuNGPINGC0LXQutGB0YIg0YHQvtC+0LHRidC10L3QuNGP?=");
-			Assert.False (encoder.MayConfuseDecoder (bytes, 0, bytes.Length));
-			bytes = encoding.GetBytes ("=?windows-1251?Q?_stop 2020_?=");
-			Assert.False (encoder.MayConfuseDecoder (bytes, 0, bytes.Length));
-
-			bytes = encoding.GetBytes ("=?windows-1251?Q?Ж?=");
-			Assert.True (encoder.MayConfuseDecoder (bytes, 0, bytes.Length));
-			bytes = encoding.GetBytes ("ss =?us-ascii?q?stop2020?= dd");
-			Assert.True (encoder.MayConfuseDecoder (bytes, 0, bytes.Length));
-			bytes = encoding.GetBytes ("=??=\t=?windows-1251?Q?=C8=E4=E5=FF_stop2020_=F1=EE=F1=F2=EE=E8=F2_=E2_=F2=EE=EC?= 200");
-			Assert.True (encoder.MayConfuseDecoder (bytes, 0, bytes.Length));
-
 			// полная строка
 			var tuple = encoder.Estimate (buf, 0, buf.Length, 99999, 0, false);
 			Assert.Equal (Template10ResultEncoded.Length, tuple.BytesProduced);
@@ -192,24 +156,6 @@ namespace Novartment.Base.Net.Mime.Test
 			var buf = encoding.GetBytes (Template20);
 			var encoder = new EncodedWordBEstimatingEncoder (encoding);
 			var encodedBuf = new byte[999];
-
-			var bytes = encoding.GetBytes ("");
-			Assert.False (encoder.MayConfuseDecoder (bytes, 0, bytes.Length));
-			bytes = encoding.GetBytes ("=??=");
-			Assert.False (encoder.MayConfuseDecoder (bytes, 0, bytes.Length));
-			bytes = encoding.GetBytes ("=??Q?=C8=E4=E5=FF_stop2020_=F1=EE=F1=F2=EE=E8=F2_=E2_=F2=EE=EC?=");
-			Assert.False (encoder.MayConfuseDecoder (bytes, 0, bytes.Length));
-			bytes = encoding.GetBytes ("=?windows-1251?Q?_stop 2020_?=");
-			bytes = encoding.GetBytes ("=?utf-8?Q?0YLQtdC80LAg0YHQvtC+0LHRidC10L3QuNGPINGC0LXQutGB0YIg0YHQvtC+0LHRidC10L3QuNGP?=");
-			Assert.False (encoder.MayConfuseDecoder (bytes, 0, bytes.Length));
-			Assert.False (encoder.MayConfuseDecoder (bytes, 0, bytes.Length));
-			bytes = encoding.GetBytes ("=?windows-1251?Q?Ж?=");
-			Assert.False (encoder.MayConfuseDecoder (bytes, 0, bytes.Length));
-
-			bytes = encoding.GetBytes ("ss =?KOI8-R?B?29XNztnKIM3VzNjULmF2cw==?= dd");
-			Assert.True (encoder.MayConfuseDecoder (bytes, 0, bytes.Length));
-			bytes = encoding.GetBytes ("=??=\t=?utf-8?b?0YLQtdC80LAg0YHQvtC+0LHRidC10L3QuNGPINGC0LXQutGB0YIg0YHQvtC+0LHRidC10L3QuNGP?= 200");
-			Assert.True (encoder.MayConfuseDecoder (bytes, 0, bytes.Length));
 
 			// полная строка
 			var tuple = encoder.Estimate (buf, 0, buf.Length, 99999, 0, false);

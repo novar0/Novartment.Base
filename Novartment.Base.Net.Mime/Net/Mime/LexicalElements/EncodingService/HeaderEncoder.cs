@@ -145,8 +145,8 @@ namespace Novartment.Base.Net.Mime
 						}
 					}
 
-					var tuple = encoder.Encode (bytes, charIndex, charCount, outBuf, outPos, outBuf.Length - outPos, 0, true);
-					outPos += tuple.BytesProduced;
+					var (bytesProduced, bytesConsumed) = encoder.Encode (bytes, charIndex, charCount, outBuf, outPos, outBuf.Length - outPos, 0, true);
+					outPos += bytesProduced;
 					result.Add (_encoding.GetString (outBuf, 0, outPos));
 					prevSequenceIsWordEncoded = true;
 					sequenceStartWord = sequenceEndWord + 1;
@@ -326,8 +326,8 @@ namespace Novartment.Base.Net.Mime
 					}
 
 					var encoder = mustEncode ? (IEstimatingEncoder)encoderB : (IEstimatingEncoder)encoderS;
-					var tuple = encoder.Encode (bytes, charIndex, charCount, outBuf, outPos, outBuf.Length - outPos, 0, true);
-					outPos += tuple.BytesProduced;
+					var (bytesProduced, bytesConsumed) = encoder.Encode (bytes, charIndex, charCount, outBuf, outPos, outBuf.Length - outPos, 0, true);
+					outPos += bytesProduced;
 					result.Add (_encoding.GetString (outBuf, 0, outPos));
 					prevSequenceIsWordEncoded = mustEncode;
 					sequenceStartWord = sequenceEndWord + 1;
@@ -368,10 +368,7 @@ namespace Novartment.Base.Net.Mime
 
 		#region static method EncodeHeaderFieldParameter
 
-		internal static void EncodeHeaderFieldParameter (
-			IAdjustableCollection<string> result,
-			HeaderFieldParameter parameter,
-			bool isLastParameter)
+		internal static void EncodeHeaderFieldParameter (IAdjustableCollection<string> result, HeaderFieldParameter parameter)
 		{
 			/*
 			RFC 2231 часть 4.1:
@@ -410,15 +407,11 @@ namespace Novartment.Base.Net.Mime
 				AsciiCharSet.GetBytes (name, 0, name.Length, outBytes, 0);
 				var pos = name.Length;
 				outBytes[pos++] = (byte)'=';
-				var tuple = valueParts[0].Encoder.Encode (
+				var (bytesProduced, bytesConsumed) = valueParts[0].Encoder.Encode (
 					bytes, valueParts[0].Offset, valueParts[0].Count,
 					outBytes, pos, MaxLineLengthRequired,
 					0, false);
-				pos += tuple.BytesProduced;
-				if (!isLastParameter)
-				{
-					outBytes[pos++] = (byte)';';
-				}
+				pos += bytesProduced;
 				result.Add (AsciiCharSet.GetString (outBytes, 0, pos));
 			}
 			else
@@ -437,13 +430,13 @@ namespace Novartment.Base.Net.Mime
 						outBytes[pos++] = (byte)'*';
 					}
 					outBytes[pos++] = (byte)'=';
-					var tuple = valueParts[idx].Encoder.Encode (
+					var (bytesProduced, bytesConsumed) = valueParts[idx].Encoder.Encode (
 						bytes, valueParts[idx].Offset, valueParts[idx].Count,
 						outBytes, pos, MaxLineLengthRequired,
 						idx,
 						idx < (valueParts.Length - 1));
-					pos += tuple.BytesProduced;
-					if (!isLastParameter || (idx != (valueParts.Length - 1))) // !isLastPart
+					pos += bytesProduced;
+					if (idx != (valueParts.Length - 1))
 					{
 						outBytes[pos++] = (byte)';';
 					}
