@@ -80,7 +80,7 @@ namespace Novartment.Base.UI.Wpf
 
 	// Согласно логике работы WPF, наследование CollectionView обязательно,
 	// иначе при использовании наше представление будет обёрнуто в CollectionViewProxy с потерей всех преимуществ.
-	// Помечен как sealed потому что создержит обращение к virtual-членам в конструкторе.
+	// Помечен как sealed потому что содержит обращение к virtual-членам в конструкторе.
 	[SuppressMessage ("Microsoft.Naming",
 		"CA1710:IdentifiersShouldHaveCorrectSuffix",
 		Justification = "Implemented interfaces has no association with class name.")]
