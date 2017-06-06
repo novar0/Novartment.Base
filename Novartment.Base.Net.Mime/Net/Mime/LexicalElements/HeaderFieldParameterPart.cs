@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Buffers;
 using System.Text;
 using System.Globalization;
 using System.Collections.Generic;
@@ -48,7 +49,7 @@ namespace Novartment.Base.Net.Mime
 			}
 
 			int offset = 0;
-			var decodedBuffer = new byte[_value.Length];
+			var decodedBuffer = ArrayPool<byte>.Shared.Rent (_value.Length);
 			for (var i = 0; i < _value.Length; i++)
 			{
 				if (_value[i] != '%')
@@ -62,7 +63,9 @@ namespace Novartment.Base.Net.Mime
 				}
 			}
 
-			return encoding.GetString (decodedBuffer, 0, offset);
+			var result = encoding.GetString (decodedBuffer, 0, offset);
+			ArrayPool<byte>.Shared.Return (decodedBuffer);
+			return result;
 		}
 
 		internal static HeaderFieldParameterPart Parse (IReadOnlyList<StructuredValueElement> tokens)

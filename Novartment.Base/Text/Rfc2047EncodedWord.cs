@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Buffers;
 using System.Text;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
@@ -152,86 +153,93 @@ namespace Novartment.Base.Text
 		/// </remarks>
 		private static string ParseBString (string value, int offset, int endOffset, Encoding encoding)
 		{
-			var buffer = new byte[((endOffset - offset) / 4) * 3 + 2];
-
-			int bufferOffset = 0;
-			uint num2 = 0xff;
-			while (offset < endOffset)
+			var buffer = ArrayPool<byte>.Shared.Rent (((endOffset - offset) / 4) * 3 + 2);
+			try
 			{
-				uint num = value[offset++];
-				switch (num)
+				int bufferOffset = 0;
+				uint num2 = 0xff;
+				while (offset < endOffset)
 				{
-					case '+': num = 62; break;
-					case '/': num = 63; break;
-					case '=':
-						if (offset != endOffset)
-						{
-							if ((offset != (endOffset - 1)) || (value[offset] != '='))
+					uint num = value[offset++];
+					switch (num)
+					{
+						case '+': num = 62; break;
+						case '/': num = 63; break;
+						case '=':
+							if (offset != endOffset)
 							{
-								throw new FormatException (FormattableString.Invariant (
-									$"Invalid position {offset - 1} of char '=' in base64-encoded string '{value}'."));
-							}
-							num2 = num2 << 12;
-							if ((num2 & 0x80000000) == 0)
-							{
-								throw new FormatException (FormattableString.Invariant (
-									$"Invalid position {offset - 1} of char '=' in base64-encoded string '{value}'."));
-							}
-							buffer[bufferOffset++] = (byte)(num2 >> 16);
-						}
-						else
-						{
-							num2 = num2 << 6;
-							if ((num2 & 0x80000000) == 0)
-							{
-								throw new FormatException (FormattableString.Invariant (
-									$"Invalid position {offset - 1} of char '=' in base64-encoded string '{value}'."));
-							}
-							buffer[bufferOffset++] = (byte)(num2 >> 16);
-							buffer[bufferOffset++] = (byte)(num2 >> 8);
-						}
-						return encoding.GetString (buffer, 0, bufferOffset);
-					default:
-						if ((num - 'A') <= 25)
-						{
-							num -= 'A';
-						}
-						else
-						{
-							if ((num - 'a') <= 25)
-							{
-								num -= 71;
+								if ((offset != (endOffset - 1)) || (value[offset] != '='))
+								{
+									throw new FormatException (FormattableString.Invariant (
+										$"Invalid position {offset - 1} of char '=' in base64-encoded string '{value}'."));
+								}
+								num2 = num2 << 12;
+								if ((num2 & 0x80000000) == 0)
+								{
+									throw new FormatException (FormattableString.Invariant (
+										$"Invalid position {offset - 1} of char '=' in base64-encoded string '{value}'."));
+								}
+								buffer[bufferOffset++] = (byte)(num2 >> 16);
 							}
 							else
 							{
-								if ((num - '0') <= 9)
+								num2 = num2 << 6;
+								if ((num2 & 0x80000000) == 0)
 								{
-									num += 4;
+									throw new FormatException (FormattableString.Invariant (
+										$"Invalid position {offset - 1} of char '=' in base64-encoded string '{value}'."));
+								}
+								buffer[bufferOffset++] = (byte)(num2 >> 16);
+								buffer[bufferOffset++] = (byte)(num2 >> 8);
+							}
+							return encoding.GetString (buffer, 0, bufferOffset);
+						default:
+							if ((num - 'A') <= 25)
+							{
+								num -= 'A';
+							}
+							else
+							{
+								if ((num - 'a') <= 25)
+								{
+									num -= 71;
 								}
 								else
 								{
-									throw new FormatException (FormattableString.Invariant (
-										$"Invalid char in position {offset - 1} of base64-encoded string '{value}'."));
+									if ((num - '0') <= 9)
+									{
+										num += 4;
+									}
+									else
+									{
+										throw new FormatException (FormattableString.Invariant (
+											$"Invalid char in position {offset - 1} of base64-encoded string '{value}'."));
+									}
 								}
 							}
-						}
-						break;
+							break;
+					}
+					num2 = (num2 << 6) | num;
+					if ((num2 & 0x80000000) != 0)
+					{
+						buffer[bufferOffset++] = (byte)(num2 >> 16);
+						buffer[bufferOffset++] = (byte)(num2 >> 8);
+						buffer[bufferOffset++] = (byte)num2;
+						num2 = 0xff;
+					}
 				}
-				num2 = (num2 << 6) | num;
-				if ((num2 & 0x80000000) != 0)
+				if (num2 != 0xff)
 				{
-					buffer[bufferOffset++] = (byte)(num2 >> 16);
-					buffer[bufferOffset++] = (byte)(num2 >> 8);
-					buffer[bufferOffset++] = (byte)num2;
-					num2 = 0xff;
+					throw new FormatException (FormattableString.Invariant (
+						$"Incorrectly ended base64-encoded string '{value}'."));
 				}
-			}
-			if (num2 != 0xff)
-			{
-				throw new FormatException ("Incorrectly ended base64-encoded string '" + value + "'.");
-			}
 
-			return encoding.GetString (buffer, 0, bufferOffset);
+				return encoding.GetString (buffer, 0, bufferOffset);
+			}
+			finally
+			{
+				ArrayPool<byte>.Shared.Return (buffer);
+			}
 		}
 
 		/// <summary>Конвертирует "Q"-encoded строку в массив байт согласно RFC 2047 часть 4.2.</summary>
@@ -242,41 +250,47 @@ namespace Novartment.Base.Text
 				return string.Empty;
 			}
 
-			var buffer = new byte[endOffset - offset];
-			var bufferOffset = 0;
-			//int offset = 0;
-			while (offset < endOffset)
+			var buffer = ArrayPool<byte>.Shared.Rent (endOffset - offset);
+			try
 			{
-				var c = value[offset];
-				switch (c)
+				var bufferOffset = 0;
+				while (offset < endOffset)
 				{
-					case '_': // The 8-bit hexadecimal value 20 (e.g., ISO-8859-1 SPACE) may be represented as "_" (underscore, ASCII 95.)
-						buffer[bufferOffset++] = 0x20;
-						offset++;
-						break;
-					case '=': // Any 8-bit value may be represented by a "=" followed by two hexadecimal digits.
-						if ((offset + 2) >= endOffset)
-						{
-							throw new FormatException (FormattableString.Invariant (
-								$"Invalid HEX char in position {offset} of q-encoded string '{value}'."));
-						}
-						// This must be encoded 8-bit byte
-						buffer[bufferOffset++] = Hex.ParseByte (value, offset + 1);
-						offset += 3;
-						break;
-					default: // Just write back all other bytes
-						var isVisibleChar = AsciiCharSet.IsCharOfClass (c, AsciiCharClasses.Visible);
-						if (!isVisibleChar)
-						{
-							throw new FormatException (FormattableString.Invariant (
-								$"Invalid char in position {offset} of q-encoded string '{value}'."));
-						}
-						buffer[bufferOffset++] = (byte)c;
-						offset++;
-						break;
+					var c = value[offset];
+					switch (c)
+					{
+						case '_': // The 8-bit hexadecimal value 20 (e.g., ISO-8859-1 SPACE) may be represented as "_" (underscore, ASCII 95.)
+							buffer[bufferOffset++] = 0x20;
+							offset++;
+							break;
+						case '=': // Any 8-bit value may be represented by a "=" followed by two hexadecimal digits.
+							if ((offset + 2) >= endOffset)
+							{
+								throw new FormatException (FormattableString.Invariant (
+									$"Invalid HEX char in position {offset} of q-encoded string '{value}'."));
+							}
+							// This must be encoded 8-bit byte
+							buffer[bufferOffset++] = Hex.ParseByte (value, offset + 1);
+							offset += 3;
+							break;
+						default: // Just write back all other bytes
+							var isVisibleChar = AsciiCharSet.IsCharOfClass (c, AsciiCharClasses.Visible);
+							if (!isVisibleChar)
+							{
+								throw new FormatException (FormattableString.Invariant (
+									$"Invalid char in position {offset} of q-encoded string '{value}'."));
+							}
+							buffer[bufferOffset++] = (byte)c;
+							offset++;
+							break;
+					}
 				}
+				return encoding.GetString (buffer, 0, bufferOffset);
 			}
-			return encoding.GetString (buffer, 0, bufferOffset);
+			finally
+			{
+				ArrayPool<byte>.Shared.Return (buffer);
+			}
 		}
 	}
 }

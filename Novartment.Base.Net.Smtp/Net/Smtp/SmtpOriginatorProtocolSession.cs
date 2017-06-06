@@ -120,7 +120,7 @@ namespace Novartment.Base.Net.Smtp
 			// TODO: брать имя/пароль у IMailTransactionOriginator
 			string login = credential.UserName;
 			string password = credential.Password;
-			var buf = new byte[1000];
+			var buf = new byte[(login.Length + password.Length) * 4 + 2]; // max 4 byte for one char + 2 null-chars
 			var idx = 0;
 			buf[idx++] = 0;
 			idx += Encoding.UTF8.GetBytes (login, 0, login.Length, buf, idx);

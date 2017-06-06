@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Buffers;
 using System.Text;
 using System.Collections.Generic;
 using System.Threading;
@@ -101,7 +102,7 @@ namespace Novartment.Base.Net.Mime
 			var maxRequiredSizeForBEncoding =
 				words.Count * (encoder.PrologSize + encoder.EpilogSize) + // каждое слово может потребовать пролог+эпилог для кодированного вида
 				(bytes.Length - words.Count) * 4; // каждый символ кроме разделяющих слова может превратиться в 4 в закодированном виде
-			var outBuf = new byte[maxRequiredSizeForBEncoding];
+			var outBuf = ArrayPool<byte>.Shared.Rent (maxRequiredSizeForBEncoding);
 			var result = new ArrayList<string> ();
 
 			// текст рабивается на последовательности слов, которые удобно представить в одном виде (напрямую или в виде encoded-word)
@@ -152,6 +153,7 @@ namespace Novartment.Base.Net.Mime
 					sequenceStartWord = sequenceEndWord + 1;
 				}
 			}
+			ArrayPool<byte>.Shared.Return (outBuf);
 
 			return result;
 		}
@@ -274,7 +276,7 @@ namespace Novartment.Base.Net.Mime
 			var maxRequiredSizeForSEncoding =
 				words.Count * (encoderS.PrologSize + encoderS.EpilogSize) + // каждое слово может потребовать пролог+эпилог для кодированного вида
 				(bytes.Length - words.Count) * 2; // каждый символ кроме разделяющих слова может превратиться в 2 в закодированном виде
-			var outBuf = new byte[Math.Min (Math.Max (maxRequiredSizeForBEncoding, maxRequiredSizeForSEncoding), MaxLineLengthRequired)];
+			var outBuf = ArrayPool<byte>.Shared.Rent (Math.Min (Math.Max (maxRequiredSizeForBEncoding, maxRequiredSizeForSEncoding), MaxLineLengthRequired));
 			var result = new ArrayList<string> ();
 
 			// Приоритет представления: 1. макс. читабельность, 2. мин. размер, 3. макс. мест для фолдинга.
@@ -333,6 +335,7 @@ namespace Novartment.Base.Net.Mime
 					sequenceStartWord = sequenceEndWord + 1;
 				}
 			}
+			ArrayPool<byte>.Shared.Return (outBuf);
 
 			return result;
 		}
@@ -400,7 +403,7 @@ namespace Novartment.Base.Net.Mime
 				MaxLineLengthRecommended,
 				(segmentNumber, encoder) => extra + ((segmentNumber == 0) ? 1 : (1 + (int)Math.Log10 (segmentNumber))) + ((encoder is ExtendedParameterValueEstimatingEncoder) ? 1 : 0)
 				);
-			var outBytes = new byte[MaxLineLengthRequired];
+			var outBytes = ArrayPool<byte>.Shared.Rent (MaxLineLengthRequired);
 			if ((valueParts.Length < 2) && !(valueParts[0].Encoder is ExtendedParameterValueEstimatingEncoder))
 			{
 				// значение из одной части не требующей кодирования
@@ -443,6 +446,7 @@ namespace Novartment.Base.Net.Mime
 					result.Add (AsciiCharSet.GetString (outBytes, 0, pos));
 				}
 			}
+			ArrayPool<byte>.Shared.Return (outBytes);
 		}
 
 		#endregion
@@ -481,7 +485,7 @@ namespace Novartment.Base.Net.Mime
 			CancellationToken cancellationToken)
 		{
 			int totalSize = 0;
-			var bytes = new byte[MaxOneFieldSize];
+			var bytes = ArrayPool<byte>.Shared.Rent (MaxOneFieldSize);
 			foreach (var fieldBuilder in fields)
 			{
 				cancellationToken.ThrowIfCancellationRequested ();
@@ -505,6 +509,7 @@ namespace Novartment.Base.Net.Mime
 				await destination.WriteAsync (bytes, 0, size, cancellationToken).ConfigureAwait (false);
 				totalSize += size;
 			}
+			ArrayPool<byte>.Shared.Return (bytes);
 
 			return totalSize;
 		}
