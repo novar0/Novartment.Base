@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Threading;
 using System.Diagnostics.CodeAnalysis;
+using System.Threading;
 using Novartment.Base.Collections.Immutable;
 using Novartment.Base.Reflection;
 
@@ -21,7 +21,8 @@ namespace Novartment.Base.Collections
 	/// если компаратора нет - используйте ConcurrentHashTreeSet.
 	/// Не реализует интерфейс ICollection ввиду несовместимости его контракта с конкурентным доступом.
 	/// </remarks>
-	[SuppressMessage ("Microsoft.Naming",
+	[SuppressMessage (
+		"Microsoft.Naming",
 		"CA1710:IdentifiersShouldHaveCorrectSuffix",
 		Justification = "Implemented interfaces has no association with class name.")]
 	public class ConcurrentTreeSet<T> :
@@ -38,7 +39,8 @@ namespace Novartment.Base.Collections
 		/// Компаратор значений множества,
 		/// или null чтобы использовать компаратор по умолчанию.
 		/// </param>
-		[SuppressMessage ("Microsoft.Design",
+		[SuppressMessage (
+		"Microsoft.Design",
 			"CA1026:DefaultParametersShouldNotBeUsed",
 			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
 		public ConcurrentTreeSet (IComparer<T> comparer = null)
@@ -60,7 +62,7 @@ namespace Novartment.Base.Collections
 		/// <summary>
 		/// Получает признак того, что множество пустое (не содержит элементов).
 		/// </summary>
-		public bool IsEmpty => (_startNode == null);
+		public bool IsEmpty => _startNode == null;
 
 		/// <summary>
 		/// Получает количество элементов в множестве.
@@ -87,17 +89,19 @@ namespace Novartment.Base.Collections
 		/// <param name="item">Элемент для добавления в множество.</param>
 		public void Add (T item)
 		{
-			var spinWait = new SpinWait ();
+			var spinWait = default (SpinWait);
 			while (true)
 			{
 				var oldState = _startNode;
 				var newState = oldState.AddItem (item, _comparer);
+
 				// заменяем состояние если оно не изменилось с момента вызова
 				var testState = Interlocked.CompareExchange (ref _startNode, newState, oldState);
 				if (testState == oldState)
 				{
 					return;
 				}
+
 				// состояние изменилось за время вызова, поэтому повторим попытку после паузы
 				spinWait.SpinOnce ();
 			}
@@ -115,17 +119,19 @@ namespace Novartment.Base.Collections
 		/// <param name="item">Значение элемента для удаления из множества.</param>
 		public void Remove (T item)
 		{
-			var spinWait = new SpinWait ();
+			var spinWait = default (SpinWait);
 			while (true)
 			{
 				var oldState = _startNode;
 				var newState = oldState.RemoveItem (item, _comparer);
+
 				// заменяем состояние если оно не изменилось с момента вызова
 				var testState = Interlocked.CompareExchange (ref _startNode, newState, oldState);
 				if (testState == oldState)
 				{
 					return;
 				}
+
 				// состояние изменилось за время вызова, поэтому повторим попытку после паузы
 				spinWait.SpinOnce ();
 			}

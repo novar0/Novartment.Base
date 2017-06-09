@@ -1,7 +1,7 @@
 ﻿using System;
-using System.ServiceModel;
 using System.Security;
 using System.Security.Principal;
+using System.ServiceModel;
 using Novartment.Base.Collections;
 
 namespace Novartment.Base
@@ -40,9 +40,15 @@ namespace Novartment.Base
 				}
 				else
 				{
-					try { user = WindowsIdentity.GetCurrent (); }
-					catch (SecurityException) { }
+					try
+					{
+						user = WindowsIdentity.GetCurrent ();
+					}
+					catch (SecurityException)
+					{
+					}
 				}
+
 				if (user == null)
 				{
 					user = WindowsIdentity.GetAnonymous ();
@@ -55,11 +61,13 @@ namespace Novartment.Base
 				{
 					roles.Add ("Administrator");
 				}
+
 				var isUser = principal.IsInRole (WindowsBuiltInRole.User);
 				if (isUser)
 				{
 					roles.Add ("User");
 				}
+
 				var isGuest = principal.IsInRole (WindowsBuiltInRole.Guest);
 				if (isGuest)
 				{

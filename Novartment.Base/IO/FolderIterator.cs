@@ -1,9 +1,9 @@
 ﻿using System;
-using System.IO;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
+using System.IO;
 using Novartment.Base.Collections;
 
 namespace Novartment.Base.IO
@@ -11,7 +11,8 @@ namespace Novartment.Base.IO
 	/// <summary>
 	/// Перечислитель объектов директории, включая содержимое вложенных директорий.
 	/// </summary>
-	[SuppressMessage ("Microsoft.Naming",
+	[SuppressMessage (
+		"Microsoft.Naming",
 		"CA1710:IdentifiersShouldHaveCorrectSuffix",
 		Justification = "Implemented interfaces has no association with class name.")]
 	public class FolderIterator :
@@ -37,7 +38,8 @@ namespace Novartment.Base.IO
 		/// Имя объекта, которое считается пригодным.
 		/// Проверяется полное совпадение без учёта регистра.
 		/// </param>
-		[SuppressMessage ("Microsoft.Design",
+		[SuppressMessage (
+		"Microsoft.Design",
 			"CA1062:Validate arguments of public methods",
 			MessageId = "1",
 			Justification = "'fileNameFilter' validated indirectly.")]
@@ -47,11 +49,13 @@ namespace Novartment.Base.IO
 			{
 				throw new ArgumentNullException (nameof (baseFolder));
 			}
+
 			var idx = fileNameFilter?.IndexOfAny (Path.GetInvalidFileNameChars ()) ?? -1;
 			if (idx >= 0)
 			{
 				throw new ArgumentOutOfRangeException (nameof (fileNameFilter));
 			}
+
 			Contract.EndContractBlock ();
 
 			_baseFolder = baseFolder;

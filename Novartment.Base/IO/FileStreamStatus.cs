@@ -21,19 +21,6 @@ namespace Novartment.Base.IO
 			this.State = state;
 		}
 
-		/// <summary>
-		/// Деконструирует данные.
-		/// </summary>
-		/// <param name="position">Получает позицию в потоке.</param>
-		/// <param name="length">Получает размер потока в байтах.</param>
-		/// <param name="state">Получает пользовательский объект-состояние, связанный с потоком.</param>
-		public void Deconstruct (out long position, out long length, out object state)
-		{
-			position = this.Position;
-			length = this.Length;
-			state = this.State;
-		}
-
 		/// <summary>Получает позицию в потоке.</summary>
 		public long Position { get; }
 
@@ -42,6 +29,41 @@ namespace Novartment.Base.IO
 
 		/// <summary>Получает пользовательский объект-состояние, связанный с потоком.</summary>
 		public object State { get; }
+
+		/// <summary>
+		/// Определяет равенство двух указанных объектов.
+		/// </summary>
+		/// <param name="first">Первый объект для сравнения.</param>
+		/// <param name="second">Второй объект для сравнения.</param>
+		/// <returns>True если значение параметра first равно second; в противном случае — False.</returns>
+		public static bool operator ==(FileStreamStatus first, FileStreamStatus second)
+		{
+			return first.Equals(second);
+		}
+
+		/// <summary>
+		/// Определяет неравенство двух указанных объектов.
+		/// </summary>
+		/// <param name="first">Первый объект для сравнения.</param>
+		/// <param name="second">Второй объект для сравнения.</param>
+		/// <returns>True если значение параметра first не равно second; в противном случае — False.</returns>
+		public static bool operator !=(FileStreamStatus first, FileStreamStatus second)
+		{
+			return !first.Equals(second);
+		}
+
+		/// <summary>
+		/// Деконструирует данные.
+		/// </summary>
+		/// <param name="position">Получает позицию в потоке.</param>
+		/// <param name="length">Получает размер потока в байтах.</param>
+		/// <param name="state">Получает пользовательский объект-состояние, связанный с потоком.</param>
+		public void Deconstruct(out long position, out long length, out object state)
+		{
+			position = this.Position;
+			length = this.Length;
+			state = this.State;
+		}
 
 		/// <summary>
 		/// Вычисляет хэш-функцию объекта.
@@ -61,7 +83,7 @@ namespace Novartment.Base.IO
 		/// <returns>True , если указанный объект равен текущему объекту; в противном случае — False.</returns>
 		public override bool Equals (object obj)
 		{
-			return ((obj is FileStreamStatus) && Equals ((FileStreamStatus)obj));
+			return (obj is FileStreamStatus) && Equals ((FileStreamStatus)obj);
 		}
 
 		/// <summary>
@@ -74,28 +96,6 @@ namespace Novartment.Base.IO
 			return (other.Position == this.Position) &&
 				(other.Length == this.Length) &&
 				(other.State == this.State);
-		}
-
-		/// <summary>
-		/// Определяет равенство двух указанных объектов.
-		/// </summary>
-		/// <param name="first">Первый объект для сравнения.</param>
-		/// <param name="second">Второй объект для сравнения.</param>
-		/// <returns>True если значение параметра first равно second; в противном случае — False.</returns>
-		public static bool operator ==(FileStreamStatus first, FileStreamStatus second)
-		{
-			return first.Equals (second);
-		}
-
-		/// <summary>
-		/// Определяет неравенство двух указанных объектов.
-		/// </summary>
-		/// <param name="first">Первый объект для сравнения.</param>
-		/// <param name="second">Второй объект для сравнения.</param>
-		/// <returns>True если значение параметра first не равно second; в противном случае — False.</returns>
-		public static bool operator !=(FileStreamStatus first, FileStreamStatus second)
-		{
-			return !first.Equals (second);
 		}
 	}
 }

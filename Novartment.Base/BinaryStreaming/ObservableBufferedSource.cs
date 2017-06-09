@@ -1,8 +1,8 @@
 ﻿using System;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Diagnostics;
 using System.Diagnostics.Contracts;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Novartment.Base.BinaryStreaming
 {
@@ -29,35 +29,16 @@ namespace Novartment.Base.BinaryStreaming
 			{
 				throw new ArgumentNullException (nameof (source));
 			}
+
 			if (progress == null)
 			{
 				throw new ArgumentNullException (nameof (progress));
 			}
+
 			Contract.EndContractBlock ();
 
 			_source = source;
 			_progress = progress;
-		}
-
-		/// <summary>
-		/// Отбрасывает (пропускает) указанное количество данных из начала буфера.
-		/// При выполнении может измениться свойство Offset.
-		/// </summary>
-		/// <param name="size">Размер данных для пропуска в начале буфера.
-		/// Должен быть меньше чем размер данных в буфере.</param>
-		public void SkipBuffer (int size)
-		{
-			if ((size < 0) || (size > this.Count))
-			{
-				throw new ArgumentOutOfRangeException (nameof (size));
-			}
-			Contract.EndContractBlock ();
-
-			if (size > 0)
-			{
-				_source.SkipBuffer (size);
-				_progress.Report (size);
-			}
 		}
 
 		/// <summary>
@@ -87,6 +68,28 @@ namespace Novartment.Base.BinaryStreaming
 		public bool IsExhausted => _source.IsExhausted;
 
 		/// <summary>
+		/// Отбрасывает (пропускает) указанное количество данных из начала буфера.
+		/// При выполнении может измениться свойство Offset.
+		/// </summary>
+		/// <param name="size">Размер данных для пропуска в начале буфера.
+		/// Должен быть меньше чем размер данных в буфере.</param>
+		public void SkipBuffer (int size)
+		{
+			if ((size < 0) || (size > this.Count))
+			{
+				throw new ArgumentOutOfRangeException (nameof (size));
+			}
+
+			Contract.EndContractBlock ();
+
+			if (size > 0)
+			{
+				_source.SkipBuffer (size);
+				_progress.Report (size);
+			}
+		}
+
+		/// <summary>
 		/// Асинхронно заполняет буфер данными источника, дополняя уже доступные там данные.
 		/// В результате буфер может быть заполнен не полностью если источник поставляет данные блоками, либо пуст если источник исчерпался.
 		/// При выполнении могут измениться свойства Offset, Count и IsExhausted.
@@ -107,18 +110,21 @@ namespace Novartment.Base.BinaryStreaming
 		/// </summary>
 		/// <param name="size">Требуемый размер данных в буфере.</param>
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
+		/// <returns>Задача, представляющая операцию.</returns>
 		public Task EnsureBufferAsync (int size, CancellationToken cancellationToken)
 		{
 			if ((size < 0) || (size > this.Buffer.Length))
 			{
 				throw new ArgumentOutOfRangeException (nameof (size));
 			}
+
 			Contract.EndContractBlock ();
 
 			if (size == 0)
 			{
 				return Task.FromResult (0);
 			}
+
 			return _source.EnsureBufferAsync (size, cancellationToken);
 		}
 
@@ -139,6 +145,7 @@ namespace Novartment.Base.BinaryStreaming
 			{
 				throw new ArgumentOutOfRangeException (nameof (size));
 			}
+
 			Contract.EndContractBlock ();
 
 			var fastSkipSource = _source as IFastSkipBufferedSource;
@@ -189,9 +196,10 @@ namespace Novartment.Base.BinaryStreaming
 				size -= (long)available;
 				skipped += (long)available;
 
-				//заполняем буфер
+				// заполняем буфер
 				await _source.FillBufferAsync (cancellationToken).ConfigureAwait (false);
-			} while (!_source.IsExhausted && (size > (long)_source.Count));
+			}
+			while (!_source.IsExhausted && (size > (long)_source.Count));
 
 			// пропускаем частично буфер
 			var reminder = (int)Math.Min (size, (long)_source.Count);

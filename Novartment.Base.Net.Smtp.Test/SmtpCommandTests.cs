@@ -19,55 +19,55 @@ namespace Novartment.Base.Smtp.Test
 			// UnknownCommand
 			var buf = new byte[1000];
 			var source = new ArrayBufferedSource (buf);
-			var cmd = SmtpCommand.Parse (source, ExpectedInputType.Command, null);
+			var cmd = SmtpCommand.Parse (source, SmtpCommand.ExpectedInputType.Command, null);
 			Assert.Equal (SmtpCommandType.Unknown, cmd.CommandType);
 			Assert.Equal (buf.Length, source.Offset);
 
 			var cmdStr = "HELO\tlocalhost\r\n";
 			source = new ArrayBufferedSource (Encoding.ASCII.GetBytes (cmdStr + _quitCommand));
-			cmd = SmtpCommand.Parse (source, ExpectedInputType.Command, null);
+			cmd = SmtpCommand.Parse (source, SmtpCommand.ExpectedInputType.Command, null);
 			Assert.Equal (SmtpCommandType.Unknown, cmd.CommandType);
 			Assert.Equal (cmdStr.Length, source.Offset);
 
 			var cmdBytes = new byte[] { 0xd0, 0x81, 0x20, 0x0d, 0x0a, 0x0d, 0x0a };
 			source = new ArrayBufferedSource (cmdBytes);
-			Assert.Throws<FormatException> (() => SmtpCommand.Parse (source, ExpectedInputType.Command, null));
+			Assert.Throws<FormatException> (() => SmtpCommand.Parse (source, SmtpCommand.ExpectedInputType.Command, null));
 
 			cmdStr = " QUIT\r\n";
 			source = new ArrayBufferedSource (Encoding.ASCII.GetBytes (cmdStr + _quitCommand));
-			cmd = SmtpCommand.Parse (source, ExpectedInputType.Command, null);
+			cmd = SmtpCommand.Parse (source, SmtpCommand.ExpectedInputType.Command, null);
 			Assert.Equal (SmtpCommandType.Unknown, cmd.CommandType);
 			Assert.Equal (cmdStr.Length, source.Offset);
 
 			cmdStr = "DATA2\r\n";
 			source = new ArrayBufferedSource (Encoding.ASCII.GetBytes (cmdStr + _quitCommand));
-			cmd = SmtpCommand.Parse (source, ExpectedInputType.Command, null);
+			cmd = SmtpCommand.Parse (source, SmtpCommand.ExpectedInputType.Command, null);
 			Assert.Equal (SmtpCommandType.Unknown, cmd.CommandType);
 			Assert.Equal (cmdStr.Length, source.Offset);
 
 			cmdStr = "MAIL FROM <someone@server.com>\r\n";
 			source = new ArrayBufferedSource (Encoding.ASCII.GetBytes (cmdStr + _quitCommand));
-			cmd = SmtpCommand.Parse (source, ExpectedInputType.Command, null);
+			cmd = SmtpCommand.Parse (source, SmtpCommand.ExpectedInputType.Command, null);
 			Assert.Equal (SmtpCommandType.Unknown, cmd.CommandType);
 			Assert.Equal (cmdStr.Length, source.Offset);
 
 			// Data
 			cmdStr = "DATA\r\n";
 			source = new ArrayBufferedSource (Encoding.ASCII.GetBytes (cmdStr + _quitCommand));
-			cmd = SmtpCommand.Parse (source, ExpectedInputType.Command, null);
+			cmd = SmtpCommand.Parse (source, SmtpCommand.ExpectedInputType.Command, null);
 			Assert.Equal (SmtpCommandType.Data, cmd.CommandType);
 			Assert.Equal (cmdStr.Length, source.Offset);
 
 			cmdStr = "Data\r\n";
 			source = new ArrayBufferedSource (Encoding.ASCII.GetBytes (cmdStr + _quitCommand));
-			cmd = SmtpCommand.Parse (source, ExpectedInputType.Command, null);
+			cmd = SmtpCommand.Parse (source, SmtpCommand.ExpectedInputType.Command, null);
 			Assert.Equal (SmtpCommandType.Data, cmd.CommandType);
 			Assert.Equal (cmdStr.Length, source.Offset);
 
 			// waiting Data
 			cmdStr = "Hello!\r\nPlease send me some info.";
 			source = new ArrayBufferedSource (Encoding.ASCII.GetBytes (cmdStr + "\r\n.\r\n" + _quitCommand));
-			cmd = SmtpCommand.Parse (source, ExpectedInputType.Data, null);
+			cmd = SmtpCommand.Parse (source, SmtpCommand.ExpectedInputType.Data, null);
 			Assert.Equal (SmtpCommandType.ActualData, cmd.CommandType);
 			Assert.IsType<SmtpActualDataCommand> (cmd);
 			var cmdActualData = (SmtpActualDataCommand)cmd;
@@ -78,47 +78,47 @@ namespace Novartment.Base.Smtp.Test
 			// Noop
 			cmdStr = "NOOP\r\n";
 			source = new ArrayBufferedSource (Encoding.ASCII.GetBytes (cmdStr + _quitCommand));
-			cmd = SmtpCommand.Parse (source, ExpectedInputType.Command, null);
+			cmd = SmtpCommand.Parse (source, SmtpCommand.ExpectedInputType.Command, null);
 			Assert.Equal (SmtpCommandType.Noop, cmd.CommandType);
 			Assert.Equal (cmdStr.Length, source.Offset);
 
 			cmdStr = "NOOP --synchronize transaction NOW--\r\n";
 			source = new ArrayBufferedSource (Encoding.ASCII.GetBytes (cmdStr + _quitCommand));
-			cmd = SmtpCommand.Parse (source, ExpectedInputType.Command, null);
+			cmd = SmtpCommand.Parse (source, SmtpCommand.ExpectedInputType.Command, null);
 			Assert.Equal (SmtpCommandType.Noop, cmd.CommandType);
 			Assert.Equal (cmdStr.Length, source.Offset);
 
 			// Quit
 			cmdStr = "QUIT\r\n";
 			source = new ArrayBufferedSource (Encoding.ASCII.GetBytes (cmdStr + _quitCommand));
-			cmd = SmtpCommand.Parse (source, ExpectedInputType.Command, null);
+			cmd = SmtpCommand.Parse (source, SmtpCommand.ExpectedInputType.Command, null);
 			Assert.Equal (SmtpCommandType.Quit, cmd.CommandType);
 			Assert.Equal (cmdStr.Length, source.Offset);
 
 			// Rset
 			cmdStr = "rset\r\n";
 			source = new ArrayBufferedSource (Encoding.ASCII.GetBytes (cmdStr + _quitCommand));
-			cmd = SmtpCommand.Parse (source, ExpectedInputType.Command, null);
+			cmd = SmtpCommand.Parse (source, SmtpCommand.ExpectedInputType.Command, null);
 			Assert.Equal (SmtpCommandType.Rset, cmd.CommandType);
 			Assert.Equal (cmdStr.Length, source.Offset);
 
 			cmdStr = "RSET\r\n";
 			source = new ArrayBufferedSource (Encoding.ASCII.GetBytes (cmdStr + _quitCommand));
-			cmd = SmtpCommand.Parse (source, ExpectedInputType.Command, null);
+			cmd = SmtpCommand.Parse (source, SmtpCommand.ExpectedInputType.Command, null);
 			Assert.Equal (SmtpCommandType.Rset, cmd.CommandType);
 			Assert.Equal (cmdStr.Length, source.Offset);
 
 			// Vrfy
 			cmdStr = "VRFY\r\n";
 			source = new ArrayBufferedSource (Encoding.ASCII.GetBytes (cmdStr + _quitCommand));
-			cmd = SmtpCommand.Parse (source, ExpectedInputType.Command, null);
+			cmd = SmtpCommand.Parse (source, SmtpCommand.ExpectedInputType.Command, null);
 			Assert.Equal (SmtpCommandType.Vrfy, cmd.CommandType);
 			Assert.IsType<SmtpInvalidSyntaxCommand> (cmd);
 			Assert.Equal (cmdStr.Length, source.Offset);
 
 			cmdStr = "VRFY John Doe\r\n";
 			source = new ArrayBufferedSource (Encoding.ASCII.GetBytes (cmdStr + _quitCommand));
-			cmd = SmtpCommand.Parse (source, ExpectedInputType.Command, null);
+			cmd = SmtpCommand.Parse (source, SmtpCommand.ExpectedInputType.Command, null);
 			Assert.Equal (SmtpCommandType.Vrfy, cmd.CommandType);
 			Assert.Equal (cmdStr.Length, source.Offset);
 
@@ -126,7 +126,7 @@ namespace Novartment.Base.Smtp.Test
 			var id = "insufficient\tsystem\tstorage";
 			cmdStr = "HELO " + id + "\r\n";
 			source = new ArrayBufferedSource (Encoding.ASCII.GetBytes (cmdStr + _quitCommand));
-			cmd = SmtpCommand.Parse (source, ExpectedInputType.Command, null);
+			cmd = SmtpCommand.Parse (source, SmtpCommand.ExpectedInputType.Command, null);
 			Assert.Equal (SmtpCommandType.Helo, cmd.CommandType);
 			Assert.IsType< SmtpHeloCommand> (cmd);
 			var cmdHelo = (SmtpHeloCommand)cmd;
@@ -136,7 +136,7 @@ namespace Novartment.Base.Smtp.Test
 			// Ehlo
 			cmdStr = "EHLO " + id + "\r\n";
 			source = new ArrayBufferedSource (Encoding.ASCII.GetBytes (cmdStr + _quitCommand));
-			cmd = SmtpCommand.Parse (source, ExpectedInputType.Command, null);
+			cmd = SmtpCommand.Parse (source, SmtpCommand.ExpectedInputType.Command, null);
 			Assert.Equal (SmtpCommandType.Ehlo, cmd.CommandType);
 			Assert.IsType<SmtpEhloCommand> (cmd);
 			var cmdEhlo = (SmtpEhloCommand)cmd;
@@ -146,21 +146,21 @@ namespace Novartment.Base.Smtp.Test
 			// MailFrom
 			cmdStr = "MAIL from:someone@server.com\r\n";
 			source = new ArrayBufferedSource (Encoding.ASCII.GetBytes (cmdStr + _quitCommand));
-			cmd = SmtpCommand.Parse (source, ExpectedInputType.Command, null);
+			cmd = SmtpCommand.Parse (source, SmtpCommand.ExpectedInputType.Command, null);
 			Assert.Equal (SmtpCommandType.MailFrom, cmd.CommandType);
 			Assert.IsType<SmtpInvalidSyntaxCommand> (cmd);
 			Assert.Equal (cmdStr.Length, source.Offset);
 
 			cmdStr = "MAIL FROM:Peter_Parker <someone@server.com>\r\n";
 			source = new ArrayBufferedSource (Encoding.ASCII.GetBytes (cmdStr + _quitCommand));
-			cmd = SmtpCommand.Parse (source, ExpectedInputType.Command, null);
+			cmd = SmtpCommand.Parse (source, SmtpCommand.ExpectedInputType.Command, null);
 			Assert.Equal (SmtpCommandType.MailFrom, cmd.CommandType);
 			Assert.IsType<SmtpInvalidSyntaxCommand> (cmd);
 			Assert.Equal (cmdStr.Length, source.Offset);
 
 			cmdStr = "mail from:<>\r\n";
 			source = new ArrayBufferedSource (Encoding.ASCII.GetBytes (cmdStr + _quitCommand));
-			cmd = SmtpCommand.Parse (source, ExpectedInputType.Command, null);
+			cmd = SmtpCommand.Parse (source, SmtpCommand.ExpectedInputType.Command, null);
 			Assert.Equal (SmtpCommandType.MailFrom, cmd.CommandType);
 			Assert.IsType<SmtpMailFromCommand> (cmd);
 			var cmdMailFrom = (SmtpMailFromCommand)cmd;
@@ -170,49 +170,49 @@ namespace Novartment.Base.Smtp.Test
 
 			cmdStr = "mail from:<> AUTH=me@server.com\r\n";
 			source = new ArrayBufferedSource (Encoding.ASCII.GetBytes (cmdStr + _quitCommand));
-			cmd = SmtpCommand.Parse (source, ExpectedInputType.Command, null);
+			cmd = SmtpCommand.Parse (source, SmtpCommand.ExpectedInputType.Command, null);
 			Assert.Equal (SmtpCommandType.MailFrom, cmd.CommandType);
 			Assert.IsType<SmtpInvalidSyntaxCommand> (cmd);
 			Assert.Equal (cmdStr.Length, source.Offset);
 
 			cmdStr = "mail from:<> BODY:8BITMIME\r\n";
 			source = new ArrayBufferedSource (Encoding.ASCII.GetBytes (cmdStr + _quitCommand));
-			cmd = SmtpCommand.Parse (source, ExpectedInputType.Command, null);
+			cmd = SmtpCommand.Parse (source, SmtpCommand.ExpectedInputType.Command, null);
 			Assert.Equal (SmtpCommandType.MailFrom, cmd.CommandType);
 			Assert.IsType<SmtpInvalidSyntaxCommand> (cmd);
 			Assert.Equal (cmdStr.Length, source.Offset);
 
 			cmdStr = "mail from:<> BODY=8BIT-MIME\r\n";
 			source = new ArrayBufferedSource (Encoding.ASCII.GetBytes (cmdStr + _quitCommand));
-			cmd = SmtpCommand.Parse (source, ExpectedInputType.Command, null);
+			cmd = SmtpCommand.Parse (source, SmtpCommand.ExpectedInputType.Command, null);
 			Assert.Equal (SmtpCommandType.MailFrom, cmd.CommandType);
 			Assert.IsType<SmtpInvalidSyntaxCommand> (cmd);
 			Assert.Equal (cmdStr.Length, source.Offset);
 
 			cmdStr = "mail from:<someone@server.com> RET=HDRS BODY=BINARYMIME\r\n";
 			source = new ArrayBufferedSource (Encoding.ASCII.GetBytes (cmdStr + _quitCommand));
-			cmd = SmtpCommand.Parse (source, ExpectedInputType.Command, null);
+			cmd = SmtpCommand.Parse (source, SmtpCommand.ExpectedInputType.Command, null);
 			Assert.Equal (SmtpCommandType.MailFrom, cmd.CommandType);
 			Assert.IsType<SmtpInvalidSyntaxCommand> (cmd);
 			Assert.Equal (cmdStr.Length, source.Offset);
 
 			cmdStr = "mail from:<someone@server.com> BODY=BINARYMIME BODY=8BITMIME\r\n";
 			source = new ArrayBufferedSource (Encoding.ASCII.GetBytes (cmdStr + _quitCommand));
-			cmd = SmtpCommand.Parse (source, ExpectedInputType.Command, null);
+			cmd = SmtpCommand.Parse (source, SmtpCommand.ExpectedInputType.Command, null);
 			Assert.Equal (SmtpCommandType.MailFrom, cmd.CommandType);
 			Assert.IsType<SmtpInvalidSyntaxCommand> (cmd);
 			Assert.Equal (cmdStr.Length, source.Offset);
 
 			cmdStr = "MAIL FROM:<someone@server.com> " + id + "\r\n";
 			source = new ArrayBufferedSource (Encoding.ASCII.GetBytes (cmdStr + _quitCommand));
-			cmd = SmtpCommand.Parse (source, ExpectedInputType.Command, null);
+			cmd = SmtpCommand.Parse (source, SmtpCommand.ExpectedInputType.Command, null);
 			Assert.Equal (SmtpCommandType.MailFrom, cmd.CommandType);
 			Assert.IsType<SmtpInvalidSyntaxCommand> (cmd);
 			Assert.Equal (cmdStr.Length, source.Offset);
 
 			cmdStr = "mail from:<> AUTH=<> BODY=8BITMIME\r\n";
 			source = new ArrayBufferedSource (Encoding.ASCII.GetBytes (cmdStr + _quitCommand));
-			cmd = SmtpCommand.Parse (source, ExpectedInputType.Command, null);
+			cmd = SmtpCommand.Parse (source, SmtpCommand.ExpectedInputType.Command, null);
 			Assert.Equal (SmtpCommandType.MailFrom, cmd.CommandType);
 			Assert.IsType<SmtpMailFromCommand> (cmd);
 			cmdMailFrom = (SmtpMailFromCommand)cmd;
@@ -223,7 +223,7 @@ namespace Novartment.Base.Smtp.Test
 
 			cmdStr = "mail from:<someone@server.com>    BODY=BINARYMIME  AUTH=<someone@server.com> \r\n";
 			source = new ArrayBufferedSource (Encoding.ASCII.GetBytes (cmdStr + _quitCommand));
-			cmd = SmtpCommand.Parse (source, ExpectedInputType.Command, null);
+			cmd = SmtpCommand.Parse (source, SmtpCommand.ExpectedInputType.Command, null);
 			Assert.Equal (SmtpCommandType.MailFrom, cmd.CommandType);
 			Assert.IsType<SmtpMailFromCommand> (cmd);
 			cmdMailFrom = (SmtpMailFromCommand)cmd;
@@ -235,28 +235,28 @@ namespace Novartment.Base.Smtp.Test
 			// RcptTo
 			cmdStr = "RCPT TO:<support>\r\n";
 			source = new ArrayBufferedSource (Encoding.ASCII.GetBytes (cmdStr + _quitCommand));
-			cmd = SmtpCommand.Parse (source, ExpectedInputType.Command, null);
+			cmd = SmtpCommand.Parse (source, SmtpCommand.ExpectedInputType.Command, null);
 			Assert.IsType<SmtpInvalidSyntaxCommand> (cmd);
 			Assert.Equal (SmtpCommandType.RcptTo, cmd.CommandType);
 			Assert.Equal (cmdStr.Length, source.Offset);
 
 			cmdStr = "RCPT TO:support@www.ru\r\n";
 			source = new ArrayBufferedSource (Encoding.ASCII.GetBytes (cmdStr + _quitCommand));
-			cmd = SmtpCommand.Parse (source, ExpectedInputType.Command, null);
+			cmd = SmtpCommand.Parse (source, SmtpCommand.ExpectedInputType.Command, null);
 			Assert.IsType<SmtpInvalidSyntaxCommand> (cmd);
 			Assert.Equal (SmtpCommandType.RcptTo, cmd.CommandType);
 			Assert.Equal (cmdStr.Length, source.Offset);
 
 			cmdStr = "RCPT TO:<>\r\n";
 			source = new ArrayBufferedSource (Encoding.ASCII.GetBytes (cmdStr + _quitCommand));
-			cmd = SmtpCommand.Parse (source, ExpectedInputType.Command, null);
+			cmd = SmtpCommand.Parse (source, SmtpCommand.ExpectedInputType.Command, null);
 			Assert.IsType<SmtpInvalidSyntaxCommand> (cmd);
 			Assert.Equal (SmtpCommandType.RcptTo, cmd.CommandType);
 			Assert.Equal (cmdStr.Length, source.Offset);
 
 			cmdStr = "RCPT TO:<someone@server.com>\r\n";
 			source = new ArrayBufferedSource (Encoding.ASCII.GetBytes (cmdStr + _quitCommand));
-			cmd = SmtpCommand.Parse (source, ExpectedInputType.Command, null);
+			cmd = SmtpCommand.Parse (source, SmtpCommand.ExpectedInputType.Command, null);
 			Assert.Equal (SmtpCommandType.RcptTo, cmd.CommandType);
 			Assert.IsType<SmtpRcptToCommand> (cmd);
 			var cmdRcptTo = (SmtpRcptToCommand)cmd;
@@ -265,7 +265,7 @@ namespace Novartment.Base.Smtp.Test
 
 			cmdStr = "rcpt TO:<someone@server.com> " + id + "\r\n";
 			source = new ArrayBufferedSource (Encoding.ASCII.GetBytes (cmdStr + _quitCommand));
-			cmd = SmtpCommand.Parse (source, ExpectedInputType.Command, null);
+			cmd = SmtpCommand.Parse (source, SmtpCommand.ExpectedInputType.Command, null);
 			Assert.Equal (SmtpCommandType.RcptTo, cmd.CommandType);
 			Assert.IsType<SmtpRcptToCommand> (cmd);
 			cmdRcptTo = (SmtpRcptToCommand)cmd;
@@ -276,28 +276,28 @@ namespace Novartment.Base.Smtp.Test
 			var sampleData = "abcdefg";
 			cmdStr = "BDAT\r\n";
 			source = new ArrayBufferedSource (Encoding.ASCII.GetBytes (cmdStr + sampleData));
-			cmd = SmtpCommand.Parse (source, ExpectedInputType.Command, null);
+			cmd = SmtpCommand.Parse (source, SmtpCommand.ExpectedInputType.Command, null);
 			Assert.Equal (SmtpCommandType.Bdat, cmd.CommandType);
 			Assert.IsType<SmtpInvalidSyntaxCommand> (cmd);
 			Assert.Equal (cmdStr.Length, source.Offset);
 
 			cmdStr = "BDAT -10\r\n";
 			source = new ArrayBufferedSource (Encoding.ASCII.GetBytes (cmdStr + sampleData));
-			cmd = SmtpCommand.Parse (source, ExpectedInputType.Command, null);
+			cmd = SmtpCommand.Parse (source, SmtpCommand.ExpectedInputType.Command, null);
 			Assert.Equal (SmtpCommandType.Bdat, cmd.CommandType);
 			Assert.IsType<SmtpInvalidSyntaxCommand> (cmd);
 			Assert.Equal (cmdStr.Length, source.Offset);
 
 			cmdStr = "bdat 10LAST\r\n";
 			source = new ArrayBufferedSource (Encoding.ASCII.GetBytes (cmdStr + sampleData));
-			cmd = SmtpCommand.Parse (source, ExpectedInputType.Command, null);
+			cmd = SmtpCommand.Parse (source, SmtpCommand.ExpectedInputType.Command, null);
 			Assert.Equal (SmtpCommandType.Bdat, cmd.CommandType);
 			Assert.IsType<SmtpInvalidSyntaxCommand> (cmd);
 			Assert.Equal (cmdStr.Length, source.Offset);
 
 			cmdStr = "BDAT 4647785733979898881\r\n";
 			source = new ArrayBufferedSource (Encoding.ASCII.GetBytes (cmdStr + sampleData));
-			cmd = SmtpCommand.Parse (source, ExpectedInputType.Command, null);
+			cmd = SmtpCommand.Parse (source, SmtpCommand.ExpectedInputType.Command, null);
 			Assert.Equal (SmtpCommandType.Bdat, cmd.CommandType);
 			Assert.IsType<SmtpBdatCommand> (cmd);
 			var cmdBdat = (SmtpBdatCommand)cmd;
@@ -308,7 +308,7 @@ namespace Novartment.Base.Smtp.Test
 
 			cmdStr = "bDAT 2 LAST\r\n";
 			source = new ArrayBufferedSource (Encoding.ASCII.GetBytes (cmdStr + sampleData));
-			cmd = SmtpCommand.Parse (source, ExpectedInputType.Command, null);
+			cmd = SmtpCommand.Parse (source, SmtpCommand.ExpectedInputType.Command, null);
 			Assert.Equal (SmtpCommandType.Bdat, cmd.CommandType);
 			Assert.IsType<SmtpBdatCommand> (cmd);
 			cmdBdat = (SmtpBdatCommand)cmd;
@@ -322,28 +322,28 @@ namespace Novartment.Base.Smtp.Test
 			// StartTls
 			cmdStr = "STARTTLS\r\n";
 			source = new ArrayBufferedSource (Encoding.ASCII.GetBytes (cmdStr + _quitCommand));
-			cmd = SmtpCommand.Parse (source, ExpectedInputType.Command, null);
+			cmd = SmtpCommand.Parse (source, SmtpCommand.ExpectedInputType.Command, null);
 			Assert.Equal (SmtpCommandType.StartTls, cmd.CommandType);
 			Assert.Equal (cmdStr.Length, source.Offset);
 
 			// Auth
 			cmdStr = "AUTH\r\n";
 			source = new ArrayBufferedSource (Encoding.ASCII.GetBytes (cmdStr + _quitCommand));
-			cmd = SmtpCommand.Parse (source, ExpectedInputType.Command, null);
+			cmd = SmtpCommand.Parse (source, SmtpCommand.ExpectedInputType.Command, null);
 			Assert.Equal (SmtpCommandType.Auth, cmd.CommandType);
 			Assert.IsType<SmtpInvalidSyntaxCommand> (cmd);
 			Assert.Equal (cmdStr.Length, source.Offset);
 
 			cmdStr = "AUTH NEW METHOD\r\n";
 			source = new ArrayBufferedSource (Encoding.ASCII.GetBytes (cmdStr + _quitCommand));
-			cmd = SmtpCommand.Parse (source, ExpectedInputType.Command, null);
+			cmd = SmtpCommand.Parse (source, SmtpCommand.ExpectedInputType.Command, null);
 			Assert.Equal (SmtpCommandType.Auth, cmd.CommandType);
 			Assert.IsType<SmtpInvalidSyntaxCommand> (cmd);
 			Assert.Equal (cmdStr.Length, source.Offset);
 
 			cmdStr = "AUTH SOME\r\n";
 			source = new ArrayBufferedSource (Encoding.ASCII.GetBytes (cmdStr + _quitCommand));
-			cmd = SmtpCommand.Parse (source, ExpectedInputType.Command, null);
+			cmd = SmtpCommand.Parse (source, SmtpCommand.ExpectedInputType.Command, null);
 			var cmdAuth = (SmtpAuthCommand)cmd;
 			Assert.Null (cmdAuth.InitialResponse);
 			Assert.Equal ("SOME", cmdAuth.Mechanism);
@@ -351,7 +351,7 @@ namespace Novartment.Base.Smtp.Test
 
 			cmdStr = "AUTH NEW =\r\n";
 			source = new ArrayBufferedSource (Encoding.ASCII.GetBytes (cmdStr + _quitCommand));
-			cmd = SmtpCommand.Parse (source, ExpectedInputType.Command, null);
+			cmd = SmtpCommand.Parse (source, SmtpCommand.ExpectedInputType.Command, null);
 			cmdAuth = (SmtpAuthCommand)cmd;
 			Assert.Equal (0, cmdAuth.InitialResponse.Length);
 			Assert.Equal ("NEW", cmdAuth.Mechanism);
@@ -359,7 +359,7 @@ namespace Novartment.Base.Smtp.Test
 
 			cmdStr = "AUTH NEW AGFhYQBiYmI=\r\n";
 			source = new ArrayBufferedSource (Encoding.ASCII.GetBytes (cmdStr + _quitCommand));
-			cmd = SmtpCommand.Parse (source, ExpectedInputType.Command, null);
+			cmd = SmtpCommand.Parse (source, SmtpCommand.ExpectedInputType.Command, null);
 			cmdAuth = (SmtpAuthCommand)cmd;
 			Assert.Equal (8, cmdAuth.InitialResponse.Length);
 			Assert.Equal (0, cmdAuth.InitialResponse[0]);
@@ -376,7 +376,7 @@ namespace Novartment.Base.Smtp.Test
 			// waiting SASL response
 			cmdStr = "AGFhYQBiYmI=\r\n";
 			source = new ArrayBufferedSource (Encoding.ASCII.GetBytes (cmdStr + _quitCommand));
-			cmd = SmtpCommand.Parse (source, ExpectedInputType.AuthenticationResponse, null);
+			cmd = SmtpCommand.Parse (source, SmtpCommand.ExpectedInputType.AuthenticationResponse, null);
 			Assert.Equal (SmtpCommandType.SaslResponse, cmd.CommandType);
 			Assert.IsType<SmtpSaslResponseCommand> (cmd);
 			var cmdSaslResponse = (SmtpSaslResponseCommand)cmd;

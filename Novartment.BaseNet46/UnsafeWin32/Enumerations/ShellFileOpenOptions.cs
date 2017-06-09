@@ -23,11 +23,11 @@ namespace Novartment.Base.UnsafeWin32
 
 		/// <summary>Ensures that returned items are file system items.</summary>
 		/// <remarks>FOS_FORCEFILESYSTEM</remarks>
-		ForceFileSystem = 0x00000040,// Ensure that items returned are filesystem items.
+		ForceFileSystem = 0x00000040, // Ensure that items returned are filesystem items.
 
 		/// <summary>Enables the user to choose any item in the Shell namespace, not just those with STREAM or FILESYSTEM attributes.</summary>
 		/// <remarks>FOS_ALLNONSTORAGEITEMS</remarks>
-		AllNonStorageItems = 0x00000080,// Allow choosing items that have no storage.
+		AllNonStorageItems = 0x00000080, // Allow choosing items that have no storage.
 
 		/// <summary>Do not check for situations that would prevent an application from opening the selected file, such as sharing violations or access denied errors.</summary>
 		/// <remarks>FOS_NOVALIDATE</remarks>

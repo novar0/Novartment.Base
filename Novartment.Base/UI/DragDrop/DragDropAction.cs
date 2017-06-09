@@ -1,5 +1,4 @@
-﻿
-namespace Novartment.Base.UI
+﻿namespace Novartment.Base.UI
 {
 	/// <summary>
 	/// Требуемое действие во время перетаскивания.

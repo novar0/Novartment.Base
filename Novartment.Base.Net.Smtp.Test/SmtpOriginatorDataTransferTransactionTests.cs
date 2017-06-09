@@ -12,12 +12,12 @@ namespace Novartment.Base.Smtp.Test
 
 	public class SmtpOriginatorDataTransferTransactionTests
 	{
-		private readonly static AddrSpec mailbox = new AddrSpec ("someone", "server.org");
-		private readonly static AddrSpec mailbox1 = new AddrSpec ("postmaster", "github.org");
-		private readonly static AddrSpec mailbox2 = new AddrSpec ("admin", "sender.org");
-		private readonly static string mailBody = "Hello!!\r\n\r\nPlese reply me.\r\n";
-		private readonly static string invalidMailBodyPart1 = "Hello!!";
-		private readonly static string invalidMailBodyPart2 = "\r\n.\r\nPlese reply me.\r\n";
+		private static readonly AddrSpec mailbox = new AddrSpec ("someone", "server.org");
+		private static readonly AddrSpec mailbox1 = new AddrSpec ("postmaster", "github.org");
+		private static readonly AddrSpec mailbox2 = new AddrSpec ("admin", "sender.org");
+		private static readonly string mailBody = "Hello!!\r\n\r\nPlese reply me.\r\n";
+		private static readonly string invalidMailBodyPart1 = "Hello!!";
+		private static readonly string invalidMailBodyPart2 = "\r\n.\r\nPlese reply me.\r\n";
 
 		[Fact, Trait ("Category", "Net.Smtp")]
 		public void StartAsync ()

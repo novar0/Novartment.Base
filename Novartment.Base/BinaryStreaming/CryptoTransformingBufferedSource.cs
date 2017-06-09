@@ -1,9 +1,9 @@
 ﻿using System;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Security.Cryptography;
 using System.Diagnostics;
 using System.Diagnostics.Contracts;
+using System.Security.Cryptography;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Novartment.Base.BinaryStreaming
 {
@@ -44,23 +44,28 @@ namespace Novartment.Base.BinaryStreaming
 			{
 				throw new ArgumentNullException (nameof (source));
 			}
+
 			if (cryptoTransform == null)
 			{
 				throw new ArgumentNullException (nameof (cryptoTransform));
 			}
+
 			if (buffer == null)
 			{
 				throw new ArgumentNullException (nameof (cryptoTransform));
 			}
+
 			if (buffer.Length < 1)
 			{
 				throw new ArgumentOutOfRangeException (nameof (buffer));
 			}
+
 			if (buffer.Length < cryptoTransform.OutputBlockSize)
 			{
 				throw new ArgumentOutOfRangeException (nameof (buffer), FormattableString.Invariant (
 					$"buffer.Length ({buffer.Length}) less than cryptoTransform.OutputBlockSize ({cryptoTransform.OutputBlockSize})."));
 			}
+
 			Contract.EndContractBlock ();
 
 			_source = source;
@@ -102,6 +107,7 @@ namespace Novartment.Base.BinaryStreaming
 			{
 				throw new ArgumentOutOfRangeException (nameof (size));
 			}
+
 			Contract.EndContractBlock ();
 
 			if (size > 0)
@@ -130,7 +136,8 @@ namespace Novartment.Base.BinaryStreaming
 				do
 				{
 					sizeTransformed = await FillBufferChunkAsync (cancellationToken).ConfigureAwait (false);
-				} while (!_isExhausted && (sizeTransformed < 1)); // повторяем пока трансформация не вернёт хотя бы один байт результата
+				}
+				while (!_isExhausted && (sizeTransformed < 1)); // повторяем пока трансформация не вернёт хотя бы один байт результата
 			}
 		}
 
@@ -141,12 +148,14 @@ namespace Novartment.Base.BinaryStreaming
 		/// </summary>
 		/// <param name="size">Требуемый размер данных в буфере.</param>
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
+		/// <returns>Задача, представляющая операцию.</returns>
 		public Task EnsureBufferAsync (int size, CancellationToken cancellationToken)
 		{
 			if ((size < 0) || (size > this.Buffer.Length))
 			{
 				throw new ArgumentOutOfRangeException (nameof (size));
 			}
+
 			Contract.EndContractBlock ();
 
 			if ((size <= _count) || _isExhausted)
@@ -155,8 +164,10 @@ namespace Novartment.Base.BinaryStreaming
 				{
 					throw new NotEnoughDataException (size - _count);
 				}
+
 				return Task.CompletedTask;
 			}
+
 			Defragment ();
 			return EnsureBufferAsyncStateMachine (size, cancellationToken);
 		}
@@ -170,6 +181,7 @@ namespace Novartment.Base.BinaryStreaming
 				var sizeTransformed = await FillBufferChunkAsync (cancellationToken).ConfigureAwait (false);
 				shortage -= sizeTransformed;
 			}
+
 			if (shortage > 0)
 			{
 				throw new NotEnoughDataException (shortage);
@@ -215,10 +227,8 @@ namespace Novartment.Base.BinaryStreaming
 			return sizeTransformed;
 		}
 
-		/// <summary>
-		/// Получает размер данных источника, необходимых чтобы заполнить указанное количество байтов результата трансформации.
-		/// <param name="availableSize">Количество байтов, доступных для результата трансформации.</param>
-		/// </summary>
+		// Получает размер данных источника, необходимых чтобы заполнить указанное количество байтов результата трансформации.
+		// availableSize - Количество байтов, доступных для результата трансформации.
 		private int GetInputSizeToFillOutputSize (int availableSize)
 		{
 			if (_inputMaxBlocks < 1)
@@ -234,6 +244,7 @@ namespace Novartment.Base.BinaryStreaming
 				// минимум один блок
 				neededBlocks = 1;
 			}
+
 			return neededBlocks * _cryptoTransform.InputBlockSize;
 		}
 
@@ -248,6 +259,7 @@ namespace Novartment.Base.BinaryStreaming
 				{
 					Array.Copy (_buffer, _offset, _buffer, 0, _count);
 				}
+
 				_offset = 0;
 			}
 		}
@@ -275,6 +287,7 @@ namespace Novartment.Base.BinaryStreaming
 					}
 				}
 			}
+
 			return size;
 		}
 
@@ -298,6 +311,7 @@ namespace Novartment.Base.BinaryStreaming
 						var sourceBlocksAvailable = sourceAvailableSize / _cryptoTransform.InputBlockSize;
 						sourceBlocksNeeded = Math.Min (sourceBlocksAvailable, outputAvailableBlocks);
 					}
+
 					var sourceSizeNeeded = sourceBlocksNeeded * _cryptoTransform.InputBlockSize;
 					sizeTransformed = _cryptoTransform.TransformBlock (
 						_source.Buffer,
@@ -325,6 +339,7 @@ namespace Novartment.Base.BinaryStreaming
 						_cacheEndOffset = sizeTransformed;
 						sizeTransformed = outputAvailableSize;
 					}
+
 					Array.Copy (cache, 0, _buffer, _offset + _count, sizeTransformed);
 				}
 			}
@@ -337,6 +352,7 @@ namespace Novartment.Base.BinaryStreaming
 				{
 					_source.SkipBuffer (sourceAvailableSize);
 				}
+
 				if (finalBlock.Length > outputAvailableSize)
 				{ // поскольку весь буфер не влезает, сохраняем его остаток в кэше
 					_cache = finalBlock;
@@ -349,8 +365,10 @@ namespace Novartment.Base.BinaryStreaming
 					sizeTransformed = finalBlock.Length;
 					_isExhausted = true;
 				}
+
 				Array.Copy (finalBlock, 0, _buffer, _offset + _count, sizeTransformed);
 			}
+
 			return sizeTransformed;
 		}
 	}

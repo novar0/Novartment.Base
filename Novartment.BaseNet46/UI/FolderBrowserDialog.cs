@@ -4,7 +4,6 @@ using Novartment.Base.UnsafeWin32;
 
 namespace Novartment.Base.UI
 {
-
 	/// <summary>
 	/// Диалог, запрашивающий у пользователя папку оболочки.
 	/// </summary>
@@ -19,6 +18,35 @@ namespace Novartment.Base.UI
 		/// </summary>
 		public FolderBrowserDialog ()
 		{
+		}
+
+		/// <summary>
+		/// Получает или устанавливает папку по-умолчанию,
+		/// с которой будет начат выбор.
+		/// </summary>
+		public Shell.ShellItem DefaultFolder { get; set; }
+
+		/// <summary>
+		/// Получает выбранную пользователем папку оболочки.
+		/// </summary>
+		public Shell.ShellItem SelectedFolder => _selectedFolder;
+
+		/// <summary>
+		/// Получает или устанавливает заголовок диалога.
+		/// </summary>
+		public string Title { get; set; }
+
+		/// <summary>
+		/// Получает или устанавливает тип доступных для выбора папок.
+		/// </summary>
+		public FolderBrowserDialogTypeFilter Filter
+		{
+			get => _filter;
+
+			set
+			{
+				_filter = value;
+			}
 		}
 
 		/// <summary>
@@ -47,6 +75,7 @@ namespace Novartment.Base.UI
 			{
 				dialog.SetDefaultFolder (this.DefaultFolder.NativeShellItem);
 			}
+
 			if (this.Title != null)
 			{
 				dialog.SetTitle (this.Title);
@@ -62,6 +91,7 @@ namespace Novartment.Base.UI
 					dialogOptions |= ShellFileOpenOptions.ForceFileSystem;
 					break;
 			}
+
 			dialog.SetOptions (dialogOptions);
 
 			var hr = dialog.Show (hwndOwner);
@@ -69,6 +99,7 @@ namespace Novartment.Base.UI
 			{
 				return false;
 			}
+
 			if (hr != 0)
 			{
 				throw new Shell.ShellException ("IFileOpenDialog.Show()", Marshal.GetExceptionForHR (hr));
@@ -77,31 +108,6 @@ namespace Novartment.Base.UI
 			var nativeShellItem = dialog.GetResult ();
 			_selectedFolder = new Shell.ShellItem (nativeShellItem);
 			return true;
-		}
-
-		/// <summary>
-		/// Получает или устанавливает папку по-умолчанию,
-		/// с которой будет начат выбор.
-		/// </summary>
-		public Shell.ShellItem DefaultFolder { get; set; }
-
-		/// <summary>
-		/// Получает выбранную пользователем папку оболочки.
-		/// </summary>
-		public Shell.ShellItem SelectedFolder => _selectedFolder;
-
-		/// <summary>
-		/// Получает или устанавливает заголовок диалога.
-		/// </summary>
-		public string Title { get; set; }
-
-		/// <summary>
-		/// Получает или устанавливает тип доступных для выбора папок.
-		/// </summary>
-		public FolderBrowserDialogTypeFilter Filter
-		{
-			get { return _filter; }
-			set { _filter = value; }
 		}
 	}
 }

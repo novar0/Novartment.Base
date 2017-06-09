@@ -16,8 +16,9 @@ namespace Novartment.Base.Collections.Immutable
 	/// Семантически эквивалентен System.ArraySegment&lt;&gt;,
 	/// но является ссылочным типом чтобы гарантировать атомарность присвоений.
 	/// </remarks>
-	[DebuggerDisplay ("{DebuggerDisplay,nq}"),
-	SuppressMessage ("Microsoft.Naming",
+	[DebuggerDisplay ("{DebuggerDisplay,nq}")]
+	[SuppressMessage (
+		"Microsoft.Naming",
 		"CA1710:IdentifiersShouldHaveCorrectSuffix",
 		Justification = "Implemented interfaces has no association with class name.")]
 	public sealed class LoopedArraySegment<T> :
@@ -33,77 +34,12 @@ namespace Novartment.Base.Collections.Immutable
 		private readonly int _count;
 
 		/// <summary>
-		/// Получает исходный массив сегмента.
-		/// </summary>
-		[SuppressMessage ("Microsoft.Performance",
-			"CA1819:PropertiesShouldNotReturnArrays",
-			Justification = "This is clearly a property and write access to array is intended.")]
-		public T[] Array => _items;
-
-		/// <summary>
-		/// Получает позицию начала сегмента в исходном массиве.
-		/// </summary>
-		public int Offset => _offset;
-
-		/// <summary>
-		/// Получает количество элементов сегмента массива.
-		/// </summary>
-		public int Count => _count;
-
-		/// <summary>
-		/// Получает или устанавливает элемент сегмента массива в указанной позиции.
-		/// </summary>
-		/// <param name="index">Позиция в сегменте массива.</param>
-		public T this[int index]
-		{
-			get
-			{
-				if (index < 0)
-				{
-					throw new ArgumentOutOfRangeException (nameof (index));
-				}
-				Contract.EndContractBlock ();
-
-				index += _offset;
-				if (index >= _capacity)
-				{
-					index -= _capacity;
-				}
-				return _items[index];
-			}
-			set
-			{
-				if (index < 0)
-				{
-					throw new ArgumentOutOfRangeException (nameof (index));
-				}
-				Contract.EndContractBlock ();
-
-				index += _offset;
-				if (index >= _capacity)
-				{
-					index -= _capacity;
-				}
-				_items[index] = value;
-			}
-		}
-
-		/// <summary>
 		/// Инициализирует новый экземпляр класса LoopedArraySegment использующий указанный массив.
 		/// </summary>
 		/// <param name="array">Массив, который будет использован сегментом.</param>
 		public LoopedArraySegment (T[] array)
 			: this (array, 0, ValidatedArrayLength (array))
 		{
-		}
-
-		private static int ValidatedArrayLength (T[] array)
-		{
-			if (array == null)
-			{
-				throw new ArgumentNullException (nameof (array));
-			}
-			return array.Length;
 		}
 
 		/// <summary>
@@ -121,20 +57,140 @@ namespace Novartment.Base.Collections.Immutable
 			{
 				throw new ArgumentNullException (nameof (array));
 			}
+
 			if ((offset < 0) || (offset > array.Length) || ((offset == array.Length) && (count > 0)))
 			{
 				throw new ArgumentOutOfRangeException (nameof (offset));
 			}
+
 			if ((count < 0) || (count > array.Length))
 			{
 				throw new ArgumentOutOfRangeException (nameof (count));
 			}
+
 			Contract.EndContractBlock ();
 
 			_items = array;
 			_capacity = array.Length;
 			_offset = (count > 0) ? offset : 0;
 			_count = count;
+		}
+
+		/// <summary>
+		/// Получает исходный массив сегмента.
+		/// </summary>
+		[SuppressMessage (
+		"Microsoft.Performance",
+			"CA1819:PropertiesShouldNotReturnArrays",
+			Justification = "This is clearly a property and write access to array is intended.")]
+		public T[] Array => _items;
+
+		/// <summary>
+		/// Получает позицию начала сегмента в исходном массиве.
+		/// </summary>
+		public int Offset => _offset;
+
+		/// <summary>
+		/// Получает количество элементов сегмента массива.
+		/// </summary>
+		public int Count => _count;
+
+		[DebuggerBrowsable (DebuggerBrowsableState.Never)]
+		[SuppressMessage (
+			"Microsoft.Globalization",
+			"CA1305:SpecifyIFormatProvider",
+			MessageId = "System.String.Format(System.String,System.Object,System.Object,System.Object)",
+			Justification = "String is not exposed to the end user and will not be localized.")]
+		[SuppressMessage (
+			"Microsoft.Globalization",
+			"CA1305:SpecifyIFormatProvider",
+			MessageId = "System.String.Format(System.String,System.Object,System.Object)",
+			Justification = "String is not exposed to the end user and will not be localized.")]
+		[SuppressMessage (
+			"Microsoft.Globalization",
+			"CA1305:SpecifyIFormatProvider",
+			MessageId = "System.String.Format(System.String,System.Object)",
+			Justification = "String is not exposed to the end user and will not be localized.")]
+		private string DebuggerDisplay
+		{
+			get
+			{
+				var info = (_count < 1) ?
+					"empty" :
+					(_count == 1) ?
+						$"{_offset}" :
+						$"{_offset}...{(_offset + _count - 1) % _items.Length}";
+				return $"<{typeof (T).Name}>[{info}] (capacity={_items.Length})";
+			}
+		}
+
+		/// <summary>
+		/// Получает или устанавливает элемент сегмента массива в указанной позиции.
+		/// </summary>
+		/// <param name="index">Позиция в сегменте массива.</param>
+		public T this[int index]
+		{
+			get
+			{
+				if (index < 0)
+				{
+					throw new ArgumentOutOfRangeException (nameof (index));
+				}
+
+				Contract.EndContractBlock ();
+
+				index += _offset;
+				if (index >= _capacity)
+				{
+					index -= _capacity;
+				}
+
+				return _items[index];
+			}
+
+			set
+			{
+				if (index < 0)
+				{
+					throw new ArgumentOutOfRangeException (nameof (index));
+				}
+
+				Contract.EndContractBlock ();
+
+				index += _offset;
+				if (index >= _capacity)
+				{
+					index -= _capacity;
+				}
+
+				_items[index] = value;
+			}
+		}
+
+		/// <summary>
+		/// Определяет равенство двух сегментов массива.
+		/// </summary>
+		/// <param name="first">Сегмент массива, который находится слева от оператора равенства.</param>
+		/// <param name="second">Сегмент массива, который находится справа от оператора равенства.</param>
+		/// <returns>true, если значения параметров first и second равны; в противном случае — false.</returns>
+		public static bool operator == (LoopedArraySegment<T> first, LoopedArraySegment<T> second)
+		{
+			return ReferenceEquals (first, null) ?
+				ReferenceEquals (second, null) :
+				first.Equals (second);
+		}
+
+		/// <summary>
+		/// Определяет неравенство двух сегментов массива.
+		/// </summary>
+		/// <param name="first">Сегмент массива, который находится слева от оператора равенства.</param>
+		/// <param name="second">Сегмент массива, который находится справа от оператора равенства.</param>
+		/// <returns>true, если значения параметров first и second не равны; в противном случае — false.</returns>
+		public static bool operator != (LoopedArraySegment<T> first, LoopedArraySegment<T> second)
+		{
+			return !(ReferenceEquals (first, null) ?
+				ReferenceEquals (second, null) :
+				first.Equals (second));
 		}
 
 		/// <summary>
@@ -149,14 +205,17 @@ namespace Novartment.Base.Collections.Immutable
 			{
 				throw new ArgumentNullException (nameof (array));
 			}
+
 			if (array.Length < this.Count)
 			{
 				throw new ArgumentOutOfRangeException (nameof (array));
 			}
+
 			if ((arrayIndex < 0) || ((array.Length - arrayIndex) < this.Count))
 			{
 				throw new ArgumentOutOfRangeException (nameof (arrayIndex));
 			}
+
 			Contract.EndContractBlock ();
 
 			if (_count > 0)
@@ -166,6 +225,7 @@ namespace Novartment.Base.Collections.Immutable
 				{
 					tail -= _capacity;
 				}
+
 				if (_offset < tail)
 				{
 					SystemArray.Copy (_items, _offset, array, arrayIndex, _count);
@@ -193,7 +253,7 @@ namespace Novartment.Base.Collections.Immutable
 		/// <returns>Перечислитель элементов сегмента массива.</returns>
 		public IEnumerator<T> GetEnumerator ()
 		{
-			return new _ArraySegmentLoopedEnumerator (this);
+			return new ArraySegmentLoopedEnumerator (this);
 		}
 
 		/// <summary>
@@ -213,7 +273,7 @@ namespace Novartment.Base.Collections.Immutable
 		public override bool Equals (object obj)
 		{
 			var asSameClass = obj as LoopedArraySegment<T>;
-			return ((asSameClass != null) && Equals (asSameClass));
+			return (asSameClass != null) && Equals (asSameClass);
 		}
 
 		/// <summary>
@@ -231,32 +291,6 @@ namespace Novartment.Base.Collections.Immutable
 		}
 
 		/// <summary>
-		/// Определяет равенство двух сегментов массива.
-		/// </summary>
-		/// <param name="first">Сегмент массива, который находится слева от оператора равенства.</param>
-		/// <param name="second">Сегмент массива, который находится справа от оператора равенства.</param>
-		/// <returns>true, если значения параметров first и second равны; в противном случае — false.</returns>
-		public static bool operator ==(LoopedArraySegment<T> first, LoopedArraySegment<T> second)
-		{
-			return ReferenceEquals (first, null) ?
-				ReferenceEquals (second, null) :
-				first.Equals (second);
-		}
-
-		/// <summary>
-		/// Определяет неравенство двух сегментов массива.
-		/// </summary>
-		/// <param name="first">Сегмент массива, который находится слева от оператора равенства.</param>
-		/// <param name="second">Сегмент массива, который находится справа от оператора равенства.</param>
-		/// <returns>true, если значения параметров first и second не равны; в противном случае — false.</returns>
-		public static bool operator !=(LoopedArraySegment<T> first, LoopedArraySegment<T> second)
-		{
-			return !(ReferenceEquals (first, null) ?
-				ReferenceEquals (second, null) :
-				first.Equals (second));
-		}
-
-		/// <summary>
 		/// Получает структурный хэш-код сегмента массива.
 		/// </summary>
 		/// <param name="comparer">Объект, вычисляющий хэш-код элементов сегмента массива.</param>
@@ -267,15 +301,18 @@ namespace Novartment.Base.Collections.Immutable
 			{
 				throw new ArgumentNullException (nameof (comparer));
 			}
+
 			Contract.EndContractBlock ();
 
 			int hash = 0;
+
 			// макс. 8 элементов с конца для вычисления хэша всей коллекции
 			var start = (_count >= 8) ? (_count - 8) : 0;
 			for (var i = start; i < _count; i++)
 			{
-				hash = (((hash << 5) + hash) ^ comparer.GetHashCode (this[i]));
+				hash = ((hash << 5) + hash) ^ comparer.GetHashCode (this[i]);
 			}
+
 			return hash;
 		}
 
@@ -291,6 +328,7 @@ namespace Novartment.Base.Collections.Immutable
 			{
 				throw new ArgumentNullException (nameof (comparer));
 			}
+
 			Contract.EndContractBlock ();
 
 			if (other == null)
@@ -306,10 +344,12 @@ namespace Novartment.Base.Collections.Immutable
 				{
 					return false;
 				}
+
 				if (array._count != _count)
 				{
 					return false;
 				}
+
 				for (var i = 0; i < _count; i++)
 				{
 					object x = this[i];
@@ -321,23 +361,55 @@ namespace Novartment.Base.Collections.Immutable
 					}
 				}
 			}
+
 			return true;
 		}
 
-		#region struct _ArraySegmentLoopedEnumerator
+		private static int ValidatedArrayLength (T[] array)
+		{
+			if (array == null)
+			{
+				throw new ArgumentNullException (nameof (array));
+			}
 
-		internal struct _ArraySegmentLoopedEnumerator : IEnumerator<T>, IDisposable, IEnumerator
+			return array.Length;
+		}
+
+		internal struct ArraySegmentLoopedEnumerator : IEnumerator<T>, IDisposable, IEnumerator
 		{
 			private readonly LoopedArraySegment<T> _data;
 			private int _index;
 			private T _currentElement;
 
-			internal _ArraySegmentLoopedEnumerator (LoopedArraySegment<T> data)
+			internal ArraySegmentLoopedEnumerator (LoopedArraySegment<T> data)
 			{
 				_data = data;
 				_index = -1;
 				_currentElement = default (T);
 			}
+
+			/// <summary>
+			/// Получает текущий элемент перечислителя.
+			/// </summary>
+			public T Current
+			{
+				get
+				{
+					if (_index == -1)
+					{
+						throw new InvalidOperationException ("Can not get current element of enumeration because it not started.");
+					}
+
+					if (_index == -2)
+					{
+						throw new InvalidOperationException ("Can not get current element of enumeration because it already ended.");
+					}
+
+					return _currentElement;
+				}
+			}
+
+			object IEnumerator.Current => this.Current;
 
 			/// <summary>
 			/// Перемещает перечислитель к следующему элементу строки.
@@ -358,29 +430,10 @@ namespace Novartment.Base.Collections.Immutable
 					_currentElement = default (T);
 					return false;
 				}
+
 				_currentElement = _data[_index];
 				return true;
 			}
-
-			/// <summary>
-			/// Получает текущий элемент перечислителя.
-			/// </summary>
-			public T Current
-			{
-				get
-				{
-					if (_index == -1)
-					{
-						throw new InvalidOperationException ("Can not get current element of enumeration because it not started.");
-					}
-					if (_index == -2)
-					{
-						throw new InvalidOperationException ("Can not get current element of enumeration because it already ended.");
-					}
-					return _currentElement;
-				}
-			}
-			object IEnumerator.Current => this.Current;
 
 			/// <summary>
 			/// Возвращает перечислитель в исходное положение.
@@ -398,33 +451,6 @@ namespace Novartment.Base.Collections.Immutable
 			{
 				_index = -2;
 				_currentElement = default (T);
-			}
-		}
-
-		#endregion
-
-		[DebuggerBrowsable (DebuggerBrowsableState.Never),
-		SuppressMessage ("Microsoft.Globalization",
-			"CA1305:SpecifyIFormatProvider",
-			MessageId = "System.String.Format(System.String,System.Object,System.Object,System.Object)",
-			Justification = "String is not exposed to the end user and will not be localized."),
-		SuppressMessage ("Microsoft.Globalization", "CA1305:SpecifyIFormatProvider",
-			MessageId = "System.String.Format(System.String,System.Object,System.Object)",
-			Justification = "String is not exposed to the end user and will not be localized."),
-		SuppressMessage ("Microsoft.Globalization",
-			"CA1305:SpecifyIFormatProvider",
-			MessageId = "System.String.Format(System.String,System.Object)",
-			Justification = "String is not exposed to the end user and will not be localized.")]
-		private string DebuggerDisplay
-		{
-			get
-			{
-				var info = (_count < 1) ?
-					"empty" :
-					(_count == 1) ?
-						$"{_offset}" :
-						$"{_offset}...{(_offset + _count - 1) % _items.Length}";
-				return $"<{typeof (T).Name}>[{info}] (capacity={_items.Length})";
 			}
 		}
 	}

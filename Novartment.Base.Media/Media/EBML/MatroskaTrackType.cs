@@ -5,14 +5,17 @@ namespace Novartment.Base.Media
 	/// <summary>
 	/// Разновидность трэка матрёшка-файла.
 	/// </summary>
-	[SuppressMessage ("Microsoft.Naming",
+	[SuppressMessage (
+		"Microsoft.Naming",
 		"CA1704:IdentifiersShouldBeSpelledCorrectly",
 		MessageId = "Matroska",
-		Justification = "'Matroska' represents standard term."),
-	SuppressMessage ("Microsoft.Design",
+		Justification = "'Matroska' represents standard term.")]
+	[SuppressMessage (
+		"Microsoft.Design",
 		"CA1028:EnumStorageShouldBeInt32",
-		Justification = "Enumeration defined externally in MKV specification."),
-	SuppressMessage ("Microsoft.Design",
+		Justification = "Enumeration defined externally in MKV specification.")]
+	[SuppressMessage (
+		"Microsoft.Design",
 		"CA1027:MarkEnumsWithFlags",
 		Justification = "Enumeration defined externally in MKV specification.")]
 	public enum MatroskaTrackType : byte

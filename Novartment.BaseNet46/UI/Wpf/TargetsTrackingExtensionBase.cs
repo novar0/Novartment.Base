@@ -1,17 +1,17 @@
 ﻿using System;
-using System.Windows.Markup;
-using System.Reflection;
-using System.Windows;
-using System.Threading;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
+using System.Reflection;
+using System.Threading;
+using System.Windows;
+using System.Windows.Markup;
 using Novartment.Base.Collections.Immutable;
 
 namespace Novartment.Base.UI.Wpf
 {
 	/// <summary>
 	/// Defines a base class for markup extensions which are managed by a central.
-	/// <see cref="MarkupExtensionManager"/>. 
+	/// <see cref="MarkupExtensionManager"/>.
 	/// This allows the associated markup targets to be updated via the manager.
 	/// </summary>
 	/// <remarks>
@@ -27,128 +27,19 @@ namespace Novartment.Base.UI.Wpf
 		private object _targetProperty;
 
 		/// <summary>
-		/// Initializes a new instance of MarkupExtensionTrackedTargets.
+		/// Initializes a new instance of MarkupExtensionTrackedTargets using specified manager.
 		/// </summary>
+		/// <param name="manager">Manager for use.</param>
 		protected TargetsTrackingExtensionBase (MarkupExtensionManager manager)
 		{
 			if (manager == null)
 			{
 				throw new ArgumentNullException (nameof (manager));
 			}
+
 			Contract.EndContractBlock ();
 
 			manager.RegisterExtension (this);
-		}
-
-		/// <summary>
-		/// Return the value for this instance of the Markup Extension.
-		/// </summary>
-		/// <param name="serviceProvider">The service provider.</param>
-		/// <returns>The value of the element.</returns>
-		public override object ProvideValue (IServiceProvider serviceProvider)
-		{
-			RegisterTarget (serviceProvider);
-			object result = this;
-
-			// when used in a template the _targetProperty may be null - in this case return this
-			if (_targetProperty != null)
-			{
-				result = GetValue ();
-			}
-			return result;
-		}
-
-		/// <summary>
-		/// Called by <see cref="ProvideValue(IServiceProvider)"/> to register the target and object using the extension.   
-		/// </summary>
-		/// <param name="serviceProvider">The service provider.</param>
-		protected virtual void RegisterTarget (IServiceProvider serviceProvider)
-		{
-			if (serviceProvider == null)
-			{
-				throw new ArgumentNullException (nameof (serviceProvider));
-			}
-			Contract.EndContractBlock ();
-
-			var provideValueTarget = serviceProvider.GetService (typeof (IProvideValueTarget)) as IProvideValueTarget;
-			var target = provideValueTarget.TargetObject;
-
-			// Check if the target is a SharedDp which indicates the target is a template.
-			// In this case we don't register the target and ProvideValue returns this
-			// allowing the extension to be evaluated for each instance of the template
-			var fullName = target?.GetType ().FullName;
-			if (fullName != "System.Windows.SharedDp")
-			{
-				_targetProperty = provideValueTarget.TargetProperty;
-				var spinWait = new SpinWait ();
-				var newRef = new WeakReference (target);
-				while (true)
-				{
-					var state1 = _targetObjects;
-					var newState = state1.AddItem (newRef);
-					// заменяем состояние если оно не изменилось с момента вызова
-					var state2 = Interlocked.CompareExchange (ref _targetObjects, newState, state1);
-					if (state1 == state2)
-					{
-						return;
-					}
-					// состояние изменилось за время вызова, поэтому повторим попытку после паузы
-					spinWait.SpinOnce ();
-				}
-			}
-		}
-
-		/// <summary>
-		/// Called by <see cref="UpdateTargets"/> to update each target referenced by the extension.
-		/// </summary>
-		/// <param name="target">The target to update.</param>
-		protected virtual void UpdateTarget (object target)
-		{
-			if (_targetProperty is DependencyProperty)
-			{
-				(target as DependencyObject)?.SetValue (_targetProperty as DependencyProperty, GetValue ());
-			}
-			else
-			{
-				(_targetProperty as PropertyInfo)?.SetValue (target, GetValue (), null);
-			}
-		}
-
-		/// <summary>
-		/// Update the associated targets.
-		/// </summary>
-		public void UpdateTargets ()
-		{
-			var node = _targetObjects;
-			while (node != null)
-			{
-				var reference = node.Value;
-				if (reference.IsAlive)
-				{
-					UpdateTarget (reference.Target);
-				}
-				node = node.Next;
-			}
-		}
-
-		/// <summary>
-		/// Is the given object the target for the extension.
-		/// </summary>
-		/// <param name="target">The target to check.</param>
-		/// <returns>True if the object is one of the targets for this extension.</returns>
-		public bool IsTarget (object target)
-		{
-			var node = _targetObjects;
-			while (node != null)
-			{
-				var reference = node.Value;
-				if (reference.IsAlive && (reference.Target == target))
-				{
-					return true;
-				}
-				node = node.Next;
-			}
-			return false;
 		}
 
 		/// <summary>
@@ -176,14 +67,13 @@ namespace Novartment.Base.UI.Wpf
 					{
 						return true;
 					}
+
 					node = node.Next;
 				}
+
 				return false;
 			}
 		}
-
-		#region Protected Methods
-
 
 		/// <summary>
 		/// Return the target objects the extension is associated with.
@@ -228,20 +118,137 @@ namespace Novartment.Base.UI.Wpf
 						}
 					}
 				}
+
 				return result;
 			}
+		}
+
+		/// <summary>
+		/// Return the value for this instance of the Markup Extension.
+		/// </summary>
+		/// <param name="serviceProvider">The service provider.</param>
+		/// <returns>The value of the element.</returns>
+		public override object ProvideValue (IServiceProvider serviceProvider)
+		{
+			RegisterTarget (serviceProvider);
+			object result = this;
+
+			// when used in a template the _targetProperty may be null - in this case return this
+			if (_targetProperty != null)
+			{
+				result = GetValue ();
+			}
+
+			return result;
+		}
+
+		/// <summary>
+		/// Update the associated targets.
+		/// </summary>
+		public void UpdateTargets ()
+		{
+			var node = _targetObjects;
+			while (node != null)
+			{
+				var reference = node.Value;
+				if (reference.IsAlive)
+				{
+					UpdateTarget (reference.Target);
+				}
+
+				node = node.Next;
+			}
+		}
+
+		/// <summary>
+		/// Is the given object the target for the extension.
+		/// </summary>
+		/// <param name="target">The target to check.</param>
+		/// <returns>True if the object is one of the targets for this extension.</returns>
+		public bool IsTarget (object target)
+		{
+			var node = _targetObjects;
+			while (node != null)
+			{
+				var reference = node.Value;
+				if (reference.IsAlive && (reference.Target == target))
+				{
+					return true;
+				}
+
+				node = node.Next;
+			}
+
+			return false;
 		}
 
 		/// <summary>
 		/// Return the value associated with the key from the resource manager.
 		/// </summary>
 		/// <returns>The value from the resources if possible otherwise the default value.</returns>
-		[SuppressMessage ("Microsoft.Design",
+		[SuppressMessage (
+		"Microsoft.Design",
 			"CA1024:UsePropertiesWhereAppropriate",
 			Justification = "This method supposed to do some work in derived classes and can not be property.")]
 		protected abstract object GetValue ();
 
-		#endregion
+		/// <summary>
+		/// Called by <see cref="ProvideValue(IServiceProvider)"/> to register the target and object using the extension.
+		/// </summary>
+		/// <param name="serviceProvider">The service provider.</param>
+		protected virtual void RegisterTarget (IServiceProvider serviceProvider)
+		{
+			if (serviceProvider == null)
+			{
+				throw new ArgumentNullException (nameof (serviceProvider));
+			}
 
+			Contract.EndContractBlock ();
+
+			var provideValueTarget = serviceProvider.GetService (typeof (IProvideValueTarget)) as IProvideValueTarget;
+			var target = provideValueTarget.TargetObject;
+
+			// Check if the target is a SharedDp which indicates the target is a template.
+			// In this case we don't register the target and ProvideValue returns this
+			// allowing the extension to be evaluated for each instance of the template
+			var fullName = target?.GetType ().FullName;
+			if (fullName != "System.Windows.SharedDp")
+			{
+				_targetProperty = provideValueTarget.TargetProperty;
+				var spinWait = default (SpinWait);
+				var newRef = new WeakReference (target);
+				while (true)
+				{
+					var state1 = _targetObjects;
+					var newState = state1.AddItem (newRef);
+
+					// заменяем состояние если оно не изменилось с момента вызова
+					var state2 = Interlocked.CompareExchange (ref _targetObjects, newState, state1);
+					if (state1 == state2)
+					{
+						return;
+					}
+
+					// состояние изменилось за время вызова, поэтому повторим попытку после паузы
+					spinWait.SpinOnce ();
+				}
+			}
+		}
+
+		/// <summary>
+		/// Called by <see cref="UpdateTargets"/> to update each target referenced by the extension.
+		/// </summary>
+		/// <param name="target">The target to update.</param>
+		protected virtual void UpdateTarget (object target)
+		{
+			if (_targetProperty is DependencyProperty)
+			{
+				(target as DependencyObject)?.SetValue (_targetProperty as DependencyProperty, GetValue ());
+			}
+			else
+			{
+				(_targetProperty as PropertyInfo)?.SetValue (target, GetValue (), null);
+			}
+		}
 	}
 }

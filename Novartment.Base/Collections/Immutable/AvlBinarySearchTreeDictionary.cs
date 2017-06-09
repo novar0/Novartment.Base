@@ -11,17 +11,17 @@ namespace Novartment.Base.Collections.Immutable
 	/// автоматически балансирующегося по алгоритму <a href="http://en.wikipedia.org/wiki/AVL_tree">АВЛ</a>.
 	/// </summary>
 	/// <remarks>Синонимы: ассоциативный массив, словарь, map, associative array, symbol table, dictionary.</remarks>
-	[SuppressMessage ("Microsoft.Naming",
+	[SuppressMessage (
+		"Microsoft.Naming",
 		"CA1704:IdentifiersShouldBeSpelledCorrectly",
 		MessageId = "Avl",
-		Justification = "'AVL-tree' represents standard term."),
-	SuppressMessage ("Microsoft.Naming",
+		Justification = "'AVL-tree' represents standard term.")]
+	[SuppressMessage (
+		"Microsoft.Naming",
 		"CA1711:IdentifiersShouldNotHaveIncorrectSuffix",
 		Justification = "Only 'dictionary' name explicitly and unambiguously describes behaviour of this class.")]
 	public static class AvlBinarySearchTreeDictionary
 	{
-		#region static method GetCount
-
 		/// <summary>
 		/// Получает количество элементов в словаре.
 		/// </summary>
@@ -33,28 +33,6 @@ namespace Novartment.Base.Collections.Immutable
 		{
 			return GetCountInternal (treeNode, 0);
 		}
-
-		private static int GetCountInternal<TKey, TValue> (this AvlBinarySearchTreeDictionaryNode<TKey, TValue> treeNode, int accumulator = 0)
-		{
-			while (true)
-			{
-				if (treeNode == null)
-				{
-					return accumulator;
-				}
-				var node = treeNode as AvlBinarySearchTreeDictionaryNode<TKey, TValue>.IntermediateNode;
-				if (node == null)
-				{
-					return (accumulator + 1);
-				}
-				accumulator = GetCountInternal (node.RightSubtree, accumulator + 1);
-				treeNode = node.LeftSubtree;
-			}
-		}
-
-		#endregion
-
-		#region static method ContainsKey
 
 		/// <summary>
 		/// Проверяет наличие в словаре элемента с указанным ключом.
@@ -77,12 +55,14 @@ namespace Novartment.Base.Collections.Immutable
 			{
 				throw new ArgumentNullException (nameof (comparer));
 			}
+
 			Contract.EndContractBlock ();
 
 			if (treeNode == null)
 			{
 				return false;
 			}
+
 			do
 			{
 				var num = comparer.Compare (key, treeNode.Key);
@@ -90,19 +70,18 @@ namespace Novartment.Base.Collections.Immutable
 				{
 					return true;
 				}
+
 				var intermediateNode = treeNode as AvlBinarySearchTreeDictionaryNode<TKey, TValue>.IntermediateNode;
 				if (intermediateNode == null)
 				{
 					return false;
 				}
+
 				treeNode = (num < 0) ? intermediateNode.LeftSubtree : intermediateNode.RightSubtree;
-			} while (treeNode != null);
+			}
+			while (treeNode != null);
 			return false;
 		}
-
-		#endregion
-
-		#region static method TryGetItem
 
 		/// <summary>
 		/// Пытается получить из словаря значение элемента с указанным ключом.
@@ -111,10 +90,10 @@ namespace Novartment.Base.Collections.Immutable
 		/// <typeparam name="TValue">Тип значений элементов словаря.</typeparam>
 		/// <param name="treeNode">Начальный узел дерева словаря, в котором производится запрос значения.</param>
 		/// <param name="key">Ключ для получения значения элемента в словаре.</param>
+		/// <param name="comparer">Реализация IComparer&lt;TKey&gt;, которую следует использовать при сравнении значений узлов.</param>
 		/// <param name="value">Возвращаемое значение, связанное с указанном ключом, если он найден;
 		/// в противном случае — значение по умолчанию для данного типа параметра value.
 		/// Этот параметр передается неинициализированным.</param>
-		/// <param name="comparer">Реализация IComparer&lt;TKey&gt;, которую следует использовать при сравнении значений узлов.</param>
 		/// <returns>
 		/// Значение true, если словарь содержит элемент с указанным ключом;
 		/// в противном случае — значение false.
@@ -129,6 +108,7 @@ namespace Novartment.Base.Collections.Immutable
 			{
 				throw new ArgumentNullException (nameof (comparer));
 			}
+
 			Contract.EndContractBlock ();
 
 			if (treeNode == null)
@@ -136,6 +116,7 @@ namespace Novartment.Base.Collections.Immutable
 				value = default (TValue);
 				return false;
 			}
+
 			do
 			{
 				var num = comparer.Compare (key, treeNode.Key);
@@ -144,21 +125,20 @@ namespace Novartment.Base.Collections.Immutable
 					value = treeNode.Value;
 					return true;
 				}
+
 				var intermediateNode = treeNode as AvlBinarySearchTreeDictionaryNode<TKey, TValue>.IntermediateNode;
 				if (intermediateNode == null)
 				{
 					value = default (TValue);
 					return false;
 				}
+
 				treeNode = (num < 0) ? intermediateNode.LeftSubtree : intermediateNode.RightSubtree;
-			} while (treeNode != null);
+			}
+			while (treeNode != null);
 			value = default (TValue);
 			return false;
 		}
-
-		#endregion
-
-		#region static method SetValue
 
 		/// <summary>
 		/// Создаёт новый словарь из указанного путём установки указанного значения в элементе с указанным ключом,
@@ -184,50 +164,12 @@ namespace Novartment.Base.Collections.Immutable
 			{
 				throw new ArgumentNullException (nameof (comparer));
 			}
+
 			Contract.EndContractBlock ();
 
 			bool existsBefore = false;
 			return SetValueInternal (treeNode, key, value, comparer, ref existsBefore);
 		}
-
-		internal static AvlBinarySearchTreeDictionaryNode<TKey, TValue> SetValueInternal<TKey, TValue> (
-			this AvlBinarySearchTreeDictionaryNode<TKey, TValue> treeNode,
-			TKey key,
-			TValue value,
-			IComparer<TKey> comparer,
-			ref bool existsBefore)
-		{
-			if (treeNode == null)
-			{
-				return new AvlBinarySearchTreeDictionaryNode<TKey, TValue>.EndNode (key, value);
-			}
-
-			var num = comparer.Compare (key, treeNode.Key);
-			if (num == 0)
-			{
-				treeNode.Value = value;
-				existsBefore = true;
-				return treeNode;
-			}
-			var intermediateNode = treeNode as AvlBinarySearchTreeDictionaryNode<TKey, TValue>.IntermediateNode;
-			if (intermediateNode != null)
-			{
-				if (num < 0)
-				{
-					var newLeftSubtree = intermediateNode.LeftSubtree.SetValueInternal (key, value, comparer, ref existsBefore);
-					return Recreate (treeNode.Key, treeNode.Value, newLeftSubtree, intermediateNode.RightSubtree);
-				}
-				var newRightSubtree = intermediateNode.RightSubtree.SetValueInternal (key, value, comparer, ref existsBefore);
-				return Recreate (treeNode.Key, treeNode.Value, intermediateNode.LeftSubtree, newRightSubtree);
-			}
-			return (num < 0) ?
-				new AvlBinarySearchTreeDictionaryNode<TKey, TValue>.IntermediateNode (key, value, null, treeNode, 2) :
-				new AvlBinarySearchTreeDictionaryNode<TKey, TValue>.IntermediateNode (key, value, treeNode, null, 2);
-		}
-
-		#endregion
-
-		#region static method RemoveKey
 
 		/// <summary>
 		/// Создаёт новый словарь из указанного путём удалением элемента с указанным ключом.
@@ -250,10 +192,66 @@ namespace Novartment.Base.Collections.Immutable
 			{
 				throw new ArgumentNullException (nameof (comparer));
 			}
+
 			Contract.EndContractBlock ();
 
 			bool existsBefore = false;
 			return RemoveKeyInternal (treeNode, key, comparer, ref existsBefore);
+		}
+
+		/// <summary>
+		/// Получает перечислитель элементов словаря.
+		/// </summary>
+		/// <typeparam name="TKey">Тип ключа элементов словаря.</typeparam>
+		/// <typeparam name="TValue">Тип значений элементов словаря.</typeparam>
+		/// <param name="treeNode">Начальный узел дерева словаря, в котором производится перечисление.</param>
+		/// <returns>Перечислитель элементов словаря.</returns>
+		[SuppressMessage (
+			"Microsoft.Design",
+			"CA1006:DoNotNestGenericTypesInMemberSignatures",
+			Justification = "The caller expects exactly this behavior.")]
+		public static IEnumerator<AvlBinarySearchTreeDictionaryNode<TKey, TValue>> GetEnumerator<TKey, TValue> (
+			this AvlBinarySearchTreeDictionaryNode<TKey, TValue> treeNode)
+		{
+			return new BinarySearchTreeEnumerator<TKey, TValue> (treeNode);
+		}
+
+		internal static AvlBinarySearchTreeDictionaryNode<TKey, TValue> SetValueInternal<TKey, TValue> (
+			this AvlBinarySearchTreeDictionaryNode<TKey, TValue> treeNode,
+			TKey key,
+			TValue value,
+			IComparer<TKey> comparer,
+			ref bool existsBefore)
+		{
+			if (treeNode == null)
+			{
+				return new AvlBinarySearchTreeDictionaryNode<TKey, TValue>.EndNode (key, value);
+			}
+
+			var num = comparer.Compare (key, treeNode.Key);
+			if (num == 0)
+			{
+				treeNode.Value = value;
+				existsBefore = true;
+				return treeNode;
+			}
+
+			var intermediateNode = treeNode as AvlBinarySearchTreeDictionaryNode<TKey, TValue>.IntermediateNode;
+			if (intermediateNode != null)
+			{
+				if (num < 0)
+				{
+					var newLeftSubtree = intermediateNode.LeftSubtree.SetValueInternal (key, value, comparer, ref existsBefore);
+					return Recreate (treeNode.Key, treeNode.Value, newLeftSubtree, intermediateNode.RightSubtree);
+				}
+
+				var newRightSubtree = intermediateNode.RightSubtree.SetValueInternal (key, value, comparer, ref existsBefore);
+				return Recreate (treeNode.Key, treeNode.Value, intermediateNode.LeftSubtree, newRightSubtree);
+			}
+
+			return (num < 0) ?
+				new AvlBinarySearchTreeDictionaryNode<TKey, TValue>.IntermediateNode (key, value, null, treeNode, 2) :
+				new AvlBinarySearchTreeDictionaryNode<TKey, TValue>.IntermediateNode (key, value, treeNode, null, 2);
 		}
 
 		internal static AvlBinarySearchTreeDictionaryNode<TKey, TValue> RemoveKeyInternal<TKey, TValue> (
@@ -275,9 +273,11 @@ namespace Novartment.Base.Collections.Immutable
 				{
 					return treeNode;
 				}
+
 				existsBefore = true;
 				return null;
 			}
+
 			var leftSubtree = node.LeftSubtree;
 			var rightSubtree = node.RightSubtree;
 			if (num < 0)
@@ -285,6 +285,7 @@ namespace Novartment.Base.Collections.Immutable
 				var newLeftSubtree = RemoveKeyInternal (leftSubtree, key, comparer, ref existsBefore);
 				return Recreate (node.Key, node.Value, newLeftSubtree, rightSubtree);
 			}
+
 			if (num > 0)
 			{
 				var newRightSubtree = RemoveKeyInternal (rightSubtree, key, comparer, ref existsBefore);
@@ -296,38 +297,35 @@ namespace Novartment.Base.Collections.Immutable
 			{
 				return rightSubtree;
 			}
+
 			if (rightSubtree == null)
 			{
 				return leftSubtree;
 			}
+
 			var tuple = CutNode (rightSubtree);
 			return CreateNode (tuple.Key, tuple.Value, leftSubtree, tuple.Node);
 		}
 
-		#endregion
-
-		#region static method GetEnumerator
-
-		/// <summary>
-		/// Получает перечислитель элементов словаря.
-		/// </summary>
-		/// <typeparam name="TKey">Тип ключа элементов словаря.</typeparam>
-		/// <typeparam name="TValue">Тип значений элементов словаря.</typeparam>
-		/// <param name="treeNode">Начальный узел дерева словаря, в котором производится перечисление.</param>
-		/// <returns>Перечислитель элементов словаря.</returns>
-		[SuppressMessage (
-			"Microsoft.Design",
-			"CA1006:DoNotNestGenericTypesInMemberSignatures",
-			Justification = "The caller expects exactly this behavior.")]
-		public static IEnumerator<AvlBinarySearchTreeDictionaryNode<TKey, TValue>> GetEnumerator<TKey, TValue> (
-			this AvlBinarySearchTreeDictionaryNode<TKey, TValue> treeNode)
+		private static int GetCountInternal<TKey, TValue> (this AvlBinarySearchTreeDictionaryNode<TKey, TValue> treeNode, int accumulator = 0)
 		{
-			return new _BinarySearchTreeEnumerator<TKey, TValue> (treeNode);
+			while (true)
+			{
+				if (treeNode == null)
+				{
+					return accumulator;
+				}
+
+				var node = treeNode as AvlBinarySearchTreeDictionaryNode<TKey, TValue>.IntermediateNode;
+				if (node == null)
+				{
+					return accumulator + 1;
+				}
+
+				accumulator = GetCountInternal (node.RightSubtree, accumulator + 1);
+				treeNode = node.LeftSubtree;
+			}
 		}
-
-		#endregion
-
-		#region private static method Recreate
 
 		private static AvlBinarySearchTreeDictionaryNode<TKey, TValue> Recreate<TKey, TValue> (
 			TKey key,
@@ -352,6 +350,7 @@ namespace Novartment.Base.Collections.Immutable
 						CreateNode (key, value, left, rightLeft),
 						rightRight);
 				}
+
 				var rightLeftInterm = (AvlBinarySearchTreeDictionaryNode<TKey, TValue>.IntermediateNode)rightLeft;
 				return CreateNode (
 					rightLeftInterm.Key,
@@ -374,6 +373,7 @@ namespace Novartment.Base.Collections.Immutable
 						leftLeft,
 						CreateNode (key, value, leftRight, right));
 				}
+
 				var leftRightInterm = (AvlBinarySearchTreeDictionaryNode<TKey, TValue>.IntermediateNode)leftRight;
 				return CreateNode (
 					leftRightInterm.Key,
@@ -385,23 +385,16 @@ namespace Novartment.Base.Collections.Immutable
 			return CreateNode (key, value, left, right);
 		}
 
-		#endregion
-
-		#region private static method GetHeight
-
 		private static int GetHeight<TKey, TValue> (this AvlBinarySearchTreeDictionaryNode<TKey, TValue> treeNode)
 		{
 			if (treeNode is AvlBinarySearchTreeDictionaryNode<TKey, TValue>.EndNode)
 			{
 				return 1;
 			}
+
 			var intermediateNode = treeNode as AvlBinarySearchTreeDictionaryNode<TKey, TValue>.IntermediateNode;
 			return intermediateNode?.Height ?? 0;
 		}
-
-		#endregion
-
-		#region private static method CreateNode
 
 		private static AvlBinarySearchTreeDictionaryNode<TKey, TValue> CreateNode<TKey, TValue> (
 			TKey key,
@@ -413,19 +406,9 @@ namespace Novartment.Base.Collections.Immutable
 			{
 				return new AvlBinarySearchTreeDictionaryNode<TKey, TValue>.EndNode (key, value);
 			}
+
 			var num = Math.Max (GetHeight (left), GetHeight (right));
 			return new AvlBinarySearchTreeDictionaryNode<TKey, TValue>.IntermediateNode (key, value, left, right, num + 1);
-		}
-
-		#endregion
-
-		#region private static method CutNode
-
-		internal struct KeyValueAndNode<TKey, TValue>
-		{
-			internal TKey Key;
-			internal TValue Value;
-			internal AvlBinarySearchTreeDictionaryNode<TKey, TValue> Node;
 		}
 
 		private static KeyValueAndNode<TKey, TValue> CutNode<TKey, TValue> (
@@ -433,21 +416,27 @@ namespace Novartment.Base.Collections.Immutable
 		{
 			if (treeNode is AvlBinarySearchTreeDictionaryNode<TKey, TValue>.EndNode)
 			{
-				return new KeyValueAndNode<TKey, TValue> () {
+				return new KeyValueAndNode<TKey, TValue>
+				{
 					Key = treeNode.Key,
 					Value = treeNode.Value,
-					Node = null };
+					Node = null
+				};
 			}
+
 			var intermediateNode = (AvlBinarySearchTreeDictionaryNode<TKey, TValue>.IntermediateNode)treeNode;
 			var left = intermediateNode.LeftSubtree;
 			var right = intermediateNode.RightSubtree;
 			if (left == null)
 			{
-				return new KeyValueAndNode<TKey, TValue> () {
+				return new KeyValueAndNode<TKey, TValue>
+				{
 					Key = intermediateNode.Key,
 					Value = intermediateNode.Value,
-					Node = right };
+					Node = right
+				};
 			}
+
 			var tuple = CutNode (left);
 			var newNode = CreateNode (intermediateNode.Key, intermediateNode.Value, tuple.Node, right);
 			return new KeyValueAndNode<TKey, TValue> ()
@@ -458,17 +447,20 @@ namespace Novartment.Base.Collections.Immutable
 			};
 		}
 
-		#endregion
+		internal struct KeyValueAndNode<TKey, TValue>
+		{
+			internal TKey Key;
+			internal TValue Value;
+			internal AvlBinarySearchTreeDictionaryNode<TKey, TValue> Node;
+		}
 
-		#region class _BinarySearchTreeEnumerator<TKey, TValue>
-
-		internal sealed class _BinarySearchTreeEnumerator<TKey, TValue> : IEnumerator<AvlBinarySearchTreeDictionaryNode<TKey, TValue>>
+		internal sealed class BinarySearchTreeEnumerator<TKey, TValue> : IEnumerator<AvlBinarySearchTreeDictionaryNode<TKey, TValue>>
 		{
 			private readonly AvlBinarySearchTreeDictionaryNode<TKey, TValue> _startingNode;
 			private SingleLinkedListNode<AvlBinarySearchTreeDictionaryNode<TKey, TValue>> _nodesToExplore;
 			private bool _started;
 
-			internal _BinarySearchTreeEnumerator (AvlBinarySearchTreeDictionaryNode<TKey, TValue> treeNode)
+			internal BinarySearchTreeEnumerator (AvlBinarySearchTreeDictionaryNode<TKey, TValue> treeNode)
 			{
 				_startingNode = treeNode;
 				Reset ();
@@ -485,13 +477,16 @@ namespace Novartment.Base.Collections.Immutable
 					{
 						throw new InvalidOperationException ("Can not get current element of enumeration because it not started.");
 					}
+
 					if (_nodesToExplore == null)
 					{
 						throw new InvalidOperationException ("Can not get current element of enumeration because it already ended.");
 					}
+
 					return _nodesToExplore.Value;
 				}
 			}
+
 			object IEnumerator.Current => this.Current;
 
 			/// <summary>
@@ -512,9 +507,11 @@ namespace Novartment.Base.Collections.Immutable
 					{
 						return false;
 					}
+
 					_nodesToExplore = Flatten (_nodesToExplore.Next);
 				}
-				return (_nodesToExplore != null);
+
+				return _nodesToExplore != null;
 			}
 
 			/// <summary>
@@ -529,7 +526,9 @@ namespace Novartment.Base.Collections.Immutable
 			/// <summary>
 			/// Ничего не делает.
 			/// </summary>
-			public void Dispose () { }
+			public void Dispose ()
+			{
+			}
 
 			private static SingleLinkedListNode<AvlBinarySearchTreeDictionaryNode<TKey, TValue>> Flatten (SingleLinkedListNode<AvlBinarySearchTreeDictionaryNode<TKey, TValue>> listNode)
 			{
@@ -547,16 +546,16 @@ namespace Novartment.Base.Collections.Immutable
 						{
 							return listNode;
 						}
+
 						listNode = listNode.Next
 							.AddItem (intermediateTreeNode.RightSubtree)
 							.AddItem (new AvlBinarySearchTreeDictionaryNode<TKey, TValue>.EndNode (treeNode.Key, treeNode.Value))
 							.AddItem (intermediateTreeNode.LeftSubtree);
 					}
 				}
+
 				return null;
 			}
 		}
-
-		#endregion
 	}
 }

@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using Novartment.Base.Collections.Linq;
 using Novartment.Base.Collections.Immutable;
+using Novartment.Base.Collections.Linq;
 
 namespace Novartment.Base
 {
@@ -10,45 +10,6 @@ namespace Novartment.Base
 	/// </summary>
 	public static class DataContainerFormats
 	{
-		#region устаревшие форматы для списка файлов
-
-		[SuppressMessage ("Microsoft.Performance",
-			"CA1802:UseLiteralsWhereAppropriate",
-			Justification = "No performance gain could be achieved.")]
-		private static readonly string _FileName = "FileName";
-		[SuppressMessage ("Microsoft.Performance",
-			"CA1802:UseLiteralsWhereAppropriate",
-			Justification = "No performance gain could be achieved.")]
-		private static readonly string _FileNameW = "FileNameW";
-
-		#endregion
-
-		#region внутренние форматы .net framework
-
-		[SuppressMessage ("Microsoft.Performance",
-			"CA1802:UseLiteralsWhereAppropriate",
-			Justification = "No performance gain could be achieved.")]
-		private static readonly string _StringFormat = "System.String";
-
-		[SuppressMessage ("Microsoft.Performance",
-			"CA1802:UseLiteralsWhereAppropriate",
-			Justification = "No performance gain could be achieved.")]
-		private static readonly string _DrawingBitmapFormat = "System.Drawing.Bitmap";
-
-		[SuppressMessage ("Microsoft.Performance",
-			"CA1802:UseLiteralsWhereAppropriate",
-			Justification = "No performance gain could be achieved.")]
-		private static readonly string _DrawingImagingMetafileFormat = "System.Drawing.Imaging.Metafile";
-
-		[SuppressMessage ("Microsoft.Performance",
-			"CA1802:UseLiteralsWhereAppropriate",
-			Justification = "No performance gain could be achieved.")]
-		private static readonly string _WindowsMediaImagingBitmapSource = "System.Windows.Media.Imaging.BitmapSource";
-
-		#endregion
-
-		#region стандартные форматы
-
 		/// <summary>Microsoft Windows bitmap data format.</summary>
 		public static readonly string Bitmap = "Bitmap";
 
@@ -59,7 +20,8 @@ namespace Novartment.Base
 		public static readonly string Dib = "DeviceIndependentBitmap";
 
 		/// <summary>Windows Data Interchange Format (DIF) data format.</summary>
-		[SuppressMessage ("Microsoft.Naming",
+		[SuppressMessage (
+			"Microsoft.Naming",
 			"CA1704:IdentifiersShouldBeSpelledCorrectly",
 			MessageId = "Dif",
 			Justification = "'DIF' represents standard term.")]
@@ -76,11 +38,13 @@ namespace Novartment.Base
 
 		/// <summary>Windows locale (culture) data format.</summary>
 		public static readonly string Locale = "Locale";
+
 		/// <summary>Windows metafile picture data format.</summary>
 		public static readonly string MetafilePicture = "MetaFilePict";
 
 		/// <summary>Standard Windows OEM text data format.</summary>
-		[SuppressMessage ("Microsoft.Naming",
+		[SuppressMessage (
+		"Microsoft.Naming",
 			"CA1704:IdentifiersShouldBeSpelledCorrectly",
 			MessageId = "Oem",
 			Justification = "'OEM' represents standard term.")]
@@ -125,7 +89,40 @@ namespace Novartment.Base
 		/// <summary>Locations of one or more existing shell namespace objects.</summary>
 		public static readonly string ShellIdList = "Shell IDList Array";
 
-		#endregion
+		[SuppressMessage (
+			"Microsoft.Performance",
+			"CA1802:UseLiteralsWhereAppropriate",
+			Justification = "No performance gain could be achieved.")]
+		private static readonly string _FileName = "FileName";
+		[SuppressMessage (
+			"Microsoft.Performance",
+			"CA1802:UseLiteralsWhereAppropriate",
+			Justification = "No performance gain could be achieved.")]
+		private static readonly string _FileNameW = "FileNameW";
+
+		[SuppressMessage (
+		"Microsoft.Performance",
+			"CA1802:UseLiteralsWhereAppropriate",
+			Justification = "No performance gain could be achieved.")]
+		private static readonly string _StringFormat = "System.String";
+
+		[SuppressMessage (
+		"Microsoft.Performance",
+			"CA1802:UseLiteralsWhereAppropriate",
+			Justification = "No performance gain could be achieved.")]
+		private static readonly string _DrawingBitmapFormat = "System.Drawing.Bitmap";
+
+		[SuppressMessage (
+		"Microsoft.Performance",
+			"CA1802:UseLiteralsWhereAppropriate",
+			Justification = "No performance gain could be achieved.")]
+		private static readonly string _DrawingImagingMetafileFormat = "System.Drawing.Imaging.Metafile";
+
+		[SuppressMessage (
+		"Microsoft.Performance",
+			"CA1802:UseLiteralsWhereAppropriate",
+			Justification = "No performance gain could be achieved.")]
+		private static readonly string _WindowsMediaImagingBitmapSource = "System.Windows.Media.Imaging.BitmapSource";
 
 		/// <summary>
 		/// Получение списка названий форматов, в которые возможно автоматическое конвертирование указанного формата.
@@ -152,6 +149,7 @@ namespace Novartment.Base
 			{
 				return new ReadOnlyArray<string> (new[] { DataContainerFormats.FileDrop, DataContainerFormats._FileNameW, DataContainerFormats._FileName });
 			}
+
 			if ((format == DataContainerFormats.Bitmap) ||
 				(format == DataContainerFormats._WindowsMediaImagingBitmapSource) ||
 				(format == DataContainerFormats._DrawingBitmapFormat))
@@ -164,6 +162,7 @@ namespace Novartment.Base
 			{
 				return new ReadOnlyArray<string> (new[] { DataContainerFormats.EnhancedMetafile, DataContainerFormats._DrawingImagingMetafileFormat });
 			}
+
 			return ReadOnlyList.Repeat (format, 1);
 		}
 	}

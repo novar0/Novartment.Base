@@ -12,9 +12,8 @@ namespace Novartment.Base
 	public interface IDataContainer
 	{
 		/// <summary>
-		/// A collection of strings, with each string specifying the name of a format supported by this data object.
+		/// Gets a collection of strings, with each string specifying the name of a format supported by this data object.
 		/// </summary>
-		/// <returns>A collection of strings, with each string specifying the name of a format supported by this data object.</returns>
 		IReadOnlyList<string> AvailableFormats { get; }
 
 		/// <summary>

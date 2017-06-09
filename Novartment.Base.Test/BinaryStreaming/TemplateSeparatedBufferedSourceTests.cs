@@ -76,6 +76,7 @@ namespace Novartment.Base.Test
 
 				source.FillBufferAsync (CancellationToken.None).Wait ();
 			}
+
 			var remainder = source.Count;
 			source.SkipBuffer (remainder);
 			skipped += (long)remainder;

@@ -10,7 +10,7 @@ using Novartment.Base.BinaryStreaming;
 
 namespace Novartment.Base.Smtp.Test
 {
-	internal class SmtpCommandReplyConnectionSenderReceiverMock : ISmtpCommandReplyConnectionSenderReceiver
+	internal class SmtpCommandReplyConnectionSenderReceiverMock : ISmtpCommandTransport
 	{
 		internal Queue<SmtpCommand> ReceivedCommands = new Queue<SmtpCommand> ();
 		internal Queue<SmtpCommand> SendedCommands = new Queue<SmtpCommand> ();
@@ -67,7 +67,7 @@ namespace Novartment.Base.Smtp.Test
 			return Task.FromResult (this.ReceivedReplies.Dequeue ());
 		}
 
-		public Task<SmtpCommand> ReceiveCommandAsync (ExpectedInputType expectedInputType, CancellationToken cancellationToken)
+		public Task<SmtpCommand> ReceiveCommandAsync (SmtpCommand.ExpectedInputType expectedInputType, CancellationToken cancellationToken)
 		{
 			return Task.FromResult (this.ReceivedCommands.Dequeue ());
 		}

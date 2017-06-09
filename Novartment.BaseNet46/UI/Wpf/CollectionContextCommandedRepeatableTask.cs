@@ -1,14 +1,14 @@
 ﻿using System;
-using static System.Linq.Enumerable;
-using System.ComponentModel;
 using System.Collections;
 using System.Collections.Generic;
-using System.Windows;
-using System.Windows.Controls;
+using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Diagnostics.CodeAnalysis;
+using System.Windows;
+using System.Windows.Controls;
 using Novartment.Base.Collections;
+using static System.Linq.Enumerable;
 
 namespace Novartment.Base.UI.Wpf
 {
@@ -28,7 +28,8 @@ namespace Novartment.Base.UI.Wpf
 		/// В функцию будут переданы контекст элемента, для которого вызвана команда,
 		/// а также список, частью которого является этот элемент и список выбранных в списке элементов.
 		/// Возвращённая функцией задача должна быть уже запущена.</param>
-		[SuppressMessage ("Microsoft.Design",
+		[SuppressMessage (
+		"Microsoft.Design",
 			"CA1006:DoNotNestGenericTypesInMemberSignatures",
 			Justification = "The caller doesn't have to cope with nested generics, he is just passing a lambda expression.")]
 		public CollectionContextCommandedRepeatableTask (Func<ContextCollectionData<T>, CancellationToken, Task> taskFactory)
@@ -64,7 +65,8 @@ namespace Novartment.Base.UI.Wpf
 		/// а также список, частью которого является этот элемент и список выбранных в списке элементов.
 		/// Возвращённая функцией задача должна быть уже запущена.</param>
 		/// <param name="previousTask">Предыдущая задача, в цепь команд которой будут добавлены команды создаваемой задачи.</param>
-		[SuppressMessage ("Microsoft.Design",
+		[SuppressMessage (
+		"Microsoft.Design",
 			"CA1006:DoNotNestGenericTypesInMemberSignatures",
 			Justification = "The caller doesn't have to cope with nested generics, he is just passing a lambda expression.")]
 		protected CollectionContextCommandedRepeatableTask (
@@ -84,7 +86,8 @@ namespace Novartment.Base.UI.Wpf
 		/// </param>
 		/// <param name="taskScheduler">Планировщик, в котором будут выполняться запускаемые задачи.</param>
 		/// <param name="previousTask">Предыдущая задача, в цепь команд которой будут добавлены команды создаваемой задачи.</param>
-		[SuppressMessage ("Microsoft.Design",
+		[SuppressMessage (
+		"Microsoft.Design",
 			"CA1006:DoNotNestGenericTypesInMemberSignatures",
 			Justification = "The caller doesn't have to cope with nested generics, he is just passing a lambda expression.")]
 		protected CollectionContextCommandedRepeatableTask (
@@ -101,8 +104,7 @@ namespace Novartment.Base.UI.Wpf
 		/// <param name="state">Объект-состояние, передаваемый в запускаемую задачу.</param>
 		protected override void StartInternal (object state)
 		{
-			var frameworkElement = state as FrameworkElement;
-			if (frameworkElement != null)
+			if (state is FrameworkElement frameworkElement)
 			{
 				var itemsControl = frameworkElement.FindVisualAncestor<ItemsControl> ();
 
@@ -118,8 +120,7 @@ namespace Novartment.Base.UI.Wpf
 				// 2. обращаться к исходному списку можно только здесь, в теле задачи (другом потоке) - нельзя
 				// 3. исходный список не содержит ссылок на коллекцию-источник (индексов), что затрудняет поиск соответствий
 				var set = new HashSet<T> ();
-				var selectedItems = itemsControl.GetValue (ListBox.SelectedItemsProperty) as IEnumerable;
-				if (selectedItems != null)
+				if (itemsControl.GetValue (ListBox.SelectedItemsProperty) is IEnumerable selectedItems)
 				{
 					foreach (var item in selectedItems)
 					{
@@ -139,11 +140,19 @@ namespace Novartment.Base.UI.Wpf
 		private class ReadOnlySet : IReadOnlyFiniteSet<T>
 		{
 			private readonly ISet<T> _source;
-			internal ReadOnlySet (ISet<T> source) { _source = source; }
-			public bool Contains (T item) { return _source.Contains (item); }
+
+			internal ReadOnlySet (ISet<T> source)
+			{
+				_source = source;
+			}
+
 			public int Count => _source.Count;
-			public IEnumerator<T> GetEnumerator () { return _source.GetEnumerator (); }
-			IEnumerator IEnumerable.GetEnumerator () { return _source.GetEnumerator (); }
+
+			public bool Contains (T item) => _source.Contains (item);
+
+			public IEnumerator<T> GetEnumerator () => _source.GetEnumerator ();
+
+			IEnumerator IEnumerable.GetEnumerator () => _source.GetEnumerator ();
 		}
 	}
 }

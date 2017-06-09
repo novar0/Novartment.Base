@@ -1,5 +1,4 @@
-﻿
-namespace Novartment.Base.UnsafeWin32
+﻿namespace Novartment.Base.UnsafeWin32
 {
 	/// <summary>
 	/// Specifies where the item is placed within the list.

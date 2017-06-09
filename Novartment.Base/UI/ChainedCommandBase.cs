@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Windows.Input;
 using System.Diagnostics.CodeAnalysis;
+using System.Windows.Input;
 
 namespace Novartment.Base.UI
 {
@@ -10,11 +10,6 @@ namespace Novartment.Base.UI
 	public abstract class ChainedCommandBase :
 		ICommand
 	{
-		/// <summary>
-		/// Получает цепь связанных команд, частью которой является команда.
-		/// </summary>
-		public CommandChain Chain { get; }
-
 		/// <summary>
 		/// Инициализирует новый экземпляр ChainedCommandBase, являющийся частью указанной цепи связанных команд.
 		/// </summary>
@@ -34,9 +29,15 @@ namespace Novartment.Base.UI
 		public event EventHandler CanExecuteChanged;
 
 		/// <summary>
+		/// Получает цепь связанных команд, частью которой является команда.
+		/// </summary>
+		public CommandChain Chain { get; }
+
+		/// <summary>
 		/// Вызывает событие CanExecuteChanged для всех команд в цепи.
 		/// </summary>
-		[SuppressMessage ("Microsoft.Design",
+		[SuppressMessage (
+			"Microsoft.Design",
 			"CA1030:UseEventsWhereAppropriate",
 			Justification = "Already event")]
 		public void RaiseCanExecuteChanged ()
@@ -54,11 +55,6 @@ namespace Novartment.Base.UI
 					cmd = cmd.Next;
 				}
 			}
-		}
-
-		private void RaiseCanExecuteChangedThis ()
-		{
-			this.CanExecuteChanged?.Invoke (this, EventArgs.Empty);
 		}
 
 		/// <summary>
@@ -81,8 +77,10 @@ namespace Novartment.Base.UI
 							{
 								return false;
 							}
+
 							cmd = cmd.Next;
 						}
+
 						return true;
 					case ExecutionAbilityChainBehavior.WhenAny:
 						while (cmd != null)
@@ -92,11 +90,14 @@ namespace Novartment.Base.UI
 							{
 								return true;
 							}
+
 							cmd = cmd.Next;
 						}
+
 						return false;
 				}
 			}
+
 			return CanExecuteThis (parameter);
 		}
 
@@ -106,7 +107,7 @@ namespace Novartment.Base.UI
 		/// <param name="parameter">Параметр команды.</param>
 		public void Execute (object parameter)
 		{
-			if ((this.Chain != null) && (this.Chain.ExecutionChained))
+			if ((this.Chain != null) && this.Chain.ExecutionChained)
 			{
 				var cmd = this.Chain.FirstCommand;
 				while (cmd != null)
@@ -133,5 +134,10 @@ namespace Novartment.Base.UI
 		/// </summary>
 		/// <param name="parameter">Параметр команды.</param>
 		protected abstract void ExecuteThis (object parameter);
+
+		private void RaiseCanExecuteChangedThis ()
+		{
+			this.CanExecuteChanged?.Invoke (this, EventArgs.Empty);
+		}
 	}
 }

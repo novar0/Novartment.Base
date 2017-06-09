@@ -1,7 +1,7 @@
 ﻿using System;
-using static System.Linq.Enumerable;
 using System.Diagnostics.Contracts;
 using Novartment.Base.Collections;
+using static System.Linq.Enumerable;
 
 namespace Novartment.Base.Net
 {
@@ -23,10 +23,12 @@ namespace Novartment.Base.Net
 			{
 				throw new ArgumentNullException (nameof (collection));
 			}
+
 			if (value == null)
 			{
 				throw new ArgumentNullException (nameof (value));
 			}
+
 			Contract.EndContractBlock ();
 
 			QualityValueParameter data;
@@ -37,9 +39,14 @@ namespace Novartment.Base.Net
 			else
 			{
 				var minQuality = collection.Min (item => item.Importance) - 0.01m;
-				if (minQuality <= 0.0m) minQuality = 0.001m;
+				if (minQuality <= 0.0m)
+				{
+					minQuality = 0.001m;
+				}
+
 				data = new QualityValueParameter (value, minQuality);
 			}
+
 			collection.Add (data);
 
 			return data;

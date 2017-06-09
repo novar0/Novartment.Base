@@ -25,41 +25,12 @@ namespace Novartment.Base
 			{
 				throw new ArgumentNullException (nameof (callback));
 			}
+
 			Contract.EndContractBlock ();
 
 			_callback = callback;
 			_state = state;
 		}
-
-		/// <summary>
-		/// Вызывает делегат срабатывания таймера.
-		/// Можно использовать для делегата типа TimerCallback.
-		/// </summary>
-		/// <param name="notUsed">Не используется.</param>
-		protected void DoCallback (object notUsed)
-		{
-			_callback.Invoke (_state);
-		}
-		/// <summary>
-		/// Вызывает делегат срабатывания таймера.
-		/// Можно использовать для делегата типа EventHandler.
-		/// </summary>
-		/// <param name="notUsed1">Не используется.</param>
-		/// <param name="notUsed2">Не используется.</param>
-		protected void DoCallback (object notUsed1, EventArgs notUsed2)
-		{
-			_callback.Invoke (_state);
-		}
-		/// <summary>
-		/// Вызывает делегат срабатывания таймераа.
-		/// Можно использовать для делегата типа Action.
-		/// </summary>
-		protected void DoCallback ()
-		{
-			_callback.Invoke (_state);
-		}
-
-		#region ITimer Members
 
 		/// <summary>
 		/// Получает или устанавливает интервал срабатывания таймера.
@@ -81,10 +52,6 @@ namespace Novartment.Base
 		/// </summary>
 		public abstract void Stop ();
 
-		#endregion
-
-		#region IDisposable Members
-
 		/// <summary>
 		/// Освобождает занимаемые объектом ресурсы.
 		/// </summary>
@@ -94,6 +61,34 @@ namespace Novartment.Base
 			Justification = "Implemented correctly.")]
 		public abstract void Dispose ();
 
-		#endregion
+		/// <summary>
+		/// Вызывает делегат срабатывания таймера.
+		/// Можно использовать для делегата типа TimerCallback.
+		/// </summary>
+		/// <param name="notUsed">Не используется.</param>
+		protected void DoCallback (object notUsed)
+		{
+			_callback.Invoke (_state);
+		}
+
+		/// <summary>
+		/// Вызывает делегат срабатывания таймера.
+		/// Можно использовать для делегата типа EventHandler.
+		/// </summary>
+		/// <param name="notUsed1">notUsed1 не используется.</param>
+		/// <param name="notUsed2">notUsed2 не используется.</param>
+		protected void DoCallback (object notUsed1, EventArgs notUsed2)
+		{
+			_callback.Invoke (_state);
+		}
+
+		/// <summary>
+		/// Вызывает делегат срабатывания таймераа.
+		/// Можно использовать для делегата типа Action.
+		/// </summary>
+		protected void DoCallback ()
+		{
+			_callback.Invoke (_state);
+		}
 	}
 }

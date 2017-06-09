@@ -24,6 +24,7 @@ namespace Novartment.Base
 			{
 				throw new ArgumentNullException (nameof (progressProvider));
 			}
+
 			Contract.EndContractBlock ();
 
 			return new ProgressToObserverTranslator<T> (progressProvider);
@@ -45,12 +46,11 @@ namespace Novartment.Base
 			{
 				throw new ArgumentNullException (nameof (observer));
 			}
+
 			Contract.EndContractBlock ();
 
 			return new ObserverToProgressTranslator<T> (observer);
 		}
-
-		#region class ProgressToObserverTranslator<T>
 
 		internal class ProgressToObserverTranslator<T> :
 			IObserver<T>
@@ -67,14 +67,14 @@ namespace Novartment.Base
 				_progressProvider.Report (value);
 			}
 
-			void IObserver<T>.OnCompleted () { }
+			void IObserver<T>.OnCompleted ()
+			{
+			}
 
-			void IObserver<T>.OnError (Exception error) { }
+			void IObserver<T>.OnError (Exception error)
+			{
+			}
 		}
-
-		#endregion
-
-		#region class ObserverToProgressTranslator<T>
 
 		internal class ObserverToProgressTranslator<T> :
 			IProgress<T>
@@ -91,7 +91,5 @@ namespace Novartment.Base
 				_observer.OnNext (value);
 			}
 		}
-
-		#endregion
 	}
 }

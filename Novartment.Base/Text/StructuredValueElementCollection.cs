@@ -1,8 +1,8 @@
 ﻿using System;
-using System.Text;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
+using System.Text;
 using Novartment.Base.Collections;
 
 namespace Novartment.Base.Text
@@ -10,7 +10,8 @@ namespace Novartment.Base.Text
 	/// <summary>
 	/// Методы для создания и обработки коллекций StructuredValueElement.
 	/// </summary>
-	[SuppressMessage ("Microsoft.Naming",
+	[SuppressMessage (
+		"Microsoft.Naming",
 		"CA1711:IdentifiersShouldNotHaveIncorrectSuffix",
 		Justification = "Implemented interfaces has no association with class name.")]
 	public static class StructuredValueElementCollection
@@ -19,8 +20,6 @@ namespace Novartment.Base.Text
 		private static readonly DelimitedElement _QuotedStringDelimitingData = new DelimitedElement ('\"', '\"', new DelimitedElement ('\\', 2), false);
 		private static readonly DelimitedElement _AngleAddrDelimitingData = new DelimitedElement ('<', '>', new DelimitedElement ('\"', '\"', new DelimitedElement ('\\', 2), false), false);
 		private static readonly DelimitedElement _DomainLiteralDelimitingData = new DelimitedElement ('[', ']', new DelimitedElement ('\\', 2), false);
-
-		#region method Decode
 
 		/// <summary>
 		/// Декодирует последовательность элементов как единую строку.
@@ -34,6 +33,7 @@ namespace Novartment.Base.Text
 			{
 				throw new ArgumentNullException (nameof (elements));
 			}
+
 			Contract.EndContractBlock ();
 
 			var result = new StringBuilder ();
@@ -51,7 +51,9 @@ namespace Novartment.Base.Text
 						throw new FormatException (FormattableString.Invariant (
 							$"Element of type '{token.ElementType}' is complex and can not be decoded to discrete value."));
 				}
+
 				var decodedValue = token.Decode ();
+
 				// RFC 2047 часть 6.2:
 				// When displaying a particular header field that contains multiple 'encoded-word's,
 				// any 'linear-white-space' that separates a pair of adjacent 'encoded-word's is ignored
@@ -62,15 +64,13 @@ namespace Novartment.Base.Text
 					// are semantically interpreted as a single space character.
 					result.Append (' ');
 				}
+
 				prevIsWordEncoded = token.IsWordEncoded;
 				result.Append (decodedValue);
 			}
+
 			return result.ToString ();
 		}
-
-		#endregion
-
-		#region method Parse
 
 		/// <summary>
 		/// Создаёт коллекцию элементов структурированного значения из его исходного строкового представления.
@@ -80,7 +80,8 @@ namespace Novartment.Base.Text
 		/// <param name="allowDotInsideValue">Признак допустимости символа 'точка' внутри элементов значения.</param>
 		/// <param name="typeToSkip">Тип элементов значения, которые будут пропущены и не попадут в создаваемую коллекцию.</param>
 		/// <returns>Коллекция элементов структурированного значения.</returns>
-		[SuppressMessage ("Microsoft.Design",
+		[SuppressMessage (
+			"Microsoft.Design",
 			"CA1026:DefaultParametersShouldNotBeUsed",
 			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
 		public static IReadOnlyList<StructuredValueElement> Parse (
@@ -93,6 +94,7 @@ namespace Novartment.Base.Text
 			{
 				throw new ArgumentNullException (nameof (source));
 			}
+
 			Contract.EndContractBlock ();
 
 			// TODO: добавить пропуск кодированных слов (внутри них могут быть символы "(<[ если оно в кодировке Q)
@@ -117,6 +119,7 @@ namespace Novartment.Base.Text
 						{
 							elements.Add (new StructuredValueElement (StructuredValueElementType.QuotedValue, parser.Source.Substring (start + 1, end - start - 2)));
 						}
+
 						break;
 					case '(':
 						end = parser.SkipDelimited (_CommentDelimitingData);
@@ -124,6 +127,7 @@ namespace Novartment.Base.Text
 						{
 							elements.Add (new StructuredValueElement (StructuredValueElementType.RoundBracketedValue, parser.Source.Substring (start + 1, end - start - 2)));
 						}
+
 						break;
 					case '<':
 						end = parser.SkipDelimited (_AngleAddrDelimitingData);
@@ -131,6 +135,7 @@ namespace Novartment.Base.Text
 						{
 							elements.Add (new StructuredValueElement (StructuredValueElementType.AngleBracketedValue, parser.Source.Substring (start + 1, end - start - 2)));
 						}
+
 						break;
 					case '[':
 						end = parser.SkipDelimited (_DomainLiteralDelimitingData);
@@ -138,6 +143,7 @@ namespace Novartment.Base.Text
 						{
 							elements.Add (new StructuredValueElement (StructuredValueElementType.SquareBracketedValue, parser.Source.Substring (start + 1, end - start - 2)));
 						}
+
 						break;
 					default:
 						end = parser.SkipClassChars (AsciiCharSet.Classes, (short)valueCharClass);
@@ -167,13 +173,12 @@ namespace Novartment.Base.Text
 								elements.Add (new StructuredValueElement (StructuredValueElementType.Value, parser.Source.Substring (start, end - start)));
 							}
 						}
+
 						break;
 				}
 			}
 
 			return elements;
 		}
-
-		#endregion
 	}
 }

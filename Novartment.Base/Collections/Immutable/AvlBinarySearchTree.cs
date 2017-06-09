@@ -10,14 +10,13 @@ namespace Novartment.Base.Collections.Immutable
 	/// Неизменяемое двоичное дерево поиска,
 	/// автоматически балансирующееся по алгоритму <a href="http://en.wikipedia.org/wiki/AVL_tree">АВЛ</a>.
 	/// </summary>
-	[SuppressMessage ("Microsoft.Naming",
+	[SuppressMessage (
+		"Microsoft.Naming",
 		"CA1704:IdentifiersShouldBeSpelledCorrectly",
 		MessageId = "Avl",
 		Justification = "'AVL-tree' represents standard term.")]
 	public static class AvlBinarySearchTree
 	{
-		#region static method GetCount
-
 		/// <summary>
 		/// Получает количество узлов в дереве.
 		/// </summary>
@@ -28,28 +27,6 @@ namespace Novartment.Base.Collections.Immutable
 		{
 			return GetCountInternal (treeNode, 0);
 		}
-
-		private static int GetCountInternal<T> (this AvlBinarySearchTreeNode<T> treeNode, int accumulator = 0)
-		{
-			while (true)
-			{
-				if (treeNode == null)
-				{
-					return accumulator;
-				}
-				var node = treeNode as AvlBinarySearchTreeNode<T>.IntermediateNode;
-				if (node == null)
-				{
-					return (accumulator + 1);
-				}
-				accumulator = GetCountInternal (node.RightSubtree, accumulator + 1);
-				treeNode = node.LeftSubtree;
-			}
-		}
-
-		#endregion
-
-		#region static method ContainsItem
 
 		/// <summary>
 		/// Проверяет наличие в дереве узла с указанным значением.
@@ -68,12 +45,14 @@ namespace Novartment.Base.Collections.Immutable
 			{
 				throw new ArgumentNullException (nameof (comparer));
 			}
+
 			Contract.EndContractBlock ();
 
 			if (treeNode == null)
 			{
 				return false;
 			}
+
 			do
 			{
 				var num = comparer.Compare (value, treeNode.Value);
@@ -81,19 +60,18 @@ namespace Novartment.Base.Collections.Immutable
 				{
 					return true;
 				}
+
 				var intermediateNode = treeNode as AvlBinarySearchTreeNode<T>.IntermediateNode;
 				if (intermediateNode == null)
 				{
 					return false;
 				}
+
 				treeNode = (num < 0) ? intermediateNode.LeftSubtree : intermediateNode.RightSubtree;
-			} while (treeNode != null);
+			}
+			while (treeNode != null);
 			return false;
 		}
-
-		#endregion
-
-		#region static method AddItem
 
 		/// <summary>
 		/// Создаёт новое дерево из указанного путём добавлением узла с указанным значением.
@@ -115,48 +93,12 @@ namespace Novartment.Base.Collections.Immutable
 			{
 				throw new ArgumentNullException (nameof (comparer));
 			}
+
 			Contract.EndContractBlock ();
 
 			bool existsBefore = false;
 			return AddItemInternal (treeNode, value, comparer, ref existsBefore);
 		}
-
-		internal static AvlBinarySearchTreeNode<T> AddItemInternal<T> (
-			this AvlBinarySearchTreeNode<T> treeNode,
-			T value,
-			IComparer<T> comparer,
-			ref bool existsBefore)
-		{
-			if (treeNode == null)
-			{
-				return new AvlBinarySearchTreeNode<T>.EndNode (value);
-			}
-
-			var num = comparer.Compare (value, treeNode.Value);
-			if (num == 0)
-			{
-				existsBefore = true;
-				return treeNode;
-			}
-			var intermediateNode = treeNode as AvlBinarySearchTreeNode<T>.IntermediateNode;
-			if (intermediateNode != null)
-			{
-				if (num < 0)
-				{
-					var newLeftSubtree = intermediateNode.LeftSubtree.AddItemInternal (value, comparer, ref existsBefore);
-					return Recreate (treeNode.Value, newLeftSubtree, intermediateNode.RightSubtree);
-				}
-				var newRightSubtree = intermediateNode.RightSubtree.AddItemInternal (value, comparer, ref existsBefore);
-				return Recreate (treeNode.Value, intermediateNode.LeftSubtree, newRightSubtree);
-			}
-			return (num < 0) ?
-				new AvlBinarySearchTreeNode<T>.IntermediateNode (value, null, treeNode, 2) :
-				new AvlBinarySearchTreeNode<T>.IntermediateNode (value, treeNode, null, 2);
-		}
-
-		#endregion
-
-		#region static method RemoveItem
 
 		/// <summary>
 		/// Создаёт новое дерево из указанного путём удалением узла с указанным значением.
@@ -178,10 +120,58 @@ namespace Novartment.Base.Collections.Immutable
 			{
 				throw new ArgumentNullException (nameof (comparer));
 			}
+
 			Contract.EndContractBlock ();
 
 			bool existsBefore = false;
 			return RemoveItemInternal (treeNode, value, comparer, ref existsBefore);
+		}
+
+		/// <summary>
+		/// Получает перечислитель узлов дерева.
+		/// </summary>
+		/// <typeparam name="T">Тип значений узлов дерева.</typeparam>
+		/// <param name="treeNode">Начальный узел дерева, в котором производится перечисление.</param>
+		/// <returns>Перечислитель значений узлов дерева.</returns>
+		public static IEnumerator<T> GetEnumerator<T> (this AvlBinarySearchTreeNode<T> treeNode)
+		{
+			return new BinarySearchTreeEnumerator<T> (treeNode);
+		}
+
+		internal static AvlBinarySearchTreeNode<T> AddItemInternal<T> (
+			this AvlBinarySearchTreeNode<T> treeNode,
+			T value,
+			IComparer<T> comparer,
+			ref bool existsBefore)
+		{
+			if (treeNode == null)
+			{
+				return new AvlBinarySearchTreeNode<T>.EndNode (value);
+			}
+
+			var num = comparer.Compare (value, treeNode.Value);
+			if (num == 0)
+			{
+				existsBefore = true;
+				return treeNode;
+			}
+
+			var intermediateNode = treeNode as AvlBinarySearchTreeNode<T>.IntermediateNode;
+			if (intermediateNode != null)
+			{
+				if (num < 0)
+				{
+					var newLeftSubtree = intermediateNode.LeftSubtree.AddItemInternal (value, comparer, ref existsBefore);
+					return Recreate (treeNode.Value, newLeftSubtree, intermediateNode.RightSubtree);
+				}
+
+				var newRightSubtree = intermediateNode.RightSubtree.AddItemInternal (value, comparer, ref existsBefore);
+				return Recreate (treeNode.Value, intermediateNode.LeftSubtree, newRightSubtree);
+			}
+
+			return (num < 0) ?
+				new AvlBinarySearchTreeNode<T>.IntermediateNode (value, null, treeNode, 2) :
+				new AvlBinarySearchTreeNode<T>.IntermediateNode (value, treeNode, null, 2);
 		}
 
 		internal static AvlBinarySearchTreeNode<T> RemoveItemInternal<T> (
@@ -203,9 +193,11 @@ namespace Novartment.Base.Collections.Immutable
 				{
 					return treeNode;
 				}
+
 				existsBefore = true;
 				return null;
 			}
+
 			var leftSubtree = node.LeftSubtree;
 			var rightSubtree = node.RightSubtree;
 			if (num < 0)
@@ -213,6 +205,7 @@ namespace Novartment.Base.Collections.Immutable
 				var newLeftSubtree = RemoveItemInternal (leftSubtree, value, comparer, ref existsBefore);
 				return Recreate (node.Value, newLeftSubtree, rightSubtree);
 			}
+
 			if (num > 0)
 			{
 				var newRightSubtree = RemoveItemInternal (rightSubtree, value, comparer, ref existsBefore);
@@ -224,32 +217,15 @@ namespace Novartment.Base.Collections.Immutable
 			{
 				return rightSubtree;
 			}
+
 			if (rightSubtree == null)
 			{
 				return leftSubtree;
 			}
+
 			var tuple = CutNode (rightSubtree);
 			return CreateNode (tuple.Value, leftSubtree, tuple.Node);
 		}
-
-		#endregion
-
-		#region static method GetEnumerator
-
-		/// <summary>
-		/// Получает перечислитель узлов дерева.
-		/// </summary>
-		/// <typeparam name="T">Тип значений узлов дерева.</typeparam>
-		/// <param name="treeNode">Начальный узел дерева, в котором производится перечисление.</param>
-		/// <returns>Перечислитель значений узлов дерева.</returns>
-		public static IEnumerator<T> GetEnumerator<T> (this AvlBinarySearchTreeNode<T> treeNode)
-		{
-			return new _BinarySearchTreeEnumerator<T> (treeNode);
-		}
-
-		#endregion
-
-		#region private static method Recreate
 
 		private static AvlBinarySearchTreeNode<T> Recreate<T> (T value, AvlBinarySearchTreeNode<T> left, AvlBinarySearchTreeNode<T> right)
 		{
@@ -269,6 +245,7 @@ namespace Novartment.Base.Collections.Immutable
 						CreateNode (value, left, rightLeft),
 						rightRight);
 				}
+
 				var rightLeftInterm = (AvlBinarySearchTreeNode<T>.IntermediateNode)rightLeft;
 				return CreateNode (
 					rightLeftInterm.Value,
@@ -289,6 +266,7 @@ namespace Novartment.Base.Collections.Immutable
 						leftLeft,
 						CreateNode (value, leftRight, right));
 				}
+
 				var leftRightInterm = (AvlBinarySearchTreeNode<T>.IntermediateNode)leftRight;
 				return CreateNode (
 					leftRightInterm.Value,
@@ -299,23 +277,16 @@ namespace Novartment.Base.Collections.Immutable
 			return CreateNode (value, left, right);
 		}
 
-		#endregion
-
-		#region private static method GetHeight
-
 		private static int GetHeight<T> (this AvlBinarySearchTreeNode<T> treeNode)
 		{
 			if (treeNode is AvlBinarySearchTreeNode<T>.EndNode)
 			{
 				return 1;
 			}
+
 			var intermediateNode = treeNode as AvlBinarySearchTreeNode<T>.IntermediateNode;
 			return intermediateNode?.Height ?? 0;
 		}
-
-		#endregion
-
-		#region private static method CreateNode
 
 		private static AvlBinarySearchTreeNode<T> CreateNode<T> (T value, AvlBinarySearchTreeNode<T> left, AvlBinarySearchTreeNode<T> right)
 		{
@@ -323,25 +294,18 @@ namespace Novartment.Base.Collections.Immutable
 			{
 				return new AvlBinarySearchTreeNode<T>.EndNode (value);
 			}
+
 			var num = Math.Max (GetHeight (left), GetHeight (right));
 			return new AvlBinarySearchTreeNode<T>.IntermediateNode (value, left, right, num + 1);
 		}
 
-		#endregion
-
-		#region private static method CutNode
-
-		internal struct ValueAndNode<T>
-		{
-			internal T Value;
-			internal AvlBinarySearchTreeNode<T> Node;
-		}
 		private static ValueAndNode<T> CutNode<T> (this AvlBinarySearchTreeNode<T> treeNode)
 		{
 			if (treeNode is AvlBinarySearchTreeNode<T>.EndNode)
 			{
 				return new ValueAndNode<T> () { Value = treeNode.Value, Node = null };
 			}
+
 			var intermediateNode = (AvlBinarySearchTreeNode<T>.IntermediateNode)treeNode;
 			var left = intermediateNode.LeftSubtree;
 			var right = intermediateNode.RightSubtree;
@@ -349,22 +313,45 @@ namespace Novartment.Base.Collections.Immutable
 			{
 				return new ValueAndNode<T> () { Value = intermediateNode.Value, Node = right };
 			}
+
 			var tuple = CutNode (left);
 			var newNode = CreateNode (intermediateNode.Value, tuple.Node, right);
 			return new ValueAndNode<T> () { Value = tuple.Value, Node = newNode };
 		}
 
-		#endregion
+		private static int GetCountInternal<T> (this AvlBinarySearchTreeNode<T> treeNode, int accumulator = 0)
+		{
+			while (true)
+			{
+				if (treeNode == null)
+				{
+					return accumulator;
+				}
 
-		#region class _BinarySearchTreeEnumerator<T>
+				var node = treeNode as AvlBinarySearchTreeNode<T>.IntermediateNode;
+				if (node == null)
+				{
+					return accumulator + 1;
+				}
 
-		internal sealed class _BinarySearchTreeEnumerator<T> : IEnumerator<T>
+				accumulator = GetCountInternal (node.RightSubtree, accumulator + 1);
+				treeNode = node.LeftSubtree;
+			}
+		}
+
+		internal struct ValueAndNode<T>
+		{
+			internal T Value;
+			internal AvlBinarySearchTreeNode<T> Node;
+		}
+
+		internal sealed class BinarySearchTreeEnumerator<T> : IEnumerator<T>
 		{
 			private readonly AvlBinarySearchTreeNode<T> _startingNode;
 			private SingleLinkedListNode<AvlBinarySearchTreeNode<T>> _nodesToExplore;
 			private bool _started;
 
-			internal _BinarySearchTreeEnumerator (AvlBinarySearchTreeNode<T> treeNode)
+			internal BinarySearchTreeEnumerator (AvlBinarySearchTreeNode<T> treeNode)
 			{
 				_startingNode = treeNode;
 				Reset ();
@@ -381,13 +368,16 @@ namespace Novartment.Base.Collections.Immutable
 					{
 						throw new InvalidOperationException ("Can not get current element of enumeration because it not started.");
 					}
+
 					if (_nodesToExplore == null)
 					{
 						throw new InvalidOperationException ("Can not get current element of enumeration because it already ended.");
 					}
+
 					return _nodesToExplore.Value.Value;
 				}
 			}
+
 			object IEnumerator.Current => this.Current;
 
 			/// <summary>
@@ -408,9 +398,11 @@ namespace Novartment.Base.Collections.Immutable
 					{
 						return false;
 					}
+
 					_nodesToExplore = Flatten (_nodesToExplore.Next);
 				}
-				return (_nodesToExplore != null);
+
+				return _nodesToExplore != null;
 			}
 
 			/// <summary>
@@ -425,7 +417,9 @@ namespace Novartment.Base.Collections.Immutable
 			/// <summary>
 			/// Ничего не делает.
 			/// </summary>
-			public void Dispose () { }
+			public void Dispose ()
+			{
+			}
 
 			private static SingleLinkedListNode<AvlBinarySearchTreeNode<T>> Flatten (SingleLinkedListNode<AvlBinarySearchTreeNode<T>> listNode)
 			{
@@ -443,16 +437,16 @@ namespace Novartment.Base.Collections.Immutable
 						{
 							return listNode;
 						}
+
 						listNode = listNode.Next
 							.AddItem (intermediateTreeNode.RightSubtree)
 							.AddItem (new AvlBinarySearchTreeNode<T>.EndNode (treeNode.Value))
 							.AddItem (intermediateTreeNode.LeftSubtree);
 					}
 				}
+
 				return null;
 			}
 		}
-
-		#endregion
 	}
 }

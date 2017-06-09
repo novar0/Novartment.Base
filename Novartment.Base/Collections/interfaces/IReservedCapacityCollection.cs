@@ -1,5 +1,4 @@
-﻿
-namespace Novartment.Base.Collections
+﻿namespace Novartment.Base.Collections
 {
 	/// <summary>
 	/// Коллекция, поддерживающая перечисление и добавление элементов,

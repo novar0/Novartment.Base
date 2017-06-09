@@ -3,22 +3,6 @@
 namespace Novartment.Base.UI
 {
 	/// <summary>
-	/// Данные для старта перетаскивания.
-	/// </summary>
-	public struct DragStartData
-	{
-		/// <summary>
-		/// Объект, который будет перетаскиваться.
-		/// </summary>
-		public IDataContainer Object;
-
-		/// <summary>
-		/// Набор разрешённых для перетаскивания эффектов.
-		/// </summary>
-		public DragDropEffects AllowedEffects;
-	}
-
-	/// <summary>
 	/// Источник для перетаскивания объектов в том числе в другие приложения.
 	/// </summary>
 	public interface IDragDropSource
@@ -59,5 +43,21 @@ namespace Novartment.Base.UI
 		/// </summary>
 		/// <param name="effects">Выбранный целью эффект перетаскивания.</param>
 		void DragEnd (DragDropEffects effects);
+	}
+
+	/// <summary>
+	/// Данные для старта перетаскивания.
+	/// </summary>
+	public struct DragStartData
+	{
+		/// <summary>
+		/// Объект, который будет перетаскиваться.
+		/// </summary>
+		public IDataContainer Object;
+
+		/// <summary>
+		/// Набор разрешённых для перетаскивания эффектов.
+		/// </summary>
+		public DragDropEffects AllowedEffects;
 	}
 }

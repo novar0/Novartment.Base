@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Security.Cryptography;
 using System.Diagnostics.Contracts;
+using System.Security.Cryptography;
 using Novartment.Base.Text;
 
 namespace Novartment.Base
@@ -13,6 +13,13 @@ namespace Novartment.Base
 	{
 		private char[] _cache = new char[4];
 		private int _cachedCount = 0;
+
+		/// <summary>
+		/// Инициализирует новый экземпляр класса FromBase64Converter.
+		/// </summary>
+		public FromBase64Converter()
+		{
+		}
 
 		/// <summary>
 		/// Получает размер входного блока.
@@ -34,14 +41,6 @@ namespace Novartment.Base
 		/// </summary>
 		public virtual bool CanReuseTransform => true;
 
-
-		/// <summary>
-		/// Инициализирует новый экземпляр класса FromBase64Converter.
-		/// </summary>
-		public FromBase64Converter ()
-		{
-		}
-
 		/// <summary>
 		/// Преобразует заданную область входного массива байтов и копирует результат в заданную область выходного массива байтов.
 		/// </summary>
@@ -57,22 +56,27 @@ namespace Novartment.Base
 			{
 				throw new ArgumentNullException (nameof (inputBuffer));
 			}
+
 			if ((inputOffset < 0) || (inputOffset > inputBuffer.Length) || ((inputOffset == inputBuffer.Length) && (inputCount > 0)))
 			{
 				throw new ArgumentOutOfRangeException (nameof (inputOffset));
 			}
+
 			if ((inputCount < 0) || ((inputOffset + inputCount) > inputBuffer.Length))
 			{
 				throw new ArgumentOutOfRangeException (nameof (inputCount));
 			}
+
 			if (outputBuffer == null)
 			{
 				throw new ArgumentNullException (nameof (outputBuffer));
 			}
+
 			if ((outputOffset < 0) || (outputOffset > outputBuffer.Length) || ((outputOffset == outputBuffer.Length) && (inputCount > 0)))
 			{
 				throw new ArgumentOutOfRangeException (nameof (outputOffset));
 			}
+
 			Contract.EndContractBlock ();
 
 			var reserved = _cache.Length; // резервируем первые 4-байта для содержимого кэша
@@ -88,7 +92,7 @@ namespace Novartment.Base
 			else
 			{
 				var bufStart = reserved - _cachedCount;
-				var bufLen = totalSize & -4; //-4 = 0xFFFFFFFC установлены все биты кроме младших двух
+				var bufLen = totalSize & -4; // -4 = 0xFFFFFFFC установлены все биты кроме младших двух
 
 				// добавляем содержимое кэша в начало буфера
 				Array.Copy (_cache, 0, buf, reserved - _cachedCount, _cachedCount);
@@ -116,14 +120,17 @@ namespace Novartment.Base
 			{
 				throw new ArgumentNullException (nameof (inputBuffer));
 			}
+
 			if ((inputOffset < 0) || (inputOffset > inputBuffer.Length) || ((inputOffset == inputBuffer.Length) && (inputCount > 0)))
 			{
 				throw new ArgumentOutOfRangeException (nameof (inputOffset));
 			}
+
 			if ((inputCount < 0) || ((inputOffset + inputCount) > inputBuffer.Length))
 			{
 				throw new ArgumentOutOfRangeException (nameof (inputCount));
 			}
+
 			Contract.EndContractBlock ();
 
 			var reserved = _cache.Length; // резервируем первые 4-байта для содержимого кэша
@@ -172,12 +179,14 @@ namespace Novartment.Base
 					{
 						throw new FormatException ("Base64-coded value contains ending marker '=' not in end position.");
 					}
+
 					var isNextCharBase64 = (nextChar == '=') ||
 						AsciiCharSet.IsCharOfClass (nextChar, AsciiCharClasses.Base64Alphabet);
 					if (isNextCharBase64)
 					{
 						base64AlphabetCharCount++;
 					}
+
 					lastChar = nextChar;
 				}
 			}

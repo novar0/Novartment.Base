@@ -1,8 +1,8 @@
 ﻿using System;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Diagnostics;
 using System.Diagnostics.Contracts;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Novartment.Base.BinaryStreaming
 {
@@ -36,14 +36,17 @@ namespace Novartment.Base.BinaryStreaming
 			{
 				throw new ArgumentNullException (nameof (source));
 			}
+
 			if (separator == null)
 			{
 				throw new ArgumentNullException (nameof (separator));
 			}
+
 			if ((separator.Length < 1) || (separator.Length > source.Buffer.Length))
 			{
 				throw new ArgumentOutOfRangeException (nameof (separator));
 			}
+
 			Contract.EndContractBlock ();
 
 			_source = source;
@@ -69,13 +72,13 @@ namespace Novartment.Base.BinaryStreaming
 		/// Получает количество данных, доступных в Buffer.
 		/// Начальная позиция доступных данных содержится в Offset.
 		/// </summary>
-		public int Count => (_foundTemplateOffset - _source.Offset);
+		public int Count => _foundTemplateOffset - _source.Offset;
 
 		/// <summary>Получает признак исчерпания источника.
 		/// Возвращает True если источник больше не поставляет данных.
 		/// Содержимое буфера при этом остаётся верным, но больше не будет меняться.</summary>
 		public bool IsExhausted =>
-				((!_throwIfNoSeparatorFound && _source.IsExhausted) || (_foundTemplateLength >= _template.Length));
+				(!_throwIfNoSeparatorFound && _source.IsExhausted) || (_foundTemplateLength >= _template.Length);
 
 		/// <summary>Отбрасывает (пропускает) указанное количество данных из начала буфера.</summary>
 		/// <param name="size">Размер данных для пропуска в начале буфера.
@@ -86,6 +89,7 @@ namespace Novartment.Base.BinaryStreaming
 			{
 				throw new ArgumentOutOfRangeException (nameof (size));
 			}
+
 			Contract.EndContractBlock ();
 
 			if (size > 0)
@@ -121,7 +125,7 @@ namespace Novartment.Base.BinaryStreaming
 			{
 				// признак изменения позиции данных в буфере.
 				// данные, доступные ранее, могут передвинуться, но не могут измениться (могут лишь добавиться новые)
-				var resetSearch = (prevOffset != _source.Offset);
+				var resetSearch = prevOffset != _source.Offset;
 				isSourceExhausted = SearchBuffer (resetSearch);
 			}
 
@@ -140,12 +144,14 @@ namespace Novartment.Base.BinaryStreaming
 		/// </summary>
 		/// <param name="size">Требуемый размер данных в буфере.</param>
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
+		/// <returns>Задача, представляющая операцию.</returns>
 		public Task EnsureBufferAsync (int size, CancellationToken cancellationToken)
 		{
 			if ((size < 0) || (size > this.Buffer.Length))
 			{
 				throw new ArgumentOutOfRangeException (nameof (size));
 			}
+
 			Contract.EndContractBlock ();
 
 			if ((size <= (_foundTemplateOffset - _source.Offset)) || _source.IsExhausted || (_foundTemplateLength >= _template.Length))
@@ -154,23 +160,26 @@ namespace Novartment.Base.BinaryStreaming
 				{
 					throw new NotEnoughDataException (size - (_foundTemplateOffset - _source.Offset));
 				}
+
 				return Task.CompletedTask;
 			}
-			return EnsureBufferAsyncStateMachine (size, cancellationToken);
-		}
 
-		private async Task EnsureBufferAsyncStateMachine (int size, CancellationToken cancellationToken)
-		{
-			while ((size > (_foundTemplateOffset - _source.Offset)) && !_source.IsExhausted)
+			return EnsureBufferAsyncStateMachine();
+
+			async Task EnsureBufferAsyncStateMachine()
 			{
-				var prevOffset = _source.Offset;
-				await _source.FillBufferAsync (cancellationToken).ConfigureAwait (false);
-				var resetSearch = (prevOffset != _source.Offset); // изменилась позиция данных в буфере. при этом сами данные, доступные ранее, не могут измениться, могут лишь добавиться новые
-				SearchBuffer (resetSearch);
-			}
-			if (size > (_foundTemplateOffset - _source.Offset))
-			{
-				throw new NotEnoughDataException (size - (_foundTemplateOffset - _source.Offset));
+				while ((size > (_foundTemplateOffset - _source.Offset)) && !_source.IsExhausted)
+				{
+					var prevOffset = _source.Offset;
+					await _source.FillBufferAsync(cancellationToken).ConfigureAwait(false);
+					var resetSearch = prevOffset != _source.Offset; // изменилась позиция данных в буфере. при этом сами данные, доступные ранее, не могут измениться, могут лишь добавиться новые
+					SearchBuffer(resetSearch);
+				}
+
+				if (size > (_foundTemplateOffset - _source.Offset))
+				{
+					throw new NotEnoughDataException(size - (_foundTemplateOffset - _source.Offset));
+				}
 			}
 		}
 
@@ -186,6 +195,7 @@ namespace Novartment.Base.BinaryStreaming
 		public async Task<bool> TrySkipPartAsync (CancellationToken cancellationToken)
 		{
 			int sizeToSkip;
+
 			// find separator if not already found
 			while (_foundTemplateLength < _template.Length)
 			{
@@ -194,9 +204,10 @@ namespace Novartment.Base.BinaryStreaming
 				{
 					SkipBuffer (sizeToSkip); // skip all data to found separator
 				}
+
 				var prevOffset = _source.Offset;
 				await _source.FillBufferAsync (cancellationToken).ConfigureAwait (false);
-				var resetSearch = (prevOffset != _source.Offset); // изменилась позиция данных в буфере. при этом сами данные, доступные ранее, не могут измениться, могут лишь добавиться новые
+				var resetSearch = prevOffset != _source.Offset; // изменилась позиция данных в буфере. при этом сами данные, доступные ранее, не могут измениться, могут лишь добавиться новые
 				var isSourceExhausted = SearchBuffer (resetSearch);
 				if (isSourceExhausted)
 				{
@@ -205,6 +216,7 @@ namespace Novartment.Base.BinaryStreaming
 					{
 						_source.SkipBuffer (_source.Count);
 					}
+
 					return false;
 				}
 			}
@@ -231,6 +243,7 @@ namespace Novartment.Base.BinaryStreaming
 				_foundTemplateOffset = _source.Offset;
 				_foundTemplateLength = 0;
 			}
+
 			var buf = _source.Buffer;
 			while (((_foundTemplateOffset + _foundTemplateLength) < (_source.Offset + _source.Count)) && (_foundTemplateLength < _template.Length))
 			{
@@ -244,6 +257,7 @@ namespace Novartment.Base.BinaryStreaming
 					_foundTemplateLength = 0;
 				}
 			}
+
 			// no more data from source, separator not found
 			if (_source.IsExhausted && (_foundTemplateLength < _template.Length))
 			{ // stops searching
@@ -251,6 +265,7 @@ namespace Novartment.Base.BinaryStreaming
 				_foundTemplateLength = 0;
 				return true;
 			}
+
 			return false;
 		}
 	}

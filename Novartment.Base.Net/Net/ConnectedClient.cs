@@ -11,17 +11,22 @@ namespace Novartment.Base.Net
 		private readonly Task _processingTask = null;
 		private readonly CancellationTokenSource _cancellationSource;
 
+		internal ConnectedClient (ITcpConnection connection, Task processingTask, CancellationTokenSource cancellationSource)
+		{
+			_connection = connection;
+			_processingTask = processingTask;
+			_cancellationSource = cancellationSource;
+		}
+
 		internal IPHostEndPoint EndPoint => _connection.RemoteEndPoint;
 
 		internal TimeSpan Duration => _connection.Duration;
 
 		internal TimeSpan IdleDuration => _connection.IdleDuration;
 
-		internal ConnectedClient (ITcpConnection connection, Task processingTask, CancellationTokenSource cancellationSource)
+		public void Dispose ()
 		{
-			_connection = connection;
-			_processingTask = processingTask;
-			_cancellationSource = cancellationSource;
+			_connection.Dispose ();
 		}
 
 		internal Task EndProcessing (bool abortConnection)
@@ -30,12 +35,8 @@ namespace Novartment.Base.Net
 			{
 				_cancellationSource.Cancel ();
 			}
-			return _processingTask;
-		}
 
-		public void Dispose ()
-		{
-			_connection.Dispose ();
+			return _processingTask;
 		}
 	}
 }

@@ -1,8 +1,8 @@
 ﻿using System;
-using System.Text;
-using System.Threading;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
+using System.Text;
+using System.Threading;
 using Novartment.Base.BinaryStreaming;
 
 namespace Novartment.Base.Net.Mime
@@ -18,16 +18,11 @@ namespace Novartment.Base.Net.Mime
 		/// Набор символов содержимого по умолчанию.
 		/// RFC 2046 4.1.2. The default character set, US-ASCII.
 		/// </summary>
-		[SuppressMessage ("Microsoft.Security",
+		[SuppressMessage (
+		"Microsoft.Security",
 			"CA2104:DoNotDeclareReadOnlyMutableReferenceTypes",
 			Justification = "Encoding is immutable.")]
 		public static readonly Encoding DefaultEncoding = Encoding.GetEncoding ("us-ascii");
-
-		/// <summary>
-		/// Получает кодировку символов, используемую в содержимом.
-		/// Соответствует параметру "charset" поля заголовка "Content-Type" определённому в RFC 2046.
-		/// </summary>
-		public Encoding Encoding { get; }
 
 		/// <summary>
 		/// Инициализирует новый экземпляр класса TextEntityBody
@@ -47,7 +42,8 @@ namespace Novartment.Base.Net.Mime
 		/// </summary>
 		/// <param name="charset">Набор символов, используемая в содержимом.</param>
 		/// <param name="transferEncoding">Кодировка передачи содержимого.</param>
-		[SuppressMessage ("Microsoft.Maintainability",
+		[SuppressMessage (
+			"Microsoft.Maintainability",
 			"CA1502:AvoidExcessiveComplexity",
 			Justification = "Method not too complex.")]
 		public TextEntityBody (string charset, ContentTransferEncoding transferEncoding)
@@ -80,13 +76,21 @@ namespace Novartment.Base.Net.Mime
 					case "CP1257": charset = "windows-1257"; break;
 					case "CP1258": charset = "windows-1258"; break;
 				}
+
 				this.Encoding = Encoding.GetEncoding (charset);
 			}
 		}
 
 		/// <summary>
+		/// Получает кодировку символов, используемую в содержимом.
+		/// Соответствует параметру "charset" поля заголовка "Content-Type" определённому в RFC 2046.
+		/// </summary>
+		public Encoding Encoding { get; }
+
+		/// <summary>
 		/// Получает текст, который содержит тело сущности.
 		/// </summary>
+		/// <returns>Текст, который содержит тело сущности.</returns>
 		public string GetText ()
 		{
 			var dataSrc = GetDataSource ();
@@ -103,6 +107,7 @@ namespace Novartment.Base.Net.Mime
 			{
 				throw new ArgumentNullException (nameof (value));
 			}
+
 			Contract.EndContractBlock ();
 
 			var bytes = this.Encoding.GetBytes (value);

@@ -2,18 +2,16 @@
 
 namespace Novartment.Base.Net.Mime
 {
+#pragma warning disable SA1402 // File may only contain a single class
+#pragma warning disable SA1649 // File name must match first type name
 	// Content-Type header field media subtype names.
 	// Full IANA registered list can be found from: http://www.iana.org/assignments/media-types.
-
-	#region application
 
 	/// <summary>
 	/// Application/xxx media sub-type names.
 	/// </summary>
 	public sealed class ApplicationMediaSubtypeNames
 	{
-		private ApplicationMediaSubtypeNames () { }
-
 		/// <summary>
 		/// "application/octet-stream". Определено в RFC 2045,2046.
 		/// </summary>
@@ -27,7 +25,8 @@ namespace Novartment.Base.Net.Mime
 		/// <summary>
 		/// "application/sdp". Определено в RFC 4566.
 		/// </summary>
-		[SuppressMessage ("Microsoft.Naming",
+		[SuppressMessage (
+		"Microsoft.Naming",
 			"CA1704:IdentifiersShouldBeSpelledCorrectly",
 			MessageId = "Sdp",
 			Justification = "'SDP' represents standard term.")]
@@ -46,7 +45,8 @@ namespace Novartment.Base.Net.Mime
 		/// <summary>
 		/// "application/x-pkcs7-signature". Определено в RFC 2311,2633.
 		/// </summary>
-		[SuppressMessage ("Microsoft.Naming",
+		[SuppressMessage (
+		"Microsoft.Naming",
 			"CA1704:IdentifiersShouldBeSpelledCorrectly",
 			MessageId = "Pkcs",
 			Justification = "'PKCS' represents standard term.")]
@@ -55,28 +55,28 @@ namespace Novartment.Base.Net.Mime
 		/// <summary>
 		/// "application/pkcs7-mime". Определено в RFC 5751.
 		/// </summary>
-		[SuppressMessage ("Microsoft.Naming",
+		[SuppressMessage (
+		"Microsoft.Naming",
 			"CA1704:IdentifiersShouldBeSpelledCorrectly",
 			MessageId = "Pkcs",
 			Justification = "'PKCS' represents standard term.")]
 		public static readonly string Pkcs7Mime = "pkcs7-mime";
+
+		private ApplicationMediaSubtypeNames ()
+		{
+		}
 	}
-
-	#endregion
-
-	#region image
 
 	/// <summary>
 	/// Image/xxx media subtype names.
 	/// </summary>
 	public sealed class ImageMediaSubtypeNames
 	{
-		private ImageMediaSubtypeNames () { }
-
 		/// <summary>
 		/// "image/png".
 		/// </summary>
-		[SuppressMessage ("Microsoft.Naming",
+		[SuppressMessage (
+			"Microsoft.Naming",
 			"CA1704:IdentifiersShouldBeSpelledCorrectly",
 			MessageId = "Png",
 			Justification = "'PNG' represents standard term.")]
@@ -85,7 +85,8 @@ namespace Novartment.Base.Net.Mime
 		/// <summary>
 		/// "image/svg+xml".
 		/// </summary>
-		[SuppressMessage ("Microsoft.Naming",
+		[SuppressMessage (
+			"Microsoft.Naming",
 			"CA1704:IdentifiersShouldBeSpelledCorrectly",
 			MessageId = "Svg",
 			Justification = "'SVG' represents standard term.")]
@@ -105,19 +106,17 @@ namespace Novartment.Base.Net.Mime
 		/// "image/tiff".
 		/// </summary>
 		public static readonly string Tiff = "tiff";
+
+		private ImageMediaSubtypeNames ()
+		{
+		}
 	}
-
-	#endregion
-
-	#region text
 
 	/// <summary>
 	/// Text/xxx media types.
 	/// </summary>
 	public sealed class TextMediaSubtypeNames
 	{
-		private TextMediaSubtypeNames () { }
-
 		/// <summary>
 		/// "text/calendar". Определено в RFC 2445.
 		/// </summary>
@@ -141,7 +140,8 @@ namespace Novartment.Base.Net.Mime
 		/// <summary>
 		/// "text/rfc822-headers". Определено в RFC 6522 часть 4.
 		/// </summary>
-		[SuppressMessage ("Microsoft.Naming",
+		[SuppressMessage (
+			"Microsoft.Naming",
 			"CA1704:IdentifiersShouldBeSpelledCorrectly",
 			MessageId = "Rfc",
 			Justification = "'RFC' represents standard term.")]
@@ -150,7 +150,8 @@ namespace Novartment.Base.Net.Mime
 		/// <summary>
 		/// "text/richtext". ОпределенО в RFC 2045,2046.
 		/// </summary>
-		[SuppressMessage ("Microsoft.Naming",
+		[SuppressMessage (
+			"Microsoft.Naming",
 			"CA1704:IdentifiersShouldBeSpelledCorrectly",
 			MessageId = "Richtext",
 			Justification = "'Rich Text' represents standard term.")]
@@ -160,19 +161,17 @@ namespace Novartment.Base.Net.Mime
 		/// "text/xml". Определено в RFC 3023.
 		/// </summary>
 		public static readonly string Xml = "xml";
+
+		private TextMediaSubtypeNames ()
+		{
+		}
 	}
-
-	#endregion
-
-	#region multipart
 
 	/// <summary>
 	/// Multipart/xxx media subtype names.
 	/// </summary>
 	public sealed class MultipartMediaSubtypeNames
 	{
-		private MultipartMediaSubtypeNames () { }
-
 		/// <summary>
 		/// "multipart/mixed". Определено в RFC 2045,2046.
 		/// </summary>
@@ -222,23 +221,22 @@ namespace Novartment.Base.Net.Mime
 		/// "multipart/voice-message". Определено в RFC 2421,2423.
 		/// </summary>
 		public static readonly string ViceMessage = "voice-message";
+
+		private MultipartMediaSubtypeNames ()
+		{
+		}
 	}
-
-	#endregion
-
-	#region message
 
 	/// <summary>
 	/// Message/xxx media subtype names.
 	/// </summary>
 	public sealed class MessageMediaSubtypeNames
 	{
-		private MessageMediaSubtypeNames () { }
-
 		/// <summary>
 		/// "message/rfc822".
 		/// </summary>
-		[SuppressMessage ("Microsoft.Naming",
+		[SuppressMessage (
+			"Microsoft.Naming",
 			"CA1704:IdentifiersShouldBeSpelledCorrectly",
 			MessageId = "Rfc",
 			Justification = "'RFC' represents standard term.")]
@@ -253,7 +251,11 @@ namespace Novartment.Base.Net.Mime
 		/// "message/delivery-status". Определено в RFC 3464.
 		/// </summary>
 		public static readonly string DeliveryStatus = "delivery-status";
-	}
 
-	#endregion
+		private MessageMediaSubtypeNames ()
+		{
+		}
+	}
+#pragma warning restore SA1649 // File name must match first type name
+#pragma warning restore SA1402 // File may only contain a single class
 }

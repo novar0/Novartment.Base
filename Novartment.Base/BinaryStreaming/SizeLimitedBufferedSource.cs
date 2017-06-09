@@ -1,8 +1,8 @@
 ﻿using System;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Diagnostics;
 using System.Diagnostics.Contracts;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Novartment.Base.BinaryStreaming
 {
@@ -19,32 +19,34 @@ namespace Novartment.Base.BinaryStreaming
 		private long _countRemainder;
 
 		/// <summary>
-		/// Получает неиспользованный остаток лимита.
-		/// </summary>
-		public long UnusedSize => (long)_countInBuffer + _countRemainder;
-
-		/// <summary>
 		/// Инициализирует новый экземпляр SizeLimitedBufferedSource получающий данные из указанного IBufferedSource
 		/// разделяя его на порции указанного размера.
 		/// </summary>
 		/// <param name="source">Источник данных, представляющий из себя порции фиксированного размера.</param>
 		/// <param name="limit">Размер порции данных.</param>
-		public SizeLimitedBufferedSource (IBufferedSource source, long limit)
+		public SizeLimitedBufferedSource(IBufferedSource source, long limit)
 		{
 			if (source == null)
 			{
-				throw new ArgumentNullException (nameof (source));
+				throw new ArgumentNullException(nameof(source));
 			}
+
 			if (limit < 0L)
 			{
-				throw new ArgumentOutOfRangeException (nameof (limit));
+				throw new ArgumentOutOfRangeException(nameof(limit));
 			}
-			Contract.EndContractBlock ();
+
+			Contract.EndContractBlock();
 
 			_source = source;
 
-			UpdateLimits (limit);
+			UpdateLimits(limit);
 		}
+
+		/// <summary>
+		/// Получает неиспользованный остаток лимита.
+		/// </summary>
+		public long UnusedSize => (long)_countInBuffer + _countRemainder;
 
 		/// <summary>
 		/// Получает буфер, в котором содержится некоторая часть данных источника.
@@ -68,7 +70,7 @@ namespace Novartment.Base.BinaryStreaming
 		/// <summary>Получает признак исчерпания источника.
 		/// Возвращает True если источник больше не поставляет данных.
 		/// Содержимое буфера при этом остаётся верным, но больше не будет меняться.</summary>
-		public bool IsExhausted => (_countRemainder <= 0L);
+		public bool IsExhausted => _countRemainder <= 0L;
 
 		/// <summary>Отбрасывает (пропускает) указанное количество данных из начала буфера.</summary>
 		/// <param name="size">Размер данных для пропуска в начале буфера.
@@ -79,6 +81,7 @@ namespace Novartment.Base.BinaryStreaming
 			{
 				throw new ArgumentOutOfRangeException (nameof (size));
 			}
+
 			Contract.EndContractBlock ();
 
 			if (size > 0)
@@ -106,6 +109,7 @@ namespace Novartment.Base.BinaryStreaming
 			{
 				throw new ArgumentOutOfRangeException (nameof (size));
 			}
+
 			Contract.EndContractBlock ();
 
 			if (size == 0L)
@@ -115,14 +119,14 @@ namespace Novartment.Base.BinaryStreaming
 
 			var limit = (long)_countInBuffer + _countRemainder;
 			var task = _source.TrySkipAsync ((size < limit) ? size : limit, cancellationToken);
-			return TrySkipAsyncFinalizer (task, limit);
-		}
+			return TrySkipAsyncFinalizer ();
 
-		private async Task<long> TrySkipAsyncFinalizer (Task<long> task, long limit)
-		{
-			var skipped = await task.ConfigureAwait (false);
-			UpdateLimits (limit - skipped);
-			return skipped;
+			async Task<long> TrySkipAsyncFinalizer ()
+			{
+				var skipped = await task.ConfigureAwait (false);
+				UpdateLimits (limit - skipped);
+				return skipped;
+			}
 		}
 
 		/// <summary>
@@ -140,20 +144,22 @@ namespace Novartment.Base.BinaryStreaming
 			{
 				return Task.CompletedTask;
 			}
-			var task = _source.FillBufferAsync (cancellationToken);
-			return FillBufferAsyncFinalizer (task);
-		}
 
-		private async Task FillBufferAsyncFinalizer (Task task)
-		{
-			await task.ConfigureAwait (false);
-			if ((_source.Count < 1) && (_countInBuffer < 1))
+			var task = _source.FillBufferAsync (cancellationToken);
+			return FillBufferAsyncFinalizer ();
+
+			async Task FillBufferAsyncFinalizer ()
 			{
-				throw new NotEnoughDataException (
-					"Source exhausted before reaching specified limit.",
-					_countRemainder);
+				await task.ConfigureAwait (false);
+				if ((_source.Count < 1) && (_countInBuffer < 1))
+				{
+					throw new NotEnoughDataException (
+						"Source exhausted before reaching specified limit.",
+						_countRemainder);
+				}
+
+				UpdateLimits ((long)_countInBuffer + _countRemainder);
 			}
-			UpdateLimits ((long)_countInBuffer + _countRemainder);
 		}
 
 		/// <summary>
@@ -163,12 +169,14 @@ namespace Novartment.Base.BinaryStreaming
 		/// </summary>
 		/// <param name="size">Требуемый размер данных в буфере.</param>
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
+		/// <returns>Задача, представляющая операцию.</returns>
 		public Task EnsureBufferAsync (int size, CancellationToken cancellationToken)
 		{
 			if ((size < 0) || (size > this.Buffer.Length))
 			{
 				throw new ArgumentOutOfRangeException (nameof (size));
 			}
+
 			Contract.EndContractBlock ();
 
 			if ((size <= _countInBuffer) || _source.IsExhausted || (_countRemainder <= 0))
@@ -177,8 +185,10 @@ namespace Novartment.Base.BinaryStreaming
 				{
 					throw new NotEnoughDataException (size - _countInBuffer);
 				}
+
 				return Task.CompletedTask;
 			}
+
 			return EnsureBufferAsyncStateMachine (size, cancellationToken);
 		}
 
@@ -189,6 +199,7 @@ namespace Novartment.Base.BinaryStreaming
 				await _source.FillBufferAsync (cancellationToken).ConfigureAwait (false);
 				UpdateLimits ((long)_countInBuffer + _countRemainder);
 			}
+
 			if (size > _countInBuffer)
 			{
 				throw new NotEnoughDataException (size - _countInBuffer);

@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections;
-using static System.Linq.Enumerable;
+using System.Globalization;
 using System.Windows;
 using System.Windows.Data;
 using System.Windows.Media;
-using System.Globalization;
+using static System.Linq.Enumerable;
 
 namespace Novartment.Base.UI.Wpf
 {
@@ -36,8 +36,6 @@ namespace Novartment.Base.UI.Wpf
 		/// <param name="culture">Язык и региональные параметры, используемые в преобразователе.</param>
 		/// <returns>Преобразованное значение.</returns>
 		public object ConvertBack (object value, Type targetType, object parameter, CultureInfo culture)
-		{
-			throw new NotSupportedException ();
-		}
+			=> throw new NotSupportedException ();
 	}
 }

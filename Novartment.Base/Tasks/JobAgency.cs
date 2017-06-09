@@ -52,27 +52,6 @@ namespace Novartment.Base
 			return completionSource.Task;
 		}
 
-		private void OfferJobCompletionSource (JobCompletionSource<TItem, TResult> completionSource)
-		{
-			TaskCompletionSource<JobCompletionSource<TItem, TResult>> consumer;
-			lock (_producers)
-			{
-				do
-				{
-					if (_consumers.Count < 1)
-					{
-						// нет ожиданий потребителей, складываем запрос в производственную очередь
-						_producers.Enqueue (completionSource);
-						return;
-					}
-					// берём самое старое ожидание потребителя
-					consumer = _consumers.Dequeue ();
-				} while (consumer.Task.IsCompleted); // пропускаем отменённые ожидания потребителей
-			}
-			// удовлетворяем самое старое ожидание потребителя
-			consumer.TrySetResult (completionSource);
-		}
-
 		/// <summary>
 		/// Асинхронно запрашивает задание у службы.
 		/// При получении маркера, добавленного методом PutMarker(), у него будет установлен флаг IsMarker.
@@ -91,19 +70,46 @@ namespace Novartment.Base
 					// возвращаем самое старое задание из производственной очереди
 					return Task.FromResult (_producers.Dequeue ());
 				}
+
 				// производственная очередь пуста, регистрируем ожидание потребителя
 				if (cancellationToken.IsCancellationRequested)
 				{
 					return Task.FromCanceled<JobCompletionSource<TItem, TResult>> (cancellationToken);
 				}
+
 				var consumer = new TaskCompletionSource<JobCompletionSource<TItem, TResult>> ();
 				if (cancellationToken.CanBeCanceled)
 				{
 					cancellationToken.Register (() => consumer.TrySetCanceled (), false);
 				}
+
 				_consumers.Enqueue (consumer);
 				return consumer.Task;
 			}
+		}
+
+		private void OfferJobCompletionSource (JobCompletionSource<TItem, TResult> completionSource)
+		{
+			TaskCompletionSource<JobCompletionSource<TItem, TResult>> consumer;
+			lock (_producers)
+			{
+				do
+				{
+					if (_consumers.Count < 1)
+					{
+						// нет ожиданий потребителей, складываем запрос в производственную очередь
+						_producers.Enqueue (completionSource);
+						return;
+					}
+
+					// берём самое старое ожидание потребителя
+					consumer = _consumers.Dequeue ();
+				}
+				while (consumer.Task.IsCompleted); // пропускаем отменённые ожидания потребителей
+			}
+
+			// удовлетворяем самое старое ожидание потребителя
+			consumer.TrySetResult (completionSource);
 		}
 	}
 }

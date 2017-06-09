@@ -1,5 +1,4 @@
-﻿
-namespace Novartment.Base
+﻿namespace Novartment.Base
 {
 	/// <summary>
 	/// Причина завершения процесса.

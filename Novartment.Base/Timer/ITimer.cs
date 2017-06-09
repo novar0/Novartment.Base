@@ -27,7 +27,8 @@ namespace Novartment.Base
 		/// <summary>
 		/// Останавливает таймер.
 		/// </summary>
-		[SuppressMessage ("Microsoft.Naming",
+		[SuppressMessage (
+			"Microsoft.Naming",
 			"CA1716:IdentifiersShouldNotMatchKeywords",
 			MessageId = "Stop",
 			Justification = "No other name could be applied. All library timers have method 'Stop()'.")]

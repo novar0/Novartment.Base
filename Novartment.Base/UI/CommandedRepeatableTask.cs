@@ -1,8 +1,8 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Diagnostics.Contracts;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Diagnostics.Contracts;
 using Novartment.Base.Tasks;
 
 namespace Novartment.Base.UI
@@ -13,12 +13,6 @@ namespace Novartment.Base.UI
 	public class CommandedRepeatableTask : RepeatableTask,
 		INotifyPropertyChanged
 	{
-		/// <summary>Получает команду запуска задачи.</summary>
-		public ChainedRelayCommand<object> StartCommand { get; }
-
-		/// <summary>Получает команду остановки задачи.</summary>
-		public ChainedRelayCommand StopCommand { get; }
-
 		/// <summary>
 		/// Инициализирует новый экземпляр CommandedRepeatableTask на основе указанной фабрики по производству задач.
 		/// </summary>
@@ -31,6 +25,7 @@ namespace Novartment.Base.UI
 			{
 				throw new ArgumentNullException (nameof (taskFactory));
 			}
+
 			Contract.EndContractBlock ();
 
 			var startChain = new CommandChain (false, ExecutionAbilityChainBehavior.WhenAll);
@@ -52,10 +47,12 @@ namespace Novartment.Base.UI
 			{
 				throw new ArgumentNullException (nameof (taskAction));
 			}
+
 			if (taskScheduler == null)
 			{
 				throw new ArgumentNullException (nameof (taskScheduler));
 			}
+
 			Contract.EndContractBlock ();
 
 			var startChain = new CommandChain (false, ExecutionAbilityChainBehavior.WhenAll);
@@ -78,10 +75,12 @@ namespace Novartment.Base.UI
 			{
 				throw new ArgumentNullException (nameof (taskFactory));
 			}
+
 			if (previousTask == null)
 			{
 				throw new ArgumentNullException (nameof (previousTask));
 			}
+
 			Contract.EndContractBlock ();
 
 			this.StartCommand = new ChainedRelayCommand<object> (previousTask.StartCommand.Chain, StartInternal, CanStart);
@@ -104,19 +103,31 @@ namespace Novartment.Base.UI
 			{
 				throw new ArgumentNullException (nameof (taskAction));
 			}
+
 			if (taskScheduler == null)
 			{
 				throw new ArgumentNullException (nameof (taskScheduler));
 			}
+
 			if (previousTask == null)
 			{
 				throw new ArgumentNullException (nameof (previousTask));
 			}
+
 			Contract.EndContractBlock ();
 
 			this.StartCommand = new ChainedRelayCommand<object> (previousTask.StartCommand.Chain, StartInternal, CanStart);
 			this.StopCommand = new ChainedRelayCommand (previousTask.StopCommand.Chain, Cancel, CanCancel);
 		}
+
+		/// <summary>Происходит после изменения свойства.</summary>
+		public event PropertyChangedEventHandler PropertyChanged;
+
+		/// <summary>Получает команду запуска задачи.</summary>
+		public ChainedRelayCommand<object> StartCommand { get; }
+
+		/// <summary>Получает команду остановки задачи.</summary>
+		public ChainedRelayCommand StopCommand { get; }
 
 		/// <summary>
 		/// Создаёт связанную задачу на основе указанной фабрики по производству задач.
@@ -130,6 +141,7 @@ namespace Novartment.Base.UI
 			{
 				throw new ArgumentNullException (nameof (taskFactory));
 			}
+
 			Contract.EndContractBlock ();
 
 			return new CommandedRepeatableTask (taskFactory, this);
@@ -147,10 +159,12 @@ namespace Novartment.Base.UI
 			{
 				throw new ArgumentNullException (nameof (taskAction));
 			}
+
 			if (taskScheduler == null)
 			{
 				throw new ArgumentNullException (nameof (taskScheduler));
 			}
+
 			Contract.EndContractBlock ();
 
 			return new CommandedRepeatableTask (taskAction, taskScheduler, this);
@@ -162,17 +176,7 @@ namespace Novartment.Base.UI
 		/// <param name="state">Объект-состояние, передаваемый в запускаемую задачу.</param>
 		protected virtual void StartInternal (object state)
 		{
-			base.Start (state);
-		}
-
-		private bool CanStart (object notUsed)
-		{
-			return !this.IsRunning;
-		}
-
-		private bool CanCancel ()
-		{
-			return this.IsRunning;
+			Start (state);
 		}
 
 		/// <summary>
@@ -199,9 +203,6 @@ namespace Novartment.Base.UI
 			OnPropertyChanged (new PropertyChangedEventArgs (nameof (this.IsRunning)));
 		}
 
-		/// <summary>Происходит после изменения свойства.</summary>
-		public event PropertyChangedEventHandler PropertyChanged;
-
 		/// <summary>
 		/// Вызывает событие PropertyChanged с указанными аргументами.
 		/// </summary>
@@ -209,6 +210,16 @@ namespace Novartment.Base.UI
 		protected virtual void OnPropertyChanged (PropertyChangedEventArgs args)
 		{
 			this.PropertyChanged?.Invoke (this, args);
+		}
+
+		private bool CanStart (object notUsed)
+		{
+			return !this.IsRunning;
+		}
+
+		private bool CanCancel ()
+		{
+			return this.IsRunning;
 		}
 	}
 }

@@ -38,13 +38,16 @@ namespace Novartment.Base.Collections.Linq
 				{
 					throw new InvalidOperationException ("Can not get current element of enumeration because it not started.");
 				}
+
 				if (_index == -2)
 				{
 					throw new InvalidOperationException ("Can not get current element of enumeration because it already ended.");
 				}
+
 				return _current;
 			}
 		}
+
 		object IEnumerator.Current => Current;
 
 		/// <summary>
@@ -67,6 +70,7 @@ namespace Novartment.Base.Collections.Linq
 				_current = default (TResult);
 				return false;
 			}
+
 			_current = _selector.Invoke (_first[_index], _second[_index]);
 			return true;
 		}

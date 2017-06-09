@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Net;
 using System.Diagnostics.Contracts;
+using System.Net;
 
 namespace Novartment.Base.Net
 {
@@ -9,11 +9,6 @@ namespace Novartment.Base.Net
 	/// </summary>
 	public class IPHostEndPoint : IPEndPoint
 	{
-		/// <summary>
-		/// Получает или устанавливает имя узла.
-		/// </summary>
-		public string HostName { get; set; }
-
 		/// <summary>
 		/// Инициализирует новый экземпляр IPHostEndPoint с указанной конечной точкой подключения.
 		/// </summary>
@@ -33,12 +28,18 @@ namespace Novartment.Base.Net
 		{
 		}
 
+		/// <summary>
+		/// Получает или устанавливает имя узла.
+		/// </summary>
+		public string HostName { get; set; }
+
 		private static IPAddress GetIPEndPointAddress (IPEndPoint endPoint)
 		{
 			if (endPoint == null)
 			{
 				throw new ArgumentNullException (nameof (endPoint));
 			}
+
 			Contract.EndContractBlock ();
 
 			return endPoint.Address;
@@ -50,6 +51,7 @@ namespace Novartment.Base.Net
 			{
 				throw new ArgumentNullException (nameof (endPoint));
 			}
+
 			Contract.EndContractBlock ();
 
 			return endPoint.Port;

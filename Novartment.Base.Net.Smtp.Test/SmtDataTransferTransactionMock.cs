@@ -63,6 +63,7 @@ namespace Novartment.Base.Smtp.Test
 			{
 				throw new OverflowException ();
 			}
+
 			if ((returnPath == _forbiddenReversePath) && (_forbiddenReversePath != null))
 			{
 				throw new UnacceptableSmtpMailboxException (returnPath);
@@ -87,6 +88,7 @@ namespace Novartment.Base.Smtp.Test
 			{
 				throw new OverflowException ();
 			}
+
 			if (recipient == _forbiddenRecipient)
 			{
 				return RecipientAcceptanceState.FailureMailboxUnavailable;
@@ -102,6 +104,7 @@ namespace Novartment.Base.Smtp.Test
 				}
 				throw new InvalidOperationException ();
 			}
+
 			return RecipientAcceptanceState.Success;
 		}
 
@@ -111,10 +114,12 @@ namespace Novartment.Base.Smtp.Test
 			{
 				throw new InvalidOperationException ();
 			}
+
 			if (_transactionBehavior == TransactionBehavior.FailProcessData)
 			{
 				throw new OverflowException ();
 			}
+
 			if (_transactionBehavior == TransactionBehavior.SlowProcessData)
 			{
 				_slowOperationInProgressEvent.Set ();

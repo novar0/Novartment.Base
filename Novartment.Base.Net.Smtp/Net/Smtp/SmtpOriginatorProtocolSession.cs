@@ -1,32 +1,61 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
-using System.Text;
 using System.Net;
 using System.Net.Sockets;
 using System.Security;
 using System.Security.Cryptography.X509Certificates;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Diagnostics.CodeAnalysis;
-using Novartment.Base.Collections;
 using Novartment.Base.BinaryStreaming;
+using Novartment.Base.Collections;
 
 namespace Novartment.Base.Net.Smtp
 {
 	internal class SmtpOriginatorProtocolSession :
 		IDisposable
 	{
-		private readonly ISmtpCommandReplyConnectionSenderReceiver _sender;
+		private readonly ISmtpCommandTransport _sender;
 		private readonly AvlHashTreeSet<string> _serverSupportedExtensions = new AvlHashTreeSet<string> (StringComparer.OrdinalIgnoreCase);
 		private readonly string _hostFqdn;
 		private int _completed = 0;
 
-		internal IReadOnlyFiniteSet<string> ServerSupportedExtensions => _serverSupportedExtensions;
-
-		internal SmtpOriginatorProtocolSession (ISmtpCommandReplyConnectionSenderReceiver sender, string hostFqdn)
+		internal SmtpOriginatorProtocolSession (ISmtpCommandTransport sender, string hostFqdn)
 		{
 			_sender = sender;
 			_hostFqdn = hostFqdn ?? "anonym";
+		}
+
+		internal IReadOnlyFiniteSet<string> ServerSupportedExtensions => _serverSupportedExtensions;
+
+		[SuppressMessage (
+			"Microsoft.Globalization",
+			"CA1303:Do not pass literals as localized parameters",
+			MessageId = "Novartment.Base.ILogWriter.Trace(System.String)",
+			Justification = "String is not exposed to the end user and will not be localized.")]
+		public void Dispose ()
+		{
+			var oldValue = Interlocked.Exchange (ref _completed, 1);
+			if (oldValue == 0)
+			{
+				try
+				{
+					_sender.SendCommandAsync (SmtpCommand.Quit, CancellationToken.None).Wait ();
+				}
+				catch (ObjectDisposedException)
+				{
+				}
+				catch (InvalidOperationException)
+				{
+				}
+				catch (IOException)
+				{
+				}
+				catch (SocketException)
+				{
+				}
+			}
 		}
 
 		internal async Task ReceiveGreetingAndStartAsync (CancellationToken cancellationToken)
@@ -37,42 +66,8 @@ namespace Novartment.Base.Net.Smtp
 			{
 				throw new InvalidOperationException (string.Join ("\r\n", greeting.Text));
 			}
-			await StartAsync (cancellationToken).ConfigureAwait (false);
-		}
 
-		private async Task StartAsync (CancellationToken cancellationToken)
-		{
-			// посылаем приветственную команду EHLO
-			_serverSupportedExtensions.Clear ();
-			var reply = await ProcessCommandAsync (new SmtpEhloCommand (_hostFqdn), cancellationToken).ConfigureAwait (false);
-			if (reply.IsPositive)
-			{
-				foreach (var extension in reply.Text)
-				{
-					var isOK = "OK".Equals (extension, StringComparison.OrdinalIgnoreCase);
-					if (!isOK)
-					{
-						_serverSupportedExtensions.Add (extension);
-					}
-				}
-			}
-			else
-			{
-				// RFC 5321 part 4.1.4:
-				// If the EHLO command is not acceptable to the SMTP server,
-				// 501, 500, 502, or 550 failure replies MUST be returned as appropriate.
-				var needRepeatGreetWithHelo = (reply.Code == 500) || (reply.Code == 501) || (reply.Code == 502) || (reply.Code == 550);
-				if (!needRepeatGreetWithHelo)
-				{
-					throw new InvalidOperationException (string.Join ("\r\n", reply.Text));
-				}
-				// если сервер не понял EHLO, посылаем HELO
-				reply = await ProcessCommandAsync (new SmtpHeloCommand (_hostFqdn), cancellationToken).ConfigureAwait (false);
-				if (!reply.IsPositive)
-				{
-					throw new InvalidOperationException (string.Join ("\r\n", reply.Text));
-				}
-			}
+			await StartAsync (cancellationToken).ConfigureAwait (false);
 		}
 
 		internal async Task RestartWithTlsAsync (X509CertificateCollection clientCertificates, CancellationToken cancellationToken)
@@ -82,11 +77,13 @@ namespace Novartment.Base.Net.Smtp
 			{
 				throw new InvalidOperationException ("Remote host not supports TLS.");
 			}
+
 			var reply = await ProcessCommandAsync (SmtpCommand.StartTls, cancellationToken).ConfigureAwait (false);
 			if (!reply.IsPositive)
 			{
 				throw new InvalidOperationException ("Remote host does not agreed to start TLS.");
 			}
+
 			try
 			{
 				await _sender.StartTlsClientAsync (clientCertificates).ConfigureAwait (false);
@@ -117,10 +114,11 @@ namespace Novartment.Base.Net.Smtp
 			{
 				throw new InvalidOperationException ("Remote host not supports PLAIN authentification.");
 			}
+
 			// TODO: брать имя/пароль у IMailTransactionOriginator
 			string login = credential.UserName;
 			string password = credential.Password;
-			var buf = new byte[(login.Length + password.Length) * 4 + 2]; // max 4 byte for one char + 2 null-chars
+			var buf = new byte[((login.Length + password.Length) * 4) + 2]; // max 4 byte for one char + 2 null-chars
 			var idx = 0;
 			buf[idx++] = 0;
 			idx += Encoding.UTF8.GetBytes (login, 0, login.Length, buf, idx);
@@ -155,10 +153,13 @@ namespace Novartment.Base.Net.Smtp
 							{
 								return true;
 							}
+
 							startIdx = idx + 1;
 						}
+
 						idx++;
 					}
+
 					var mechanism2 = extension.Substring (startIdx, idx - startIdx);
 					var isMechanism2Plain = "PLAIN".Equals (mechanism2, StringComparison.OrdinalIgnoreCase);
 					if (isMechanism2Plain)
@@ -167,6 +168,7 @@ namespace Novartment.Base.Net.Smtp
 					}
 				}
 			}
+
 			return false;
 		}
 
@@ -191,6 +193,7 @@ namespace Novartment.Base.Net.Smtp
 						// игнорируем команду QUIT если работа уже завершена
 						return SmtpReply.OK;
 					}
+
 					await _sender.SendCommandAsync (command, cancellationToken).ConfigureAwait (false);
 					break;
 				case SmtpCommandType.NoCommand:
@@ -210,6 +213,7 @@ namespace Novartment.Base.Net.Smtp
 							FormattableString.Invariant ($"Source provided less data ({bdatCmd.Size - bdatCmd.Source.UnusedSize}) then specified ({bdatCmd.Size}). Appended {bdatCmd.Source.UnusedSize} bytes."),
 							excpt);
 					}
+
 					break;
 				case SmtpCommandType.ActualData:
 					var actualDataCmd = (SmtpActualDataCommand)command;
@@ -220,6 +224,7 @@ namespace Novartment.Base.Net.Smtp
 						// в данных встретился маркер конца данных, данные не дочитаны до конца
 						throw new UnrecoverableProtocolException ("Unexpected end-mark 'CRLF.CRLF' found in data. Data transfer incomplete.");
 					}
+
 					var endMarker = new byte[] { 0x0d, 0x0a, (byte)'.', 0x0d, 0x0a };
 					var endMarkerSrc = new ArrayBufferedSource (endMarker);
 					await _sender.SendBinaryAsync (endMarkerSrc, cancellationToken).ConfigureAwait (false);
@@ -232,31 +237,48 @@ namespace Novartment.Base.Net.Smtp
 			// получаем ответ
 			var reply = await _sender.ReceiveReplyAsync (cancellationToken).ConfigureAwait (false);
 
-			if (reply.Code == 421) // 421 Service not available, closing transmission channel
+			if (reply.Code == 421)
 			{
+				// 421 Service not available, closing transmission channel
 				_completed = 1; // соединение будет закрыто сервером, дальше слать команды бесполезно
 			}
 
 			return reply;
 		}
 
-		[SuppressMessage ("Microsoft.Globalization",
-			"CA1303:Do not pass literals as localized parameters",
-			MessageId = "Novartment.Base.ILogWriter.Trace(System.String)",
-			Justification = "String is not exposed to the end user and will not be localized.")]
-		public void Dispose ()
+		private async Task StartAsync (CancellationToken cancellationToken)
 		{
-			var oldValue = Interlocked.Exchange (ref _completed, 1);
-			if (oldValue == 0)
+			// посылаем приветственную команду EHLO
+			_serverSupportedExtensions.Clear ();
+			var reply = await ProcessCommandAsync (new SmtpEhloCommand (_hostFqdn), cancellationToken).ConfigureAwait (false);
+			if (reply.IsPositive)
 			{
-				try
+				foreach (var extension in reply.Text)
 				{
-					_sender.SendCommandAsync (SmtpCommand.Quit, CancellationToken.None).Wait ();
+					var isOK = "OK".Equals (extension, StringComparison.OrdinalIgnoreCase);
+					if (!isOK)
+					{
+						_serverSupportedExtensions.Add (extension);
+					}
 				}
-				catch (ObjectDisposedException) { }
-				catch (InvalidOperationException) { }
-				catch (IOException) { }
-				catch (SocketException) { }
+			}
+			else
+			{
+				// RFC 5321 part 4.1.4:
+				// If the EHLO command is not acceptable to the SMTP server,
+				// 501, 500, 502, or 550 failure replies MUST be returned as appropriate.
+				var needRepeatGreetWithHelo = (reply.Code == 500) || (reply.Code == 501) || (reply.Code == 502) || (reply.Code == 550);
+				if (!needRepeatGreetWithHelo)
+				{
+					throw new InvalidOperationException (string.Join ("\r\n", reply.Text));
+				}
+
+				// если сервер не понял EHLO, посылаем HELO
+				reply = await ProcessCommandAsync (new SmtpHeloCommand (_hostFqdn), cancellationToken).ConfigureAwait (false);
+				if (!reply.IsPositive)
+				{
+					throw new InvalidOperationException (string.Join ("\r\n", reply.Text));
+				}
 			}
 		}
 	}

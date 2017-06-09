@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Text;
 using System.Diagnostics.Contracts;
+using System.Text;
 using Novartment.Base.Text;
 
 namespace Novartment.Base.Net.Mime
@@ -23,6 +23,7 @@ namespace Novartment.Base.Net.Mime
 			{
 				throw new ArgumentNullException (nameof (encoding));
 			}
+
 			Contract.EndContractBlock ();
 
 			_encoding = encoding;
@@ -43,10 +44,12 @@ namespace Novartment.Base.Net.Mime
 			{
 				throw new ArgumentNullException (nameof (source));
 			}
+
 			if ((offset < 0) || (offset > source.Length) || ((offset == source.Length) && (count > 0)))
 			{
 				throw new ArgumentOutOfRangeException (nameof (offset));
 			}
+
 			Contract.EndContractBlock ();
 
 			return offset;
@@ -69,18 +72,22 @@ namespace Novartment.Base.Net.Mime
 			{
 				throw new ArgumentNullException (nameof (source));
 			}
+
 			if ((offset < 0) || (offset > source.Length) || ((offset == source.Length) && (count > 0)))
 			{
 				throw new ArgumentOutOfRangeException (nameof (offset));
 			}
+
 			if ((count < 0) || (count > source.Length))
 			{
 				throw new ArgumentOutOfRangeException (nameof (count));
 			}
+
 			if (maxOutCount < 0)
 			{
 				throw new ArgumentOutOfRangeException (nameof (maxOutCount));
 			}
+
 			Contract.EndContractBlock ();
 
 			int srcPos = 0;
@@ -89,6 +96,7 @@ namespace Novartment.Base.Net.Mime
 			{ // ничего кроме пролога не влезет
 				return new EncodingBalance (0, 0);
 			}
+
 			while ((srcPos < count) && (dstPos < maxOutCount))
 			{
 				var c = source[offset + srcPos];
@@ -99,14 +107,17 @@ namespace Novartment.Base.Net.Mime
 					{
 						break;
 					}
+
 					dstPos += 3; // знак процента вместо символа, потом два шест.знака
 				}
 				else
 				{
 					dstPos++;
 				}
+
 				srcPos++;
 			}
+
 			return new EncodingBalance (dstPos, srcPos);
 		}
 
@@ -124,34 +135,45 @@ namespace Novartment.Base.Net.Mime
 		/// <returns>Кортеж из количества байтов, записанных в массив для результата кодирования и
 		/// количества байтов источника, которое было использовано для кодирования.</returns>
 		public EncodingBalance Encode (
-			byte[] source, int offset, int count,
-			byte[] destination, int outOffset, int maxOutCount,
-			int segmentNumber, bool isLastSegment)
+			byte[] source,
+			int offset,
+			int count,
+			byte[] destination,
+			int outOffset,
+			int maxOutCount,
+			int segmentNumber,
+			bool isLastSegment)
 		{
 			if (source == null)
 			{
 				throw new ArgumentNullException (nameof (source));
 			}
+
 			if ((offset < 0) || (offset > source.Length) || ((offset == source.Length) && (count > 0)))
 			{
 				throw new ArgumentOutOfRangeException (nameof (offset));
 			}
+
 			if ((count < 0) || (count > source.Length))
 			{
 				throw new ArgumentOutOfRangeException (nameof (count));
 			}
+
 			if (destination == null)
 			{
 				throw new ArgumentNullException (nameof (destination));
 			}
+
 			if ((outOffset < 0) || (outOffset > destination.Length) || ((outOffset == destination.Length) && (maxOutCount > 0)))
 			{
 				throw new ArgumentOutOfRangeException (nameof (outOffset));
 			}
+
 			if ((maxOutCount < 0) || (maxOutCount > destination.Length))
 			{
 				throw new ArgumentOutOfRangeException (nameof (maxOutCount));
 			}
+
 			Contract.EndContractBlock ();
 
 			var outStartOffset = outOffset;
@@ -160,6 +182,7 @@ namespace Novartment.Base.Net.Mime
 			{ // ничего кроме пролога не влезет
 				return new EncodingBalance (0, 0);
 			}
+
 			if (segmentNumber == 0)
 			{
 				AsciiCharSet.GetBytes (encodingName, 0, encodingName.Length, destination, outOffset);
@@ -167,6 +190,7 @@ namespace Novartment.Base.Net.Mime
 				destination[outOffset++] = (byte)'\'';
 				destination[outOffset++] = (byte)'\'';
 			}
+
 			int srcPos = 0;
 			while ((srcPos < count) && ((outOffset - outStartOffset) < maxOutCount))
 			{
@@ -179,6 +203,7 @@ namespace Novartment.Base.Net.Mime
 					{
 						break;
 					}
+
 					destination[outOffset++] = (byte)'%';
 					var hex = Hex.OctetsUpper[c];
 					destination[outOffset++] = (byte)hex[0];
@@ -188,8 +213,10 @@ namespace Novartment.Base.Net.Mime
 				{
 					destination[outOffset++] = c;
 				}
+
 				srcPos++;
 			}
+
 			return new EncodingBalance (outOffset - outStartOffset, srcPos);
 		}
 	}

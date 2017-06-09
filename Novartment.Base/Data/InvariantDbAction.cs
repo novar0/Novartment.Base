@@ -1,11 +1,11 @@
 ﻿using System;
-using Novartment.Base.Collections;
-using Novartment.Base.Collections.Linq;
 using System.Data;
 using System.Data.Common;
-using System.Globalization;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
+using System.Globalization;
+using Novartment.Base.Collections;
+using Novartment.Base.Collections.Linq;
 
 namespace Novartment.Base.Data
 {
@@ -26,7 +26,8 @@ namespace Novartment.Base.Data
 		/// </summary>
 		/// <param name="connectionManager">IDbConnectionManager.</param>
 		/// <param name="logger">Опциональный объект-журнал для записей о событиях. Укажите null если не требуется.</param>
-		[SuppressMessage ("Microsoft.Design",
+		[SuppressMessage (
+		"Microsoft.Design",
 			"CA1026:DefaultParametersShouldNotBeUsed",
 			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
 		public InvariantDbAction (IDbConnectionManager connectionManager, ILogWriter logger = null)
@@ -35,6 +36,7 @@ namespace Novartment.Base.Data
 			{
 				throw new ArgumentNullException (nameof (connectionManager));
 			}
+
 			Contract.EndContractBlock ();
 
 			_connectionManager = connectionManager;
@@ -58,6 +60,7 @@ namespace Novartment.Base.Data
 			{
 				throw new ArgumentNullException (nameof (name));
 			}
+
 			Contract.EndContractBlock ();
 
 			_parameters.Add (new InvariantDbCommandParameter (name, value));
@@ -74,6 +77,7 @@ namespace Novartment.Base.Data
 			{
 				throw new ArgumentNullException (nameof (name));
 			}
+
 			Contract.EndContractBlock ();
 
 			if ((value != null) && (value != DBNull.Value))
@@ -93,12 +97,14 @@ namespace Novartment.Base.Data
 			{
 				throw new ArgumentNullException (nameof (name));
 			}
+
 			Contract.EndContractBlock ();
 
 			if ((value == null) || (value == DBNull.Value))
 			{
 				throw new ArgumentOutOfRangeException (nameof (value));
 			}
+
 			_keyParameters.Add (new InvariantDbCommandParameter (name, value));
 		}
 
@@ -111,8 +117,9 @@ namespace Novartment.Base.Data
 		[SuppressMessage (
 			"Microsoft.Security",
 			"CA2100:Review SQL queries for security vulnerabilities",
-			Justification = "User-input variables only in parameters."),
-		SuppressMessage ("Microsoft.Design",
+			Justification = "User-input variables only in parameters.")]
+		[SuppressMessage (
+			"Microsoft.Design",
 			"CA1026:DefaultParametersShouldNotBeUsed",
 			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
 		public DisposableValueLinkedWithDbCommand<DbDataReader> SelectData (string tableName, string schemaName = null)
@@ -121,6 +128,7 @@ namespace Novartment.Base.Data
 			{
 				throw new ArgumentNullException (nameof (tableName));
 			}
+
 			Contract.EndContractBlock ();
 
 			var dbCommand = _connectionManager.CreateCommand (_parameters, false);
@@ -135,6 +143,7 @@ namespace Novartment.Base.Data
 			{
 				cmdText = "SELECT * FROM " + _connectionManager.FormatObjectName (tableName, schemaName);
 			}
+
 			_logger?.Trace (FormattableString.Invariant ($"Executing: {cmdText}"));
 			dbCommand.CommandText = cmdText;
 			var reader = dbCommand.ExecuteReader ();
@@ -150,8 +159,9 @@ namespace Novartment.Base.Data
 		[SuppressMessage (
 			"Microsoft.Security",
 			"CA2100:Review SQL queries for security vulnerabilities",
-			Justification = "User-input variables only in parameters."),
-		SuppressMessage ("Microsoft.Design",
+			Justification = "User-input variables only in parameters.")]
+		[SuppressMessage (
+			"Microsoft.Design",
 			"CA1026:DefaultParametersShouldNotBeUsed",
 			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
 		public object Insert (string tableName, string schemaName = null)
@@ -160,6 +170,7 @@ namespace Novartment.Base.Data
 			{
 				throw new ArgumentNullException (nameof (tableName));
 			}
+
 			Contract.EndContractBlock ();
 
 			if ((_parameters.Count == 0) && (_keyParameters.Count == 0))
@@ -170,17 +181,17 @@ namespace Novartment.Base.Data
 			using (var dbCommand = _connectionManager.CreateCommand (_keyParameters.Concat (_parameters).Concat (_plusParameters), false))
 			{
 				dbCommand.CommandTimeout = this.CommandTimeout;
-				var columnList = string.Join (",",
+				var columnList = string.Join (
+					",",
 					_keyParameters.Select (param => _connectionManager.FormatObjectName (param.Name))
 					.Concat (_parameters.Select (param => _connectionManager.FormatObjectName (param.Name)))
-					.Concat (_plusParameters.Select (param => _connectionManager.FormatObjectName (param.Name)))
-					);
+					.Concat (_plusParameters.Select (param => _connectionManager.FormatObjectName (param.Name))));
 
-				var valueList = string.Join (",",
+				var valueList = string.Join (
+					",",
 					_keyParameters.Select (param => param.Placeholder)
 					.Concat (_parameters.Select (param => param.Placeholder))
-					.Concat (_plusParameters.Select (param => param.Placeholder))
-					);
+					.Concat (_plusParameters.Select (param => param.Placeholder)));
 
 				var cmdText = "INSERT INTO " + _connectionManager.FormatObjectName (tableName, schemaName) + " (" + columnList + ") VALUES (" + valueList + ")";
 				_logger?.Trace (FormattableString.Invariant ($"Executing: {cmdText}"));
@@ -198,8 +209,9 @@ namespace Novartment.Base.Data
 		[SuppressMessage (
 			"Microsoft.Security",
 			"CA2100:Review SQL queries for security vulnerabilities",
-			Justification = "User-input variables only in parameters."),
-		SuppressMessage ("Microsoft.Design",
+			Justification = "User-input variables only in parameters.")]
+		[SuppressMessage (
+			"Microsoft.Design",
 			"CA1026:DefaultParametersShouldNotBeUsed",
 			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
 		public void Update (string tableName, string schemaName = null)
@@ -208,6 +220,7 @@ namespace Novartment.Base.Data
 			{
 				throw new ArgumentNullException (nameof (tableName));
 			}
+
 			Contract.EndContractBlock ();
 
 			if ((_parameters.Count + _plusParameters.Count) == 0)
@@ -218,14 +231,14 @@ namespace Novartment.Base.Data
 			using (var dbCommand = _connectionManager.CreateCommand (_parameters.Concat (_plusParameters).Concat (_keyParameters), false))
 			{
 				dbCommand.CommandTimeout = this.CommandTimeout;
-				var columnList = string.Join (",",
+				var columnList = string.Join (
+					",",
 					_parameters.Select (param => _connectionManager.FormatObjectName (param.Name) + "=" + param.Placeholder)
-					.Concat (_plusParameters.Select (param => _connectionManager.FormatObjectName (param.Name) + "=" + _connectionManager.FormatObjectName (param.Name) + "+" + param.Placeholder))
-					);
+					.Concat (_plusParameters.Select (param => _connectionManager.FormatObjectName (param.Name) + "=" + _connectionManager.FormatObjectName (param.Name) + "+" + param.Placeholder)));
 
-				var keyColumnList = string.Join (" AND ",
-					_keyParameters.Select (param => _connectionManager.FormatObjectName (param.Name) + "=" + param.Placeholder)
-					);
+				var keyColumnList = string.Join (
+					" AND ",
+					_keyParameters.Select (param => _connectionManager.FormatObjectName (param.Name) + "=" + param.Placeholder));
 
 				var cmdText = "UPDATE " + _connectionManager.FormatObjectName (tableName, schemaName) + " SET " + columnList + " WHERE " + keyColumnList;
 				_logger?.Trace (FormattableString.Invariant ($"Executing: {cmdText}"));
@@ -240,7 +253,8 @@ namespace Novartment.Base.Data
 		/// <param name="tableName">Имя таблицы.</param>
 		/// <param name="schemaName">Имя схемы. Укажите null если схему указывать не нужно.</param>
 		/// <returns>Уникальный идентификатор, присвоенный вставленной записи.</returns>
-		[SuppressMessage ("Microsoft.Design",
+		[SuppressMessage (
+			"Microsoft.Design",
 			"CA1026:DefaultParametersShouldNotBeUsed",
 			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
 		public object UpdateInsert (string tableName, string schemaName = null)
@@ -249,20 +263,24 @@ namespace Novartment.Base.Data
 			{
 				throw new ArgumentNullException (nameof (tableName));
 			}
+
 			Contract.EndContractBlock ();
 
 			if (_keyParameters.Count == 0)
 			{
 				return null;
 			}
+
 			// неизвестно какой тип вернёт SelectCount, поэтому конвертируем его в максимально ёмкий тип double
 			var existingRowsCount = Convert.ToDouble (SelectCount (tableName, schemaName), CultureInfo.InvariantCulture);
+
 			// double нельзя сравнивать с точным значением (x == 0), поэтому сравниваем чтобы было меньше пограничного значения
 			if (existingRowsCount < 0.5d)
 			{
 				Insert (tableName, schemaName); // надо вставлять
 				return _connectionManager.GetLastIdentityValue ();
 			}
+
 			Update (tableName, schemaName); // надо обновить
 			return null;
 		}
@@ -276,8 +294,9 @@ namespace Novartment.Base.Data
 		[SuppressMessage (
 			"Microsoft.Security",
 			"CA2100:Review SQL queries for security vulnerabilities",
-			Justification = "User-input variables only in parameters."),
-		SuppressMessage ("Microsoft.Design",
+			Justification = "User-input variables only in parameters.")]
+		[SuppressMessage (
+			"Microsoft.Design",
 			"CA1026:DefaultParametersShouldNotBeUsed",
 			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
 		public object SelectCount (string tableName, string schemaName = null)
@@ -286,16 +305,17 @@ namespace Novartment.Base.Data
 			{
 				throw new ArgumentNullException (nameof (tableName));
 			}
+
 			Contract.EndContractBlock ();
 
 			using (var dbCommand = _connectionManager.CreateCommand (_keyParameters, false))
 			{
 				dbCommand.CommandTimeout = this.CommandTimeout;
-				var columnList = string.Join (" AND ",
-					_keyParameters.Select (param => _connectionManager.FormatObjectName (param.Name) + "=" + param.Placeholder)
-					);
+				var columnList = string.Join (
+					" AND ",
+					_keyParameters.Select (param => _connectionManager.FormatObjectName (param.Name) + "=" + param.Placeholder));
 
-				var cmdText ="SELECT COUNT(*) FROM " + _connectionManager.FormatObjectName (tableName, schemaName) + " WHERE " + columnList;
+				var cmdText = "SELECT COUNT(*) FROM " + _connectionManager.FormatObjectName (tableName, schemaName) + " WHERE " + columnList;
 				_logger?.Trace (FormattableString.Invariant ($"Executing: {cmdText}"));
 				dbCommand.CommandText = cmdText;
 				return dbCommand.ExecuteScalar ();
@@ -310,8 +330,9 @@ namespace Novartment.Base.Data
 		[SuppressMessage (
 			"Microsoft.Security",
 			"CA2100:Review SQL queries for security vulnerabilities",
-			Justification = "User-input variables only in parameters."),
-		SuppressMessage ("Microsoft.Design",
+			Justification = "User-input variables only in parameters.")]
+		[SuppressMessage (
+			"Microsoft.Design",
 			"CA1026:DefaultParametersShouldNotBeUsed",
 			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
 		public void Delete (string tableName, string schemaName = null)
@@ -320,6 +341,7 @@ namespace Novartment.Base.Data
 			{
 				throw new ArgumentNullException (nameof (tableName));
 			}
+
 			Contract.EndContractBlock ();
 
 			if (_keyParameters.Count == 0)
@@ -330,9 +352,9 @@ namespace Novartment.Base.Data
 			using (var dbCommand = _connectionManager.CreateCommand (_keyParameters, false))
 			{
 				dbCommand.CommandTimeout = this.CommandTimeout;
-				var columnList = string.Join (" AND ",
-					_keyParameters.Select (param => _connectionManager.FormatObjectName (param.Name) + "=" + param.Placeholder)
-					);
+				var columnList = string.Join (
+					" AND ",
+					_keyParameters.Select (param => _connectionManager.FormatObjectName (param.Name) + "=" + param.Placeholder));
 
 				var cmdText = "DELETE " + _connectionManager.FormatObjectName (tableName, schemaName) + " WHERE " + columnList;
 				_logger?.Trace (FormattableString.Invariant ($"Executing: {cmdText}"));
@@ -349,8 +371,9 @@ namespace Novartment.Base.Data
 		[SuppressMessage (
 			"Microsoft.Security",
 			"CA2100:Review SQL queries for security vulnerabilities",
-			Justification = "User-input variables only in parameters."),
-		SuppressMessage ("Microsoft.Design",
+			Justification = "User-input variables only in parameters.")]
+		[SuppressMessage (
+			"Microsoft.Design",
 			"CA1026:DefaultParametersShouldNotBeUsed",
 			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
 		public void ExecuteProcedure (string procedureName, string schemaName = null)
@@ -359,6 +382,7 @@ namespace Novartment.Base.Data
 			{
 				throw new ArgumentNullException (nameof (procedureName));
 			}
+
 			Contract.EndContractBlock ();
 
 			_logger?.Trace (FormattableString.Invariant ($"Executing procedure: {procedureName}"));
@@ -380,8 +404,9 @@ namespace Novartment.Base.Data
 		[SuppressMessage (
 			"Microsoft.Security",
 			"CA2100:Review SQL queries for security vulnerabilities",
-			Justification = "User-input variables only in parameters."),
-		SuppressMessage ("Microsoft.Design",
+			Justification = "User-input variables only in parameters.")]
+		[SuppressMessage (
+			"Microsoft.Design",
 			"CA1026:DefaultParametersShouldNotBeUsed",
 			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
 		public DisposableValueLinkedWithDbCommand<DbDataReader> ExecuteSelectProcedure (string procedureName, string schemaName = null)
@@ -390,6 +415,7 @@ namespace Novartment.Base.Data
 			{
 				throw new ArgumentNullException (nameof (procedureName));
 			}
+
 			Contract.EndContractBlock ();
 
 			_logger?.Trace (FormattableString.Invariant ($"Executing procedure: {procedureName}"));
@@ -417,6 +443,7 @@ namespace Novartment.Base.Data
 			{
 				throw new ArgumentNullException (nameof (functionName));
 			}
+
 			Contract.EndContractBlock ();
 
 			_logger?.Trace (FormattableString.Invariant ($"Executing function: {functionName}"));

@@ -1,7 +1,7 @@
-﻿using System.Net;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Diagnostics.CodeAnalysis;
 
 namespace Novartment.Base.Net
 {
@@ -28,7 +28,8 @@ namespace Novartment.Base.Net
 		/// <summary>
 		/// Останавливает прослушивание.
 		/// </summary>
-		[SuppressMessage ("Microsoft.Naming",
+		[SuppressMessage (
+		"Microsoft.Naming",
 			"CA1716:IdentifiersShouldNotMatchKeywords",
 			MessageId = "Stop",
 			Justification = "No other name could be applied because base System.Net.Sockets.TcpListener have method 'Stop()'.")]

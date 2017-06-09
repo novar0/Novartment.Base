@@ -77,6 +77,7 @@ namespace Novartment.Base.Net.Mime
 							}
 						}
 					}
+
 					break;
 				case ContentMediaType.Multipart:
 					var isDigest = MultipartMediaSubtypeNames.Digest.Equals (contentProperties.Subtype, StringComparison.OrdinalIgnoreCase);
@@ -90,6 +91,7 @@ namespace Novartment.Base.Net.Mime
 							new ReportEntityBody (reportType, boundary) :
 							new CompositeEntityBody (boundary);
 					}
+
 					break;
 			}
 

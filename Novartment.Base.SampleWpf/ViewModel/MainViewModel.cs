@@ -128,6 +128,7 @@ namespace Novartment.Base.SampleWpf
 					result = DragDropAction.Drop;
 				}
 			}
+
 			return result;
 		}
 
@@ -155,14 +156,17 @@ namespace Novartment.Base.SampleWpf
 			{
 				return DragDropEffects.Link;
 			}
+
 			if (((keyStates & DragDropKeyStates.ControlKey) == DragDropKeyStates.ControlKey) && ((allowedEffects & DragDropEffects.Copy) == DragDropEffects.Copy))
 			{
 				return DragDropEffects.Copy;
 			}
+
 			if ((allowedEffects & DragDropEffects.Move) == DragDropEffects.Move)
 			{
 				return DragDropEffects.Move;
 			}
+
 			return DragDropEffects.None;
 		}
 
@@ -172,14 +176,17 @@ namespace Novartment.Base.SampleWpf
 			{
 				return DragDropEffects.Link;
 			}
+
 			if (((keyStates & DragDropKeyStates.ControlKey) == DragDropKeyStates.ControlKey) && ((allowedEffects & DragDropEffects.Copy) == DragDropEffects.Copy))
 			{
 				return DragDropEffects.Copy;
 			}
+
 			if ((allowedEffects & DragDropEffects.Move) == DragDropEffects.Move)
 			{
 				return DragDropEffects.Move;
 			}
+
 			return DragDropEffects.None;
 		}
 
@@ -201,14 +208,17 @@ namespace Novartment.Base.SampleWpf
 			{
 				return DragDropEffects.Link;
 			}
+
 			if (((keyStates & DragDropKeyStates.ControlKey) == DragDropKeyStates.ControlKey) && ((allowedEffects & DragDropEffects.Copy) == DragDropEffects.Copy))
 			{
 				return DragDropEffects.Copy;
 			}
+
 			if ((allowedEffects & DragDropEffects.Move) == DragDropEffects.Move)
 			{
 				return DragDropEffects.Move;
 			}
+
 			return DragDropEffects.None;
 		}
 

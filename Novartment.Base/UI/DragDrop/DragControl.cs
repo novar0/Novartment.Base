@@ -1,5 +1,4 @@
-﻿
-namespace Novartment.Base.UI
+﻿namespace Novartment.Base.UI
 {
 	/// <summary>
 	/// Орган управления, использованный при перетаскивании.

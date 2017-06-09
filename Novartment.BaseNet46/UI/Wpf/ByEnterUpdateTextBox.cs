@@ -1,5 +1,5 @@
-﻿using System.Windows.Input;
-using System.Windows.Controls;
+﻿using System.Windows.Controls;
+using System.Windows.Input;
 
 namespace Novartment.Base.UI.Wpf
 {
@@ -14,6 +14,7 @@ namespace Novartment.Base.UI.Wpf
 			{
 				GetBindingExpression (TextProperty)?.UpdateSource ();
 			}
+
 			base.OnPreviewKeyDown (e);
 		}
 	}

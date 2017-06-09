@@ -1,8 +1,8 @@
 ﻿using System;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Diagnostics;
 using System.Diagnostics.Contracts;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Novartment.Base.BinaryStreaming
 {
@@ -17,6 +17,23 @@ namespace Novartment.Base.BinaryStreaming
 	{
 		private readonly IBufferedSource _source;
 		private int _partValidatedLength = 0;
+
+		/// <summary>
+		/// Инициализирует новый экземпляр EvaluatorPartitionedBufferedSourceBase получающий данные из указанного IBufferedSource
+		/// разделяя его по результатам вызова указанной функции.
+		/// </summary>
+		/// <param name="source">Источник данных.</param>
+		protected EvaluatorPartitionedBufferedSourceBase(IBufferedSource source)
+		{
+			if (source == null)
+			{
+				throw new ArgumentNullException(nameof(source));
+			}
+
+			Contract.EndContractBlock();
+
+			_source = source;
+		}
 
 		/// <summary>
 		/// Получает буфер, в котором содержится некоторая часть данных источника.
@@ -55,33 +72,6 @@ namespace Novartment.Base.BinaryStreaming
 		/// </summary>
 		protected abstract int PartEpilogueSize { get; }
 
-		/// <summary>
-		/// В наследованном классе проверяет данные на принадлежность к одной части.
-		/// Также обновляет свойства IsEndOfPartFound и PartEpilogueSize.
-		/// </summary>
-		/// <param name="validatedPartLength">
-		/// Размер уже проверенных данных,
-		/// которые указаны как принадлежащие одной части в предыдущих вызовах.
-		/// </param>
-		/// <returns>Размер данных в буфере, которые принадлежат одной части.</returns>
-		protected abstract int ValidatePartData (int validatedPartLength);
-
-		/// <summary>
-		/// Инициализирует новый экземпляр EvaluatorPartitionedBufferedSourceBase получающий данные из указанного IBufferedSource
-		/// разделяя его по результатам вызова указанной функции.
-		/// </summary>
-		/// <param name="source">Источник данных.</param>
-		protected EvaluatorPartitionedBufferedSourceBase (IBufferedSource source)
-		{
-			if (source == null)
-			{
-				throw new ArgumentNullException (nameof (source));
-			}
-			Contract.EndContractBlock ();
-
-			_source = source;
-		}
-
 		/// <summary>Отбрасывает (пропускает) указанное количество данных из начала буфера.</summary>
 		/// <param name="size">Размер данных для пропуска в начале буфера.
 		/// Должен быть меньше чем размер данных в буфере.</param>
@@ -91,6 +81,7 @@ namespace Novartment.Base.BinaryStreaming
 			{
 				throw new ArgumentOutOfRangeException (nameof (size));
 			}
+
 			Contract.EndContractBlock ();
 
 			if (size > 0)
@@ -125,12 +116,14 @@ namespace Novartment.Base.BinaryStreaming
 		/// </summary>
 		/// <param name="size">Требуемый размер данных в буфере.</param>
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
+		/// <returns>Задача, представляющая операцию.</returns>
 		public Task EnsureBufferAsync (int size, CancellationToken cancellationToken)
 		{
 			if ((size < 0) || (size > this.Buffer.Length))
 			{
 				throw new ArgumentOutOfRangeException (nameof (size));
 			}
+
 			Contract.EndContractBlock ();
 
 			if ((size <= _partValidatedLength) || this.IsEndOfPartFound || _source.IsExhausted)
@@ -139,21 +132,24 @@ namespace Novartment.Base.BinaryStreaming
 				{
 					throw new NotEnoughDataException (size - _partValidatedLength);
 				}
+
 				return Task.CompletedTask;
 			}
-			return EnsureBufferAsyncStateMachine (size, cancellationToken);
-		}
 
-		private async Task EnsureBufferAsyncStateMachine (int size, CancellationToken cancellationToken)
-		{
-			while ((size > _partValidatedLength) && !_source.IsExhausted)
+			return EnsureBufferAsyncStateMachine ();
+
+			async Task EnsureBufferAsyncStateMachine ()
 			{
-				await _source.FillBufferAsync (cancellationToken).ConfigureAwait (false);
-				_partValidatedLength = ValidatePartData (_partValidatedLength);
-			}
-			if (size > _partValidatedLength)
-			{
-				throw new NotEnoughDataException (size - _partValidatedLength);
+				while ((size > _partValidatedLength) && !_source.IsExhausted)
+				{
+					await _source.FillBufferAsync (cancellationToken).ConfigureAwait (false);
+					_partValidatedLength = ValidatePartData (_partValidatedLength);
+				}
+
+				if (size > _partValidatedLength)
+				{
+					throw new NotEnoughDataException (size - _partValidatedLength);
+				}
 			}
 		}
 
@@ -182,6 +178,7 @@ namespace Novartment.Base.BinaryStreaming
 				{
 					SkipBuffer (_partValidatedLength);
 				}
+
 				await FillBufferAsync (cancellationToken).ConfigureAwait (false);
 				if ((_partValidatedLength <= 0) && !this.IsEndOfPartFound)
 				{
@@ -203,5 +200,16 @@ namespace Novartment.Base.BinaryStreaming
 
 			return true;
 		}
+
+		/// <summary>
+		/// В наследованном классе проверяет данные на принадлежность к одной части.
+		/// Также обновляет свойства IsEndOfPartFound и PartEpilogueSize.
+		/// </summary>
+		/// <param name="validatedPartLength">
+		/// Размер уже проверенных данных,
+		/// которые указаны как принадлежащие одной части в предыдущих вызовах.
+		/// </param>
+		/// <returns>Размер данных в буфере, которые принадлежат одной части.</returns>
+		protected abstract int ValidatePartData (int validatedPartLength);
 	}
 }

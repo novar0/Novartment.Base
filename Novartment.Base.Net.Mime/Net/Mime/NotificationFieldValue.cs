@@ -17,16 +17,6 @@ namespace Novartment.Base.Net.Mime
 		// value = *text
 
 		/// <summary>
-		/// Получает тип значения поля.
-		/// </summary>
-		public NotificationFieldValueKind Kind { get; }
-
-		/// <summary>
-		/// Получает значение поля.
-		/// </summary>
-		public string Value { get; }
-
-		/// <summary>
 		/// Инициализирует новый экземпляр класса NotificationFieldValue с указанными типом и значением.
 		/// </summary>
 		/// <param name="kind">Тип значения поля.</param>
@@ -37,14 +27,52 @@ namespace Novartment.Base.Net.Mime
 			{
 				throw new ArgumentOutOfRangeException (nameof (kind));
 			}
+
 			if (value == null)
 			{
 				throw new ArgumentNullException (nameof (value));
 			}
+
 			Contract.EndContractBlock ();
 
 			this.Kind = kind;
 			this.Value = value;
+		}
+
+		/// <summary>
+		/// Получает тип значения поля.
+		/// </summary>
+		public NotificationFieldValueKind Kind { get; }
+
+		/// <summary>
+		/// Получает значение поля.
+		/// </summary>
+		public string Value { get; }
+
+		/// <summary>
+		/// Определяет равенство двух указанных объектов.
+		/// </summary>
+		/// <param name="first">Первый объект для сравнения.</param>
+		/// <param name="second">Второй объект для сравнения.</param>
+		/// <returns>True если значение параметра first равно second; в противном случае — False.</returns>
+		public static bool operator == (NotificationFieldValue first, NotificationFieldValue second)
+		{
+			return ReferenceEquals (first, null) ?
+				ReferenceEquals (second, null) :
+				first.Equals (second);
+		}
+
+		/// <summary>
+		/// Определяет неравенство двух указанных объектов.
+		/// </summary>
+		/// <param name="first">Первый объект для сравнения.</param>
+		/// <param name="second">Второй объект для сравнения.</param>
+		/// <returns>True если значение параметра first не равно second; в противном случае — False.</returns>
+		public static bool operator != (NotificationFieldValue first, NotificationFieldValue second)
+		{
+			return !(ReferenceEquals (first, null) ?
+				ReferenceEquals (second, null) :
+				first.Equals (second));
 		}
 
 		/// <summary>
@@ -58,6 +86,7 @@ namespace Novartment.Base.Net.Mime
 			{
 				throw new ArgumentOutOfRangeException (nameof (type));
 			}
+
 			Contract.EndContractBlock ();
 
 			return new NotificationFieldValue (type, this.Value);
@@ -74,6 +103,7 @@ namespace Novartment.Base.Net.Mime
 			{
 				throw new ArgumentNullException (nameof (value));
 			}
+
 			Contract.EndContractBlock ();
 
 			return new NotificationFieldValue (this.Kind, value);
@@ -118,32 +148,6 @@ namespace Novartment.Base.Net.Mime
 			return (other != null) &&
 			(this.Kind == other.Kind) &&
 			string.Equals (this.Value, other.Value, StringComparison.OrdinalIgnoreCase);
-		}
-
-		/// <summary>
-		/// Определяет равенство двух указанных объектов.
-		/// </summary>
-		/// <param name="first">Первый объект для сравнения.</param>
-		/// <param name="second">Второй объект для сравнения.</param>
-		/// <returns>True если значение параметра first равно second; в противном случае — False.</returns>
-		public static bool operator ==(NotificationFieldValue first, NotificationFieldValue second)
-		{
-			return ReferenceEquals (first, null) ?
-				ReferenceEquals (second, null) :
-				first.Equals (second);
-		}
-
-		/// <summary>
-		/// Определяет неравенство двух указанных объектов.
-		/// </summary>
-		/// <param name="first">Первый объект для сравнения.</param>
-		/// <param name="second">Второй объект для сравнения.</param>
-		/// <returns>True если значение параметра first не равно second; в противном случае — False.</returns>
-		public static bool operator !=(NotificationFieldValue first, NotificationFieldValue second)
-		{
-			return !(ReferenceEquals (first, null) ?
-				ReferenceEquals (second, null) :
-				first.Equals (second));
 		}
 	}
 }

@@ -9,21 +9,6 @@ namespace Novartment.Base.Net.Mime
 	/// </summary>
 	internal class MimeWordCollection
 	{
-		/// <summary>
-		/// Позиции первого символа слов.
-		/// </summary>
-		internal readonly int[] WordPositions;
-
-		/// <summary>
-		/// Признаки необходимости кодированного представления слова.
-		/// </summary>
-		internal readonly bool[] WordEncodeNeeds;
-
-		/// <summary>
-		/// Количество слов.
-		/// </summary>
-		internal int Count;
-
 		private byte[] _source;
 
 		/// <summary>
@@ -36,6 +21,21 @@ namespace Novartment.Base.Net.Mime
 			this.WordPositions = new int[maxWords + 1]; // дополнительное фиктивное слово нужно чтобы расчитывать размер предыдущего слова
 			this.WordEncodeNeeds = new bool[maxWords];
 		}
+
+		/// <summary>
+		/// Количество слов.
+		/// </summary>
+		internal int Count { get; private set; }
+
+		/// <summary>
+		/// Позиции первого символа слов.
+		/// </summary>
+		internal int[] WordPositions { get; }
+
+		/// <summary>
+		/// Признаки необходимости кодированного представления слова.
+		/// </summary>
+		internal bool[] WordEncodeNeeds { get; }
 
 		/// <summary>
 		/// Разбирает указанный текст (представленный в кодированном байтовом виде)
@@ -71,6 +71,7 @@ namespace Novartment.Base.Net.Mime
 						{
 							throw new FormatException (FormattableString.Invariant ($"Specified value contain too many words. Maximum words allowed = {this.WordEncodeNeeds.Length}."));
 						}
+
 						this.WordPositions[wordNumber] = wordStartPos;
 						this.WordEncodeNeeds[wordNumber] = encodeNeed;
 						wordNumber++;
@@ -97,15 +98,18 @@ namespace Novartment.Base.Net.Mime
 						}
 					}
 				}
+
 				pos++;
 				if ((pos - wordStartPos) > maxWordLength)
 				{
 					throw new FormatException (FormattableString.Invariant ($"Too long word. Maximum allowed length = {maxWordLength}."));
 				}
 			}
+
 			if (count > 0)
 			{
 				encodeNeed = encodeNeed || ((subWordStartPos >= 0) && IsLikeEncodedWord (subWordStartPos, pos));
+
 				// добавляем остаток в виде еще одного слова если остаток содержит непробельные символы
 				if (printableFound || (wordNumber < 1))
 				{
@@ -113,11 +117,13 @@ namespace Novartment.Base.Net.Mime
 					{
 						throw new FormatException (FormattableString.Invariant ($"Specified value contain too many words. Maximum words allowed = {this.WordEncodeNeeds.Length}."));
 					}
+
 					this.WordPositions[wordNumber] = wordStartPos;
 					this.WordEncodeNeeds[wordNumber] = encodeNeed;
 					wordNumber++;
 				}
 			}
+
 			this.WordPositions[wordNumber] = endPos; // дополнительное фиктивное слово нужно чтобы расчитывать размер предыдущего слова
 			this.Count = wordNumber;
 		}
@@ -131,10 +137,12 @@ namespace Novartment.Base.Net.Mime
 		{
 			var start = this.WordPositions[wordNumber];
 			var end = this.WordPositions[wordNumber + 1];
-			if (wordNumber > 0) // во всех словах кроме первого первым символом идет разделитель, который не учитываем при подсчете
+			if (wordNumber > 0)
 			{
+				// во всех словах кроме первого первым символом идет разделитель, который не учитываем при подсчете
 				start++;
 			}
+
 			var toQuoteCount = 0;
 			for (var idx = start; idx < end; idx++)
 			{
@@ -144,6 +152,7 @@ namespace Novartment.Base.Net.Mime
 					toQuoteCount++;
 				}
 			}
+
 			return toQuoteCount;
 		}
 
@@ -170,20 +179,24 @@ namespace Novartment.Base.Net.Mime
 					{
 						return endWord;
 					}
+
 					if (this.WordEncodeNeeds[testWord])
 					{
 						break;
 					}
+
 					nonEncodedWordsToSkip++;
 				}
 
 				// вычисляем уложится ли последовательность в указанный лимит
 				var bytesNeeded = this.WordPositions[testWord + 1] - this.WordPositions[startWord];
 				var groupsNeeded = (int)Math.Ceiling ((double)bytesNeeded / 3.0D);
-				if ((groupsNeeded * 4) > maxLength) // каждые 3 байта исходника будут занимать 4 байта в кодированном виде
+				if ((groupsNeeded * 4) > maxLength)
 				{
+					// каждые 3 байта исходника будут занимать 4 байта в кодированном виде
 					return endWord;
 				}
+
 				endWord += nonEncodedWordsToSkip + 1;
 			}
 		}
@@ -210,18 +223,18 @@ namespace Novartment.Base.Net.Mime
 				while (true)
 				{
 					testWord = endWord + 1 + nonEncodedWordsToSkip;
-					if (
-						(testWord >= this.Count) || // больше слов нет
-						this.WordEncodeNeeds[testWord] // встретилось слово, которое не может быть представлено в кавычках
-						)
+					if ((testWord >= this.Count) || this.WordEncodeNeeds[testWord])
 					{
+						// больше слов нет или встретилось слово, которое не может быть представлено в кавычках
 						return endWord;
 					}
+
 					endWordToQuoteCount = GetToQuoteCount (testWord);
 					if (endWordToQuoteCount > 0)
 					{
 						break;
 					}
+
 					nonEncodedWordsToSkip++;
 				}
 
@@ -234,6 +247,7 @@ namespace Novartment.Base.Net.Mime
 				{
 					return endWord;
 				}
+
 				endWord += nonEncodedWordsToSkip + 1;
 			}
 		}

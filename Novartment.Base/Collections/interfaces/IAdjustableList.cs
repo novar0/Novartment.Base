@@ -10,7 +10,8 @@ namespace Novartment.Base.Collections
 	/// </summary>
 	/// <typeparam name="T">Тип элементов коллекции.</typeparam>
 	/// <remarks>Характерный представитель - System.Collections.Generic.List.</remarks>
-	[SuppressMessage ("Microsoft.Naming",
+	[SuppressMessage (
+		"Microsoft.Naming",
 		"CA1710:IdentifiersShouldHaveCorrectSuffix",
 		Justification = "Implemented interfaces has no association with name.")]
 	public interface IAdjustableList<T> :

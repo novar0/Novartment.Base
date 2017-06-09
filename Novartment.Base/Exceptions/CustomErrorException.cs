@@ -9,30 +9,18 @@ namespace Novartment.Base
 	/// Класс-обёртка для передачи информации об исключениях различного рода
 	/// (не представленных типом System.Exception) туда, где ожидается тип System.Exception.
 	/// </summary>
-	[SuppressMessage ("Microsoft.Design",
+	[SuppressMessage (
+		"Microsoft.Design",
 		"CA1032:ImplementStandardExceptionConstructors",
 		Justification = "Standard exception constructors not possible.")]
 	public class CustomErrorException : Exception
 	{
-		/// <summary>Получает название исключения.</summary>
-		public string Name { get; }
-
-		/// <summary>Получает подробности исключения.</summary>
-		public string Details { get; }
-
-		/// <summary>Получает трассировку исключения.</summary>
-		public string Trace { get; }
-
-		/// <summary>Получает список дочерних (вложенных) исключений.</summary>
-		public IReadOnlyList<Exception> InnerExceptions { get; }
-
 		/// <summary>
 		/// Инициализирует новый экземпляр CustomErrorException на основе предоставленных данных.
 		/// </summary>
 		/// <param name="name">Название исключения.</param>
-		public CustomErrorException (
-			string name)
-			: base ()
+		public CustomErrorException(string name)
+			: base()
 		{
 			this.Name = name;
 		}
@@ -42,9 +30,7 @@ namespace Novartment.Base
 		/// </summary>
 		/// <param name="name">Название исключения.</param>
 		/// <param name="message">Сообщение исключения.</param>
-		public CustomErrorException (
-			string name,
-			string message)
+		public CustomErrorException (string name, string message)
 			: base (message)
 		{
 			this.Name = name;
@@ -87,5 +73,17 @@ namespace Novartment.Base
 			this.Trace = trace;
 			this.InnerExceptions = innerExceptions;
 		}
+
+		/// <summary>Получает название исключения.</summary>
+		public string Name { get; }
+
+		/// <summary>Получает подробности исключения.</summary>
+		public string Details { get; }
+
+		/// <summary>Получает трассировку исключения.</summary>
+		public string Trace { get; }
+
+		/// <summary>Получает список дочерних (вложенных) исключений.</summary>
+		public IReadOnlyList<Exception> InnerExceptions { get; }
 	}
 }

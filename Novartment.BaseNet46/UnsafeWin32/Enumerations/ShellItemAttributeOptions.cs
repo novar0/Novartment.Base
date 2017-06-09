@@ -1,5 +1,4 @@
-﻿
-namespace Novartment.Base.UnsafeWin32
+﻿namespace Novartment.Base.UnsafeWin32
 {
 	/// <summary>
 	/// Defines how final attribute set is determined.

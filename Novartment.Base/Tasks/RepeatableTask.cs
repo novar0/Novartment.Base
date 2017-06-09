@@ -1,8 +1,8 @@
 ﻿using System;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Novartment.Base.Tasks
 {
@@ -18,7 +18,6 @@ namespace Novartment.Base.Tasks
 	/// Автоматически создаёт/освобождает необходимые CancellationTokenSorce.
 	/// Отслеживает статус предыдущих задач (которым послан сигнал отмены) даже если уже запущены новые.
 	/// </remarks>
-
 	// Согласно рекомендациям Stephen Toub (специалист по параллелизму, конкурентности и асинхронности из команды Visual Studio)
 	// http://blogs.msdn.com/b/pfxteam/archive/2012/03/25/10287435.aspx
 	// для объектов типа Task и CancellationTokenSource не производится освобождение (вызов IDisposable.Dispose()),
@@ -47,6 +46,7 @@ namespace Novartment.Base.Tasks
 			{
 				throw new ArgumentNullException (nameof (taskFactory));
 			}
+
 			Contract.EndContractBlock ();
 
 			_createTaskFunc = taskFactory;
@@ -58,7 +58,8 @@ namespace Novartment.Base.Tasks
 		/// <param name="taskAction">Делегат, который будут вызывать запускаемые задачи.</param>
 		/// <param name="taskScheduler">Планировщик, в котором будут выполняться запускаемые задачи.
 		/// Укажите null чтобы использовать планировщик по умолчанию.</param>
-		[SuppressMessage ("Microsoft.Design",
+		[SuppressMessage (
+			"Microsoft.Design",
 			"CA1026:DefaultParametersShouldNotBeUsed",
 			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
 		public RepeatableTask (Action<object, CancellationToken> taskAction, TaskScheduler taskScheduler = null)
@@ -67,18 +68,34 @@ namespace Novartment.Base.Tasks
 			{
 				throw new ArgumentNullException (nameof (taskAction));
 			}
+
 			Contract.EndContractBlock ();
 
 			_taskScheduler = taskScheduler ?? TaskScheduler.Default;
 			_taskAction = taskAction;
 		}
 
+		/// <summary>Происходит перед тем, как запустится задача.</summary>
+		public event EventHandler<TaskStartingEventArgs> TaskStarting;
+
+		/// <summary>Происходит после запуска задачи.</summary>
+		public event EventHandler<DataEventArgs<object>> TaskStarted;
+
+		/// <summary>Происходит после завершения задачи.</summary>
+		public event EventHandler<DataEventArgs<CompletedTaskData>> TaskEnded;
+
+		/// <summary>
+		/// Возвращает true если задача в настоящий момент выполняется, иначе false.
+		/// </summary>
+		public bool IsRunning => _tasksInProgressCount > 0;
+
 		/// <summary>
 		/// Запускает задачу с указанным объектом состояния.
 		/// Ранее запущенная задача отменяется.
 		/// </summary>
 		/// <param name="state">Объект-состояние, передаваемый в запускаемую задачу.</param>
-		[SuppressMessage ("Microsoft.Reliability",
+		[SuppressMessage (
+			"Microsoft.Reliability",
 			"CA2000:Dispose objects before losing scope",
 			Justification = "newCts can not be disposed here. It is unclear when it must be disposed. According to recommendations http://blogs.msdn.com/b/pfxteam/archive/2012/03/25/10287435.aspx, disposing may be skipped in this case.")]
 		public void Start (object state)
@@ -90,6 +107,7 @@ namespace Novartment.Base.Tasks
 			{
 				return;
 			}
+
 			state = startingArgs.State;
 
 			Interlocked.Increment (ref _tasksInProgressCount);
@@ -121,12 +139,16 @@ namespace Novartment.Base.Tasks
 					TaskScheduler.FromCurrentSynchronizationContext () :
 					TaskScheduler.Current;
 
-				task.ContinueWith (prevTask =>
-				{
-					Interlocked.Decrement (ref _tasksInProgressCount);
-					var taskData = new CompletedTaskData (prevTask.Status, prevTask.Exception, state);
-					OnTaskEnded (new DataEventArgs<CompletedTaskData> (taskData));
-				}, CancellationToken.None, TaskContinuationOptions.None, scheduler);
+				task.ContinueWith (
+					prevTask =>
+					{
+						Interlocked.Decrement (ref _tasksInProgressCount);
+						var taskData = new CompletedTaskData (prevTask.Status, prevTask.Exception, state);
+						OnTaskEnded (new DataEventArgs<CompletedTaskData> (taskData));
+					},
+					CancellationToken.None,
+					TaskContinuationOptions.None,
+					scheduler);
 			}
 		}
 
@@ -138,49 +160,14 @@ namespace Novartment.Base.Tasks
 			Interlocked.Exchange (ref _cancellationTokenSource, null)?.Cancel ();
 		}
 
-		/// <summary>Происходит перед тем, как запустится задача.</summary>
-		public event EventHandler<TaskStartingEventArgs> TaskStarting;
-
-		/// <summary>
-		/// Вызывает событие TaskStarting с указанными аргументами.
-		/// </summary>
-		/// <param name="args">Аргументы события TaskStarting.</param>
-		protected virtual void OnTaskStarting (TaskStartingEventArgs args)
-		{
-			this.TaskStarting?.Invoke (this, args);
-		}
-
-		/// <summary>Происходит после запуска задачи.</summary>
-		public event EventHandler<DataEventArgs<object>> TaskStarted;
-
-		/// <summary>
-		/// Вызывает событие TaskStarted с указанными аргументами.
-		/// </summary>
-		/// <param name="args">Аргументы события TaskStarted.</param>
-		protected virtual void OnTaskStarted (DataEventArgs<object> args)
-		{
-			this.TaskStarted?.Invoke (this, args);
-		}
-
-		/// <summary>Происходит после завершения задачи.</summary>
-		public event EventHandler<DataEventArgs<CompletedTaskData>> TaskEnded;
-
-		/// <summary>
-		/// Вызывает событие TaskEnded с указанными аргументами.
-		/// </summary>
-		/// <param name="args">Аргументы события TaskEnded.</param>
-		protected virtual void OnTaskEnded (DataEventArgs<CompletedTaskData> args)
-		{
-			this.TaskEnded?.Invoke (this, args);
-		}
-
 		/// <summary>
 		/// Освобождает все занятые ресурсы.
 		/// </summary>
-		[SuppressMessage ("Microsoft.Usage",
+		[SuppressMessage (
+			"Microsoft.Usage",
 			"CA1816:CallGCSuppressFinalizeCorrectly",
-			Justification = "There is no meaning to introduce a finalizer in derived type."),
-		SuppressMessage (
+			Justification = "There is no meaning to introduce a finalizer in derived type.")]
+		[SuppressMessage (
 			"Microsoft.Design",
 			"CA1063:ImplementIDisposableCorrectly",
 			Justification = "Implemented correctly.")]
@@ -193,8 +180,30 @@ namespace Novartment.Base.Tasks
 		}
 
 		/// <summary>
-		/// Возвращает true если задача в настоящий момент выполняется, иначе false.
+		/// Вызывает событие TaskStarting с указанными аргументами.
 		/// </summary>
-		public bool IsRunning => (_tasksInProgressCount > 0);
+		/// <param name="args">Аргументы события TaskStarting.</param>
+		protected virtual void OnTaskStarting (TaskStartingEventArgs args)
+		{
+			this.TaskStarting?.Invoke (this, args);
+		}
+
+		/// <summary>
+		/// Вызывает событие TaskStarted с указанными аргументами.
+		/// </summary>
+		/// <param name="args">Аргументы события TaskStarted.</param>
+		protected virtual void OnTaskStarted (DataEventArgs<object> args)
+		{
+			this.TaskStarted?.Invoke (this, args);
+		}
+
+		/// <summary>
+		/// Вызывает событие TaskEnded с указанными аргументами.
+		/// </summary>
+		/// <param name="args">Аргументы события TaskEnded.</param>
+		protected virtual void OnTaskEnded (DataEventArgs<CompletedTaskData> args)
+		{
+			this.TaskEnded?.Invoke (this, args);
+		}
 	}
 }

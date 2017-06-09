@@ -23,7 +23,8 @@ namespace Novartment.Base.Net.Mime
 		/// </summary>
 		/// <param name="address">Строковое представление адреса почтового ящика.</param>
 		/// <param name="displayName">Имя почтового ящика. Может быть не указано (значение null).</param>
-		[SuppressMessage ("Microsoft.Design",
+		[SuppressMessage (
+		"Microsoft.Design",
 			"CA1026:DefaultParametersShouldNotBeUsed",
 			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
 		public Mailbox (AddrSpec address, string displayName = null)
@@ -32,6 +33,7 @@ namespace Novartment.Base.Net.Mime
 			{
 				throw new ArgumentNullException (nameof (address));
 			}
+
 			Contract.EndContractBlock ();
 
 			this.Address = address;
@@ -43,7 +45,8 @@ namespace Novartment.Base.Net.Mime
 		/// </summary>
 		/// <param name="address">Адрес почтового ящика.</param>
 		/// <param name="displayName">Имя почтового ящика. Может быть не указано (значение null).</param>
-		[SuppressMessage ("Microsoft.Design",
+		[SuppressMessage (
+		"Microsoft.Design",
 			"CA1026:DefaultParametersShouldNotBeUsed",
 			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
 		public Mailbox (string address, string displayName = null)
@@ -52,10 +55,47 @@ namespace Novartment.Base.Net.Mime
 			{
 				throw new ArgumentNullException (nameof (address));
 			}
+
 			Contract.EndContractBlock ();
 
 			this.Address = AddrSpec.Parse (address);
 			this.Name = displayName;
+		}
+
+		/// <summary>
+		/// Получает или устанавливает имя почтового ящика.
+		/// </summary>
+		public string Name { get; }
+
+		/// <summary>
+		/// Получает адрес почтового ящика.
+		/// </summary>
+		public AddrSpec Address { get; }
+
+		/// <summary>
+		/// Определяет равенство двух указанных объектов.
+		/// </summary>
+		/// <param name="first">Первый объект для сравнения.</param>
+		/// <param name="second">Второй объект для сравнения.</param>
+		/// <returns>True если значение параметра first равно second; в противном случае — False.</returns>
+		public static bool operator == (Mailbox first, Mailbox second)
+		{
+			return ReferenceEquals (first, null) ?
+				ReferenceEquals (second, null) :
+				first.Equals (second);
+		}
+
+		/// <summary>
+		/// Определяет неравенство двух указанных объектов.
+		/// </summary>
+		/// <param name="first">Первый объект для сравнения.</param>
+		/// <param name="second">Второй объект для сравнения.</param>
+		/// <returns>True если значение параметра first не равно second; в противном случае — False.</returns>
+		public static bool operator != (Mailbox first, Mailbox second)
+		{
+			return !(ReferenceEquals (first, null) ?
+				ReferenceEquals (second, null) :
+				first.Equals (second));
 		}
 
 		/// <summary>
@@ -69,6 +109,7 @@ namespace Novartment.Base.Net.Mime
 			{
 				throw new ArgumentNullException (nameof (source));
 			}
+
 			Contract.EndContractBlock ();
 
 			var elements = StructuredValueElementCollection.Parse (source, AsciiCharClasses.Atom, true, StructuredValueElementType.RoundBracketedValue);
@@ -86,13 +127,13 @@ namespace Novartment.Base.Net.Mime
 			{
 				throw new ArgumentNullException (nameof (elements));
 			}
+
 			Contract.EndContractBlock ();
 
 			// mailbox      = name-addr / addr-spec
 			// name-addr    = [display-name] angle-addr
 			// angle-addr   = [CFWS] "<" addr-spec ">" [CFWS]
 			// display-name = phrase
-
 			var cnt = elements.Count;
 
 			if (cnt < 1)
@@ -103,10 +144,12 @@ namespace Novartment.Base.Net.Mime
 			if (cnt == 1)
 			{
 				if ((elements[0].ElementType == StructuredValueElementType.AngleBracketedValue) || // angle-addr
-					(elements[0].ElementType == StructuredValueElementType.QuotedValue)) // non-standard form of addr-spec: "addrs@server.com"
+					(elements[0].ElementType == StructuredValueElementType.QuotedValue))
 				{
+					// non-standard form of addr-spec: "addrs@server.com"
 					return new Mailbox (AddrSpec.Parse (elements[0].Value), null);
 				}
+
 				throw new FormatException ("Value does not conform to format 'mailbox'.");
 			}
 
@@ -126,21 +169,12 @@ namespace Novartment.Base.Net.Mime
 			{
 				throw new FormatException ("Value does not conform to format 'mailbox'.");
 			}
+
 			// [display-name] angle-addr
 			var displayName = elements.Decode (elements.Count - 1);
 			var addr2 = AddrSpec.Parse (elements[cnt - 1].Value);
 			return new Mailbox (addr2, displayName);
 		}
-
-		/// <summary>
-		/// Получает или устанавливает имя почтового ящика.
-		/// </summary>
-		public string Name { get; }
-
-		/// <summary>
-		/// Получает адрес почтового ящика.
-		/// </summary>
-		public AddrSpec Address { get; }
 
 		/// <summary>
 		/// Получает строковое представление объекта.
@@ -184,33 +218,8 @@ namespace Novartment.Base.Net.Mime
 			{
 				return false;
 			}
+
 			return string.Equals (this.Name, other.Name) && this.Address.Equals (other.Address);
-		}
-
-		/// <summary>
-		/// Определяет равенство двух указанных объектов.
-		/// </summary>
-		/// <param name="first">Первый объект для сравнения.</param>
-		/// <param name="second">Второй объект для сравнения.</param>
-		/// <returns>True если значение параметра first равно second; в противном случае — False.</returns>
-		public static bool operator ==(Mailbox first, Mailbox second)
-		{
-			return ReferenceEquals (first, null) ?
-				ReferenceEquals (second, null) :
-				first.Equals (second);
-		}
-
-		/// <summary>
-		/// Определяет неравенство двух указанных объектов.
-		/// </summary>
-		/// <param name="first">Первый объект для сравнения.</param>
-		/// <param name="second">Второй объект для сравнения.</param>
-		/// <returns>True если значение параметра first не равно second; в противном случае — False.</returns>
-		public static bool operator !=(Mailbox first, Mailbox second)
-		{
-			return !(ReferenceEquals (first, null) ?
-				ReferenceEquals (second, null) :
-				first.Equals (second));
 		}
 	}
 }

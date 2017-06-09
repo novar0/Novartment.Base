@@ -1,7 +1,7 @@
-﻿using System.Threading;
-using System.Threading.Tasks;
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Novartment.Base.BinaryStreaming
 {
@@ -16,7 +16,8 @@ namespace Novartment.Base.BinaryStreaming
 		/// Текущая начальная позиция и количество доступных данных содержатся в свойствах Offset и Count,
 		/// при этом сам буфер остаётся неизменным всё время жизни источника.
 		/// </summary>
-		[SuppressMessage ("Microsoft.Performance",
+		[SuppressMessage (
+			"Microsoft.Performance",
 			"CA1819:PropertiesShouldNotReturnArrays",
 			Justification = "This is clearly a property and write access to array is intended.")]
 		byte[] Buffer { get; }
@@ -87,7 +88,9 @@ namespace Novartment.Base.BinaryStreaming
 	internal abstract class IBufferedSourceContracts :
 		IBufferedSource
 	{
-		private IBufferedSourceContracts () { }
+		private IBufferedSourceContracts ()
+		{
+		}
 
 		public byte[] Buffer => null;
 

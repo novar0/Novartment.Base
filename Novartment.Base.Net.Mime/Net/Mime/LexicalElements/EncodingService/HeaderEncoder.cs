@@ -1,16 +1,16 @@
 ﻿using System;
 using System.Buffers;
-using System.Text;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
+using System.Globalization;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Globalization;
-using System.Diagnostics.Contracts;
-using Novartment.Base.Text;
+using Novartment.Base.BinaryStreaming;
 using Novartment.Base.Collections;
 using Novartment.Base.Collections.Immutable;
 using Novartment.Base.Collections.Linq;
-using Novartment.Base.BinaryStreaming;
+using Novartment.Base.Text;
 
 namespace Novartment.Base.Net.Mime
 {
@@ -22,6 +22,25 @@ namespace Novartment.Base.Net.Mime
 	internal static class HeaderEncoder
 	{
 		internal static readonly int MaxOneFieldSize = 10000;
+
+		/// <summary>
+		/// Максимально допустимая длина одной строки.
+		/// Определено в RFC 2822 часть 2.1.1.
+		/// </summary>
+		internal static readonly int MaxLineLengthRequired = 998;
+
+		/// <summary>
+		/// Максимально рекомендуемая длина одной строки.
+		/// Определено в RFC 2822 часть 2.1.1.
+		/// </summary>
+		internal static readonly int MaxLineLengthRecommended = 78;
+
+		/// <summary>
+		/// Максимально допустимая длина 'encoded-word'.
+		/// Определено в RFC 2047 часть 2.
+		/// </summary>
+		internal static readonly int MaxEncodedWordLength = 75;
+
 		private static Encoding _encoding = Encoding.UTF8;
 
 		/// <summary>
@@ -29,38 +48,19 @@ namespace Novartment.Base.Net.Mime
 		/// </summary>
 		internal static Encoding DefaultEncoding
 		{
-			get { return _encoding; }
+			get => _encoding;
 			set
 			{
 				if (value == null)
 				{
 					throw new ArgumentNullException (nameof (value));
 				}
+
 				Contract.EndContractBlock ();
 
 				_encoding = value;
 			}
 		}
-
-		/// <summary>
-		/// Максимально допустимая длина одной строки.
-		/// Определено в RFC 2822 часть 2.1.1.
-		/// </summary>
-		internal readonly static int MaxLineLengthRequired = 998;
-
-		/// <summary>
-		/// Максимально рекомендуемая длина одной строки.
-		/// Определено в RFC 2822 часть 2.1.1.
-		/// </summary>
-		internal readonly static int MaxLineLengthRecommended = 78;
-
-		/// <summary>
-		/// Максимально допустимая длина 'encoded-word'.
-		/// Определено в RFC 2047 часть 2.
-		/// </summary>
-		internal readonly static int MaxEncodedWordLength = 75;
-
-		#region static method EncodeUnstructured
 
 		/// <summary>
 		/// Кодирует указанное значение в значение поля заголовка типа 'unstructured'.
@@ -79,15 +79,16 @@ namespace Novartment.Base.Net.Mime
 			// Элементы в круглых скобках не распознаются как коменты.
 
 			// важно сохранять читаемость после кодировки, поэтому в ущерб размеру используем более читаемую кодировку
-
 			if (text == null)
 			{
 				throw new ArgumentNullException (nameof (text));
 			}
+
 			if (text.Length >= MaxLineLengthRequired)
 			{
 				throw new ArgumentOutOfRangeException (nameof (text));
 			}
+
 			Contract.EndContractBlock ();
 
 			if (text.Length < 1)
@@ -96,12 +97,12 @@ namespace Novartment.Base.Net.Mime
 			}
 
 			var bytes = _encoding.GetBytes (text);
-			var words = new MimeWordCollection (text.Length / 2 + 1); // каждое слово занимает мин. 2 байта (знак + разделитель)
+			var words = new MimeWordCollection ((text.Length / 2) + 1); // каждое слово занимает мин. 2 байта (знак + разделитель)
 			words.ParseWords (bytes, false, MaxLineLengthRequired);
 			var encoder = new EncodedWordBEstimatingEncoder (_encoding);
 			var maxRequiredSizeForBEncoding =
-				words.Count * (encoder.PrologSize + encoder.EpilogSize) + // каждое слово может потребовать пролог+эпилог для кодированного вида
-				(bytes.Length - words.Count) * 4; // каждый символ кроме разделяющих слова может превратиться в 4 в закодированном виде
+				(words.Count * (encoder.PrologSize + encoder.EpilogSize)) + // каждое слово может потребовать пролог+эпилог для кодированного вида
+				((bytes.Length - words.Count) * 4); // каждый символ кроме разделяющих слова может превратиться в 4 в закодированном виде
 			var outBuf = ArrayPool<byte>.Shared.Rent (maxRequiredSizeForBEncoding);
 			var result = new ArrayList<string> ();
 
@@ -153,14 +154,11 @@ namespace Novartment.Base.Net.Mime
 					sequenceStartWord = sequenceEndWord + 1;
 				}
 			}
+
 			ArrayPool<byte>.Shared.Return (outBuf);
 
 			return result;
 		}
-
-		#endregion
-
-		#region static method EncodeTokens
 
 		/// <summary>
 		/// Кодирует указанное '*tokens' значение в значение поля заголовка.
@@ -177,6 +175,7 @@ namespace Novartment.Base.Net.Mime
 			{
 				return result;
 			}
+
 			var pos = 0;
 			int wordStart = -1;
 			while (pos < value.Length)
@@ -210,6 +209,7 @@ namespace Novartment.Base.Net.Mime
 								Hex.OctetsUpper[currentChar >> 8] + Hex.OctetsUpper[currentChar & 0xff] +
 								". Expected characters are U+0009 and U+0020...U+007E.");
 						}
+
 						if (wordStart >= 0)
 						{
 							result.Add (value.Substring (wordStart, pos - wordStart));
@@ -218,19 +218,18 @@ namespace Novartment.Base.Net.Mime
 						}
 					}
 				}
+
 				pos++;
 			}
-			if (wordStart >= 0) // добавляем только куски со словами (пробельные куски в конце отбрасываем)
+
+			if (wordStart >= 0)
 			{
+				// добавляем только куски со словами (пробельные куски в конце отбрасываем)
 				result.Add (value.Substring (wordStart, pos - wordStart));
 			}
 
 			return result;
 		}
-
-		#endregion
-
-		#region static method EncodePhrase
 
 		/// <summary>
 		/// Кодирует указанное значение в значение поля заголовка типа 'phrase'.
@@ -244,38 +243,40 @@ namespace Novartment.Base.Net.Mime
 		/// </remarks>
 		internal static IReadOnlyList<string> EncodePhrase (string text)
 		{
-			// RFC 5322
-			// phrase = набор atom, encoded-word или quoted-string разделенных WSP или comment, не может быть пустой.
-			// WSP между элементами являются пригодными для фолдинга.
-			// семантически phrase - это набор значений не включающий пробельное пространство между ними:
-			// *3.2.3 Atom. Semantically, the optional comments and FWS surrounding the rest of the characters are not part of the atom;
-			// *3.2.4 Quoted Strings.  Semantically, neither the optional CFWS outside of the quote characters nor the quote characters themselves are part of the quoted-string;
-
+			/*
+			RFC 5322
+			phrase = набор atom, encoded-word или quoted-string разделенных WSP или comment, не может быть пустой.
+			WSP между элементами являются пригодными для фолдинга.
+			семантически phrase - это набор значений не включающий пробельное пространство между ними:
+			*3.2.3 Atom. Semantically, the optional comments and FWS surrounding the rest of the characters are not part of the atom;
+			*3.2.4 Quoted Strings.  Semantically, neither the optional CFWS outside of the quote characters nor the quote characters themselves are part of the quoted-string;
+			*/
 			if (text == null)
 			{
 				throw new ArgumentNullException (nameof (text));
 			}
+
 			if ((text.Length < 1) || (text.Length >= MaxLineLengthRequired))
 			{
 				throw new ArgumentOutOfRangeException (nameof (text));
 			}
+
 			Contract.EndContractBlock ();
 
 			// TODO: разбивать слова если результат превышает ограничение в 75 символов
 			// RFC 2047 часть 2: An 'encoded-word' may not be more than 75 characters long
-
 			var bytes = _encoding.GetBytes (text);
-			var words = new MimeWordCollection (text.Length / 2 + 1); // каждое слово занимает мин. 2 байта (знак + разделитель)
+			var words = new MimeWordCollection ((text.Length / 2) + 1); // каждое слово занимает мин. 2 байта (знак + разделитель)
 			words.ParseWords (bytes, true, MaxLineLengthRequired);
 
 			var encoderS = new QuotedStringEstimatingEncoder (AsciiCharClasses.Visible | AsciiCharClasses.WhiteSpace);
 			var encoderB = new EncodedWordBEstimatingEncoder (_encoding);
 			var maxRequiredSizeForBEncoding =
-				words.Count * (encoderB.PrologSize + encoderB.EpilogSize) + // каждое слово может потребовать пролог+эпилог для кодированного вида
-				(bytes.Length - words.Count) * 4; // каждый символ кроме разделяющих слова может превратиться в 4 в закодированном виде
+				(words.Count * (encoderB.PrologSize + encoderB.EpilogSize)) + // каждое слово может потребовать пролог+эпилог для кодированного вида
+				((bytes.Length - words.Count) * 4); // каждый символ кроме разделяющих слова может превратиться в 4 в закодированном виде
 			var maxRequiredSizeForSEncoding =
-				words.Count * (encoderS.PrologSize + encoderS.EpilogSize) + // каждое слово может потребовать пролог+эпилог для кодированного вида
-				(bytes.Length - words.Count) * 2; // каждый символ кроме разделяющих слова может превратиться в 2 в закодированном виде
+				(words.Count * (encoderS.PrologSize + encoderS.EpilogSize)) + // каждое слово может потребовать пролог+эпилог для кодированного вида
+				((bytes.Length - words.Count) * 2); // каждый символ кроме разделяющих слова может превратиться в 2 в закодированном виде
 			var outBuf = ArrayPool<byte>.Shared.Rent (Math.Min (Math.Max (maxRequiredSizeForBEncoding, maxRequiredSizeForSEncoding), MaxLineLengthRequired));
 			var result = new ArrayList<string> ();
 
@@ -335,14 +336,11 @@ namespace Novartment.Base.Net.Mime
 					sequenceStartWord = sequenceEndWord + 1;
 				}
 			}
+
 			ArrayPool<byte>.Shared.Return (outBuf);
 
 			return result;
 		}
-
-		#endregion
-
-		#region static method EncodeMailbox
 
 		/// <summary>
 		/// Кодирует Mailbox в набор элементов значения поля заголовка.
@@ -358,6 +356,7 @@ namespace Novartment.Base.Net.Mime
 			{
 				throw new ArgumentNullException (nameof (mailbox));
 			}
+
 			Contract.EndContractBlock ();
 
 			var address = mailbox.Address.ToAngleString ();
@@ -366,10 +365,6 @@ namespace Novartment.Base.Net.Mime
 				ReadOnlyList.Repeat (address, 1) :
 				EncodePhrase (mailbox.Name).Concat (ReadOnlyList.Repeat (address, 1));
 		}
-
-		#endregion
-
-		#region static method EncodeHeaderFieldParameter
 
 		internal static void EncodeHeaderFieldParameter (IAdjustableCollection<string> result, HeaderFieldParameter parameter)
 		{
@@ -389,10 +384,12 @@ namespace Novartment.Base.Net.Mime
 
 			var extendedParameterEncoder = new ExtendedParameterValueEstimatingEncoder (_encoding);
 			var encodersOne = ReadOnlyList.Repeat<IEstimatingEncoder> (extendedParameterEncoder, 1);
-			var encodersAll = new ReadOnlyArray<IEstimatingEncoder> (new IEstimatingEncoder[] {
+			var encodersAll = new ReadOnlyArray<IEstimatingEncoder> (new IEstimatingEncoder[]
+			{
 				new AsciiCharClassEstimatingEncoder (AsciiCharClasses.Token),
 				new QuotedStringEstimatingEncoder (AsciiCharClasses.Visible | AsciiCharClasses.WhiteSpace),
-				extendedParameterEncoder });
+				extendedParameterEncoder
+			});
 			var bytes = _encoding.GetBytes (value);
 			var extra = " *=;".Length + name.Length;
 			var valueParts = EstimatingEncoder.CutBySize (
@@ -401,8 +398,7 @@ namespace Novartment.Base.Net.Mime
 					encodersAll, // если нужна кодировка то первый кусок принудительно делаем в виде 'extended-value'
 				bytes,
 				MaxLineLengthRecommended,
-				(segmentNumber, encoder) => extra + ((segmentNumber == 0) ? 1 : (1 + (int)Math.Log10 (segmentNumber))) + ((encoder is ExtendedParameterValueEstimatingEncoder) ? 1 : 0)
-				);
+				(segmentNumber, encoder) => extra + ((segmentNumber == 0) ? 1 : (1 + (int)Math.Log10 (segmentNumber))) + ((encoder is ExtendedParameterValueEstimatingEncoder) ? 1 : 0));
 			var outBytes = ArrayPool<byte>.Shared.Rent (MaxLineLengthRequired);
 			if ((valueParts.Length < 2) && !(valueParts[0].Encoder is ExtendedParameterValueEstimatingEncoder))
 			{
@@ -411,9 +407,14 @@ namespace Novartment.Base.Net.Mime
 				var pos = name.Length;
 				outBytes[pos++] = (byte)'=';
 				var (bytesProduced, bytesConsumed) = valueParts[0].Encoder.Encode (
-					bytes, valueParts[0].Offset, valueParts[0].Count,
-					outBytes, pos, MaxLineLengthRequired,
-					0, false);
+					bytes,
+					valueParts[0].Offset,
+					valueParts[0].Count,
+					outBytes,
+					pos,
+					MaxLineLengthRequired,
+					0,
+					false);
 				pos += bytesProduced;
 				result.Add (AsciiCharSet.GetString (outBytes, 0, pos));
 			}
@@ -432,10 +433,15 @@ namespace Novartment.Base.Net.Mime
 					{
 						outBytes[pos++] = (byte)'*';
 					}
+
 					outBytes[pos++] = (byte)'=';
 					var (bytesProduced, bytesConsumed) = valueParts[idx].Encoder.Encode (
-						bytes, valueParts[idx].Offset, valueParts[idx].Count,
-						outBytes, pos, MaxLineLengthRequired,
+						bytes,
+						valueParts[idx].Offset,
+						valueParts[idx].Count,
+						outBytes,
+						pos,
+						MaxLineLengthRequired,
 						idx,
 						idx < (valueParts.Length - 1));
 					pos += bytesProduced;
@@ -443,15 +449,13 @@ namespace Novartment.Base.Net.Mime
 					{
 						outBytes[pos++] = (byte)';';
 					}
+
 					result.Add (AsciiCharSet.GetString (outBytes, 0, pos));
 				}
 			}
+
 			ArrayPool<byte>.Shared.Return (outBytes);
 		}
-
-		#endregion
-
-		#region static method SaveHeaderAsync
 
 		/// <summary>
 		/// Записывает коллекцию полей в указанный получатель двоичных данных.
@@ -470,10 +474,12 @@ namespace Novartment.Base.Net.Mime
 			{
 				throw new ArgumentNullException (nameof (fields));
 			}
+
 			if (destination == null)
 			{
 				throw new ArgumentNullException (nameof (destination));
 			}
+
 			Contract.EndContractBlock ();
 
 			return SaveHeaderAsyncStateMachine (fields, destination, cancellationToken);
@@ -501,19 +507,20 @@ namespace Novartment.Base.Net.Mime
 					{
 						bytes[size++] = (byte)' ';
 					}
+
 					AsciiCharSet.GetBytes (field.Value, 0, field.Value.Length, bytes, size);
 					size += field.Value.Length;
 				}
+
 				bytes[size++] = (byte)'\r';
 				bytes[size++] = (byte)'\n';
 				await destination.WriteAsync (bytes, 0, size, cancellationToken).ConfigureAwait (false);
 				totalSize += size;
 			}
+
 			ArrayPool<byte>.Shared.Return (bytes);
 
 			return totalSize;
 		}
-
-		#endregion
 	}
 }

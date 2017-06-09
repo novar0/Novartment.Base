@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Net.Security;
-using System.Security.Cryptography.X509Certificates;
 using System.Security.Authentication;
+using System.Security.Cryptography.X509Certificates;
 using Novartment.Base.BinaryStreaming;
 
 namespace Novartment.Base.Net
@@ -22,28 +22,6 @@ namespace Novartment.Base.Net
 				GetBinaryDestination (secureStream))
 		{
 			_secureStream = secureStream;
-		}
-
-		private static IBufferedSource GetBufferedSource (SslStream stream, byte[] buffer)
-		{
-			if (stream == null)
-			{
-				throw new ArgumentNullException (nameof (stream));
-			}
-			if (buffer == null)
-			{
-				throw new ArgumentNullException (nameof (buffer));
-			}
-			return StreamExtensions.AsBufferedSource (stream, buffer);
-		}
-
-		private static IBinaryDestination GetBinaryDestination (SslStream stream)
-		{
-			if (stream == null)
-			{
-				throw new ArgumentNullException (nameof (stream));
-			}
-			return StreamExtensions.AsBinaryDestination (stream);
 		}
 
 		/// <summary>
@@ -90,5 +68,30 @@ namespace Novartment.Base.Net
 		/// Gets a value that identifies the strength of the key exchange algorithm used by this instance.
 		/// </summary>
 		public int KeyExchangeStrength => _secureStream.KeyExchangeStrength;
+
+		private static IBufferedSource GetBufferedSource (SslStream stream, byte[] buffer)
+		{
+			if (stream == null)
+			{
+				throw new ArgumentNullException (nameof (stream));
+			}
+
+			if (buffer == null)
+			{
+				throw new ArgumentNullException (nameof (buffer));
+			}
+
+			return StreamExtensions.AsBufferedSource (stream, buffer);
+		}
+
+		private static IBinaryDestination GetBinaryDestination (SslStream stream)
+		{
+			if (stream == null)
+			{
+				throw new ArgumentNullException (nameof (stream));
+			}
+
+			return StreamExtensions.AsBinaryDestination (stream);
+		}
 	}
 }

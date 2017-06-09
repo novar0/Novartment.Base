@@ -1,7 +1,7 @@
 ﻿using System;
-using System.Security.Cryptography;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
+using System.Security.Cryptography;
 using Novartment.Base.Text;
 
 namespace Novartment.Base
@@ -12,21 +12,24 @@ namespace Novartment.Base
 	public class ToQuotedPrintableWithLineBreaksConverter :
 		ICryptoTransform
 	{
-		[SuppressMessage ("Microsoft.Performance",
+		[SuppressMessage (
+			"Microsoft.Performance",
 			"CA1802:UseLiteralsWhereAppropriate",
 			Justification = "No performance gain could be achieved.")]
-		private readonly static int _maxLineLen = 75; // по стандарту предел 76 печатных символов, но чтобы начать новую строку надо добавлять символ '='
-		[SuppressMessage ("Microsoft.Performance",
+		private static readonly int _maxLineLen = 75; // по стандарту предел 76 печатных символов, но чтобы начать новую строку надо добавлять символ '='
+		[SuppressMessage (
+			"Microsoft.Performance",
 			"CA1802:UseLiteralsWhereAppropriate",
 			Justification = "No performance gain could be achieved.")]
-		private readonly static int _inputBlockSize = 25;
+		private static readonly int _inputBlockSize = 25;
 		private readonly bool _isText;
 
-		private readonly byte[] _outArray = new byte[_maxLineLen * 2 + 3];
+		private readonly byte[] _outArray = new byte[(_maxLineLen * 2) + 3];
+		private readonly int[] _outArraySizes = new int[(_maxLineLen * 2) + 3];
+
 		private int _outArrayOffset;
 		private int _outArrayCount;
 
-		private readonly int[] _outArraySizes = new int[_maxLineLen * 2 + 3];
 		private int _outArraySizesOffset;
 		private int _outArraySizesCount;
 
@@ -36,7 +39,8 @@ namespace Novartment.Base
 		/// <param name="isText">
 		/// Укажите True чтобы сохранять без трансформации встречающиеся в исходных данных символы перевода строки.
 		/// </param>
-		[SuppressMessage ("Microsoft.Design",
+		[SuppressMessage (
+		"Microsoft.Design",
 			"CA1026:DefaultParametersShouldNotBeUsed",
 			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
 		public ToQuotedPrintableWithLineBreaksConverter (bool isText = false)
@@ -79,22 +83,27 @@ namespace Novartment.Base
 			{
 				throw new ArgumentNullException (nameof (inputBuffer));
 			}
+
 			if ((inputOffset < 0) || (inputOffset > inputBuffer.Length) || ((inputOffset == inputBuffer.Length) && (inputCount > 0)))
 			{
 				throw new ArgumentOutOfRangeException (nameof (inputOffset));
 			}
+
 			if ((inputCount < 0) || ((inputOffset + inputCount) > inputBuffer.Length))
 			{
 				throw new ArgumentOutOfRangeException (nameof (inputCount));
 			}
+
 			if (outputBuffer == null)
 			{
 				throw new ArgumentNullException (nameof (outputBuffer));
 			}
+
 			if ((outputOffset < 0) || (outputOffset > outputBuffer.Length) || ((outputOffset == outputBuffer.Length) && (inputCount > 0)))
 			{
 				throw new ArgumentOutOfRangeException (nameof (outputOffset));
 			}
+
 			Contract.EndContractBlock ();
 
 			int outputSize = 0;
@@ -117,23 +126,26 @@ namespace Novartment.Base
 						_outArrayOffset -= totalSize;
 						_outArraySizesCount -= idx + 1;
 						_outArraySizesOffset -= idx + 1;
+
 						// сдвигаем остаток буфера outArray в начало
 						if (_outArrayCount > 0)
 						{
 							Array.Copy (_outArray, totalSize, _outArray, 0, _outArrayCount);
 						}
+
 						// сдвигаем остаток буфера outArraySizes в начало
 						if (_outArraySizesCount > 0)
 						{
 							Array.Copy (_outArraySizes, idx + 1, _outArraySizes, 0, _outArraySizesCount);
 						}
+
 						// начнём сначала сканирование буфера
 						totalSize = 0;
 						idx = 0;
 					}
-					// данных хватает на целую строку, выводим её
 					else
 					{
+						// данных хватает на целую строку, выводим её
 						if ((totalSize + _outArraySizes[idx]) > _maxLineLen)
 						{
 							Array.Copy (_outArray, 0, outputBuffer, outputOffset, totalSize);
@@ -143,26 +155,32 @@ namespace Novartment.Base
 							_outArrayOffset -= totalSize;
 							_outArraySizesCount -= idx;
 							_outArraySizesOffset -= idx;
-							outputBuffer[outputOffset++] = 0x3d; outputSize++;
-							outputBuffer[outputOffset++] = 0x0d; outputSize++;
-							outputBuffer[outputOffset++] = 0x0a; outputSize++;
+							outputBuffer[outputOffset++] = 0x3d;
+							outputSize++;
+							outputBuffer[outputOffset++] = 0x0d;
+							outputSize++;
+							outputBuffer[outputOffset++] = 0x0a;
+							outputSize++;
+
 							// сдвигаем остаток буфера outArray в начало
 							if (_outArrayCount > 0)
 							{
 								Array.Copy (_outArray, totalSize, _outArray, 0, _outArrayCount);
 							}
+
 							// сдвигаем остаток буфера outArraySizes в начало
 							if (_outArraySizesCount > 0)
 							{
 								Array.Copy (_outArraySizes, idx, _outArraySizes, 0, _outArraySizesCount);
 							}
+
 							// начнём сначала сканирование буфера
 							totalSize = 0;
 							idx = 0;
 						}
-						// идём дальше по элементам буфера, суммируя их размер
 						else
 						{
+							// идём дальше по элементам буфера, суммируя их размер
 							totalSize += _outArraySizes[idx++];
 						}
 					}
@@ -172,7 +190,8 @@ namespace Novartment.Base
 				var inputSize = Math.Min (_inputBlockSize, inputEndOffset - inputOffset);
 				FillOutBuffer (inputBuffer, inputOffset, inputSize);
 				inputOffset += inputSize;
-			} while (inputOffset < inputEndOffset);
+			}
+			while (inputOffset < inputEndOffset);
 
 			return outputSize;
 		}
@@ -190,14 +209,17 @@ namespace Novartment.Base
 			{
 				throw new ArgumentNullException (nameof (inputBuffer));
 			}
+
 			if ((inputOffset < 0) || (inputOffset > inputBuffer.Length) || ((inputOffset == inputBuffer.Length) && (inputCount > 0)))
 			{
 				throw new ArgumentOutOfRangeException (nameof (inputOffset));
 			}
+
 			if ((inputCount < 0) || ((inputOffset + inputCount) > inputBuffer.Length))
 			{
 				throw new ArgumentOutOfRangeException (nameof (inputCount));
 			}
+
 			Contract.EndContractBlock ();
 
 			var result = new byte[_maxLineLen + _outArray.Length];
@@ -248,7 +270,7 @@ namespace Novartment.Base
 						// если перед ним был пробел или таб, то надо его закодировать
 						if (_outArrayOffset > 0)
 						{
-							var prevOctet = _outArray[_outArrayOffset-1];
+							var prevOctet = _outArray[_outArrayOffset - 1];
 							if ((prevOctet == 0x09) || (prevOctet == 0x20))
 							{
 								// откатываемся на предыдущую позицию
@@ -256,6 +278,7 @@ namespace Novartment.Base
 								_outArraySizesOffset--;
 								_outArraySizesCount--;
 								_outArrayCount--;
+
 								// вписываем закодированный вариант предыдущего символа
 								_outArray[_outArrayOffset++] = 0x3d; // =
 								_outArray[_outArrayOffset++] = (byte)Hex.OctetsUpper[prevOctet][0];
@@ -265,6 +288,7 @@ namespace Novartment.Base
 								_outArrayCount += 3;
 							}
 						}
+
 						offsetIn++;
 						_outArray[_outArrayOffset++] = 0x0d;
 						_outArray[_outArrayOffset++] = 0x0a;
@@ -276,8 +300,8 @@ namespace Novartment.Base
 				}
 
 				// printable char (except '=' 0x3d)
-				if ((0x21 <= octet && octet <= 0x3c) ||
-					(0x3e <= octet && octet <= 0x7e) ||
+				if (((octet >= 0x21) && (octet <= 0x3c)) ||
+					((octet >= 0x3e) && (octet <= 0x7e)) ||
 					(_isText && ((octet == 0x09) || (octet == 0x20))))
 				{
 					_outArray[_outArrayOffset++] = octet;

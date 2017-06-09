@@ -1,5 +1,4 @@
-﻿
-namespace Novartment.Base.Net.Mime
+﻿namespace Novartment.Base.Net.Mime
 {
 	/// <summary>
 	/// Назначенное для содержимого расположение, определяющее его отображение.

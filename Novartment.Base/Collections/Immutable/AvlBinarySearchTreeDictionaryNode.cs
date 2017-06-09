@@ -10,7 +10,8 @@ namespace Novartment.Base.Collections.Immutable
 	/// <typeparam name="TKey">Тип ключа элементов словаря.</typeparam>
 	/// <typeparam name="TValue">Тип значений элементов словаря.</typeparam>
 	/// <remarks>Значение null является корректным и означает пустой словарь.</remarks>
-	[SuppressMessage ("Microsoft.Naming",
+	[SuppressMessage (
+		"Microsoft.Naming",
 		"CA1704:IdentifiersShouldBeSpelledCorrectly",
 		MessageId = "Avl",
 		Justification = "'AVL-tree' represents standard term.")]
@@ -20,6 +21,12 @@ namespace Novartment.Base.Collections.Immutable
 		private readonly TKey _key;
 		private TValue _value;
 
+		private AvlBinarySearchTreeDictionaryNode(TKey key, TValue value)
+		{
+			_key = key;
+			_value = value;
+		}
+
 		/// <summary>
 		/// Получает ключ элемента.
 		/// </summary>
@@ -28,25 +35,22 @@ namespace Novartment.Base.Collections.Immutable
 		/// <summary>
 		/// Получает или устанавливает значение элемента.
 		/// </summary>
-		public TValue Value { get { return _value; } set { _value = value; } }
-
-		private AvlBinarySearchTreeDictionaryNode (TKey key, TValue value)
+		public TValue Value
 		{
-			_key = key;
-			_value = value;
+			get => _value;
+
+			set
+			{
+				_value = value;
+			}
 		}
 
-		[DebuggerTypeProxy (typeof (AvlBinarySearchTreeDictionaryNode<,>._DebugView))]
+		[DebuggerTypeProxy (typeof (AvlBinarySearchTreeDictionaryNode<,>.DebugView))]
 		internal class IntermediateNode : AvlBinarySearchTreeDictionaryNode<TKey, TValue>
 		{
 			private readonly AvlBinarySearchTreeDictionaryNode<TKey, TValue> _leftSubtree;
 			private readonly AvlBinarySearchTreeDictionaryNode<TKey, TValue> _rightSubtree;
-
 			private readonly int _height;
-
-			internal int Height => _height;
-			internal AvlBinarySearchTreeDictionaryNode<TKey, TValue> LeftSubtree => _leftSubtree;
-			internal AvlBinarySearchTreeDictionaryNode<TKey, TValue> RightSubtree => _rightSubtree;
 
 			internal IntermediateNode (
 				TKey key,
@@ -60,6 +64,12 @@ namespace Novartment.Base.Collections.Immutable
 				_rightSubtree = rightSubtree;
 				_height = height;
 			}
+
+			internal int Height => _height;
+
+			internal AvlBinarySearchTreeDictionaryNode<TKey, TValue> LeftSubtree => _leftSubtree;
+
+			internal AvlBinarySearchTreeDictionaryNode<TKey, TValue> RightSubtree => _rightSubtree;
 		}
 
 		[DebuggerDisplay ("Key={Key}, Value = {Value}")]
@@ -71,13 +81,11 @@ namespace Novartment.Base.Collections.Immutable
 			}
 		}
 
-		#region class _DebugView
-
-		internal sealed class _DebugView
+		internal sealed class DebugView
 		{
 			private readonly IntermediateNode _node;
 
-			public _DebugView (IntermediateNode node)
+			public DebugView (IntermediateNode node)
 			{
 				_node = node;
 			}
@@ -90,6 +98,7 @@ namespace Novartment.Base.Collections.Immutable
 					{
 						return null;
 					}
+
 					var items = new Tuple<TKey, TValue>[_node.LeftSubtree.GetCount ()];
 					int i = 0;
 					using (var enumerator = _node.LeftSubtree.GetEnumerator ())
@@ -99,6 +108,7 @@ namespace Novartment.Base.Collections.Immutable
 							items[i++] = Tuple.Create (enumerator.Current.Key, enumerator.Current.Value);
 						}
 					}
+
 					return items;
 				}
 			}
@@ -115,6 +125,7 @@ namespace Novartment.Base.Collections.Immutable
 					{
 						return null;
 					}
+
 					var items = new Tuple<TKey, TValue>[_node.RightSubtree.GetCount ()];
 					int i = 0;
 					using (var enumerator = _node.RightSubtree.GetEnumerator ())
@@ -124,11 +135,10 @@ namespace Novartment.Base.Collections.Immutable
 							items[i++] = Tuple.Create (enumerator.Current.Key, enumerator.Current.Value);
 						}
 					}
+
 					return items;
 				}
 			}
 		}
-
-		#endregion
 	}
 }

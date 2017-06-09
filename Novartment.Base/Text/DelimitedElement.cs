@@ -12,21 +12,6 @@ namespace Novartment.Base.Text
 	/// </remarks>
 	public class DelimitedElement
 	{
-		/// <summary>Начальный код символа (в UTF-32) элемента.</summary>
-		public int StartChar { get; }
-
-		/// <summary>Конечный код символа (в UTF-32) элемента.</summary>
-		public int EndChar { get; }
-
-		/// <summary>Разрешены ли вложенные элементы.</summary>
-		public bool AllowNesting { get; }
-
-		/// <summary>Фиксированный размер элемента, либо 0 если размер не фиксирован.</summary>
-		public int FixedLength { get; }
-
-		/// <summary>Элемент, который пропускается при поиске границ.</summary>
-		public DelimitedElement IgnoreElement { get; }
-
 		/// <summary>
 		/// Инициализирует новый экземпляр класса DelimitedElement на основе указанного начального символа и фиксированной длины.
 		/// </summary>
@@ -35,7 +20,7 @@ namespace Novartment.Base.Text
 		public DelimitedElement (int startUtf32Char, int fixedLength)
 		{
 			this.StartChar = startUtf32Char;
-			this.EndChar = Char.MinValue;
+			this.EndChar = char.MinValue;
 			this.AllowNesting = false;
 			this.FixedLength = fixedLength;
 			this.IgnoreElement = null;
@@ -71,6 +56,7 @@ namespace Novartment.Base.Text
 			{
 				throw new ArgumentNullException (nameof (ignoreElement));
 			}
+
 			Contract.EndContractBlock ();
 
 			this.StartChar = startUtf32Char;
@@ -79,5 +65,20 @@ namespace Novartment.Base.Text
 			this.FixedLength = 0;
 			this.IgnoreElement = ignoreElement;
 		}
+
+		/// <summary>Начальный код символа (в UTF-32) элемента.</summary>
+		public int StartChar { get; }
+
+		/// <summary>Конечный код символа (в UTF-32) элемента.</summary>
+		public int EndChar { get; }
+
+		/// <summary>Разрешены ли вложенные элементы.</summary>
+		public bool AllowNesting { get; }
+
+		/// <summary>Фиксированный размер элемента, либо 0 если размер не фиксирован.</summary>
+		public int FixedLength { get; }
+
+		/// <summary>Элемент, который пропускается при поиске границ.</summary>
+		public DelimitedElement IgnoreElement { get; }
 	}
 }

@@ -1,5 +1,4 @@
-﻿
-namespace Novartment.Base.UI
+﻿namespace Novartment.Base.UI
 {
 	/// <summary>
 	/// Цель, на которую можно перетаскивать объекты в том числе из других приложений.

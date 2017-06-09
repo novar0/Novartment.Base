@@ -53,6 +53,7 @@ namespace Novartment.Base.Test
 					tcs.SetException (new ArithmeticException ("test exception"));
 					return;
 				}
+
 				var cToken = (CancellationToken)tcs.Task.AsyncState;
 				if (cToken.IsCancellationRequested || (arg == TaskArgument.ProcessingCancel))
 				{

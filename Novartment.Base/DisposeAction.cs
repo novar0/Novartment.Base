@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Threading;
 using System.Diagnostics.Contracts;
+using System.Threading;
 
 namespace Novartment.Base
 {
@@ -9,7 +9,7 @@ namespace Novartment.Base
 	/// </summary>
 	public static class DisposeAction
 	{
-		private readonly static IDisposable _empty = new DisposeActionHolder (null);
+		private static readonly IDisposable _empty = new DisposeActionHolder (null);
 
 		/// <summary>
 		/// Получает освобождаемый объект-заглушку, который ничего не делает при освобождении.
@@ -31,6 +31,7 @@ namespace Novartment.Base
 			{
 				throw new ArgumentNullException (nameof (disposeAction));
 			}
+
 			Contract.EndContractBlock ();
 
 			return new DisposeActionHolder (disposeAction);
@@ -39,6 +40,7 @@ namespace Novartment.Base
 		/// <summary>
 		/// Создаёт освобождаемый объект, который при освобождении вызывает указанный делегат с указанным параметром.
 		/// </summary>
+		/// <typeparam name="TState">Тип объекта-состояния.</typeparam>
 		/// <param name="disposeAction">Делегат, который будет вызван при освобождении объекта.</param>
 		/// <param name="state">Объект-состояние, который будет параметром при вызове делегата при освобождении объекта.</param>
 		/// <returns>Созданный освобождаемый объект, который при освобождении вызывает указанный делегат.</returns>
@@ -52,6 +54,7 @@ namespace Novartment.Base
 			{
 				throw new ArgumentNullException (nameof (disposeAction));
 			}
+
 			Contract.EndContractBlock ();
 
 			return new DisposeActionHolderWithState<TState> (disposeAction, state);

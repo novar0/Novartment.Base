@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
-using Novartment.Base.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using Novartment.Base.BinaryStreaming;
+using Novartment.Base.Text;
 
 namespace Novartment.Base.Media
 {
@@ -22,9 +22,6 @@ namespace Novartment.Base.Media
 		private readonly IBufferedSource _source;
 		private RiffChunk _current;
 
-		/// <summary>Получает FOURCC-код, идентифицирующий коллекцию.</summary>
-		public string ListId { get; }
-
 		/// <summary>
 		/// Инициализирует новый экземпляр класса RiffChunkListReader на основе указанного источника данных.
 		/// </summary>
@@ -35,10 +32,12 @@ namespace Novartment.Base.Media
 			{
 				throw new ArgumentNullException (nameof (source));
 			}
+
 			if (source.Buffer.Length < 4)
 			{
 				throw new ArgumentOutOfRangeException (nameof (source));
 			}
+
 			Contract.EndContractBlock ();
 
 			_source = source;
@@ -47,9 +46,13 @@ namespace Novartment.Base.Media
 			{
 				throw new InvalidOperationException ("Specified source is too small to be list of Riff-chunk. Expected minimum 4 bytes");
 			}
+
 			this.ListId = AsciiCharSet.GetString (_source.Buffer, _source.Offset, 4);
 			_source.SkipBuffer (4);
 		}
+
+		/// <summary>Получает FOURCC-код, идентифицирующий коллекцию.</summary>
+		public string ListId { get; }
 
 		/// <summary>
 		/// Получает текущий элемент перечислителя.
@@ -62,9 +65,17 @@ namespace Novartment.Base.Media
 				{
 					throw new InvalidOperationException ("Can not get current element of enumeration because it not started or already ended");
 				}
+
 				return _current;
 			}
 		}
+
+		[DebuggerBrowsable (DebuggerBrowsableState.Never)]
+		[SuppressMessage (
+		"Microsoft.Performance",
+			"CA1811:AvoidUncalledPrivateCode",
+			Justification = "Used in DebuggerDisplay attribute.")]
+		private string DebuggerDisplay => "Id = " + this.ListId;
 
 		/// <summary>
 		/// Перемещает перечислитель к следующему элементу строки.
@@ -81,26 +92,15 @@ namespace Novartment.Base.Media
 			}
 
 			await _source.FillBufferAsync (cancellationToken).ConfigureAwait (false);
-			if (_source.Count < 8) // no more data
+			if (_source.Count < 8)
 			{
+				// no more data
 				_current = null;
 				return false;
 			}
 
 			_current = await RiffChunk.ParseAsync (_source, cancellationToken).ConfigureAwait (false);
 			return true;
-		}
-
-		[DebuggerBrowsable (DebuggerBrowsableState.Never),
-		SuppressMessage ("Microsoft.Performance",
-			"CA1811:AvoidUncalledPrivateCode",
-			Justification = "Used in DebuggerDisplay attribute.")]
-		private string DebuggerDisplay
-		{
-			get
-			{
-				return "Id = " + this.ListId;
-			}
 		}
 	}
 }

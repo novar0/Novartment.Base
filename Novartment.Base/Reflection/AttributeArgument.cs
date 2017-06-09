@@ -8,6 +8,17 @@ namespace Novartment.Base.Reflection
 	public struct AttributeArgument
 	{
 		/// <summary>
+		/// Инициализирует новый экземпляр класса AttributeArgument с указанными именем и значением.
+		/// </summary>
+		/// <param name="name">Имя аргумента.</param>
+		/// <param name="value">Значение аргумента.</param>
+		public AttributeArgument(string name, object value)
+		{
+			this.Name = name;
+			this.Value = value;
+		}
+
+		/// <summary>
 		/// Получает имя аргумента.
 		/// </summary>
 		public string Name { get; }
@@ -18,14 +29,29 @@ namespace Novartment.Base.Reflection
 		public object Value { get; }
 
 		/// <summary>
-		/// Инициализирует новый экземпляр класса AttributeArgument с указанными именем и значением.
+		/// Определяет равенство двух указанных объектов.
 		/// </summary>
-		/// <param name="name">Имя аргумента.</param>
-		/// <param name="value">Значение аргумента.</param>
-		public AttributeArgument (string name, object value)
+		/// <param name="first">Первый объект для сравнения.</param>
+		/// <param name="second">Второй объект для сравнения.</param>
+		/// <returns>True если значение параметра first равно second; в противном случае — False.</returns>
+		public static bool operator ==(AttributeArgument first, AttributeArgument second)
 		{
-			this.Name = name;
-			this.Value = value;
+			return ReferenceEquals(first, null) ?
+				ReferenceEquals(second, null) :
+				first.Equals(second);
+		}
+
+		/// <summary>
+		/// Определяет неравенство двух указанных объектов.
+		/// </summary>
+		/// <param name="first">Первый объект для сравнения.</param>
+		/// <param name="second">Второй объект для сравнения.</param>
+		/// <returns>True если значение параметра first не равно second; в противном случае — False.</returns>
+		public static bool operator !=(AttributeArgument first, AttributeArgument second)
+		{
+			return !(ReferenceEquals(first, null) ?
+				ReferenceEquals(second, null) :
+				first.Equals(second));
 		}
 
 		/// <summary>
@@ -54,7 +80,7 @@ namespace Novartment.Base.Reflection
 		/// <returns>Хэш-код для текущего объекта.</returns>
 		public override int GetHashCode ()
 		{
-			return ((this.Name?.GetHashCode () ?? 0) ^ (this.Value?.GetHashCode () ?? 0));
+			return this.Name?.GetHashCode () ?? 0 ^ this.Value?.GetHashCode () ?? 0;
 		}
 
 		/// <summary>
@@ -86,32 +112,6 @@ namespace Novartment.Base.Reflection
 
 			var other = (AttributeArgument)obj;
 			return other.Name.Equals (this.Name, StringComparison.Ordinal) && (other.Value == this.Value);
-		}
-
-		/// <summary>
-		/// Определяет равенство двух указанных объектов.
-		/// </summary>
-		/// <param name="first">Первый объект для сравнения.</param>
-		/// <param name="second">Второй объект для сравнения.</param>
-		/// <returns>True если значение параметра first равно second; в противном случае — False.</returns>
-		public static bool operator ==(AttributeArgument first, AttributeArgument second)
-		{
-			return ReferenceEquals (first, null) ?
-				ReferenceEquals (second, null) :
-				first.Equals (second);
-		}
-
-		/// <summary>
-		/// Определяет неравенство двух указанных объектов.
-		/// </summary>
-		/// <param name="first">Первый объект для сравнения.</param>
-		/// <param name="second">Второй объект для сравнения.</param>
-		/// <returns>True если значение параметра first не равно second; в противном случае — False.</returns>
-		public static bool operator !=(AttributeArgument first, AttributeArgument second)
-		{
-			return !(ReferenceEquals (first, null) ?
-				ReferenceEquals (second, null) :
-				first.Equals (second));
 		}
 	}
 }

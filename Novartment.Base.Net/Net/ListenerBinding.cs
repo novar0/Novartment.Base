@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
@@ -17,15 +17,25 @@ namespace Novartment.Base.Net
 		private CancellationTokenSource _acceptConnectionsLoopCancellation = null;
 		private Task _acceptingConnectionsTask = Task.CompletedTask;
 
-		internal ICollection<ConnectedClient> ConnectedClients => _connections.Values;
-
-		internal Task AcceptingConnectionsTask => _acceptingConnectionsTask;
-
 		internal ListenerBinding (ITcpListener listener, ITcpConnectionProtocol protocol, ILogWriter logger)
 		{
 			_listener = listener;
 			_protocol = protocol;
 			_logger = logger;
+		}
+
+		internal ICollection<ConnectedClient> ConnectedClients => _connections.Values;
+
+		internal Task AcceptingConnectionsTask => _acceptingConnectionsTask;
+
+		public void Dispose ()
+		{
+			foreach (var client in _connections.Values)
+			{
+				client?.Dispose ();
+			}
+
+			SafeMethods.TryDispose (_listener);
 		}
 
 		internal void Start ()
@@ -61,6 +71,7 @@ namespace Novartment.Base.Net
 					{
 						break;
 					}
+
 					// на каждое подключением создаём источник отмены, потому что каждое может отменятся независимо от других по тайм-ауту
 					var cts = new CancellationTokenSource ();
 					Task startingTask;
@@ -73,6 +84,7 @@ namespace Novartment.Base.Net
 						connection.Dispose ();
 						throw;
 					}
+
 					var finishingTask = AcceptedConnectionFinalizer (startingTask, connection);
 					var client = new ConnectedClient (connection, finishingTask, cts);
 					_connections[connection.RemoteEndPoint] = client;
@@ -93,19 +105,9 @@ namespace Novartment.Base.Net
 			}
 			finally
 			{
-				ConnectedClient connectionProtocolTask;
-				_connections.TryRemove (connection.RemoteEndPoint, out connectionProtocolTask);
+				_connections.TryRemove (connection.RemoteEndPoint, out ConnectedClient connectionProtocolTask);
 				connection.Dispose ();
 			}
-		}
-
-		public void Dispose ()
-		{
-			foreach (var client in _connections.Values)
-			{
-				client?.Dispose ();
-			}
-			SafeMethods.TryDispose (_listener);
 		}
 	}
 }

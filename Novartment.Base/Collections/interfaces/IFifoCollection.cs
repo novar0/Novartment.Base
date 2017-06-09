@@ -8,7 +8,8 @@ namespace Novartment.Base.Collections
 	/// </summary>
 	/// <typeparam name="T">Тип элементов коллекции.</typeparam>
 	/// <remarks>Характерный представитель - System.Collections.Generic.Queue.</remarks>
-	[SuppressMessage ("Microsoft.Naming",
+	[SuppressMessage (
+		"Microsoft.Naming",
 		"CA1704:IdentifiersShouldBeSpelledCorrectly",
 		MessageId = "Fifo",
 		Justification = "'FIFO' represents standard term.")]

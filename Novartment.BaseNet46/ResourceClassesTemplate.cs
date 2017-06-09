@@ -32,7 +32,7 @@ namespace Novartment.Base.UI.Wpf
 		/// <summary>
 		/// Returns the cached ResourceManager instance used by this class.
 		/// </summary>
-		[System.ComponentModel.EditorBrowsableAttribute (System.ComponentModel.EditorBrowsableState.Advanced)]
+		[System.ComponentModel.EditorBrowsable (System.ComponentModel.EditorBrowsableState.Advanced)]
 		private static System.Resources.ResourceManager CreateResourceManager ()
 		{
 			var template = "Novartment.Base.UI.Wpf.Resources.resources";
@@ -47,6 +47,7 @@ namespace Novartment.Base.UI.Wpf
 					break;
 				}
 			}
+
 			if (foundName == null)
 			{
 				foreach (var name in names)
@@ -57,6 +58,7 @@ namespace Novartment.Base.UI.Wpf
 						break;
 					}
 				}
+
 				if (foundName == null)
 				{
 					var template2 = "Resources.resources";
@@ -70,17 +72,19 @@ namespace Novartment.Base.UI.Wpf
 					}
 				}
 			}
+
 			if (foundName == null)
 			{
 				throw new InvalidOperationException (string.Format ("Resource with name '{0}' not found in assembly '{1}'.", template, assembly.GetName ().Name));
 			}
+
 			return new System.Resources.ResourceManager (foundName.Substring (0, foundName.Length - 10), assembly);
 		}
 
 		/// <summary>
 		/// Returns the formatted resource string.
 		/// </summary>
-		[System.ComponentModel.EditorBrowsableAttribute (System.ComponentModel.EditorBrowsableState.Advanced)]
+		[System.ComponentModel.EditorBrowsable (System.ComponentModel.EditorBrowsableState.Advanced)]
 		private static string GetResourceString (string key)
 		{
 			return _resourceMan.Value.GetString (key);

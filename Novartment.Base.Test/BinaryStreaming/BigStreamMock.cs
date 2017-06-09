@@ -19,6 +19,7 @@ namespace Novartment.Base.Test
 			{
 				throw new ArgumentOutOfRangeException (nameof (length));
 			}
+
 			if (dataFunction == null)
 			{
 				throw new ArgumentNullException (nameof (dataFunction));
@@ -39,20 +40,25 @@ namespace Novartment.Base.Test
 		{
 			get
 			{
-				if (!_canSeek) throw new NotSupportedException ();
+				if (!_canSeek)
+				{
+					throw new NotSupportedException ();
+				}
+
 				return _length;
 			}
 		}
 
 		public override long Position
 		{
-			get
-			{
-				return _position;
-			}
+			get => _position;
+
 			set
 			{
-				if (!_canSeek) throw new NotSupportedException ();
+				if (!_canSeek)
+				{
+					throw new NotSupportedException ();
+				}
 				_position = value;
 			}
 		}
@@ -70,6 +76,7 @@ namespace Novartment.Base.Test
 				}
 				_position += readed;
 			}
+
 			return readed;
 		}
 
@@ -88,12 +95,13 @@ namespace Novartment.Base.Test
 					_position += _length + offset;
 					break;
 			}
+
 			if (_position < 0) _position = 0;
 			return _position;
 		}
 
-		public override void Flush () { throw new NotSupportedException (); }
-		public override void SetLength (long value) { throw new NotSupportedException (); }
-		public override void Write (byte[] buffer, int offset, int count) { throw new NotSupportedException (); }
+		public override void Flush () => throw new NotSupportedException ();
+		public override void SetLength (long value) => throw new NotSupportedException ();
+		public override void Write (byte[] buffer, int offset, int count) => throw new NotSupportedException ();
 	}
 }

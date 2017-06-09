@@ -1,5 +1,4 @@
-﻿
-namespace Novartment.Base.Net.Smtp
+﻿namespace Novartment.Base.Net.Smtp
 {
 	/// <summary>
 	/// Результат добавления получателя к списку получателей.

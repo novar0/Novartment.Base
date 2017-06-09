@@ -7,14 +7,46 @@ namespace Novartment.Base.Media
 	/// <summary>
 	/// Информация о трэке матрёшка-файла.
 	/// </summary>
-	[SuppressMessage ("Microsoft.Naming",
+	[SuppressMessage (
+		"Microsoft.Naming",
 		"CA1704:IdentifiersShouldBeSpelledCorrectly",
 		MessageId = "Matroska",
-		Justification = "'Matroska' represents standard term."),
-	DebuggerDisplay ("{DebuggerDisplay,nq}"),
-	CLSCompliant (false)]
+		Justification = "'Matroska' represents standard term.")]
+	[DebuggerDisplay ("{DebuggerDisplay,nq}")]
+	[CLSCompliant (false)]
 	public class MatroskaTrackInfo
 	{
+		/// <summary>
+		/// Инициализирует новый экземпляр класса MatroskaTrackInfo на основе указанных данных.
+		/// </summary>
+		/// <param name="trackType">Разновидность трэка.</param>
+		/// <param name="forced">Признак принудительного использования трэка.</param>
+		/// <param name="codec">Кодек трэка.</param>
+		/// <param name="defaultDuration">Продолжительность трэка по умолчанию.</param>
+		/// <param name="language">Язык трэка.</param>
+		/// <param name="name">Название трэка.</param>
+		/// <param name="videoFormat">Видео-формат.</param>
+		/// <param name="audioFormat">Аудио-формат.</param>
+		public MatroskaTrackInfo (
+			MatroskaTrackType? trackType,
+			bool forced,
+			string codec,
+			ulong? defaultDuration,
+			string language,
+			string name,
+			MatroskaTrackInfoVideoFormat videoFormat,
+			MatroskaTrackInfoAudioFormat audioFormat)
+		{
+			this.TrackType = trackType;
+			this.Forced = forced;
+			this.Codec = codec;
+			this.DefaultDuration = defaultDuration;
+			this.Language = language;
+			this.Name = name;
+			this.VideoFormat = videoFormat;
+			this.AudioFormat = audioFormat;
+		}
+
 		/// <summary>
 		/// Получает разновидность трэка.
 		/// </summary>
@@ -55,47 +87,11 @@ namespace Novartment.Base.Media
 		/// </summary>
 		public MatroskaTrackInfoAudioFormat AudioFormat { get; }
 
-		/// <summary>
-		/// Инициализирует новый экземпляр класса MatroskaTrackInfo на основе указанных данных.
-		/// </summary>
-		/// <param name="trackType">Разновидность трэка.</param>
-		/// <param name="forced">Признак принудительного использования трэка.</param>
-		/// <param name="codec">Кодек трэка.</param>
-		/// <param name="defaultDuration">Продолжительность трэка по умолчанию.</param>
-		/// <param name="language">Язык трэка.</param>
-		/// <param name="name">Название трэка.</param>
-		/// <param name="videoFormat">Видео-формат.</param>
-		/// <param name="audioFormat">Аудио-формат.</param>
-		public MatroskaTrackInfo (
-			MatroskaTrackType? trackType,
-			bool forced,
-			string codec,
-			ulong? defaultDuration,
-			string language,
-			string name,
-			MatroskaTrackInfoVideoFormat videoFormat,
-			MatroskaTrackInfoAudioFormat audioFormat)
-		{
-			this.TrackType = trackType;
-			this.Forced = forced;
-			this.Codec = codec;
-			this.DefaultDuration = defaultDuration;
-			this.Language = language;
-			this.Name = name;
-			this.VideoFormat = videoFormat;
-			this.AudioFormat = audioFormat;
-		}
-
-		[DebuggerBrowsable (DebuggerBrowsableState.Never),
-		SuppressMessage ("Microsoft.Performance",
+		[DebuggerBrowsable (DebuggerBrowsableState.Never)]
+		[SuppressMessage (
+		"Microsoft.Performance",
 			"CA1811:AvoidUncalledPrivateCode",
 			Justification = "Used in DebuggerDisplay attribute.")]
-		private string DebuggerDisplay
-		{
-			get
-			{
-				return FormattableString.Invariant ($"Type = {this.TrackType}, Codec = {this.Codec}");
-			}
-		}
+		private string DebuggerDisplay => FormattableString.Invariant ($"Type = {this.TrackType}, Codec = {this.Codec}");
 	}
 }

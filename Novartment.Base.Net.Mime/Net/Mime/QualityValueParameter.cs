@@ -12,16 +12,6 @@ namespace Novartment.Base.Net
 		IEquatable<QualityValueParameter>
 	{
 		/// <summary>
-		/// Получает относительную важность параметра.
-		/// </summary>
-		public decimal Importance { get; }
-
-		/// <summary>
-		/// Получает значение параметра.
-		/// </summary>
-		public string Value { get; }
-
-		/// <summary>
 		/// Инициализирует новый экземпляр QualityValueParameter с указанным значением и относительной важностью.
 		/// </summary>
 		/// <param name="value">Значение параметра.</param>
@@ -32,14 +22,52 @@ namespace Novartment.Base.Net
 			{
 				throw new ArgumentNullException (nameof (value));
 			}
+
 			if (importance <= 0.0m || importance > 1.0m)
 			{
 				throw new ArgumentOutOfRangeException (nameof (importance));
 			}
+
 			Contract.EndContractBlock ();
 
 			this.Importance = importance;
 			this.Value = value;
+		}
+
+		/// <summary>
+		/// Получает относительную важность параметра.
+		/// </summary>
+		public decimal Importance { get; }
+
+		/// <summary>
+		/// Получает значение параметра.
+		/// </summary>
+		public string Value { get; }
+
+		/// <summary>
+		/// Определяет равенство двух указанных объектов.
+		/// </summary>
+		/// <param name="first">Первый объект для сравнения.</param>
+		/// <param name="second">Второй объект для сравнения.</param>
+		/// <returns>True если значение параметра first равно second; в противном случае — False.</returns>
+		public static bool operator == (QualityValueParameter first, QualityValueParameter second)
+		{
+			return ReferenceEquals (first, null) ?
+				ReferenceEquals (second, null) :
+				first.Equals (second);
+		}
+
+		/// <summary>
+		/// Определяет неравенство двух указанных объектов.
+		/// </summary>
+		/// <param name="first">Первый объект для сравнения.</param>
+		/// <param name="second">Второй объект для сравнения.</param>
+		/// <returns>True если значение параметра first не равно second; в противном случае — False.</returns>
+		public static bool operator != (QualityValueParameter first, QualityValueParameter second)
+		{
+			return !(ReferenceEquals (first, null) ?
+				ReferenceEquals (second, null) :
+				first.Equals (second));
 		}
 
 		/// <summary>
@@ -53,6 +81,7 @@ namespace Novartment.Base.Net
 			{
 				throw new ArgumentOutOfRangeException (nameof (importance));
 			}
+
 			Contract.EndContractBlock ();
 
 			return new QualityValueParameter (this.Value, importance);
@@ -69,6 +98,7 @@ namespace Novartment.Base.Net
 			{
 				throw new ArgumentNullException (nameof (value));
 			}
+
 			Contract.EndContractBlock ();
 
 			return new QualityValueParameter (value, this.Importance);
@@ -114,35 +144,10 @@ namespace Novartment.Base.Net
 			{
 				return false;
 			}
+
 			return
 				(this.Importance == other.Importance) &&
 				string.Equals (this.Value, other.Value, StringComparison.Ordinal);
-		}
-
-		/// <summary>
-		/// Определяет равенство двух указанных объектов.
-		/// </summary>
-		/// <param name="first">Первый объект для сравнения.</param>
-		/// <param name="second">Второй объект для сравнения.</param>
-		/// <returns>True если значение параметра first равно second; в противном случае — False.</returns>
-		public static bool operator == (QualityValueParameter first, QualityValueParameter second)
-		{
-			return ReferenceEquals (first, null) ?
-				ReferenceEquals (second, null) :
-				first.Equals (second);
-		}
-
-		/// <summary>
-		/// Определяет неравенство двух указанных объектов.
-		/// </summary>
-		/// <param name="first">Первый объект для сравнения.</param>
-		/// <param name="second">Второй объект для сравнения.</param>
-		/// <returns>True если значение параметра first не равно second; в противном случае — False.</returns>
-		public static bool operator != (QualityValueParameter first, QualityValueParameter second)
-		{
-			return !(ReferenceEquals (first, null) ?
-				ReferenceEquals (second, null) :
-				first.Equals (second));
 		}
 	}
 }

@@ -1,6 +1,6 @@
 ﻿using System;
-using System.ComponentModel;
 using System.Collections.Specialized;
+using System.ComponentModel;
 
 namespace Novartment.Base
 {
@@ -16,11 +16,12 @@ namespace Novartment.Base
 		public static bool TryDispose (object disposableValue)
 		{
 			var disposable = disposableValue as IDisposable;
-			var success = (disposable != null);
+			var success = disposable != null;
 			if (success)
 			{
 				disposable.Dispose ();
 			}
+
 			return success;
 		}
 
@@ -37,6 +38,7 @@ namespace Novartment.Base
 			{
 				return false;
 			}
+
 			ncc.CollectionChanged += handler;
 			return true;
 		}
@@ -54,6 +56,7 @@ namespace Novartment.Base
 			{
 				return false;
 			}
+
 			ncc.CollectionChanged -= handler;
 			return true;
 		}
@@ -71,6 +74,7 @@ namespace Novartment.Base
 			{
 				return false;
 			}
+
 			npc.PropertyChanged += handler;
 			return true;
 		}
@@ -88,6 +92,7 @@ namespace Novartment.Base
 			{
 				return false;
 			}
+
 			npc.PropertyChanged -= handler;
 			return true;
 		}

@@ -14,6 +14,30 @@ namespace Novartment.Base.Net
 		private string _value;
 
 		/// <summary>
+		/// Инициализирует новый экземпляр класса HeaderFieldParameter с указанным именем и значением.
+		/// </summary>
+		/// <param name="name">Имя параметра поля заголовка.</param>
+		/// <param name="value">Значение параметра поля заголовка.</param>
+		public HeaderFieldParameter(string name, string value)
+		{
+			if (name == null)
+			{
+				throw new ArgumentNullException(nameof(name));
+			}
+
+			if ((name.Length < 1) ||
+				!AsciiCharSet.IsAllOfClass(name, AsciiCharClasses.Token))
+			{
+				throw new ArgumentOutOfRangeException(nameof(name));
+			}
+
+			Contract.EndContractBlock();
+
+			this.Name = name;
+			_value = value;
+		}
+
+		/// <summary>
 		/// Получает имя параметра поля заголовка.
 		/// </summary>
 		public string Name { get; }
@@ -23,30 +47,34 @@ namespace Novartment.Base.Net
 		/// </summary>
 		public string Value
 		{
-			get { return _value; }
+			get => _value;
 			set { _value = value; }
 		}
 
 		/// <summary>
-		/// Инициализирует новый экземпляр класса HeaderFieldParameter с указанным именем и значением.
+		/// Определяет равенство двух указанных объектов.
 		/// </summary>
-		/// <param name="name">Имя параметра поля заголовка.</param>
-		/// <param name="value">Значение параметра поля заголовка.</param>
-		public HeaderFieldParameter (string name, string value)
+		/// <param name="first">Первый объект для сравнения.</param>
+		/// <param name="second">Второй объект для сравнения.</param>
+		/// <returns>True если значение параметра first равно second; в противном случае — False.</returns>
+		public static bool operator ==(HeaderFieldParameter first, HeaderFieldParameter second)
 		{
-			if (name == null)
-			{
-				throw new ArgumentNullException (nameof (name));
-			}
-			if ((name.Length < 1) || 
-				!AsciiCharSet.IsAllOfClass (name, AsciiCharClasses.Token))
-			{
-				throw new ArgumentOutOfRangeException (nameof (name));
-			}
-			Contract.EndContractBlock ();
+			return ReferenceEquals(first, null) ?
+				ReferenceEquals(second, null) :
+				first.Equals(second);
+		}
 
-			this.Name = name;
-			_value = value;
+		/// <summary>
+		/// Определяет неравенство двух указанных объектов.
+		/// </summary>
+		/// <param name="first">Первый объект для сравнения.</param>
+		/// <param name="second">Второй объект для сравнения.</param>
+		/// <returns>True если значение параметра first не равно second; в противном случае — False.</returns>
+		public static bool operator !=(HeaderFieldParameter first, HeaderFieldParameter second)
+		{
+			return !(ReferenceEquals(first, null) ?
+				ReferenceEquals(second, null) :
+				first.Equals(second));
 		}
 
 		/// <summary>
@@ -89,35 +117,10 @@ namespace Novartment.Base.Net
 			{
 				return false;
 			}
+
 			return
 				string.Equals (this.Name, other.Name, StringComparison.OrdinalIgnoreCase) &&
 				string.Equals (_value, other._value, StringComparison.Ordinal);
-		}
-
-		/// <summary>
-		/// Определяет равенство двух указанных объектов.
-		/// </summary>
-		/// <param name="first">Первый объект для сравнения.</param>
-		/// <param name="second">Второй объект для сравнения.</param>
-		/// <returns>True если значение параметра first равно second; в противном случае — False.</returns>
-		public static bool operator ==(HeaderFieldParameter first, HeaderFieldParameter second)
-		{
-			return ReferenceEquals (first, null) ?
-				ReferenceEquals (second, null) :
-				first.Equals (second);
-		}
-
-		/// <summary>
-		/// Определяет неравенство двух указанных объектов.
-		/// </summary>
-		/// <param name="first">Первый объект для сравнения.</param>
-		/// <param name="second">Второй объект для сравнения.</param>
-		/// <returns>True если значение параметра first не равно second; в противном случае — False.</returns>
-		public static bool operator !=(HeaderFieldParameter first, HeaderFieldParameter second)
-		{
-			return !(ReferenceEquals (first, null) ?
-				ReferenceEquals (second, null) :
-				first.Equals (second));
 		}
 	}
 }

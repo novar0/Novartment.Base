@@ -23,6 +23,7 @@ namespace Novartment.Base.Collections.Immutable
 				acc++;
 				node = node.Next;
 			}
+
 			return acc;
 		}
 
@@ -57,19 +58,17 @@ namespace Novartment.Base.Collections.Immutable
 		/// <returns>Перечислитель значений узлов списка.</returns>
 		public static IEnumerator<T> GetEnumerator<T> (this SingleLinkedListNode<T> node)
 		{
-			return new _SingleLinkedListEnumerator<T> (node);
+			return new SingleLinkedListEnumerator<T> (node);
 		}
 
-		#region class _SingleLinkedListEnumerator<T>
-
-		internal sealed class _SingleLinkedListEnumerator<T> :
+		internal sealed class SingleLinkedListEnumerator<T> :
 			IEnumerator<T>
 		{
 			private readonly SingleLinkedListNode<T> _startingNode;
 			private SingleLinkedListNode<T> _currentNode;
 			private bool _started;
 
-			internal _SingleLinkedListEnumerator (SingleLinkedListNode<T> node)
+			internal SingleLinkedListEnumerator (SingleLinkedListNode<T> node)
 			{
 				_startingNode = node;
 				Reset ();
@@ -86,13 +85,16 @@ namespace Novartment.Base.Collections.Immutable
 					{
 						throw new InvalidOperationException ("Can not get current element of enumeration because it not started.");
 					}
+
 					if (_currentNode == null)
 					{
 						throw new InvalidOperationException ("Can not get current element of enumeration because it already ended.");
 					}
+
 					return _currentNode.Value;
 				}
 			}
+
 			object IEnumerator.Current => this.Current;
 
 			/// <summary>
@@ -113,9 +115,11 @@ namespace Novartment.Base.Collections.Immutable
 					{
 						return false;
 					}
+
 					_currentNode = _currentNode.Next;
 				}
-				return (_currentNode != null);
+
+				return _currentNode != null;
 			}
 
 			/// <summary>
@@ -130,9 +134,9 @@ namespace Novartment.Base.Collections.Immutable
 			/// <summary>
 			/// Ничего не делает.
 			/// </summary>
-			public void Dispose () { }
+			public void Dispose ()
+			{
+			}
 		}
-
-		#endregion
 	}
 }

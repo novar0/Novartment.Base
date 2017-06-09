@@ -16,13 +16,6 @@ namespace Novartment.Base.UI.Wpf
 		ICommand
 	{
 		/// <summary>
-		/// Инициализирует новый экземпляр класса CommandReference.
-		/// </summary>
-		public CommandReference ()
-		{
-		}
-
-		/// <summary>
 		/// Команда, хранящаяся в ссылке.
 		/// </summary>
 		public static readonly DependencyProperty CommandProperty = DependencyProperty.Register (
@@ -31,16 +24,26 @@ namespace Novartment.Base.UI.Wpf
 			typeof (CommandReference),
 			new PropertyMetadata (OnCommandChanged));
 
+		private EventHandler _commandCanExecuteChangedHandler;
+
+		/// <summary>
+		/// Инициализирует новый экземпляр класса CommandReference.
+		/// </summary>
+		public CommandReference ()
+		{
+		}
+
+		/// <summary>Происходит при изменениях, влияющих на то, должна ли выполняться данная команда.</summary>
+		public event EventHandler CanExecuteChanged;
+
 		/// <summary>
 		/// Получает или устанавливает команду, хранящуюся в ссылке.
 		/// </summary>
 		public ICommand Command
 		{
-			get { return (ICommand)GetValue (CommandProperty); }
+			get => (ICommand)GetValue (CommandProperty);
 			set { SetValue (CommandProperty, value); }
 		}
-
-		#region ICommand Members
 
 		/// <summary>Определяет метод, который определяет, может ли данная команда выполняться в ее текущем состоянии.</summary>
 		/// <param name="parameter">Данные, используемые данной командой.</param>
@@ -57,10 +60,12 @@ namespace Novartment.Base.UI.Wpf
 			this.Command.Execute (parameter);
 		}
 
-		private EventHandler _commandCanExecuteChangedHandler;
-
-		/// <summary>Происходит при изменениях, влияющих на то, должна ли выполняться данная команда.</summary>
-		public event EventHandler CanExecuteChanged;
+		/// <summary>Не реализовано.</summary>
+		/// <returns>Исключение NotImplementedException.</returns>
+		protected override Freezable CreateInstanceCore ()
+		{
+			throw new NotImplementedException ();
+		}
 
 		private static void OnCommandChanged (DependencyObject d, DependencyPropertyChangedEventArgs e)
 		{
@@ -72,6 +77,7 @@ namespace Novartment.Base.UI.Wpf
 			{
 				oldCommand.CanExecuteChanged -= commandReference._commandCanExecuteChangedHandler;
 			}
+
 			if (newCommand != null)
 			{
 				commandReference._commandCanExecuteChangedHandler = commandReference.CommandCanExecuteChanged;
@@ -82,14 +88,6 @@ namespace Novartment.Base.UI.Wpf
 		private void CommandCanExecuteChanged (object sender, EventArgs e)
 		{
 			this.CanExecuteChanged?.Invoke (this, e);
-		}
-
-		#endregion
-
-		/// <summary>Не реализовано.</summary>
-		protected override Freezable CreateInstanceCore ()
-		{
-			throw new NotImplementedException ();
 		}
 	}
 }

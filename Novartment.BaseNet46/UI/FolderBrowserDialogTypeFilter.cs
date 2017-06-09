@@ -1,5 +1,4 @@
-﻿
-namespace Novartment.Base.UI
+﻿namespace Novartment.Base.UI
 {
 	/// <summary>
 	/// Тип доступных папок в диалоге, запрашивающий у пользователя папку оболочки.

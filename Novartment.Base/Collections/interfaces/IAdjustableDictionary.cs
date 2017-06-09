@@ -8,10 +8,12 @@ namespace Novartment.Base.Collections
 	/// </summary>
 	/// <typeparam name="TKey">Тип ключей в словаре.</typeparam>
 	/// <typeparam name="TValue">Тип значений в словаре.</typeparam>
-	[SuppressMessage ("Microsoft.Naming",
+	[SuppressMessage (
+		"Microsoft.Naming",
 		"CA1710:IdentifiersShouldHaveCorrectSuffix",
-		Justification = "Implemented interfaces has no association with class name."),
-	SuppressMessage ("Microsoft.Naming",
+		Justification = "Implemented interfaces has no association with class name.")]
+	[SuppressMessage (
+		"Microsoft.Naming",
 		"CA1711:IdentifiersShouldNotHaveIncorrectSuffix",
 		Justification = "'Dictionary' suffix intended because of base type is IReadOnlyDictionary.")]
 	public interface IAdjustableDictionary<TKey, TValue> :

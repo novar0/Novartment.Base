@@ -8,7 +8,8 @@ namespace Novartment.Base.Collections
 	/// </summary>
 	/// <typeparam name="T">Тип элементов коллекции.</typeparam>
 	/// <remarks>Характерный представитель - System.Collections.Generic.Stack.</remarks>
-	[SuppressMessage ("Microsoft.Naming",
+	[SuppressMessage (
+		"Microsoft.Naming",
 		"CA1704:IdentifiersShouldBeSpelledCorrectly",
 		MessageId = "Lifo",
 		Justification = "'LIFO' represents standard term.")]

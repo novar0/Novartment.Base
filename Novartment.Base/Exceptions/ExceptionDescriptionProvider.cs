@@ -1,14 +1,14 @@
 ﻿using System;
-using System.IO;
-using Novartment.Base.Collections;
-using Novartment.Base.Collections.Linq;
 using System.Collections.Generic;
-using static System.Linq.Enumerable;
-using System.Reflection;
-using System.Globalization;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
+using System.Globalization;
+using System.IO;
+using System.Reflection;
+using Novartment.Base.Collections;
+using Novartment.Base.Collections.Linq;
 using Novartment.Base.Reflection;
+using static System.Linq.Enumerable;
 
 namespace Novartment.Base
 {
@@ -41,6 +41,7 @@ namespace Novartment.Base
 			{
 				throw new ArgumentNullException (nameof (exception));
 			}
+
 			Contract.EndContractBlock ();
 
 			var customErrorException = exception as CustomErrorException;
@@ -82,6 +83,7 @@ namespace Novartment.Base
 			{
 				throw new ArgumentNullException (nameof (exception));
 			}
+
 			Contract.EndContractBlock ();
 
 			var customErrorException = exception as CustomErrorException;
@@ -101,6 +103,7 @@ namespace Novartment.Base
 			{
 				throw new ArgumentNullException (nameof (exception));
 			}
+
 			Contract.EndContractBlock ();
 
 			var customErrorException = exception as CustomErrorException;
@@ -120,6 +123,7 @@ namespace Novartment.Base
 			{
 				throw new ArgumentNullException (nameof (exception));
 			}
+
 			Contract.EndContractBlock ();
 
 			var customErrorException = exception as CustomErrorException;
@@ -129,6 +133,7 @@ namespace Novartment.Base
 			}
 
 			string message = null;
+
 			// для AggregateException сообщение совершенно неинформативно, заменяем его на сообщение первого вложенного исключения
 			var aggregateException = exception as AggregateException;
 			if ((aggregateException != null) && (aggregateException.InnerExceptions != null))
@@ -153,6 +158,7 @@ namespace Novartment.Base
 			{
 				throw new ArgumentNullException (nameof (exception));
 			}
+
 			Contract.EndContractBlock ();
 
 			var customErrorException = exception as CustomErrorException;
@@ -219,13 +225,14 @@ namespace Novartment.Base
 			{
 				throw new ArgumentNullException (nameof (exception));
 			}
+
 			Contract.EndContractBlock ();
 
-			return string.Join ("; ",
+			return string.Join (
+				"; ",
 				CreateDescription (exception)
 					.EnumerateHierarchy (true)
-					.Select (item => item.ToString (false, null))
-				);
+					.Select (item => item.ToString (false, null)));
 		}
 
 		/// <summary>
@@ -234,7 +241,8 @@ namespace Novartment.Base
 		/// <param name="exception">Исключение, для которого создаётся подробное описание.</param>
 		/// <param name="tracePatternToHide">Строка-образец, которая в трассировке будет заменена на многоточие.</param>
 		/// <returns>Последовательность строк, составляющих описание исключения.</returns>
-		[SuppressMessage ("Microsoft.Design",
+		[SuppressMessage (
+		"Microsoft.Design",
 			"CA1026:DefaultParametersShouldNotBeUsed",
 			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
 		public static IReadOnlyList<string> GetFullInfo (Exception exception, string tracePatternToHide = null)
@@ -243,6 +251,7 @@ namespace Novartment.Base
 			{
 				throw new ArgumentNullException (nameof (exception));
 			}
+
 			Contract.EndContractBlock ();
 
 			return CreateDescription (exception)
@@ -265,6 +274,7 @@ namespace Novartment.Base
 			{
 				throw new ArgumentNullException (nameof (exception));
 			}
+
 			Contract.EndContractBlock ();
 
 			var innerExceptions = ExceptionDescriptionProvider.GetInnerExceptions (exception);

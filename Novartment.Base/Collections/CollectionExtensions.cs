@@ -1,10 +1,10 @@
 ﻿using System;
-using static System.Linq.Enumerable;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using Novartment.Base.Collections.Immutable;
+using static System.Linq.Enumerable;
 
 namespace Novartment.Base.Collections
 {
@@ -13,11 +13,10 @@ namespace Novartment.Base.Collections
 	/// </summary>
 	public static class CollectionExtensions
 	{
-		#region method LoopedArraySegmentClear
-
 		/// <summary>
 		/// Очищает диапазон элементов зацикленного сегмента массива.
 		/// </summary>
+		/// <typeparam name="T">Тип элементов массива.</typeparam>
 		/// <param name="segmentItems">Массив элементов сегмента.</param>
 		/// <param name="segmentOffset">Начальная позиция элементов сегмента.</param>
 		/// <param name="segmentCount">Количество элементов сегмента.</param>
@@ -34,10 +33,12 @@ namespace Novartment.Base.Collections
 			{
 				throw new ArgumentNullException (nameof (segmentItems));
 			}
+
 			if ((segmentOffset < 0) || (segmentOffset > segmentItems.Length) || ((segmentOffset == segmentItems.Length) && (segmentCount > 0)))
 			{
 				throw new ArgumentOutOfRangeException (nameof (segmentOffset));
 			}
+
 			if ((segmentCount < 0) || (segmentCount > segmentItems.Length))
 			{
 				throw new ArgumentOutOfRangeException (nameof (segmentCount));
@@ -47,10 +48,12 @@ namespace Novartment.Base.Collections
 			{
 				throw new ArgumentOutOfRangeException (nameof (index));
 			}
+
 			if ((count < 0) || ((index + count) > segmentCount))
 			{
 				throw new ArgumentOutOfRangeException (nameof (count));
 			}
+
 			Contract.EndContractBlock ();
 
 			index += segmentOffset;
@@ -79,14 +82,11 @@ namespace Novartment.Base.Collections
 			}
 		}
 
-		#endregion
-
-		#region method LoopedArraySegmentCopy
-
 		/// <summary>
 		/// Копирует диапазон элементов зацикленного сегмента массива из одной позиции в другую.
 		/// Позиции для копирования указываются от начала сегмента.
 		/// </summary>
+		/// <typeparam name="T">Тип элементов массива.</typeparam>
 		/// <param name="segmentItems">Массив элементов сегмента.</param>
 		/// <param name="segmentOffset">Начальная позиция элементов сегмента.</param>
 		/// <param name="segmentCount">Количество элементов сегмента.</param>
@@ -99,33 +99,38 @@ namespace Novartment.Base.Collections
 			int segmentCount,
 			int sourceIndex,
 			int destinationIndex,
-			int count
-			)
+			int count)
 		{
 			if (segmentItems == null)
 			{
 				throw new ArgumentNullException (nameof (segmentItems));
 			}
+
 			if ((segmentOffset < 0) || (segmentOffset > segmentItems.Length) || ((segmentOffset == segmentItems.Length) && (segmentCount > 0)))
 			{
 				throw new ArgumentOutOfRangeException (nameof (segmentOffset));
 			}
+
 			if ((segmentCount < 0) || (segmentCount > segmentItems.Length))
 			{
 				throw new ArgumentOutOfRangeException (nameof (segmentCount));
 			}
+
 			if ((sourceIndex < 0) || (sourceIndex > segmentCount) || ((sourceIndex == segmentCount) && (count > 0)))
 			{
 				throw new ArgumentOutOfRangeException (nameof (sourceIndex));
 			}
+
 			if ((destinationIndex < 0) || (destinationIndex > segmentCount) || ((destinationIndex == segmentCount) && (count > 0)))
 			{
 				throw new ArgumentOutOfRangeException (nameof (destinationIndex));
 			}
+
 			if ((count < 0) || ((sourceIndex + count) > segmentCount) || ((destinationIndex + count) > segmentCount))
 			{
 				throw new ArgumentOutOfRangeException (nameof (count));
 			}
+
 			Contract.EndContractBlock ();
 
 			var srcIndex = sourceIndex + segmentOffset;
@@ -199,10 +204,6 @@ namespace Novartment.Base.Collections
 			}
 		}
 
-		#endregion
-
-		#region extension method ArraySegment<>.DuplicateToArray
-
 		/// <summary>
 		/// Создаёт массив, в который оптимально доступным образом скопированы все элементы указанного сегмента массива.
 		/// </summary>
@@ -215,24 +216,23 @@ namespace Novartment.Base.Collections
 			{
 				throw new ArgumentNullException (nameof (arraySegment));
 			}
+
 			if (arraySegment.Array == null)
 			{
 				throw new ArgumentOutOfRangeException (nameof (arraySegment));
 			}
+
 			if ((arraySegment.Count < 0) || (arraySegment.Offset < 0) || (arraySegment.Offset >= arraySegment.Count))
 			{
 				throw new ArgumentOutOfRangeException (nameof (arraySegment));
 			}
+
 			Contract.EndContractBlock ();
 
 			var arrayCopy = new T[arraySegment.Count];
 			Array.Copy (arraySegment.Array, arraySegment.Offset, arrayCopy, 0, arraySegment.Count);
 			return arrayCopy;
 		}
-
-		#endregion
-
-		#region extension method IAdjustableCollection<>.AddRange
 
 		/// <summary>
 		/// Добавляет к коллекции указанную последовательность по возможности заранее резервируя место под новые элементы.
@@ -246,10 +246,12 @@ namespace Novartment.Base.Collections
 			{
 				throw new ArgumentNullException (nameof (collection));
 			}
+
 			if (items == null)
 			{
 				throw new ArgumentNullException (nameof (items));
 			}
+
 			Contract.EndContractBlock ();
 
 			var reservableCapacityCollection = collection as IReservedCapacityCollection<T>;
@@ -262,15 +264,12 @@ namespace Novartment.Base.Collections
 					reservableCapacityCollection.EnsureCapacity (collection.Count + count);
 				}
 			}
+
 			foreach (var item in items)
 			{
 				collection.Add (item);
 			}
 		}
-
-		#endregion
-
-		#region extension method IAdjustableList<>.InsertRange
 
 		/// <summary>
 		/// Вставляет в список в указанную позицию элементы указанной последовательности.
@@ -285,14 +284,17 @@ namespace Novartment.Base.Collections
 			{
 				throw new ArgumentNullException (nameof (list));
 			}
+
 			if (items == null)
 			{
 				throw new ArgumentNullException (nameof (items));
 			}
+
 			if ((index < 0) || (index > list.Count))
 			{
 				throw new ArgumentOutOfRangeException (nameof (index));
 			}
+
 			Contract.EndContractBlock ();
 
 			int count;
@@ -317,10 +319,6 @@ namespace Novartment.Base.Collections
 			}
 		}
 
-		#endregion
-
-		#region extension method IEnumerable<>.Split
-
 		/// <summary>
 		/// Разделяет последовательность на под-последовательности в местах,
 		/// отобранных по результатам применения указанной функции к элементам исходной последовательности.
@@ -341,10 +339,12 @@ namespace Novartment.Base.Collections
 			{
 				throw new ArgumentNullException (nameof (collection));
 			}
+
 			if (splitHereFunc == null)
 			{
 				throw new ArgumentNullException (nameof (splitHereFunc));
 			}
+
 			Contract.EndContractBlock ();
 
 			var list = new ArrayList<T> ();
@@ -357,6 +357,7 @@ namespace Novartment.Base.Collections
 					{
 						yield return GetReadOnlyView (list);
 					}
+
 					list = new ArrayList<T> ();
 				}
 				else
@@ -364,15 +365,12 @@ namespace Novartment.Base.Collections
 					list.Add (item);
 				}
 			}
+
 			if (list.Count > 0)
 			{
 				yield return GetReadOnlyView (list);
 			}
 		}
-
-		#endregion
-
-		#region extension method IAdjustableList<>.RemoveWhere
 
 		/// <summary>Удаляет элементы в списке, прошедшие фильтрацию указанным предикатом.</summary>
 		/// <typeparam name="T">Тип элементов списка.</typeparam>
@@ -387,16 +385,19 @@ namespace Novartment.Base.Collections
 			{
 				throw new ArgumentNullException (nameof (list));
 			}
+
 			if (predicate == null)
 			{
 				throw new ArgumentNullException (nameof (predicate));
 			}
+
 			Contract.EndContractBlock ();
 
 			if (list.Count < 1)
 			{
 				return 0;
 			}
+
 			var indexesToRemove = new ArrayList<int> ();
 			for (var i = 0; i < list.Count; i++)
 			{
@@ -406,13 +407,10 @@ namespace Novartment.Base.Collections
 					indexesToRemove.Add (i);
 				}
 			}
+
 			list.RemoveAtMany (indexesToRemove);
 			return indexesToRemove.Count;
 		}
-
-		#endregion
-
-		#region extension method IAdjustableList<>.RemoveItems
 
 		/// <summary>Удаляет в указанном списке все элементы, содержащиеся в указанном множестве.</summary>
 		/// <typeparam name="T">Тип элементов списка.</typeparam>
@@ -426,16 +424,19 @@ namespace Novartment.Base.Collections
 			{
 				throw new ArgumentNullException (nameof (list));
 			}
+
 			if (collectionToRemove == null)
 			{
 				throw new ArgumentNullException (nameof (collectionToRemove));
 			}
+
 			Contract.EndContractBlock ();
 
 			if (list.Count < 1)
 			{
 				return 0;
 			}
+
 			var indexesToRemove = new ArrayList<int> ();
 			{
 				for (var index = 0; index < list.Count; index++)
@@ -447,13 +448,10 @@ namespace Novartment.Base.Collections
 					}
 				}
 			}
+
 			list.RemoveAtMany (indexesToRemove);
 			return indexesToRemove.Count;
 		}
-
-		#endregion
-
-		#region extension method IAdjustableList<>.RemoveAtMany
 
 		/// <summary>
 		/// Удаляет элементы из списка согласно указанному отсортированному списку позиций для удаления.
@@ -470,10 +468,12 @@ namespace Novartment.Base.Collections
 			{
 				throw new ArgumentNullException (nameof (list));
 			}
+
 			if (indexes == null)
 			{
 				throw new ArgumentNullException (nameof (indexes));
 			}
+
 			Contract.EndContractBlock ();
 
 			var count = indexes.Count;
@@ -486,6 +486,7 @@ namespace Novartment.Base.Collections
 			var rangeEnd = indexes[count - 1];
 			var lastIndex = rangeEnd + 1;
 			int rangeSize;
+
 			// собираем индексы в непрерывные диапазоны чтобы минимизировать операции удаления
 			for (var i = count - 1; i >= 0; i--)
 			{
@@ -495,6 +496,7 @@ namespace Novartment.Base.Collections
 					throw new InvalidOperationException (FormattableString.Invariant (
 						$"Array of indexes to delete is not sorted in position {i}."));
 				}
+
 				if (index == (lastIndex - 1))
 				{
 					rangeStart = index;
@@ -506,15 +508,13 @@ namespace Novartment.Base.Collections
 					rangeStart = index;
 					rangeEnd = index;
 				}
+
 				lastIndex = index;
 			}
+
 			rangeSize = rangeEnd - lastIndex + 1;
 			list.RemoveRange (lastIndex, rangeSize);
 		}
-
-		#endregion
-
-		#region extension method IEnumerable<>.ToSet
 
 		/// <summary>
 		/// Создаёт конечное множество уникальных элементов, содержащихся в указанной последовательности,
@@ -527,7 +527,8 @@ namespace Novartment.Base.Collections
 		/// Конечное множество уникальных элементов, содержащихся в указанной последовательности,
 		/// выбранных с использованием указанный компаратора.
 		/// </returns>
-		[SuppressMessage ("Microsoft.Design",
+		[SuppressMessage (
+			"Microsoft.Design",
 			"CA1026:DefaultParametersShouldNotBeUsed",
 			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
 		public static IAdjustableFiniteSet<T> ToSet<T> (this IEnumerable<T> source, IComparer<T> comparer = null)
@@ -536,6 +537,7 @@ namespace Novartment.Base.Collections
 			{
 				throw new ArgumentNullException (nameof (source));
 			}
+
 			Contract.EndContractBlock ();
 
 			var set = new AvlTreeSet<T> (comparer);
@@ -543,12 +545,9 @@ namespace Novartment.Base.Collections
 			{
 				set.Add (item);
 			}
+
 			return set;
 		}
-
-		#endregion
-
-		#region extension method IEnumerable<>.ToHashSet
 
 		/// <summary>
 		/// Создаёт конечное множество уникальных элементов, содержащихся в указанной последовательности,
@@ -561,7 +560,8 @@ namespace Novartment.Base.Collections
 		/// Конечное множество уникальных элементов, содержащихся в указанной последовательности,
 		/// выбранных с использованием указанный компаратора.
 		/// </returns>
-		[SuppressMessage ("Microsoft.Design",
+		[SuppressMessage (
+		"Microsoft.Design",
 			"CA1026:DefaultParametersShouldNotBeUsed",
 			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
 		public static IAdjustableFiniteSet<T> ToHashSet<T> (this IEnumerable<T> source, IEqualityComparer<T> comparer = null)
@@ -570,6 +570,7 @@ namespace Novartment.Base.Collections
 			{
 				throw new ArgumentNullException (nameof (source));
 			}
+
 			Contract.EndContractBlock ();
 
 			var set = new AvlHashTreeSet<T> (comparer);
@@ -577,35 +578,26 @@ namespace Novartment.Base.Collections
 			{
 				set.Add (item);
 			}
+
 			return set;
 		}
-
-		#endregion
-
-		#region extension method IEnumerable<>.WhereNotNull
 
 		/// <summary>Повторяет последовательность, пропуская null-элементы.</summary>
 		/// <typeparam name="T">Тип элементов последовательности.</typeparam>
 		/// <param name="source">Последовательность, элементы которой будут возвращены если отличны от null.</param>
 		/// <returns>Последовательность в которой пропущены null-элементы.</returns>
-		public static IEnumerable<T> WhereNotNull<T> (this IEnumerable<T> source) where T : class
+		public static IEnumerable<T> WhereNotNull<T> (this IEnumerable<T> source)
+			where T : class
 		{
 			if (source == null)
 			{
 				throw new ArgumentNullException (nameof (source));
 			}
+
 			Contract.EndContractBlock ();
 
-			return source.Where (IsNotNullReference);
+			return source.Where (item => !ReferenceEquals (item, null));
 		}
-		private static bool IsNotNullReference<T> (T item) where T : class
-		{
-			return !ReferenceEquals (item, null);
-		}
-
-		#endregion
-
-		#region extension method IEnumerable<>.TryGetFirst
 
 		/// <summary>
 		/// Пытается получить первый элемент указанной коллекции.
@@ -621,6 +613,7 @@ namespace Novartment.Base.Collections
 			{
 				throw new ArgumentNullException (nameof (source));
 			}
+
 			Contract.EndContractBlock ();
 
 			var fifoCollection = source as IFifoCollection<T>;
@@ -668,13 +661,10 @@ namespace Novartment.Base.Collections
 					}
 				}
 			}
+
 			item = default (T);
 			return false;
 		}
-
-		#endregion
-
-		#region extension method IEnumerable<>.TryGetLast
 
 		/// <summary>
 		/// Пытается получить последний элемент указанной коллекции.
@@ -690,6 +680,7 @@ namespace Novartment.Base.Collections
 			{
 				throw new ArgumentNullException (nameof (source));
 			}
+
 			Contract.EndContractBlock ();
 
 			var lifoCollection = source as ILifoCollection<T>;
@@ -735,20 +726,18 @@ namespace Novartment.Base.Collections
 								do
 								{
 									item = enumerator.Current;
-								} while (enumerator.MoveNext ());
+								}
+								while (enumerator.MoveNext ());
 								return true;
 							}
 						}
 					}
 				}
 			}
+
 			item = default (T);
 			return false;
 		}
-
-		#endregion
-
-		#region extension method IEnumerable<>.TryGetCount
 
 		/// <summary>
 		/// Пытается получить количество элементов последовательности без её перебора.
@@ -766,6 +755,7 @@ namespace Novartment.Base.Collections
 			{
 				throw new ArgumentNullException (nameof (source));
 			}
+
 			Contract.EndContractBlock ();
 
 			var countable1 = source as IReadOnlyCollection<T>;
@@ -793,10 +783,6 @@ namespace Novartment.Base.Collections
 			return false;
 		}
 
-		#endregion
-
-		#region extension method ICollection<T>.AsReadOnlyCollection
-
 		/// <summary>
 		/// Создаёт обёртку только для чтения для указанной коллекции.
 		/// </summary>
@@ -809,23 +795,12 @@ namespace Novartment.Base.Collections
 			{
 				throw new ArgumentNullException (nameof (source));
 			}
+
 			Contract.EndContractBlock ();
 
 			var readOnlyCollection = source as IReadOnlyCollection<T>;
 			return readOnlyCollection ?? new GenericCollectionAsReadOnlyDecorator<T> (source);
 		}
-		internal class GenericCollectionAsReadOnlyDecorator<T> : IReadOnlyCollection<T>
-		{
-			private readonly ICollection<T> _collection;
-			internal GenericCollectionAsReadOnlyDecorator (ICollection<T> collection) { _collection = collection; }
-			public int Count => _collection.Count;
-			public IEnumerator<T> GetEnumerator () { return _collection.GetEnumerator (); }
-			IEnumerator IEnumerable.GetEnumerator () { return _collection.GetEnumerator (); }
-		}
-
-		#endregion
-
-		#region extension method ICollection.AsReadOnlyCollection
 
 		/// <summary>
 		/// Создаёт обёртку только для чтения для указанной коллекции.
@@ -839,23 +814,12 @@ namespace Novartment.Base.Collections
 			{
 				throw new ArgumentNullException (nameof (source));
 			}
+
 			Contract.EndContractBlock ();
 
 			var readOnlyCollection = source as IReadOnlyCollection<T>;
 			return readOnlyCollection ?? new CollectionAsReadOnlyDecorator<T> (source);
 		}
-		internal class CollectionAsReadOnlyDecorator<T> : IReadOnlyCollection<T>
-		{
-			private readonly ICollection _collection;
-			internal CollectionAsReadOnlyDecorator (ICollection collection) { _collection = collection; }
-			public int Count => _collection.Count;
-			public IEnumerator<T> GetEnumerator () { return _collection.Cast<T> ().GetEnumerator (); }
-			IEnumerator IEnumerable.GetEnumerator () { return _collection.GetEnumerator (); }
-		}
-
-		#endregion
-
-		#region extension method IList<T>.AsReadOnlyList
 
 		/// <summary>
 		/// Создаёт обёртку только для чтения для указанного списка.
@@ -869,24 +833,12 @@ namespace Novartment.Base.Collections
 			{
 				throw new ArgumentNullException (nameof (source));
 			}
+
 			Contract.EndContractBlock ();
 
 			var readOnlyList = source as IReadOnlyList<T>;
 			return readOnlyList ?? new GenericListAsReadOnlyDecorator<T> (source);
 		}
-		internal class GenericListAsReadOnlyDecorator<T> : IReadOnlyList<T>
-		{
-			private readonly IList<T> _list;
-			internal GenericListAsReadOnlyDecorator (IList<T> list) { _list = list; }
-			public T this[int index] => _list[index];
-			public int Count => _list.Count;
-			public IEnumerator<T> GetEnumerator () { return _list.GetEnumerator (); }
-			IEnumerator IEnumerable.GetEnumerator () { return _list.GetEnumerator (); }
-		}
-
-		#endregion
-
-		#region extension method IList.AsReadOnlyList
 
 		/// <summary>
 		/// Создаёт обёртку только для чтения для указанного списка.
@@ -900,24 +852,12 @@ namespace Novartment.Base.Collections
 			{
 				throw new ArgumentNullException (nameof (source));
 			}
+
 			Contract.EndContractBlock ();
 
 			var readOnlyList = source as IReadOnlyList<T>;
 			return readOnlyList ?? new ListAsReadOnlyDecorator<T> (source);
 		}
-		internal class ListAsReadOnlyDecorator<T> : IReadOnlyList<T>
-		{
-			private readonly IList _list;
-			internal ListAsReadOnlyDecorator (IList list) { _list = list; }
-			public T this[int index] => (T)_list[index];
-			public int Count => _list.Count;
-			public IEnumerator<T> GetEnumerator () { return _list.Cast<T> ().GetEnumerator (); }
-			IEnumerator IEnumerable.GetEnumerator () { return _list.GetEnumerator (); }
-		}
-
-		#endregion
-
-		#region extension method IEnumerable<>.DuplicateToArray
 
 		/// <summary>
 		/// Создаёт массив, в который оптимально доступным образом скопированы все элементы указанной последовательности.
@@ -931,6 +871,7 @@ namespace Novartment.Base.Collections
 			{
 				throw new ArgumentNullException (nameof (source));
 			}
+
 			Contract.EndContractBlock ();
 
 			T[] array;
@@ -945,6 +886,7 @@ namespace Novartment.Base.Collections
 				{
 					collection1.CopyTo (array, 0);
 				}
+
 				return array;
 			}
 
@@ -957,6 +899,7 @@ namespace Novartment.Base.Collections
 				{
 					collection2.CopyTo (array, 0);
 				}
+
 				return array;
 			}
 
@@ -969,6 +912,7 @@ namespace Novartment.Base.Collections
 				{
 					collection3.CopyTo (array, 0);
 				}
+
 				return array;
 			}
 
@@ -985,6 +929,7 @@ namespace Novartment.Base.Collections
 						array[idx++] = item;
 					}
 				}
+
 				return array;
 			}
 
@@ -999,6 +944,7 @@ namespace Novartment.Base.Collections
 					Array.Copy (array, newArray, length);
 					array = newArray;
 				}
+
 				array[length++] = item;
 			}
 
@@ -1017,10 +963,6 @@ namespace Novartment.Base.Collections
 			return resultArray;
 		}
 
-		#endregion
-
-		#region extension method IEnumerable<>.DuplicateToList
-
 		/// <summary>
 		/// Создаёт список, в который оптимально доступным образом скопированы все элементы указанной последовательности.
 		/// </summary>
@@ -1033,6 +975,7 @@ namespace Novartment.Base.Collections
 			{
 				throw new ArgumentNullException (nameof (source));
 			}
+
 			Contract.EndContractBlock ();
 
 			T[] array;
@@ -1047,6 +990,7 @@ namespace Novartment.Base.Collections
 				{
 					collection1.CopyTo (array, 0);
 				}
+
 				return new ArrayList<T> (array);
 			}
 
@@ -1059,6 +1003,7 @@ namespace Novartment.Base.Collections
 				{
 					collection2.CopyTo (array, 0);
 				}
+
 				return new ArrayList<T> (array);
 			}
 
@@ -1071,6 +1016,7 @@ namespace Novartment.Base.Collections
 				{
 					collection3.CopyTo (array, 0);
 				}
+
 				return new ArrayList<T> (array);
 			}
 
@@ -1087,6 +1033,7 @@ namespace Novartment.Base.Collections
 						array[idx++] = item;
 					}
 				}
+
 				return new ArrayList<T> (array);
 			}
 
@@ -1101,14 +1048,12 @@ namespace Novartment.Base.Collections
 					Array.Copy (array, newArray, length);
 					array = newArray;
 				}
+
 				array[length++] = item;
 			}
+
 			return new ArrayList<T> (array, 0, length);
 		}
-
-		#endregion
-
-		#region extension method ArrayList<>.GetReadOnlyView
 
 		/// <summary>
 		/// Получает представление только для чтения для указанного списка.
@@ -1122,12 +1067,79 @@ namespace Novartment.Base.Collections
 			{
 				throw new ArgumentNullException (nameof (arrayList));
 			}
+
 			Contract.EndContractBlock ();
 
 			arrayList.Defragment ();
 			return new ReadOnlyArray<T> (arrayList.Array, arrayList.Count);
 		}
 
-		#endregion
+		internal class GenericCollectionAsReadOnlyDecorator<T> : IReadOnlyCollection<T>
+		{
+			private readonly ICollection<T> _collection;
+
+			internal GenericCollectionAsReadOnlyDecorator (ICollection<T> collection)
+			{
+				_collection = collection;
+			}
+
+			public int Count => _collection.Count;
+
+			public IEnumerator<T> GetEnumerator () => _collection.GetEnumerator ();
+
+			IEnumerator IEnumerable.GetEnumerator () => _collection.GetEnumerator ();
+		}
+
+		internal class CollectionAsReadOnlyDecorator<T> : IReadOnlyCollection<T>
+		{
+			private readonly ICollection _collection;
+
+			internal CollectionAsReadOnlyDecorator (ICollection collection)
+			{
+				_collection = collection;
+			}
+
+			public int Count => _collection.Count;
+
+			public IEnumerator<T> GetEnumerator () => _collection.Cast<T> ().GetEnumerator ();
+
+			IEnumerator IEnumerable.GetEnumerator () => _collection.GetEnumerator ();
+		}
+
+		internal class GenericListAsReadOnlyDecorator<T> : IReadOnlyList<T>
+		{
+			private readonly IList<T> _list;
+
+			internal GenericListAsReadOnlyDecorator (IList<T> list)
+			{
+				_list = list;
+			}
+
+			public int Count => _list.Count;
+
+			public T this[int index] => _list[index];
+
+			public IEnumerator<T> GetEnumerator () => _list.GetEnumerator ();
+
+			IEnumerator IEnumerable.GetEnumerator () => _list.GetEnumerator ();
+		}
+
+		internal class ListAsReadOnlyDecorator<T> : IReadOnlyList<T>
+		{
+			private readonly IList _list;
+
+			internal ListAsReadOnlyDecorator (IList list)
+			{
+				_list = list;
+			}
+
+			public int Count => _list.Count;
+
+			public T this[int index] => (T)_list[index];
+
+			public IEnumerator<T> GetEnumerator () => _list.Cast<T> ().GetEnumerator ();
+
+			IEnumerator IEnumerable.GetEnumerator () => _list.GetEnumerator ();
+		}
 	}
 }

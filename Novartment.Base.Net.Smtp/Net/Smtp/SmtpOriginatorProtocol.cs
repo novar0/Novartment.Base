@@ -1,10 +1,10 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.Contracts;
 using System.IO;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Diagnostics.CodeAnalysis;
-using System.Diagnostics.Contracts;
 
 namespace Novartment.Base.Net.Smtp
 {
@@ -35,7 +35,8 @@ namespace Novartment.Base.Net.Smtp
 		/// <param name="securityParameters">Параметры безопасности,
 		/// устнавливающие использование шифрования и аутентификации при выполнении транзакций.</param>
 		/// <param name="logger">Журнал для записи событий. Укажите null если запись не нужна.</param>
-		[SuppressMessage ("Microsoft.Design",
+		[SuppressMessage (
+		"Microsoft.Design",
 			"CA1026:DefaultParametersShouldNotBeUsed",
 			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
 		public SmtpOriginatorProtocol (
@@ -47,15 +48,18 @@ namespace Novartment.Base.Net.Smtp
 			{
 				throw new ArgumentNullException (nameof (transactionOriginator));
 			}
+
 			if (securityParameters == null)
 			{
 				throw new ArgumentNullException (nameof (securityParameters));
 			}
+
 			if (((securityParameters.ClientCertificates != null) || (securityParameters.ClientCredentials != null)) &&
 				!securityParameters.EncryptionRequired)
 			{
 				throw new ArgumentOutOfRangeException (nameof (securityParameters));
 			}
+
 			Contract.EndContractBlock ();
 
 			_transactionOriginator = transactionOriginator;
@@ -79,10 +83,12 @@ namespace Novartment.Base.Net.Smtp
 			{
 				throw new ArgumentNullException (nameof (connection));
 			}
+
 			if (connection.LocalEndPoint.HostName == null)
 			{
 				throw new ArgumentOutOfRangeException (nameof (connection));
 			}
+
 			Contract.EndContractBlock ();
 
 			var credential = _securityParameters.ClientCredentials?.GetCredential (
@@ -98,7 +104,7 @@ namespace Novartment.Base.Net.Smtp
 			NetworkCredential credential,
 			CancellationToken cancellationToken)
 		{
-			var sender = new SmtpCommandReplyConnectionSenderReceiver (connection, _logger);
+			var sender = new TcpConnectionSmtpCommandTransport (connection, _logger);
 			using (var session = new SmtpOriginatorProtocolSession (sender, connection.LocalEndPoint.HostName))
 			{
 				try
@@ -109,6 +115,7 @@ namespace Novartment.Base.Net.Smtp
 					{
 						await session.RestartWithTlsAsync (_securityParameters.ClientCertificates, cancellationToken).ConfigureAwait (false);
 					}
+
 					if (credential != null)
 					{
 						await session.AuthenticateAsync (credential, cancellationToken).ConfigureAwait (false);
@@ -126,7 +133,7 @@ namespace Novartment.Base.Net.Smtp
 				}
 				catch (OperationCanceledException)
 				{
-					_logger?.Warn (String.Format (
+					_logger?.Warn (string.Format (
 						"Canceling protocol with {0}.",
 						connection.RemoteEndPoint));
 					throw;
@@ -136,17 +143,16 @@ namespace Novartment.Base.Net.Smtp
 					// Отдельно отслеживаем запрос отмены при ObjectDisposedException.
 					// Такая комбинация означает отмену операции с объектом, не поддерживающим отмену отдельных операций.
 					if (cancellationToken.IsCancellationRequested &&
-						(
-							(excpt is ObjectDisposedException) ||
-							((excpt is IOException) && (excpt.InnerException is ObjectDisposedException))
-						))
+						((excpt is ObjectDisposedException) ||
+						((excpt is IOException) && (excpt.InnerException is ObjectDisposedException))))
 					{
-						_logger?.Warn (String.Format (
+						_logger?.Warn (string.Format (
 							"Canceling protocol with {0}.",
 							connection.RemoteEndPoint));
 						cancellationToken.ThrowIfCancellationRequested ();
 					}
-					_logger?.Warn (String.Format (
+
+					_logger?.Warn (string.Format (
 						"Aborting protocol with {0}. {1}",
 						connection.RemoteEndPoint,
 						ExceptionDescriptionProvider.GetDescription (excpt)));

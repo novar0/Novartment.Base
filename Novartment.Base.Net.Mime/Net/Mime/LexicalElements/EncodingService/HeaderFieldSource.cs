@@ -16,6 +16,10 @@ namespace Novartment.Base.Net.Mime
 			_source = headerSource;
 		}
 
+		protected override bool IsEndOfPartFound => _foundSeparatorLength >= 0;
+
+		protected override int PartEpilogueSize => _foundSeparatorLength;
+
 		protected override int ValidatePartData (int validatedPartLength)
 		{
 			var buf = _source.Buffer;
@@ -30,9 +34,11 @@ namespace Novartment.Base.Net.Mime
 					{
 						return validatedPartLength;
 					}
+
 					if (buf[startOffset + 1] == 0x0a)
 					{
 						var foundSeparatorLength = 2;
+
 						// skips repeating CRLF
 						while (true)
 						{
@@ -41,12 +47,14 @@ namespace Novartment.Base.Net.Mime
 								_foundSeparatorLength = foundSeparatorLength;
 								return validatedPartLength;
 							}
+
 							if ((buf[startOffset + foundSeparatorLength] != 0x0d) ||
 								((startOffset + foundSeparatorLength + 1) >= endOffset) ||
 								(buf[startOffset + foundSeparatorLength + 1] != 0x0a))
 							{
 								break;
 							}
+
 							foundSeparatorLength += 2;
 						}
 
@@ -58,15 +66,12 @@ namespace Novartment.Base.Net.Mime
 						}
 					}
 				}
+
 				startOffset++;
 				validatedPartLength++;
 			}
 
 			return validatedPartLength;
 		}
-
-		protected override bool IsEndOfPartFound => (_foundSeparatorLength >= 0);
-
-		protected override int PartEpilogueSize => _foundSeparatorLength;
 	}
 }

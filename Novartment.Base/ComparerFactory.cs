@@ -1,10 +1,10 @@
 ﻿using System;
-using static System.Linq.Enumerable;
 using System.Collections;
 using System.Collections.Generic;
-using System.Reflection;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
+using System.Reflection;
+using static System.Linq.Enumerable;
 
 namespace Novartment.Base
 {
@@ -24,7 +24,8 @@ namespace Novartment.Base
 		/// <returns>Объект реализующий IComparer&lt;TItem&gt; и ISortDirection
 		/// на основе указанной функции получения ключа объекта,
 		/// который можно использовать для их сравнения.</returns>
-		[SuppressMessage ("Microsoft.Design",
+		[SuppressMessage (
+		"Microsoft.Design",
 			"CA1026:DefaultParametersShouldNotBeUsed",
 			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
 		public static IComparer<TItem> CreateFromPropertySelector<TItem, TKey> (
@@ -35,9 +36,10 @@ namespace Novartment.Base
 			{
 				throw new ArgumentNullException (nameof (propertySelector));
 			}
+
 			Contract.EndContractBlock ();
 
-			var sorter = new _InternalSorter<TItem, TKey> (propertySelector);
+			var sorter = new InternalSorter<TItem, TKey> (propertySelector);
 			((ISortDirectionVariable)sorter).DescendingOrder = descendingOrder;
 			return sorter;
 		}
@@ -51,7 +53,8 @@ namespace Novartment.Base
 		/// <returns>Объект реализующий IComparer&lt;TItem&gt; и ISortDirection
 		/// на основе указанного имени свойства и направления сортировки,
 		/// который можно использовать для их сравнения.</returns>
-		[SuppressMessage ("Microsoft.Design",
+		[SuppressMessage (
+		"Microsoft.Design",
 			"CA1026:DefaultParametersShouldNotBeUsed",
 			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
 		public static IComparer<TItem> CreateFromPropertyName<TItem> (
@@ -62,6 +65,7 @@ namespace Novartment.Base
 			{
 				throw new ArgumentNullException (nameof (propertyName));
 			}
+
 			Contract.EndContractBlock ();
 
 			var itemType = typeof (TItem);
@@ -70,20 +74,19 @@ namespace Novartment.Base
 			{
 				throw new InvalidOperationException ("Specified property not found.");
 			}
-			var sorterType = typeof (_InternalSorter<,>).MakeGenericType (itemType, sortingPropertyInfo.PropertyType);
+
+			var sorterType = typeof (InternalSorter<,>).MakeGenericType (itemType, sortingPropertyInfo.PropertyType);
 			var sorterConstructor = sorterType.GetTypeInfo ().DeclaredConstructors.Single (item =>
 			{
 				var pars = item.GetParameters ();
-				return ((pars.Length == 1) && (pars[0].ParameterType == typeof (PropertyInfo)));
+				return (pars.Length == 1) && (pars[0].ParameterType == typeof (PropertyInfo));
 			});
 			var sorter = (IComparer<TItem>)sorterConstructor.Invoke (new object[] { sortingPropertyInfo });
 			((ISortDirectionVariable)sorter).DescendingOrder = descendingOrder;
 			return sorter;
 		}
 
-		#region class _InternalSorter
-
-		internal class _InternalSorter<TItem, TKey> :
+		internal class InternalSorter<TItem, TKey> :
 			IComparer,
 			IComparer<TItem>,
 			ISortDirectionVariable
@@ -93,23 +96,24 @@ namespace Novartment.Base
 			private readonly PropertyInfo _propertyInfo;
 			private bool _descendingOrder = false;
 
-			internal _InternalSorter (Func<TItem, TKey> keySelector)
+			internal InternalSorter (Func<TItem, TKey> keySelector)
 			{
 				_propertyInfo = null;
 				_keySelector = keySelector;
 				_comparer = Comparer<TKey>.Default;
 			}
 
-			internal _InternalSorter (PropertyInfo propertyInfo)
+			internal InternalSorter (PropertyInfo propertyInfo)
 			{
 				_propertyInfo = propertyInfo;
 				_keySelector = GetPropertyByPropertyInfo;
 				_comparer = Comparer<TKey>.Default;
 			}
 
-			private TKey GetPropertyByPropertyInfo (TItem item)
+			public bool DescendingOrder
 			{
-				return (TKey)_propertyInfo.GetValue (item, null);
+				get => _descendingOrder;
+				set { _descendingOrder = value; }
 			}
 
 			int IComparer.Compare (object item1, object item2)
@@ -138,16 +142,14 @@ namespace Novartment.Base
 							_comparer.Compare (_keySelector.Invoke (item1), _keySelector.Invoke (item2));
 					}
 				}
+
 				return _descendingOrder ? -result : result;
 			}
 
-			public bool DescendingOrder
+			private TKey GetPropertyByPropertyInfo (TItem item)
 			{
-				get { return _descendingOrder; }
-				set { _descendingOrder = value; }
+				return (TKey)_propertyInfo.GetValue (item, null);
 			}
 		}
-
-		#endregion
 	}
 }

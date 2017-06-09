@@ -8,7 +8,8 @@ namespace Novartment.Base.Collections.Immutable
 	/// </summary>
 	/// <typeparam name="T">Тип значения узла.</typeparam>
 	/// <remarks>Значение null является корректным и означает пустое дерево.</remarks>
-	[SuppressMessage ("Microsoft.Naming",
+	[SuppressMessage (
+		"Microsoft.Naming",
 		"CA1704:IdentifiersShouldBeSpelledCorrectly",
 		MessageId = "Avl",
 		Justification = "'AVL-tree' represents standard term.")]
@@ -17,27 +18,23 @@ namespace Novartment.Base.Collections.Immutable
 	{
 		private readonly T _value;
 
+		private AvlBinarySearchTreeNode(T value)
+		{
+			_value = value;
+		}
+
 		/// <summary>
 		/// Получает значение узла.
 		/// </summary>
 		public T Value => _value;
 
-		private AvlBinarySearchTreeNode (T value)
-		{
-			_value = value;
-		}
-
-		[DebuggerTypeProxy (typeof (AvlBinarySearchTreeNode<>._DebugView))]
+		[DebuggerTypeProxy (typeof (AvlBinarySearchTreeNode<>.DebugView))]
 		internal class IntermediateNode : AvlBinarySearchTreeNode<T>
 		{
 			private readonly AvlBinarySearchTreeNode<T> _leftSubtree;
 			private readonly AvlBinarySearchTreeNode<T> _rightSubtree;
 
 			private readonly int _height;
-
-			internal int Height => _height;
-			internal AvlBinarySearchTreeNode<T> LeftSubtree => _leftSubtree;
-			internal AvlBinarySearchTreeNode<T> RightSubtree => _rightSubtree;
 
 			internal IntermediateNode (T value, AvlBinarySearchTreeNode<T> leftSubtree, AvlBinarySearchTreeNode<T> rightSubtree, int height)
 				: base (value)
@@ -46,6 +43,12 @@ namespace Novartment.Base.Collections.Immutable
 				_rightSubtree = rightSubtree;
 				_height = height;
 			}
+
+			internal int Height => _height;
+
+			internal AvlBinarySearchTreeNode<T> LeftSubtree => _leftSubtree;
+
+			internal AvlBinarySearchTreeNode<T> RightSubtree => _rightSubtree;
 		}
 
 		[DebuggerDisplay ("Value = {Value}")]
@@ -57,13 +60,11 @@ namespace Novartment.Base.Collections.Immutable
 			}
 		}
 
-		#region class _DebugView
-
-		internal sealed class _DebugView
+		internal sealed class DebugView
 		{
 			private readonly IntermediateNode _node;
 
-			public _DebugView (IntermediateNode node)
+			public DebugView (IntermediateNode node)
 			{
 				_node = node;
 			}
@@ -76,6 +77,7 @@ namespace Novartment.Base.Collections.Immutable
 					{
 						return null;
 					}
+
 					var items = new T[_node.LeftSubtree.GetCount ()];
 					int i = 0;
 					using (var enumerator = _node.LeftSubtree.GetEnumerator ())
@@ -85,6 +87,7 @@ namespace Novartment.Base.Collections.Immutable
 							items[i++] = enumerator.Current;
 						}
 					}
+
 					return items;
 				}
 			}
@@ -99,6 +102,7 @@ namespace Novartment.Base.Collections.Immutable
 					{
 						return null;
 					}
+
 					var items = new T[_node.RightSubtree.GetCount ()];
 					int i = 0;
 					using (var enumerator = _node.RightSubtree.GetEnumerator ())
@@ -108,11 +112,10 @@ namespace Novartment.Base.Collections.Immutable
 							items[i++] = enumerator.Current;
 						}
 					}
+
 					return items;
 				}
 			}
 		}
-
-		#endregion
 	}
 }

@@ -6,7 +6,8 @@ namespace Novartment.Base
 	/// <summary>
 	/// Ошибка работы с шифрованием из-за несоответствия учетной записи.
 	/// </summary>
-	[SuppressMessage ("Microsoft.Design",
+	[SuppressMessage (
+		"Microsoft.Design",
 		"CA1032:ImplementStandardExceptionConstructors",
 		Justification = "Constructor with custom message not allowed.")]
 	public class CryptWrongCredentialsException : Exception

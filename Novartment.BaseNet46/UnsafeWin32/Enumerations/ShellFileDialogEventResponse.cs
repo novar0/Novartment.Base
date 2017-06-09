@@ -1,5 +1,4 @@
-﻿
-namespace Novartment.Base.UnsafeWin32
+﻿namespace Novartment.Base.UnsafeWin32
 {
 	/// <summary>
 	/// Response to the sharing violation.

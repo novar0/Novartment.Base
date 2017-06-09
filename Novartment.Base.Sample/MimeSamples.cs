@@ -83,6 +83,7 @@ namespace Novartment.Base.Sample
 				message = new MailMessage ();
 				await message.LoadAsync (fs.AsBufferedSource (new byte[1024]), EntityBodyFactory.Create, cancellationToken).ConfigureAwait (false);
 			}
+
 			var reply = message.CreateReply ();
 			reply.GenerateId ();
 			reply.From.Add ("noone@mailinator.com", "Иван Сидоров");

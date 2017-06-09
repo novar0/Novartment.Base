@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
-using Novartment.Base.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using Novartment.Base.BinaryStreaming;
+using Novartment.Base.Text;
 
 namespace Novartment.Base.Media
 {
@@ -18,15 +18,6 @@ namespace Novartment.Base.Media
 	[DebuggerDisplay ("{DebuggerDisplay,nq}")]
 	public class RiffChunk
 	{
-		/// <summary>Получает FOURCC-код, идентифицирующий тип данных порции.</summary>
-		public string Id { get; }
-
-		/// <summary>Получает исходные данные порции.</summary>
-		public IBufferedSource Source { get; }
-
-		/// <summary>Получает признак того, что порция содержит список вложенных порций.</summary>
-		public bool IsSubChunkList => ((this.Id == "RIFF") || (this.Id == "LIST"));
-
 		/// <summary>
 		/// Инициализирует новый экземпляр класса RiffChunk на основе указанных данных.
 		/// </summary>
@@ -38,11 +29,28 @@ namespace Novartment.Base.Media
 			{
 				throw new ArgumentNullException (nameof (data));
 			}
+
 			Contract.EndContractBlock ();
 
 			this.Id = id;
 			this.Source = data;
 		}
+
+		/// <summary>Получает FOURCC-код, идентифицирующий тип данных порции.</summary>
+		public string Id { get; }
+
+		/// <summary>Получает исходные данные порции.</summary>
+		public IBufferedSource Source { get; }
+
+		/// <summary>Получает признак того, что порция содержит список вложенных порций.</summary>
+		public bool IsSubChunkList => (this.Id == "RIFF") || (this.Id == "LIST");
+
+		[DebuggerBrowsable (DebuggerBrowsableState.Never)]
+		[SuppressMessage (
+		"Microsoft.Performance",
+			"CA1811:AvoidUncalledPrivateCode",
+			Justification = "Used in DebuggerDisplay attribute.")]
+		private string DebuggerDisplay => FormattableString.Invariant ($"ID = {this.Id}");
 
 		/// <summary>
 		/// Считывает RIFF-порцию из указанного буфера.
@@ -56,10 +64,12 @@ namespace Novartment.Base.Media
 			{
 				throw new ArgumentNullException (nameof (source));
 			}
+
 			if (source.Buffer.Length < 8)
 			{
 				throw new ArgumentOutOfRangeException (nameof (source));
 			}
+
 			Contract.EndContractBlock ();
 
 			Task task;
@@ -71,6 +81,7 @@ namespace Novartment.Base.Media
 			{
 				throw new FormatException ("Specified source is too small for Riff-chunk. Expected minimum 8 bytes.", exception);
 			}
+
 			return ParseAsyncFinalizer (task, source);
 		}
 
@@ -84,6 +95,7 @@ namespace Novartment.Base.Media
 			{
 				throw new FormatException ("Specified source is too small for Riff-chunk. Expected minimum 8 bytes.", exception);
 			}
+
 			var id = AsciiCharSet.GetString (source.Buffer, source.Offset, 4);
 			var size = (long)BitConverter.ToUInt32 (source.Buffer, source.Offset + 4);
 			source.SkipBuffer (8);
@@ -91,18 +103,6 @@ namespace Novartment.Base.Media
 			var data = new SizeLimitedBufferedSource (source, size);
 
 			return new RiffChunk (id, data);
-		}
-
-		[DebuggerBrowsable (DebuggerBrowsableState.Never),
-		SuppressMessage ("Microsoft.Performance",
-			"CA1811:AvoidUncalledPrivateCode",
-			Justification = "Used in DebuggerDisplay attribute.")]
-		private string DebuggerDisplay
-		{
-			get
-			{
-				return FormattableString.Invariant ($"ID = {this.Id}");
-			}
 		}
 	}
 }

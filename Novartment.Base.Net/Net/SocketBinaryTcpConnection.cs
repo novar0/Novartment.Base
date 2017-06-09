@@ -1,14 +1,14 @@
 ﻿using System;
-using System.Net;
-using System.Net.Sockets;
-using System.Net.Security;
-using System.Net.NetworkInformation;
-using System.Security.Cryptography.X509Certificates;
-using System.Security.Authentication;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
+using System.Net;
+using System.Net.NetworkInformation;
+using System.Net.Security;
+using System.Net.Sockets;
+using System.Security.Authentication;
+using System.Security.Cryptography.X509Certificates;
+using System.Threading;
+using System.Threading.Tasks;
 using Novartment.Base.BinaryStreaming;
 
 namespace Novartment.Base.Net
@@ -17,7 +17,8 @@ namespace Novartment.Base.Net
 	/// Установленное TCP-подключение, отслеживающее полное время и время простоя
 	/// с возможностью запуска TLS-подключения.
 	/// </summary>
-	[SuppressMessage ("Microsoft.Naming",
+	[SuppressMessage (
+		"Microsoft.Naming",
 		"CA1704:IdentifiersShouldBeSpelledCorrectly",
 		MessageId = "Tls",
 		Justification = "'TLS' represents standard term (Transport Layer Security).")]
@@ -26,11 +27,10 @@ namespace Novartment.Base.Net
 	{
 		private bool _authenticateAsServerClientCertificateRequired;
 
-		/// <summary>
-		/// Инициализирует новый экземпляр TlsCapableConnection на основе указанного подключенного сокета.
-		/// </summary>
-		/// <remarks>Created TlsCapableConnection will take ownership of the specified connectedSocket.</remarks>
-		[SuppressMessage ("Microsoft.Reliability",
+		// Инициализирует новый экземпляр TlsCapableConnection на основе указанного подключенного сокета.
+		// Created TlsCapableConnection will take ownership of the specified connectedSocket.
+		[SuppressMessage (
+		"Microsoft.Reliability",
 			"CA2000:Dispose objects before losing scope",
 			Justification = "new NetworkStream will be stored in property 'Reader' and disposed later.")]
 		internal SocketBinaryTcpConnection (Socket connectedSocket, string localHostName, string remoteHostName)
@@ -40,6 +40,89 @@ namespace Novartment.Base.Net
 			new SocketBufferedSource (connectedSocket, new byte[connectedSocket.ReceiveBufferSize]),
 			new SocketBinaryDestination (connectedSocket))
 		{
+		}
+
+		/// <summary>
+		/// Асинхронно создаёт TCP-подключение к указанному URI.
+		/// </summary>
+		/// <param name="remoteUri">URI куда будет произведено подключение.</param>
+		/// <param name="addressFamily">Схема адресации для подключения.</param>
+		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
+		/// <returns>Задача, результатом которой будет установленное TCP-подключение</returns>
+		public static Task<ITcpConnection> CreateAsync (Uri remoteUri, AddressFamily addressFamily, CancellationToken cancellationToken)
+		{
+			if (remoteUri == null)
+			{
+				throw new ArgumentNullException (nameof (remoteUri));
+			}
+
+			var isNullOrWhiteSpace = string.IsNullOrWhiteSpace (remoteUri.Host);
+			if (isNullOrWhiteSpace)
+			{
+				throw new ArgumentOutOfRangeException (nameof (remoteUri));
+			}
+
+			if (remoteUri.Port < 0)
+			{
+				throw new ArgumentOutOfRangeException (nameof (remoteUri));
+			}
+
+			Contract.EndContractBlock ();
+
+			var task = Dns.GetHostAddressesAsync (remoteUri.Host);
+			return CreateAsyncFinalizer (task, remoteUri, addressFamily, cancellationToken);
+		}
+
+		/// <summary>
+		/// Асинхронно создаёт TCP-подключение к указанной конечной точке.
+		/// </summary>
+		/// <param name="remoteEndpoint">Конечная точка, к которой будет создано подключение.</param>
+		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
+		/// <returns>Задача, результатом которой будет установленное TCP-подключение</returns>
+		[SuppressMessage (
+		"Microsoft.Reliability",
+			"CA2000:Dispose objects before losing scope",
+			Justification = "new TcpConnection will be returned and disposed outside.")]
+		public static Task<ITcpConnection> CreateAsync (IPHostEndPoint remoteEndpoint, CancellationToken cancellationToken)
+		{
+			if (remoteEndpoint == null)
+			{
+				throw new ArgumentNullException (nameof (remoteEndpoint));
+			}
+
+			Contract.EndContractBlock ();
+
+			if (cancellationToken.IsCancellationRequested)
+			{
+				return Task.FromCanceled<ITcpConnection> (cancellationToken);
+			}
+
+			var socket = new Socket (remoteEndpoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+			IDisposable tokenRegistration = null;
+			if (cancellationToken.CanBeCanceled)
+			{
+				tokenRegistration = cancellationToken.Register (socket.Dispose, false);
+			}
+
+			var ipProps = IPGlobalProperties.GetIPGlobalProperties ();
+			var localHostFqdn = string.IsNullOrWhiteSpace (ipProps.DomainName) ?
+				ipProps.HostName :
+				ipProps.HostName + "." + ipProps.DomainName;
+			try
+			{
+				var task = socket.ConnectAsync (remoteEndpoint);
+				return CreateAsyncFializer (task, localHostFqdn, remoteEndpoint.HostName, socket, tokenRegistration, cancellationToken);
+			}
+			catch (ObjectDisposedException)
+			{
+				tokenRegistration?.Dispose ();
+				if (cancellationToken.IsCancellationRequested)
+				{
+					return Task.FromCanceled<ITcpConnection> (cancellationToken);
+				}
+
+				throw;
+			}
 		}
 
 		/// <summary>
@@ -56,6 +139,7 @@ namespace Novartment.Base.Net
 			{
 				throw new InvalidOperationException ("TLS already started in this connection.");
 			}
+
 			if (this.RemoteEndPoint.HostName == null)
 			{
 				throw new InvalidOperationException ("Remote host name not specified. Host name required for starting TLS as client.");
@@ -80,27 +164,26 @@ namespace Novartment.Base.Net
 					clientCertificates,
 					SslProtocols.Tls | SslProtocols.Tls11 | SslProtocols.Tls12, // TODO: get value from configuration
 					true); // TODO: get value from configuration
-				return StartTlsClientAsyncFinalizer (task, secureStream);
+				return StartTlsClientAsyncFinalizer ();
+
+				async Task<ITlsConnection> StartTlsClientAsyncFinalizer ()
+				{
+					try
+					{
+						await task.ConfigureAwait (false);
+						var buf = new byte[this.Reader.Buffer.Length];
+						return new SslStreamBinaryConnection (this.LocalEndPoint, this.RemoteEndPoint, secureStream, buf);
+					}
+					catch
+					{
+						secureStream.Dispose ();
+						throw;
+					}
+				}
 			}
 			catch
 			{
 				secureStream.Dispose ();
-				throw;
-			}
-
-		}
-
-		private async Task<ITlsConnection> StartTlsClientAsyncFinalizer (Task task, SslStream stream)
-		{
-			try
-			{
-				await task.ConfigureAwait (false);
-				var buf = new byte[this.Reader.Buffer.Length];
-				return new SslStreamBinaryConnection (this.LocalEndPoint, this.RemoteEndPoint, stream, buf);
-			}
-			catch
-			{
-				stream.Dispose ();
 				throw;
 			}
 		}
@@ -120,6 +203,7 @@ namespace Novartment.Base.Net
 			{
 				throw new ArgumentNullException (nameof (serverCertificate));
 			}
+
 			Contract.EndContractBlock ();
 
 			if (this.Writer is SslStream)
@@ -147,26 +231,26 @@ namespace Novartment.Base.Net
 					clientCertificateRequired,
 					SslProtocols.Tls | SslProtocols.Tls11 | SslProtocols.Tls12, // TODO: get value from configuration
 					true); // TODO: get value from configuration
-				return StartTlsServerAsyncFinalizer (task, secureStream);
+				return StartTlsServerAsyncFinalizer ();
+
+				async Task<ITlsConnection> StartTlsServerAsyncFinalizer ()
+				{
+					try
+					{
+						await task.ConfigureAwait (false);
+						var buf = new byte[this.Reader.Buffer.Length];
+						return new SslStreamBinaryConnection (this.LocalEndPoint, this.RemoteEndPoint, secureStream, buf);
+					}
+					catch
+					{
+						secureStream.Dispose ();
+						throw;
+					}
+				}
 			}
 			catch
 			{
 				secureStream.Dispose ();
-				throw;
-			}
-		}
-
-		private async Task<ITlsConnection> StartTlsServerAsyncFinalizer (Task task, SslStream stream)
-		{
-			try
-			{
-				await task.ConfigureAwait (false);
-				var buf = new byte[this.Reader.Buffer.Length];
-				return new SslStreamBinaryConnection (this.LocalEndPoint, this.RemoteEndPoint, stream, buf);
-			}
-			catch
-			{
-				stream.Dispose ();
 				throw;
 			}
 		}
@@ -181,7 +265,7 @@ namespace Novartment.Base.Net
 		/// <returns>True если проверка пройдена успешно.</returns>
 		protected virtual bool CheckAuthenticationAsClient (object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
 		{
-			return (sslPolicyErrors == SslPolicyErrors.None);
+			return sslPolicyErrors == SslPolicyErrors.None;
 		}
 
 		/// <summary>
@@ -194,36 +278,8 @@ namespace Novartment.Base.Net
 		/// <returns>True если проверка пройдена успешно.</returns>
 		protected virtual bool CheckAuthenticationAsServer (object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
 		{
-			return ((sslPolicyErrors == SslPolicyErrors.None) ||
-					(!_authenticateAsServerClientCertificateRequired && (sslPolicyErrors == SslPolicyErrors.RemoteCertificateNotAvailable)));
-		}
-
-		/// <summary>
-		/// Асинхронно создаёт TCP-подключение к указанному URI. 
-		/// </summary>
-		/// <param name="remoteUri">URI куда будет произведено подключение.</param>
-		/// <param name="addressFamily">Схема адресации для подключения.</param>
-		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
-		/// <returns>Задача, результатом которой будет установленное TCP-подключение</returns>
-		public static Task<ITcpConnection> CreateAsync (Uri remoteUri, AddressFamily addressFamily, CancellationToken cancellationToken)
-		{
-			if (remoteUri == null)
-			{
-				throw new ArgumentNullException (nameof (remoteUri));
-			}
-			var isNullOrWhiteSpace = string.IsNullOrWhiteSpace (remoteUri.Host);
-			if (isNullOrWhiteSpace)
-			{
-				throw new ArgumentOutOfRangeException (nameof (remoteUri));
-			}
-			if (remoteUri.Port < 0)
-			{
-				throw new ArgumentOutOfRangeException (nameof (remoteUri));
-			}
-			Contract.EndContractBlock ();
-
-			var task = Dns.GetHostAddressesAsync (remoteUri.Host);
-			return CreateAsyncFinalizer (task, remoteUri, addressFamily, cancellationToken);
+			return (sslPolicyErrors == SslPolicyErrors.None) ||
+					(!_authenticateAsServerClientCertificateRequired && (sslPolicyErrors == SslPolicyErrors.RemoteCertificateNotAvailable));
 		}
 
 		private static async Task<ITcpConnection> CreateAsyncFinalizer (
@@ -242,6 +298,7 @@ namespace Novartment.Base.Net
 					break;
 				}
 			}
+
 			if (ipAddress == null)
 			{
 				throw new InvalidOperationException (FormattableString.Invariant (
@@ -255,55 +312,8 @@ namespace Novartment.Base.Net
 			return await CreateAsync (remoteEndpoint, cancellationToken).ConfigureAwait (false);
 		}
 
-		/// <summary>
-		/// Асинхронно создаёт TCP-подключение к указанной конечной точке. 
-		/// </summary>
-		/// <param name="remoteEndpoint">Конечная точка, к которой будет создано подключение.</param>
-		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
-		/// <returns>Задача, результатом которой будет установленное TCP-подключение</returns>
-		[SuppressMessage ("Microsoft.Reliability",
-			"CA2000:Dispose objects before losing scope",
-			Justification = "new TcpConnection will be returned and disposed outside.")]
-		public static Task<ITcpConnection> CreateAsync (IPHostEndPoint remoteEndpoint,CancellationToken cancellationToken)
-		{
-			if (remoteEndpoint == null)
-			{
-				throw new ArgumentNullException (nameof (remoteEndpoint));
-			}
-			Contract.EndContractBlock ();
-
-			if (cancellationToken.IsCancellationRequested)
-			{
-				return Task.FromCanceled<ITcpConnection> (cancellationToken);
-			}
-
-			var socket = new Socket (remoteEndpoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
-			IDisposable tokenRegistration = null;
-			if (cancellationToken.CanBeCanceled)
-			{
-				tokenRegistration = cancellationToken.Register (socket.Dispose, false);
-			}
-			var ipProps = IPGlobalProperties.GetIPGlobalProperties ();
-			var localHostFqdn = string.IsNullOrWhiteSpace (ipProps.DomainName) ?
-				ipProps.HostName :
-				ipProps.HostName + "." + ipProps.DomainName;
-			try
-			{
-				var task = socket.ConnectAsync (remoteEndpoint);
-				return CreateAsyncFializer (task, localHostFqdn, remoteEndpoint.HostName, socket, tokenRegistration, cancellationToken);
-			}
-			catch (ObjectDisposedException)
-			{
-				tokenRegistration?.Dispose ();
-				if (cancellationToken.IsCancellationRequested)
-				{
-					return Task.FromCanceled<ITcpConnection> (cancellationToken);
-				}
-				throw;
-			}
-		}
-
-		private static async Task<ITcpConnection> CreateAsyncFializer (Task task,
+		private static async Task<ITcpConnection> CreateAsyncFializer (
+			Task task,
 			string localHostFqdn,
 			string remoteHostName,
 			Socket socket,

@@ -1,9 +1,9 @@
 ﻿using System;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Novartment.Base.BinaryStreaming
 {
@@ -18,7 +18,8 @@ namespace Novartment.Base.BinaryStreaming
 		/// <summary>
 		/// Получает пустой источник данных, представленный байтовым буфером.
 		/// </summary>
-		[SuppressMessage ("Microsoft.Security",
+		[SuppressMessage (
+			"Microsoft.Security",
 			"CA2104:DoNotDeclareReadOnlyMutableReferenceTypes",
 			Justification = "new ArrayBufferedSource (Array.Empty<byte> ()) is immutable.")]
 		public static readonly IBufferedSource Empty = new ArrayBufferedSource (Array.Empty<byte> ());
@@ -26,6 +27,54 @@ namespace Novartment.Base.BinaryStreaming
 		private readonly byte[] _buffer;
 		private int _offset;
 		private int _count;
+
+		/// <summary>
+		/// Инициализирует новый экземпляр ArrayBufferedSource использующий в качестве буфера предоставленный массив байтов.
+		/// </summary>
+		/// <param name="buffer">Массив байтов, который будет буфером источника.</param>
+		public ArrayBufferedSource(byte[] buffer)
+		{
+			if (buffer == null)
+			{
+				throw new ArgumentNullException(nameof(buffer));
+			}
+
+			Contract.EndContractBlock();
+
+			_buffer = buffer;
+			_offset = 0;
+			_count = buffer.Length;
+		}
+
+		/// <summary>
+		/// Инициализирует новый экземпляр ArrayBufferedSource использующий в качестве буфера предоставленный сегмента массива байтов.
+		/// </summary>
+		/// <param name="buffer">Массив байтов, который будет буфером источника.</param>
+		/// <param name="offset">Позиция начала данных в buffer.</param>
+		/// <param name="count">Количество байтов в buffer.</param>
+		public ArrayBufferedSource(byte[] buffer, int offset, int count)
+		{
+			if (buffer == null)
+			{
+				throw new ArgumentNullException(nameof(buffer));
+			}
+
+			if ((offset < 0) || (offset > buffer.Length) || ((offset == buffer.Length) && (count > 0)))
+			{
+				throw new ArgumentOutOfRangeException(nameof(offset));
+			}
+
+			if ((count < 0) || ((offset + count) > buffer.Length))
+			{
+				throw new ArgumentOutOfRangeException(nameof(count));
+			}
+
+			Contract.EndContractBlock();
+
+			_buffer = buffer;
+			_offset = offset;
+			_count = count;
+		}
 
 		/// <summary>
 		/// Получает буфер, в котором содержится некоторая часть данных источника.
@@ -50,50 +99,6 @@ namespace Novartment.Base.BinaryStreaming
 		public bool IsExhausted => true;
 
 		/// <summary>
-		/// Инициализирует новый экземпляр ArrayBufferedSource использующий в качестве буфера предоставленный массив байтов.
-		/// </summary>
-		/// <param name="buffer">Массив байтов, который будет буфером источника.</param>
-		public ArrayBufferedSource (byte[] buffer)
-		{
-			if (buffer == null)
-			{
-				throw new ArgumentNullException (nameof (buffer));
-			}
-			Contract.EndContractBlock ();
-
-			_buffer = buffer;
-			_offset = 0;
-			_count = buffer.Length;
-		}
-
-		/// <summary>
-		/// Инициализирует новый экземпляр ArrayBufferedSource использующий в качестве буфера предоставленный сегмента массива байтов.
-		/// </summary>
-		/// <param name="buffer">Массив байтов, который будет буфером источника.</param>
-		/// <param name="offset">Позиция начала данных в buffer.</param>
-		/// <param name="count">Количество байтов в buffer.</param>
-		public ArrayBufferedSource (byte[] buffer, int offset, int count)
-		{
-			if (buffer == null)
-			{
-				throw new ArgumentNullException (nameof (buffer));
-			}
-			if ((offset < 0) || (offset > buffer.Length) || ((offset == buffer.Length) && (count > 0)))
-			{
-				throw new ArgumentOutOfRangeException (nameof (offset));
-			}
-			if ((count < 0) || ((offset + count) > buffer.Length))
-			{
-				throw new ArgumentOutOfRangeException (nameof (count));
-			}
-			Contract.EndContractBlock ();
-
-			_buffer = buffer;
-			_offset = offset;
-			_count = count;
-		}
-
-		/// <summary>
 		/// Отбрасывает (пропускает) указанное количество данных из начала буфера.
 		/// При выполнении может измениться свойство Offset.
 		/// </summary>
@@ -105,6 +110,7 @@ namespace Novartment.Base.BinaryStreaming
 			{
 				throw new ArgumentOutOfRangeException (nameof (size));
 			}
+
 			Contract.EndContractBlock ();
 
 			if (size > 0)
@@ -135,18 +141,21 @@ namespace Novartment.Base.BinaryStreaming
 		/// </summary>
 		/// <param name="size">Требуемый размер данных в буфере.</param>
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
+		/// <returns>Задача, представляющая операцию.</returns>
 		public Task EnsureBufferAsync (int size, CancellationToken cancellationToken)
 		{
 			if ((size < 0) || (size > this.Buffer.Length))
 			{
 				throw new ArgumentOutOfRangeException (nameof (size));
 			}
+
 			Contract.EndContractBlock ();
 
 			if (size > _count)
 			{
 				throw new NotEnoughDataException (size - _count);
 			}
+
 			return Task.CompletedTask;
 		}
 
@@ -167,6 +176,7 @@ namespace Novartment.Base.BinaryStreaming
 			{
 				throw new ArgumentOutOfRangeException (nameof (size));
 			}
+
 			Contract.EndContractBlock ();
 
 			var available = _count;
@@ -175,6 +185,7 @@ namespace Novartment.Base.BinaryStreaming
 				_offset = _count = 0;
 				return Task.FromResult ((long)available);
 			}
+
 			_offset += (int)size;
 			_count -= (int)size;
 			return Task.FromResult (size);

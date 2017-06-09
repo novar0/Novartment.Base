@@ -7,18 +7,18 @@ namespace Novartment.Base.UI.Wpf
 	/// Defines a class for managing <see cref="TargetsTrackingExtensionBase"/> objects.
 	/// </summary>
 	/// <remarks>
-	/// This class provides a single point for updating all markup targets that use the given Markup Extension managed by this class.   
+	/// This class provides a single point for updating all markup targets that use the given Markup Extension managed by this class.
 	/// </remarks>
 	public class MarkupExtensionManager
 	{
+		/// <summary>The interval at which to cleanup and remove extensions.</summary>
+		private readonly int _cleanupInterval = 40;
+
 		/// <summary>List of active extensions.</summary>
 		private SingleLinkedListNode<TargetsTrackingExtensionBase> _extensions = null;
 
 		/// <summary>The number of extensions added since the last cleanup.</summary>
 		private int _cleanupCount;
-
-		/// <summary>The interval at which to cleanup and remove extensions.</summary>
-		private readonly int _cleanupInterval = 40;
 
 		/// <summary>
 		/// Initializes a new instance of the MarkupExtensionManager.
@@ -31,6 +31,11 @@ namespace Novartment.Base.UI.Wpf
 		{
 			_cleanupInterval = cleanupInterval;
 		}
+
+		/// <summary>
+		/// Return a list of the currently active extensions.
+		/// </summary>
+		public SingleLinkedListNode<TargetsTrackingExtensionBase> ActiveExtensions => _extensions;
 
 		/// <summary>
 		/// Force the update of all active targets that use the markup extension.
@@ -46,16 +51,11 @@ namespace Novartment.Base.UI.Wpf
 		}
 
 		/// <summary>
-		/// Return a list of the currently active extensions.
-		/// </summary>
-		public SingleLinkedListNode<TargetsTrackingExtensionBase> ActiveExtensions => _extensions;
-
-		/// <summary>
 		/// Cleanup references to extensions for targets which have been garbage collected.
 		/// </summary>
 		/// <remarks>
-		/// This method is called periodically as new <see cref="TargetsTrackingExtensionBase"/> objects 
-		/// are registered to release <see cref="TargetsTrackingExtensionBase"/> objects which are no longer 
+		/// This method is called periodically as new <see cref="TargetsTrackingExtensionBase"/> objects
+		/// are registered to release <see cref="TargetsTrackingExtensionBase"/> objects which are no longer
 		/// required (because their target has been garbage collected).
 		/// This method does not need to be called externally, however it can be useful to call it prior to calling
 		/// GC.Collect to verify that objects are being garbage collected correctly.
@@ -71,8 +71,10 @@ namespace Novartment.Base.UI.Wpf
 				{
 					newExtensions = newExtensions.AddItem (ext);
 				}
+
 				node = node.Next;
 			}
+
 			_extensions = newExtensions;
 		}
 
@@ -90,11 +92,12 @@ namespace Novartment.Base.UI.Wpf
 				_cleanupCount = 0;
 			}
 
-			var spinWait = new SpinWait ();
+			var spinWait = default (SpinWait);
 			while (true)
 			{
 				var state1 = _extensions;
 				var newState = state1.AddItem (extension);
+
 				// заменяем состояние если оно не изменилось с момента вызова
 				var state2 = Interlocked.CompareExchange (ref _extensions, newState, state1);
 				if (state1 == state2)
@@ -102,6 +105,7 @@ namespace Novartment.Base.UI.Wpf
 					_cleanupCount++;
 					return;
 				}
+
 				// состояние изменилось за время вызова, поэтому повторим попытку после паузы
 				spinWait.SpinOnce ();
 			}

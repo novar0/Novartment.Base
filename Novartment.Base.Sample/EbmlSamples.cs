@@ -45,6 +45,7 @@ namespace Novartment.Base.Sample
 					}
 				}
 			}
+
 			var chapsFileName = Path.Combine (_folder, "chaps.txt");
 			File.WriteAllText (chapsFileName, chapsText.ToString ());
 		}

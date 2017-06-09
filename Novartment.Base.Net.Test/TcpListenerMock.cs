@@ -39,10 +39,12 @@ namespace Novartment.Base.Net.Test
 				{
 					return Task.FromResult (_producers.Dequeue ());
 				}
+
 				if (cancellationToken.IsCancellationRequested)
 				{
 					return Task.FromCanceled<TItem> (cancellationToken);
 				}
+
 				var consumer = new TaskCompletionSource<TItem> ();
 				if (cancellationToken.CanBeCanceled)
 				{

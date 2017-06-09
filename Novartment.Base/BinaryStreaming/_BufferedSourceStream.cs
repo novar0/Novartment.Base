@@ -1,23 +1,24 @@
 ﻿using System;
-using System.IO;
 using System.Diagnostics.Contracts;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace Novartment.Base.BinaryStreaming
 {
+	/// <content>
+	/// Класс-обёртка BufferedSourceStream для представления IBufferedSource в виде Stream.
+	/// </content>
 	public static partial class StreamExtensions
 	{
-		private class _BufferedSourceStream : Stream
+		private class BufferedSourceStream : Stream
 		{
 			private readonly IBufferedSource _source;
 
-			internal _BufferedSourceStream (IBufferedSource source)
+			internal BufferedSourceStream (IBufferedSource source)
 			{
 				_source = source;
 			}
-
-			internal IBufferedSource BaseBufferedSource => _source;
 
 			public override bool CanRead => true;
 
@@ -25,17 +26,25 @@ namespace Novartment.Base.BinaryStreaming
 
 			public override bool CanSeek => false;
 
-			public override long Length { get { throw new NotSupportedException (); } }
+			public override long Length => throw new NotSupportedException ();
 
-			public override long Position { get { throw new NotSupportedException (); } set { throw new NotSupportedException (); } }
+			public override long Position
+			{
+				get => throw new NotSupportedException ();
+				set => throw new NotSupportedException ();
+			}
 
-			public override long Seek (long offset, SeekOrigin origin) { throw new NotSupportedException (); }
+			internal IBufferedSource BaseBufferedSource => _source;
 
-			public override void SetLength (long value) { throw new NotSupportedException (); }
+			public override long Seek (long offset, SeekOrigin origin) => throw new NotSupportedException ();
 
-			public override void Write (byte[] buffer, int offset, int count) { throw new NotSupportedException (); }
+			public override void SetLength (long value) => throw new NotSupportedException ();
 
-			public override void Flush () { }
+			public override void Write (byte[] buffer, int offset, int count) => throw new NotSupportedException ();
+
+			public override void Flush ()
+			{
+			}
 
 			public override int Read (byte[] buffer, int offset, int count)
 			{
@@ -43,14 +52,17 @@ namespace Novartment.Base.BinaryStreaming
 				{
 					throw new ArgumentNullException (nameof (buffer));
 				}
+
 				if ((offset < 0) || (offset > buffer.Length) || ((offset == buffer.Length) && (count > 0)))
 				{
 					throw new ArgumentOutOfRangeException (nameof (offset));
 				}
+
 				if ((count < 0) || (count > (buffer.Length - offset)))
 				{
 					throw new ArgumentOutOfRangeException (nameof (count));
 				}
+
 				Contract.EndContractBlock ();
 
 				if ((count <= _source.Count) || _source.IsExhausted)
@@ -62,6 +74,7 @@ namespace Novartment.Base.BinaryStreaming
 						Array.Copy (_source.Buffer, _source.Offset, buffer, offset, toCopy);
 						_source.SkipBuffer (toCopy);
 					}
+
 					return toCopy;
 				}
 
@@ -73,6 +86,7 @@ namespace Novartment.Base.BinaryStreaming
 					{
 						break;
 					}
+
 					var toCopy = Math.Min (_source.Count, count);
 					Array.Copy (_source.Buffer, _source.Offset, buffer, offset, toCopy);
 					offset += toCopy;
@@ -98,6 +112,7 @@ namespace Novartment.Base.BinaryStreaming
 						return -1;
 					}
 				}
+
 				var result = (int)_source.Buffer[_source.Offset];
 				_source.SkipBuffer (1);
 				return result;
@@ -109,14 +124,17 @@ namespace Novartment.Base.BinaryStreaming
 				{
 					throw new ArgumentNullException (nameof (buffer));
 				}
+
 				if ((offset < 0) || (offset > buffer.Length) || ((offset == buffer.Length) && (count > 0)))
 				{
 					throw new ArgumentOutOfRangeException (nameof (offset));
 				}
+
 				if ((count < 0) || (count > (buffer.Length - offset)))
 				{
 					throw new ArgumentOutOfRangeException (nameof (count));
 				}
+
 				Contract.EndContractBlock ();
 
 				if ((count <= _source.Count) || _source.IsExhausted)
@@ -128,40 +146,38 @@ namespace Novartment.Base.BinaryStreaming
 						Array.Copy (_source.Buffer, _source.Offset, buffer, offset, toCopy);
 						_source.SkipBuffer (toCopy);
 					}
+
 					return Task.FromResult (toCopy);
 				}
 
-				return ReadAsyncStateMachine (_source, buffer, offset, count, cancellationToken);
-			}
+				return ReadAsyncStateMachine ();
 
-			// асинхронный запрос к источнику пока не наберём необходимое количество данных
-			private static async Task<int> ReadAsyncStateMachine (
-				IBufferedSource source,
-				byte[] buffer,
-				int offset,
-				int count,
-				CancellationToken cancellationToken)
-			{
-				int resultSize = 0;
-				while (count > 0)
+				// асинхронный запрос к источнику пока не наберём необходимое количество данных
+				async Task<int> ReadAsyncStateMachine ()
 				{
-					if ((count > source.Count) && !source.IsExhausted)
+					int resultSize = 0;
+					while (count > 0)
 					{
-						await source.FillBufferAsync (cancellationToken).ConfigureAwait (false);
-					}
-					if (source.Count <= 0)
-					{
-						break;
-					}
-					var toCopy = Math.Min (source.Count, count);
-					Array.Copy (source.Buffer, source.Offset, buffer, offset, toCopy);
-					offset += toCopy;
-					count -= toCopy;
-					resultSize += toCopy;
-					source.SkipBuffer (toCopy);
-				}
+						if ((count > _source.Count) && !_source.IsExhausted)
+						{
+							await _source.FillBufferAsync (cancellationToken).ConfigureAwait (false);
+						}
 
-				return resultSize;
+						if (_source.Count <= 0)
+						{
+							break;
+						}
+
+						var toCopy = Math.Min (_source.Count, count);
+						Array.Copy (_source.Buffer, _source.Offset, buffer, offset, toCopy);
+						offset += toCopy;
+						count -= toCopy;
+						resultSize += toCopy;
+						_source.SkipBuffer (toCopy);
+					}
+
+					return resultSize;
+				}
 			}
 
 			public override Task CopyToAsync (Stream destination, int bufferSize, CancellationToken cancellationToken)

@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
+using System.Threading;
+using System.Threading.Tasks;
 using Novartment.Base.Collections;
 
 namespace Novartment.Base.Media
@@ -33,17 +33,44 @@ namespace Novartment.Base.Media
 [1F][43][B6][75]	Cluster-
 [1C][53][BB][6B]	Cues
  */
+
 	/// <summary>
 	/// Суммарная информация о сегменте matroska-файла.
 	/// </summary>
-	[SuppressMessage ("Microsoft.Naming",
+	[SuppressMessage (
+		"Microsoft.Naming",
 		"CA1704:IdentifiersShouldBeSpelledCorrectly",
 		MessageId = "Matroska",
-		Justification = "'Matroska' represents standard term."),
-	DebuggerDisplay ("{DebuggerDisplay,nq}"),
-	CLSCompliant (false)]
+		Justification = "'Matroska' represents standard term.")]
+	[DebuggerDisplay ("{DebuggerDisplay,nq}")]
+	[CLSCompliant (false)]
 	public class MatroskaSegmentInfo
 	{
+		/// <summary>
+		/// Инициализирует новый экземпляр класса MatroskaSegmentInfo на основе указанных данных.
+		/// </summary>
+		/// <param name="title">Название сегмента</param>
+		/// <param name="date">Дата/время сегмента</param>
+		/// <param name="duration">Продолжительность сегмента</param>
+		/// <param name="timeCodeScale">Масштаб времени сегмента</param>
+		/// <param name="tracks">Список трэков сегмента</param>
+		/// <param name="attachments">Присоединённые элементы сегмента</param>
+		public MatroskaSegmentInfo (
+			string title,
+			DateTime? date,
+			double? duration,
+			ulong? timeCodeScale,
+			IReadOnlyList<MatroskaTrackInfo> tracks,
+			IReadOnlyList<MatroskaAttachedFileInfo> attachments)
+		{
+			this.Title = title;
+			this.Date = date;
+			this.Duration = duration;
+			this.TimeCodeScale = timeCodeScale;
+			this.Tracks = tracks;
+			this.Attachments = attachments;
+		}
+
 		/// <summary>
 		/// Получает название сегмента.
 		/// </summary>
@@ -74,30 +101,12 @@ namespace Novartment.Base.Media
 		/// </summary>
 		public IReadOnlyList<MatroskaAttachedFileInfo> Attachments { get; }
 
-		/// <summary>
-		/// Инициализирует новый экземпляр класса MatroskaSegmentInfo на основе указанных данных.
-		/// </summary>
-		/// <param name="title">Название сегмента</param>
-		/// <param name="date">Дата/время сегмента</param>
-		/// <param name="duration">Продолжительность сегмента</param>
-		/// <param name="timeCodeScale">Масштаб времени сегмента</param>
-		/// <param name="tracks">Список трэков сегмента</param>
-		/// <param name="attachments">Присоединённые элементы сегмента</param>
-		public MatroskaSegmentInfo (
-			string title,
-			DateTime? date,
-			double? duration,
-			ulong? timeCodeScale,
-			IReadOnlyList<MatroskaTrackInfo> tracks,
-			IReadOnlyList<MatroskaAttachedFileInfo> attachments)
-		{
-			this.Title = title;
-			this.Date = date;
-			this.Duration = duration;
-			this.TimeCodeScale = timeCodeScale;
-			this.Tracks = tracks;
-			this.Attachments = attachments;
-		}
+		[DebuggerBrowsable (DebuggerBrowsableState.Never)]
+		[SuppressMessage (
+		"Microsoft.Performance",
+			"CA1811:AvoidUncalledPrivateCode",
+			Justification = "Used in DebuggerDisplay attribute.")]
+		private string DebuggerDisplay => FormattableString.Invariant ($"Date = {this.Date}, Duration = {this.Duration}, Tracks = {this.Tracks.Count}, Attachments = {this.Attachments.Count}");
 
 		/// <summary>
 		/// Создаёт cуммарную информация о сегменте matroska-файла на основе указанной коллекции EBML-элементов.
@@ -115,6 +124,7 @@ namespace Novartment.Base.Media
 			{
 				throw new ArgumentNullException (nameof (source));
 			}
+
 			Contract.EndContractBlock ();
 
 			return ParseAsyncStateMachine (source, cancellationToken);
@@ -138,6 +148,7 @@ namespace Novartment.Base.Media
 				{
 					break;
 				}
+
 				switch (source.Current.Id)
 				{
 					case 0x1f43b675UL: // Cluster
@@ -152,6 +163,7 @@ namespace Novartment.Base.Media
 							{
 								break;
 							}
+
 							switch (reader1.Current.Id)
 							{
 								case 0x2ad7b1UL: // TimeCodeScale
@@ -168,6 +180,7 @@ namespace Novartment.Base.Media
 									break;
 							}
 						}
+
 						break;
 					case 0x1654ae6bUL: // Tracks
 						await ProcessTracksEntryAsync (source.Current.ReadSubElements (), tracks, cancellationToken).ConfigureAwait (false);
@@ -181,8 +194,10 @@ namespace Novartment.Base.Media
 							{
 								break;
 							}
-							if (reader6.Current.Id == 0x61a7UL) // AttachedFile
+
+							if (reader6.Current.Id == 0x61a7UL)
 							{
+								// AttachedFile
 								var reader7 = reader6.Current.ReadSubElements ();
 								string fileName = null;
 								string fileMimeType = null;
@@ -193,6 +208,7 @@ namespace Novartment.Base.Media
 									{
 										break;
 									}
+
 									switch (reader7.Current.Id)
 									{
 										case 0x466eUL: // FileName
@@ -203,12 +219,15 @@ namespace Novartment.Base.Media
 											break;
 									}
 								}
+
 								attachments.Add (new MatroskaAttachedFileInfo (fileName, fileMimeType));
 							}
 						}
+
 						break;
 				}
-			} while (!clusterFound);
+			}
+			while (!clusterFound);
 
 			return new MatroskaSegmentInfo (
 				title,
@@ -231,8 +250,10 @@ namespace Novartment.Base.Media
 				{
 					break;
 				}
-				if (reader.Current.Id == 0xaeUL) // TrackEntry
+
+				if (reader.Current.Id == 0xaeUL)
 				{
+					// TrackEntry
 					ulong? trackType = null;
 					var forced = false;
 					string codec = null;
@@ -249,6 +270,7 @@ namespace Novartment.Base.Media
 						{
 							break;
 						}
+
 						switch (reader3.Current.Id)
 						{
 							case 0x83UL: // TrackType
@@ -282,6 +304,7 @@ namespace Novartment.Base.Media
 									{
 										break;
 									}
+
 									switch (reader4.Current.Id)
 									{
 										case 0xb0UL: // PixelWidth
@@ -298,6 +321,7 @@ namespace Novartment.Base.Media
 											break;
 									}
 								}
+
 								videoFormat = new MatroskaTrackInfoVideoFormat (
 									pixelWidth,
 									pixelHeight,
@@ -315,6 +339,7 @@ namespace Novartment.Base.Media
 									{
 										break;
 									}
+
 									switch (reader5.Current.Id)
 									{
 										case 0xb5UL: // SamplingFrequency
@@ -325,10 +350,12 @@ namespace Novartment.Base.Media
 											break;
 									}
 								}
+
 								audioFormat = new MatroskaTrackInfoAudioFormat (samplingFrequency, channels);
 								break;
 						}
 					}
+
 					var track = new MatroskaTrackInfo (
 						(MatroskaTrackType)trackType,
 						forced,
@@ -340,18 +367,6 @@ namespace Novartment.Base.Media
 						audioFormat);
 					tracks.Add (track);
 				}
-			}
-		}
-
-		[DebuggerBrowsable (DebuggerBrowsableState.Never),
-		SuppressMessage ("Microsoft.Performance",
-			"CA1811:AvoidUncalledPrivateCode",
-			Justification = "Used in DebuggerDisplay attribute.")]
-		private string DebuggerDisplay
-		{
-			get
-			{
-				return FormattableString.Invariant ($"Date = {this.Date}, Duration = {this.Duration}, Tracks = {this.Tracks.Count}, Attachments = {this.Attachments.Count}");
 			}
 		}
 	}

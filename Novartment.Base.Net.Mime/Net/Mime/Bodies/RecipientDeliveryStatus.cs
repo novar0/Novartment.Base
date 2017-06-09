@@ -11,6 +11,36 @@ namespace Novartment.Base.Net.Mime
 	{
 		// TODO: добавить валидацию при установке свойств
 
+		/// <summary>
+		/// Инициализирует новый экземпляр класса RecipientDeliveryStatus для указанного адресата, действия и статуса.
+		/// </summary>
+		/// <param name="recipient">Адресат, к которому относятся остальные свойства.</param>
+		/// <param name="action">Действие, предпринятое почтовым агентом в результате попытки доставки сообщения адресату.</param>
+		/// <param name="status">Транспорт-независимый код соответствующий статусу доставки сообщения адресату.</param>
+		public RecipientDeliveryStatus (NotificationFieldValue recipient, DeliveryAttemptResult action, string status)
+		{
+			if (recipient == null)
+			{
+				throw new ArgumentNullException (nameof (recipient));
+			}
+
+			if (action == DeliveryAttemptResult.Unspecified)
+			{
+				throw new ArgumentOutOfRangeException (nameof (action));
+			}
+
+			if (status == null)
+			{
+				throw new ArgumentNullException (nameof (status));
+			}
+
+			Contract.EndContractBlock ();
+
+			this.FinalRecipient = recipient;
+			this.Action = action;
+			this.Status = status;
+		}
+
 		/// <summary>Gets or sets original recipient address as specified by the sender of the message for which the DSN is being issued.</summary>
 		public NotificationFieldValue OriginalRecipient { get; set; }
 
@@ -38,32 +68,5 @@ namespace Novartment.Base.Net.Mime
 
 		/// <summary>Gets or sets date after which the Reporting MTA expects to abandon all attempts to deliver the message to that recipient.</summary>
 		public DateTimeOffset? WillRetryUntil { get; set; }
-
-		/// <summary>
-		/// Инициализирует новый экземпляр класса RecipientDeliveryStatus для указанного адресата, действия и статуса.
-		/// </summary>
-		/// <param name="recipient">Адресат, к которому относятся остальные свойства.</param>
-		/// <param name="action">Действие, предпринятое почтовым агентом в результате попытки доставки сообщения адресату.</param>
-		/// <param name="status">Транспорт-независимый код соответствующий статусу доставки сообщения адресату.</param>
-		public RecipientDeliveryStatus (NotificationFieldValue recipient, DeliveryAttemptResult action, string status)
-		{
-			if (recipient == null)
-			{
-				throw new ArgumentNullException (nameof (recipient));
-			}
-			if (action == DeliveryAttemptResult.Unspecified)
-			{
-				throw new ArgumentOutOfRangeException (nameof (action));
-			}
-			if (status == null)
-			{
-				throw new ArgumentNullException (nameof (status));
-			}
-			Contract.EndContractBlock ();
-
-			this.FinalRecipient = recipient;
-			this.Action = action;
-			this.Status = status;
-		}
 	}
 }

@@ -1,14 +1,17 @@
 ﻿using System;
-using System.IO;
 using System.Diagnostics.Contracts;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace Novartment.Base.BinaryStreaming
 {
+	/// <content>
+	/// Класс-обёртка StreamBufferedSource для представления Stream в виде IFastSkipBufferedSource.
+	/// </content>
 	public static partial class StreamExtensions
 	{
-		private class _StreamBufferedSource :
+		private class StreamBufferedSource :
 			IFastSkipBufferedSource
 		{
 			private readonly Stream _stream;
@@ -16,6 +19,12 @@ namespace Novartment.Base.BinaryStreaming
 			private int _offset = 0;
 			private int _count = 0;
 			private bool _streamEnded = false;
+
+			internal StreamBufferedSource(Stream readableStream, byte[] buffer)
+			{
+				_stream = readableStream;
+				_buffer = buffer;
+			}
 
 			public byte[] Buffer => _buffer;
 
@@ -25,18 +34,13 @@ namespace Novartment.Base.BinaryStreaming
 
 			public bool IsExhausted => _streamEnded;
 
-			internal _StreamBufferedSource (Stream readableStream, byte[] buffer)
-			{
-				_stream = readableStream;
-				_buffer = buffer;
-			}
-
 			public void SkipBuffer (int size)
 			{
 				if ((size < 0) || (size > _count))
 				{
 					throw new ArgumentOutOfRangeException (nameof (size));
 				}
+
 				Contract.EndContractBlock ();
 
 				if (size > 0)
@@ -52,6 +56,7 @@ namespace Novartment.Base.BinaryStreaming
 				{
 					throw new ArgumentOutOfRangeException (nameof (size));
 				}
+
 				Contract.EndContractBlock ();
 
 				if (cancellationToken.IsCancellationRequested)
@@ -70,6 +75,7 @@ namespace Novartment.Base.BinaryStreaming
 				}
 
 				long skipped = available;
+
 				// пропускаем весь буфер
 				size -= (long)available;
 				_offset = _count = 0;
@@ -80,7 +86,8 @@ namespace Novartment.Base.BinaryStreaming
 					try
 					{
 						var streamAvailable = _stream.Length - _stream.Position;
-						_streamEnded = (size >= streamAvailable);
+						_streamEnded = size >= streamAvailable;
+
 						// если выходим за пределы размера потока то ставим указатель на конец
 						if (size > streamAvailable)
 						{
@@ -88,39 +95,44 @@ namespace Novartment.Base.BinaryStreaming
 							skipped += streamAvailable;
 							return Task.FromResult (skipped);
 						}
+
 						_stream.Seek (size, SeekOrigin.Current);
 						skipped += size;
 						return Task.FromResult (skipped);
 					}
+
 					// на случай если свойство Length, свойство Position или метод Seek() не поддерживаются потоком
 					// будет использован метод последовательного чтения далее
-					catch (NotSupportedException) { }
+					catch (NotSupportedException)
+					{
+					}
 				}
 
 				// поток не поддерживает позиционирование, читаем данные в буфер пока не считаем нужное количество
-				return TrySkipAsyncStateMachine (size, skipped, cancellationToken);
-			}
+				return TrySkipAsyncStateMachine ();
 
-			private async Task<long> TrySkipAsyncStateMachine (long size, long skipped, CancellationToken cancellationToken)
-			{
-				int readed = 0;
-				do
+				async Task<long> TrySkipAsyncStateMachine ()
 				{
-					size -= (long)readed;
-					skipped += (long)readed;
-					readed = await _stream.ReadAsync (_buffer, 0, _buffer.Length, cancellationToken).ConfigureAwait (false);
-					if (readed < 1)
+					int readed = 0;
+					do
 					{
-						_streamEnded = true;
-						return skipped;
+						size -= (long)readed;
+						skipped += (long)readed;
+						readed = await _stream.ReadAsync (_buffer, 0, _buffer.Length, cancellationToken).ConfigureAwait (false);
+						if (readed < 1)
+						{
+							_streamEnded = true;
+							return skipped;
+						}
 					}
-				} while (size > (long)readed);
+					while (size > (long)readed);
 
-				// делаем доступным остаток буфера
-				skipped += size;
-				_offset = (int)size;
-				_count = readed - (int)size;
-				return skipped;
+					// делаем доступным остаток буфера
+					skipped += size;
+					_offset = (int)size;
+					_count = readed - (int)size;
+					return skipped;
+				}
 			}
 
 			public Task FillBufferAsync (CancellationToken cancellationToken)
@@ -137,16 +149,16 @@ namespace Novartment.Base.BinaryStreaming
 					_offset + _count,
 					_buffer.Length - _offset - _count,
 					cancellationToken);
-				return FillBufferAsyncFinalizer (task);
-			}
+				return FillBufferAsyncFinalizer ();
 
-			private async Task FillBufferAsyncFinalizer (Task<int> task)
-			{
-				var readed = await task.ConfigureAwait (false);
-				_count += readed;
-				if (readed < 1)
+				async Task FillBufferAsyncFinalizer ()
 				{
-					_streamEnded = true;
+					var readed = await task.ConfigureAwait (false);
+					_count += readed;
+					if (readed < 1)
+					{
+						_streamEnded = true;
+					}
 				}
 			}
 
@@ -156,6 +168,7 @@ namespace Novartment.Base.BinaryStreaming
 				{
 					throw new ArgumentOutOfRangeException (nameof (size));
 				}
+
 				Contract.EndContractBlock ();
 
 				if ((size <= _count) || _streamEnded)
@@ -164,8 +177,10 @@ namespace Novartment.Base.BinaryStreaming
 					{
 						throw new NotEnoughDataException (size - _count);
 					}
+
 					return Task.CompletedTask;
 				}
+
 				Defragment ();
 				return EnsureBufferAsyncAsyncStateMachine (size, cancellationToken);
 			}
@@ -192,6 +207,7 @@ namespace Novartment.Base.BinaryStreaming
 						_streamEnded = true;
 					}
 				}
+
 				if (shortage > 0)
 				{
 					throw new NotEnoughDataException (shortage);
@@ -207,6 +223,7 @@ namespace Novartment.Base.BinaryStreaming
 					{
 						Array.Copy (_buffer, _offset, _buffer, 0, _count);
 					}
+
 					_offset = 0;
 				}
 			}

@@ -13,20 +13,10 @@ namespace Novartment.Base.UI.Wpf
 	public class SplitButton : Button
 	{
 		private const string SplitElementName = "SplitElement";
+		private readonly ObservableCollection<object> _buttonMenuItemsSource = new ObservableCollection<object> ();
 		private UIElement _splitElement;
 		private ContextMenu _contextMenu;
 		private Point _contextMenuInitialOffset;
-		private readonly ObservableCollection<object> _buttonMenuItemsSource = new ObservableCollection<object> ();
-
-		/// <summary>
-		/// Gets the collection of items for the split button's menu.
-		/// </summary>
-		public Collection<object> ButtonMenuItemsSource => _buttonMenuItemsSource;
-
-		/// <summary>
-		/// Gets or sets a value indicating whetherthe mouse is over the split element.
-		/// </summary>
-		protected bool IsMouseOverSplitElement { get; private set; }
 
 		/// <summary>
 		/// Initializes a new instance of the SplitButton class.
@@ -37,18 +27,29 @@ namespace Novartment.Base.UI.Wpf
 		}
 
 		/// <summary>
+		/// Gets the collection of items for the split button's menu.
+		/// </summary>
+		public Collection<object> ButtonMenuItemsSource => _buttonMenuItemsSource;
+
+		/// <summary>
+		/// Gets a value indicating whetherthe mouse is over the split element.
+		/// </summary>
+		protected bool IsMouseOverSplitElement { get; private set; }
+
+		/// <summary>
 		/// Called when the template is changed.
 		/// </summary>
 		public override void OnApplyTemplate ()
 		{
 			// Unhook existing handlers
-			if (null != _splitElement)
+			if (_splitElement != null)
 			{
 				_splitElement.MouseEnter -= SplitElement_MouseEnter;
 				_splitElement.MouseLeave -= SplitElement_MouseLeave;
 				_splitElement = null;
 			}
-			if (null != _contextMenu)
+
+			if (_contextMenu != null)
 			{
 				_contextMenu.Opened -= ContextMenu_Opened;
 				_contextMenu.Closed -= ContextMenu_Closed;
@@ -60,15 +61,14 @@ namespace Novartment.Base.UI.Wpf
 
 			// Hook new event handlers
 			_splitElement = GetTemplateChild (SplitElementName) as UIElement;
-			if (null != _splitElement)
+			if (_splitElement != null)
 			{
 				_splitElement.MouseEnter += SplitElement_MouseEnter;
 				_splitElement.MouseLeave += SplitElement_MouseLeave;
 
 				_contextMenu = ContextMenuService.GetContextMenu (_splitElement);
-				if (null != _contextMenu)
+				if (_contextMenu != null)
 				{
-
 					_contextMenu.Opened += ContextMenu_Opened;
 					_contextMenu.Closed += ContextMenu_Closed;
 				}
@@ -93,14 +93,15 @@ namespace Novartment.Base.UI.Wpf
 		/// <summary>
 		/// Called when a key is pressed.
 		/// </summary>
+		/// <param name="e">Arguments of event.</param>
 		protected override void OnKeyDown (KeyEventArgs e)
 		{
-			if (null == e)
+			if (e == null)
 			{
 				throw new ArgumentNullException (nameof (e));
 			}
 
-			if ((Key.Down == e.Key) || (Key.Up == e.Key))
+			if ((e.Key == Key.Down) || (e.Key == Key.Up))
 			{
 				// WPF requires this to happen via BeginInvoke
 				Dispatcher.BeginInvoke ((Action)OpenButtonMenu);
@@ -116,7 +117,7 @@ namespace Novartment.Base.UI.Wpf
 		/// </summary>
 		protected void OpenButtonMenu ()
 		{
-			if ((0 < _buttonMenuItemsSource.Count) && (null != _contextMenu))
+			if ((_buttonMenuItemsSource.Count > 0) && (_contextMenu != null))
 			{
 				_contextMenu.HorizontalOffset = 0;
 				_contextMenu.VerticalOffset = 0;
@@ -189,16 +190,16 @@ namespace Novartment.Base.UI.Wpf
 		private void UpdateContextMenuOffsets ()
 		{
 			// Calculate desired offset to put the ContextMenu below and left-aligned to the Button
-			var currentOffset = new Point ();
+			var currentOffset = default(Point);
 			var desiredOffset = _contextMenuInitialOffset;
 			_contextMenu.HorizontalOffset = desiredOffset.X - currentOffset.X;
 			_contextMenu.VerticalOffset = desiredOffset.Y - currentOffset.Y;
+
 			// Adjust for RTL
-			if (FlowDirection.RightToLeft == FlowDirection)
+			if (this.FlowDirection == FlowDirection.RightToLeft)
 			{
 				_contextMenu.HorizontalOffset *= -1;
 			}
 		}
-
 	}
 }

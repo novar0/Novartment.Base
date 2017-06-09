@@ -8,6 +8,13 @@ namespace Novartment.Base.Net.Mime
 	public class EssentialContentProperties
 	{
 		/// <summary>
+		/// Инициализирует новый экземпляр класса EssentialContentProperties.
+		/// </summary>
+		public EssentialContentProperties ()
+		{
+		}
+
+		/// <summary>
 		/// Медиатип содержимого.
 		/// </summary>
 		public ContentMediaType Type { get; set; } = ContentMediaType.Unspecified;
@@ -26,12 +33,5 @@ namespace Novartment.Base.Net.Mime
 		/// Коллекция дополнительных параметров содержимого, обычно представленных в поле заголовка "Content-Type".
 		/// </summary>
 		public IAdjustableList<HeaderFieldParameter> Parameters { get; } = new ArrayList<HeaderFieldParameter> ();
-
-		/// <summary>
-		/// Инициализирует новый экземпляр класса EssentialContentProperties.
-		/// </summary>
-		public EssentialContentProperties ()
-		{
-		}
 	}
 }

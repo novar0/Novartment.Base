@@ -2,10 +2,10 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.Threading;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
+using System.Threading;
 using Novartment.Base.Collections.Immutable;
 using Novartment.Base.Reflection;
 
@@ -24,10 +24,12 @@ namespace Novartment.Base.Collections
 	/// Для конкурентного доступа синхронизация не требуется.
 	/// Не реализует интерфейсы ICollection и IList ввиду несовместимости их контрактов с конкурентным доступом.
 	/// </remarks>
-	[SuppressMessage ("Microsoft.Naming",
+	[SuppressMessage (
+		"Microsoft.Naming",
 		"CA1710:IdentifiersShouldHaveCorrectSuffix",
-		Justification = "Implemented interfaces has no association with class name."),
-	DebuggerDisplay ("{DebuggerDisplay,nq}"), DebuggerTypeProxy (typeof (ConcurrentList<>._DebugView))]
+		Justification = "Implemented interfaces has no association with class name.")]
+	[DebuggerDisplay ("{DebuggerDisplay,nq}")]
+	[DebuggerTypeProxy (typeof (ConcurrentList<>.DebugView))]
 	public class ConcurrentList<T> :
 		IAdjustableList<T>,
 		IReservedCapacityCollection<T>,
@@ -35,19 +37,21 @@ namespace Novartment.Base.Collections
 		IStructuralEquatable,
 		INotifyCollectionChanged
 	{
-		// для обеспечения конкурентного доступа, всё состояние хранится в одном поле _state, а любое его изменение выглядит так:
-		// var spinWait = new SpinWait ();
-		// while (true)
-		// {
-		//   var state1 = _state;
-		//   var newState = SomeOperation (state1);
-		//   var state2 = Interlocked.CompareExchange (ref _state, newState, state1);
-		//   if (state1 == state2)
-		//   {
-		//     return;
-		//   }
-		//   spinWait.SpinOnce ();
-		// }
+		/*
+		для обеспечения конкурентного доступа, всё состояние хранится в одном поле _state, а любое его изменение выглядит так:
+		var spinWait = default (SpinWait);
+		while (true)
+		{
+		  var state1 = _state;
+		  var newState = SomeOperation (state1);
+		  var state2 = Interlocked.CompareExchange (ref _state, newState, state1);
+		  if (state1 == state2)
+		  {
+		    return;
+		  }
+		  spinWait.SpinOnce ();
+		}
+		*/
 
 		[DebuggerBrowsable (DebuggerBrowsableState.RootHidden)]
 		private LoopedArraySegment<T> _state;
@@ -87,6 +91,7 @@ namespace Novartment.Base.Collections
 			{
 				throw new ArgumentNullException (nameof (arraySegment));
 			}
+
 			Contract.EndContractBlock ();
 
 			var isAtomicallyAssignable = typeof (T).IsAtomicallyAssignable ();
@@ -104,11 +109,34 @@ namespace Novartment.Base.Collections
 		/// <summary>
 		/// Получает количество элементов в списке.
 		/// </summary>
-		public int Count
+		public int Count => _state.Count;
+
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
+		[SuppressMessage(
+			"Microsoft.Globalization",
+			"CA1305:SpecifyIFormatProvider",
+			MessageId = "System.String.Format(System.String,System.Object,System.Object,System.Object)",
+			Justification = "String is not exposed to the end user and will not be localized.")]
+		[SuppressMessage(
+			"Microsoft.Globalization",
+			"CA1305:SpecifyIFormatProvider",
+			MessageId = "System.String.Format(System.String,System.Object,System.Object)",
+			Justification = "String is not exposed to the end user and will not be localized.")]
+		[SuppressMessage(
+			"Microsoft.Globalization",
+			"CA1305:SpecifyIFormatProvider",
+			MessageId = "System.String.Format(System.String,System.Object)",
+			Justification = "String is not exposed to the end user and will not be localized.")]
+		private string DebuggerDisplay
 		{
 			get
 			{
-				return _state.Count;
+				var info = (_state.Count < 1) ?
+					"empty" :
+					(_state.Count == 1) ?
+						$"{_state.Offset}" :
+						$"{_state.Offset}...{(_state.Offset + _state.Count - 1) % _state.Array.Length}";
+				return $"<{typeof(T).Name}>[{info}] (capacity={_state.Array.Length})";
 			}
 		}
 
@@ -124,16 +152,19 @@ namespace Novartment.Base.Collections
 				{
 					throw new ArgumentOutOfRangeException (nameof (index));
 				}
+
 				Contract.EndContractBlock ();
 
 				return _state[index];
 			}
+
 			set
 			{
 				if (index < 0)
 				{
 					throw new ArgumentOutOfRangeException (nameof (index));
 				}
+
 				Contract.EndContractBlock ();
 
 				var handler = this.CollectionChanged;
@@ -157,8 +188,11 @@ namespace Novartment.Base.Collections
 			var state1 = _state;
 			_state = new LoopedArraySegment<T> (Array.Empty<T> ());
 			CollectionExtensions.LoopedArraySegmentClear (
-				state1.Array, state1.Offset, state1.Count,
-				0, state1.Count);
+				state1.Array,
+				state1.Offset,
+				state1.Count,
+				0,
+				state1.Count);
 			this.CollectionChanged?.Invoke (this, new NotifyCollectionChangedEventArgs (NotifyCollectionChangedAction.Reset));
 		}
 
@@ -168,7 +202,7 @@ namespace Novartment.Base.Collections
 		/// <param name="item">Элемент для добавления в список.</param>
 		public void Add (T item)
 		{
-			var spinWait = new SpinWait ();
+			var spinWait = default (SpinWait);
 			while (true)
 			{
 				var state1 = _state;
@@ -176,6 +210,7 @@ namespace Novartment.Base.Collections
 				var newState = EnsureCapacity (state1, cnt + 1);
 				newState[cnt] = item;
 				newState = new LoopedArraySegment<T> (newState.Array, newState.Offset, cnt + 1);
+
 				// заменяем состояние если оно не изменилось с момента вызова
 				var state2 = Interlocked.CompareExchange (ref _state, newState, state1);
 				if (state1 == state2)
@@ -183,6 +218,7 @@ namespace Novartment.Base.Collections
 					this.CollectionChanged?.Invoke (this, new NotifyCollectionChangedEventArgs (NotifyCollectionChangedAction.Add, item, cnt));
 					return;
 				}
+
 				// состояние изменилось за время вызова, поэтому повторим попытку после паузы
 				spinWait.SpinOnce ();
 			}
@@ -202,6 +238,7 @@ namespace Novartment.Base.Collections
 				item = default (T);
 				return false;
 			}
+
 			item = snapshot[0];
 			return true;
 		}
@@ -214,7 +251,7 @@ namespace Novartment.Base.Collections
 		/// <returns>True если первый элемент списка успешно изъят, false если нет.</returns>
 		public bool TryTakeFirst (out T item)
 		{
-			var spinWait = new SpinWait ();
+			var spinWait = default (SpinWait);
 			while (true)
 			{
 				var state1 = _state;
@@ -223,6 +260,7 @@ namespace Novartment.Base.Collections
 					item = default (T);
 					return false;
 				}
+
 				item = state1[0];
 				state1[0] = default (T);
 				var newOffset = state1.Offset + 1;
@@ -230,7 +268,9 @@ namespace Novartment.Base.Collections
 				{
 					newOffset -= state1.Array.Length;
 				}
+
 				var newState = new LoopedArraySegment<T> (state1.Array, newOffset, state1.Count - 1);
+
 				// заменяем состояние если оно не изменилось с момента вызова
 				var state2 = Interlocked.CompareExchange (ref _state, newState, state1);
 				if (state1 == state2)
@@ -238,6 +278,7 @@ namespace Novartment.Base.Collections
 					this.CollectionChanged?.Invoke (this, new NotifyCollectionChangedEventArgs (NotifyCollectionChangedAction.Remove, item, 0));
 					return true;
 				}
+
 				// состояние изменилось за время вызова, поэтому повторим попытку после паузы
 				spinWait.SpinOnce ();
 			}
@@ -258,6 +299,7 @@ namespace Novartment.Base.Collections
 				item = default (T);
 				return false;
 			}
+
 			item = snapshot[lastIndex];
 			return true;
 		}
@@ -270,7 +312,7 @@ namespace Novartment.Base.Collections
 		/// <returns>True если последний элемент списка успешно изъят, false если нет.</returns>
 		public bool TryTakeLast (out T item)
 		{
-			var spinWait = new SpinWait ();
+			var spinWait = default (SpinWait);
 			while (true)
 			{
 				var state1 = _state;
@@ -280,9 +322,11 @@ namespace Novartment.Base.Collections
 					item = default (T);
 					return false;
 				}
+
 				item = state1[lastIndex];
 				state1[lastIndex] = default (T);
 				var newState = new LoopedArraySegment<T> (state1.Array, state1.Offset, lastIndex);
+
 				// заменяем состояние если оно не изменилось с момента вызова
 				var state2 = Interlocked.CompareExchange (ref _state, newState, state1);
 				if (state1 == state2)
@@ -290,6 +334,7 @@ namespace Novartment.Base.Collections
 					this.CollectionChanged?.Invoke (this, new NotifyCollectionChangedEventArgs (NotifyCollectionChangedAction.Remove, item, lastIndex));
 					return true;
 				}
+
 				// состояние изменилось за время вызова, поэтому повторим попытку после паузы
 				spinWait.SpinOnce ();
 			}
@@ -306,9 +351,10 @@ namespace Novartment.Base.Collections
 			{
 				throw new ArgumentOutOfRangeException (nameof (index));
 			}
+
 			Contract.EndContractBlock ();
 
-			var spinWait = new SpinWait ();
+			var spinWait = default (SpinWait);
 			while (true)
 			{
 				var state1 = _state;
@@ -335,12 +381,17 @@ namespace Novartment.Base.Collections
 							newOffset += newState.Array.Length;
 						}
 					}
+
 					newState = new LoopedArraySegment<T> (newState.Array, newOffset, count + 1);
 					if (index > 0)
 					{
 						CollectionExtensions.LoopedArraySegmentCopy (
-							newState.Array, newState.Offset, newState.Count,
-							1, 0, index);
+							newState.Array,
+							newState.Offset,
+							newState.Count,
+							1,
+							0,
+							index);
 					}
 				}
 				else
@@ -349,10 +400,15 @@ namespace Novartment.Base.Collections
 					if (index < count)
 					{
 						CollectionExtensions.LoopedArraySegmentCopy (
-							newState.Array, newState.Offset, newState.Count,
-							index, index + 1, count - index);
+							newState.Array,
+							newState.Offset,
+							newState.Count,
+							index,
+							index + 1,
+							count - index);
 					}
 				}
+
 				newState[index] = item;
 
 				// заменяем состояние если оно не изменилось с момента вызова
@@ -362,6 +418,7 @@ namespace Novartment.Base.Collections
 					this.CollectionChanged?.Invoke (this, new NotifyCollectionChangedEventArgs (NotifyCollectionChangedAction.Add, item, index));
 					return;
 				}
+
 				// состояние изменилось за время вызова, поэтому повторим попытку после паузы
 				spinWait.SpinOnce ();
 			}
@@ -379,10 +436,12 @@ namespace Novartment.Base.Collections
 			{
 				throw new ArgumentOutOfRangeException (nameof (index));
 			}
+
 			if (count < 0)
 			{
 				throw new ArgumentOutOfRangeException (nameof (count));
 			}
+
 			Contract.EndContractBlock ();
 
 			if (count == 0)
@@ -390,7 +449,7 @@ namespace Novartment.Base.Collections
 				return;
 			}
 
-			var spinWait = new SpinWait ();
+			var spinWait = default (SpinWait);
 			while (true)
 			{
 				var state1 = _state;
@@ -399,6 +458,7 @@ namespace Novartment.Base.Collections
 				{
 					throw new ArgumentOutOfRangeException (nameof (index));
 				}
+
 				var newState = EnsureCapacity (state1, size + count);
 
 				if (index <= (size / 2))
@@ -412,23 +472,35 @@ namespace Novartment.Base.Collections
 							newOffset += newState.Array.Length;
 						}
 					}
+
 					newState = new LoopedArraySegment<T> (newState.Array, newOffset, size + count);
 					CollectionExtensions.LoopedArraySegmentCopy (
-						newState.Array, newState.Offset, newState.Count,
-						count, 0, index);
+						newState.Array,
+						newState.Offset,
+						newState.Count,
+						count,
+						0,
+						index);
 				}
 				else
 				{ // место вставки - вторая половина, выгоднее отодвигать вперёд кусок от индекса до конца
 					newState = new LoopedArraySegment<T> (newState.Array, newState.Offset, size + count);
 					CollectionExtensions.LoopedArraySegmentCopy (
-						newState.Array, newState.Offset, newState.Count,
-						index, index + count, size - index);
+						newState.Array,
+						newState.Offset,
+						newState.Count,
+						index,
+						index + count,
+						size - index);
 				}
 
 				// очищаем место под новые элементы
 				CollectionExtensions.LoopedArraySegmentClear (
-					newState.Array, newState.Offset, newState.Count,
-					index, count);
+					newState.Array,
+					newState.Offset,
+					newState.Count,
+					index,
+					count);
 
 				// заменяем состояние если оно не изменилось с момента вызова
 				var state2 = Interlocked.CompareExchange (ref _state, newState, state1);
@@ -437,6 +509,7 @@ namespace Novartment.Base.Collections
 					this.CollectionChanged?.Invoke (this, new NotifyCollectionChangedEventArgs (NotifyCollectionChangedAction.Add, new T[count], index));
 					return;
 				}
+
 				// состояние изменилось за время вызова, поэтому повторим попытку после паузы
 				spinWait.SpinOnce ();
 			}
@@ -452,9 +525,10 @@ namespace Novartment.Base.Collections
 			{
 				throw new ArgumentOutOfRangeException (nameof (index));
 			}
+
 			Contract.EndContractBlock ();
 
-			var spinWait = new SpinWait ();
+			var spinWait = default (SpinWait);
 			while (true)
 			{
 				var state1 = _state;
@@ -473,15 +547,21 @@ namespace Novartment.Base.Collections
 					if (index > 0)
 					{
 						CollectionExtensions.LoopedArraySegmentCopy (
-							newState.Array, newState.Offset, newState.Count,
-							0, 1, index);
+							newState.Array,
+							newState.Offset,
+							newState.Count,
+							0,
+							1,
+							index);
 					}
+
 					newState[0] = default (T);
 					var newOffset = newState.Offset + 1;
 					if (newOffset >= newState.Array.Length)
 					{
 						newOffset -= newState.Array.Length;
 					}
+
 					newState = new LoopedArraySegment<T> (newState.Array, newOffset, count - 1);
 				}
 				else
@@ -489,9 +569,14 @@ namespace Novartment.Base.Collections
 					if (index < lastIndex)
 					{
 						CollectionExtensions.LoopedArraySegmentCopy (
-							newState.Array, newState.Offset, newState.Count,
-							index + 1, index, count - index - 1);
+							newState.Array,
+							newState.Offset,
+							newState.Count,
+							index + 1,
+							index,
+							count - index - 1);
 					}
+
 					_state[lastIndex] = default (T);
 					newState = new LoopedArraySegment<T> (newState.Array, newState.Offset, count - 1);
 				}
@@ -503,6 +588,7 @@ namespace Novartment.Base.Collections
 					this.CollectionChanged?.Invoke (this, new NotifyCollectionChangedEventArgs (NotifyCollectionChangedAction.Remove, deletedItem, index));
 					return;
 				}
+
 				// состояние изменилось за время вызова, поэтому повторим попытку после паузы
 				spinWait.SpinOnce ();
 			}
@@ -519,22 +605,26 @@ namespace Novartment.Base.Collections
 			{
 				throw new ArgumentOutOfRangeException (nameof (index));
 			}
+
 			if (count < 0)
 			{
 				throw new ArgumentOutOfRangeException (nameof (count));
 			}
+
 			Contract.EndContractBlock ();
 
 			if (count == 0)
 			{
 				return;
 			}
+
 			if (count == 1)
 			{
 				RemoveAt (index);
 				return;
 			}
-			var spinWait = new SpinWait ();
+
+			var spinWait = default (SpinWait);
 			while (true)
 			{
 				var state1 = _state;
@@ -552,6 +642,7 @@ namespace Novartment.Base.Collections
 					{
 						offset -= state1.Array.Length;
 					}
+
 					notifyList = new T[count];
 					new LoopedArraySegment<T> (state1.Array, offset, count).CopyTo (notifyList, 0);
 				}
@@ -559,26 +650,41 @@ namespace Novartment.Base.Collections
 				if (size1 <= size2)
 				{ // выгоднее отодвигать вперёд кусок от начала до индекса
 					CollectionExtensions.LoopedArraySegmentCopy (
-						newState.Array, newState.Offset, newState.Count,
-						0, count, size1);
+						newState.Array,
+						newState.Offset,
+						newState.Count,
+						0,
+						count,
+						size1);
 					CollectionExtensions.LoopedArraySegmentClear (
-						newState.Array, newState.Offset, newState.Count,
-						0, count);
+						newState.Array,
+						newState.Offset,
+						newState.Count,
+						0,
+						count);
 					var newOffset = newState.Offset + count;
 					if (newOffset >= newState.Array.Length)
 					{
 						newOffset -= newState.Array.Length;
 					}
+
 					newState = new LoopedArraySegment<T> (newState.Array, newOffset, size1 + size2);
 				}
 				else
 				{ // выгоднее отодвигать назад кусок от индекса до конца
 					CollectionExtensions.LoopedArraySegmentCopy (
-						newState.Array, newState.Offset, newState.Count,
-						index + count, index, size2);
+						newState.Array,
+						newState.Offset,
+						newState.Count,
+						index + count,
+						index,
+						size2);
 					CollectionExtensions.LoopedArraySegmentClear (
-						newState.Array, newState.Offset, newState.Count,
-						index + size2, count);
+						newState.Array,
+						newState.Offset,
+						newState.Count,
+						index + size2,
+						count);
 					newState = new LoopedArraySegment<T> (newState.Array, newState.Offset, size1 + size2);
 				}
 
@@ -589,6 +695,7 @@ namespace Novartment.Base.Collections
 					handler?.Invoke (this, new NotifyCollectionChangedEventArgs (NotifyCollectionChangedAction.Remove, notifyList, index));
 					return;
 				}
+
 				// состояние изменилось за время вызова, поэтому повторим попытку после паузы
 				spinWait.SpinOnce ();
 			}
@@ -605,19 +712,22 @@ namespace Novartment.Base.Collections
 			{
 				throw new ArgumentOutOfRangeException (nameof (min));
 			}
+
 			Contract.EndContractBlock ();
 
-			var spinWait = new SpinWait ();
+			var spinWait = default (SpinWait);
 			while (true)
 			{
 				var state1 = _state;
 				var newState = EnsureCapacity (state1, min);
+
 				// заменяем состояние если оно не изменилось с момента вызова
 				var state2 = Interlocked.CompareExchange (ref _state, newState, state1);
 				if (state1 == state2)
 				{
 					return;
 				}
+
 				// состояние изменилось за время вызова, поэтому повторим попытку после паузы
 				spinWait.SpinOnce ();
 			}
@@ -629,7 +739,7 @@ namespace Novartment.Base.Collections
 		/// </summary>
 		public void TrimExcess ()
 		{
-			var spinWait = new SpinWait ();
+			var spinWait = default (SpinWait);
 			while (true)
 			{
 				var state1 = _state;
@@ -638,15 +748,18 @@ namespace Novartment.Base.Collections
 				{
 					return;
 				}
+
 				var newItems = new T[state1.Count];
 				state1.CopyTo (newItems, 0);
 				var newState = new LoopedArraySegment<T> (newItems);
+
 				// заменяем состояние если оно не изменилось с момента вызова
 				var state2 = Interlocked.CompareExchange (ref _state, newState, state1);
 				if (state1 == state2)
 				{
 					return;
 				}
+
 				// состояние изменилось за время вызова, поэтому повторим попытку после паузы
 				spinWait.SpinOnce ();
 			}
@@ -660,6 +773,11 @@ namespace Novartment.Base.Collections
 		{
 			return _state.GetEnumerator ();
 		}
+
+		/// <summary>
+		/// Получает перечислитель элементов списка.
+		/// </summary>
+		/// <returns>Перечислитель элементов списка.</returns>
 		IEnumerator IEnumerable.GetEnumerator ()
 		{
 			return GetEnumerator ();
@@ -677,43 +795,60 @@ namespace Novartment.Base.Collections
 			{
 				throw new ArgumentNullException (nameof (array));
 			}
+
 			if (arrayIndex < 0)
 			{
 				throw new ArgumentOutOfRangeException (nameof (arrayIndex));
 			}
+
 			Contract.EndContractBlock ();
 
 			_state.CopyTo (array, arrayIndex);
 		}
 
+		/// <summary>
+		/// Returns a hash code for the current instance.
+		/// </summary>
+		/// <param name="comparer">An object that computes the hash code of the current object.</param>
+		/// <returns>The hash code for the current instance.</returns>
 		int IStructuralEquatable.GetHashCode (IEqualityComparer comparer)
 		{
 			if (comparer == null)
 			{
 				throw new ArgumentNullException (nameof (comparer));
 			}
+
 			Contract.EndContractBlock ();
 
 			return ((IStructuralEquatable)_state).GetHashCode (comparer);
 		}
 
+		/// <summary>
+		/// Determines whether an object is structurally equal to the current instance.
+		/// </summary>
+		/// <param name="other">The object to compare with the current instance.</param>
+		/// <param name="comparer">An object that determines whether the current instance and other are equal.</param>
+		/// <returns>true if the two objects are equal; otherwise, false.</returns>
 		bool IStructuralEquatable.Equals (object other, IEqualityComparer comparer)
 		{
 			if (comparer == null)
 			{
 				throw new ArgumentNullException (nameof (comparer));
 			}
+
 			Contract.EndContractBlock ();
 
 			if (other == null)
 			{
 				return false;
 			}
+
 			var isOtherEqualsThis = ReferenceEquals (this, other);
 			if (isOtherEqualsThis)
 			{
 				return true;
 			}
+
 			var list = other as ConcurrentList<T>;
 			if (list == null)
 			{
@@ -724,27 +859,6 @@ namespace Novartment.Base.Collections
 			var snapshot2 = list._state;
 			return ReferenceEquals (snapshot1, snapshot2) ||
 				((IStructuralEquatable)snapshot1).Equals (snapshot2, comparer);
-		}
-
-		private static LoopedArraySegment<T> EnsureCapacity (LoopedArraySegment<T> arraySegment, int min)
-		{
-			var oldCapacity = arraySegment.Array.Length;
-			if (oldCapacity < min)
-			{
-				var newCapacity = (int)((oldCapacity * 200L) / 100L);
-				if (newCapacity < (oldCapacity + 4))
-				{
-					newCapacity = oldCapacity + 4;
-				}
-				if (newCapacity < min)
-				{
-					newCapacity = min;
-				}
-				var newItems = new T[newCapacity];
-				arraySegment.CopyTo (newItems, 0);
-				arraySegment = new LoopedArraySegment<T> (newItems, 0, arraySegment.Count);
-			}
-			return arraySegment;
 		}
 
 		/// <summary>
@@ -766,9 +880,10 @@ namespace Novartment.Base.Collections
 			{
 				throw new ArgumentNullException (nameof (accessMethod));
 			}
+
 			Contract.EndContractBlock ();
 
-			var spinWait = new SpinWait ();
+			var spinWait = default (SpinWait);
 			while (true)
 			{
 				var state1 = _state;
@@ -777,53 +892,47 @@ namespace Novartment.Base.Collections
 				{
 					return result;
 				}
+
 				// состояние изменилось за время вызова, поэтому повторим попытку после паузы
 				spinWait.SpinOnce ();
 			}
 		}
 
-		internal sealed class _DebugView
+		private static LoopedArraySegment<T> EnsureCapacity (LoopedArraySegment<T> arraySegment, int min)
+		{
+			var oldCapacity = arraySegment.Array.Length;
+			if (oldCapacity < min)
+			{
+				var newCapacity = (int)((oldCapacity * 200L) / 100L);
+				if (newCapacity < (oldCapacity + 4))
+				{
+					newCapacity = oldCapacity + 4;
+				}
+
+				if (newCapacity < min)
+				{
+					newCapacity = min;
+				}
+
+				var newItems = new T[newCapacity];
+				arraySegment.CopyTo (newItems, 0);
+				arraySegment = new LoopedArraySegment<T> (newItems, 0, arraySegment.Count);
+			}
+
+			return arraySegment;
+		}
+
+		internal sealed class DebugView
 		{
 			private readonly ConcurrentList<T> _list;
 
-			public _DebugView (ConcurrentList<T> list)
+			public DebugView (ConcurrentList<T> list)
 			{
 				_list = list;
 			}
 
 			[DebuggerBrowsable (DebuggerBrowsableState.RootHidden)]
-			public T[] Items
-			{
-				get
-				{
-					return CollectionExtensions.DuplicateToArray (_list._state);
-				}
-			}
-		}
-
-		[DebuggerBrowsable (DebuggerBrowsableState.Never),
-		SuppressMessage ("Microsoft.Globalization", "CA1305:SpecifyIFormatProvider",
-			MessageId = "System.String.Format(System.String,System.Object,System.Object,System.Object)",
-			Justification = "String is not exposed to the end user and will not be localized."),
-		SuppressMessage ("Microsoft.Globalization",
-			"CA1305:SpecifyIFormatProvider",
-			MessageId = "System.String.Format(System.String,System.Object,System.Object)",
-			Justification = "String is not exposed to the end user and will not be localized."),
-		SuppressMessage ("Microsoft.Globalization",
-			"CA1305:SpecifyIFormatProvider",
-			MessageId = "System.String.Format(System.String,System.Object)",
-			Justification = "String is not exposed to the end user and will not be localized.")]
-		private string DebuggerDisplay
-		{
-			get
-			{
-				var info = (_state.Count < 1) ?
-					"empty" :
-					(_state.Count == 1) ?
-						$"{_state.Offset}" :
-						$"{_state.Offset}...{(_state.Offset + _state.Count - 1) % _state.Array.Length}";
-				return $"<{typeof (T).Name}>[{info}] (capacity={_state.Array.Length})";
-			}
+			public T[] Items => CollectionExtensions.DuplicateToArray (_list._state);
 		}
 	}
 }

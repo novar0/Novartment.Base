@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Reflection;
 using System.Diagnostics.Contracts;
+using System.Reflection;
 
 namespace Novartment.Base.Reflection
 {
@@ -20,6 +20,7 @@ namespace Novartment.Base.Reflection
 			{
 				throw new ArgumentNullException (nameof (type));
 			}
+
 			Contract.EndContractBlock ();
 
 			var typeInfo = type.GetTypeInfo ();
@@ -27,36 +28,46 @@ namespace Novartment.Base.Reflection
 			{
 				return true;
 			}
+
 			if (typeInfo.IsEnum)
 			{
 				return IsAtomicallyAssignable (Enum.GetUnderlyingType (type));
 			}
-			if ((type == typeof (System.Boolean)) || // специальный тип, размер может быть различный но всегда приспособлен для атомарного присвоения
-				(type == typeof (System.Byte)) || // тип размером 8 бит
-				(type == typeof (System.SByte)) || // тип размером 8 бит
-				(type == typeof (IntPtr))) // указатель платформы
+
+			if ((type == typeof (bool)) ||
+				(type == typeof (byte)) ||
+				(type == typeof (sbyte)) ||
+				(type == typeof (IntPtr)))
 			{
+				// тип размером 8 бит и указатель платформы
 				return true;
 			}
-			if ((type == typeof (System.Char)) || // тип размером 16 бит
-				(type == typeof (System.Int16)) || // тип размером 16 бит
-				(type == typeof (System.UInt16))) // тип размером 16 бит
+
+			if ((type == typeof (char)) ||
+				(type == typeof (short)) ||
+				(type == typeof (ushort)))
 			{
-				return (IntPtr.Size >= 2);
+				// тип размером 16 бит
+				return IntPtr.Size >= 2;
 			}
-			if ((type == typeof (System.Int32)) || // тип размером 32 бит
-				(type == typeof (System.UInt32)) || // тип размером 32 бит
-				(type == typeof (System.Single))) // тип размером 32 бит
+
+			if ((type == typeof (int)) ||
+				(type == typeof (uint)) ||
+				(type == typeof (float)))
 			{
-				return (IntPtr.Size >= 4);
+				// тип размером 32 бит
+				return IntPtr.Size >= 4;
 			}
-			if ((type == typeof (System.Int64)) || // тип размером 64 бит
-				(type == typeof (System.UInt64)) || // тип размером 64 бит
-				(type == typeof (System.Double)) || // тип размером 64 бит
-				(type == typeof (System.DateTime))) // тип размером 64 бит
+
+			if ((type == typeof (long)) ||
+				(type == typeof (ulong)) ||
+				(type == typeof (double)) ||
+				(type == typeof (DateTime)))
 			{
-				return (IntPtr.Size >= 8);
+				// тип размером 64 бит
+				return IntPtr.Size >= 8;
 			}
+
 			return false;
 		}
 	}

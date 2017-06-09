@@ -78,6 +78,7 @@ namespace Novartment.Base.Net.Mime.Test
 			{
 				template[i] = (byte)rnd.Next (byte.MaxValue + 1);
 			}
+
 			var srcStream = new ArrayBufferedSource (template);
 
 			// application/octet-stream в кодировке base64

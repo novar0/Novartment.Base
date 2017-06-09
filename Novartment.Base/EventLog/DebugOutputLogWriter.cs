@@ -1,6 +1,6 @@
 ﻿using System;
-using SysDebug = System.Diagnostics.Debug;
 using System.Diagnostics.CodeAnalysis;
+using SysDebug = System.Diagnostics.Debug;
 
 namespace Novartment.Base
 {
@@ -16,7 +16,8 @@ namespace Novartment.Base
 		/// Initializes new instance of DebugOutputLogWriter with specified message prefix.
 		/// </summary>
 		/// <param name="prefix">Prefix for all messages.</param>
-		[SuppressMessage ("Microsoft.Design",
+		[SuppressMessage (
+		"Microsoft.Design",
 			"CA1026:DefaultParametersShouldNotBeUsed",
 			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
 		public DebugOutputLogWriter (string prefix = null)
@@ -27,7 +28,16 @@ namespace Novartment.Base
 		/// <summary>
 		/// Occurs when logger configuration changes.
 		/// </summary>
-		public event EventHandler<EventArgs> LoggerReconfigured { add { } remove { } }
+		public event EventHandler<EventArgs> LoggerReconfigured
+		{
+			add
+			{
+			}
+
+			remove
+			{
+			}
+		}
 
 		/// <summary>
 		/// Gets a value indicating whether logging is enabled for the <c>Trace</c> level.
@@ -112,7 +122,8 @@ namespace Novartment.Base
 		/// Other runtime errors or unexpected conditions. Expect these to be immediately visible on a status console.
 		/// </summary>
 		/// <param name="message">Log message.</param>
-		[SuppressMessage ("Microsoft.Naming",
+		[SuppressMessage (
+		"Microsoft.Naming",
 			"CA1716:IdentifiersShouldNotMatchKeywords",
 			MessageId = "Error",
 			Justification = "No other name could be applied. NLog historically have method 'Error()'.")]

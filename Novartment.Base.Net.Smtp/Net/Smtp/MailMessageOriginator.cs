@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Diagnostics.Contracts;
-using Novartment.Base.Collections;
 using Novartment.Base.BinaryStreaming;
+using Novartment.Base.Collections;
 
 namespace Novartment.Base.Net.Smtp
 {
@@ -31,10 +31,12 @@ namespace Novartment.Base.Net.Smtp
 			{
 				throw new ArgumentNullException (nameof (message));
 			}
+
 			if (transactionFactory == null)
 			{
 				throw new ArgumentNullException (nameof (transactionFactory));
 			}
+
 			Contract.EndContractBlock ();
 
 			var recipients = new ArrayList<AddrSpec> ();
@@ -66,6 +68,7 @@ namespace Novartment.Base.Net.Smtp
 				{
 					await transaction.TryAddRecipientAsync (recipient, cancellationToken).ConfigureAwait (false);
 				}
+
 				var channel = new BufferedChannel (new byte[8192]); // TcpClient.SendBufferSize default value is 8192 bytes
 				var writeTask = WriteToChannelAsync (message, channel, cancellationToken);
 				var readTask = ReadFromChannelAsync (transaction, channel, cancellationToken);

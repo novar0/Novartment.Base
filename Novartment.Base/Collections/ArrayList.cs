@@ -24,10 +24,11 @@ namespace Novartment.Base.Collections
 	/// Не производит уведомлений об изменениях.
 	/// Не содержит методов с неявным потреблением ресурсов.
 	/// </remarks>
-	[SuppressMessage ("Microsoft.Naming",
+	[SuppressMessage (
+		"Microsoft.Naming",
 		"CA1710:IdentifiersShouldHaveCorrectSuffix",
-		Justification = "Implemented interfaces has no association with class name."),
-	DebuggerDisplay ("{DebuggerDisplay,nq}")]
+		Justification = "Implemented interfaces has no association with class name.")]
+	[DebuggerDisplay ("{DebuggerDisplay,nq}")]
 	public class ArrayList<T> :
 		IAdjustableList<T>,
 		IReservedCapacityCollection<T>,
@@ -57,6 +58,7 @@ namespace Novartment.Base.Collections
 			{
 				throw new ArgumentOutOfRangeException (nameof (capacity));
 			}
+
 			Contract.EndContractBlock ();
 
 			_items = new T[capacity];
@@ -72,6 +74,7 @@ namespace Novartment.Base.Collections
 			{
 				throw new ArgumentNullException (nameof (array));
 			}
+
 			Contract.EndContractBlock ();
 
 			_items = array;
@@ -98,19 +101,113 @@ namespace Novartment.Base.Collections
 			{
 				throw new ArgumentNullException (nameof (array));
 			}
+
 			if ((offset < 0) || (offset > array.Length) || ((offset == array.Length) && (count > 0)))
 			{
 				throw new ArgumentOutOfRangeException (nameof (offset));
 			}
+
 			if ((count < 0) || (count > array.Length))
 			{
 				throw new ArgumentOutOfRangeException (nameof (count));
 			}
+
 			Contract.EndContractBlock ();
 
 			_items = array;
 			_head = (count > 0) ? offset : 0;
 			_count = count;
+		}
+
+		/// <summary>
+		/// Получает внутренний массив, в котором хранятся элементы списка.
+		/// </summary>
+		[SuppressMessage(
+		"Microsoft.Performance",
+			"CA1819:PropertiesShouldNotReturnArrays",
+			Justification = "This is clearly a property and write access to array is intended.")]
+		public T[] Array => _items;
+
+		/// <summary>
+		/// Получает позицию начала диапазона во внутреннем массиве, в котором хранятся элементы списка.
+		/// </summary>
+		public int Offset => _head;
+
+		/// <summary>
+		/// Получает количество элементов списка.
+		/// </summary>
+		public int Count => _count;
+
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
+		[SuppressMessage(
+			"Microsoft.Globalization",
+			"CA1305:SpecifyIFormatProvider",
+			MessageId = "System.String.Format(System.String,System.Object,System.Object,System.Object)",
+			Justification = "String is not exposed to the end user and will not be localized.")]
+		[SuppressMessage(
+			"Microsoft.Globalization",
+			"CA1305:SpecifyIFormatProvider",
+			MessageId = "System.String.Format(System.String,System.Object,System.Object)",
+			Justification = "String is not exposed to the end user and will not be localized.")]
+		[SuppressMessage(
+			"Microsoft.Globalization",
+			"CA1305:SpecifyIFormatProvider",
+			MessageId = "System.String.Format(System.String,System.Object)",
+			Justification = "String is not exposed to the end user and will not be localized.")]
+		private string DebuggerDisplay
+		{
+			get
+			{
+				var info = (_count < 1) ?
+					"empty" :
+					(_count == 1) ?
+						$"{_head}" :
+						$"{_head}...{(_head + _count - 1) % _items.Length}";
+				return $"<{typeof(T).Name}>[{info}] (capacity={_items.Length})";
+			}
+		}
+
+		/// <summary>
+		/// Получает или устанавливает элемент списка в указанной позиции.
+		/// </summary>
+		/// <param name="index">Позиция в списке.</param>
+		public T this[int index]
+		{
+			get
+			{
+				if ((index < 0) || (index >= this.Count))
+				{
+					throw new ArgumentOutOfRangeException(nameof(index));
+				}
+
+				Contract.EndContractBlock();
+
+				index += _head;
+				if (index >= _items.Length)
+				{
+					index -= _items.Length;
+				}
+
+				return _items[index];
+			}
+
+			set
+			{
+				if ((index < 0) || (index >= this.Count))
+				{
+					throw new ArgumentOutOfRangeException(nameof(index));
+				}
+
+				Contract.EndContractBlock();
+
+				index += _head;
+				if (index >= _items.Length)
+				{
+					index -= _items.Length;
+				}
+
+				_items[index] = value;
+			}
 		}
 
 		/// <summary>
@@ -125,6 +222,7 @@ namespace Novartment.Base.Collections
 			{
 				index -= _items.Length;
 			}
+
 			_items[index] = item;
 
 			_count++;
@@ -143,6 +241,7 @@ namespace Novartment.Base.Collections
 				item = default (T);
 				return false;
 			}
+
 			item = _items[_head];
 			return true;
 		}
@@ -160,6 +259,7 @@ namespace Novartment.Base.Collections
 				item = default (T);
 				return false;
 			}
+
 			item = _items[_head];
 			_items[_head] = default (T);
 			_head++;
@@ -167,11 +267,13 @@ namespace Novartment.Base.Collections
 			{
 				_head -= _items.Length;
 			}
+
 			_count--;
 			if (_count < 1)
 			{
 				_head = 0;
 			}
+
 			return true;
 		}
 
@@ -188,11 +290,13 @@ namespace Novartment.Base.Collections
 				item = default (T);
 				return false;
 			}
+
 			var index = _head + _count - 1;
 			if (index >= _items.Length)
 			{
 				index -= _items.Length;
 			}
+
 			item = _items[index];
 			return true;
 		}
@@ -210,11 +314,13 @@ namespace Novartment.Base.Collections
 				item = default (T);
 				return false;
 			}
+
 			var index = _head + _count - 1;
 			if (index >= _items.Length)
 			{
 				index -= _items.Length;
 			}
+
 			item = _items[index];
 			_items[index] = default (T);
 			_count--;
@@ -222,6 +328,7 @@ namespace Novartment.Base.Collections
 			{
 				_head = 0;
 			}
+
 			return true;
 		}
 
@@ -236,6 +343,7 @@ namespace Novartment.Base.Collections
 			{
 				throw new ArgumentOutOfRangeException (nameof (index));
 			}
+
 			Contract.EndContractBlock ();
 
 			EnsureCapacity (_count + 1);
@@ -250,6 +358,7 @@ namespace Novartment.Base.Collections
 						_head += _items.Length;
 					}
 				}
+
 				_count++;
 				if (index > 0)
 				{
@@ -262,6 +371,7 @@ namespace Novartment.Base.Collections
 				{
 					CopyInternal (index, index + 1, _count - index);
 				}
+
 				_count++;
 			}
 
@@ -270,6 +380,7 @@ namespace Novartment.Base.Collections
 			{
 				index -= _items.Length;
 			}
+
 			_items[index] = item;
 		}
 
@@ -285,10 +396,12 @@ namespace Novartment.Base.Collections
 			{
 				throw new ArgumentOutOfRangeException (nameof (index));
 			}
+
 			if (count < 0)
 			{
 				throw new ArgumentOutOfRangeException (nameof (count));
 			}
+
 			Contract.EndContractBlock ();
 
 			if (count < 1)
@@ -304,6 +417,7 @@ namespace Novartment.Base.Collections
 				_count += count;
 				return;
 			}
+
 			if (index <= (_count / 2))
 			{ // место вставки - первая половина, выгоднее отодвигать назад кусок от начала до индекса
 				if (_count > 0)
@@ -314,6 +428,7 @@ namespace Novartment.Base.Collections
 						_head += _items.Length;
 					}
 				}
+
 				_count += count;
 				CopyInternal (count, 0, index);
 			}
@@ -322,6 +437,7 @@ namespace Novartment.Base.Collections
 				CopyInternal (index, index + count, _count - index);
 				_count += count;
 			}
+
 			// очищаем место под новые элементы
 			ResetItems (index, count);
 		}
@@ -336,8 +452,8 @@ namespace Novartment.Base.Collections
 			{
 				throw new ArgumentOutOfRangeException (nameof (index));
 			}
-			Contract.EndContractBlock ();
 
+			Contract.EndContractBlock ();
 
 			var lastIndex = _count - 1;
 
@@ -347,6 +463,7 @@ namespace Novartment.Base.Collections
 				{
 					CopyInternal (0, 1, index);
 				}
+
 				_items[_head] = default (T);
 				_head++;
 				if (_head >= _items.Length)
@@ -360,13 +477,16 @@ namespace Novartment.Base.Collections
 				{
 					CopyInternal (index + 1, index, _count - index - 1);
 				}
+
 				var idx = _head + _count - 1;
 				if (idx >= _items.Length)
 				{
 					idx -= _items.Length;
 				}
+
 				_items[idx] = default (T);
 			}
+
 			_count--;
 			if (_count < 1)
 			{
@@ -385,10 +505,12 @@ namespace Novartment.Base.Collections
 			{
 				throw new ArgumentOutOfRangeException (nameof (index));
 			}
+
 			if ((count < 0) || ((index + count) > this.Count))
 			{
 				throw new ArgumentOutOfRangeException (nameof (count));
 			}
+
 			Contract.EndContractBlock ();
 
 			if (_count == 0)
@@ -421,6 +543,7 @@ namespace Novartment.Base.Collections
 					CopyInternal (index + count, index, size2);
 					ResetItems (index + size2, count);
 				}
+
 				_count = size1 + size2;
 				if (_count < 1)
 				{
@@ -445,7 +568,11 @@ namespace Novartment.Base.Collections
 			if (_count > 0)
 			{
 				var tail = _head + _count;
-				if (tail >= _items.Length) tail -= _items.Length;
+				if (tail >= _items.Length)
+				{
+					tail -= _items.Length;
+				}
+
 				if (_head < tail)
 				{
 					SystemArray.Clear (_items, _head, _count);
@@ -469,10 +596,12 @@ namespace Novartment.Base.Collections
 			{
 				throw new ArgumentOutOfRangeException (nameof (index));
 			}
+
 			if ((count < 0) || ((index + count) > this.Count))
 			{
 				throw new ArgumentOutOfRangeException (nameof (count));
 			}
+
 			Contract.EndContractBlock ();
 
 			index += _head;
@@ -513,14 +642,17 @@ namespace Novartment.Base.Collections
 			{
 				throw new ArgumentNullException (nameof (array));
 			}
+
 			if (array.Length < this.Count)
 			{
 				throw new ArgumentOutOfRangeException (nameof (array));
 			}
+
 			if ((arrayIndex < 0) || ((array.Length - arrayIndex) < this.Count))
 			{
 				throw new ArgumentOutOfRangeException (nameof (arrayIndex));
 			}
+
 			Contract.EndContractBlock ();
 
 			if (_count > 0)
@@ -530,6 +662,7 @@ namespace Novartment.Base.Collections
 				{
 					tail -= _items.Length;
 				}
+
 				if (_head < tail)
 				{
 					SystemArray.Copy (_items, _head, array, arrayIndex, _count);
@@ -555,6 +688,7 @@ namespace Novartment.Base.Collections
 				{
 					tail -= _items.Length;
 				}
+
 				if (_head < tail)
 				{
 					SystemArray.Copy (_items, _head, _items, 0, _count);
@@ -567,6 +701,7 @@ namespace Novartment.Base.Collections
 					_items = newItems;
 				}
 			}
+
 			_head = 0;
 		}
 
@@ -580,7 +715,8 @@ namespace Novartment.Base.Collections
 		/// <remarks>
 		/// Если массив зациклен через край, то перед сортировкой будет произведено копирование меньшей части.
 		/// </remarks>
-		[SuppressMessage ("Microsoft.Design",
+		[SuppressMessage (
+		"Microsoft.Design",
 			"CA1026:DefaultParametersShouldNotBeUsed",
 			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
 		public void Sort (IComparer<T> comparer = null)
@@ -610,8 +746,8 @@ namespace Novartment.Base.Collections
 					SystemArray.Copy (_items, 0, _items, _head, sizeTail);
 					SystemArray.Clear (_items, 0, _head);
 				}
-
 			}
+
 			SystemArray.Sort (_items, _head, _count, comparer);
 		}
 
@@ -630,7 +766,7 @@ namespace Novartment.Base.Collections
 		/// <returns>Перечислитель элементов списка.</returns>
 		public IEnumerator<T> GetEnumerator ()
 		{
-			return new _SimpleListEnumerator (this);
+			return new SimpleListEnumerator (this);
 		}
 
 		/// <summary>
@@ -644,6 +780,7 @@ namespace Novartment.Base.Collections
 			{
 				throw new ArgumentOutOfRangeException (nameof (min));
 			}
+
 			Contract.EndContractBlock ();
 
 			if (_items.Length < min)
@@ -655,10 +792,12 @@ namespace Novartment.Base.Collections
 				{
 					newCapacity = _items.Length + 4; // увеличиваем минимум на 4
 				}
+
 				if (newCapacity < min)
 				{
 					newCapacity = min;
 				}
+
 				var newItems = new T[newCapacity];
 				CopyTo (newItems, 0);
 				_items = newItems;
@@ -694,15 +833,18 @@ namespace Novartment.Base.Collections
 			{
 				throw new ArgumentNullException (nameof (comparer));
 			}
+
 			Contract.EndContractBlock ();
 
 			int hash = 0;
+
 			// макс. 8 элементов с конца для вычисления хэша всего списка
 			var start = (_count >= 8) ? (_count - 8) : 0;
 			for (var i = start; i < _count; i++)
 			{
-				hash = (((hash << 5) + hash) ^ comparer.GetHashCode (this[i]));
+				hash = ((hash << 5) + hash) ^ comparer.GetHashCode (this[i]);
 			}
+
 			return hash;
 		}
 
@@ -718,6 +860,7 @@ namespace Novartment.Base.Collections
 			{
 				throw new ArgumentNullException (nameof (comparer));
 			}
+
 			Contract.EndContractBlock ();
 
 			if (other == null)
@@ -733,10 +876,12 @@ namespace Novartment.Base.Collections
 				{
 					return false;
 				}
+
 				if (list._count != _count)
 				{
 					return false;
 				}
+
 				for (var i = 0; i < _count; i++)
 				{
 					object x = this[i];
@@ -748,70 +893,11 @@ namespace Novartment.Base.Collections
 					}
 				}
 			}
+
 			return true;
 		}
 
-		/// <summary>
-		/// Получает или устанавливает элемент списка в указанной позиции.
-		/// </summary>
-		/// <param name="index">Позиция в списке.</param>
-		public T this[int index]
-		{
-			get
-			{
-				if ((index < 0) || (index >= this.Count))
-				{
-					throw new ArgumentOutOfRangeException (nameof (index));
-				}
-				Contract.EndContractBlock ();
-
-				index += _head;
-				if (index >= _items.Length)
-				{
-					index -= _items.Length;
-				}
-				return _items[index];
-			}
-			set
-			{
-				if ((index < 0) || (index >= this.Count))
-				{
-					throw new ArgumentOutOfRangeException (nameof (index));
-				}
-				Contract.EndContractBlock ();
-
-				index += _head;
-				if (index >= _items.Length)
-				{
-					index -= _items.Length;
-				}
-				_items[index] = value;
-			}
-		}
-
-		/// <summary>
-		/// Получает внутренний массив, в котором хранятся элементы списка.
-		/// </summary>
-		[SuppressMessage ("Microsoft.Performance",
-			"CA1819:PropertiesShouldNotReturnArrays",
-			Justification = "This is clearly a property and write access to array is intended.")]
-		public T[] Array => _items;
-
-		/// <summary>
-		/// Получает позицию начала диапазона во внутреннем массиве, в котором хранятся элементы списка.
-		/// </summary>
-		public int Offset => _head;
-
-		/// <summary>
-		/// Получает количество элементов списка.
-		/// </summary>
-		public int Count => _count;
-
-		#region private method CopyInternal
-
-		/// <summary>
-		/// Копирует без проверок диапазон элементов из одной позиции внутреннего массива в другую.
-		/// </summary>
+		// Копирует без проверок диапазон элементов из одной позиции внутреннего массива в другую.
 		private void CopyInternal (int sourceIndex, int destinationIndex, int length)
 		{
 			var srcIndex = sourceIndex + _head;
@@ -885,22 +971,41 @@ namespace Novartment.Base.Collections
 			}
 		}
 
-		#endregion
-
-		#region struct _SimpleListEnumerator
-
-		internal struct _SimpleListEnumerator : IEnumerator<T>, IDisposable, IEnumerator
+		internal struct SimpleListEnumerator : IEnumerator<T>, IDisposable, IEnumerator
 		{
 			private readonly ArrayList<T> _data;
 			private int _index;
 			private T _currentElement;
 
-			internal _SimpleListEnumerator (ArrayList<T> data)
+			internal SimpleListEnumerator (ArrayList<T> data)
 			{
 				_data = data;
 				_index = -1;
 				_currentElement = default (T);
 			}
+
+			/// <summary>
+			/// Получает текущий элемент перечислителя.
+			/// </summary>
+			public T Current
+			{
+				get
+				{
+					if (_index == -1)
+					{
+						throw new InvalidOperationException("Can not get current element of enumeration because it not started.");
+					}
+
+					if (_index == -2)
+					{
+						throw new InvalidOperationException("Can not get current element of enumeration because it already ended.");
+					}
+
+					return _currentElement;
+				}
+			}
+
+			object IEnumerator.Current => this.Current;
 
 			/// <summary>
 			/// Перемещает перечислитель к следующему элементу строки.
@@ -921,34 +1026,16 @@ namespace Novartment.Base.Collections
 					_currentElement = default (T);
 					return false;
 				}
+
 				var index = _index + _data._head;
 				if (index >= _data._items.Length)
 				{
 					index -= _data._items.Length;
 				}
+
 				_currentElement = _data._items[index];
 				return true;
 			}
-
-			/// <summary>
-			/// Получает текущий элемент перечислителя.
-			/// </summary>
-			public T Current
-			{
-				get
-				{
-					if (_index == -1)
-					{
-						throw new InvalidOperationException ("Can not get current element of enumeration because it not started.");
-					}
-					if (_index == -2)
-					{
-						throw new InvalidOperationException ("Can not get current element of enumeration because it already ended.");
-					}
-					return _currentElement;
-				}
-			}
-			object IEnumerator.Current => this.Current;
 
 			/// <summary>
 			/// Возвращает перечислитель в исходное положение.
@@ -966,32 +1053,6 @@ namespace Novartment.Base.Collections
 			{
 				_index = -2;
 				_currentElement = default (T);
-			}
-		}
-
-		#endregion
-
-		[DebuggerBrowsable (DebuggerBrowsableState.Never),
-		SuppressMessage ("Microsoft.Globalization", "CA1305:SpecifyIFormatProvider",
-			MessageId = "System.String.Format(System.String,System.Object,System.Object,System.Object)",
-			Justification = "String is not exposed to the end user and will not be localized."),
-		SuppressMessage ("Microsoft.Globalization", "CA1305:SpecifyIFormatProvider",
-			MessageId = "System.String.Format(System.String,System.Object,System.Object)",
-			Justification = "String is not exposed to the end user and will not be localized."),
-		SuppressMessage ("Microsoft.Globalization",
-			"CA1305:SpecifyIFormatProvider",
-			MessageId = "System.String.Format(System.String,System.Object)",
-			Justification = "String is not exposed to the end user and will not be localized.")]
-		private string DebuggerDisplay
-		{
-			get
-			{
-				var info = (_count < 1) ?
-					"empty" :
-					(_count == 1) ?
-						$"{_head}" :
-						$"{_head}...{(_head + _count - 1) % _items.Length}";
-				return $"<{typeof (T).Name}>[{info}] (capacity={_items.Length})";
 			}
 		}
 	}

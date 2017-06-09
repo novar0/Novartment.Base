@@ -1,7 +1,7 @@
 ﻿using System;
-using System.Text;
-using System.Security.Cryptography;
 using System.Diagnostics.Contracts;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace Novartment.Base
 {
@@ -45,17 +45,6 @@ namespace Novartment.Base
 		public override int HashSize => 32;
 
 		/// <summary>
-		/// Инициализирует хэш-алгоритм, подготавливая его к следующему вычислению хэш-кода.
-		/// </summary>
-		public override void Initialize ()
-		{
-			_hash = _seed;
-			_length = 0;
-		}
-
-		#region static methods GetHashCode
-
-		/// <summary>
 		/// Вычисляет хэш-функцию для указанного source.
 		/// </summary>
 		/// <param name="source">Данные для вычисления хэш-функции.</param>
@@ -66,6 +55,7 @@ namespace Novartment.Base
 			{
 				throw new ArgumentNullException (nameof (source));
 			}
+
 			Contract.EndContractBlock ();
 
 			var hash = HashCore (source, 0, source.Length, 144);
@@ -100,6 +90,7 @@ namespace Novartment.Base
 			{
 				throw new ArgumentNullException (nameof (source));
 			}
+
 			Contract.EndContractBlock ();
 
 			var bytes = Encoding.UTF8.GetBytes (source);
@@ -271,7 +262,7 @@ namespace Novartment.Base
 		/// <returns>Хэш-функция для указанного source.</returns>
 		public static uint GetHashCode (decimal source)
 		{
-			var bits = Decimal.GetBits (source);
+			var bits = decimal.GetBits (source);
 			uint hash = 144;
 			uint length = 0;
 			foreach (var value in bits)
@@ -281,6 +272,7 @@ namespace Novartment.Base
 				{
 					Array.Reverse (bytes);
 				}
+
 				hash = HashCore (bytes, 0, bytes.Length, hash);
 				length += (uint)bytes.Length;
 			}
@@ -288,7 +280,14 @@ namespace Novartment.Base
 			return HashFinal (hash, length);
 		}
 
-		#endregion
+		/// <summary>
+		/// Инициализирует хэш-алгоритм, подготавливая его к следующему вычислению хэш-кода.
+		/// </summary>
+		public override void Initialize ()
+		{
+			_hash = _seed;
+			_length = 0;
+		}
 
 		/// <summary>
 		/// Передаёт данные, записанные в объект, на вход хэш-алгоритма для вычисления хэша.
@@ -302,14 +301,17 @@ namespace Novartment.Base
 			{
 				throw new ArgumentNullException (nameof (array));
 			}
+
 			if ((index < 0) || (index > array.Length) || ((index == array.Length) && (index > 0)))
 			{
 				throw new ArgumentOutOfRangeException (nameof (index));
 			}
+
 			if ((count < 0) || (count > array.Length))
 			{
 				throw new ArgumentOutOfRangeException (nameof (count));
 			}
+
 			Contract.EndContractBlock ();
 
 			_hash = HashCore (array, index, count, _hash);
@@ -327,6 +329,7 @@ namespace Novartment.Base
 			{
 				Array.Reverse (bytes);
 			}
+
 			return bytes;
 		}
 
@@ -347,7 +350,7 @@ namespace Novartment.Base
 						k1 *= c2;
 						hash ^= k1;
 						hash = (hash << 13) | (hash >> 19);
-						hash = hash * 5 + 0xe6546b64;
+						hash = (hash * 5) + 0xe6546b64;
 						ibStart += 4;
 						cbSize -= 4;
 						break;
@@ -374,6 +377,7 @@ namespace Novartment.Base
 						return hash;
 				}
 			}
+
 			return hash;
 		}
 

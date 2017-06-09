@@ -1,14 +1,14 @@
 ﻿using System;
+using System.Globalization;
 using System.Windows;
 using System.Windows.Data;
-using System.Globalization;
 
 namespace Novartment.Base.UI.Wpf
 {
 	/// <summary>
 	/// конвертирует в обе стороны bool / System.Windows.Visibility, параметр (любое значение) указывает на инверсную логику
 	/// </summary>
-	[ValueConversion (typeof (Boolean), typeof (Visibility))]
+	[ValueConversion (typeof (bool), typeof (Visibility))]
 	public class BoolToVisibilityConverter :
 		IValueConverter
 	{
@@ -24,10 +24,12 @@ namespace Novartment.Base.UI.Wpf
 			{
 				return Visibility.Collapsed;
 			}
+
 			if ((bool)value ^ (parameter != null))
 			{
 				return Visibility.Visible;
 			}
+
 			return Visibility.Collapsed;
 		}
 
@@ -39,7 +41,7 @@ namespace Novartment.Base.UI.Wpf
 		/// <returns>Преобразованное значение.</returns>
 		public object ConvertBack (object value, Type targetType, object parameter, CultureInfo culture)
 		{
-			return ((((Visibility)value) == Visibility.Visible) ^ (parameter != null));
+			return ((Visibility)value == Visibility.Visible) ^ (parameter != null);
 		}
 	}
 }

@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using static System.Linq.Enumerable;
-using System.Net;
-using System.Net.Sockets;
-using System.Net.NetworkInformation;
 using System.Diagnostics.Contracts;
+using System.Net;
+using System.Net.NetworkInformation;
+using System.Net.Sockets;
 using System.Threading.Tasks;
 using Novartment.Base.Collections;
+using static System.Linq.Enumerable;
 
 namespace Novartment.Base.Net
 {
@@ -46,6 +46,7 @@ namespace Novartment.Base.Net
 			{
 				throw new ArgumentNullException (nameof (address));
 			}
+
 			Contract.EndContractBlock ();
 
 			return
@@ -67,6 +68,7 @@ namespace Novartment.Base.Net
 			{
 				throw new ArgumentNullException (nameof (hostName));
 			}
+
 			Contract.EndContractBlock ();
 
 			try
@@ -78,12 +80,13 @@ namespace Novartment.Base.Net
 					throw new InvalidOperationException (FormattableString.Invariant (
 						$"Not found addresses of type {family} for host [{hostName}]."));
 				}
+
 				return result;
 			}
 			catch (SocketException exception)
 			{
-				throw new InvalidOperationException (FormattableString.Invariant (
-					$"Not found addresses of type {family} for host [{hostName}]."),
+				throw new InvalidOperationException (
+					FormattableString.Invariant ($"Not found addresses of type {family} for host [{hostName}]."),
 					exception);
 			}
 		}

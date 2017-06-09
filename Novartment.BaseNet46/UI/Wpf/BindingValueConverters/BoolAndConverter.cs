@@ -1,7 +1,7 @@
 ﻿using System;
+using System.Globalization;
 using System.Windows;
 using System.Windows.Data;
-using System.Globalization;
 
 namespace Novartment.Base.UI.Wpf
 {
@@ -23,17 +23,20 @@ namespace Novartment.Base.UI.Wpf
 			{
 				return DependencyProperty.UnsetValue;
 			}
+
 			for (var i = 0; i < values.Length; i++)
 			{
 				if (!(values[i] is bool))
 				{
 					return DependencyProperty.UnsetValue;
 				}
+
 				if (!(bool)values[i])
 				{
 					return false;
 				}
 			}
+
 			return true;
 		}
 
@@ -44,8 +47,6 @@ namespace Novartment.Base.UI.Wpf
 		/// <param name="culture">Язык и региональные параметры, используемые в преобразователе.</param>
 		/// <returns>Массив значений, преобразованных из целевых значений назад в исходные значения.</returns>
 		public object[] ConvertBack (object value, Type[] targetTypes, object parameter, CultureInfo culture)
-		{
-			throw new NotSupportedException ();
-		}
+			=> throw new NotSupportedException ();
 	}
 }

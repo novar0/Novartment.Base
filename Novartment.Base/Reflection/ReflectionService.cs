@@ -1,11 +1,11 @@
 ﻿using System;
-using static System.Linq.Enumerable;
 using System.Collections.Generic;
-using System.Reflection;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
+using System.Reflection;
 using Novartment.Base.Collections;
 using Novartment.Base.Collections.Linq;
+using static System.Linq.Enumerable;
 
 namespace Novartment.Base.Reflection
 {
@@ -23,6 +23,7 @@ namespace Novartment.Base.Reflection
 			{
 				throw new ArgumentNullException (nameof (type));
 			}
+
 			Contract.EndContractBlock ();
 
 			if (type.IsConstructedGenericType)
@@ -30,6 +31,7 @@ namespace Novartment.Base.Reflection
 				var arguments = type.GenericTypeArguments.Select (GetFormattedFullName);
 				return type.GetGenericTypeDefinition ().FullName + "<" + string.Join (", ", arguments) + ">";
 			}
+
 			return type.FullName;
 		}
 
@@ -42,6 +44,7 @@ namespace Novartment.Base.Reflection
 			{
 				throw new ArgumentNullException (nameof (assembly));
 			}
+
 			Contract.EndContractBlock ();
 
 			// у текущей сборки ищем атрибут AssemblyFileVersionAttribute
@@ -57,6 +60,7 @@ namespace Novartment.Base.Reflection
 					return (string)args[0].Value;
 				}
 			}
+
 			return assembly.GetName ().Version.ToString ();
 		}
 
@@ -77,6 +81,7 @@ namespace Novartment.Base.Reflection
 			{
 				throw new ArgumentNullException (nameof (member));
 			}
+
 			Contract.EndContractBlock ();
 
 			var attrs = member.CustomAttributes;
@@ -85,9 +90,10 @@ namespace Novartment.Base.Reflection
 			{
 				return ReadOnlyList.Empty<AttributeArgument> ();
 			}
+
 			return attr.ConstructorArguments.AsReadOnlyList ()
 				.Select (item => new AttributeArgument (null, item.Value))
-				.Concat (attr.NamedArguments.AsReadOnlyList ().Select (item => 
+				.Concat (attr.NamedArguments.AsReadOnlyList ().Select (item =>
 					new AttributeArgument (item.MemberName, item.TypedValue.Value)));
 		}
 

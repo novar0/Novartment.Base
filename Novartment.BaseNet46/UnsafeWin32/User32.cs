@@ -8,11 +8,15 @@ namespace Novartment.Base.UnsafeWin32
 	{
 		internal static class User32
 		{
-			[SecurityCritical, SuppressUnmanagedCodeSecurity, DllImport ("User32.dll", SetLastError = true, CharSet = CharSet.Auto)]
+			[SecurityCritical]
+			[SuppressUnmanagedCodeSecurity]
+			[DllImport ("User32.dll", SetLastError = true, CharSet = CharSet.Auto)]
 			[return: MarshalAs (UnmanagedType.Bool)]
 			internal static extern bool AddClipboardFormatListener (IntPtr hWndObserver);
 
-			[SecurityCritical, SuppressUnmanagedCodeSecurity, DllImport ("User32.dll", SetLastError = true, CharSet = CharSet.Auto)]
+			[SecurityCritical]
+			[SuppressUnmanagedCodeSecurity]
+			[DllImport ("User32.dll", SetLastError = true, CharSet = CharSet.Auto)]
 			[return: MarshalAs (UnmanagedType.Bool)]
 			internal static extern bool RemoveClipboardFormatListener (IntPtr hWndObserver);
 		}

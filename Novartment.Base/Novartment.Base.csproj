@@ -15,6 +15,7 @@
     <GenerateAssemblyFileVersionAttribute>false</GenerateAssemblyFileVersionAttribute>
     <GenerateAssemblyInformationalVersionAttribute>false</GenerateAssemblyInformationalVersionAttribute>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+		<CodeAnalysisRuleSet>StyleCop.Analyzers.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.3' ">
@@ -25,8 +26,15 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="System.Buffers" Version="4.3.0" />
+    <AdditionalFiles Include="StyleCop.Analyzers.ruleset" />
+    <AdditionalFiles Include="stylecop.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+		<PackageReference Include="StyleCop.Analyzers" Version="1.0.2" />
+		<PackageReference Include="System.Buffers" Version="4.3.0" />
     <PackageReference Include="System.ValueTuple" Version="4.3.1" />
   </ItemGroup>
+	
 
 </Project>

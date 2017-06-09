@@ -1,5 +1,4 @@
-﻿
-namespace Novartment.Base.Net.Mime
+﻿namespace Novartment.Base.Net.Mime
 {
 	/// <summary>
 	/// Важность параметра сообщения, определяющего доставку уведомления об изменении его дислокации у получателя.

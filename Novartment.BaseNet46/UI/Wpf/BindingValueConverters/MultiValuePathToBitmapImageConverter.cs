@@ -1,23 +1,24 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.Contracts;
+using System.Globalization;
 using System.IO;
-using static System.Linq.Enumerable;
 using System.Windows;
 using System.Windows.Data;
 using System.Windows.Media.Imaging;
-using System.Globalization;
-using System.Diagnostics.CodeAnalysis;
-using System.Diagnostics.Contracts;
+using static System.Linq.Enumerable;
 
 namespace Novartment.Base.UI.Wpf
 {
 	/// <summary>
 	/// Конвертирует части строки пути к изображению по формату в параметре -> BitmapImage.
 	/// </summary>
-	[SuppressMessage ("Microsoft.Naming",
+	[SuppressMessage (
+		"Microsoft.Naming",
 		"CA1704:IdentifiersShouldBeSpelledCorrectly",
 		MessageId = "Multi",
-		Justification = "Name 'MultiValue*' inherited from library inerface."),
-	ValueConversion (typeof (string), typeof (BitmapImage))]
+		Justification = "Name 'MultiValue*' inherited from library inerface.")]
+	[ValueConversion (typeof (string), typeof (BitmapImage))]
 	public class MultiValuePathToBitmapImageConverter :
 		IMultiValueConverter
 	{
@@ -33,10 +34,12 @@ namespace Novartment.Base.UI.Wpf
 			{
 				throw new ArgumentNullException (nameof (values));
 			}
+
 			if (parameter == null)
 			{
 				throw new ArgumentNullException (nameof (parameter));
 			}
+
 			Contract.EndContractBlock ();
 
 			var isContainsNull = values.Contains (null);
@@ -44,6 +47,7 @@ namespace Novartment.Base.UI.Wpf
 			{
 				return DependencyProperty.UnsetValue;
 			}
+
 			var path = string.Format (CultureInfo.InvariantCulture, (string)parameter, values);
 			var uri = new Uri (path);
 			var isFileNotExists = (uri.Scheme == "file") && !File.Exists (path);
@@ -51,6 +55,7 @@ namespace Novartment.Base.UI.Wpf
 			{
 				return DependencyProperty.UnsetValue;
 			}
+
 			var source = new BitmapImage (uri);
 			return source;
 		}

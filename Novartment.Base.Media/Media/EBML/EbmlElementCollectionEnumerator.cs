@@ -1,8 +1,8 @@
 ﻿using System;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
+using System.Threading;
+using System.Threading.Tasks;
 using Novartment.Base.BinaryStreaming;
 
 namespace Novartment.Base.Media
@@ -10,15 +10,16 @@ namespace Novartment.Base.Media
 	/// <summary>
 	/// Перечислитель дочерних элементов EBML-элемента.
 	/// </summary>
-	[SuppressMessage ("Microsoft.Naming",
+	[SuppressMessage (
+		"Microsoft.Naming",
 		"CA1704:IdentifiersShouldBeSpelledCorrectly",
 		MessageId = "Ebml",
-		Justification = "'EBML' represents standard term."),
-	SuppressMessage (
+		Justification = "'EBML' represents standard term.")]
+	[SuppressMessage (
 		"Microsoft.Design",
 		"CA1063:ImplementIDisposableCorrectly",
-		Justification = "Implemented correctly."),
-	CLSCompliant (false)]
+		Justification = "Implemented correctly.")]
+	[CLSCompliant (false)]
 	public class EbmlElementCollectionEnumerator
 	{
 		private readonly IBufferedSource _data;
@@ -35,10 +36,12 @@ namespace Novartment.Base.Media
 			{
 				throw new ArgumentNullException (nameof (source));
 			}
+
 			if (source.Buffer.Length < 2)
 			{
 				throw new ArgumentOutOfRangeException (nameof (source));
 			}
+
 			Contract.EndContractBlock ();
 
 			_data = source;
@@ -55,10 +58,12 @@ namespace Novartment.Base.Media
 				{
 					throw new InvalidOperationException ("Can not get current element of enumeration because it not started.");
 				}
+
 				if (_ended)
 				{
 					throw new InvalidOperationException ("Can not get current element of enumeration because it already ended.");
 				}
+
 				return _current;
 			}
 		}

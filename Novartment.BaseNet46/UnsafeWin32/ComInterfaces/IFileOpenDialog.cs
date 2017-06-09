@@ -4,16 +4,15 @@ using System.Runtime.InteropServices;
 
 namespace Novartment.Base.UnsafeWin32
 {
-	[ComImport, Guid ("DC1C5A9C-E88A-4dde-A5A1-60F82A20AEF7")]
-	internal class FileOpenDialog
-	{
-	}
-
-	[ComImport, Guid ("42f85136-db7e-439c-85f1-e4075d135fc8"), InterfaceType (ComInterfaceType.InterfaceIsIUnknown)]
+#pragma warning disable SA1600 // Elements must be documented
+	[ComImport]
+	[Guid ("42f85136-db7e-439c-85f1-e4075d135fc8")]
+	[InterfaceType (ComInterfaceType.InterfaceIsIUnknown)]
 	internal interface IFileOpenDialog
 	{
 		// Defined on IModalWindow - repeated here due to requirements of COM interop layer.
-		[PreserveSig, MethodImpl (MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
+		[PreserveSig]
+		[MethodImpl (MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
 		int Show ([In] IntPtr parent);
 
 		// Defined on IFileDialog - repeated here due to requirements of COM interop layer.
@@ -100,4 +99,5 @@ namespace Novartment.Base.UnsafeWin32
 		[return: MarshalAs (UnmanagedType.Interface)]
 		IShellItemArray GetSelectedItems ();
 	}
+#pragma warning restore SA1600 // Elements must be documented
 }

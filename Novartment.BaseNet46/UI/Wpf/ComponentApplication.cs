@@ -1,20 +1,20 @@
 ﻿using System;
-using System.IO;
-using System.Windows;
 using System.Collections;
-using System.Reflection;
-using System.Threading;
-using System.Windows.Interop;
-using System.Windows.Threading;
-using System.Security;
-using System.Runtime.CompilerServices;
-using System.Globalization;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
-using System.Windows.Markup;
+using System.Globalization;
+using System.IO;
+using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Security;
+using System.Threading;
+using System.Windows;
 using System.Windows.Data;
-using Novartment.Base.UnsafeWin32;
+using System.Windows.Interop;
+using System.Windows.Markup;
+using System.Windows.Threading;
 using Novartment.Base.Reflection;
+using Novartment.Base.UnsafeWin32;
 
 namespace Novartment.Base.UI.Wpf
 {
@@ -38,21 +38,6 @@ namespace Novartment.Base.UI.Wpf
 		private EventHandler _onClipboardUpdated;
 
 		/// <summary>
-		/// Получает строковое представление версии приложения.
-		/// </summary>
-		public string Version => _version;
-
-		/// <summary>
-		/// Получает текущее приложение.
-		/// </summary>
-		public static new ComponentApplication Current => Application.Current as ComponentApplication;
-
-		/// <summary>
-		/// Получает путь к директории, в которой расположены исходные файлы приложения.
-		/// </summary>
-		public string SourceDirectory { get { return _sourceDirectory; } set { _sourceDirectory = value; } }
-
-		/// <summary>
 		/// Инициализирует новый экземпляр класса ComponentApplication использующий указанные параметры.
 		/// </summary>
 		/// <param name="mainWindowFactory">Фабрика, которая производит главное окно приложения.</param>
@@ -68,10 +53,12 @@ namespace Novartment.Base.UI.Wpf
 			{
 				throw new ArgumentNullException (nameof (mainWindowFactory));
 			}
+
 			if (exceptionDialogFactory == null)
 			{
 				throw new ArgumentNullException (nameof (exceptionDialogFactory));
 			}
+
 			Contract.EndContractBlock ();
 
 			_mainWindowFactory = mainWindowFactory;
@@ -79,10 +66,90 @@ namespace Novartment.Base.UI.Wpf
 			_version = ReflectionService.GetAssemblyVersion (Assembly.GetEntryAssembly () ?? Assembly.GetCallingAssembly ());
 		}
 
+		/// <summary>Происходит когда меняется содержимое буфера обмена.</summary>
+		public event EventHandler ClipboardUpdated
+		{
+			add
+			{
+				EventHandler oldHandler;
+				EventHandler newHandler;
+				var prevHandler = _onClipboardUpdated;
+				do
+				{
+					oldHandler = prevHandler;
+					newHandler = (EventHandler)Delegate.Combine (oldHandler, value);
+					prevHandler = Interlocked.CompareExchange (ref _onClipboardUpdated, newHandler, oldHandler);
+				}
+				while (prevHandler != oldHandler);
+
+				if (newHandler != null)
+				{
+					var oldValue = Interlocked.CompareExchange (ref _messageHookSet, 1, 0);
+					if (oldValue == 0)
+					{
+						ComponentDispatcher.ThreadPreprocessMessage += PreprocessMessage;
+					}
+				}
+			}
+
+			remove
+			{
+				EventHandler oldHandler;
+				var prevHandler = _onClipboardUpdated;
+				do
+				{
+					oldHandler = prevHandler;
+					var newHandler = (EventHandler)Delegate.Remove (oldHandler, value);
+					prevHandler = Interlocked.CompareExchange (ref _onClipboardUpdated, newHandler, oldHandler);
+				}
+				while (prevHandler != oldHandler);
+			}
+		}
+
+		/// <summary>
+		/// Получает текущее приложение.
+		/// </summary>
+		public static new ComponentApplication Current => Application.Current as ComponentApplication;
+
+		/// <summary>
+		/// Получает строковое представление версии приложения.
+		/// </summary>
+		public string Version => _version;
+
+		/// <summary>
+		/// Получает путь к директории, в которой расположены исходные файлы приложения.
+		/// </summary>
+		public string SourceDirectory
+		{
+			get => _sourceDirectory;
+			set
+			{
+				_sourceDirectory = value;
+			}
+		}
+
+		/// <summary>
+		/// Разрешает для операций биндинга прямое конкурентное обращение к коллекции.
+		/// Подразумевается что синхронизация конкурентного доступа встроена в коллекцию.
+		/// </summary>
+		/// <param name="collection">Коллекция, для которой требуется разрешить прямое конкурентное обращение.</param>
+		public static void EnableBindingOperationsWithoutSynchronization (IEnumerable collection)
+		{
+			if (collection == null)
+			{
+				throw new ArgumentNullException (nameof (collection));
+			}
+
+			Contract.EndContractBlock ();
+
+			BindingOperations.EnableCollectionSynchronization (collection, null, (nu1, nu2, action, nu3) => action.Invoke ());
+		}
+
 		/// <summary>
 		/// Создаёт таймер, вызывающий при срабатывании указанный делегат с указанным параметром.
 		/// Опционально можно указать приоритет, с которым вызовы делегата будут ставиться в очередь диспетчера.
 		/// </summary>
+		/// <typeparam name="TState">Тип объекта, передаваемового при срабатывании таймера.</typeparam>
 		/// <param name="callback">Делегат, вызываемый при срабатывании таймера.</param>
 		/// <param name="state">Объект, передавамый в делегат при срабатывании таймера.</param>
 		/// <param name="priority">Приоритет, с которым вызовы делегата будут ставиться в очередь диспетчера.
@@ -97,13 +164,14 @@ namespace Novartment.Base.UI.Wpf
 			{
 				throw new ArgumentNullException (nameof (callback));
 			}
+
 			Contract.EndContractBlock ();
 
 			return new WindowsDispatcherTimer<TState> (callback, state, this.Dispatcher, priority);
 		}
 
 		/// <summary>
-		///Создаёт таймер, вызывающий при срабатывании указанный делегат.
+		/// Создаёт таймер, вызывающий при срабатывании указанный делегат.
 		/// Опционально можно указать приоритет, с которым вызовы делегата будут ставиться в очередь диспетчера.
 		/// </summary>
 		/// <param name="callback">Делегат, вызываемый при срабатывании таймера.</param>
@@ -116,6 +184,7 @@ namespace Novartment.Base.UI.Wpf
 			{
 				throw new ArgumentNullException (nameof (callback));
 			}
+
 			Contract.EndContractBlock ();
 
 			return new WindowsDispatcherTimer (callback, this.Dispatcher, priority);
@@ -140,7 +209,8 @@ namespace Novartment.Base.UI.Wpf
 		/// устанавливается глобальный обработчик неперехваченных исключений,
 		/// устанавливается режим приёма сообщений об обновлении буфера обмена, транслируемый в события ClipboardUpdated.
 		/// </remarks>
-		[SuppressMessage ("Microsoft.Design",
+		[SuppressMessage (
+		"Microsoft.Design",
 			"CA1031:DoNotCatchGeneralExceptionTypes",
 			Justification = "The exception is top-level and will be presented to user.")]
 		public new ProcessExitCode Run ()
@@ -188,10 +258,11 @@ namespace Novartment.Base.UI.Wpf
 		/// <param name="failedAssembly">Сборка, в которой произошло исключение.</param>
 		/// <param name="failedAction">Выполняемое программой действие, при выполнении которого произошло исключение.</param>
 		/// <param name="recommendedSolution">Рекомендуемое пользователю действие.</param>
-		[SuppressMessage ("Microsoft.Design",
+		[SuppressMessage (
+		"Microsoft.Design",
 			"CA1026:DefaultParametersShouldNotBeUsed",
 			Justification = "Parameters have clear right 'default' values and there is no plausible reason why the default might need to change.")]
-		[MethodImplAttribute (MethodImplOptions.NoInlining)]
+		[MethodImpl (MethodImplOptions.NoInlining)]
 		public void ReportException (
 			Exception exception,
 			Assembly failedAssembly = null,
@@ -202,19 +273,18 @@ namespace Novartment.Base.UI.Wpf
 			{
 				throw new ArgumentNullException (nameof (exception));
 			}
+
 			Contract.EndContractBlock ();
 
 			var assembly = failedAssembly ?? Assembly.GetEntryAssembly () ?? Assembly.GetCallingAssembly ();
-			ReportException (new UserLevelExceptionData
-			(
+			ReportException (new UserLevelExceptionData (
 				ExceptionDescriptionProvider.CreateDescription (exception),
 				WindowsEnvironmentDescription.CurrentUser,
 				WindowsEnvironmentDescription.Framework,
 				Path.GetFileName (assembly.Location),
 				ReflectionService.GetAssemblyVersion (assembly),
 				failedAction ?? Wpf.Resources.NotSpecifiedAction,
-				recommendedSolution ?? Wpf.Resources.NotSpecifiedRecommendations
-			));
+				recommendedSolution ?? Wpf.Resources.NotSpecifiedRecommendations));
 		}
 
 		/// <summary>
@@ -227,68 +297,12 @@ namespace Novartment.Base.UI.Wpf
 		}
 
 		/// <summary>
-		/// Разрешает для операций биндинга прямое конкурентное обращение к коллекции.
-		/// Подразумевается что синхронизация конкурентного доступа встроена в коллекцию.
-		/// </summary>
-		/// <param name="collection">Коллекция, для которой требуется разрешить прямое конкурентное обращение.</param>
-		public static void EnableBindingOperationsWithoutSynchronization (IEnumerable collection)
-		{
-			if (collection == null)
-			{
-				throw new ArgumentNullException (nameof (collection));
-			}
-			Contract.EndContractBlock ();
-
-			BindingOperations.EnableCollectionSynchronization (collection, null, (nu1, nu2, action, nu3) => action.Invoke ());
-		}
-
-		/// <summary>Происходит когда меняется содержимое буфера обмена.</summary>
-		public event EventHandler ClipboardUpdated
-		{
-			add
-			{
-				EventHandler oldHandler;
-				EventHandler newHandler;
-				var prevHandler = _onClipboardUpdated;
-				do
-				{
-					oldHandler = prevHandler;
-					newHandler = (EventHandler)Delegate.Combine (oldHandler, value);
-					prevHandler = Interlocked.CompareExchange (ref _onClipboardUpdated, newHandler, oldHandler);
-				} while (prevHandler != oldHandler);
-
-				if (newHandler != null)
-				{
-					var oldValue = Interlocked.CompareExchange (ref _messageHookSet, 1, 0);
-					if (oldValue == 0)
-					{
-						ComponentDispatcher.ThreadPreprocessMessage += PreprocessMessage;
-					}
-				}
-			}
-			remove
-			{
-				EventHandler oldHandler;
-				var prevHandler = _onClipboardUpdated;
-				do
-				{
-					oldHandler = prevHandler;
-					var newHandler = (EventHandler)Delegate.Remove (oldHandler, value);
-					prevHandler = Interlocked.CompareExchange (ref _onClipboardUpdated, newHandler, oldHandler);
-				}
-				while (prevHandler != oldHandler);
-			}
-		}
-
-		/// <summary>
 		/// Вызывает событие ClipboardUpdated.
 		/// </summary>
 		protected virtual void OnClipboardUpdated ()
 		{
 			_onClipboardUpdated?.Invoke (this, EventArgs.Empty);
 		}
-
-		#region private methods
 
 		[SecurityCritical]
 		private static void AddClipboardFormatListener (object sender, RoutedEventArgs e)
@@ -305,20 +319,21 @@ namespace Novartment.Base.UI.Wpf
 		private void PreprocessMessage (ref MSG msg, ref bool handled)
 		{
 			// конвертируем сообщение WM_CLIPBOARDUPDATE в событие ClipboardUpdated
-			if (!handled && (msg.message == 0x031D)) // WM_CLIPBOARDUPDATE
+			if (!handled && (msg.message == 0x031D))
 			{
+				// WM_CLIPBOARDUPDATE
 				this.Dispatcher.InvokeAsync (OnClipboardUpdated, DispatcherPriority.Background);
 			}
 		}
 
-		[MethodImplAttribute (MethodImplOptions.NoInlining)]
+		[MethodImpl (MethodImplOptions.NoInlining)]
 		private void OnDomainUnhandledException (object sender, UnhandledExceptionEventArgs args)
 		{
 			var assembly = Assembly.GetCallingAssembly ();
 			ReportException ((Exception)args.ExceptionObject, assembly);
 		}
 
-		[MethodImplAttribute (MethodImplOptions.NoInlining)]
+		[MethodImpl (MethodImplOptions.NoInlining)]
 		private void OnDispatcherUnhandledException (object sender, DispatcherUnhandledExceptionEventArgs args)
 		{
 			var assembly = Assembly.GetCallingAssembly ();
@@ -355,7 +370,5 @@ namespace Novartment.Base.UI.Wpf
 				dialog.ShowDialog ();
 			}
 		}
-
-		#endregion
 	}
 }

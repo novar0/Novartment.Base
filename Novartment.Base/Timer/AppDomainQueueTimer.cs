@@ -1,7 +1,7 @@
 ﻿using System;
-using System.Threading;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
+using System.Threading;
 
 namespace Novartment.Base
 {
@@ -17,10 +17,10 @@ namespace Novartment.Base
 	public class AppDomainQueueTimer<TState> :
 		BaseTimer<TState>
 	{
-		private TimeSpan _interval;
-		private bool _enabled;
 		private readonly Timer _timer;
 		private readonly object _integrityLocker = new object ();
+		private TimeSpan _interval;
+		private bool _enabled;
 
 		/// <summary>
 		/// Инициализирует новый экземпляр AppDomainQueueTimer, вызывающий при срабатывании указанный делегат с указанным параметром.
@@ -34,6 +34,7 @@ namespace Novartment.Base
 			{
 				throw new ArgumentNullException (nameof (callback));
 			}
+
 			Contract.EndContractBlock ();
 
 			_enabled = false;
@@ -53,6 +54,7 @@ namespace Novartment.Base
 					return _interval;
 				}
 			}
+
 			set
 			{
 				lock (_integrityLocker)
@@ -107,10 +109,11 @@ namespace Novartment.Base
 		/// <summary>
 		/// Освобождает занимаемые объектом ресурсы.
 		/// </summary>
-		[SuppressMessage ("Microsoft.Usage",
+		[SuppressMessage (
+			"Microsoft.Usage",
 			"CA1816:CallGCSuppressFinalizeCorrectly",
-			Justification = "There is no meaning to introduce a finalizer in derived type."),
-		SuppressMessage (
+			Justification = "There is no meaning to introduce a finalizer in derived type.")]
+		[SuppressMessage (
 			"Microsoft.Design",
 			"CA1063:ImplementIDisposableCorrectly",
 			Justification = "Implemented correctly.")]

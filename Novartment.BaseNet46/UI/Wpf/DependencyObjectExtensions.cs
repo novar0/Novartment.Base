@@ -1,7 +1,7 @@
 ﻿using System;
+using System.Diagnostics.Contracts;
 using System.Windows;
 using System.Windows.Media;
-using System.Diagnostics.Contracts;
 
 namespace Novartment.Base.UI.Wpf
 {
@@ -16,16 +16,17 @@ namespace Novartment.Base.UI.Wpf
 		/// <typeparam name="TItem">Тип искомого элемента, производный от DependencyObject.</typeparam>
 		/// <param name="child">Элемент, среди родительских элементов которого производить поиск.</param>
 		/// <returns>Найденный элемент либо null если ничего не найдено.</returns>
-		public static TItem FindVisualAncestor<TItem> (this DependencyObject child) where TItem : DependencyObject
+		public static TItem FindVisualAncestor<TItem> (this DependencyObject child)
+			where TItem : DependencyObject
 		{
 			if (child == null)
 			{
 				throw new ArgumentNullException (nameof (child));
 			}
+
 			Contract.EndContractBlock ();
 
-			var candidate = child as TItem;
-			if (candidate != null)
+			if (child is TItem candidate)
 			{
 				return candidate;
 			}
@@ -42,16 +43,19 @@ namespace Novartment.Base.UI.Wpf
 		/// <param name="parent">Элемент, среди дочерних элементов которого производить поиск.</param>
 		/// <param name="predicate">Уловие проверки, возвращающее true для подходящих элементов.</param>
 		/// <returns>Найденный элемент либо null если ничего не найдено.</returns>
-		public static TItem FindLogicalChild<TItem> (this DependencyObject parent, Func<TItem, bool> predicate) where TItem : DependencyObject
+		public static TItem FindLogicalChild<TItem> (this DependencyObject parent, Func<TItem, bool> predicate)
+			where TItem : DependencyObject
 		{
 			if (parent == null)
 			{
 				throw new ArgumentNullException (nameof (parent));
 			}
+
 			if (predicate == null)
 			{
 				throw new ArgumentNullException (nameof (predicate));
 			}
+
 			Contract.EndContractBlock ();
 
 			var candidate = parent as TItem;
@@ -63,8 +67,7 @@ namespace Novartment.Base.UI.Wpf
 
 			foreach (var obj in LogicalTreeHelper.GetChildren (parent))
 			{
-				var child = obj as DependencyObject;
-				if (child != null)
+				if (obj is DependencyObject child)
 				{
 					var result = FindLogicalChild (child, predicate);
 					if (result != null)
@@ -73,6 +76,7 @@ namespace Novartment.Base.UI.Wpf
 					}
 				}
 			}
+
 			return null;
 		}
 	}

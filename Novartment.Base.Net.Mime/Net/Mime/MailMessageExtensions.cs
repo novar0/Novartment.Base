@@ -1,10 +1,10 @@
 ﻿using System;
+using System.Diagnostics.Contracts;
 using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Diagnostics.Contracts;
-using Novartment.Base.Collections;
 using Novartment.Base.BinaryStreaming;
+using Novartment.Base.Collections;
 
 namespace Novartment.Base.Net.Mime
 {
@@ -13,8 +13,6 @@ namespace Novartment.Base.Net.Mime
 	/// </summary>
 	public static class MailMessageExtensions
 	{
-		#region extension method LoadAsync
-
 		/// <summary>
 		/// Загружает сообщение из указанного источника данных.
 		/// </summary>
@@ -33,14 +31,11 @@ namespace Novartment.Base.Net.Mime
 			{
 				throw new ArgumentNullException (nameof (message));
 			}
+
 			Contract.EndContractBlock ();
 
 			return message.LoadAsync (source, bodyFactory, Entity.DefaultType, Entity.DefaultSubtype, cancellationToken);
 		}
-
-		#endregion
-
-		#region extension method CreateDeliveryStatusNotification
 
 		/// <summary>
 		/// Создаёт уведомление о доставке указанного сообщения.
@@ -61,6 +56,7 @@ namespace Novartment.Base.Net.Mime
 			{
 				throw new ArgumentNullException (nameof (message));
 			}
+
 			Contract.EndContractBlock ();
 
 			// RFC 3464:
@@ -71,7 +67,6 @@ namespace Novartment.Base.Net.Mime
 			// (b) The first component of the multipart/report contains a human-readable explanation of the DSN, as described in [REPORT].
 			// (c) The second component of the multipart/report is of content-type message/delivery-status, described in section 2.1 of this document.
 			// (d) If the original message or a portion of the message is to be returned to the sender, it appears as the third component of the multipart/report.
-
 			var newMsg = MailMessage.CreateReport (MessageMediaSubtypeNames.DeliveryStatus);
 			newMsg.Subject = "Delivery Status Notification";
 			newMsg.GenerateId ();
@@ -99,6 +94,7 @@ namespace Novartment.Base.Net.Mime
 			var textExplanation = newMsg.AddTextPart (explanation);
 
 			var deliveryStatus = newMsg.AddDeliveryStatusPart ();
+
 			// TODO: добавить заполение свойств deliveryStatus
 
 			// создаём пустое письмо, в которое копируем только главные поля
@@ -116,10 +112,6 @@ namespace Novartment.Base.Net.Mime
 			// TODO: добавить какой то механизм чтобы при отправке этого письма не был указан адрес возврата в SMTP-команде MAIL FROM:<>
 			return newMsg;
 		}
-
-		#endregion
-
-		#region extension method CreateDispositionNotification
 
 		/// <summary>
 		/// Создаёт уведомление об изменении дислокации указанного сообщения.
@@ -146,18 +138,22 @@ namespace Novartment.Base.Net.Mime
 			{
 				throw new ArgumentNullException (nameof (message));
 			}
+
 			if (recipient == null)
 			{
 				throw new ArgumentNullException (nameof (recipient));
 			}
+
 			if (reportingUserAgentName == null)
 			{
 				throw new ArgumentNullException (nameof (reportingUserAgentName));
 			}
+
 			if (dispositionType == MessageDispositionChangedAction.Unspecified)
 			{
 				throw new ArgumentOutOfRangeException (nameof (dispositionType));
 			}
+
 			Contract.EndContractBlock ();
 
 			if (message.DispositionNotificationTo.Count < 1)
@@ -180,8 +176,7 @@ namespace Novartment.Base.Net.Mime
 			var template = ((dispositionType == MessageDispositionChangedAction.AutomaticallyDisplayed) || (dispositionType == MessageDispositionChangedAction.ManuallyDisplayed)) ?
 				Resources.DispositionNotificationDisplayedMessage :
 				Resources.DispositionNotificationDeletedMessage;
-			var text = string.Format (CultureInfo.InvariantCulture,
-				template, message.OriginationDate, message.RecipientTo[0], message.Subject);
+			var text = string.Format (CultureInfo.InvariantCulture, template, message.OriginationDate, message.RecipientTo[0], message.Subject);
 			newMsg.AddTextPart (text, null, TextMediaSubtypeNames.Plain, ContentTransferEncoding.QuotedPrintable);
 
 			var part2 = newMsg.AddDispositionNotificationPart (recipient.Address, dispositionType);
@@ -199,10 +194,6 @@ namespace Novartment.Base.Net.Mime
 			return newMsg;
 		}
 
-		#endregion
-
-		#region extension method CreateReply
-
 		/// <summary>
 		/// Создаёт ответ на указанное сообщение.
 		/// </summary>
@@ -216,6 +207,7 @@ namespace Novartment.Base.Net.Mime
 			{
 				throw new ArgumentNullException (nameof (message));
 			}
+
 			Contract.EndContractBlock ();
 
 			var newMsg = MailMessage.CreateComposite ();
@@ -224,12 +216,14 @@ namespace Novartment.Base.Net.Mime
 			{
 				newMsg.RecipientTo.AddRange (message.From);
 			}
+
 			newMsg.References.AddRange (message.References);
 			if (message.MessageId != null)
 			{
 				newMsg.InReplyTo.Add (message.MessageId);
 				newMsg.References.Add (message.MessageId);
 			}
+
 			// When used in a message, the field body MAY start with the string "Re: "
 			// (an abbreviation of the Latin "in re", meaning "in the matter of")
 			// followed by the contents of the "Subject:" field body of the original message.
@@ -242,7 +236,5 @@ namespace Novartment.Base.Net.Mime
 
 			return newMsg;
 		}
-
-		#endregion
 	}
 }

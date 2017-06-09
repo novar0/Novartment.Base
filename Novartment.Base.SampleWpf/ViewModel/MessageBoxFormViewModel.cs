@@ -11,15 +11,10 @@ namespace Novartment.Base.SampleWpf
 
 	public class MessageBoxFormViewModel : BaseViewModel, IDialogViewModel<System.Windows.MessageBoxResult>
 	{
-		public System.Windows.MessageBoxResult Result
-		{
-			get
-			{
-				return System.Windows.MessageBoxResult.OK;
-			}
-		}
+		public System.Windows.MessageBoxResult Result => System.Windows.MessageBoxResult.OK;
 
 		public string Message { get; set; }
+
 		public string Title { get; set; }
 
 		public MessageBoxFormViewModel (MessageBoxFormData data)

@@ -1,6 +1,6 @@
 ﻿using System;
-using System.IO;
 using System.Diagnostics.Contracts;
+using System.IO;
 
 namespace Novartment.Base.BinaryStreaming
 {
@@ -24,22 +24,26 @@ namespace Novartment.Base.BinaryStreaming
 			{
 				throw new ArgumentNullException (nameof (readableStream));
 			}
+
 			if (buffer == null)
 			{
 				throw new ArgumentNullException (nameof (buffer));
 			}
+
 			if (!readableStream.CanRead)
 			{
 				throw new ArgumentOutOfRangeException (nameof (readableStream));
 			}
+
 			if (buffer.Length < 1)
 			{
 				throw new ArgumentOutOfRangeException (nameof (buffer));
 			}
+
 			Contract.EndContractBlock ();
 
 			// нельзя использовать (readableStream as _BufferedSourceStream).BaseStream, потому что не будет использован указанный buffer
-			return new _StreamBufferedSource (readableStream, buffer);
+			return new StreamBufferedSource (readableStream, buffer);
 		}
 
 		/// <summary>
@@ -54,16 +58,18 @@ namespace Novartment.Base.BinaryStreaming
 			{
 				throw new ArgumentNullException (nameof (writableStream));
 			}
+
 			if (!writableStream.CanWrite)
 			{
 				throw new ArgumentOutOfRangeException (nameof (writableStream));
 			}
+
 			Contract.EndContractBlock ();
 
-			var destinaton = writableStream as _BinaryDestinationStream;
+			var destinaton = writableStream as BinaryDestinationStream;
 			return (destinaton != null) ?
 				destinaton.BaseBinaryDestination :
-				new _StreamBinaryDestination (writableStream);
+				new StreamBinaryDestination (writableStream);
 		}
 
 		/// <summary>
@@ -77,10 +83,11 @@ namespace Novartment.Base.BinaryStreaming
 			{
 				throw new ArgumentNullException (nameof (source));
 			}
+
 			Contract.EndContractBlock ();
 
 			// нельзя использовать (source as _StreamBufferedSource).BaseStream, потому что у потока должен быть только один считыватель
-			return new _BufferedSourceStream (source);
+			return new BufferedSourceStream (source);
 		}
 
 		/// <summary>
@@ -95,12 +102,13 @@ namespace Novartment.Base.BinaryStreaming
 			{
 				throw new ArgumentNullException (nameof (destination));
 			}
+
 			Contract.EndContractBlock ();
 
-			var strm = destination as _StreamBinaryDestination;
+			var strm = destination as StreamBinaryDestination;
 			return (strm != null) ?
 				strm.BaseStream :
-				new _BinaryDestinationStream (destination);
+				new BinaryDestinationStream (destination);
 		}
 	}
 }

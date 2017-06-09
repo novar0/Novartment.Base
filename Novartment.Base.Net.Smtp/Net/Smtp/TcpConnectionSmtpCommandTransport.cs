@@ -1,30 +1,21 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Security.Authentication;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Security.Cryptography.X509Certificates;
-using System.Security.Authentication;
-using System.Diagnostics.CodeAnalysis;
-using Novartment.Base.Text;
 using Novartment.Base.BinaryStreaming;
+using Novartment.Base.Text;
 
 namespace Novartment.Base.Net.Smtp
 {
-	internal interface ISmtpCommandReplyConnectionSenderReceiver
-	{
-		Task<SmtpCommand> ReceiveCommandAsync (ExpectedInputType expectedInputType, CancellationToken cancellationToken);
-		Task<SmtpReply> ReceiveReplyAsync (CancellationToken cancellationToken);
-		Task SendCommandAsync (SmtpCommand command, CancellationToken cancellationToken);
-		Task SendBinaryAsync (IBufferedSource source, CancellationToken cancellationToken);
-		Task SendReplyAsync (SmtpReply reply, bool canBeGrouped, CancellationToken cancellationToken);
-		Task StartTlsClientAsync (X509CertificateCollection clientCertificates);
-		Task StartTlsServerAsync (X509Certificate serverCertificate, bool clientCertificateRequired);
-		bool TlsEstablished { get; }
-		X509Certificate RemoteCertificate { get; }
-	}
-
-	internal class SmtpCommandReplyConnectionSenderReceiver :
-		ISmtpCommandReplyConnectionSenderReceiver
+	/// <summary>
+	/// Транспорт, доставляющий SmtpCommand-ы и ответы на них через TCP-подключение
+	/// с возможностью орагнизации безопасной доставки.
+	/// </summary>
+	internal class TcpConnectionSmtpCommandTransport :
+		ISmtpCommandTransport
 	{
 		private readonly ILogWriter _logger;
 		private IBufferedSource _reader;
@@ -32,14 +23,15 @@ namespace Novartment.Base.Net.Smtp
 		private ITcpConnection _connection;
 		private string _pendingReplies = null;
 
-		internal SmtpCommandReplyConnectionSenderReceiver (ITcpConnection connection, ILogWriter logger = null)
+		internal TcpConnectionSmtpCommandTransport (ITcpConnection connection, ILogWriter logger = null)
 		{
 			if (connection == null)
 			{
 				throw new ArgumentNullException (nameof (connection));
 			}
 
-			if (connection.Reader.Buffer.Length < 5) // нужно минимум 5 байтов для команды (QUIT + CRLF) или ответа (три цифры + CRLF)
+			// нужно минимум 5 байтов для команды (QUIT + CRLF) или ответа (три цифры + CRLF)
+			if (connection.Reader.Buffer.Length < 5)
 			{
 				throw new InvalidOperationException ("Too small connection.Reader.Buffer.Length, required minimum 5 bytes.");
 			}
@@ -52,13 +44,6 @@ namespace Novartment.Base.Net.Smtp
 
 		public X509Certificate RemoteCertificate => (_connection as ITlsConnection)?.RemoteCertificate;
 
-		private void SetConnection (ITcpConnection connection)
-		{
-			_reader = connection.Reader;
-			_writer = connection.Writer;
-			_connection = connection;
-		}
-
 		public async Task StartTlsClientAsync (X509CertificateCollection clientCertificates)
 		{
 			// RFC 3207 part 4:
@@ -70,14 +55,12 @@ namespace Novartment.Base.Net.Smtp
 			{
 				throw new UnrecoverableProtocolException ("Connection is not TLS-capable.");
 			}
+
 			_logger?.Trace ("Starting TLS as client...");
 			var newConnection = await tlsCapableConnection.StartTlsClientAsync (clientCertificates, CancellationToken.None)
 				.ConfigureAwait (false);
 			_logger?.Info (FormattableString.Invariant (
-				$@"Started TLS client: Protocol={newConnection.TlsProtocol
-				}, Cipher={newConnection.CipherAlgorithm}/{newConnection.CipherStrength
-				}, Hash={GetHashAlgorithmName (newConnection.HashAlgorithm)}/{newConnection.HashStrength
-				}, KeyExchange={GetExchangeAlgorithmName (newConnection.KeyExchangeAlgorithm)}/{newConnection.KeyExchangeStrength}"));
+				$@"Started TLS client: Protocol={newConnection.TlsProtocol}, Cipher={newConnection.CipherAlgorithm}/{newConnection.CipherStrength}, Hash={GetHashAlgorithmName (newConnection.HashAlgorithm)}/{newConnection.HashStrength}, KeyExchange={GetExchangeAlgorithmName (newConnection.KeyExchangeAlgorithm)}/{newConnection.KeyExchangeStrength}"));
 			SetConnection (newConnection);
 		}
 
@@ -88,18 +71,16 @@ namespace Novartment.Base.Net.Smtp
 			{
 				throw new InvalidOperationException ("Connection is not TLS-capable.");
 			}
+
 			_logger?.Trace ("Starting TLS as server...");
 			var newConnection = await tlsCapableConnection.StartTlsServerAsync (serverCertificate, clientCertificateRequired, CancellationToken.None)
 				.ConfigureAwait (false);
 			_logger?.Info (FormattableString.Invariant (
-				$@"Started TLS server: Protocol={newConnection.TlsProtocol
-				}, Cipher={newConnection.CipherAlgorithm}/{newConnection.CipherStrength
-				}, Hash={GetHashAlgorithmName (newConnection.HashAlgorithm)}/{newConnection.HashStrength
-				}, KeyExchange={GetExchangeAlgorithmName (newConnection.KeyExchangeAlgorithm)}/{newConnection.KeyExchangeStrength}"));
+				$@"Started TLS server: Protocol={newConnection.TlsProtocol}, Cipher={newConnection.CipherAlgorithm}/{newConnection.CipherStrength}, Hash={GetHashAlgorithmName (newConnection.HashAlgorithm)}/{newConnection.HashStrength}, KeyExchange={GetExchangeAlgorithmName (newConnection.KeyExchangeAlgorithm)}/{newConnection.KeyExchangeStrength}"));
 			SetConnection (newConnection);
 		}
 
-		public async Task<SmtpCommand> ReceiveCommandAsync (ExpectedInputType expectedInputType, CancellationToken cancellationToken)
+		public async Task<SmtpCommand> ReceiveCommandAsync (SmtpCommand.ExpectedInputType expectedInputType, CancellationToken cancellationToken)
 		{
 			if (_reader.Count < 1)
 			{
@@ -111,22 +92,8 @@ namespace Novartment.Base.Net.Smtp
 					throw new IOException ("Connection closed waiting for command.");
 				}
 			}
-			return ParseReceivedCommand (expectedInputType);
-		}
 
-		private SmtpCommand ParseReceivedCommand (ExpectedInputType expectedInputType)
-		{
-			SmtpCommand command;
-			try
-			{
-				command = SmtpCommand.Parse (_reader, expectedInputType, _logger);
-			}
-			catch (FormatException excpt)
-			{
-				// исключение произойдёт ТОЛЬКО если не распознано первое слово (собственно команда)
-				command = new SmtpUnknownCommand (excpt.Message);
-			}
-			return command;
+			return ParseReceivedCommand (expectedInputType);
 		}
 
 		public async Task<SmtpReply> ReceiveReplyAsync (CancellationToken cancellationToken)
@@ -135,17 +102,20 @@ namespace Novartment.Base.Net.Smtp
 			{
 				return SmtpReply.Parse (_reader, _logger);
 			}
+
 			await _reader.FillBufferAsync (cancellationToken).ConfigureAwait (false);
 			if (_reader.Count < 1)
 			{
 				throw new InvalidOperationException ("Connection unexpectedly closed.");
 			}
+
 			return SmtpReply.Parse (_reader, _logger);
 		}
 
 		public Task SendReplyAsync (SmtpReply reply, bool canBeGrouped, CancellationToken cancellationToken)
 		{
 			var replyText = reply.ToString ();
+
 			// RFC 2920 part 3.2:
 			// A server SMTP implementation that offers the pipelining extension:
 			// ... (2) SHOULD elect to store responses to grouped ... commands in an internal buffer so they can sent as a unit.
@@ -159,6 +129,7 @@ namespace Novartment.Base.Net.Smtp
 				_pendingReplies = null;
 				return SendTextAsync (text, cancellationToken);
 			}
+
 			return Task.CompletedTask;
 		}
 
@@ -171,24 +142,6 @@ namespace Novartment.Base.Net.Smtp
 		public Task SendBinaryAsync (IBufferedSource source, CancellationToken cancellationToken)
 		{
 			return source.WriteToAsync (_writer, cancellationToken);
-		}
-
-		[SuppressMessage ("Microsoft.Globalization",
-			"CA1303:Do not pass literals as localized parameters",
-			MessageId = "Novartment.Base.ILogWriter.Trace(System.String)",
-			Justification = "String is not exposed to the end user and will not be localized."),
-		]
-		private Task SendTextAsync (string text, CancellationToken cancellationToken)
-		{
-			var size = text.Length;
-			var buf = new byte[size];
-			AsciiCharSet.GetBytes (text, 0, size, buf, 0);
-
-			var isCRLF = (size > 1) && (buf[size - 2] == 0x0d) && (buf[size - 1] == 0x0a);
-			_logger?.Trace (">>> " + (isCRLF ? text.Substring (0, size - 2) : text));
-
-			_pendingReplies = null;
-			return _writer.WriteAsync (buf, 0, size, cancellationToken);
 		}
 
 		private static string GetHashAlgorithmName (HashAlgorithmType hashAlgorithmType)
@@ -215,6 +168,48 @@ namespace Novartment.Base.Net.Smtp
 				default:
 					return exchangeAlgorithmType.ToString ();
 			}
+		}
+
+		private void SetConnection (ITcpConnection connection)
+		{
+			_reader = connection.Reader;
+			_writer = connection.Writer;
+			_connection = connection;
+		}
+
+		private SmtpCommand ParseReceivedCommand (SmtpCommand.ExpectedInputType expectedInputType)
+		{
+			SmtpCommand command;
+			try
+			{
+				command = SmtpCommand.Parse (_reader, expectedInputType, _logger);
+			}
+			catch (FormatException excpt)
+			{
+				// исключение произойдёт ТОЛЬКО если не распознано первое слово (собственно команда)
+				command = new SmtpUnknownCommand (excpt.Message);
+			}
+
+			return command;
+		}
+
+		[SuppressMessage (
+			"Microsoft.Globalization",
+			"CA1303:Do not pass literals as localized parameters",
+			MessageId = "Novartment.Base.ILogWriter.Trace(System.String)",
+			Justification = "String is not exposed to the end user and will not be localized."),
+		]
+		private Task SendTextAsync (string text, CancellationToken cancellationToken)
+		{
+			var size = text.Length;
+			var buf = new byte[size];
+			AsciiCharSet.GetBytes (text, 0, size, buf, 0);
+
+			var isCRLF = (size > 1) && (buf[size - 2] == 0x0d) && (buf[size - 1] == 0x0a);
+			_logger?.Trace (">>> " + (isCRLF ? text.Substring (0, size - 2) : text));
+
+			_pendingReplies = null;
+			return _writer.WriteAsync (buf, 0, size, cancellationToken);
 		}
 	}
 }

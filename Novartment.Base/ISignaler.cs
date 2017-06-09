@@ -16,6 +16,7 @@ namespace Novartment.Base
 		/// <summary>Посылка сигнала.</summary>
 		/// <param name="millisecondsTimeout">Максимальное время (в миллисекундах) отведённое на отсылку сигнала.</param>
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены ожидания.</param>
+		/// <returns>Задача, представляющая операцию.</returns>
 		Task SendSignalAsync (int millisecondsTimeout, CancellationToken cancellationToken);
 	}
 }

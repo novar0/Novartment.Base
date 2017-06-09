@@ -16,12 +16,14 @@ namespace Novartment.Base
 		/// <param name="holder">Объект, который необходимо освободить вместе с начинкой.</param>
 		/// <remarks>Не инициализирует объекты с отложенной инициализацией.
 		/// Не вызывает исключений если объект не реализует интерфейс IDisposable.</remarks>
-		public static void DisposeWithValue<T> (this IValueHolder<T> holder) where T : IDisposable
+		public static void DisposeWithValue<T> (this IValueHolder<T> holder)
+			where T : IDisposable
 		{
 			if (holder == null)
 			{
 				throw new ArgumentNullException (nameof (holder));
 			}
+
 			Contract.EndContractBlock ();
 
 			var lazy = holder as ILazyValueHolder<T>;
@@ -29,6 +31,7 @@ namespace Novartment.Base
 			{
 				holder.Value?.Dispose ();
 			}
+
 			(holder as IDisposable)?.Dispose ();
 		}
 	}

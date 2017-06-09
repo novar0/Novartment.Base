@@ -1,6 +1,6 @@
 ﻿using System;
-using System.IO;
 using System.Diagnostics.Contracts;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -38,10 +38,14 @@ namespace Novartment.Base.BinaryStreaming
 		public override bool CanSeek => false;
 
 		/// <summary>Получает длину потока в байтах.</summary>
-		public override long Length { get { throw new NotSupportedException (); } }
+		public override long Length => throw new NotSupportedException ();
 
 		/// <summary>Получает или задает позицию в потоке.</summary>
-		public override long Position { get { throw new NotSupportedException (); } set { throw new NotSupportedException (); } }
+		public override long Position
+		{
+			get => throw new NotSupportedException ();
+			set => throw new NotSupportedException ();
+		}
 
 		/// <summary>
 		/// Задает позицию в потоке.
@@ -49,13 +53,13 @@ namespace Novartment.Base.BinaryStreaming
 		/// <param name="offset">Смещение в байтах относительно параметра origin.</param>
 		/// <param name="origin">определяет точку ссылки, которая используется для получения новой позиции.</param>
 		/// <returns>Новая позиция в текущем потоке.</returns>
-		public override long Seek (long offset, SeekOrigin origin) { throw new NotSupportedException (); }
+		public override long Seek (long offset, SeekOrigin origin) => throw new NotSupportedException ();
 
 		/// <summary>
 		/// Задает длину потока.
 		/// </summary>
 		/// <param name="value">Необходимая длина потока в байтах.</param>
-		public override void SetLength (long value) { throw new NotSupportedException (); }
+		public override void SetLength (long value) => throw new NotSupportedException ();
 
 		/// <summary>
 		/// Записывает последовательность байтов в поток и перемещает позицию в нём вперед на число записанных байтов.
@@ -69,18 +73,20 @@ namespace Novartment.Base.BinaryStreaming
 			{
 				throw new ArgumentNullException (nameof (buffer));
 			}
+
 			if ((offset < 0) || (offset > buffer.Length) || ((offset == buffer.Length) && (count > 0)))
 			{
 				throw new ArgumentOutOfRangeException (nameof (offset));
 			}
+
 			if ((count < 0) || ((offset + count) > buffer.Length))
 			{
 				throw new ArgumentOutOfRangeException (nameof (count));
 			}
+
 			Contract.EndContractBlock ();
 
-			var streamBinaryDestination = _destination as StreamExtensions._StreamBinaryDestination;
-			if (streamBinaryDestination != null)
+			if (_destination is StreamExtensions.StreamBinaryDestination streamBinaryDestination)
 			{
 				streamBinaryDestination.BaseStream.Write (buffer, offset, count);
 			}
@@ -105,17 +111,20 @@ namespace Novartment.Base.BinaryStreaming
 			{
 				throw new ArgumentNullException (nameof (buffer));
 			}
+
 			if ((offset < 0) || (offset > buffer.Length) || ((offset == buffer.Length) && (count > 0)))
 			{
 				throw new ArgumentOutOfRangeException (nameof (offset));
 			}
+
 			if ((count < 0) || ((offset + count) > buffer.Length))
 			{
 				throw new ArgumentOutOfRangeException (nameof (count));
 			}
+
 			Contract.EndContractBlock ();
 
-			var streamBinaryDestination = _destination as StreamExtensions._StreamBinaryDestination;
+			var streamBinaryDestination = _destination as StreamExtensions.StreamBinaryDestination;
 			return (streamBinaryDestination != null) ?
 				streamBinaryDestination.BaseStream.WriteAsync (buffer, offset, count, cancellationToken) :
 				_destination.WriteAsync (buffer, offset, count, cancellationToken);
@@ -126,8 +135,7 @@ namespace Novartment.Base.BinaryStreaming
 		/// </summary>
 		public override void Flush ()
 		{
-			var streamBinaryDestination = _destination as StreamExtensions._StreamBinaryDestination;
-			if (streamBinaryDestination != null)
+			if (_destination is StreamExtensions.StreamBinaryDestination streamBinaryDestination)
 			{
 				streamBinaryDestination.BaseStream.Flush ();
 			}
@@ -140,24 +148,10 @@ namespace Novartment.Base.BinaryStreaming
 		/// <returns>Задача, представляющая асинхронную операцию очистки.</returns>
 		public override Task FlushAsync (CancellationToken cancellationToken)
 		{
-			var streamBinaryDestination = _destination as StreamExtensions._StreamBinaryDestination;
+			var streamBinaryDestination = _destination as StreamExtensions.StreamBinaryDestination;
 			return (streamBinaryDestination != null) ?
 				streamBinaryDestination.BaseStream.FlushAsync () :
 				Task.CompletedTask;
-		}
-
-		/// <summary>
-		/// Освобождает неуправляемые ресурсы, используемые объектом, а при необходимости освобождает также управляемые ресурсы.
-		/// </summary>
-		/// <param name="disposing">Значение true позволяет освободить управляемые и неуправляемые ресурсы;
-		/// значение false позволяет освободить только неуправляемые ресурсы.</param>
-		protected override void Dispose (bool disposing)
-		{
-			base.Dispose (disposing);
-			if (disposing)
-			{
-				_destination.SetComplete ();
-			}
 		}
 
 		/// <summary>
@@ -173,14 +167,17 @@ namespace Novartment.Base.BinaryStreaming
 			{
 				throw new ArgumentNullException (nameof (buffer));
 			}
+
 			if ((offset < 0) || (offset > buffer.Length) || ((offset == buffer.Length) && (count > 0)))
 			{
 				throw new ArgumentOutOfRangeException (nameof (offset));
 			}
+
 			if ((count < 0) || (count > (buffer.Length - offset)))
 			{
 				throw new ArgumentOutOfRangeException (nameof (count));
 			}
+
 			Contract.EndContractBlock ();
 
 			int resultSize = 0;
@@ -194,8 +191,10 @@ namespace Novartment.Base.BinaryStreaming
 					Array.Copy (_source.Buffer, _source.Offset, buffer, offset, toCopy);
 					_source.SkipBuffer (toCopy);
 				}
+
 				return toCopy;
 			}
+
 			while (count > 0)
 			{
 				_source.FillBufferAsync (CancellationToken.None).Wait ();
@@ -203,6 +202,7 @@ namespace Novartment.Base.BinaryStreaming
 				{
 					break;
 				}
+
 				var toCopy = Math.Min (_source.Count, count);
 				Array.Copy (_source.Buffer, _source.Offset, buffer, offset, toCopy);
 				offset += toCopy;
@@ -228,6 +228,7 @@ namespace Novartment.Base.BinaryStreaming
 					return -1;
 				}
 			}
+
 			var result = (int)_source.Buffer[_source.Offset];
 			_source.SkipBuffer (1);
 			return result;
@@ -251,14 +252,17 @@ namespace Novartment.Base.BinaryStreaming
 			{
 				throw new ArgumentNullException (nameof (buffer));
 			}
+
 			if ((offset < 0) || (offset > buffer.Length) || ((offset == buffer.Length) && (count > 0)))
 			{
 				throw new ArgumentOutOfRangeException (nameof (offset));
 			}
+
 			if ((count < 0) || (count > (buffer.Length - offset)))
 			{
 				throw new ArgumentOutOfRangeException (nameof (count));
 			}
+
 			Contract.EndContractBlock ();
 
 			var available = _source.Count;
@@ -271,40 +275,38 @@ namespace Novartment.Base.BinaryStreaming
 					Array.Copy (_source.Buffer, _source.Offset, buffer, offset, toCopy);
 					_source.SkipBuffer (toCopy);
 				}
+
 				return Task.FromResult (toCopy);
 			}
 
-			return ReadAsyncStateMachine (_source, buffer, offset, count, cancellationToken);
-		}
+			return ReadAsyncStateMachine ();
 
-		// асинхронный запрос к источнику пока не наберём необходимое количество данных
-		private static async Task<int> ReadAsyncStateMachine (
-			IBufferedSource source,
-			byte[] buffer,
-			int offset,
-			int count,
-			CancellationToken cancellationToken)
-		{
-			int resultSize = 0;
-			while (count > 0)
+			// асинхронный запрос к источнику пока не наберём необходимое количество данных
+			async Task<int> ReadAsyncStateMachine ()
 			{
-				if ((count > source.Count) && !source.IsExhausted)
+				int resultSize = 0;
+				while (count > 0)
 				{
-					await source.FillBufferAsync (cancellationToken).ConfigureAwait (false);
-				}
-				if (source.Count <= 0)
-				{
-					break;
-				}
-				var toCopy = Math.Min (source.Count, count);
-				Array.Copy (source.Buffer, source.Offset, buffer, offset, toCopy);
-				offset += toCopy;
-				count -= toCopy;
-				resultSize += toCopy;
-				source.SkipBuffer (toCopy);
-			}
+					if ((count > _source.Count) && !_source.IsExhausted)
+					{
+						await _source.FillBufferAsync (cancellationToken).ConfigureAwait (false);
+					}
 
-			return resultSize;
+					if (_source.Count <= 0)
+					{
+						break;
+					}
+
+					var toCopy = Math.Min (_source.Count, count);
+					Array.Copy (_source.Buffer, _source.Offset, buffer, offset, toCopy);
+					offset += toCopy;
+					count -= toCopy;
+					resultSize += toCopy;
+					_source.SkipBuffer (toCopy);
+				}
+
+				return resultSize;
+			}
 		}
 
 		/// <summary>
@@ -317,6 +319,20 @@ namespace Novartment.Base.BinaryStreaming
 		public override Task CopyToAsync (Stream destination, int bufferSize, CancellationToken cancellationToken)
 		{
 			return BufferedSourceExtensions.WriteToAsync (_source, destination.AsBinaryDestination (), cancellationToken);
+		}
+
+		/// <summary>
+		/// Освобождает неуправляемые ресурсы, используемые объектом, а при необходимости освобождает также управляемые ресурсы.
+		/// </summary>
+		/// <param name="disposing">Значение true позволяет освободить управляемые и неуправляемые ресурсы;
+		/// значение false позволяет освободить только неуправляемые ресурсы.</param>
+		protected override void Dispose (bool disposing)
+		{
+			base.Dispose (disposing);
+			if (disposing)
+			{
+				_destination.SetComplete ();
+			}
 		}
 	}
 }

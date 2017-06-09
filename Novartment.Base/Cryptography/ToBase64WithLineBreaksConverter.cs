@@ -1,7 +1,7 @@
 ﻿using System;
-using System.Security.Cryptography;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
+using System.Security.Cryptography;
 using Novartment.Base.Text;
 
 namespace Novartment.Base
@@ -18,11 +18,19 @@ namespace Novartment.Base
 	public class ToBase64WithLineBreaksConverter :
 		ICryptoTransform
 	{
-		[SuppressMessage ("Microsoft.Performance",
+		[SuppressMessage (
+		"Microsoft.Performance",
 			"CA1802:UseLiteralsWhereAppropriate",
 			Justification = "No performance gain could be achieved.")]
-		private readonly static int _maxLineLen = 76;
+		private static readonly int _maxLineLen = 76;
 		private readonly char[] _outArray = new char[_maxLineLen + 2];
+
+		/// <summary>
+		/// Инициализирует новый экземпляр класса ToBase64WithLineBreaksConverter.
+		/// </summary>
+		public ToBase64WithLineBreaksConverter()
+		{
+		}
 
 		/// <summary>
 		/// Получает размер входного блока.
@@ -33,6 +41,7 @@ namespace Novartment.Base
 		/// Получает размер выходного блока.
 		/// </summary>
 		public int OutputBlockSize => _maxLineLen + 2;
+
 		/// <summary>
 		/// Получает значение, указывающее на возможность повторного использования текущего преобразования.
 		/// </summary>
@@ -42,13 +51,6 @@ namespace Novartment.Base
 		/// Получает значение, указывающее на возможность преобразования нескольких блоков.
 		/// </summary>
 		public bool CanTransformMultipleBlocks => true;
-
-		/// <summary>
-		/// Инициализирует новый экземпляр класса ToBase64WithLineBreaksConverter.
-		/// </summary>
-		public ToBase64WithLineBreaksConverter ()
-		{
-		}
 
 		/// <summary>
 		/// Преобразует заданную область входного массива байтов и копирует результат в заданную область выходного массива байтов.
@@ -65,22 +67,27 @@ namespace Novartment.Base
 			{
 				throw new ArgumentNullException (nameof (inputBuffer));
 			}
+
 			if ((inputOffset < 0) || (inputOffset > inputBuffer.Length) || ((inputOffset == inputBuffer.Length) && (inputCount > 0)))
 			{
 				throw new ArgumentOutOfRangeException (nameof (inputOffset));
 			}
+
 			if ((inputCount < 0) || ((inputOffset + inputCount) > inputBuffer.Length))
 			{
 				throw new ArgumentOutOfRangeException (nameof (inputCount));
 			}
+
 			if (outputBuffer == null)
 			{
 				throw new ArgumentNullException (nameof (outputBuffer));
 			}
+
 			if ((outputOffset < 0) || (outputOffset > outputBuffer.Length) || ((outputOffset == outputBuffer.Length) && (inputCount > 0)))
 			{
 				throw new ArgumentOutOfRangeException (nameof (outputOffset));
 			}
+
 			Contract.EndContractBlock ();
 
 			int outputSize = 0;
@@ -93,6 +100,7 @@ namespace Novartment.Base
 					throw new FormatException (FormattableString.Invariant (
 						$"Wrong size of chunk of base64-encoded data. Specified {size}, expected {_maxLineLen}."));
 				}
+
 				AsciiCharSet.GetBytes (_outArray, 0, size, outputBuffer, outputOffset);
 				outputBuffer[outputOffset + size++] = 0x0d;
 				outputBuffer[outputOffset + size++] = 0x0a;
@@ -100,6 +108,7 @@ namespace Novartment.Base
 				inputOffset += InputBlockSize;
 				outputOffset += size;
 			}
+
 			return outputSize;
 		}
 
@@ -116,14 +125,17 @@ namespace Novartment.Base
 			{
 				throw new ArgumentNullException (nameof (inputBuffer));
 			}
+
 			if ((inputOffset < 0) || (inputOffset > inputBuffer.Length) || ((inputOffset == inputBuffer.Length) && (inputCount > 0)))
 			{
 				throw new ArgumentOutOfRangeException (nameof (inputOffset));
 			}
+
 			if ((inputCount < 0) || ((inputOffset + inputCount) > inputBuffer.Length))
 			{
 				throw new ArgumentOutOfRangeException (nameof (inputCount));
 			}
+
 			Contract.EndContractBlock ();
 
 			if (inputCount == 0)

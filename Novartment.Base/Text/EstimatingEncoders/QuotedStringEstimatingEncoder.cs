@@ -13,22 +13,6 @@ namespace Novartment.Base.Text
 		private readonly AsciiCharClasses _enabledClasses;
 
 		/// <summary>
-		/// Получает количество байтов, которые кодировщик записывает в качестве пролога перед данными.
-		/// </summary>
-		[SuppressMessage ("Microsoft.Performance",
-			"CA1822:MarkMembersAsStatic",
-			Justification = "Cant be static because implements interface memeber.")]
-		public int PrologSize => 1;
-
-		/// <summary>
-		/// Получает количество байтов, которые кодировщик записывает в качестве эпилога после данных.
-		/// </summary>
-		[SuppressMessage ("Microsoft.Performance",
-			"CA1822:MarkMembersAsStatic",
-			Justification = "Cant be static because implements interface memeber.")]
-		public int EpilogSize => 1;
-
-		/// <summary>
 		/// Инициализирует новый экземпляр класса QuotedStringEstimatingEncoder с классом допустимых символов по умолчанию.
 		/// </summary>
 		public QuotedStringEstimatingEncoder ()
@@ -46,6 +30,24 @@ namespace Novartment.Base.Text
 		}
 
 		/// <summary>
+		/// Получает количество байтов, которые кодировщик записывает в качестве пролога перед данными.
+		/// </summary>
+		[SuppressMessage(
+			"Microsoft.Performance",
+			"CA1822:MarkMembersAsStatic",
+			Justification = "Cant be static because implements interface memeber.")]
+		public int PrologSize => 1;
+
+		/// <summary>
+		/// Получает количество байтов, которые кодировщик записывает в качестве эпилога после данных.
+		/// </summary>
+		[SuppressMessage(
+			"Microsoft.Performance",
+			"CA1822:MarkMembersAsStatic",
+			Justification = "Cant be static because implements interface memeber.")]
+		public int EpilogSize => 1;
+
+		/// <summary>
 		/// В указанном массиве байтов ищет ближайшую позицию данных,
 		/// подходящих для кодировщика.
 		/// </summary>
@@ -60,14 +62,17 @@ namespace Novartment.Base.Text
 			{
 				throw new ArgumentNullException (nameof (source));
 			}
+
 			if ((offset < 0) || (offset > source.Length) || ((offset == source.Length) && (count > 0)))
 			{
 				throw new ArgumentOutOfRangeException (nameof (offset));
 			}
+
 			if ((count < 0) || (count > source.Length))
 			{
 				throw new ArgumentOutOfRangeException (nameof (count));
 			}
+
 			Contract.EndContractBlock ();
 
 			int pos = 0;
@@ -79,8 +84,10 @@ namespace Novartment.Base.Text
 				{
 					return offset + pos;
 				}
+
 				pos++;
 			}
+
 			return -1;
 		}
 
@@ -91,8 +98,8 @@ namespace Novartment.Base.Text
 		/// <param name="offset">Позиция начала порции исходных данных.</param>
 		/// <param name="count">Количество байтов в порции исходных данных.</param>
 		/// <param name="maxOutCount">Максимальное количество байтов, которое может содержать результат кодирования.</param>
-		/// <param name="segmentNumber">Не используется.</param>
-		/// <param name="isLastSegment">Не используется.</param>
+		/// <param name="segmentNumber">segmentNumber не используется.</param>
+		/// <param name="isLastSegment">isLastSegment не используется.</param>
 		/// <returns>Кортеж из количества байтов, необходимых для результата кодирования и
 		/// количества байтов источника, которое было использовано для кодирования.</returns>
 		public EncodingBalance Estimate (byte[] source, int offset, int count, int maxOutCount, int segmentNumber, bool isLastSegment)
@@ -101,18 +108,22 @@ namespace Novartment.Base.Text
 			{
 				throw new ArgumentNullException (nameof (source));
 			}
+
 			if ((offset < 0) || (offset > source.Length) || ((offset == source.Length) && (count > 0)))
 			{
 				throw new ArgumentOutOfRangeException (nameof (offset));
 			}
+
 			if ((count < 0) || (count > source.Length))
 			{
 				throw new ArgumentOutOfRangeException (nameof (count));
 			}
+
 			if (maxOutCount < 0)
 			{
 				throw new ArgumentOutOfRangeException (nameof (maxOutCount));
 			}
+
 			Contract.EndContractBlock ();
 
 			int srcPos = 0;
@@ -122,6 +133,7 @@ namespace Novartment.Base.Text
 			{ // ничего кроме кавычек не влезет
 				return new EncodingBalance (0, 0);
 			}
+
 			while ((srcPos < count) && (dstPos < maxOutCount))
 			{
 				var c = source[offset + srcPos];
@@ -130,6 +142,7 @@ namespace Novartment.Base.Text
 				{
 					break;
 				}
+
 				if ((c == 34) || (c == 92))
 				{
 					// кавычка либо косая черта предваряется косой чертой
@@ -137,18 +150,22 @@ namespace Novartment.Base.Text
 					{
 						break;
 					}
+
 					dstPos += 2;
 				}
 				else
 				{
 					dstPos++;
 				}
+
 				srcPos++;
 			}
+
 			if (srcPos < 1)
 			{ // ничего кроме кавычек
 				return new EncodingBalance (0, 0);
 			}
+
 			dstPos++; // конечная кавычка
 			return new EncodingBalance (dstPos, srcPos);
 		}
@@ -162,39 +179,50 @@ namespace Novartment.Base.Text
 		/// <param name="destination">Массив байтов, куда будет записываться результат кодирования.</param>
 		/// <param name="outOffset">Позиция в destination куда будет записываться результат кодирования.</param>
 		/// <param name="maxOutCount">Максимальное количество байтов, которое может содержать результат кодирования.</param>
-		/// <param name="segmentNumber">Не используется.</param>
-		/// <param name="isLastSegment">Не используется.</param>
+		/// <param name="segmentNumber">segmentNumber не используется.</param>
+		/// <param name="isLastSegment">isLastSegment не используется.</param>
 		/// <returns>Кортеж из количества байтов, записанных в массив для результата кодирования и
 		/// количества байтов источника, которое было использовано для кодирования.</returns>
 		public EncodingBalance Encode (
-			byte[] source, int offset, int count,
-			byte[] destination, int outOffset, int maxOutCount,
-			int segmentNumber, bool isLastSegment)
+			byte[] source,
+			int offset,
+			int count,
+			byte[] destination,
+			int outOffset,
+			int maxOutCount,
+			int segmentNumber,
+			bool isLastSegment)
 		{
 			if (source == null)
 			{
 				throw new ArgumentNullException (nameof (source));
 			}
+
 			if ((offset < 0) || (offset > source.Length) || ((offset == source.Length) && (count > 0)))
 			{
 				throw new ArgumentOutOfRangeException (nameof (offset));
 			}
+
 			if ((count < 0) || (count > source.Length))
 			{
 				throw new ArgumentOutOfRangeException (nameof (count));
 			}
+
 			if (destination == null)
 			{
 				throw new ArgumentNullException (nameof (destination));
 			}
+
 			if ((outOffset < 0) || (outOffset > destination.Length) || ((outOffset == destination.Length) && (maxOutCount > 0)))
 			{
 				throw new ArgumentOutOfRangeException (nameof (outOffset));
 			}
+
 			if ((maxOutCount < 0) || (maxOutCount > destination.Length))
 			{
 				throw new ArgumentOutOfRangeException (nameof (maxOutCount));
 			}
+
 			Contract.EndContractBlock ();
 
 			var outStartOffset = outOffset;
@@ -203,6 +231,7 @@ namespace Novartment.Base.Text
 			{ // ничего кроме кавычек не влезет
 				return new EncodingBalance (0, 0);
 			}
+
 			destination[outOffset++] = (byte)'"'; // начальная кавычка
 			maxOutCount--; // уменьшаем лимит на конечную кавычку
 			while ((srcPos < count) && ((outOffset - outStartOffset) < maxOutCount))
@@ -213,6 +242,7 @@ namespace Novartment.Base.Text
 				{
 					break;
 				}
+
 				if ((c == 34) || (c == 92))
 				{
 					// кавычка либо косая черта предваряется косой чертой
@@ -220,15 +250,19 @@ namespace Novartment.Base.Text
 					{
 						break;
 					}
+
 					destination[outOffset++] = (byte)'\\';
 				}
+
 				destination[outOffset++] = c;
 				srcPos++;
 			}
+
 			if (srcPos < 1)
 			{ // ничего кроме кавычек
 				return new EncodingBalance (0, 0);
 			}
+
 			destination[outOffset++] = (byte)'"'; // конечная кавычка
 			return new EncodingBalance (outOffset - outStartOffset, srcPos);
 		}

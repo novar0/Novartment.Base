@@ -1,5 +1,4 @@
-﻿
-namespace Novartment.Base.UI
+﻿namespace Novartment.Base.UI
 {
 	/// <summary>
 	/// Поведение при запросе готовности выполнения команды, являющейся звеном в цепи связанных команд.

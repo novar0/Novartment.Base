@@ -1,5 +1,4 @@
-﻿
-namespace Novartment.Base.UnsafeWin32
+﻿namespace Novartment.Base.UnsafeWin32
 {
 	/// <summary>
 	/// Form of a shell item's display name.

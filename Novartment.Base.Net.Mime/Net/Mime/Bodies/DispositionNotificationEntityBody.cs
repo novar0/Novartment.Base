@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using static System.Linq.Enumerable;
+using System.Diagnostics.Contracts;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Diagnostics.Contracts;
-using Novartment.Base.Collections;
 using Novartment.Base.BinaryStreaming;
+using Novartment.Base.Collections;
+using static System.Linq.Enumerable;
 
 namespace Novartment.Base.Net.Mime
 {
@@ -16,6 +16,13 @@ namespace Novartment.Base.Net.Mime
 	public class DispositionNotificationEntityBody :
 		IEntityBody
 	{
+		/// <summary>
+		/// Инициализирует новый экземпляр класса DispositionNotificationEntityBody.
+		/// </summary>
+		public DispositionNotificationEntityBody ()
+		{
+		}
+
 		/// <summary>Получает кодировку передачи содержимого тела сущности.</summary>
 		public ContentTransferEncoding TransferEncoding => ContentTransferEncoding.Unspecified;
 
@@ -53,15 +60,6 @@ namespace Novartment.Base.Net.Mime
 		public IAdjustableList<string> WarningInfo { get; } = new ArrayList<string> ();
 
 		/// <summary>
-		/// Инициализирует новый экземпляр класса DispositionNotificationEntityBody.
-		/// </summary>
-		public DispositionNotificationEntityBody ()
-		{
-		}
-
-		#region method Clear
-
-		/// <summary>
 		/// Очищает тело сущности.
 		/// </summary>
 		public void Clear ()
@@ -79,10 +77,6 @@ namespace Novartment.Base.Net.Mime
 			Disposition = MessageDispositionChangedAction.Unspecified;
 		}
 
-		#endregion
-
-		#region method Load
-
 		/// <summary>
 		/// Загружает тело сущности из указанного источника данных.
 		/// </summary>
@@ -99,21 +93,19 @@ namespace Novartment.Base.Net.Mime
 			{
 				throw new ArgumentNullException (nameof (source));
 			}
+
 			Contract.EndContractBlock ();
 
 			var headerSource = new TemplateSeparatedBufferedSource (source, HeaderDecoder.CarriageReturnLinefeed2, false);
 			var task = HeaderDecoder.LoadHeaderFieldsAsync (headerSource, cancellationToken);
-			return LoadAsyncFinalizer (task);
-		}
-		private async Task LoadAsyncFinalizer (Task<IReadOnlyList<HeaderField>> task)
-		{
-			var fields = await task.ConfigureAwait (false);
-			ParseHeader (fields);
-		}
+			return LoadAsyncFinalizer ();
 
-		#endregion
-
-		#region method Save
+			async Task LoadAsyncFinalizer ()
+			{
+				var fields = await task.ConfigureAwait (false);
+				ParseHeader (fields);
+			}
+		}
 
 		/// <summary>
 		/// Сохраняет тело сущности в указанный получатель двоичных данных.
@@ -127,12 +119,14 @@ namespace Novartment.Base.Net.Mime
 			{
 				throw new ArgumentNullException (nameof (destination));
 			}
+
 			Contract.EndContractBlock ();
 
 			if (this.FinalRecipient == null)
 			{
 				throw new InvalidOperationException ("Required property 'FinalRecipient' not specified.");
 			}
+
 			if (this.Disposition == MessageDispositionChangedAction.Unspecified)
 			{
 				throw new InvalidOperationException ("Required property 'Disposition' not specified.");
@@ -146,7 +140,7 @@ namespace Novartment.Base.Net.Mime
 
 		private async Task SaveAsyncStateMachine (
 			IBinaryDestination destination,
-			ArrayList<HeaderFieldBuilder>  header,
+			ArrayList<HeaderFieldBuilder> header,
 			CancellationToken cancellationToken)
 		{
 			await HeaderEncoder.SaveHeaderAsync (header, destination, cancellationToken)
@@ -155,39 +149,35 @@ namespace Novartment.Base.Net.Mime
 				.ConfigureAwait (false);
 		}
 
-		#endregion
-
-		#region method ParseHeader
-
-		/// <summary>
-		/// Создаёт коллекцию свойств уведомления об изменении дислокации сообщения
-		/// на основе указанной коллекции полей заголовка уведомления об изменении дислокации сообщения.
-		/// </summary>
+		// Создаёт коллекцию свойств уведомления об изменении дислокации сообщения
+		// на основе указанной коллекции полей заголовка уведомления об изменении дислокации сообщения.
 		private void ParseHeader (IReadOnlyCollection<HeaderField> fields)
 		{
-			// disposition-notification-content =
-			//		[ reporting-ua-field TargetsTrackingExtensionBase ]
-			//		[ mdn-gateway-field TargetsTrackingExtensionBase ]
-			//		[ original-recipient-field TargetsTrackingExtensionBase ]
-			//		final-recipient-field TargetsTrackingExtensionBase
-			//		[ original-message-id-field TargetsTrackingExtensionBase ]
-			//		disposition-field TargetsTrackingExtensionBase
-			//		*( failure-field TargetsTrackingExtensionBase )
-			//		*( error-field TargetsTrackingExtensionBase )
-			//		*( warning-field TargetsTrackingExtensionBase )
-			//		*( extension-field TargetsTrackingExtensionBase
-			// reporting-ua-field =
-			//		"Reporting-UA" ":" ua-name [ ";" ua-product ]
-			// disposition-field =
-			//		"Disposition" ":" disposition-mode ";" disposition-type [ "/" disposition-modifier *( "," disposition-modifier ) ]
-			// disposition-mode =
-			//		action-mode "/" sending-mode
-			// action-mode =
-			//		"manual-action" / "automatic-action"
-			// sending-mode =
-			//		"MDN-sent-manually" / "MDN-sent-automatically"
-			// disposition-type =
-			//		"displayed" / "deleted"
+			/*
+			disposition-notification-content =
+				[ reporting-ua-field TargetsTrackingExtensionBase ]
+				[ mdn-gateway-field TargetsTrackingExtensionBase ]
+				[ original-recipient-field TargetsTrackingExtensionBase ]
+				final-recipient-field TargetsTrackingExtensionBase
+				[ original-message-id-field TargetsTrackingExtensionBase ]
+				disposition-field TargetsTrackingExtensionBase
+				*( failure-field TargetsTrackingExtensionBase )
+				*( error-field TargetsTrackingExtensionBase )
+				*( warning-field TargetsTrackingExtensionBase )
+				*( extension-field TargetsTrackingExtensionBase
+			reporting-ua-field =
+				"Reporting-UA" ":" ua-name [ ";" ua-product ]
+			disposition-field =
+				"Disposition" ":" disposition-mode ";" disposition-type [ "/" disposition-modifier *( "," disposition-modifier ) ]
+			disposition-mode =
+				action-mode "/" sending-mode
+			action-mode =
+				"manual-action" / "automatic-action"
+			sending-mode =
+				"MDN-sent-manually" / "MDN-sent-automatically"
+			disposition-type =
+				"displayed" / "deleted"
+			*/
 
 			foreach (var field in fields)
 			{
@@ -201,6 +191,7 @@ namespace Novartment.Base.Net.Mime
 						{
 							throw new FormatException ("More than one '" + HeaderFieldNameHelper.GetName (HeaderFieldName.MdnGateway) + "' field.");
 						}
+
 						this.Gateway = HeaderDecoder.DecodeNotificationFieldValue (field.Value);
 						break;
 					case HeaderFieldName.OriginalRecipient:
@@ -208,6 +199,7 @@ namespace Novartment.Base.Net.Mime
 						{
 							throw new FormatException ("More than one '" + HeaderFieldNameHelper.GetName (HeaderFieldName.OriginalRecipient) + "' field.");
 						}
+
 						this.OriginalRecipient = HeaderDecoder.DecodeNotificationFieldValue (field.Value);
 						break;
 					case HeaderFieldName.FinalRecipient:
@@ -215,6 +207,7 @@ namespace Novartment.Base.Net.Mime
 						{
 							throw new FormatException ("More than one '" + HeaderFieldNameHelper.GetName (HeaderFieldName.FinalRecipient) + "' field.");
 						}
+
 						this.FinalRecipient = HeaderDecoder.DecodeNotificationFieldValue (field.Value);
 						break;
 					case HeaderFieldName.OriginalMessageId:
@@ -222,6 +215,7 @@ namespace Novartment.Base.Net.Mime
 						{
 							throw new FormatException ("More than one '" + HeaderFieldNameHelper.GetName (HeaderFieldName.OriginalMessageId) + "' field.");
 						}
+
 						this.OriginalMessageId = HeaderDecoder.DecodeAddrSpecList (field.Value).Single ();
 						break;
 					case HeaderFieldName.Disposition:
@@ -236,7 +230,6 @@ namespace Novartment.Base.Net.Mime
 					case HeaderFieldName.Warning:
 						this.WarningInfo.Add (HeaderDecoder.DecodeUnstructured (field.Value).Trim ());
 						break;
-
 				}
 			}
 
@@ -244,6 +237,7 @@ namespace Novartment.Base.Net.Mime
 			{
 				throw new FormatException ("Required field '" + HeaderFieldNameHelper.GetName (HeaderFieldName.FinalRecipient) + "' not specified.");
 			}
+
 			if (this.Disposition == MessageDispositionChangedAction.Unspecified)
 			{
 				throw new FormatException ("Not specified valid value for property 'Disposition'.");
@@ -256,6 +250,7 @@ namespace Novartment.Base.Net.Mime
 			{
 				throw new FormatException ("More than one '" + HeaderFieldNameHelper.GetName (HeaderFieldName.ReportingUA) + "' field.");
 			}
+
 			var data = HeaderDecoder.DecodeUnstructuredPair (value);
 			this.ReportingUserAgentName = data.Value1.Trim ();
 			var isReportingUserAgentProductEmpty = string.IsNullOrWhiteSpace (data.Value2);
@@ -271,19 +266,16 @@ namespace Novartment.Base.Net.Mime
 			{
 				throw new FormatException ("More than one '" + HeaderFieldNameHelper.GetName (HeaderFieldName.Disposition) + "' field.");
 			}
-			// disposition-field =
-			//		"Disposition" ":" disposition-mode ";" disposition-type [ "/" disposition-modifier *( "," disposition-modifier ) ]
-			// disposition-mode =
-			//		action-mode "/" sending-mode
-			// action-mode =
-			//		"manual-action" / "automatic-action"
-			// sending-mode =
-			//		"MDN-sent-manually" / "MDN-sent-automatically"
-			// disposition-type =
-			//		"displayed" / "deleted"
+
+			// disposition-field = "Disposition" ":" disposition-mode ";" disposition-type [ "/" disposition-modifier *( "," disposition-modifier ) ]
+			// disposition-mode = action-mode "/" sending-mode
+			// action-mode = "manual-action" / "automatic-action"
+			// sending-mode = "MDN-sent-manually" / "MDN-sent-automatically"
+			// disposition-type = "displayed" / "deleted"
 			var data = HeaderDecoder.DecodeDispositionAction (value);
 			var isManualAction = MdnActionModeNames.ManualAction.Equals (data.Value1, StringComparison.OrdinalIgnoreCase);
-			//var isSendManually = MdnSendingModeNames.MdnSentManually.Equals (data.Item2, StringComparison.OrdinalIgnoreCase);
+
+			// var isSendManually = MdnSendingModeNames.MdnSentManually.Equals (data.Item2, StringComparison.OrdinalIgnoreCase);
 			var isDiplayed = MdnDispositionTypeNames.Displayed.Equals (data.Value3, StringComparison.OrdinalIgnoreCase);
 			if (isManualAction)
 			{
@@ -297,19 +289,14 @@ namespace Novartment.Base.Net.Mime
 					MessageDispositionChangedAction.AutomaticallyDisplayed :
 					MessageDispositionChangedAction.AutomaticallyDeleted;
 			}
+
 			if (data.List.Count > 0)
 			{
 				this.DispositionModifiers.AddRange (data.List);
 			}
 		}
 
-		#endregion
-
-		#region method CreateHeader
-
-		/// <summary>
-		/// Создаёт поля заголовка содержащую все свойства коллекции.
-		/// </summary>
+		// Создаёт поля заголовка содержащую все свойства коллекции.
 		private void CreateHeader (IAdjustableCollection<HeaderFieldBuilder> header)
 		{
 			// Reporting-UA
@@ -317,7 +304,8 @@ namespace Novartment.Base.Net.Mime
 			{
 				header.Add (HeaderFieldBuilder.CreateUnstructuredPair (
 					HeaderFieldName.ReportingUA,
-					this.ReportingUserAgentName, this.ReportingUserAgentProduct));
+					this.ReportingUserAgentName,
+					this.ReportingUserAgentProduct));
 			}
 
 			// MDN-Gateway
@@ -325,7 +313,8 @@ namespace Novartment.Base.Net.Mime
 			{
 				header.Add (HeaderFieldBuilder.CreateAtomAndUnstructured (
 					HeaderFieldName.MdnGateway,
-					this.Gateway.Kind.GetName (), this.Gateway.Value));
+					this.Gateway.Kind.GetName (),
+					this.Gateway.Value));
 			}
 
 			// Original-Recipient
@@ -333,13 +322,15 @@ namespace Novartment.Base.Net.Mime
 			{
 				header.Add (HeaderFieldBuilder.CreateAtomAndUnstructured (
 					HeaderFieldName.OriginalRecipient,
-					this.OriginalRecipient.Kind.GetName (), this.OriginalRecipient.Value));
+					this.OriginalRecipient.Kind.GetName (),
+					this.OriginalRecipient.Value));
 			}
 
 			// Final-Recipient
 			header.Add (HeaderFieldBuilder.CreateAtomAndUnstructured (
 				HeaderFieldName.FinalRecipient,
-				this.FinalRecipient.Kind.GetName (), this.FinalRecipient.Value));
+				this.FinalRecipient.Kind.GetName (),
+				this.FinalRecipient.Value));
 
 			// Original-Message-ID
 			if (this.OriginalMessageId != null)
@@ -357,7 +348,10 @@ namespace Novartment.Base.Net.Mime
 				MdnDispositionTypeNames.Displayed : MdnDispositionTypeNames.Deleted;
 			header.Add (HeaderFieldBuilder.CreateDisposition (
 				HeaderFieldName.Disposition,
-				actionMode, sendingMode, dispositionType, this.DispositionModifiers));
+				actionMode,
+				sendingMode,
+				dispositionType,
+				this.DispositionModifiers));
 
 			// Failure
 			foreach (var info in this.FailureInfo)
@@ -377,7 +371,5 @@ namespace Novartment.Base.Net.Mime
 				header.Add (HeaderFieldBuilder.CreateUnstructured (HeaderFieldName.Warning, info));
 			}
 		}
-
-		#endregion
 	}
 }

@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Security.Cryptography;
 using System.Diagnostics.Contracts;
+using System.Security.Cryptography;
 
 namespace Novartment.Base
 {
@@ -68,14 +68,17 @@ namespace Novartment.Base
 			{
 				throw new ArgumentNullException (nameof (array));
 			}
+
 			if ((index < 0) || (index > array.Length) || ((index == array.Length) && (count > 0)))
 			{
 				throw new ArgumentOutOfRangeException (nameof (index));
 			}
+
 			if ((count < 0) || (count > array.Length))
 			{
 				throw new ArgumentOutOfRangeException (nameof (count));
 			}
+
 			Contract.EndContractBlock ();
 
 			_length += (ulong)count;
@@ -95,13 +98,13 @@ namespace Novartment.Base
 
 				_hash1 = (_hash1 << 27) | (_hash1 >> 37);
 				_hash1 += _hash2;
-				_hash1 = _hash1 * 5 + 0x52dce729;
+				_hash1 = (_hash1 * 5) + 0x52dce729;
 
 				_hash2 ^= MixKey2 (k2);
 
 				_hash2 = (_hash2 << 31) | (_hash2 >> 33);
 				_hash2 += _hash1;
-				_hash2 = _hash2 * 5 + 0x38495ab5;
+				_hash2 = (_hash2 * 5) + 0x38495ab5;
 			}
 
 			// if the input MOD 16 != 0

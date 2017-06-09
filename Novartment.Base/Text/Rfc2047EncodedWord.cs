@@ -1,15 +1,16 @@
 ﻿using System;
 using System.Buffers;
-using System.Text;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
+using System.Text;
 
 namespace Novartment.Base.Text
 {
 	/// <summary>
 	/// Операции для конвертирования строк в форму "encoded-word" и обратно согласно RFC 2047.
 	/// </summary>
-	[SuppressMessage ("Microsoft.Naming",
+	[SuppressMessage (
+		"Microsoft.Naming",
 		"CA1704:IdentifiersShouldBeSpelledCorrectly",
 		MessageId = "Rfc",
 		Justification = "'RFC' represents standard term.")]
@@ -26,11 +27,12 @@ namespace Novartment.Base.Text
 			{
 				throw new ArgumentNullException (nameof (value));
 			}
+
 			Contract.EndContractBlock ();
 
-			//encoded-word := "=?" charset ["*" Language-Tag] "?" encoding "?" encoded-text "?="
-			//charset = etoken
-			//encoding = etoken
+			// encoded-word := "=?" charset ["*" Language-Tag] "?" encoding "?" encoded-text "?="
+			// charset = etoken
+			// encoding = etoken
 			if (value.Length < 8)
 			{
 				throw new FormatException (FormattableString.Invariant (
@@ -47,16 +49,23 @@ namespace Novartment.Base.Text
 			if (idx > 0)
 			{
 				charsetStr = charsetStr.Substring (0, idx);
-				//var lang = charsetStr.Substring (idx + 1);
+
+				// var lang = charsetStr.Substring (idx + 1);
 			}
+
 			Encoding encoding;
-			try { encoding = Encoding.GetEncoding (charsetStr); }
+			try
+			{
+				encoding = Encoding.GetEncoding (charsetStr);
+			}
 			catch (ArgumentException e)
 			{
-				throw new FormatException (FormattableString.Invariant (
+				throw new FormatException (
+					FormattableString.Invariant (
 					$"Invalid 'charset' parameter '{charsetStr}' in 'encoded-word'-value '{value}'."),
 					e);
 			}
+
 			parser.EnsureChar ('?');
 			var wordEncodingChar = parser.SkipChar ();
 			var binaryEncoding = false;
@@ -73,6 +82,7 @@ namespace Novartment.Base.Text
 					throw new FormatException (FormattableString.Invariant (
 						$"Unsupported value of 'encoding' ('{wordEncodingChar}') in 'encoded-word' value '{value}'. Expected 'Q' or 'B'."));
 			}
+
 			parser.EnsureChar ('?');
 			start = parser.Position;
 			end = value.Length - 2;
@@ -98,6 +108,7 @@ namespace Novartment.Base.Text
 			{
 				throw new ArgumentNullException (nameof (value));
 			}
+
 			Contract.EndContractBlock ();
 
 			return IsValid (value, 0, value.Length);
@@ -116,14 +127,17 @@ namespace Novartment.Base.Text
 			{
 				throw new ArgumentNullException (nameof (value));
 			}
+
 			if ((index < 0) || (index > value.Length) || ((index == value.Length) && (count > 0)))
 			{
 				throw new ArgumentOutOfRangeException (nameof (index));
 			}
+
 			if ((count < 0) || ((index + count) > value.Length))
 			{
 				throw new ArgumentOutOfRangeException (nameof (count));
 			}
+
 			Contract.EndContractBlock ();
 
 			/* RFC 2047 2.
@@ -147,13 +161,11 @@ namespace Novartment.Base.Text
 					AsciiCharSet.IsAllOfClass (value, index, count, AsciiCharClasses.Visible);
 		}
 
-		/// <summary>Конвертирует "B"-encoded строку в массив байт согласно RFC 2045 часть 6.8.</summary>
-		/// <remarks>
-		/// Отказался от использования Convert.FromBase64String() потому что там лояльно относятся к лишним пробелам.
-		/// </remarks>
+		// Конвертирует "B"-encoded строку в массив байт согласно RFC 2045 часть 6.8.</summary>
+		// Отказался от использования Convert.FromBase64String() потому, что там лояльно относятся к лишним пробелам.
 		private static string ParseBString (string value, int offset, int endOffset, Encoding encoding)
 		{
-			var buffer = ArrayPool<byte>.Shared.Rent (((endOffset - offset) / 4) * 3 + 2);
+			var buffer = ArrayPool<byte>.Shared.Rent ((((endOffset - offset) / 4) * 3) + 2);
 			try
 			{
 				int bufferOffset = 0;
@@ -173,12 +185,14 @@ namespace Novartment.Base.Text
 									throw new FormatException (FormattableString.Invariant (
 										$"Invalid position {offset - 1} of char '=' in base64-encoded string '{value}'."));
 								}
+
 								num2 = num2 << 12;
 								if ((num2 & 0x80000000) == 0)
 								{
 									throw new FormatException (FormattableString.Invariant (
 										$"Invalid position {offset - 1} of char '=' in base64-encoded string '{value}'."));
 								}
+
 								buffer[bufferOffset++] = (byte)(num2 >> 16);
 							}
 							else
@@ -189,9 +203,11 @@ namespace Novartment.Base.Text
 									throw new FormatException (FormattableString.Invariant (
 										$"Invalid position {offset - 1} of char '=' in base64-encoded string '{value}'."));
 								}
+
 								buffer[bufferOffset++] = (byte)(num2 >> 16);
 								buffer[bufferOffset++] = (byte)(num2 >> 8);
 							}
+
 							return encoding.GetString (buffer, 0, bufferOffset);
 						default:
 							if ((num - 'A') <= 25)
@@ -217,8 +233,10 @@ namespace Novartment.Base.Text
 									}
 								}
 							}
+
 							break;
 					}
+
 					num2 = (num2 << 6) | num;
 					if ((num2 & 0x80000000) != 0)
 					{
@@ -228,6 +246,7 @@ namespace Novartment.Base.Text
 						num2 = 0xff;
 					}
 				}
+
 				if (num2 != 0xff)
 				{
 					throw new FormatException (FormattableString.Invariant (
@@ -242,7 +261,7 @@ namespace Novartment.Base.Text
 			}
 		}
 
-		/// <summary>Конвертирует "Q"-encoded строку в массив байт согласно RFC 2047 часть 4.2.</summary>
+		// Конвертирует "Q"-encoded строку в массив байт согласно RFC 2047 часть 4.2.
 		private static string ParseQString (string value, int offset, int endOffset, Encoding encoding)
 		{
 			if (endOffset <= offset)
@@ -269,6 +288,7 @@ namespace Novartment.Base.Text
 								throw new FormatException (FormattableString.Invariant (
 									$"Invalid HEX char in position {offset} of q-encoded string '{value}'."));
 							}
+
 							// This must be encoded 8-bit byte
 							buffer[bufferOffset++] = Hex.ParseByte (value, offset + 1);
 							offset += 3;
@@ -280,11 +300,13 @@ namespace Novartment.Base.Text
 								throw new FormatException (FormattableString.Invariant (
 									$"Invalid char in position {offset} of q-encoded string '{value}'."));
 							}
+
 							buffer[bufferOffset++] = (byte)c;
 							offset++;
 							break;
 					}
 				}
+
 				return encoding.GetString (buffer, 0, bufferOffset);
 			}
 			finally

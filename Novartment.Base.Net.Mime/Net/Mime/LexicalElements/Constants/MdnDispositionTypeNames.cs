@@ -1,5 +1,4 @@
-﻿
-namespace Novartment.Base.Net.Mime
+﻿namespace Novartment.Base.Net.Mime
 {
 	/// <summary>
 	/// Action performed by the Reporting-MUA on behalf of the user.

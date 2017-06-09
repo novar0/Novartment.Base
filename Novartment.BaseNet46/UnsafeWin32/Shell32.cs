@@ -8,7 +8,9 @@ namespace Novartment.Base.UnsafeWin32
 	{
 		internal static class Shell32
 		{
-			[SecurityCritical, SuppressUnmanagedCodeSecurity, DllImport ("shell32")]
+			[SecurityCritical]
+			[SuppressUnmanagedCodeSecurity]
+			[DllImport ("shell32")]
 			internal static extern int SHGetFolderLocation (
 				IntPtr hwndOwner,
 				Environment.SpecialFolder nFolder,
@@ -21,8 +23,7 @@ namespace Novartment.Base.UnsafeWin32
 				IntPtr pidlParent,
 				[In, MarshalAs (UnmanagedType.Interface)] IShellItem psfParent,
 				IntPtr pidl,
-				[MarshalAs (UnmanagedType.Interface)] out IShellItem ppsi
-			);
+				[MarshalAs (UnmanagedType.Interface)] out IShellItem ppsi);
 
 			[DllImport ("shell32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
 			internal static extern int SHCreateItemFromParsingName (

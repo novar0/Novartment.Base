@@ -1,5 +1,4 @@
-﻿
-namespace Novartment.Base
+﻿namespace Novartment.Base
 {
 	/// <summary>
 	/// Объект, который может быть помечен.

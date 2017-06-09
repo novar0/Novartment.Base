@@ -580,6 +580,7 @@ namespace Novartment.Base.Net.Mime.Test
 						}
 						break;
 					}
+
 					if ((pos < (source.Length - 1)) && source[pos + 2] != ' ' && source[pos + 3] != '\t')
 					{
 						if (start > 0)

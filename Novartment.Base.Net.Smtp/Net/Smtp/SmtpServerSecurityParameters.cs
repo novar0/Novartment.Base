@@ -1,7 +1,7 @@
 ﻿using System;
-using System.Threading.Tasks;
-using System.Security.Cryptography.X509Certificates;
 using System.Diagnostics.Contracts;
+using System.Security.Cryptography.X509Certificates;
+using System.Threading.Tasks;
 
 namespace Novartment.Base.Net
 {
@@ -10,6 +10,21 @@ namespace Novartment.Base.Net
 	/// </summary>
 	public sealed class SmtpServerSecurityParameters
 	{
+		// приватный конструктор принуждает создавать экземпляры с помощью статических методов
+		private SmtpServerSecurityParameters (
+			X509Certificate serverCertificate,
+			bool clientCertificateRequired,
+			Func<string, string, Task<object>> clientAuthenticator)
+		{
+			this.ServerCertificate = serverCertificate;
+			this.ClientAuthenticator = clientAuthenticator;
+		}
+
+		/// <summary>
+		/// Получает параметры без использования механизмов безопасности.
+		/// </summary>
+		public static SmtpServerSecurityParameters NoSecurity { get; } = new SmtpServerSecurityParameters (null, false, null);
+
 		/// <summary>
 		/// Получает сертификат сервера. Null означает что шифрование не используется и сервер себя не идентифицирует.
 		/// </summary>
@@ -27,21 +42,6 @@ namespace Novartment.Base.Net
 		public Func<string, string, Task<object>> ClientAuthenticator { get; }
 
 		/// <summary>
-		/// Получает параметры без использования механизмов безопасности.
-		/// </summary>
-		public static SmtpServerSecurityParameters NoSecurity { get; } = new SmtpServerSecurityParameters (null, false, null);
-
-		// приватный конструктор принуждает создавать экземпляры с помощью статических методов
-		private SmtpServerSecurityParameters (
-			X509Certificate serverCertificate,
-			bool clientCertificateRequired,
-			Func<string, string, Task<object>> clientAuthenticator)
-		{
-			this.ServerCertificate = serverCertificate;
-			this.ClientAuthenticator = clientAuthenticator;
-		}
-
-		/// <summary>
 		/// Получает параметры, требующие использование шифрования и идентификации сервера с помощью указанного сертификата.
 		/// </summary>
 		/// <param name="serverCertificate">Сертификат сервера, используемый для идентификации сервера и шифрования.</param>
@@ -53,6 +53,7 @@ namespace Novartment.Base.Net
 			{
 				throw new ArgumentNullException (nameof (serverCertificate));
 			}
+
 			Contract.EndContractBlock ();
 
 			return new SmtpServerSecurityParameters (serverCertificate, false, null);
@@ -72,6 +73,7 @@ namespace Novartment.Base.Net
 			{
 				throw new ArgumentNullException (nameof (serverCertificate));
 			}
+
 			Contract.EndContractBlock ();
 
 			return new SmtpServerSecurityParameters (serverCertificate, true, null);
@@ -95,10 +97,12 @@ namespace Novartment.Base.Net
 			{
 				throw new ArgumentNullException (nameof (serverCertificate));
 			}
+
 			if (clientAuthenticator == null)
 			{
 				throw new ArgumentNullException (nameof (clientAuthenticator));
 			}
+
 			Contract.EndContractBlock ();
 
 			return new SmtpServerSecurityParameters (serverCertificate, false, clientAuthenticator);

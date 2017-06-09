@@ -16,24 +16,8 @@ namespace Novartment.Base.Net.Mime
 		// parameter = attribute "=" importance "," value *("," value)
 		// importance = "required" / "optional"
 		// (value are the same as Content-Type parameter's value)
-
+		private static readonly IReadOnlyList<string> _emptyValues = ReadOnlyList.Empty<string> ();
 		private readonly IReadOnlyList<string> _values;
-		private readonly static IReadOnlyList<string> _emptyValues = ReadOnlyList.Empty<string> ();
-
-		/// <summary>
-		/// Важность параметра.
-		/// </summary>
-		public DispositionNotificationParameterImportance Importance { get; }
-
-		/// <summary>
-		/// Имя параметра.
-		/// </summary>
-		public string Name { get; }
-
-		/// <summary>
-		/// Коллекция значений параметра.
-		/// </summary>
-		public IReadOnlyList<string> Values => _values ?? _emptyValues;
 
 		/// <summary>
 		/// Инициализирует новый экземпляр класса DispositionNotificationParameter
@@ -48,15 +32,18 @@ namespace Novartment.Base.Net.Mime
 			{
 				throw new ArgumentNullException (nameof (name));
 			}
+
 			if (value == null)
 			{
 				throw new ArgumentNullException (nameof (value));
 			}
+
 			var isValueValid = AsciiCharSet.IsAllOfClass (value, AsciiCharClasses.Token);
 			if (!isValueValid)
 			{
 				throw new ArgumentOutOfRangeException (nameof (value));
 			}
+
 			Contract.EndContractBlock ();
 
 			this.Name = name;
@@ -77,10 +64,12 @@ namespace Novartment.Base.Net.Mime
 			{
 				throw new ArgumentNullException (nameof (name));
 			}
+
 			if (values == null)
 			{
 				throw new ArgumentNullException (nameof (values));
 			}
+
 			Contract.Requires (Contract.ForAll (values, value => AsciiCharSet.IsAllOfClass (value, AsciiCharClasses.Token)));
 			Contract.EndContractBlock ();
 
@@ -88,6 +77,21 @@ namespace Novartment.Base.Net.Mime
 			this.Importance = importance;
 			_values = values;
 		}
+
+		/// <summary>
+		/// Важность параметра.
+		/// </summary>
+		public DispositionNotificationParameterImportance Importance { get; }
+
+		/// <summary>
+		/// Имя параметра.
+		/// </summary>
+		public string Name { get; }
+
+		/// <summary>
+		/// Коллекция значений параметра.
+		/// </summary>
+		public IReadOnlyList<string> Values => _values ?? _emptyValues;
 
 		/// <summary>
 		/// Создаёт новый параметр у которого важность изменена на указанное значение.
@@ -115,6 +119,7 @@ namespace Novartment.Base.Net.Mime
 			{
 				return new DispositionNotificationParameter (this.Name, this.Importance, value);
 			}
+
 			var appendedCollection = _values.Concat (ReadOnlyList.Repeat (value, 1));
 			return new DispositionNotificationParameter (this.Name, this.Importance, appendedCollection);
 		}

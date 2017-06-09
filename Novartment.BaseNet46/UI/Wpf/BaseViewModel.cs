@@ -1,8 +1,8 @@
 ﻿using System;
 using System.ComponentModel;
-using System.Windows;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Windows;
 
 namespace Novartment.Base.UI.Wpf
 {

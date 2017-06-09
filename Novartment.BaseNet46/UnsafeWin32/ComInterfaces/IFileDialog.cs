@@ -4,16 +4,18 @@ using System.Runtime.InteropServices;
 
 namespace Novartment.Base.UnsafeWin32
 {
-	[ComImport, Guid ("42F85136-DB7E-439C-85F1-E4075D135FC8"), InterfaceType (ComInterfaceType.InterfaceIsIUnknown)]
+#pragma warning disable SA1600 // Elements must be documented
+	[ComImport]
+	[Guid ("42F85136-DB7E-439C-85F1-E4075D135FC8")]
+	[InterfaceType (ComInterfaceType.InterfaceIsIUnknown)]
 	internal interface IFileDialog
 	{
 		// Defined on IModalWindow - repeated here due to requirements of COM interop layer.
-		[MethodImpl (MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime),
-		PreserveSig]
+		[PreserveSig]
+		[MethodImpl (MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
 		int Show ([In] IntPtr parent);
 
 		// IFileDialog-Specific interface members.
-
 		[MethodImpl (MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
 		void SetFileTypes (
 			[In] uint cFileTypes,
@@ -88,4 +90,5 @@ namespace Novartment.Base.UnsafeWin32
 		[MethodImpl (MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
 		void SetFilter ([MarshalAs (UnmanagedType.Interface)] IntPtr pFilter);
 	}
+#pragma warning restore SA1600 // Elements must be documented
 }

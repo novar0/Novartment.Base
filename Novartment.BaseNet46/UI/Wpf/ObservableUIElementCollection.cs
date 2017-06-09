@@ -1,7 +1,7 @@
-﻿using System.Windows;
-using System.Windows.Controls;
-using System.Collections.Specialized;
+﻿using System.Collections.Specialized;
 using System.Diagnostics.CodeAnalysis;
+using System.Windows;
+using System.Windows.Controls;
 using Novartment.Base.Collections;
 
 namespace Novartment.Base.UI.Wpf
@@ -9,7 +9,8 @@ namespace Novartment.Base.UI.Wpf
 	/// <summary>
 	/// Коллекция из UIElement, поддерживающая уведомления об изменениях.
 	/// </summary>
-	[SuppressMessage ("Microsoft.Design",
+	[SuppressMessage (
+		"Microsoft.Design",
 		"CA1010:CollectionsShouldImplementGenericInterface",
 		Justification = "This class is not general purpose collection and strongly follows its base class pattern.")]
 	public class ObservableUIElementCollection : UIElementCollection,
@@ -18,20 +19,15 @@ namespace Novartment.Base.UI.Wpf
 		/// <summary>
 		/// Инициализирует новый экземпляр класса ObservableUIElementCollection с указанными визуальным и логическим родительскими элементами.
 		/// </summary>
+		/// <param name="visualParent">The System.Windows.UIElement parent of the collection.</param>
+		/// <param name="logicalParent">The logical parent of the elements in the collection.</param>
 		public ObservableUIElementCollection (UIElement visualParent, FrameworkElement logicalParent)
-			: base (visualParent, logicalParent) { }
+			: base (visualParent, logicalParent)
+		{
+		}
 
 		/// <summary>Происходит, когда запись добавляется в словарь.</summary>
 		public event NotifyCollectionChangedEventHandler CollectionChanged;
-
-		/// <summary>
-		/// Создаёт событие CollectionChanged с указанными аргументами.
-		/// </summary>
-		/// <param name="e">Аргументы события.</param>
-		protected virtual void OnCollectionChanged (NotifyCollectionChangedEventArgs e)
-		{
-			this.CollectionChanged?.Invoke (this, e);
-		}
 
 		/// <summary>Добавляет указанный элемент к коллекции.</summary>
 		/// <param name="element">Добавляемый объект.</param>
@@ -70,6 +66,7 @@ namespace Novartment.Base.UI.Wpf
 			{
 				elements.Add (this[i]);
 			}
+
 			OnCollectionChanged (new NotifyCollectionChangedEventArgs (NotifyCollectionChangedAction.Remove, elements));
 		}
 
@@ -78,6 +75,15 @@ namespace Novartment.Base.UI.Wpf
 		{
 			base.Clear ();
 			OnCollectionChanged (new NotifyCollectionChangedEventArgs (NotifyCollectionChangedAction.Reset));
+		}
+
+		/// <summary>
+		/// Создаёт событие CollectionChanged с указанными аргументами.
+		/// </summary>
+		/// <param name="e">Аргументы события.</param>
+		protected virtual void OnCollectionChanged (NotifyCollectionChangedEventArgs e)
+		{
+			this.CollectionChanged?.Invoke (this, e);
 		}
 	}
 }

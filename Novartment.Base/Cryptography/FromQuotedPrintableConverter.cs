@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Security.Cryptography;
 using System.Diagnostics.Contracts;
+using System.Security.Cryptography;
 using Novartment.Base.Text;
 
 namespace Novartment.Base
@@ -56,26 +56,31 @@ namespace Novartment.Base
 			{
 				throw new ArgumentNullException (nameof (inputBuffer));
 			}
+
 			if ((inputOffset < 0) || (inputOffset > inputBuffer.Length) || ((inputOffset == inputBuffer.Length) && (inputCount > 0)))
 			{
 				throw new ArgumentOutOfRangeException (nameof (inputOffset));
 			}
+
 			if ((inputCount < 0) || ((inputOffset + inputCount) > inputBuffer.Length))
 			{
 				throw new ArgumentOutOfRangeException (nameof (inputCount));
 			}
+
 			if (outputBuffer == null)
 			{
 				throw new ArgumentNullException (nameof (outputBuffer));
 			}
+
 			if ((outputOffset < 0) || (outputOffset > outputBuffer.Length) || ((outputOffset == outputBuffer.Length) && (inputCount > 0)))
 			{
 				throw new ArgumentOutOfRangeException (nameof (outputOffset));
 			}
+
 			Contract.EndContractBlock ();
 			var ret = 0;
 
-			while (0 < inputCount--)
+			while (inputCount-- > 0)
 			{
 				var octet = inputBuffer[inputOffset++];
 
@@ -149,14 +154,17 @@ namespace Novartment.Base
 			{
 				throw new ArgumentNullException (nameof (inputBuffer));
 			}
+
 			if ((inputOffset < 0) || (inputOffset > inputBuffer.Length) || ((inputOffset == inputBuffer.Length) && (inputCount > 0)))
 			{
 				throw new ArgumentOutOfRangeException (nameof (inputOffset));
 			}
+
 			if ((inputCount < 0) || ((inputOffset + inputCount) > inputBuffer.Length))
 			{
 				throw new ArgumentOutOfRangeException (nameof (inputCount));
 			}
+
 			Contract.EndContractBlock ();
 
 			var outputBuffer = new byte[inputCount];

@@ -1,15 +1,15 @@
 ﻿using System;
-using static System.Linq.Enumerable;
 using System.Collections.Generic;
-using System.Text;
+using System.Diagnostics.Contracts;
 using System.Globalization;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Diagnostics.Contracts;
-using Novartment.Base.Text;
+using Novartment.Base.BinaryStreaming;
 using Novartment.Base.Collections;
 using Novartment.Base.Collections.Linq;
-using Novartment.Base.BinaryStreaming;
+using Novartment.Base.Text;
+using static System.Linq.Enumerable;
 
 namespace Novartment.Base.Net.Mime
 {
@@ -24,54 +24,54 @@ namespace Novartment.Base.Net.Mime
 
 		internal static readonly byte[] CarriageReturnLinefeed2 = new byte[] { 0x0d, 0x0a, 0x0d, 0x0a };
 
-		// Неструктурированное поля (unstructured) это:
-		// любые нераспознанные поля,
-		// Subject,
-		// Comments,
-		// Content-Description,
-		// Final-Log-ID
-		// Original-Envelope-Id
-		// Failure, Error, Warning
-		// значения "-type" полей: Reporting-MTA, DSN-Gateway, Received-From-MTA, Original-Recipient, Final-Recipient, Remote-MTA, Diagnostic-Code, MDN-Gateway
-		// пара значений в Reporting-UA
-		//
-		// unstructured (*text по старому) =
-		// 1) произвольный набор VCHAR,SP,HTAB
-		// 2) может встретиться 'encoded-word' отделённый FWSP
-		// 3) WSP окруженные VCHAR являются пригодными для фолдинга
-		// 4) элементы в кавычках не распознаются как quoted-string
-		// 4) элементы в круглых скобках не распознаются как коменты
-		// 6) может быть пустым
+		/*
+		Неструктурированное поля (unstructured) это:
+		любые нераспознанные поля,
+		Subject,
+		Comments,
+		Content-Description,
+		Final-Log-ID
+		Original-Envelope-Id
+		Failure, Error, Warning
+		значения "-type" полей: Reporting-MTA, DSN-Gateway, Received-From-MTA, Original-Recipient, Final-Recipient, Remote-MTA, Diagnostic-Code, MDN-Gateway
+		пара значений в Reporting-UA
 
-		// Основные элементы структурированных полей:
-		// atom               = [CFWS] 1*atext [CFWS]
-		// dot-atom           = [CFWS] 1*atext *("." 1*atext) [CFWS]
-		// quoted-string      = [CFWS] DQUOTE *([FWS] qcontent) [FWS] DQUOTE [CFWS]        // внутри нигде не допустимы encoded-word
-		// addr-spec          = (dot-atom / quoted-string) "@" (dot-atom / domain-literal) // внутри нигде не допустимы encoded-word
-		// domain-literal     = [CFWS] "[" *([FWS] dtext) [FWS] "]" [CFWS]
-		// angle-addr(msg-id) = [CFWS] "<" addr-spec ">" [CFWS]
-		// mailbox            = ([phrase] angle-addr) / addr-spec
+		unstructured (*text по старому) =
+		1) произвольный набор VCHAR,SP,HTAB
+		2) может встретиться 'encoded-word' отделённый FWSP
+		3) WSP окруженные VCHAR являются пригодными для фолдинга
+		4) элементы в кавычках не распознаются как quoted-string
+		4) элементы в круглых скобках не распознаются как коменты
+		6) может быть пустым
 
-		// Фраза (phrase) это display-name в mailbox, элемент списка в keywords, описание в list-id.
-		// phrase =
-		// 1) набор atom, encoded-word или quoted-string разделенных WSP или comment
-		// 2) WSP между элементами являются пригодными для фолдинга
-		// 3) не может быть пустым
+		Основные элементы структурированных полей:
+		atom               = [CFWS] 1*atext [CFWS]
+		dot-atom           = [CFWS] 1*atext *("." 1*atext) [CFWS]
+		quoted-string      = [CFWS] DQUOTE *([FWS] qcontent) [FWS] DQUOTE [CFWS]        // внутри нигде не допустимы encoded-word
+		addr-spec          = (dot-atom / quoted-string) "@" (dot-atom / domain-literal) // внутри нигде не допустимы encoded-word
+		domain-literal     = [CFWS] "[" *([FWS] dtext) [FWS] "]" [CFWS]
+		angle-addr(msg-id) = [CFWS] "<" addr-spec ">" [CFWS]
+		mailbox            = ([phrase] angle-addr) / addr-spec
 
-		// Правила применения кодированных слов (encoded-word) согласно RFC 2047:
-		// + MAY replace a 'unstructured' token in any Subject or Comments header field, any extension message header field, or any MIME body part field for which the field body is defined as 'unstructured'.
-		// + MAY appear within a 'comment'.
-		// + MAY appear as a replacement for a 'word' entity within a 'phrase'.
-		//
-		// - MUST NOT appear in any portion of an 'addr-spec'.
-		// - MUST NOT appear within a 'quoted-string'.
-		// - MUST NOT be used in a Received header field.
-		// - MUST NOT be used in parameter of a MIME Content-Type or Content-Disposition field.
-		// - MUST NOT be used in any structured field body except within a 'comment' or 'phrase'.
+		Фраза (phrase) это display-name в mailbox, элемент списка в keywords, описание в list-id.
+		phrase =
+		1) набор atom, encoded-word или quoted-string разделенных WSP или comment
+		2) WSP между элементами являются пригодными для фолдинга
+		3) не может быть пустым
+
+		Правила применения кодированных слов (encoded-word) согласно RFC 2047:
+		+ MAY replace a 'unstructured' token in any Subject or Comments header field, any extension message header field, or any MIME body part field for which the field body is defined as 'unstructured'.
+		+ MAY appear within a 'comment'.
+		+ MAY appear as a replacement for a 'word' entity within a 'phrase'.
+
+		- MUST NOT appear in any portion of an 'addr-spec'.
+		- MUST NOT appear within a 'quoted-string'.
+		- MUST NOT be used in a Received header field.
+		- MUST NOT be used in parameter of a MIME Content-Type or Content-Disposition field.
+		- MUST NOT be used in any structured field body except within a 'comment' or 'phrase'.
+		*/
 
 		private static readonly NumberFormatInfo _NumberFormatDot = new NumberFormatInfo { NumberDecimalSeparator = ".", NumberGroupSeparator = "," };
-
-		#region static method DecodeAtom
 
 		/// <summary>
 		/// Decodes 'atom' value from specified representation.
@@ -84,6 +84,7 @@ namespace Novartment.Base.Net.Mime
 			{
 				throw new ArgumentNullException (nameof (source));
 			}
+
 			Contract.EndContractBlock ();
 
 			// удаление комментариев и пробельного пространства
@@ -97,10 +98,6 @@ namespace Novartment.Base.Net.Mime
 			return elements[0].Value;
 		}
 
-		#endregion
-
-		#region static method DecodeUnstructured
-
 		/// <summary>
 		/// Converts encoded 'unstructured' value to decoded source value.
 		/// </summary>
@@ -112,6 +109,7 @@ namespace Novartment.Base.Net.Mime
 			{
 				throw new ArgumentNullException (nameof (source));
 			}
+
 			Contract.EndContractBlock ();
 
 			var parser = new StructuredStringReader (source);
@@ -142,8 +140,10 @@ namespace Novartment.Base.Net.Mime
 								". Expected characters are U+0009 and U+0020...U+007E.");
 						}
 					}
+
 					var value = parser.Source.Substring (start, end - start);
 					var isWordEncoded = Rfc2047EncodedWord.IsValid (value);
+
 					// RFC 2047 часть 6.2:
 					// When displaying a particular header field that contains multiple 'encoded-word's,
 					// any 'linear-white-space' that separates a pair of adjacent 'encoded-word's is ignored
@@ -151,11 +151,13 @@ namespace Novartment.Base.Net.Mime
 					{
 						result.Append (lastWhiteSpace);
 					}
+
 					prevIsWordEncoded = isWordEncoded;
 					result.Append (isWordEncoded ? Rfc2047EncodedWord.Parse (value) : value);
 					lastWhiteSpace = null;
 				}
 			}
+
 			if (lastWhiteSpace != null)
 			{
 				result.Append (lastWhiteSpace);
@@ -163,10 +165,6 @@ namespace Novartment.Base.Net.Mime
 
 			return result.ToString ();
 		}
-
-		#endregion
-
-		#region static method DecodePhrase
 
 		/// <summary>
 		/// Decodes 'phrase' into resulting string.
@@ -180,6 +178,7 @@ namespace Novartment.Base.Net.Mime
 			{
 				throw new ArgumentNullException (nameof (source));
 			}
+
 			Contract.EndContractBlock ();
 
 			var elements = StructuredValueElementCollection.Parse (source, AsciiCharClasses.Atom, true, StructuredValueElementType.RoundBracketedValue);
@@ -190,10 +189,6 @@ namespace Novartment.Base.Net.Mime
 
 			return elements.Decode (elements.Count);
 		}
-
-		#endregion
-
-		#region static method DecodeAtomList
 
 		/// <summary>
 		/// Creates collection of 'atom's from specified comma-delimited string representation.
@@ -206,6 +201,7 @@ namespace Novartment.Base.Net.Mime
 			{
 				throw new ArgumentNullException (nameof (source));
 			}
+
 			Contract.EndContractBlock ();
 
 			var elementSets = StructuredValueElementCollection.Parse (source, AsciiCharClasses.Token, false, StructuredValueElementType.RoundBracketedValue)
@@ -217,14 +213,12 @@ namespace Novartment.Base.Net.Mime
 				{
 					throw new FormatException ("Value does not conform to format 'comma-separated atoms'.");
 				}
+
 				result.Add (elements[0].Value);
 			}
+
 			return result;
 		}
-
-		#endregion
-
-		#region static method DecodeNotificationFieldValue
 
 		/// <summary>
 		/// Creates ValueWithType from specified string representation.
@@ -237,12 +231,14 @@ namespace Novartment.Base.Net.Mime
 			{
 				throw new ArgumentNullException (nameof (source));
 			}
+
 			Contract.EndContractBlock ();
 
 			if (source.Length < 3)
 			{
 				throw new FormatException ("Value does not conform to format 'type;value'.");
 			}
+
 			var idx = source.IndexOf (';'); // в 'atom' не может быть ';'. допускаем что в коментах тоже нет ';'
 			if ((idx < 1) || ((idx + 1) >= source.Length))
 			{
@@ -255,26 +251,16 @@ namespace Novartment.Base.Net.Mime
 			{
 				throw new FormatException ("Value does not conform to format 'type;value'.");
 			}
+
 			var value = source.Substring (idx + 1);
 
-			NotificationFieldValueKind valueType;
-			var isValidNotificationFieldValue = NotificationFieldValueTypeHelper.TryParse (typeTokens[0].Value, out valueType);
+			var isValidNotificationFieldValue = NotificationFieldValueTypeHelper.TryParse (typeTokens[0].Value, out NotificationFieldValueKind valueType);
 			if (!isValidNotificationFieldValue)
 			{
 				throw new FormatException ("Value does not conform to format 'type;value'.");
 			}
 
 			return new NotificationFieldValue (valueType, DecodeUnstructured (value).Trim ());
-		}
-
-		#endregion
-
-		#region static method DecodeUnstructuredPair
-
-		internal struct TwoStrings
-		{
-			internal string Value1;
-			internal string Value2;
 		}
 
 		/// <summary>
@@ -288,6 +274,7 @@ namespace Novartment.Base.Net.Mime
 			{
 				throw new ArgumentNullException (nameof (source));
 			}
+
 			Contract.EndContractBlock ();
 
 			var idx = source.IndexOf (';'); // коменты не распознаются. допускаем что в кодированных словах нет ';'
@@ -297,15 +284,6 @@ namespace Novartment.Base.Net.Mime
 			return new TwoStrings () { Value1 = text1, Value2 = text2 };
 		}
 
-		#endregion
-
-		#region static method DecodeUnstructuredAndDate
-
-		internal struct TextAndTime
-		{
-			internal string Text;
-			internal DateTimeOffset Time;
-		}
 		/// <summary>
 		/// Converts encoded 'unstructured' value and string representation of date
 		/// to decoded source value and date.
@@ -318,19 +296,16 @@ namespace Novartment.Base.Net.Mime
 			{
 				throw new ArgumentNullException (nameof (source));
 			}
+
 			Contract.EndContractBlock ();
 
-			//received       = "Received:" *received-token ";" date-time CRLF
-			//received-token = word / angle-addr / addr-spec / domain
+			// received       = "Received:" *received-token ";" date-time CRLF
+			// received-token = word / angle-addr / addr-spec / domain
 			var parser = new StructuredStringReader (source);
 			var delimData = new DelimitedElement (
 				parser.NextChar,
 				';',
-				new DelimitedElement (
-					'\"',
-					'\"',
-					new DelimitedElement ('\\', 2),
-					false),
+				new DelimitedElement ('\"', '\"', new DelimitedElement ('\\', 2), false),
 				false);
 			var idx = parser.SkipDelimited (delimData);
 			if (idx >= (source.Length - 1))
@@ -344,10 +319,6 @@ namespace Novartment.Base.Net.Mime
 			return new TextAndTime () { Text = parameters, Time = date };
 		}
 
-		#endregion
-
-		#region static method DecodePhraseAndId
-
 		/// <summary>
 		/// Converts encoded 'phrase' value and angle-bracketed id.
 		/// </summary>
@@ -359,6 +330,7 @@ namespace Novartment.Base.Net.Mime
 			{
 				throw new ArgumentNullException (nameof (source));
 			}
+
 			Contract.EndContractBlock ();
 
 			var elements = StructuredValueElementCollection.Parse (source, AsciiCharClasses.Atom, true, StructuredValueElementType.RoundBracketedValue);
@@ -366,18 +338,16 @@ namespace Novartment.Base.Net.Mime
 			{
 				throw new FormatException ("Value does not conform format 'phrase' + <id>.");
 			}
+
 			string text = null;
 			if (elements.Count > 1)
 			{
 				text = elements.Decode (elements.Count - 1);
 			}
+
 			var id = elements[elements.Count - 1].Value;
 			return new TwoStrings () { Value1 = text, Value2 = id };
 		}
-
-		#endregion
-
-		#region static method DecodePhraseList
 
 		/// <summary>
 		/// Creates collection of 'phrase's from specified comma-delimited string representation.
@@ -390,16 +360,13 @@ namespace Novartment.Base.Net.Mime
 			{
 				throw new ArgumentNullException (nameof (source));
 			}
+
 			Contract.EndContractBlock ();
 
 			var elementSets = StructuredValueElementCollection.Parse (source, AsciiCharClasses.Atom, false, StructuredValueElementType.RoundBracketedValue)
 				.Split (item => item.EqualsSeparator (','));
 			return elementSets.Select (elements => elements.Decode (elements.Count)).ToArray ().AsReadOnlyList ();
 		}
-
-		#endregion
-
-		#region static method DecodeAddrSpecList
 
 		/// <summary>
 		/// Creates collection of AddrSpecs from specified string representation.
@@ -413,6 +380,7 @@ namespace Novartment.Base.Net.Mime
 			{
 				throw new ArgumentNullException (nameof (source));
 			}
+
 			Contract.EndContractBlock ();
 
 			var elements = StructuredValueElementCollection.Parse (source, AsciiCharClasses.Atom, true, StructuredValueElementType.RoundBracketedValue);
@@ -431,6 +399,7 @@ namespace Novartment.Base.Net.Mime
 				{
 					throw new FormatException ("Value does not conform to list of 'angle-addr' format.");
 				}
+
 				var subTokens = StructuredValueElementCollection.Parse (token.Value, AsciiCharClasses.Atom, true, StructuredValueElementType.RoundBracketedValue);
 				if (enableEmptyAddrSpec)
 				{
@@ -440,15 +409,13 @@ namespace Novartment.Base.Net.Mime
 						continue;
 					}
 				}
+
 				var addr = AddrSpec.Parse (subTokens);
 				result.Add (addr);
 			}
+
 			return result;
 		}
-
-		#endregion
-
-		#region static method DecodeMailboxList
 
 		/// <summary>
 		/// Creates collection of Mailbox from specified string representation.
@@ -461,16 +428,13 @@ namespace Novartment.Base.Net.Mime
 			{
 				throw new ArgumentNullException (nameof (source));
 			}
+
 			Contract.EndContractBlock ();
 
 			var elements = StructuredValueElementCollection.Parse (source, AsciiCharClasses.Atom, true, StructuredValueElementType.RoundBracketedValue);
 			var elementSets = elements.Split (item => item.EqualsSeparator (','));
 			return elementSets.Select (Mailbox.Parse).ToArray ().AsReadOnlyList ();
 		}
-
-		#endregion
-
-		#region static method DecodeAngleBracketedlList
 
 		/// <summary>
 		/// Creates collection of urls from specified comma-delimited string representation.
@@ -483,6 +447,7 @@ namespace Novartment.Base.Net.Mime
 			{
 				throw new ArgumentNullException (nameof (source));
 			}
+
 			Contract.EndContractBlock ();
 
 			/*
@@ -505,16 +470,6 @@ namespace Novartment.Base.Net.Mime
 				.ToArray ().AsReadOnlyList ();
 		}
 
-		#endregion
-
-		#region static method DecodeAtomAndParameterList
-
-		internal struct StringAndParameters
-		{
-			internal string Text;
-			internal IReadOnlyList<HeaderFieldParameter> Parameters;
-		}
-
 		/// <summary>
 		/// Creates atom value and collection of HeaderFieldParameter from specified string representation
 		/// </summary>
@@ -526,6 +481,7 @@ namespace Novartment.Base.Net.Mime
 			{
 				throw new ArgumentNullException (nameof (source));
 			}
+
 			Contract.EndContractBlock ();
 
 			var parameters = new ArrayList<HeaderFieldParameter> ();
@@ -539,8 +495,9 @@ namespace Novartment.Base.Net.Mime
 				var parameterValue = string.Empty;
 				foreach (var part in elementSets.Select (parameterElements => HeaderFieldParameterPart.Parse (parameterElements)))
 				{
-					if (part.Section == 0) // начался новый параметр
+					if (part.Section == 0)
 					{
+						// начался новый параметр
 						// возвращаем предыдущий параметр если был
 						if (parameterName != null)
 						{
@@ -569,6 +526,7 @@ namespace Novartment.Base.Net.Mime
 				{
 					parameters.Add (new HeaderFieldParameter (parameterName, parameterValue));
 				}
+
 				source = source.Substring (0, idx);
 			}
 
@@ -577,19 +535,8 @@ namespace Novartment.Base.Net.Mime
 			{
 				throw new FormatException (FormattableString.Invariant ($"Invalid value for type 'atom': \"{source}\"."));
 			}
+
 			return new StringAndParameters () { Text = valueTokens[0].Value, Parameters = parameters };
-		}
-
-		#endregion
-
-		#region static method DecodeDispositionAction
-
-		internal struct ThreeStringsAndList
-		{
-			internal string Value1;
-			internal string Value2;
-			internal string Value3;
-			internal IReadOnlyList<string> List;
 		}
 
 		internal static ThreeStringsAndList DecodeDispositionAction (string source)
@@ -598,6 +545,7 @@ namespace Novartment.Base.Net.Mime
 			{
 				throw new ArgumentNullException (nameof (source));
 			}
+
 			Contract.EndContractBlock ();
 
 			var elements = StructuredValueElementCollection.Parse (source, AsciiCharClasses.Token, false, StructuredValueElementType.RoundBracketedValue);
@@ -610,6 +558,7 @@ namespace Novartment.Base.Net.Mime
 			{
 				throw new FormatException ("Specified value does not represent valid 'disposition-action'.");
 			}
+
 			var actionMode = elements[0].Decode ();
 			var sendingMode = elements[2].Decode ();
 			var dispositionType = elements[4].Decode ();
@@ -622,6 +571,7 @@ namespace Novartment.Base.Net.Mime
 					throw new FormatException ("Specified value does not represent valid 'disposition-action'.");
 				}
 			}
+
 			var modifiersTokenSet = elements
 				.Skip (6)
 				.Split (item => item.EqualsSeparator (','));
@@ -642,10 +592,6 @@ namespace Novartment.Base.Net.Mime
 			};
 		}
 
-		#endregion
-
-		#region static method DecodeDispositionNotificationParameterList
-
 		/// <summary>
 		/// Creates collection of DispositionNotificationParameter from specified string representation
 		/// </summary>
@@ -657,6 +603,7 @@ namespace Novartment.Base.Net.Mime
 			{
 				throw new ArgumentNullException (nameof (source));
 			}
+
 			Contract.EndContractBlock ();
 
 			var elements = StructuredValueElementCollection.Parse (source, AsciiCharClasses.Token, false, StructuredValueElementType.RoundBracketedValue);
@@ -673,6 +620,7 @@ namespace Novartment.Base.Net.Mime
 				{
 					throw new FormatException ("Invalid value of 'disposition-notification' parameter.");
 				}
+
 				var name = parameterElements[0].Value;
 
 				var values = parameterElements
@@ -687,14 +635,12 @@ namespace Novartment.Base.Net.Mime
 				{
 					throw new FormatException ("Invalid value of 'disposition-notification' parameter.");
 				}
+
 				result.Add (new DispositionNotificationParameter (name, importance, values.Skip (1)));
 			}
+
 			return result;
 		}
-
-		#endregion
-
-		#region static method DecodeQualityValueParameterList
 
 		/// <summary>
 		/// Creates collection of QualityValueParameter from specified string representation.
@@ -707,6 +653,7 @@ namespace Novartment.Base.Net.Mime
 			{
 				throw new ArgumentNullException (nameof (source));
 			}
+
 			Contract.EndContractBlock ();
 
 			var elements = StructuredValueElementCollection.Parse (source, AsciiCharClasses.Token, false, StructuredValueElementType.RoundBracketedValue);
@@ -719,6 +666,7 @@ namespace Novartment.Base.Net.Mime
 				{
 					throw new FormatException ("Value does not conform to format 'language-q'. First item is not 'atom'.");
 				}
+
 				var value = parameterElements[0].Value;
 				var quality = defaultQuality;
 				if (parameterElements.Count > 1)
@@ -731,6 +679,7 @@ namespace Novartment.Base.Net.Mime
 					{
 						throw new FormatException ("Value does not conform to format 'language-q'.");
 					}
+
 					var qualityStr = parameterElements[4].Value;
 					var isValidNumber = decimal.TryParse (qualityStr, NumberStyles.AllowDecimalPoint, _NumberFormatDot, out quality);
 					if (!isValidNumber ||
@@ -745,12 +694,9 @@ namespace Novartment.Base.Net.Mime
 
 				defaultQuality -= 0.01m;
 			}
+
 			return result;
 		}
-
-		#endregion
-
-		#region static method DecodeVersion
 
 		/// <summary>
 		/// Creates Version from specified string representation.
@@ -763,6 +709,7 @@ namespace Novartment.Base.Net.Mime
 			{
 				throw new ArgumentNullException (nameof (source));
 			}
+
 			Contract.EndContractBlock ();
 
 			var elements = StructuredValueElementCollection.Parse (source, AsciiCharClasses.Atom, false, StructuredValueElementType.RoundBracketedValue);
@@ -774,22 +721,19 @@ namespace Novartment.Base.Net.Mime
 			{
 				throw new FormatException ("Value does not conform to format 'version'.");
 			}
+
 			var n1Str = elements[0].Decode ();
 			var n2Str = elements[2].Decode ();
-			var n1 = Int32.Parse (
+			var n1 = int.Parse (
 					n1Str,
 					NumberStyles.AllowLeadingWhite | NumberStyles.AllowTrailingWhite,
 					CultureInfo.InvariantCulture);
-			var n2 = Int32.Parse (
+			var n2 = int.Parse (
 					n2Str,
 					NumberStyles.AllowLeadingWhite | NumberStyles.AllowTrailingWhite,
 					CultureInfo.InvariantCulture);
 			return new Version (n1, n2);
 		}
-
-		#endregion
-
-		#region static method LoadHeaderFieldsAsync
 
 		/// <summary>
 		/// Loads header field lines terminated by empty line.
@@ -811,6 +755,7 @@ namespace Novartment.Base.Net.Mime
 			{
 				throw new ArgumentNullException (nameof (headerSource));
 			}
+
 			Contract.EndContractBlock ();
 
 			if (cancellationToken.IsCancellationRequested)
@@ -822,50 +767,44 @@ namespace Novartment.Base.Net.Mime
 			var isEmpty = headerSource.IsEmpty ();
 			return isEmpty ?
 				Task.FromResult<IReadOnlyList<HeaderField>> (result) :
-				LoadHeaderFieldsAsyncStateMachine (headerSource, result, cancellationToken);
-		}
+				LoadHeaderFieldsAsyncStateMachine ();
 
-		private static async Task<IReadOnlyList<HeaderField>> LoadHeaderFieldsAsyncStateMachine (
-			IBufferedSource headerSource,
-			ArrayList<HeaderField> result,
-			CancellationToken cancellationToken)
-		{
-			var fieldSource = new HeaderFieldSource (headerSource);
-			bool nextFieldFound;
-			do
+			async Task<IReadOnlyList<HeaderField>> LoadHeaderFieldsAsyncStateMachine ()
 			{
-				try
+				var fieldSource = new HeaderFieldSource (headerSource);
+				bool nextFieldFound;
+				do
 				{
-					var field = await HeaderDecoder.ParseFoldedFieldAsync (fieldSource, cancellationToken).ConfigureAwait (false);
-					result.Add (field);
-				}
-				// ignore incorrect result
-				catch (FormatException) { }
-				nextFieldFound = await fieldSource.TrySkipPartAsync (cancellationToken).ConfigureAwait (false);
-			} while (nextFieldFound);
+					try
+					{
+						var field = await HeaderDecoder.ParseFoldedFieldAsync (fieldSource, cancellationToken).ConfigureAwait (false);
+						result.Add (field);
+					}
 
-			return result;
+					// ignore incorrect result
+					catch (FormatException)
+					{
+					}
+
+					nextFieldFound = await fieldSource.TrySkipPartAsync (cancellationToken).ConfigureAwait (false);
+				}
+				while (nextFieldFound);
+
+				return result;
+			}
 		}
 
-		#endregion
-
-		#region static method ParseFoldedFieldAsync
-
-		/// <summary>
-		/// Вычленяет имя и значение из строкового представления поля заголовка.
-		/// Значение подвергается анфолдингу (замене множества пробельных знаков и переводов строки на один пробел).
-		/// </summary>
-		/// <remarks>
-		/// RFC 5322 part 2.2: A field body MUST NOT include CR and LF except when used in "folding" and "unfolding"
-		/// RFC 5322 part 2.2.3: Each header field should be treated in its unfolded form for further syntactic and semantic evaluation.
-		/// RFC 5322 part 3.2.2: CRLF that appears in FWS is semantically "invisible".
-		/// </remarks>
+		// Вычленяет имя и значение из строкового представления поля заголовка.
+		// Значение подвергается анфолдингу (замене множества пробельных знаков и переводов строки на один пробел).
 		internal static async Task<HeaderField> ParseFoldedFieldAsync (IBufferedSource source, CancellationToken cancellationToken)
 		{
+			// RFC 5322 part 2.2: A field body MUST NOT include CR and LF except when used in "folding" and "unfolding"
+			// RFC 5322 part 2.2.3: Each header field should be treated in its unfolded form for further syntactic and semantic evaluation.
+			// RFC 5322 part 3.2.2: CRLF that appears in FWS is semantically "invisible".
+
 			// RFC 5322 part 3.6.8 optional field:
 			// field-name = 1*ftext
 			// ftext      = %d33-57 / %d59-126 ; Printable US-ASCII characters not including ":".
-
 			var idx = await BufferedSourceExtensions.IndexOfAsync (source, (byte)':', cancellationToken).ConfigureAwait (false) -
 				source.Offset;
 			if (idx < 1)
@@ -874,15 +813,16 @@ namespace Novartment.Base.Net.Mime
 			}
 
 			var name = AsciiCharSet.GetString (source.Buffer, source.Offset, idx);
-			HeaderFieldName knownName;
-			var isKnown = HeaderFieldNameHelper.TryParse (name, out knownName);
+			var isKnown = HeaderFieldNameHelper.TryParse (name, out HeaderFieldName knownName);
 			if (!isKnown)
 			{
 				knownName = HeaderFieldName.Extension;
 			}
+
 			source.SkipBuffer (idx + 1);
 			var size = source.Count;
 			int assumedSize = source.IsExhausted ? size : Math.Max (8, size);
+
 			// TODO: переделать формирование строки без использользования ArrayList<char> (через char[] ?)
 			var unfoldedValue = new ArrayList<char> (assumedSize);
 			int lastNonWsp = 0;
@@ -892,7 +832,8 @@ namespace Novartment.Base.Net.Mime
 				source.SkipBuffer (size);
 				await source.FillBufferAsync (cancellationToken).ConfigureAwait (false);
 				size = source.Count;
-			} while (size > 0);
+			}
+			while (size > 0);
 			var value = new string (unfoldedValue.Array, unfoldedValue.Offset, lastNonWsp);
 			return isKnown ?
 				new HeaderField (knownName, value) :
@@ -927,8 +868,9 @@ namespace Novartment.Base.Net.Mime
 				{
 					var isWsp = (nextChar == 0x20) || (nextChar == 0x09);
 
-					if (!isWsp || (result.Count > 0)) // пропускаем пробелы только в начале (когда result.Count == 0)
+					if (!isWsp || (result.Count > 0))
 					{
+						// пропускаем пробелы только в начале (когда result.Count == 0)
 						result.Add ((char)nextChar);
 						if (!isWsp)
 						{
@@ -937,9 +879,34 @@ namespace Novartment.Base.Net.Mime
 					}
 				}
 			}
+
 			return lastNonWsp;
 		}
 
-		#endregion
+		internal struct TextAndTime
+		{
+			internal string Text;
+			internal DateTimeOffset Time;
+		}
+
+		internal struct TwoStrings
+		{
+			internal string Value1;
+			internal string Value2;
+		}
+
+		internal struct ThreeStringsAndList
+		{
+			internal string Value1;
+			internal string Value2;
+			internal string Value3;
+			internal IReadOnlyList<string> List;
+		}
+
+		internal struct StringAndParameters
+		{
+			internal string Text;
+			internal IReadOnlyList<HeaderFieldParameter> Parameters;
+		}
 	}
 }

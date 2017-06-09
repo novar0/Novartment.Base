@@ -6,14 +6,16 @@ namespace Novartment.Base.Text
 	/// <summary>
 	/// Тип ASCII символа, такой как цифра, буква алфавита, токен.
 	/// </summary>
-	[SuppressMessage ("Microsoft.Design",
+	[SuppressMessage (
+		"Microsoft.Design",
 		"CA1028:EnumStorageShouldBeInt32",
-		Justification = "Size matters for large arrays of this enum."),
-	SuppressMessage ("Microsoft.Naming",
+		Justification = "Size matters for large arrays of this enum.")]
+	[SuppressMessage (
+		"Microsoft.Naming",
 		"CA1704:IdentifiersShouldBeSpelledCorrectly",
 		MessageId = "Ascii",
-		Justification = "'ASCII' represents standard term."),
-	Flags]
+		Justification = "'ASCII' represents standard term.")]
+	[Flags]
 	public enum AsciiCharClasses : short
 	{
 		/// <summary>

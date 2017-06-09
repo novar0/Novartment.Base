@@ -1,9 +1,9 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.Contracts;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Diagnostics.CodeAnalysis;
-using System.Diagnostics.Contracts;
 
 namespace Novartment.Base.Net.Smtp
 {
@@ -27,10 +27,11 @@ namespace Novartment.Base.Net.Smtp
 		/// <param name="securityParameters">Параметры безопасности,
 		/// устнавливающие использование шифрования и аутентификации при выполнении транзакций.</param>
 		/// <param name="logger">Журнал для записи событий. Укажите null если запись не нужна.</param>
-		[SuppressMessage ("Microsoft.Design",
+		[SuppressMessage (
+		"Microsoft.Design",
 			"CA1026:DefaultParametersShouldNotBeUsed",
-			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change."),
-		SuppressMessage (
+			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
+		[SuppressMessage (
 			"Microsoft.Design",
 			"CA1006:DoNotNestGenericTypesInMemberSignatures",
 			Justification = "The caller doesn't have to cope with nested generics, he is just passing a lambda expression.")]
@@ -43,15 +44,18 @@ namespace Novartment.Base.Net.Smtp
 			{
 				throw new ArgumentNullException (nameof (transactionFactory));
 			}
+
 			if (securityParameters == null)
 			{
 				throw new ArgumentNullException (nameof (securityParameters));
 			}
+
 			if ((securityParameters.ServerCertificate == null) &&
 				(securityParameters.ClientCertificateRequired || (securityParameters.ClientAuthenticator != null)))
 			{// проверять клиента можно только при наличии серверного сертификата
 				throw new ArgumentOutOfRangeException (nameof (securityParameters));
 			}
+
 			Contract.EndContractBlock ();
 
 			_transactionFactory = transactionFactory;
@@ -75,16 +79,21 @@ namespace Novartment.Base.Net.Smtp
 			{
 				throw new ArgumentNullException (nameof (connection));
 			}
+
 			if (connection.LocalEndPoint?.HostName == null)
 			{
 				throw new ArgumentOutOfRangeException (nameof (connection), "Not valid connection.LocalEndPoint.HostName.");
 			}
-			if (connection.Reader.Buffer.Length < 6) // для команды нужно минимум 6 байт
+
+			// для команды нужно минимум 6 байт
+			if (connection.Reader.Buffer.Length < 6)
 			{
-				throw new ArgumentOutOfRangeException (nameof (connection),
+				throw new ArgumentOutOfRangeException (
+					nameof (connection),
 					FormattableString.Invariant (
 						$"Aborting protocol because of insufficient connection.Reader.Buffer.Length ({connection.Reader.Buffer.Length}). Required minimum 6 bytes."));
 			}
+
 			Contract.EndContractBlock ();
 
 			return StartAsyncStateMachine (connection, cancellationToken);
@@ -92,7 +101,7 @@ namespace Novartment.Base.Net.Smtp
 
 		private async Task StartAsyncStateMachine (ITcpConnection connection, CancellationToken cancellationToken)
 		{
-			var sender = new SmtpCommandReplyConnectionSenderReceiver (connection, _logger);
+			var sender = new TcpConnectionSmtpCommandTransport (connection, _logger);
 			using (var session = new SmtpDeliveryProtocolSession (
 				sender,
 				connection.RemoteEndPoint,
@@ -101,10 +110,10 @@ namespace Novartment.Base.Net.Smtp
 				_securityParameters,
 				_logger))
 			{
-
 				if (cancellationToken.CanBeCanceled)
 				{
 					cancellationToken.ThrowIfCancellationRequested ();
+
 					// на отмену регистрируем посылку прощального ответа
 					cancellationToken.Register (session.Dispose, false);
 				}
@@ -124,7 +133,7 @@ namespace Novartment.Base.Net.Smtp
 					}
 					catch (OperationCanceledException)
 					{
-						_logger?.Warn (String.Format (
+						_logger?.Warn (string.Format (
 							"Canceling protocol with {0}.",
 							connection.RemoteEndPoint));
 						throw;
@@ -134,17 +143,16 @@ namespace Novartment.Base.Net.Smtp
 						// Отдельно отслеживаем запрос отмены при ObjectDisposedException.
 						// Такая комбинация означает отмену операции с объектом, не поддерживающим отмену отдельных операций.
 						if (cancellationToken.IsCancellationRequested &&
-							(
-								(excpt is ObjectDisposedException) ||
-								((excpt is IOException) && (excpt.InnerException is ObjectDisposedException))
-							))
+							((excpt is ObjectDisposedException) ||
+							((excpt is IOException) && (excpt.InnerException is ObjectDisposedException))))
 						{
-							_logger?.Warn (String.Format (
+							_logger?.Warn (string.Format (
 								"Canceling protocol with {0}.",
 								connection.RemoteEndPoint));
 							cancellationToken.ThrowIfCancellationRequested ();
 						}
-						_logger?.Warn (String.Format (
+
+						_logger?.Warn (string.Format (
 							"Aborting protocol with {0}. {1}",
 							connection.RemoteEndPoint,
 							ExceptionDescriptionProvider.GetDescription (excpt)));

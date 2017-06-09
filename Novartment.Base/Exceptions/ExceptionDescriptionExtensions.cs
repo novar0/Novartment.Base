@@ -1,11 +1,11 @@
 ﻿using System;
-using static System.Linq.Enumerable;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using Novartment.Base.Collections;
 using Novartment.Base.Collections.Immutable;
+using static System.Linq.Enumerable;
 
 namespace Novartment.Base
 {
@@ -25,6 +25,7 @@ namespace Novartment.Base
 			{
 				throw new ArgumentNullException (nameof (exceptionDescription));
 			}
+
 			Contract.EndContractBlock ();
 
 			var elements = exceptionDescription
@@ -39,7 +40,8 @@ namespace Novartment.Base
 		/// <param name="exceptionDescription">Объект-описание исключения, для которого создаётся описание.</param>
 		/// <param name="tracePatternToHide">Строка-образец, который в трассировке стэка будет заменён на многоточие.</param>
 		/// <returns>Последовательность строк, составляющих описание исключения.</returns>
-		[SuppressMessage ("Microsoft.Design",
+		[SuppressMessage (
+		"Microsoft.Design",
 			"CA1026:DefaultParametersShouldNotBeUsed",
 			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
 		public static IReadOnlyList<string> GetFullInfo (this ExceptionDescription exceptionDescription, string tracePatternToHide = null)
@@ -48,6 +50,7 @@ namespace Novartment.Base
 			{
 				throw new ArgumentNullException (nameof (exceptionDescription));
 			}
+
 			Contract.EndContractBlock ();
 
 			return new ReadOnlyArray<string> (exceptionDescription
@@ -70,19 +73,17 @@ namespace Novartment.Base
 			{
 				throw new ArgumentNullException (nameof (exceptionDescription));
 			}
+
 			Contract.EndContractBlock ();
-			return new _ExceptionDescriptionHierarchyEnumerator (exceptionDescription, skipAggregate);
+			return new ExceptionDescriptionHierarchyEnumerator (exceptionDescription, skipAggregate);
 		}
 
-		#region internal class _ExceptionDescriptionHierarchyEnumerator
-
-		internal class _ExceptionDescriptionHierarchyEnumerator : IEnumerable<ExceptionDescriptionAndNestingData>
+		internal class ExceptionDescriptionHierarchyEnumerator : IEnumerable<ExceptionDescriptionAndNestingData>
 		{
-
 			private readonly ExceptionDescription _rootException;
 			private readonly bool _skipAggregate;
 
-			internal _ExceptionDescriptionHierarchyEnumerator (ExceptionDescription exceptionInfo, bool skipAggregate)
+			internal ExceptionDescriptionHierarchyEnumerator (ExceptionDescription exceptionInfo, bool skipAggregate)
 			{
 				_rootException = exceptionInfo;
 				_skipAggregate = skipAggregate;
@@ -137,7 +138,5 @@ namespace Novartment.Base
 				}
 			}
 		}
-
-		#endregion
 	}
 }

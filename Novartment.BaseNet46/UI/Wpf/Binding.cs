@@ -1,5 +1,4 @@
 ﻿using System.Globalization;
-using System.Diagnostics.CodeAnalysis;
 
 namespace Novartment.Base.UI.Wpf
 {
@@ -22,26 +21,6 @@ namespace Novartment.Base.UI.Wpf
 		/// <param name="path">Начальный путь для привязки.</param>
 		public Binding (string path)
 			: base (path)
-		{
-			this.ConverterCulture = CultureInfo.CurrentCulture;
-		}
-	}
-
-	/// <summary>
-	/// Дублирует System.Windows.Data.MultiBinding,
-	/// но устанавливает текущую культуру для конвертеров.
-	/// </summary>
-	[SuppressMessage ("Microsoft.Naming",
-		"CA1704:IdentifiersShouldBeSpelledCorrectly",
-		MessageId = "Multi",
-		Justification = "Name inherited from library class.")]
-	public class MultiBinding : System.Windows.Data.MultiBinding
-	{
-		/// <summary>
-		/// <summary>Инициализирует новый экземпляр класса MultiBinding.</summary>
-		/// </summary>
-		public MultiBinding ()
-			: base ()
 		{
 			this.ConverterCulture = CultureInfo.CurrentCulture;
 		}

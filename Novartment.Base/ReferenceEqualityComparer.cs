@@ -11,14 +11,14 @@ namespace Novartment.Base
 	{
 		private static readonly IEqualityComparer<object> _Default = new ReferenceEqualityComparer ();
 
+		private ReferenceEqualityComparer ()
+		{
+		}
+
 		/// <summary>
 		/// Получает экземпляр ссылочного компаратора.
 		/// </summary>
 		public static IEqualityComparer<object> Default => _Default;
-
-		private ReferenceEqualityComparer ()
-		{
-		}
 
 		/// <summary>
 		/// Определяет, указывают ли обе указанных ссылки на один объект.

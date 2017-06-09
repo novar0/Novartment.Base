@@ -1,72 +1,101 @@
 ﻿using System;
 using System.Collections.Generic;
-using static System.Linq.Enumerable;
-using System.Windows.Controls;
-using System.Windows.Markup;
-using System.Resources;
-using System.Reflection;
-using System.Windows;
-using System.ComponentModel;
-using System.Globalization;
-using System.Windows.Data;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
+using System.Globalization;
+using System.Reflection;
+using System.Resources;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Markup;
+using static System.Linq.Enumerable;
 
 namespace Novartment.Base.UI.Wpf
 {
-/*
-Use:
-===
-<Window ResxExtension.ResxName="WpfApp.MainWindow">
-convert to
-<TextBlock Text="{Resx MyText}"/>
-or
-<TextBlock Text="{Resx ResxName=MyApp.TestWindow, Key=MyText}"/>
+	/*
+	Use:
+	===
+	<Window ResxExtension.ResxName="WpfApp.MainWindow">
+	convert to
+	<TextBlock Text="{Resx MyText}"/>
+	or
+	<TextBlock Text="{Resx ResxName=MyApp.TestWindow, Key=MyText}"/>
 
-Use for non-text:
-================
-<TextBlock Margin="{Resx Key=MyMargin, DefaultValue='18,0,0,71'}"/>
+	Use for non-text:
+	================
+	<TextBlock Margin="{Resx Key=MyMargin, DefaultValue='18,0,0,71'}"/>
 
-Formatting:
-==========
-<Binding StringFormat="Selected Item: {0}" ElementName="_fileListBox" Path="SelectedItem"/>
-convert to
-<Resx Key="MyFormatString" BindingElementName="_fileListBox" BindingPath="SelectedItem"/>
+	Formatting:
+	==========
+	<Binding StringFormat="Selected Item: {0}" ElementName="_fileListBox" Path="SelectedItem"/>
+	convert to
+	<Resx Key="MyFormatString" BindingElementName="_fileListBox" BindingPath="SelectedItem"/>
 
-<Resx Key="MyMultiFormatString">
-	<Resx BindingElementName="_fileListBox" BindingPath="Name"/>
-	<Resx BindingElementName="_fileListBox" BindingPath="SelectedItem"/>
-</Resx>
-
-
-Changing the Culture Dynamically at Runtime:
-===========================================
-set the Thread.CurrentThread.CurrentUICulture 
-ResxExtension.UpdateAllTargets ()
+	<Resx Key="MyMultiFormatString">
+		<Resx BindingElementName="_fileListBox" BindingPath="Name"/>
+		<Resx BindingElementName="_fileListBox" BindingPath="SelectedItem"/>
+	</Resx>
 
 
-Hiding RESX Files
-================
-<EmbeddedResource Include="TestWindow.resx" />
-convert to
-<EmbeddedResource Include="TestWindow.resx">
-  <DependentUpon>TestWindow.xaml</DependentUpon>
-  <SubType>Designer</SubType>
-</EmbeddedResource>
-*/	
+	Changing the Culture Dynamically at Runtime:
+	===========================================
+	set the Thread.CurrentThread.CurrentUICulture
+	ResxExtension.UpdateAllTargets ()
+
+
+	Hiding RESX Files
+	================
+	<EmbeddedResource Include="TestWindow.resx" />
+	convert to
+	<EmbeddedResource Include="TestWindow.resx">
+	  <DependentUpon>TestWindow.xaml</DependentUpon>
+	  <SubType>Designer</SubType>
+	</EmbeddedResource>
+	*/
+
 	/// <summary>
 	/// A markup extension to allow resources for WPF Windows and controls to be retrieved
 	/// from an embedded resource (resx) file associated with the window or control.
 	/// </summary>
-	[SuppressMessage ("Microsoft.Naming",
+	[SuppressMessage (
+		"Microsoft.Naming",
 		"CA1704:IdentifiersShouldBeSpelledCorrectly",
 		MessageId = "Resx",
-		Justification = "'RESX' is the standard term for resource files."),
-	MarkupExtensionReturnType (typeof (object))]
+		Justification = "'RESX' is the standard term for resource files.")]
+	[MarkupExtensionReturnType (typeof (object))]
 	[ContentProperty ("Children")]
 	public class ResxExtension : TargetsTrackingExtensionBase
 	{
+		/// <summary>
+		/// The ResxName attached property.
+		/// </summary>
+		[SuppressMessage (
+			"Microsoft.Naming",
+			"CA1704:IdentifiersShouldBeSpelledCorrectly",
+			MessageId = "Resx",
+			Justification = "'RESX' is the standard term for resource files.")]
+		public static readonly DependencyProperty DefaultResxNameProperty =
+			DependencyProperty.RegisterAttached (
+			"DefaultResxName",
+			typeof (string),
+			typeof (ResxExtension),
+			new FrameworkPropertyMetadata (null, FrameworkPropertyMetadataOptions.AffectsRender | FrameworkPropertyMetadataOptions.Inherits, OnDefaultResxNamePropertyChanged));
+
+		/// <summary>Cached resource managers.</summary>
+		private static readonly Dictionary<string, WeakReference> _resourceManagers = new Dictionary<string, WeakReference> ();
+
+		/// <summary>The manager for resx extensions.</summary>
+		private static readonly MarkupExtensionManager _markupManager = new MarkupExtensionManager (40);
+
+		/// <summary>The binding (if any) used to store the binding properties for the extension.</summary>
+		private readonly ILazyValueHolder<Binding> _binding = new LazyValueHolder<Binding> ();
+
+		/// <summary>The child ResxExtensions (if any) when using MultiBinding expressions.</summary>
+		private readonly Collection<ResxExtension> _children = new Collection<ResxExtension> ();
+
 		/// <summary>The explicitly set embedded Resx Name (if any).</summary>
 		private string _resxName;
 
@@ -84,18 +113,6 @@ convert to
 		/// Resource Manager keeps it in the cache while ever there are ResxExtensions that are using it.
 		/// </summary>
 		private ResourceManager _resourceManager;
-
-		/// <summary>The binding (if any) used to store the binding properties for the extension.</summary>
-		private readonly ILazyValueHolder<Binding> _binding = new LazyValueHolder<Binding> ();
-
-		/// <summary>The child ResxExtensions (if any) when using MultiBinding expressions.</summary>
-		private readonly Collection<ResxExtension> _children = new Collection<ResxExtension> ();
-
-		/// <summary>Cached resource managers.</summary>
-		private static readonly Dictionary<string, WeakReference> _resourceManagers = new Dictionary<string, WeakReference> ();
-
-		/// <summary>The manager for resx extensions.</summary>
-		private static readonly MarkupExtensionManager _markupManager = new MarkupExtensionManager (40);
 
 		/// <summary>
 		/// Create a new instance of the markup extension.
@@ -116,12 +133,18 @@ convert to
 		}
 
 		/// <summary>
+		/// Return the MarkupManager for this extension.
+		/// </summary>
+		public static MarkupExtensionManager MarkupManager => _markupManager;
+
+		/// <summary>
 		/// The fully qualified name of the embedded resx (without .resources) to get the resource from.
 		/// </summary>
-		[SuppressMessage ("Microsoft.Naming",
+		[SuppressMessage (
+			"Microsoft.Naming",
 			"CA1704:IdentifiersShouldBeSpelledCorrectly",
 			MessageId = "Resx",
-		Justification = "'RESX' is the standard term for resource files.")]
+			Justification = "'RESX' is the standard term for resource files.")]
 		public string ResxName
 		{
 			get
@@ -139,20 +162,23 @@ convert to
 							var targetRef = node.Value;
 							if (targetRef.IsAlive)
 							{
-								var dependencyObject = targetRef.Target as DependencyObject;
-								if (dependencyObject != null)
+								if (targetRef.Target is DependencyObject dependencyObject)
 								{
 									_defaultResxName = dependencyObject.GetValue (DefaultResxNameProperty) as string;
 									break;
 								}
 							}
+
 							node = node.Next;
 						}
 					}
+
 					result = _defaultResxName;
 				}
+
 				return result;
 			}
+
 			set
 			{
 				_resxName = value;
@@ -164,7 +190,7 @@ convert to
 		/// </summary>
 		public string Key
 		{
-			get { return _key; }
+			get => _key;
 			set { _key = value; }
 		}
 
@@ -177,7 +203,7 @@ convert to
 		/// </remarks>
 		public string DefaultValue
 		{
-			get { return _defaultValue; }
+			get => _defaultValue;
 			set { _defaultValue = value; }
 		}
 
@@ -187,13 +213,11 @@ convert to
 		/// <remarks>
 		/// You can nest Resx elements in this case the parent Resx element
 		/// value is used as a format string to format the values from child Resx
-		/// elements similar to a <see cref="MultiBinding"/> eg If a Resx has two 
+		/// elements similar to a <see cref="MultiBinding"/> eg If a Resx has two
 		/// child elements then you.
 		/// </remarks>
 		[DesignerSerializationVisibility (DesignerSerializationVisibility.Content)]
 		public Collection<ResxExtension> Children => _children;
-
-		#region Delegated Binding properties
 
 		/// <summary>
 		/// Return the associated binding for the extension
@@ -206,8 +230,12 @@ convert to
 		[DefaultValue (null)]
 		public string BindingElementName
 		{
-			get { return _binding.Value.ElementName; }
-			set { _binding.Value.ElementName = value; }
+			get => _binding.Value.ElementName;
+
+			set
+			{
+				_binding.Value.ElementName = value;
+			}
 		}
 
 		/// <summary>
@@ -216,8 +244,12 @@ convert to
 		[DefaultValue (null)]
 		public PropertyPath BindingPath
 		{
-			get { return _binding.Value.Path; }
-			set { _binding.Value.Path = value; }
+			get => _binding.Value.Path;
+
+			set
+			{
+				_binding.Value.Path = value;
+			}
 		}
 
 		/// <summary>
@@ -226,8 +258,12 @@ convert to
 		[DefaultValue (null)]
 		public RelativeSource BindingRelativeSource
 		{
-			get { return _binding.Value.RelativeSource; }
-			set { _binding.Value.RelativeSource = value; }
+			get => _binding.Value.RelativeSource;
+
+			set
+			{
+				_binding.Value.RelativeSource = value;
+			}
 		}
 
 		/// <summary>
@@ -236,8 +272,12 @@ convert to
 		[DefaultValue (null)]
 		public object BindingSource
 		{
-			get { return _binding.Value.Source; }
-			set { _binding.Value.Source = value; }
+			get => _binding.Value.Source;
+
+			set
+			{
+				_binding.Value.Source = value;
+			}
 		}
 
 		/// <summary>
@@ -246,8 +286,12 @@ convert to
 		[DefaultValue (null)]
 		public string BindingXPath
 		{
-			get { return _binding.Value.XPath; }
-			set { _binding.Value.XPath = value; }
+			get => _binding.Value.XPath;
+
+			set
+			{
+				_binding.Value.XPath = value;
+			}
 		}
 
 		/// <summary>
@@ -256,8 +300,12 @@ convert to
 		[DefaultValue (null)]
 		public IValueConverter BindingConverter
 		{
-			get { return _binding.Value.Converter; }
-			set { _binding.Value.Converter = value; }
+			get => _binding.Value.Converter;
+
+			set
+			{
+				_binding.Value.Converter = value;
+			}
 		}
 
 		/// <summary>
@@ -266,8 +314,12 @@ convert to
 		[DefaultValue (null)]
 		public string BindingGroupName
 		{
-			get { return _binding.Value.BindingGroupName; }
-			set { _binding.Value.BindingGroupName = value; }
+			get => _binding.Value.BindingGroupName;
+
+			set
+			{
+				_binding.Value.BindingGroupName = value;
+			}
 		}
 
 		/// <summary>
@@ -276,8 +328,12 @@ convert to
 		[DefaultValue (null)]
 		public CultureInfo BindingConverterCulture
 		{
-			get { return _binding.Value.ConverterCulture; }
-			set { _binding.Value.ConverterCulture = value; }
+			get => _binding.Value.ConverterCulture;
+
+			set
+			{
+				_binding.Value.ConverterCulture = value;
+			}
 		}
 
 		/// <summary>
@@ -286,8 +342,12 @@ convert to
 		[DefaultValue (null)]
 		public object BindingConverterParameter
 		{
-			get { return _binding.Value.ConverterParameter; }
-			set { _binding.Value.ConverterParameter = value; }
+			get => _binding.Value.ConverterParameter;
+
+			set
+			{
+				_binding.Value.ConverterParameter = value;
+			}
 		}
 
 		/// <summary>
@@ -296,8 +356,12 @@ convert to
 		[DefaultValue (false)]
 		public bool BindsDirectlyToSource
 		{
-			get { return _binding.Value.BindsDirectlyToSource; }
-			set { _binding.Value.BindsDirectlyToSource = value; }
+			get => _binding.Value.BindsDirectlyToSource;
+
+			set
+			{
+				_binding.Value.BindsDirectlyToSource = value;
+			}
 		}
 
 		/// <summary>
@@ -306,8 +370,12 @@ convert to
 		[DefaultValue (BindingMode.Default)]
 		public BindingMode BindingMode
 		{
-			get { return _binding.Value.Mode; }
-			set { _binding.Value.Mode = value; }
+			get => _binding.Value.Mode;
+
+			set
+			{
+				_binding.Value.Mode = value;
+			}
 		}
 
 		/// <summary>
@@ -316,8 +384,12 @@ convert to
 		[DefaultValue (false)]
 		public bool BindingNotifyOnSourceUpdated
 		{
-			get { return _binding.Value.NotifyOnSourceUpdated; }
-			set { _binding.Value.NotifyOnSourceUpdated = value; }
+			get => _binding.Value.NotifyOnSourceUpdated;
+
+			set
+			{
+				_binding.Value.NotifyOnSourceUpdated = value;
+			}
 		}
 
 		/// <summary>
@@ -326,8 +398,12 @@ convert to
 		[DefaultValue (false)]
 		public bool BindingNotifyOnTargetUpdated
 		{
-			get { return _binding.Value.NotifyOnTargetUpdated; }
-			set { _binding.Value.NotifyOnTargetUpdated = value; }
+			get => _binding.Value.NotifyOnTargetUpdated;
+
+			set
+			{
+				_binding.Value.NotifyOnTargetUpdated = value;
+			}
 		}
 
 		/// <summary>
@@ -336,8 +412,12 @@ convert to
 		[DefaultValue (false)]
 		public bool BindingNotifyOnValidationError
 		{
-			get { return _binding.Value.NotifyOnValidationError; }
-			set { _binding.Value.NotifyOnValidationError = value; }
+			get => _binding.Value.NotifyOnValidationError;
+
+			set
+			{
+				_binding.Value.NotifyOnValidationError = value;
+			}
 		}
 
 		/// <summary>
@@ -346,8 +426,12 @@ convert to
 		[DefaultValue (null)]
 		public object BindingAsyncState
 		{
-			get { return _binding.Value.AsyncState; }
-			set { _binding.Value.AsyncState = value; }
+			get => _binding.Value.AsyncState;
+
+			set
+			{
+				_binding.Value.AsyncState = value;
+			}
 		}
 
 		/// <summary>
@@ -356,8 +440,12 @@ convert to
 		[DefaultValue (false)]
 		public bool BindingIsAsync
 		{
-			get { return _binding.Value.IsAsync; }
-			set { _binding.Value.IsAsync = value; }
+			get => _binding.Value.IsAsync;
+
+			set
+			{
+				_binding.Value.IsAsync = value;
+			}
 		}
 
 		/// <summary>
@@ -366,8 +454,12 @@ convert to
 		[DefaultValue (null)]
 		public object BindingFallbackValue
 		{
-			get { return _binding.Value.FallbackValue; }
-			set { _binding.Value.FallbackValue = value; }
+			get => _binding.Value.FallbackValue;
+
+			set
+			{
+				_binding.Value.FallbackValue = value;
+			}
 		}
 
 		/// <summary>
@@ -376,8 +468,12 @@ convert to
 		[DefaultValue (null)]
 		public object BindingTargetNullValue
 		{
-			get { return _binding.Value.TargetNullValue; }
-			set { _binding.Value.TargetNullValue = value; }
+			get => _binding.Value.TargetNullValue;
+
+			set
+			{
+				_binding.Value.TargetNullValue = value;
+			}
 		}
 
 		/// <summary>
@@ -386,8 +482,12 @@ convert to
 		[DefaultValue (false)]
 		public bool BindingValidatesOnDataErrors
 		{
-			get { return _binding.Value.ValidatesOnDataErrors; }
-			set { _binding.Value.ValidatesOnDataErrors = value; }
+			get => _binding.Value.ValidatesOnDataErrors;
+
+			set
+			{
+				_binding.Value.ValidatesOnDataErrors = value;
+			}
 		}
 
 		/// <summary>
@@ -396,8 +496,12 @@ convert to
 		[DefaultValue (false)]
 		public bool BindingValidatesOnExceptions
 		{
-			get { return _binding.Value.ValidatesOnExceptions; }
-			set { _binding.Value.ValidatesOnExceptions = value; }
+			get => _binding.Value.ValidatesOnExceptions;
+
+			set
+			{
+				_binding.Value.ValidatesOnExceptions = value;
+			}
 		}
 
 		/// <summary>
@@ -406,8 +510,12 @@ convert to
 		[DefaultValue (UpdateSourceTrigger.Default)]
 		public UpdateSourceTrigger BindingUpdateSourceTrigger
 		{
-			get { return _binding.Value.UpdateSourceTrigger; }
-			set { _binding.Value.UpdateSourceTrigger = value; }
+			get => _binding.Value.UpdateSourceTrigger;
+
+			set
+			{
+				_binding.Value.UpdateSourceTrigger = value;
+			}
 		}
 
 		/// <summary>
@@ -416,7 +524,86 @@ convert to
 		[DefaultValue (false)]
 		public Collection<ValidationRule> BindingValidationRules => _binding.Value.ValidationRules;
 
-		#endregion
+		/// <summary>
+		/// Is this ResxExtension being used as a multi-binding parent.
+		/// </summary>
+		private bool IsMultiBindingParent => _children.Count > 0;
+
+		/// <summary>
+		/// Is this ResxExtension being used inside another Resx Extension for multi-binding.
+		/// </summary>
+		private bool IsMultiBindingChild => TargetPropertyType == typeof (Collection<ResxExtension>);
+
+		/// <summary>
+		/// Use the Markup Manager to update all targets.
+		/// </summary>
+		public static void UpdateAllTargets ()
+		{
+			_markupManager.UpdateAllTargets ();
+		}
+
+		/// <summary>
+		/// Update the ResxExtension target with the given key.
+		/// </summary>
+		/// <param name="key">Resource key for update.</param>
+		public static void UpdateTarget (string key)
+		{
+			var node = _markupManager.ActiveExtensions;
+			while (node != null)
+			{
+				if (node.Value is ResxExtension ext && (ext.Key == key))
+				{
+					ext.UpdateTargets ();
+				}
+
+				node = node.Next;
+			}
+		}
+
+		/// <summary>
+		/// Get the DefaultResxName attached property for the given target.
+		/// </summary>
+		/// <param name="target">The Target object.</param>
+		/// <returns>The name of the Resx.</returns>
+		[SuppressMessage (
+			"Microsoft.Naming",
+			"CA1704:IdentifiersShouldBeSpelledCorrectly",
+			MessageId = "Resx",
+			Justification = "'RESX' is the standard term for resource files.")]
+		[AttachedPropertyBrowsableForChildren (IncludeDescendants = true)]
+		public static string GetDefaultResxName (DependencyObject target)
+		{
+			if (target == null)
+			{
+				throw new ArgumentNullException (nameof (target));
+			}
+
+			Contract.EndContractBlock ();
+
+			return (string)target.GetValue (DefaultResxNameProperty);
+		}
+
+		/// <summary>
+		/// Set the DefaultResxName attached property for the given target.
+		/// </summary>
+		/// <param name="target">The Target object.</param>
+		/// <param name="value">The name of the Resx.</param>
+		[SuppressMessage (
+		"Microsoft.Naming",
+			"CA1704:IdentifiersShouldBeSpelledCorrectly",
+			MessageId = "Resx",
+			Justification = "'RESX' is the standard term for resource files.")]
+		public static void SetDefaultResxName (DependencyObject target, string value)
+		{
+			if (target == null)
+			{
+				throw new ArgumentNullException (nameof (target));
+			}
+
+			Contract.EndContractBlock ();
+
+			target.SetValue (DefaultResxNameProperty, value);
+		}
 
 		/// <summary>
 		/// Return the value for this instance of the Markup Extension.
@@ -437,7 +624,7 @@ convert to
 			}
 
 			// if the extension is used in a template or as a child of another
-			// resx extension (for multi-binding) then return this 
+			// resx extension (for multi-binding) then return this
 			if (TargetProperty == null || this.IsMultiBindingChild)
 			{
 				result = this;
@@ -445,7 +632,7 @@ convert to
 			else
 			{
 				// if this extension has child Resx elements then invoke AFTER this method has returned
-				// to setup the MultiBinding on the target element.  
+				// to setup the MultiBinding on the target element.
 				if (this.IsMultiBindingParent)
 				{
 					var binding = CreateMultiBinding ();
@@ -467,198 +654,9 @@ convert to
 					}
 				}
 			}
+
 			return result;
 		}
-
-		/// <summary>
-		/// Return the MarkupManager for this extension.
-		/// </summary>
-		public static MarkupExtensionManager MarkupManager => _markupManager;
-
-		/// <summary>
-		/// Use the Markup Manager to update all targets.
-		/// </summary>
-		public static void UpdateAllTargets ()
-		{
-			_markupManager.UpdateAllTargets ();
-		}
-
-		/// <summary>
-		/// Update the ResxExtension target with the given key.
-		/// </summary>
-		public static void UpdateTarget (string key)
-		{
-			var node = _markupManager.ActiveExtensions;
-			while (node != null)
-			{
-				var ext = node.Value as ResxExtension;
-				if ((ext != null) && (ext.Key == key))
-				{
-					ext.UpdateTargets ();
-				}
-				node = node.Next;
-			}
-		}
-
-		/// <summary>
-		/// The ResxName attached property.
-		/// </summary>
-		[SuppressMessage ("Microsoft.Naming",
-			"CA1704:IdentifiersShouldBeSpelledCorrectly",
-			MessageId = "Resx",
-		Justification = "'RESX' is the standard term for resource files.")]
-		public static readonly DependencyProperty DefaultResxNameProperty =
-			DependencyProperty.RegisterAttached (
-			"DefaultResxName",
-			typeof (string),
-			typeof (ResxExtension),
-			new FrameworkPropertyMetadata (null,
-				FrameworkPropertyMetadataOptions.AffectsRender |
-				FrameworkPropertyMetadataOptions.Inherits,
-				OnDefaultResxNamePropertyChanged));
-
-		/// <summary>
-		/// Get the DefaultResxName attached property for the given target.
-		/// </summary>
-		/// <param name="target">The Target object.</param>
-		/// <returns>The name of the Resx.</returns>
-		[SuppressMessage ("Microsoft.Naming",
-			"CA1704:IdentifiersShouldBeSpelledCorrectly",
-			MessageId = "Resx",
-		Justification = "'RESX' is the standard term for resource files."),
-		AttachedPropertyBrowsableForChildren (IncludeDescendants = true)]
-		public static string GetDefaultResxName (DependencyObject target)
-		{
-			if (target == null)
-			{
-				throw new ArgumentNullException (nameof (target));
-			}
-			Contract.EndContractBlock ();
-
-			return (string)target.GetValue (DefaultResxNameProperty);
-		}
-
-		/// <summary>
-		/// Set the DefaultResxName attached property for the given target.
-		/// </summary>
-		/// <param name="target">The Target object.</param>
-		/// <param name="value">The name of the Resx.</param>
-		[SuppressMessage ("Microsoft.Naming",
-			"CA1704:IdentifiersShouldBeSpelledCorrectly",
-			MessageId = "Resx",
-		Justification = "'RESX' is the standard term for resource files.")]
-		public static void SetDefaultResxName (DependencyObject target, string value)
-		{
-			if (target == null)
-			{
-				throw new ArgumentNullException (nameof (target));
-			}
-			Contract.EndContractBlock ();
-
-			target.SetValue (DefaultResxNameProperty, value);
-		}
-
-		#region Local Methods
-
-		/// <summary>
-		/// Create a binding for this Resx Extension.
-		/// </summary>
-		/// <returns>A binding for this Resx Extension.</returns>
-		private Binding CreateBinding ()
-		{
-			var binding = new Binding ();
-			var isBindingExpression = IsBindingExpression ();
-			if (isBindingExpression)
-			{
-				// copy all the properties of the binding to the new binding
-				if (_binding.Value.ElementName != null)
-				{
-					binding.ElementName = _binding.Value.ElementName;
-				}
-				if (_binding.Value.RelativeSource != null)
-				{
-					binding.RelativeSource = _binding.Value.RelativeSource;
-				}
-				if (_binding.Value.Source != null)
-				{
-					binding.Source = _binding.Value.Source;
-				}
-
-				binding.AsyncState = _binding.Value.AsyncState;
-				binding.BindingGroupName = _binding.Value.BindingGroupName;
-				binding.BindsDirectlyToSource = _binding.Value.BindsDirectlyToSource;
-				binding.Converter = _binding.Value.Converter;
-				binding.ConverterCulture = _binding.Value.ConverterCulture;
-				binding.ConverterParameter = _binding.Value.ConverterParameter;
-				binding.FallbackValue = _binding.Value.FallbackValue;
-				binding.IsAsync = _binding.Value.IsAsync;
-				binding.Mode = _binding.Value.Mode;
-				binding.NotifyOnSourceUpdated = _binding.Value.NotifyOnSourceUpdated;
-				binding.NotifyOnTargetUpdated = _binding.Value.NotifyOnTargetUpdated;
-				binding.NotifyOnValidationError = _binding.Value.NotifyOnValidationError;
-				binding.Path = _binding.Value.Path;
-				binding.TargetNullValue = _binding.Value.TargetNullValue;
-				binding.UpdateSourceTrigger = _binding.Value.UpdateSourceTrigger;
-				binding.ValidatesOnDataErrors = _binding.Value.ValidatesOnDataErrors;
-				binding.ValidatesOnExceptions = _binding.Value.ValidatesOnExceptions;
-				foreach (var rule in _binding.Value.ValidationRules)
-				{
-					binding.ValidationRules.Add (rule);
-				}
-				binding.XPath = _binding.Value.XPath;
-				binding.StringFormat = GetValue () as string;
-			}
-			else
-			{
-				binding.Source = GetValue ();
-			}
-			return binding;
-		}
-
-		/// <summary>
-		/// Create new MultiBinding that binds to the child Resx Extensioins.
-		/// </summary>
-		/// <returns>Created MultiBinding.</returns>
-		private MultiBinding CreateMultiBinding ()
-		{
-			var result = new MultiBinding ();
-			foreach (var child in _children)
-			{
-				// ensure the child has a resx name
-				if (child.ResxName == null)
-				{
-					child.ResxName = ResxName;
-				}
-				result.Bindings.Add (child.CreateBinding ());
-			}
-			result.StringFormat = GetValue () as string;
-			return result;
-		}
-
-		/// <summary>
-		/// Have any of the binding properties been set.
-		/// </summary>
-		private bool IsBindingExpression ()
-		{
-			if (!_binding.IsValueCreated)
-			{
-				return false;
-			}
-
-			return	(_binding.Value.Source != null || _binding.Value.RelativeSource != null ||
-					_binding.Value.ElementName != null || _binding.Value.XPath != null ||
-					_binding.Value.Path != null);
-		}
-
-		/// <summary>
-		/// Is this ResxExtension being used as a multi-binding parent.
-		/// </summary>
-		private bool IsMultiBindingParent => (_children.Count > 0);
-
-		/// <summary>
-		/// Is this ResxExtension being used inside another Resx Extension for multi-binding.
-		/// </summary>
-		private bool IsMultiBindingChild => (TargetPropertyType == typeof (Collection<ResxExtension>));
 
 		/// <summary>
 		/// Return the value for the markup extension.
@@ -680,10 +678,12 @@ convert to
 				{
 					_resourceManager = GetResourceManager (this.ResxName);
 				}
+
 				if (_resourceManager != null)
 				{
 					result = _resourceManager.GetObject (_key/*, CultureManager.UICulture*/);
 				}
+
 				if (!this.IsMultiBindingChild)
 				{
 					result = ConvertValue (result);
@@ -700,7 +700,10 @@ convert to
 		protected override void UpdateTarget (object target)
 		{
 			// binding of child extensions is done by the parent
-			if (this.IsMultiBindingChild) return;
+			if (this.IsMultiBindingChild)
+			{
+				return;
+			}
 
 			var el = target as FrameworkElement;
 			if (this.IsMultiBindingParent)
@@ -757,7 +760,131 @@ convert to
 				// GetManifestResourceNames may throw an exception
 				// for some assemblies - just ignore these assemblies.
 			}
+
 			return false;
+		}
+
+		/// <summary>
+		/// Handle a change to the attached DefaultResxName property.
+		/// </summary>
+		/// <param name="element">the dependency object (a WPF element).</param>
+		/// <param name="args">the dependency property changed event arguments.</param>
+		/// <remarks>In design mode update the extension with the correct ResxName.</remarks>
+		private static void OnDefaultResxNamePropertyChanged (DependencyObject element, DependencyPropertyChangedEventArgs args)
+		{
+			var isInDesignMode = DesignerProperties.GetIsInDesignMode (element);
+			if (isInDesignMode)
+			{
+				var node = _markupManager.ActiveExtensions;
+				while (node != null)
+				{
+					var ext = node.Value as ResxExtension;
+					var isNodeTargetOfElement = (ext != null) && ext.IsTarget (element);
+					if (isNodeTargetOfElement)
+					{
+						// force the resource manager to be reloaded when the attached resx name changes
+						ext._resourceManager = null;
+						ext._defaultResxName = args.NewValue as string;
+						ext.UpdateTarget (element);
+					}
+
+					node = node.Next;
+				}
+			}
+		}
+
+		/// <summary>
+		/// Create a binding for this Resx Extension.
+		/// </summary>
+		/// <returns>A binding for this Resx Extension.</returns>
+		private Binding CreateBinding ()
+		{
+			var binding = new Binding ();
+			var isBindingExpression = IsBindingExpression ();
+			if (isBindingExpression)
+			{
+				// copy all the properties of the binding to the new binding
+				if (_binding.Value.ElementName != null)
+				{
+					binding.ElementName = _binding.Value.ElementName;
+				}
+
+				if (_binding.Value.RelativeSource != null)
+				{
+					binding.RelativeSource = _binding.Value.RelativeSource;
+				}
+
+				if (_binding.Value.Source != null)
+				{
+					binding.Source = _binding.Value.Source;
+				}
+
+				binding.AsyncState = _binding.Value.AsyncState;
+				binding.BindingGroupName = _binding.Value.BindingGroupName;
+				binding.BindsDirectlyToSource = _binding.Value.BindsDirectlyToSource;
+				binding.Converter = _binding.Value.Converter;
+				binding.ConverterCulture = _binding.Value.ConverterCulture;
+				binding.ConverterParameter = _binding.Value.ConverterParameter;
+				binding.FallbackValue = _binding.Value.FallbackValue;
+				binding.IsAsync = _binding.Value.IsAsync;
+				binding.Mode = _binding.Value.Mode;
+				binding.NotifyOnSourceUpdated = _binding.Value.NotifyOnSourceUpdated;
+				binding.NotifyOnTargetUpdated = _binding.Value.NotifyOnTargetUpdated;
+				binding.NotifyOnValidationError = _binding.Value.NotifyOnValidationError;
+				binding.Path = _binding.Value.Path;
+				binding.TargetNullValue = _binding.Value.TargetNullValue;
+				binding.UpdateSourceTrigger = _binding.Value.UpdateSourceTrigger;
+				binding.ValidatesOnDataErrors = _binding.Value.ValidatesOnDataErrors;
+				binding.ValidatesOnExceptions = _binding.Value.ValidatesOnExceptions;
+				foreach (var rule in _binding.Value.ValidationRules)
+				{
+					binding.ValidationRules.Add (rule);
+				}
+
+				binding.XPath = _binding.Value.XPath;
+				binding.StringFormat = GetValue () as string;
+			}
+			else
+			{
+				binding.Source = GetValue ();
+			}
+
+			return binding;
+		}
+
+		/// <summary>
+		/// Create new MultiBinding that binds to the child Resx Extensioins.
+		/// </summary>
+		/// <returns>Created MultiBinding.</returns>
+		private MultiBinding CreateMultiBinding ()
+		{
+			var result = new MultiBinding ();
+			foreach (var child in _children)
+			{
+				// ensure the child has a resx name
+				if (child.ResxName == null)
+				{
+					child.ResxName = ResxName;
+				}
+
+				result.Bindings.Add (child.CreateBinding ());
+			}
+
+			result.StringFormat = GetValue () as string;
+			return result;
+		}
+
+		// Have any of the binding properties been set.
+		private bool IsBindingExpression ()
+		{
+			if (!_binding.IsValueCreated)
+			{
+				return false;
+			}
+
+			return _binding.Value.Source != null || _binding.Value.RelativeSource != null ||
+					_binding.Value.ElementName != null || _binding.Value.XPath != null ||
+					_binding.Value.Path != null;
 		}
 
 		/// <summary>
@@ -795,6 +922,7 @@ convert to
 					}
 				}
 			}
+
 			return null;
 		}
 
@@ -806,13 +934,13 @@ convert to
 		/// <remarks>Caches resource managers to improve performance.</remarks>
 		private ResourceManager GetResourceManager (string resxName)
 		{
-			WeakReference reference;
 			ResourceManager result = null;
 			if (resxName == null)
 			{
 				return null;
 			}
-			var isValueGetted = _resourceManagers.TryGetValue (resxName, out reference);
+
+			var isValueGetted = _resourceManagers.TryGetValue (resxName, out WeakReference reference);
 			if (isValueGetted)
 			{
 				result = reference.Target as ResourceManager;
@@ -832,8 +960,10 @@ convert to
 				{
 					result = new ResourceManager (resxName, assembly);
 				}
+
 				_resourceManagers.Add (resxName, new WeakReference (result));
 			}
+
 			return result;
 		}
 
@@ -850,8 +980,7 @@ convert to
 			var targetType = TargetPropertyType;
 			if (targetType != null)
 			{
-				var strValue = value as string;
-				if ((strValue != null) && (targetType != typeof (string)) && (targetType != typeof (object)))
+				if (value is string strValue && (targetType != typeof (string)) && (targetType != typeof (object)))
 				{
 					var tc = TypeDescriptor.GetConverter (targetType);
 					result = tc.ConvertFromInvariantString (strValue);
@@ -864,6 +993,7 @@ convert to
 		/// <summary>
 		/// Return the default value for the property.
 		/// </summary>
+		/// <param name="key">Property for retrieving default value.</param>
 		/// <returns>Default value for specified property.</returns>
 		private object GetDefaultValue (string key)
 		{
@@ -881,7 +1011,7 @@ convert to
 				if (targetType != null)
 				{
 					// convert the default value if necessary to the required type
-					if ((targetType != typeof (String)) && (targetType != typeof (object)))
+					if ((targetType != typeof (string)) && (targetType != typeof (object)))
 					{
 						try
 						{
@@ -894,38 +1024,8 @@ convert to
 					}
 				}
 			}
+
 			return result;
 		}
-
-		/// <summary>
-		/// Handle a change to the attached DefaultResxName property.
-		/// </summary>
-		/// <param name="element">the dependency object (a WPF element).</param>
-		/// <param name="args">the dependency property changed event arguments.</param>
-		/// <remarks>In design mode update the extension with the correct ResxName.</remarks>
-		private static void OnDefaultResxNamePropertyChanged (DependencyObject element, DependencyPropertyChangedEventArgs args)
-		{
-			var isInDesignMode = DesignerProperties.GetIsInDesignMode (element);
-			if (isInDesignMode)
-			{
-				var node = _markupManager.ActiveExtensions;
-				while (node != null)
-				{
-					var ext = node.Value as ResxExtension;
-					var isNodeTargetOfElement = (ext != null) && ext.IsTarget (element);
-					if (isNodeTargetOfElement)
-					{
-						// force the resource manager to be reloaded when the attached resx name changes
-						ext._resourceManager = null;
-						ext._defaultResxName = args.NewValue as string;
-						ext.UpdateTarget (element);
-					}
-					node = node.Next;
-				}
-			}
-		}
-
-		#endregion
-
 	}
 }

@@ -11,28 +11,24 @@ namespace Novartment.Base.SampleWpf
 
 		#region свойства которые пишутся в конфиг. файл. может быть сгенерирован автоматически
 
-		[UserScopedSettingAttribute ()]
-		[DefaultSettingValueAttribute ("0")]
+		[UserScopedSetting]
+		[DefaultSettingValue ("0")]
 		public int IntParameter
 		{
-			get
-			{
-				return ((int)(this["IntParameter"]));
-			}
+			get => ((int)(this["IntParameter"]));
+
 			set
 			{
 				this["IntParameter"] = value;
 			}
 		}
 
-		[UserScopedSettingAttribute ()]
-		[DefaultSettingValueAttribute ("Строковое значение")]
+		[UserScopedSetting]
+		[DefaultSettingValue ("Строковое значение")]
 		public string StringParameter
 		{
-			get
-			{
-				return ((string)(this["StringParameter"]));
-			}
+			get => ((string)(this["StringParameter"]));
+
 			set
 			{
 				this["StringParameter"] = value;

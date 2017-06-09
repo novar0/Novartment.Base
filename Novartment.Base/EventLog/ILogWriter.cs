@@ -84,7 +84,8 @@ namespace Novartment.Base
 		/// Other runtime errors or unexpected conditions. Expect these to be immediately visible on a status console.
 		/// </summary>
 		/// <param name="message">Log message.</param>
-		[SuppressMessage ("Microsoft.Naming",
+		[SuppressMessage (
+		"Microsoft.Naming",
 			"CA1716:IdentifiersShouldNotMatchKeywords",
 			MessageId = "Error",
 			Justification = "No other name could be applied. NLog historically have method 'Error()'.")]

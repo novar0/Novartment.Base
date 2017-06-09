@@ -1,27 +1,34 @@
 ﻿using System;
-using System.Globalization;
 using System.Diagnostics.CodeAnalysis;
-using Novartment.Base.Text;
+using System.Globalization;
 using Novartment.Base.BinaryStreaming;
+using Novartment.Base.Text;
 
 namespace Novartment.Base.Net.Smtp
 {
 	internal class SmtpCommand
 	{
-		internal readonly static SmtpCommand Unknown = new SmtpCommand (SmtpCommandType.Unknown);
-		internal readonly static SmtpCommand NoCommand = new SmtpCommand (SmtpCommandType.NoCommand);
-		internal readonly static SmtpCommand Data = new SmtpCommand (SmtpCommandType.Data);
-		internal readonly static SmtpCommand Noop = new SmtpCommand (SmtpCommandType.Noop);
-		internal readonly static SmtpCommand Quit = new SmtpCommand (SmtpCommandType.Quit);
-		internal readonly static SmtpCommand Rset = new SmtpCommand (SmtpCommandType.Rset);
-		internal readonly static SmtpCommand StartTls = new SmtpCommand (SmtpCommandType.StartTls);
-
-		internal SmtpCommandType CommandType { get; }
+		internal static readonly SmtpCommand Unknown = new SmtpCommand (SmtpCommandType.Unknown);
+		internal static readonly SmtpCommand NoCommand = new SmtpCommand (SmtpCommandType.NoCommand);
+		internal static readonly SmtpCommand Data = new SmtpCommand (SmtpCommandType.Data);
+		internal static readonly SmtpCommand Noop = new SmtpCommand (SmtpCommandType.Noop);
+		internal static readonly SmtpCommand Quit = new SmtpCommand (SmtpCommandType.Quit);
+		internal static readonly SmtpCommand Rset = new SmtpCommand (SmtpCommandType.Rset);
+		internal static readonly SmtpCommand StartTls = new SmtpCommand (SmtpCommandType.StartTls);
 
 		protected SmtpCommand (SmtpCommandType commandType)
 		{
 			this.CommandType = commandType;
 		}
+
+		internal enum ExpectedInputType
+		{
+			Command,
+			Data,
+			AuthenticationResponse
+		}
+
+		internal SmtpCommandType CommandType { get; }
 
 		public override string ToString ()
 		{
@@ -38,19 +45,18 @@ namespace Novartment.Base.Net.Smtp
 				case SmtpCommandType.StartTls:
 					return "STARTTLS\r\n";
 			}
+
 			throw new InvalidOperationException ("Command's string representation undefined.");
 		}
 
-		#region static method Parse
-
-		/// <summary>
-		/// Разбор синтаксиса.
-		/// </summary>
-		[SuppressMessage ("Microsoft.Globalization",
+		// Разбор синтаксиса.
+		[SuppressMessage (
+			"Microsoft.Globalization",
 			"CA1303:Do not pass literals as localized parameters",
 			MessageId = "Novartment.Base.ILogWriter.Trace(System.String)",
-			Justification = "String is not exposed to the end user and will not be localized."),
-		SuppressMessage ("Microsoft.Globalization",
+			Justification = "String is not exposed to the end user and will not be localized.")]
+		[SuppressMessage (
+			"Microsoft.Globalization",
 			"CA1303:Do not pass literals as localized parameters",
 			MessageId = "Novartment.Base.Net.Smtp.SmtpInvalidSyntaxCommand.#ctor(Novartment.Base.Net.Smtp.SmtpCommandType,System.String)",
 			Justification = "String is not exposed to the end user and will not be localized.")]
@@ -71,6 +77,7 @@ namespace Novartment.Base.Net.Smtp
 				source.SkipBuffer (source.Count);
 				return new SmtpInvalidSyntaxCommand (SmtpCommandType.Unknown, "Ending CRLF not found in command.");
 			}
+
 			logger?.Trace ("<<< " + AsciiCharSet.GetStringMaskingInvalidChars (buffer, offset, countToCRLF, '?'));
 
 			// RFC 5321 part 4.5.3.1.4:
@@ -96,6 +103,7 @@ namespace Novartment.Base.Net.Smtp
 				source.SkipBuffer (countToCRLF);
 				return new SmtpInvalidSyntaxCommand (SmtpCommandType.Unknown, "Line is empty.");
 			}
+
 			// делаем терпимый к отклонениям от стандарта разбор
 			SmtpCommand result = null;
 			try
@@ -156,18 +164,21 @@ namespace Novartment.Base.Net.Smtp
 				// даже при исключении надо пропустить всю строку
 				source.SkipBuffer (countToCRLF);
 			}
+
 			return result;
 		}
 
-		[SuppressMessage ("Microsoft.Maintainability",
+		[SuppressMessage (
+		"Microsoft.Maintainability",
 			"CA1502:AvoidExcessiveComplexity",
 			Justification = "Method not too complex.")]
 		private static SmtpCommandType GetCommandType (BytesChunkEnumerator chunkEnumerator)
 		{
 			var commandTypeStr = chunkEnumerator.GetString ().ToUpperInvariant ();
 
-			if ((commandTypeStr == "MAIL") || (commandTypeStr == "RCPT")) // если команда из двух слов, то добавляем второе
+			if ((commandTypeStr == "MAIL") || (commandTypeStr == "RCPT"))
 			{
+				// если команда из двух слов, то добавляем второе
 				// ищем второе слово оканчивающееся на ':'
 				var isSecondWordFound = chunkEnumerator.MoveToNextChunk (0x0d, (byte)':', true);
 				if (isSecondWordFound)
@@ -207,13 +218,16 @@ namespace Novartment.Base.Net.Smtp
 				{
 					return -1;
 				}
+
 				countToCRLF++;
 			}
+
 			return countToCRLF;
 		}
 
-		[SuppressMessage ("Microsoft.Globalization",
-			"CA1303:Do not pass literals as localized parameters", 
+		[SuppressMessage (
+			"Microsoft.Globalization",
+			"CA1303:Do not pass literals as localized parameters",
 			MessageId = "Novartment.Base.Net.Smtp.SmtpInvalidSyntaxCommand.#ctor(Novartment.Base.Net.Smtp.SmtpCommandType,System.String)",
 			Justification = "String is not exposed to the end user and will not be localized.")]
 		private static SmtpCommand ParseAuthenticationResponse (IBufferedSource source, int countToCRLF)
@@ -223,6 +237,7 @@ namespace Novartment.Base.Net.Smtp
 			{
 				return new SmtpSaslResponseCommand (null);
 			}
+
 			byte[] response;
 			try
 			{
@@ -234,21 +249,24 @@ namespace Novartment.Base.Net.Smtp
 				source.SkipBuffer (countToCRLF + 2);
 				return new SmtpInvalidSyntaxCommand (SmtpCommandType.SaslResponse, "Unrecognized authentication response." + excpt.Message);
 			}
+
 			source.SkipBuffer (countToCRLF + 2);
 			return new SmtpSaslResponseCommand (response);
 		}
 
-		[SuppressMessage ("Microsoft.Globalization",
+		[SuppressMessage (
+		"Microsoft.Globalization",
 			"CA1303:Do not pass literals as localized parameters",
 			MessageId = "Novartment.Base.Net.Smtp.SmtpInvalidSyntaxCommand.#ctor(Novartment.Base.Net.Smtp.SmtpCommandType,System.String)",
 			Justification = "String is not exposed to the end user and will not be localized.")]
 		private static SmtpCommand ParseMailFrom (BytesChunkEnumerator chunkEnumerator)
 		{
-			var isAngleBracketedValueFound = chunkEnumerator.MoveToNextBracketedValue (0x20, (byte)'<' , (byte)'>');
+			var isAngleBracketedValueFound = chunkEnumerator.MoveToNextBracketedValue (0x20, (byte)'<', (byte)'>');
 			if (!isAngleBracketedValueFound)
 			{
 				return new SmtpInvalidSyntaxCommand (SmtpCommandType.MailFrom, "Unrecognized 'MAIL FROM' parameter.");
 			}
+
 			AddrSpec returnPath = null;
 			if (chunkEnumerator.ChunkSize > 2)
 			{
@@ -263,6 +281,7 @@ namespace Novartment.Base.Net.Smtp
 						$"Unrecognized 'MAIL FROM' parameter. {excpt.Message}"));
 				}
 			}
+
 			// RFC 3030:
 			// Mail-parameters  = esmtp-param *(SP esmtp-param)
 			// esmtp-param      = esmtp-keyword ["=" esmtp-value]
@@ -286,6 +305,7 @@ namespace Novartment.Base.Net.Smtp
 								{
 									return new SmtpInvalidSyntaxCommand (SmtpCommandType.MailFrom, "'MAIL FROM' BODY parameter specified more than once.");
 								}
+
 								bodyType = ContentTransferEncoding.EightBit;
 								bodyTypeSpecified = true;
 								break;
@@ -294,6 +314,7 @@ namespace Novartment.Base.Net.Smtp
 								{
 									return new SmtpInvalidSyntaxCommand (SmtpCommandType.MailFrom, "'MAIL FROM' BODY parameter specified more than once.");
 								}
+
 								bodyType = ContentTransferEncoding.Binary;
 								bodyTypeSpecified = true;
 								break;
@@ -301,12 +322,14 @@ namespace Novartment.Base.Net.Smtp
 								return new SmtpInvalidSyntaxCommand (SmtpCommandType.MailFrom, FormattableString.Invariant (
 									$"Unrecognized 'MAIL FROM' BODY parameter value '{parameterValue}'. Expected 8BITMIME or BINARYMIME."));
 						}
+
 						break;
 					case "AUTH=":
 						if ((parameterValue.Length < 2) || (parameterValue[0] != '<') || (parameterValue[parameterValue.Length - 1] != '>'))
 						{
 							return new SmtpInvalidSyntaxCommand (SmtpCommandType.MailFrom, "Unrecognized 'MAIL FROM' AUTH parameter.");
 						}
+
 						if (parameterValue.Length < 3)
 						{
 							associatedMailbox = SmtpMailFromCommand.EmptyAddrSpec;
@@ -322,26 +345,30 @@ namespace Novartment.Base.Net.Smtp
 								return new SmtpInvalidSyntaxCommand (SmtpCommandType.MailFrom, "Unrecognized 'MAIL FROM' AUTH parameter.");
 							}
 						}
+
 						break;
 					default:
 						return new SmtpInvalidSyntaxCommand (SmtpCommandType.MailFrom, FormattableString.Invariant (
 							$"Unrecognized 'MAIL FROM' parameter '{parameterNameAndValue}'. Expected BODY or AUTH."));
 				}
 			}
+
 			return new SmtpMailFromCommand (returnPath, bodyType, associatedMailbox);
 		}
 
-		[SuppressMessage ("Microsoft.Globalization",
+		[SuppressMessage (
+		"Microsoft.Globalization",
 			"CA1303:Do not pass literals as localized parameters",
 			MessageId = "Novartment.Base.Net.Smtp.SmtpInvalidSyntaxCommand.#ctor(Novartment.Base.Net.Smtp.SmtpCommandType,System.String)",
 			Justification = "String is not exposed to the end user and will not be localized.")]
 		private static SmtpCommand ParseRcptTo (BytesChunkEnumerator chunkEnumerator)
 		{
-			var isAngleBracketedValueFound = chunkEnumerator.MoveToNextBracketedValue (0x20 , (byte)'<', (byte)'>');
+			var isAngleBracketedValueFound = chunkEnumerator.MoveToNextBracketedValue (0x20, (byte)'<', (byte)'>');
 			if (!isAngleBracketedValueFound)
 			{
 				return new SmtpInvalidSyntaxCommand (SmtpCommandType.RcptTo, "Unrecognized 'RCPT TO' parameter.");
 			}
+
 			AddrSpec recepient = null;
 			var recipient = chunkEnumerator.GetStringInBrackets ();
 			try
@@ -353,10 +380,12 @@ namespace Novartment.Base.Net.Smtp
 				return new SmtpInvalidSyntaxCommand (SmtpCommandType.RcptTo, FormattableString.Invariant (
 					$"Unrecognized 'RCPT TO' parameter '{recipient}'. {excpt}"));
 			}
+
 			return new SmtpRcptToCommand (recepient);
 		}
 
-		[SuppressMessage ("Microsoft.Globalization",
+		[SuppressMessage (
+		"Microsoft.Globalization",
 			"CA1303:Do not pass literals as localized parameters",
 			MessageId = "Novartment.Base.Net.Smtp.SmtpInvalidSyntaxCommand.#ctor(Novartment.Base.Net.Smtp.SmtpCommandType,System.String)",
 			Justification = "String is not exposed to the end user and will not be localized.")]
@@ -371,6 +400,7 @@ namespace Novartment.Base.Net.Smtp
 			{
 				return new SmtpInvalidSyntaxCommand (SmtpCommandType.Bdat, "Missed size parameter in 'BDAT' command.");
 			}
+
 			long size;
 			bool isLast;
 			var sizeStr = chunkEnumerator.GetString ();
@@ -380,6 +410,7 @@ namespace Novartment.Base.Net.Smtp
 					sizeStr,
 					NumberStyles.AllowLeadingWhite | NumberStyles.AllowTrailingWhite | NumberStyles.AllowDecimalPoint,
 					CultureInfo.InvariantCulture);
+
 				// любые непробельные символы после размера считаем индикатором последней части
 				isLast = chunkEnumerator.MoveToNextChunk (0x20, 0x20);
 			}
@@ -388,10 +419,12 @@ namespace Novartment.Base.Net.Smtp
 				return new SmtpInvalidSyntaxCommand (SmtpCommandType.Bdat, FormattableString.Invariant (
 					$"Unrecognized size parameter '{sizeStr}' in 'BDAT' command. {excpt.Message}"));
 			}
+
 			return new SmtpBdatCommand (source, size, isLast);
 		}
 
-		[SuppressMessage ("Microsoft.Globalization",
+		[SuppressMessage (
+		"Microsoft.Globalization",
 			"CA1303:Do not pass literals as localized parameters",
 			MessageId = "Novartment.Base.Net.Smtp.SmtpInvalidSyntaxCommand.#ctor(Novartment.Base.Net.Smtp.SmtpCommandType,System.String)",
 			Justification = "String is not exposed to the end user and will not be localized.")]
@@ -402,6 +435,7 @@ namespace Novartment.Base.Net.Smtp
 			{
 				return new SmtpInvalidSyntaxCommand (SmtpCommandType.Auth, "Missed 'AUTH' mechanism parameter.");
 			}
+
 			var mechanism = chunkEnumerator.GetString ();
 			byte[] initialResponse = null;
 			var isInitialResponseFound = chunkEnumerator.MoveToNextChunk (0x20, 0x0d);
@@ -420,21 +454,21 @@ namespace Novartment.Base.Net.Smtp
 						$"Unrecognized 'AUTH' initial-response parameter. {excpt.Message}"));
 				}
 			}
+
 			return new SmtpAuthCommand (mechanism, initialResponse);
 		}
-
-		#endregion
 	}
 
+#pragma warning disable SA1402 // File may only contain a single class
 	internal class SmtpUnknownCommand : SmtpCommand
 	{
-		internal string Message { get; }
-
 		internal SmtpUnknownCommand (string message)
 			: base (SmtpCommandType.Unknown)
 		{
 			this.Message = message;
 		}
+
+		internal string Message { get; }
 	}
 
 	internal class SmtpTooLongCommand : SmtpCommand
@@ -447,24 +481,24 @@ namespace Novartment.Base.Net.Smtp
 
 	internal class SmtpInvalidSyntaxCommand : SmtpCommand
 	{
-		internal string Message { get; }
-	
 		internal SmtpInvalidSyntaxCommand (SmtpCommandType commandType, string message)
 			: base (commandType)
 		{
 			this.Message = message;
 		}
+
+		internal string Message { get; }
 	}
 
 	internal class SmtpHeloCommand : SmtpCommand
 	{
-		internal string ClientIdentification { get; }
-
 		internal SmtpHeloCommand (string clientIdentification)
 			: base (SmtpCommandType.Helo)
 		{
 			this.ClientIdentification = clientIdentification;
 		}
+
+		internal string ClientIdentification { get; }
 
 		public override string ToString ()
 		{
@@ -474,13 +508,13 @@ namespace Novartment.Base.Net.Smtp
 
 	internal class SmtpEhloCommand : SmtpCommand
 	{
-		internal string ClientIdentification { get; }
-
 		internal SmtpEhloCommand (string clientIdentification)
 			: base (SmtpCommandType.Ehlo)
 		{
 			this.ClientIdentification = clientIdentification;
 		}
+
+		internal string ClientIdentification { get; }
 
 		public override string ToString ()
 		{
@@ -490,18 +524,9 @@ namespace Novartment.Base.Net.Smtp
 
 	internal class SmtpMailFromCommand : SmtpCommand
 	{
-
 		internal static readonly AddrSpec _emptyAddrSpec = new AddrSpec (Guid.NewGuid ().ToString (), "local");
 
 		private ContentTransferEncoding _requestedContentTransferEncoding;
-
-		internal static AddrSpec EmptyAddrSpec => _emptyAddrSpec;
-
-		internal AddrSpec ReturnPath { get; }
-
-		internal AddrSpec AssociatedMailbox { get; }
-
-		internal ContentTransferEncoding RequestedContentTransferEncoding => _requestedContentTransferEncoding;
 
 		internal SmtpMailFromCommand (
 			AddrSpec returnPath,
@@ -513,6 +538,14 @@ namespace Novartment.Base.Net.Smtp
 			_requestedContentTransferEncoding = requestedContentTransferEncoding;
 			this.AssociatedMailbox = associatedMailbox;
 		}
+
+		internal static AddrSpec EmptyAddrSpec => _emptyAddrSpec;
+
+		internal AddrSpec ReturnPath { get; }
+
+		internal AddrSpec AssociatedMailbox { get; }
+
+		internal ContentTransferEncoding RequestedContentTransferEncoding => _requestedContentTransferEncoding;
 
 		public override string ToString ()
 		{
@@ -530,25 +563,27 @@ namespace Novartment.Base.Net.Smtp
 					result = "MAIL FROM:" + pathStr + "\r\n";
 					break;
 			}
+
 			if (this.AssociatedMailbox != null)
 			{
 				result += " AUTH=" + ((this.AssociatedMailbox != EmptyAddrSpec) ?
 					this.AssociatedMailbox.ToAngleString () :
 					"<>");
 			}
+
 			return result;
 		}
 	}
 
 	internal class SmtpRcptToCommand : SmtpCommand
 	{
-		internal AddrSpec Recipient { get; }
-
 		internal SmtpRcptToCommand (AddrSpec recipient)
 			: base (SmtpCommandType.RcptTo)
 		{
 			this.Recipient = recipient;
 		}
+
+		internal AddrSpec Recipient { get; }
 
 		public override string ToString ()
 		{
@@ -558,13 +593,13 @@ namespace Novartment.Base.Net.Smtp
 
 	internal class SmtpVrfyCommand : SmtpCommand
 	{
-		internal string Parameters { get; }
-		
 		internal SmtpVrfyCommand (string parameters)
 			: base (SmtpCommandType.Vrfy)
 		{
 			this.Parameters = parameters;
 		}
+
+		internal string Parameters { get; }
 
 		public override string ToString ()
 		{
@@ -574,12 +609,6 @@ namespace Novartment.Base.Net.Smtp
 
 	internal class SmtpBdatCommand : SmtpCommand
 	{
-		internal SizeLimitedBufferedSource Source { get; }
-
-		internal long Size { get; }
-
-		internal bool IsLast { get; }
-
 		internal SmtpBdatCommand (IBufferedSource source, long size, bool isLast)
 			: base (SmtpCommandType.Bdat)
 		{
@@ -588,9 +617,15 @@ namespace Novartment.Base.Net.Smtp
 			this.IsLast = isLast;
 		}
 
+		internal SizeLimitedBufferedSource Source { get; }
+
+		internal long Size { get; }
+
+		internal bool IsLast { get; }
+
 		public override string ToString ()
 		{
-			return (this.IsLast) ?
+			return this.IsLast ?
 				FormattableString.Invariant ($"BDAT {this.Size} LAST\r\n") :
 				FormattableString.Invariant ($"BDAT {this.Size}\r\n");
 		}
@@ -598,8 +633,6 @@ namespace Novartment.Base.Net.Smtp
 
 	internal class SmtpActualDataCommand : SmtpCommand
 	{
-		internal TemplateSeparatedBufferedSource Source { get; }
-	
 		internal SmtpActualDataCommand (IBufferedSource source, bool throwIfEndMarkerNotFound)
 			: base (SmtpCommandType.ActualData)
 		{
@@ -608,21 +641,23 @@ namespace Novartment.Base.Net.Smtp
 				new byte[] { 0x0d, 0x0a, (byte)'.', 0x0d, 0x0a },
 				throwIfEndMarkerNotFound);
 		}
+
+		internal TemplateSeparatedBufferedSource Source { get; }
 	}
 
 	internal class SmtpAuthCommand : SmtpCommand
 	{
-		// список см. http://www.iana.org/assignments/sasl-mechanisms/sasl-mechanisms.xhtml
-		internal string Mechanism { get; }
-
-		internal byte[] InitialResponse { get; }
-
 		internal SmtpAuthCommand (string mechanism, byte[] initialResponse)
 			: base (SmtpCommandType.Auth)
 		{
 			this.Mechanism = mechanism;
 			this.InitialResponse = initialResponse;
 		}
+
+		// список см. http://www.iana.org/assignments/sasl-mechanisms/sasl-mechanisms.xhtml
+		internal string Mechanism { get; }
+
+		internal byte[] InitialResponse { get; }
 
 		public override string ToString ()
 		{
@@ -634,19 +669,20 @@ namespace Novartment.Base.Net.Smtp
 
 	internal class SmtpSaslResponseCommand : SmtpCommand
 	{
-		internal byte[] Response { get; }
-
-		internal bool IsCancelRequest => (this.Response == null);
-
 		internal SmtpSaslResponseCommand (byte[] response)
 			: base (SmtpCommandType.SaslResponse)
 		{
 			this.Response = response;
 		}
 
+		internal byte[] Response { get; }
+
+		internal bool IsCancelRequest => this.Response == null;
+
 		public override string ToString ()
 		{
 			return Convert.ToBase64String (this.Response) + "\r\n";
 		}
 	}
+#pragma warning restore SA1402 // File may only contain a single class
 }

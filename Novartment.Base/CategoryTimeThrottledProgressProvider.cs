@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Threading;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
+using System.Threading;
 using Novartment.Base.Collections.Immutable;
 
 namespace Novartment.Base
@@ -67,14 +67,17 @@ namespace Novartment.Base
 			{
 				throw new ArgumentNullException (nameof (progress));
 			}
+
 			if (timerFactory == null)
 			{
 				throw new ArgumentNullException (nameof (timerFactory));
 			}
+
 			if (minimumInterval < 1)
 			{
 				throw new ArgumentOutOfRangeException (nameof (minimumInterval));
 			}
+
 			Contract.EndContractBlock ();
 
 			_progress = progress;
@@ -85,10 +88,11 @@ namespace Novartment.Base
 		/// <summary>
 		/// Освобождает занятые объектом ресурсы, прекращает приём уведомлений.
 		/// </summary>
-		[SuppressMessage ("Microsoft.Usage",
+		[SuppressMessage (
+			"Microsoft.Usage",
 			"CA1816:CallGCSuppressFinalizeCorrectly",
-			Justification = "There is no meaning to introduce a finalizer in derived type."),
-		SuppressMessage (
+			Justification = "There is no meaning to introduce a finalizer in derived type.")]
+		[SuppressMessage (
 			"Microsoft.Design",
 			"CA1063:ImplementIDisposableCorrectly",
 			Justification = "Implemented correctly.")]
@@ -136,12 +140,14 @@ namespace Novartment.Base
 						// уведомлений такой категории не было отложено, либо уже пришло время их отправлять
 						_categoryPostponedData = _categoryPostponedData.SetValue (
 							category,
-							new ReportEvent () { Time = DateTime.Now },
+							new ReportEvent { Time = DateTime.Now },
 							_categoryComparer);
 					}
+
 					needReport = true;
 				}
 			}
+
 			if (needReport)
 			{
 				_progress.Report (value);
@@ -176,19 +182,23 @@ namespace Novartment.Base
 						needReport = true;
 					}
 				}
+
 				if (needReport)
 				{
 					_progress.Report (data);
 				}
 			}
+
 			_reportingInProgress = 0;
 		}
 
 		private class ReportEvent
 		{
-			internal DateTime Time;
-			internal bool IsDataPresent;
-			internal T Data;
+			internal DateTime Time { get; set; }
+
+			internal bool IsDataPresent { get; set; }
+
+			internal T Data { get; set; }
 		}
 	}
 }

@@ -1,7 +1,7 @@
 ﻿using System;
+using System.Diagnostics.Contracts;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Diagnostics.Contracts;
 using Novartment.Base.BinaryStreaming;
 
 namespace Novartment.Base.Net.Mime
@@ -14,21 +14,34 @@ namespace Novartment.Base.Net.Mime
 	{
 		private MailMessage _nestedMessage = null;
 
-		/// <summary>Получает кодировку передачи содержимого тела сущности.</summary>
-		public ContentTransferEncoding TransferEncoding
-		{
-			get
-			{
-				return _nestedMessage?.TransferEncoding.GetSuitableCompositeMediaTypeTransferEncoding () ??
-					ContentTransferEncoding.Unspecified;
-			}
-		}
-
 		/// <summary>
 		/// Инициализирует новый экземпляр класса MessageEntityBody.
 		/// </summary>
 		public MessageEntityBody ()
 		{
+		}
+
+		/// <summary>Получает кодировку передачи содержимого тела сущности.</summary>
+		public ContentTransferEncoding TransferEncoding => _nestedMessage?.TransferEncoding.GetSuitableCompositeMediaTypeTransferEncoding () ??
+			ContentTransferEncoding.Unspecified;
+
+		/// <summary>
+		/// Получает или устанавливает вложенное сообщение.
+		/// </summary>
+		public MailMessage Message
+		{
+			get => _nestedMessage;
+			set
+			{
+				if (value == null)
+				{
+					throw new ArgumentNullException (nameof (value));
+				}
+
+				Contract.EndContractBlock ();
+
+				_nestedMessage = value;
+			}
 		}
 
 		/// <summary>
@@ -55,10 +68,12 @@ namespace Novartment.Base.Net.Mime
 			{
 				throw new ArgumentNullException (nameof (source));
 			}
+
 			if (subBodyFactory == null)
 			{
 				throw new ArgumentNullException (nameof (subBodyFactory));
 			}
+
 			Contract.EndContractBlock ();
 
 			if (cancellationToken.IsCancellationRequested)
@@ -82,31 +97,15 @@ namespace Novartment.Base.Net.Mime
 			{
 				throw new ArgumentNullException (nameof (destination));
 			}
+
 			Contract.EndContractBlock ();
 
 			if (this.Message == null)
 			{
 				throw new InvalidOperationException ("Required property 'Message' not specified.");
 			}
+
 			return this.Message.SaveAsync (destination, cancellationToken);
-		}
-
-		/// <summary>
-		/// Получает или устанавливает вложенное сообщение.
-		/// </summary>
-		public MailMessage Message
-		{
-			get { return _nestedMessage; }
-			set
-			{
-				if (value == null)
-				{
-					throw new ArgumentNullException (nameof (value));
-				}
-				Contract.EndContractBlock ();
-
-				_nestedMessage = value;
-			}
 		}
 	}
 }

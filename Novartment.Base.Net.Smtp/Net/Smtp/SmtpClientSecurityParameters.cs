@@ -1,7 +1,7 @@
 ﻿using System;
+using System.Diagnostics.Contracts;
 using System.Net;
 using System.Security.Cryptography.X509Certificates;
-using System.Diagnostics.Contracts;
 
 namespace Novartment.Base.Net
 {
@@ -10,6 +10,29 @@ namespace Novartment.Base.Net
 	/// </summary>
 	public sealed class SmtpClientSecurityParameters
 	{
+		// приватный конструктор принуждает создавать экземпляры с помощью статических методов
+		private SmtpClientSecurityParameters (
+			bool requireEncryption,
+			ICredentialsByHost credentials,
+			X509CertificateCollection clientCertificates)
+		{
+			this.EncryptionRequired = requireEncryption;
+			this.ClientCredentials = credentials;
+			this.ClientCertificates = clientCertificates;
+		}
+
+		/// <summary>
+		/// Получает параметры, не требующие использования механизмов безопасности.
+		/// </summary>
+		public static SmtpClientSecurityParameters AllowNoSecurity { get; } =
+			new SmtpClientSecurityParameters (false, null, null);
+
+		/// <summary>
+		/// Получает параметры, требующие использование шифрования.
+		/// </summary>
+		public static SmtpClientSecurityParameters RequireEncryption { get; } =
+			new SmtpClientSecurityParameters (true, null, null);
+
 		/// <summary>
 		/// Получает признак использования шифрования.
 		/// </summary>
@@ -26,29 +49,6 @@ namespace Novartment.Base.Net
 		public X509CertificateCollection ClientCertificates { get; }
 
 		/// <summary>
-		/// Получает параметры, не требующие использования механизмов безопасности.
-		/// </summary>
-		public static SmtpClientSecurityParameters AllowNoSecurity { get; } =
-			new SmtpClientSecurityParameters (false,  null, null);
-
-		/// <summary>
-		/// Получает параметры, требующие использование шифрования.
-		/// </summary>
-		public static SmtpClientSecurityParameters RequireEncryption { get; } =
-			new SmtpClientSecurityParameters (true, null, null);
-
-		// приватный конструктор принуждает создавать экземпляры с помощью статических методов
-		private SmtpClientSecurityParameters (
-			bool requireEncryption,
-			ICredentialsByHost credentials,
-			X509CertificateCollection clientCertificates)
-		{
-			this.EncryptionRequired = requireEncryption;
-			this.ClientCredentials = credentials;
-			this.ClientCertificates = clientCertificates;
-		}
-
-		/// <summary>
 		/// Получает параметры, требующие использование шифрования и идентификации клиента с помощью указанного набора сертификатов.
 		/// </summary>
 		/// <param name="clientCertificates">Сертификаты клиента, используемые при установке защищённого соединения.</param>
@@ -60,10 +60,12 @@ namespace Novartment.Base.Net
 			{
 				throw new ArgumentNullException (nameof (clientCertificates));
 			}
+
 			if (clientCertificates.Count < 1)
 			{
 				throw new ArgumentOutOfRangeException (nameof (clientCertificates));
 			}
+
 			Contract.EndContractBlock ();
 
 			return new SmtpClientSecurityParameters (true, null, clientCertificates);
@@ -82,6 +84,7 @@ namespace Novartment.Base.Net
 			{
 				throw new ArgumentNullException (nameof (credentials));
 			}
+
 			Contract.EndContractBlock ();
 
 			return new SmtpClientSecurityParameters (true, credentials, null);

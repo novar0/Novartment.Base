@@ -1,8 +1,8 @@
 ﻿using System;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
+using System.Threading;
+using System.Threading.Tasks;
 using Novartment.Base.BinaryStreaming;
 
 namespace Novartment.Base.Media
@@ -10,11 +10,12 @@ namespace Novartment.Base.Media
 	/// <summary>
 	/// Методы обработки файлов в формате "матрёшка".
 	/// </summary>
-	[SuppressMessage ("Microsoft.Naming",
+	[SuppressMessage (
+		"Microsoft.Naming",
 		"CA1704:IdentifiersShouldBeSpelledCorrectly",
 		MessageId = "Matroska",
-		Justification = "'Matroska' represents standard term."),
-	CLSCompliant (false)]
+		Justification = "'Matroska' represents standard term.")]
+	[CLSCompliant (false)]
 	public static class MatroskaFile
 	{
 		/// <summary>
@@ -31,6 +32,7 @@ namespace Novartment.Base.Media
 			{
 				throw new ArgumentNullException (nameof (source));
 			}
+
 			Contract.EndContractBlock ();
 
 			return ParseSegmentInformationAsyncStateMachine (source, cancellationToken);
@@ -49,6 +51,7 @@ namespace Novartment.Base.Media
 					return element;
 				}
 			}
+
 			throw new InvalidOperationException ("Segment Information not found");
 		}
 	}

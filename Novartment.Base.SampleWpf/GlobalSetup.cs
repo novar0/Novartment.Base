@@ -90,6 +90,7 @@ namespace Novartment.Base.SampleWpf
 				{
 					return;
 				}
+
 				var notUsed = ComponentApplication.Current.Dispatcher.InvokeAsync (action);
 			}
 		}

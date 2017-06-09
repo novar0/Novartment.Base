@@ -10,6 +10,20 @@ namespace Novartment.Base.UI.Wpf
 	public class ContextCollectionData<T>
 	{
 		/// <summary>
+		/// Инициализирует новый экземпляр ContextCollectionData на основе указанных данных.
+		/// </summary>
+		/// <param name="context">Контекст элемента, для которого вызвана команда.</param>
+		/// <param name="contextCollection">Коллекция, которая является источником списка элементов,
+		/// частью которого является элемент, для которого вызвана команда.</param>
+		/// <param name="contextCollectionSelectedItems">Эементы, выбранные в ContextCollection.</param>
+		public ContextCollectionData (object context, IEnumerable<T> contextCollection, IReadOnlyFiniteSet<T> contextCollectionSelectedItems)
+		{
+			this.Context = context;
+			this.ContextCollection = contextCollection;
+			this.ContextCollectionSelectedItems = contextCollectionSelectedItems;
+		}
+
+		/// <summary>
 		/// Получает контекст элемента, для которого вызвана команда.
 		/// </summary>
 		public object Context { get; }
@@ -23,19 +37,5 @@ namespace Novartment.Base.UI.Wpf
 		/// Получает элементы, выбранные в ContextCollection.
 		/// </summary>
 		public IReadOnlyFiniteSet<T> ContextCollectionSelectedItems { get; }
-
-		/// <summary>
-		/// Инициализирует новый экземпляр ContextCollectionData на основе указанных данных.
-		/// </summary>
-		/// <param name="context">Контекст элемента, для которого вызвана команда.</param>
-		/// <param name="contextCollection">Коллекция, которая является источником списка элементов,
-		/// частью которого является элемент, для которого вызвана команда.</param>
-		/// <param name="contextCollectionSelectedItems">Эементы, выбранные в ContextCollection.</param>
-		public ContextCollectionData (object context, IEnumerable<T> contextCollection, IReadOnlyFiniteSet<T> contextCollectionSelectedItems)
-		{
-			this.Context = context;
-			this.ContextCollection = contextCollection;
-			this.ContextCollectionSelectedItems = contextCollectionSelectedItems;
-		}
 	}
 }

@@ -9,26 +9,11 @@ namespace Novartment.Base.Text
 	public class StructuredValueElement
 	{
 		/// <summary>
-		/// Получает тип, определяющий способ кодирования элемента.
-		/// </summary>
-		public StructuredValueElementType ElementType { get; }
-
-		/// <summary>
-		/// Получает кодированное в соответствии с типом значение элемента.
-		/// </summary>
-		public string Value { get; }
-
-		/// <summary>
-		/// Получает признак того, что исходная строка храниться в виде "word-encoded".
-		/// </summary>
-		public bool IsWordEncoded { get; }
-
-		/// <summary>
 		/// Инициализирует новый экземпляр класса StructuredValueElement представляющий указанный знак-разделитель.
 		/// </summary>
 		/// <param name="separator">Значение создаваемого элемента.</param>
-		public StructuredValueElement (char separator) :
-			this (StructuredValueElementType.Separator, new string (separator, 1))
+		public StructuredValueElement (char separator)
+			: this (StructuredValueElementType.Separator, new string (separator, 1))
 		{
 		}
 
@@ -43,14 +28,17 @@ namespace Novartment.Base.Text
 			{
 				throw new ArgumentOutOfRangeException (nameof (type));
 			}
+
 			if (value == null)
 			{
 				throw new ArgumentNullException (nameof (value));
 			}
+
 			if (value.Length < 1)
 			{
 				throw new ArgumentOutOfRangeException (nameof (value));
 			}
+
 			Contract.EndContractBlock ();
 
 			switch (type)
@@ -73,6 +61,21 @@ namespace Novartment.Base.Text
 		}
 
 		/// <summary>
+		/// Получает тип, определяющий способ кодирования элемента.
+		/// </summary>
+		public StructuredValueElementType ElementType { get; }
+
+		/// <summary>
+		/// Получает кодированное в соответствии с типом значение элемента.
+		/// </summary>
+		public string Value { get; }
+
+		/// <summary>
+		/// Получает признак того, что исходная строка храниться в виде "word-encoded".
+		/// </summary>
+		public bool IsWordEncoded { get; }
+
+		/// <summary>
 		/// Декодирует значение элемента в соответствии с его типом.
 		/// </summary>
 		/// <returns>Декодировенное значение элемента.</returns>
@@ -83,9 +86,9 @@ namespace Novartment.Base.Text
 				case StructuredValueElementType.SquareBracketedValue:
 				case StructuredValueElementType.QuotedValue:
 					var value = UnquoteString (this.Value);
-					return (this.IsWordEncoded) ? Rfc2047EncodedWord.Parse (value) : value;
+					return this.IsWordEncoded ? Rfc2047EncodedWord.Parse (value) : value;
 				case StructuredValueElementType.Value:
-					return (this.IsWordEncoded) ? Rfc2047EncodedWord.Parse (this.Value) : this.Value;
+					return this.IsWordEncoded ? Rfc2047EncodedWord.Parse (this.Value) : this.Value;
 				case StructuredValueElementType.Separator:
 					return this.Value;
 				default:
@@ -106,6 +109,15 @@ namespace Novartment.Base.Text
 				(this.Value[0] == separator);
 		}
 
+		/// <summary>
+		/// Преобразовывает значение объекта в эквивалентное ему строковое представление.
+		/// </summary>
+		/// <returns>Строковое представление значения объекта.</returns>
+		public override string ToString ()
+		{
+			return "<" + this.ElementType + "> " + this.Value;
+		}
+
 		private static string UnquoteString (string value)
 		{
 			int idx = 0;
@@ -116,18 +128,11 @@ namespace Novartment.Base.Text
 				{
 					i++;
 				}
+
 				result[idx++] = value[i];
 			}
-			return new string (result, 0, idx);
-		}
 
-		/// <summary>
-		/// Преобразовывает значение объекта в эквивалентное ему строковое представление.
-		/// </summary>
-		/// <returns>Строковое представление значения объекта.</returns>
-		public override string ToString ()
-		{
-			return "<" + this.ElementType + "> " + this.Value;
+			return new string (result, 0, idx);
 		}
 	}
 }

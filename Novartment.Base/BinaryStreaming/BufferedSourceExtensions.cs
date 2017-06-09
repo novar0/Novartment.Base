@@ -1,9 +1,9 @@
 ﻿using System;
+using System.Diagnostics.Contracts;
 using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Diagnostics.Contracts;
 
 namespace Novartment.Base.BinaryStreaming
 {
@@ -12,8 +12,6 @@ namespace Novartment.Base.BinaryStreaming
 	/// </summary>
 	public static class BufferedSourceExtensions
 	{
-		#region method IsEmpty
-
 		/// <summary>
 		/// Проверяет что указанный источник исчерпан и не содержит данных.
 		/// </summary>
@@ -25,14 +23,11 @@ namespace Novartment.Base.BinaryStreaming
 			{
 				throw new ArgumentNullException (nameof (source));
 			}
+
 			Contract.EndContractBlock ();
 
 			return (source.Count < 1) && source.IsExhausted;
 		}
-
-		#endregion
-
-		#region method TrySkipAsync
 
 		/// <summary>
 		/// Пытается асинхронно пропустить указанное количество данных источника, включая доступные в буфере данные.
@@ -52,16 +47,17 @@ namespace Novartment.Base.BinaryStreaming
 			{
 				throw new ArgumentNullException (nameof (source));
 			}
+
 			if (size < 0L)
 			{
 				throw new ArgumentOutOfRangeException (nameof (size));
 			}
+
 			Contract.EndContractBlock ();
 
-			var fastSkipSource = source as IFastSkipBufferedSource;
-			if (fastSkipSource != null)
+			if (source is IFastSkipBufferedSource fastSkipSource)
 			{
-				return fastSkipSource.TryFastSkipAsync (size, cancellationToken);
+				return fastSkipSource.TryFastSkipAsync(size, cancellationToken);
 			}
 
 			// источник не поддерживает быстрый пропуск,
@@ -81,35 +77,32 @@ namespace Novartment.Base.BinaryStreaming
 				return Task.FromResult ((long)available);
 			}
 
-			return TrySkipAsyncStateMachine (source, size, cancellationToken);
-		}
+			return TrySkipAsyncStateMachine();
 
-		private static async Task<long> TrySkipAsyncStateMachine (IBufferedSource source, long size, CancellationToken cancellationToken)
-		{
-			long skipped = 0L;
-			do
+			async Task<long> TrySkipAsyncStateMachine()
 			{
-				// пропускаем всё что в буфере
-				var available = source.Count;
-				source.SkipBuffer (available);
-				size -= (long)available;
-				skipped += (long)available;
+				long skipped = 0L;
+				do
+				{
+					// пропускаем всё что в буфере
+					available = source.Count;
+					source.SkipBuffer(available);
+					size -= (long)available;
+					skipped += (long)available;
 
-				//заполняем буфер
-				await source.FillBufferAsync (cancellationToken).ConfigureAwait (false);
-			} while (!source.IsExhausted && (size > (long)source.Count));
+					// заполняем буфер
+					await source.FillBufferAsync(cancellationToken).ConfigureAwait(false);
+				}
+				while (!source.IsExhausted && (size > (long)source.Count));
 
-			// пропускаем частично буфер
-			var reminder = Math.Min (size, (long)source.Count);
-			source.SkipBuffer ((int)reminder);
-			skipped += reminder;
+				// пропускаем частично буфер
+				var reminder = Math.Min(size, (long)source.Count);
+				source.SkipBuffer((int)reminder);
+				skipped += reminder;
 
-			return skipped;
+				return skipped;
+			}
 		}
-
-		#endregion
-
-		#region method SkipToEndAsync
 
 		/// <summary>
 		/// Пытается асинхронно пропустить все оставшиеся данные источника, включая доступные в буфере данные.
@@ -126,12 +119,12 @@ namespace Novartment.Base.BinaryStreaming
 			{
 				throw new ArgumentNullException (nameof (source));
 			}
+
 			Contract.EndContractBlock ();
 
-			var fastSkipSource = source as IFastSkipBufferedSource;
-			if (fastSkipSource != null)
+			if (source is IFastSkipBufferedSource fastSkipSource)
 			{
-				return fastSkipSource.TryFastSkipAsync (long.MaxValue, cancellationToken);
+				return fastSkipSource.TryFastSkipAsync(long.MaxValue, cancellationToken);
 			}
 
 			var available = source.Count;
@@ -144,28 +137,26 @@ namespace Novartment.Base.BinaryStreaming
 
 			// источник не поддерживает быстрый пропуск,
 			// поэтому будем пропускать путём последовательного считывания и пропуска буфера
-			return SkipToEndStateMachine (source, (long)available, cancellationToken);
-		}
+			return SkipToEndStateMachine ();
 
-		private static async Task<long> SkipToEndStateMachine (IBufferedSource source, long skipped, CancellationToken cancellationToken)
-		{
-			do
+			async Task<long> SkipToEndStateMachine ()
 			{
-				//заполняем буфер
-				await source.FillBufferAsync (cancellationToken).ConfigureAwait (false);
+				var skipped = (long)available;
+				do
+				{
+					// заполняем буфер
+					await source.FillBufferAsync (cancellationToken).ConfigureAwait (false);
 
-				// пропускаем всё что в буфере
-				var available = source.Count;
-				source.SkipBuffer (available);
-				skipped += (long)available;
-			} while (!source.IsExhausted);
+					// пропускаем всё что в буфере
+					available = source.Count;
+					source.SkipBuffer (available);
+					skipped += (long)available;
+				}
+				while (!source.IsExhausted);
 
-			return skipped;
+				return skipped;
+			}
 		}
-
-		#endregion
-
-		#region method ReadAsync
 
 		/// <summary>
 		/// Считывает указанное количество байтов в указанный массив по указанному смещению из указанного источника данных.
@@ -179,7 +170,8 @@ namespace Novartment.Base.BinaryStreaming
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
 		/// <returns>Задача, результатом которой является количество байтов, помещённых в буфер.
 		/// Может быть меньше, чем запрошено, если источник исчерпан.</returns>
-		public static Task<int> ReadAsync (this IBufferedSource source,
+		public static Task<int> ReadAsync (
+			this IBufferedSource source,
 			byte[] buffer,
 			int offset,
 			int count,
@@ -189,64 +181,60 @@ namespace Novartment.Base.BinaryStreaming
 			{
 				throw new ArgumentNullException (nameof (source));
 			}
+
 			if (buffer == null)
 			{
 				throw new ArgumentNullException (nameof (buffer));
 			}
+
 			if ((offset < 0) || (offset > buffer.Length) || ((offset == buffer.Length) && (count > 0)))
 			{
 				throw new ArgumentOutOfRangeException (nameof (offset));
 			}
+
 			if ((count < 0) || ((offset + count) > buffer.Length))
 			{
 				throw new ArgumentOutOfRangeException (nameof (count));
 			}
+
 			Contract.EndContractBlock ();
 
-			return (count > 0) ?
-				ReadAsyncStateMachine (source, buffer, offset, count, cancellationToken) :
-				Task.FromResult (0);
-		}
+			return (count > 0) ? ReadAsyncStateMachine () : Task.FromResult (0);
 
-		private static async Task<int> ReadAsyncStateMachine (this IBufferedSource source,
-			byte[] buffer,
-			int offset,
-			int count,
-			CancellationToken cancellationToken)
-		{
-			int totalSize = 0;
-			do
+			async Task<int> ReadAsyncStateMachine ()
 			{
-				cancellationToken.ThrowIfCancellationRequested ();
+				int totalSize = 0;
+				do
+				{
+					cancellationToken.ThrowIfCancellationRequested ();
 
-				if ((count > source.Count) && !source.IsExhausted)
-				{
-					await source.FillBufferAsync (cancellationToken).ConfigureAwait (false);
-				}
-				if (source.Count < 1)
-				{
-					if (source.IsExhausted)
+					if ((count > source.Count) && !source.IsExhausted)
 					{
-						break; // end of stream
+						await source.FillBufferAsync (cancellationToken).ConfigureAwait (false);
+					}
+
+					if (source.Count < 1)
+					{
+						if (source.IsExhausted)
+						{
+							break; // end of stream
+						}
+					}
+					else
+					{
+						var size = Math.Min (source.Count, count);
+						Array.Copy (source.Buffer, source.Offset, buffer, offset, size);
+						source.SkipBuffer (size);
+						offset += size;
+						count -= size;
+						totalSize += size;
 					}
 				}
-				else
-				{
-					var size = Math.Min (source.Count, count);
-					Array.Copy (source.Buffer, source.Offset, buffer, offset, size);
-					source.SkipBuffer (size);
-					offset += size;
-					count -= size;
-					totalSize += size;
-				}
-			} while (count > 0);
+				while (count > 0);
 
-			return totalSize;
+				return totalSize;
+			}
 		}
-
-		#endregion
-
-		#region method IndexOfAsync
 
 		/// <summary>
 		/// Асинхронно ищет первое нахождение указанного байта в буфере указанного источника данных,
@@ -263,6 +251,7 @@ namespace Novartment.Base.BinaryStreaming
 			{
 				throw new ArgumentNullException (nameof (source));
 			}
+
 			Contract.EndContractBlock ();
 
 			// проверяем то, что уже есть в буфере
@@ -274,50 +263,51 @@ namespace Novartment.Base.BinaryStreaming
 				{
 					return Task.FromResult (offset);
 				}
+
 				offset++;
 			}
 
 			if (source.IsExhausted || // источник исчерпался
-				((source.Offset < 1) && (offset >= source.Buffer.Length))) // больше нет места в буфере
+				((source.Offset < 1) && (offset >= source.Buffer.Length)))
 			{
 				// буфер полон, запрашивать данные больше нет смысла
 				return Task.FromResult (-1);
 			}
 
 			// продолжение поиска с предварительным вызовом заполнения буфера
-			return IndexOfAsyncStateMachine (offset, source, value, cancellationToken);
-		}
-		private static async Task<int> IndexOfAsyncStateMachine (int offset, IBufferedSource source, byte value, CancellationToken cancellationToken)
-		{
-			while (!source.IsExhausted)
+			return IndexOfAsyncStateMachine ();
+
+			async Task<int> IndexOfAsyncStateMachine ()
 			{
-				cancellationToken.ThrowIfCancellationRequested ();
-				var sizeScanned = offset - source.Offset; // запоминаем сколько мы уже просмотрели от начала, потому что начало сдвинется при запросе новых данных
-				// запрашиваем дополнительные данные (старые данные останутся в буфере)
-				await source.FillBufferAsync (cancellationToken).ConfigureAwait (false);
-				offset = source.Offset + sizeScanned;
-				var end = source.Offset + source.Count;
-				if (offset >= end)
+				while (!source.IsExhausted)
 				{
-					// запрос не добавил новых данных, что означает что в буфер больше ничего не влезет
-					break;
-				}
-				while (offset < end)
-				{
-					if (source.Buffer[offset] == value)
+					cancellationToken.ThrowIfCancellationRequested ();
+					var sizeScanned = offset - source.Offset; // запоминаем сколько мы уже просмотрели от начала, потому что начало сдвинется при запросе новых данных
+															  // запрашиваем дополнительные данные (старые данные останутся в буфере)
+					await source.FillBufferAsync (cancellationToken).ConfigureAwait (false);
+					offset = source.Offset + sizeScanned;
+					end = source.Offset + source.Count;
+					if (offset >= end)
 					{
-						return offset;
+						// запрос не добавил новых данных, что означает что в буфер больше ничего не влезет
+						break;
 					}
-					offset++;
+
+					while (offset < end)
+					{
+						if (source.Buffer[offset] == value)
+						{
+							return offset;
+						}
+
+						offset++;
+					}
 				}
+
+				// источник исчерпался или нет места в буфере, запрашивать данные больше нет смысла
+				return -1;
 			}
-			// источник исчерпался или нет места в буфере, запрашивать данные больше нет смысла
-			return -1;
 		}
-
-		#endregion
-
-		#region method ReadAllBytesAsync
 
 		/// <summary>
 		/// Считывает все данные, оставшиеся в источнике и возвращает их в виде массива байтов.
@@ -332,6 +322,7 @@ namespace Novartment.Base.BinaryStreaming
 			{
 				throw new ArgumentNullException (nameof (source));
 			}
+
 			Contract.EndContractBlock ();
 
 			if (source.IsExhausted)
@@ -343,38 +334,37 @@ namespace Novartment.Base.BinaryStreaming
 					Array.Copy (source.Buffer, source.Offset, copy, 0, sizeExhausted);
 					source.SkipBuffer (sizeExhausted);
 				}
+
 				return Task.FromResult (copy);
 			}
 
-			return ReadAllBytesAsyncStateMachine (source, cancellationToken);
-		}
+			return ReadAllBytesAsyncStateMachine ();
 
-		private static async Task<byte[]> ReadAllBytesAsyncStateMachine (this IBufferedSource source, CancellationToken cancellationToken)
-		{
-			await source.FillBufferAsync (cancellationToken).ConfigureAwait (false);
-			var size = source.Count;
-			int totalSize = 0;
-			var memStream = new MemoryStream (size);
-			while (size > 0)
+			async Task<byte[]> ReadAllBytesAsyncStateMachine ()
 			{
-				cancellationToken.ThrowIfCancellationRequested ();
-				if (((long)totalSize + (long)size) > (long)int.MaxValue)
-				{
-					throw new InvalidOperationException (FormattableString.Invariant (
-						$"Too big size of data ({(long)totalSize + (long)size}). Supported maximum is {Int32.MaxValue}."));
-				}
-				memStream.Write (source.Buffer, source.Offset, size);
-				totalSize += size;
-				source.SkipBuffer (size);
 				await source.FillBufferAsync (cancellationToken).ConfigureAwait (false);
-				size = source.Count;
+				var size = source.Count;
+				int totalSize = 0;
+				var memStream = new MemoryStream (size);
+				while (size > 0)
+				{
+					cancellationToken.ThrowIfCancellationRequested ();
+					if (((long)totalSize + (long)size) > (long)int.MaxValue)
+					{
+						throw new InvalidOperationException (FormattableString.Invariant (
+							$"Too big size of data ({(long)totalSize + (long)size}). Supported maximum is {int.MaxValue}."));
+					}
+
+					memStream.Write (source.Buffer, source.Offset, size);
+					totalSize += size;
+					source.SkipBuffer (size);
+					await source.FillBufferAsync (cancellationToken).ConfigureAwait (false);
+					size = source.Count;
+				}
+
+				return memStream.ToArray ();
 			}
-			return memStream.ToArray ();
 		}
-
-		#endregion
-
-		#region method ReadAllTextAsync
 
 		/// <summary>
 		/// Считывает все данные, оставшиеся в источнике и возвращает их в виде строки.
@@ -389,26 +379,24 @@ namespace Novartment.Base.BinaryStreaming
 			{
 				throw new ArgumentNullException (nameof (source));
 			}
+
 			if (encoding == null)
 			{
 				throw new ArgumentNullException (nameof (encoding));
 			}
+
 			Contract.EndContractBlock ();
 
 			// обязательно читать полностью всё потому что неизвестно сколько байт занимают отдельные символы
 			var task = ReadAllBytesAsync (source, cancellationToken);
-			return ReadAllTextAsyncFinalizer (task, encoding);
+			return ReadAllTextAsyncFinalizer ();
+
+			async Task<string> ReadAllTextAsyncFinalizer ()
+			{
+				var buf = await task.ConfigureAwait (false);
+				return encoding.GetString (buf, 0, buf.Length);
+			}
 		}
-
-		private static async Task<string> ReadAllTextAsyncFinalizer (Task<byte[]> task, Encoding encoding)
-		{
-			var buf = await task.ConfigureAwait (false);
-			return encoding.GetString (buf, 0, buf.Length);
-		}
-
-		#endregion
-
-		#region method WriteToAsync
 
 		/// <summary>
 		/// Сохраняет содержимое указанного источника данных в указанный получатель двоичных данных.
@@ -417,7 +405,8 @@ namespace Novartment.Base.BinaryStreaming
 		/// <param name="destination">Получатель двоичных данных, в который будет сохранено содержимое указанного источника данных.</param>
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
 		/// <returns>Задача, результатом которой является количество байтов, записанный в указанный получатель двоичных данных.</returns>
-		public static Task<long> WriteToAsync (this IBufferedSource source,
+		public static Task<long> WriteToAsync (
+			this IBufferedSource source,
 			IBinaryDestination destination,
 			CancellationToken cancellationToken)
 		{
@@ -425,16 +414,19 @@ namespace Novartment.Base.BinaryStreaming
 			{
 				throw new ArgumentNullException (nameof (source));
 			}
+
 			if (destination == null)
 			{
 				throw new ArgumentNullException (nameof (destination));
 			}
+
 			Contract.EndContractBlock ();
 
 			return WriteToAsyncStateMachine (source, destination, cancellationToken);
 		}
 
-		private static async Task<long> WriteToAsyncStateMachine (this IBufferedSource source,
+		private static async Task<long> WriteToAsyncStateMachine (
+			this IBufferedSource source,
 			IBinaryDestination destination,
 			CancellationToken cancellationToken)
 		{
@@ -447,6 +439,7 @@ namespace Novartment.Base.BinaryStreaming
 				{
 					break;
 				}
+
 				cancellationToken.ThrowIfCancellationRequested ();
 				await destination.WriteAsync (source.Buffer, source.Offset, available, cancellationToken).ConfigureAwait (false);
 				resultSize += available;
@@ -455,8 +448,5 @@ namespace Novartment.Base.BinaryStreaming
 
 			return resultSize;
 		}
-
-		#endregion
-
 	}
 }

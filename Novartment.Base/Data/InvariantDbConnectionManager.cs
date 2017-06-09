@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
-using System.Globalization;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
+using System.Globalization;
 
 namespace Novartment.Base.Data
 {
@@ -30,9 +30,9 @@ namespace Novartment.Base.Data
 		private readonly object _connectionLocker = new object ();
 		private readonly object _transactionLocker = new object ();
 
-		private int _globalParamNumber; // номера параметров для sql server должны быть уникальными в пределах транзакции
 		private readonly ReusableDisposable<DbTransaction> _activeTransaction = new ReusableDisposable<DbTransaction> ();
 		private readonly ILogWriter _logger;
+		private int _globalParamNumber; // номера параметров для sql server должны быть уникальными в пределах транзакции
 
 		/// <summary>
 		/// Инициализирует новый экземпляр класса InvariantDbConnectionManager с указанными параметрами.
@@ -41,7 +41,8 @@ namespace Novartment.Base.Data
 		/// <param name="connectionString">Строка подключения.</param>
 		/// <param name="commandTimeout">Время (в секундах) ожидания выполнения команды перед тем как она будет прервана с ошибкой.</param>
 		/// <param name="logger">Опциональный объект-журнал для записей о событиях. Укажите null если не требуется.</param>
-		[SuppressMessage ("Microsoft.Design",
+		[SuppressMessage (
+		"Microsoft.Design",
 			"CA1026:DefaultParametersShouldNotBeUsed",
 			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
 		public InvariantDbConnectionManager (DbProviderFactory factory, string connectionString, int commandTimeout, ILogWriter logger = null)
@@ -50,14 +51,17 @@ namespace Novartment.Base.Data
 			{
 				throw new ArgumentNullException (nameof (factory));
 			}
+
 			if (connectionString == null)
 			{
 				throw new ArgumentNullException (nameof (connectionString));
 			}
+
 			if (commandTimeout < 0)
 			{
 				throw new ArgumentOutOfRangeException (nameof (commandTimeout));
 			}
+
 			Contract.EndContractBlock ();
 
 			var factoryTypeName = factory.GetType ().FullName;
@@ -88,10 +92,13 @@ namespace Novartment.Base.Data
 					_lastIdentityStatement = null;
 					break;
 				default:
-					throw new ArgumentOutOfRangeException (nameof (factory),
-						"Specified provider factory (" + factoryTypeName + ") not supported, please use one of the following:" +
-						" SqlClientFactory, SqlCeProviderFactory, OracleClientFactory, OdbcFactory, OleDbFactory.");
+					var excptText = "Specified provider factory (" + factoryTypeName + ") not supported, please use one of the following:" +
+						" SqlClientFactory, SqlCeProviderFactory, OracleClientFactory, OdbcFactory, OleDbFactory.";
+					throw new ArgumentOutOfRangeException (
+						nameof (factory),
+						excptText);
 			}
+
 			_workDbConnection = factory.CreateConnection (); // тут не происходит никаких подключений к БД
 			_workDbConnection.ConnectionString = connectionString;
 			_commandTimeOut = commandTimeout;
@@ -130,7 +137,8 @@ namespace Novartment.Base.Data
 		/// <param name="objectName">Имя объекта.</param>
 		/// <param name="schemaName">Имя схемы. Укажите null если схему указывать не нужно.</param>
 		/// <returns>Сформатированное имя объекта.</returns>
-		[SuppressMessage ("Microsoft.Design",
+		[SuppressMessage (
+		"Microsoft.Design",
 			"CA1026:DefaultParametersShouldNotBeUsed",
 			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
 		public string FormatObjectName (string objectName, string schemaName = null)
@@ -139,6 +147,7 @@ namespace Novartment.Base.Data
 			{
 				throw new ArgumentNullException (nameof (objectName));
 			}
+
 			Contract.EndContractBlock ();
 
 			return (schemaName == null) ?
@@ -149,7 +158,8 @@ namespace Novartment.Base.Data
 		/// <summary>
 		/// Начинает транзакцию.
 		/// </summary>
-		[SuppressMessage ("Microsoft.Globalization",
+		[SuppressMessage (
+		"Microsoft.Globalization",
 			"CA1303:Do not pass literals as localized parameters",
 			MessageId = "Novartment.Base.ILogWriter.Error(System.String)",
 			Justification = "String is not exposed to the end user and will not be localized.")]
@@ -163,6 +173,7 @@ namespace Novartment.Base.Data
 					_logger?.Error (msg);
 					throw new InvalidOperationException (msg);
 				}
+
 				lock (_transactionLocker)
 				{
 					if (_activeTransaction.Value != null)
@@ -171,16 +182,19 @@ namespace Novartment.Base.Data
 						_logger?.Error (msg);
 						throw new InvalidOperationException (msg);
 					}
+
 					_activeTransaction.Value = _workDbConnection.BeginTransaction ();
 				}
 			}
+
 			_globalParamNumber = 0;
 		}
 
 		/// <summary>
 		/// Подтверждает начатую транзакцию.
 		/// </summary>
-		[SuppressMessage ("Microsoft.Globalization",
+		[SuppressMessage (
+		"Microsoft.Globalization",
 			"CA1303:Do not pass literals as localized parameters",
 			MessageId = "Novartment.Base.ILogWriter.Error(System.String)",
 			Justification = "String is not exposed to the end user and will not be localized.")]
@@ -194,6 +208,7 @@ namespace Novartment.Base.Data
 					_logger?.Error (msg);
 					throw new InvalidOperationException (msg);
 				}
+
 				_activeTransaction.Value.Commit ();
 				_activeTransaction.Value = null;
 			}
@@ -210,19 +225,31 @@ namespace Novartment.Base.Data
 				{
 					return;
 				}
-				try { _activeTransaction.Value.Rollback (); }
+
 				// Try/Catch exception handling should always be used when rolling back a transaction.
 				// A Rollback generates an InvalidOperationException if the connection is terminated or if the transaction has already been rolled back on the server.
-				catch (InvalidOperationException) { }
-				catch (DbException) { }
-				finally { _activeTransaction.Value = null; }
+				try
+				{
+					_activeTransaction.Value.Rollback ();
+				}
+				catch (InvalidOperationException)
+				{
+				}
+				catch (DbException)
+				{
+				}
+				finally
+				{
+					_activeTransaction.Value = null;
+				}
 			}
 		}
 
 		/// <summary>
 		/// Открывает подключение.
 		/// </summary>
-		[SuppressMessage ("Microsoft.Globalization",
+		[SuppressMessage (
+		"Microsoft.Globalization",
 			"CA1303:Do not pass literals as localized parameters",
 			MessageId = "Novartment.Base.ILogWriter.Debug(System.String)",
 			Justification = "String is not exposed to the end user and will not be localized.")]
@@ -246,7 +273,8 @@ namespace Novartment.Base.Data
 		/// <summary>
 		/// Закрывает подключение.
 		/// </summary>
-		[SuppressMessage ("Microsoft.Globalization",
+		[SuppressMessage (
+		"Microsoft.Globalization",
 			"CA1303:Do not pass literals as localized parameters",
 			MessageId = "Novartment.Base.ILogWriter.Info(System.String)",
 			Justification = "String is not exposed to the end user and will not be localized.")]
@@ -275,7 +303,8 @@ namespace Novartment.Base.Data
 		/// <param name="useRealParameterNames">Признак использования настоящих имён параметром.
 		/// Если не указан, то будут использоваться номерные заполнители.</param>
 		/// <returns>Созданная команда.</returns>
-		[SuppressMessage ("Microsoft.Globalization",
+		[SuppressMessage (
+		"Microsoft.Globalization",
 			"CA1303:Do not pass literals as localized parameters",
 			MessageId = "Novartment.Base.ILogWriter.Error(System.String)",
 			Justification = "String is not exposed to the end user and will not be localized.")]
@@ -290,12 +319,14 @@ namespace Novartment.Base.Data
 					_logger?.Error (msg);
 					throw new InvalidOperationException (msg);
 				}
+
 				dbCommand = _workDbConnection.CreateCommand ();
 				lock (_transactionLocker)
 				{
 					dbCommand.Transaction = _activeTransaction.Value;
 				}
 			}
+
 			dbCommand.CommandTimeout = _commandTimeOut;
 			if (parameters != null)
 			{
@@ -322,6 +353,7 @@ namespace Novartment.Base.Data
 					_logger?.Trace (FormattableString.Invariant ($"name={dataParam.ParameterName} value={param.Value} type={type} DbType={dataParam.DbType}"));
 				}
 			}
+
 			return dbCommand;
 		}
 

@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Globalization;
 using System.Diagnostics.Contracts;
+using System.Globalization;
 
 namespace Novartment.Base.Text
 {
@@ -31,6 +31,7 @@ namespace Novartment.Base.Text
 			{
 				throw new ArgumentNullException (nameof (source));
 			}
+
 			Contract.EndContractBlock ();
 
 			_source = source;
@@ -51,14 +52,17 @@ namespace Novartment.Base.Text
 			{
 				throw new ArgumentNullException (nameof (source));
 			}
+
 			if ((index < 0) || (index > source.Length) || ((index == source.Length) && (count > 0)))
 			{
 				throw new ArgumentOutOfRangeException (nameof (index));
 			}
+
 			if ((count < 0) || ((index + count) > source.Length))
 			{
 				throw new ArgumentOutOfRangeException (nameof (count));
 			}
+
 			Contract.EndContractBlock ();
 
 			_source = source;
@@ -78,11 +82,13 @@ namespace Novartment.Base.Text
 				{
 					throw new InvalidOperationException ("Can not get current element of enumeration because it not started.");
 				}
+
 				if (_currentIndex == (_endIndex + 1))
 				{
 					throw new InvalidOperationException ("Can not get current element of enumeration because it already ended.");
 				}
-				return (_currentIndex - _currentElementLength);
+
+				return _currentIndex - _currentElementLength;
 			}
 		}
 
@@ -97,10 +103,12 @@ namespace Novartment.Base.Text
 				{
 					throw new InvalidOperationException ("Can not get current element of enumeration because it not started.");
 				}
+
 				if (_currentIndex == (_endIndex + 1))
 				{
 					throw new InvalidOperationException ("Can not get current element of enumeration because it already ended.");
 				}
+
 				return _currentElementLength;
 			}
 		}
@@ -125,7 +133,7 @@ namespace Novartment.Base.Text
 			}
 			else
 			{
-				var nextCharCount = Char.IsSurrogatePair (_source, currentIndex + _currentCharCount) ? 2 : 1;
+				var nextCharCount = char.IsSurrogatePair (_source, currentIndex + _currentCharCount) ? 2 : 1;
 				var nextCategory = CharUnicodeInfo.GetUnicodeCategory (_source, currentIndex + _currentCharCount);
 				if ((
 					(!IsCombiningCategory (nextCategory) || IsCombiningCategory (_currentCategory)) ||
@@ -143,7 +151,7 @@ namespace Novartment.Base.Text
 					currentIndex += _currentCharCount + nextCharCount;
 					while (currentIndex < _endIndex)
 					{
-						nextCharCount = Char.IsSurrogatePair (_source, currentIndex) ? 2 : 1;
+						nextCharCount = char.IsSurrogatePair (_source, currentIndex) ? 2 : 1;
 						nextCategory = CharUnicodeInfo.GetUnicodeCategory (_source, currentIndex);
 						var isCombiningCategory = IsCombiningCategory (nextCategory);
 						if (!isCombiningCategory)
@@ -152,11 +160,14 @@ namespace Novartment.Base.Text
 							_currentCharCount = nextCharCount;
 							break;
 						}
+
 						currentIndex += nextCharCount;
 					}
-					_currentElementLength = (currentIndex - startIndex);
+
+					_currentElementLength = currentIndex - startIndex;
 				}
 			}
+
 			_currentIndex += _currentElementLength;
 			return true;
 		}
@@ -169,7 +180,7 @@ namespace Novartment.Base.Text
 			_currentIndex = _startIndex;
 			if (_currentIndex < _endIndex)
 			{
-				_currentCharCount = Char.IsSurrogatePair (_source, _currentIndex) ? 2 : 1;
+				_currentCharCount = char.IsSurrogatePair (_source, _currentIndex) ? 2 : 1;
 				_currentCategory = CharUnicodeInfo.GetUnicodeCategory (_source, _currentIndex);
 			}
 		}
@@ -178,8 +189,9 @@ namespace Novartment.Base.Text
 		{
 			if ((category != UnicodeCategory.NonSpacingMark) && (category != UnicodeCategory.SpacingCombiningMark))
 			{
-				return (category == UnicodeCategory.EnclosingMark);
+				return category == UnicodeCategory.EnclosingMark;
 			}
+
 			return true;
 		}
 	}

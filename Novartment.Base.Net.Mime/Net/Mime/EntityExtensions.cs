@@ -1,16 +1,16 @@
 ﻿using System;
-using System.IO;
-using System.Text;
 using System.Collections.Generic;
-using static System.Linq.Enumerable;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
+using System.IO;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using Novartment.Base.BinaryStreaming;
 using Novartment.Base.Collections;
-using Novartment.Base.Collections.Linq;
 using Novartment.Base.Collections.Immutable;
+using Novartment.Base.Collections.Linq;
+using static System.Linq.Enumerable;
 
 namespace Novartment.Base.Net.Mime
 {
@@ -19,8 +19,6 @@ namespace Novartment.Base.Net.Mime
 	/// </summary>
 	public static class EntityExtensions
 	{
-		#region extension method GetChildEntities
-
 		/// <summary>
 		/// Получает коллекцию вложенных сущностей с простым содержимым.
 		/// Позволяет указывать необходимости рекурсивного поиска и обработки вложенных сообщений.
@@ -36,38 +34,38 @@ namespace Novartment.Base.Net.Mime
 			{
 				throw new ArgumentNullException (nameof (entity));
 			}
+
 			Contract.EndContractBlock ();
 
 			if (!recursive)
 			{
-				var compositeEntityBody = entity.Body as ICompositeEntityBody;
-				if (compositeEntityBody != null)
+				if (entity.Body is ICompositeEntityBody compositeEntityBody)
 				{
 					var parts = compositeEntityBody.Parts.Where (item => item.Body is IDiscreteEntityBody);
 					return new ReadOnlyArray<Entity> (parts.ToArray ());
 				}
-				var entityBodyMessage = entity.Body as MessageEntityBody;
-				if (entityBodyMessage != null && includeNestedMessages)
+
+				if (entity.Body is MessageEntityBody entityBodyMessage && includeNestedMessages)
 				{
 					entity = entityBodyMessage.Message;
 				}
-				var entityBodySinglepart = entity.Body as IDiscreteEntityBody;
-				if (entityBodySinglepart != null)
+
+				if (entity.Body is IDiscreteEntityBody entityBodySinglepart)
 				{
 					return new ReadOnlyArray<Entity> (new[] { entity });
 				}
+
 				return ReadOnlyList.Empty<Entity> ();
 			}
 
 			var result = new ArrayList<Entity> ();
-			var entitiesQueue = new ArrayList<Entity> ();
-			entitiesQueue.Add (entity);
-
-			Entity currentEntity;
-			while (entitiesQueue.TryTakeFirst (out currentEntity))
+			var entitiesQueue = new ArrayList<Entity>
 			{
-				var compositeEntityBody = currentEntity.Body as ICompositeEntityBody;
-				if (compositeEntityBody != null)
+				entity
+			};
+			while (entitiesQueue.TryTakeFirst (out Entity currentEntity))
+			{
+				if (currentEntity.Body is ICompositeEntityBody compositeEntityBody)
 				{
 					int i = 0;
 					foreach (var part in compositeEntityBody.Parts)
@@ -78,8 +76,7 @@ namespace Novartment.Base.Net.Mime
 				else
 				{
 					// Add nested message for processing (nested message entities will be included).
-					var entityBodyMessage = currentEntity.Body as MessageEntityBody;
-					if (entityBodyMessage != null)
+					if (currentEntity.Body is MessageEntityBody entityBodyMessage)
 					{
 						if (includeNestedMessages)
 						{
@@ -88,8 +85,7 @@ namespace Novartment.Base.Net.Mime
 					}
 					else
 					{
-						var entityBodySinglepart = currentEntity.Body as IDiscreteEntityBody;
-						if (entityBodySinglepart != null)
+						if (currentEntity.Body is IDiscreteEntityBody entityBodySinglepart)
 						{
 							result.Add (currentEntity);
 						}
@@ -99,10 +95,6 @@ namespace Novartment.Base.Net.Mime
 
 			return result.GetReadOnlyView ();
 		}
-
-		#endregion
-
-		#region extension method GetAttachments
 
 		/// <summary>
 		/// Получает коллекцию вложений указанной сущности с возможностью указания необходимости возврата вложений из вложенных сообщений.
@@ -116,29 +108,15 @@ namespace Novartment.Base.Net.Mime
 			{
 				throw new ArgumentNullException (nameof (entity));
 			}
+
 			Contract.EndContractBlock ();
 
 			return entity.GetChildContentParts (true, includeNestedMessages)
-				.Where (DetermineIfEntityIsAttachment)
+				.Where (e => (e != null) &&
+					((e.DispositionType == ContentDispositionType.Attachment) ||
+					((e.Body is IDiscreteEntityBody) && !(e.Body is TextEntityBody))))
 				.ToArray ().AsReadOnlyList ();
 		}
-
-		private static bool DetermineIfEntityIsAttachment (Entity entity)
-		{
-			if (entity == null)
-			{
-				throw new ArgumentNullException (nameof (entity));
-			}
-			Contract.EndContractBlock ();
-
-			return
-				(entity.DispositionType == ContentDispositionType.Attachment) ||
-				((entity.Body is IDiscreteEntityBody) && !(entity.Body is TextEntityBody));
-		}
-
-		#endregion
-
-		#region extension method AddTextPart
 
 		/// <summary>
 		/// Добавляет к указанной сущности новую текстовую сущность указанного подтипа и кодировки передачи
@@ -154,7 +132,8 @@ namespace Novartment.Base.Net.Mime
 		/// <param name="transferEncoding">Кодировка передачи создаваемой сущности.
 		/// Укажите ContentTransferEncoding.Unspecified чтобы использовать универсальную (возможно неоптимальную) кодировку.</param>
 		/// <returns>Созданная сущность.</returns>
-		[SuppressMessage ("Microsoft.Design",
+		[SuppressMessage (
+			"Microsoft.Design",
 			"CA1026:DefaultParametersShouldNotBeUsed",
 			Justification = "Parameters have clear right 'default' values and there is no plausible reason why the default might need to change.")]
 		public static Entity AddTextPart (
@@ -168,10 +147,12 @@ namespace Novartment.Base.Net.Mime
 			{
 				throw new ArgumentNullException (nameof (entity));
 			}
+
 			if (text == null)
 			{
 				throw new ArgumentNullException (nameof (text));
 			}
+
 			Contract.EndContractBlock ();
 
 			var compositeEntityBody = entity.Body as ICompositeEntityBody;
@@ -187,10 +168,6 @@ namespace Novartment.Base.Net.Mime
 			return newEntity;
 		}
 
-		#endregion
-
-		#region extension method AddCompositePart
-
 		/// <summary>
 		/// Добавляет к указанной сущности новую сущность с множественным содержимым.
 		/// </summary>
@@ -205,6 +182,7 @@ namespace Novartment.Base.Net.Mime
 			{
 				throw new ArgumentNullException (nameof (entity));
 			}
+
 			Contract.EndContractBlock ();
 
 			var compositeEntityBody = entity.Body as ICompositeEntityBody;
@@ -212,15 +190,12 @@ namespace Novartment.Base.Net.Mime
 			{
 				throw new InvalidOperationException ("Can not add part to entity with discrete content. Parts can be added only to composite entities.");
 			}
+
 			var newBody = new CompositeEntityBody (null);
 			var newEntity = new Entity (newBody, ContentMediaType.Multipart, multipartType ?? MultipartMediaSubtypeNames.Mixed);
 			compositeEntityBody.Parts.Add (newEntity);
 			return newEntity;
 		}
-
-		#endregion
-
-		#region extension method AddDigestPart
 
 		/// <summary>
 		/// Добавляет к указанной сущности новую сущность, представляющую дайджест сообщений.
@@ -233,6 +208,7 @@ namespace Novartment.Base.Net.Mime
 			{
 				throw new ArgumentNullException (nameof (entity));
 			}
+
 			Contract.EndContractBlock ();
 
 			var compositeEntityBody = entity.Body as ICompositeEntityBody;
@@ -240,15 +216,12 @@ namespace Novartment.Base.Net.Mime
 			{
 				throw new InvalidOperationException ("Can not add part to entity with discrete content. Parts can be added only to composite entities.");
 			}
+
 			var newBody = new DigestEntityBody ();
 			var newEntity = new Entity (newBody, ContentMediaType.Multipart, MultipartMediaSubtypeNames.Digest);
 			compositeEntityBody.Parts.Add (newEntity);
 			return newEntity;
 		}
-
-		#endregion
-
-		#region extension method AddMessagePart
 
 		/// <summary>
 		/// Добавляет к указанной сущности новую сущность, представляющую отдельное интернет-сообщение.
@@ -264,10 +237,12 @@ namespace Novartment.Base.Net.Mime
 			{
 				throw new ArgumentNullException (nameof (entity));
 			}
+
 			if (message == null)
 			{
 				throw new ArgumentNullException (nameof (message));
 			}
+
 			Contract.EndContractBlock ();
 
 			var compositeEntityBody = entity.Body as ICompositeEntityBody;
@@ -275,6 +250,7 @@ namespace Novartment.Base.Net.Mime
 			{
 				throw new InvalidOperationException ("Can not add part to entity with discrete content. Parts can be added only to composite entities.");
 			}
+
 			var newBody = new MessageEntityBody
 			{
 				Message = includeContent ? message : message.CreateCopyWithoutContent ()
@@ -287,10 +263,6 @@ namespace Novartment.Base.Net.Mime
 			return newEntity;
 		}
 
-		#endregion
-
-		#region extension method AddDeliveryStatusPart
-
 		/// <summary>
 		/// Добавляет к указанной сущности новую сущность, представляющую уведомление о статусе доставки сообщения.
 		/// </summary>
@@ -302,6 +274,7 @@ namespace Novartment.Base.Net.Mime
 			{
 				throw new ArgumentNullException (nameof (entity));
 			}
+
 			Contract.EndContractBlock ();
 
 			var compositeEntityBody = entity.Body as ICompositeEntityBody;
@@ -309,15 +282,12 @@ namespace Novartment.Base.Net.Mime
 			{
 				throw new InvalidOperationException ("Can not add part to entity with discrete content. Parts can be added only to composite entities.");
 			}
+
 			var newBody = new DeliveryStatusEntityBody ();
 			var newEntity = new Entity (newBody, ContentMediaType.Message, MessageMediaSubtypeNames.DeliveryStatus);
 			compositeEntityBody.Parts.Add (newEntity);
 			return newEntity;
 		}
-
-		#endregion
-
-		#region extension method AddDispositionNotificationPart
 
 		/// <summary>
 		/// Добавляет к указанной сущности новую сущность, представляющую уведомление об изменении дислокации сообщения указанным адресатом.
@@ -335,10 +305,12 @@ namespace Novartment.Base.Net.Mime
 			{
 				throw new ArgumentNullException (nameof (entity));
 			}
+
 			if (recipient == null)
 			{
 				throw new ArgumentNullException (nameof (recipient));
 			}
+
 			Contract.EndContractBlock ();
 
 			var compositeEntityBody = entity.Body as ICompositeEntityBody;
@@ -346,6 +318,7 @@ namespace Novartment.Base.Net.Mime
 			{
 				throw new InvalidOperationException ("Can not add part to entity with discrete content. Parts can be added only to composite entities.");
 			}
+
 			var newBody = new DispositionNotificationEntityBody ();
 			var newEntity = new Entity (newBody, ContentMediaType.Message, MessageMediaSubtypeNames.DispositionNotification);
 			((DispositionNotificationEntityBody)newEntity.Body).FinalRecipient = new NotificationFieldValue (NotificationFieldValueKind.Mailbox, recipient.ToString ());
@@ -353,10 +326,6 @@ namespace Novartment.Base.Net.Mime
 			compositeEntityBody.Parts.Add (newEntity);
 			return newEntity;
 		}
-
-		#endregion
-
-		#region extension method AddImagePartAsync
 
 		/// <summary>
 		/// Добавляет к указанной сущности новую сущность, представляющую изображение указанного типа.
@@ -377,14 +346,17 @@ namespace Novartment.Base.Net.Mime
 			{
 				throw new ArgumentNullException (nameof (entity));
 			}
+
 			if (imageType == null)
 			{
 				throw new ArgumentNullException (nameof (imageType));
 			}
+
 			if (data == null)
 			{
 				throw new ArgumentNullException (nameof (data));
 			}
+
 			Contract.EndContractBlock ();
 
 			var compositeEntityBody = entity.Body as ICompositeEntityBody;
@@ -392,25 +364,20 @@ namespace Novartment.Base.Net.Mime
 			{
 				throw new InvalidOperationException ("Can not add part to entity with discrete content. Parts can be added only to composite entities.");
 			}
+
 			var newBody = new DataEntityBody (ContentTransferEncoding.Base64);
 			var task = newBody.SetDataAsync (data, cancellationToken);
-			return AddImagePartAsyncFinalizer (task, imageType, compositeEntityBody, newBody);
+			return AddImagePartAsyncFinalizer ();
+
+			async Task<Entity> AddImagePartAsyncFinalizer ()
+			{
+				await task.ConfigureAwait (false);
+
+				var newEntity = new Entity (newBody, ContentMediaType.Image, imageType);
+				compositeEntityBody.Parts.Add (newEntity);
+				return newEntity;
+			}
 		}
-		private static async Task<Entity> AddImagePartAsyncFinalizer (Task task,
-			string imageType,
-			ICompositeEntityBody parentEntityBody,
-			IEntityBody newBody)
-		{
-			await task.ConfigureAwait (false);
-
-			var newEntity = new Entity (newBody, ContentMediaType.Image, imageType);
-			parentEntityBody.Parts.Add (newEntity);
-			return newEntity;
-		}
-
-		#endregion
-
-		#region extension method AddApplicationPartAsync
 
 		/// <summary>
 		/// Добавляет к указанной сущности новую сущность,
@@ -435,14 +402,17 @@ namespace Novartment.Base.Net.Mime
 			{
 				throw new ArgumentNullException (nameof (entity));
 			}
+
 			if (applicationType == null)
 			{
 				throw new ArgumentNullException (nameof (applicationType));
 			}
+
 			if (data == null)
 			{
 				throw new ArgumentNullException (nameof (data));
 			}
+
 			Contract.EndContractBlock ();
 
 			if (cancellationToken.IsCancellationRequested)
@@ -455,29 +425,23 @@ namespace Novartment.Base.Net.Mime
 			{
 				throw new InvalidOperationException ("Can not add part to entity with discrete content. Parts can be added only to composite entities.");
 			}
+
 			var newBody = new DataEntityBody (
 				(transferEncoding != ContentTransferEncoding.Unspecified) ?
 					transferEncoding :
 					ContentTransferEncoding.Base64);
 			var task = newBody.SetDataAsync (data, cancellationToken);
-			return AddApplicationPartAsyncFinalizer (task, applicationType, compositeEntityBody, newBody);
+			return AddApplicationPartAsyncFinalizer ();
+
+			async Task<Entity> AddApplicationPartAsyncFinalizer ()
+			{
+				await task.ConfigureAwait (false);
+
+				var newEntity = new Entity (newBody, ContentMediaType.Application, applicationType);
+				compositeEntityBody.Parts.Add (newEntity);
+				return newEntity;
+			}
 		}
-
-		private static async Task<Entity> AddApplicationPartAsyncFinalizer (Task task,
-			string applicationType,
-			ICompositeEntityBody parentEntityBody,
-			IEntityBody newBody)
-		{
-			await task.ConfigureAwait (false);
-
-			var newEntity = new Entity (newBody, ContentMediaType.Application, applicationType);
-			parentEntityBody.Parts.Add (newEntity);
-			return newEntity;
-		}
-
-		#endregion
-
-		#region extension method AddAttachmentAsync
 
 		/// <summary>
 		/// Добавляет к указанной сущности новую сущность-вложение с указанным именем,
@@ -498,14 +462,17 @@ namespace Novartment.Base.Net.Mime
 			{
 				throw new ArgumentNullException (nameof (entity));
 			}
+
 			if (data == null)
 			{
 				throw new ArgumentNullException (nameof (data));
 			}
+
 			if (fileName == null)
 			{
 				throw new ArgumentNullException (nameof (fileName));
 			}
+
 			Contract.EndContractBlock ();
 
 			var compositeEntityBody = entity.Body as ICompositeEntityBody;
@@ -515,37 +482,24 @@ namespace Novartment.Base.Net.Mime
 			}
 
 			var attachmentBody = new DataEntityBody (ContentTransferEncoding.Base64);
-			var observer = new _SizeCalculator ();
+			var observer = new SizeCalculator ();
 			var dataObservable = new ObservableBufferedSource (data, observer);
 
 			var task = attachmentBody.SetDataAsync (dataObservable, cancellationToken);
-			return AddAttachmentAsyncFinalizer (task, fileName, compositeEntityBody, attachmentBody, observer);
-		}
+			return AddAttachmentAsyncFinalizer ();
 
-		private static async Task<Entity> AddAttachmentAsyncFinalizer (Task task,
-			string fileName,
-			ICompositeEntityBody compositeEntityBody,
-			IEntityBody newBody,
-			_SizeCalculator sizeCalculator)
-		{
-			await task.ConfigureAwait (false);
-
-			var attachment = new Entity (newBody, ContentMediaType.Application, ApplicationMediaSubtypeNames.OctetStream);
-			attachment.DispositionType = ContentDispositionType.Attachment;
-			attachment.FileName = fileName;
-			attachment.Size = sizeCalculator.Size;
-			compositeEntityBody.Parts.Add (attachment);
-			return attachment;
-		}
-
-		private class _SizeCalculator :
-			IProgress<long>
-		{
-			internal long Size = 0L;
-
-			void IProgress<long>.Report (long value)
+			async Task<Entity> AddAttachmentAsyncFinalizer ()
 			{
-				this.Size += value;
+				await task.ConfigureAwait (false);
+
+				var attachment = new Entity (attachmentBody, ContentMediaType.Application, ApplicationMediaSubtypeNames.OctetStream)
+				{
+					DispositionType = ContentDispositionType.Attachment,
+					FileName = fileName,
+					Size = observer.Size
+				};
+				compositeEntityBody.Parts.Add (attachment);
+				return attachment;
 			}
 		}
 
@@ -563,10 +517,12 @@ namespace Novartment.Base.Net.Mime
 			{
 				throw new ArgumentNullException (nameof (entity));
 			}
+
 			if (fileName == null)
 			{
 				throw new ArgumentNullException (nameof (fileName));
 			}
+
 			Contract.EndContractBlock ();
 
 			var fileInfo = new FileInfo (fileName);
@@ -579,36 +535,42 @@ namespace Novartment.Base.Net.Mime
 					stream.AsBufferedSource (new byte[Math.Min (fileInfo.Length, 4096L)]),
 					fileInfo.Name,
 					cancellationToken);
-				return AddAttachmentAsyncFinalizer (task, fileInfo.CreationTime, fileInfo.LastWriteTime, fileInfo.LastAccessTime, stream);
+				return AddAttachmentAsyncFinalizer (task);
 			}
 			catch
 			{
 				stream?.Dispose ();
 				throw;
 			}
+
+			async Task<Entity> AddAttachmentAsyncFinalizer (Task<Entity> task)
+			{
+				Entity attachment;
+				try
+				{
+					attachment = await task.ConfigureAwait (false);
+				}
+				finally
+				{
+					stream?.Dispose ();
+				}
+
+				attachment.CreationDate = fileInfo.CreationTime;
+				attachment.ModificationDate = fileInfo.LastWriteTime;
+				attachment.ReadDate = fileInfo.LastAccessTime;
+				return attachment;
+			}
 		}
 
-		private static async Task<Entity> AddAttachmentAsyncFinalizer (Task<Entity> task,
-			DateTime creationTime,
-			DateTime lastWriteTime,
-			DateTime lastAccessTime,
-			IDisposable disposable)
+		private class SizeCalculator :
+			IProgress<long>
 		{
-			Entity attachment;
-			try
-			{
-				attachment = await task.ConfigureAwait (false);
-			}
-			finally
-			{
-				disposable?.Dispose ();
-			}
-			attachment.CreationDate = creationTime;
-			attachment.ModificationDate = lastWriteTime;
-			attachment.ReadDate = lastAccessTime;
-			return attachment;
-		}
+			internal long Size { get; set; }
 
-		#endregion
+			void IProgress<long>.Report (long value)
+			{
+				this.Size += value;
+			}
+		}
 	}
 }

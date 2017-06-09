@@ -8,6 +8,15 @@ namespace Novartment.Base.Tasks
 	public class TaskStartingEventArgs : EventArgs
 	{
 		/// <summary>
+		/// Инициализирует новый экземпляр TaskStartingEventArgs на основе указанного объекта-состояния задачи.
+		/// </summary>
+		/// <param name="state">Объект-состояния задачи.</param>
+		public TaskStartingEventArgs(object state)
+		{
+			State = state;
+		}
+
+		/// <summary>
 		/// Получает или устанавливает объект-состояние задачи.
 		/// </summary>
 		public object State { get; set; }
@@ -16,14 +25,5 @@ namespace Novartment.Base.Tasks
 		/// Получает или устанавливает необходимость отмены запускаемой задачи.
 		/// </summary>
 		public bool Cancel { get; set; }
-
-		/// <summary>
-		/// Инициализирует новый экземпляр TaskStartingEventArgs на основе указанного объекта-состояния задачи.
-		/// </summary>
-		/// <param name="state">Объект-состояния задачи.</param>
-		public TaskStartingEventArgs (object state)
-		{
-			State = state;
-		}
 	}
 }

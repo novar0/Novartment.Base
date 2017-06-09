@@ -12,10 +12,11 @@ namespace Novartment.Base.Collections.Immutable
 	/// </summary>
 	/// <typeparam name="T">Тип элементов массива.</typeparam>
 	/// <remarks>Никакой дополнительной функциональности, только делегирование к указанному массиву.</remarks>
-	[SuppressMessage ("Microsoft.Naming",
+	[SuppressMessage (
+		"Microsoft.Naming",
 		"CA1710:IdentifiersShouldHaveCorrectSuffix",
-		Justification = "Implemented interfaces has no association with class name."),
-	DebuggerDisplay ("{DebuggerDisplay,nq}")]
+		Justification = "Implemented interfaces has no association with class name.")]
+	[DebuggerDisplay ("{DebuggerDisplay,nq}")]
 	public class ReadOnlyArray<T> :
 		IReadOnlyList<T>,
 		IArrayDuplicableCollection<T>,
@@ -36,11 +37,13 @@ namespace Novartment.Base.Collections.Immutable
 			{
 				throw new ArgumentNullException (nameof (items));
 			}
+
 			var isNormalArray = (items.Rank == 1) && (items.GetLowerBound (0) == 0);
 			if (!isNormalArray)
 			{
 				throw new ArgumentOutOfRangeException (nameof (items));
 			}
+
 			Contract.EndContractBlock ();
 
 			_items = items;
@@ -59,20 +62,41 @@ namespace Novartment.Base.Collections.Immutable
 			{
 				throw new ArgumentNullException (nameof (items));
 			}
+
 			var isNormalArray = (items.Rank == 1) && (items.GetLowerBound (0) == 0);
 			if (!isNormalArray)
 			{
 				throw new ArgumentOutOfRangeException (nameof (items));
 			}
+
 			if ((count < 0) || (count > items.Length))
 			{
 				throw new ArgumentOutOfRangeException (nameof (count));
 			}
+
 			Contract.EndContractBlock ();
 
 			_items = items;
 			_count = count;
 		}
+
+		/// <summary>
+		/// Получает количество элементов коллекции.
+		/// </summary>
+		public int Count => _count;
+
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
+		[SuppressMessage(
+			"Microsoft.Globalization",
+			"CA1305:SpecifyIFormatProvider",
+			MessageId = "System.String.Format(System.String,System.Object,System.Object)",
+			Justification = "String is not exposed to the end user and will not be localized.")]
+		[SuppressMessage(
+			"Microsoft.Globalization",
+			"CA1305:SpecifyIFormatProvider",
+			MessageId = "System.String.Format(System.String,System.Object)",
+			Justification = "String is not exposed to the end user and will not be localized.")]
+		private string DebuggerDisplay => $"<{typeof(T).Name}> ({_count})";
 
 		/// <summary>
 		/// Получает элемент коллекции в указанной позиции.
@@ -84,18 +108,40 @@ namespace Novartment.Base.Collections.Immutable
 			{
 				if ((index < 0) || (index >= this.Count))
 				{
-					throw new ArgumentOutOfRangeException (nameof (index));
+					throw new ArgumentOutOfRangeException(nameof(index));
 				}
-				Contract.EndContractBlock ();
+
+				Contract.EndContractBlock();
 
 				return _items[index];
 			}
 		}
 
 		/// <summary>
-		/// Получает количество элементов коллекции.
+		/// Определяет равенство двух коллекций.
 		/// </summary>
-		public int Count => _count;
+		/// <param name="first">Коллекция, которая находится слева от оператора равенства.</param>
+		/// <param name="second">Коллекция, которая находится справа от оператора равенства.</param>
+		/// <returns>true, если значения параметров first и second равны; в противном случае — false.</returns>
+		public static bool operator ==(ReadOnlyArray<T> first, ReadOnlyArray<T> second)
+		{
+			return ReferenceEquals(first, null) ?
+				ReferenceEquals(second, null) :
+				first.Equals(second);
+		}
+
+		/// <summary>
+		/// Определяет неравенство двух коллекций.
+		/// </summary>
+		/// <param name="first">Коллекция, который находится слева от оператора равенства.</param>
+		/// <param name="second">Коллекция, который находится справа от оператора равенства.</param>
+		/// <returns>true, если значения параметров first и second не равны; в противном случае — false.</returns>
+		public static bool operator !=(ReadOnlyArray<T> first, ReadOnlyArray<T> second)
+		{
+			return !(ReferenceEquals(first, null) ?
+				ReferenceEquals(second, null) :
+				first.Equals(second));
+		}
 
 		/// <summary>
 		/// Получает перечислитель элементов коллекции.
@@ -103,7 +149,7 @@ namespace Novartment.Base.Collections.Immutable
 		/// <returns>Перечислитель элементов коллекции.</returns>
 		public IEnumerator<T> GetEnumerator ()
 		{
-			return new _SimpleArrayEnumerator (this);
+			return new SimpleArrayEnumerator (this);
 		}
 
 		/// <summary>
@@ -143,7 +189,7 @@ namespace Novartment.Base.Collections.Immutable
 		public override bool Equals (object obj)
 		{
 			var asSameClass = obj as ReadOnlyArray<T>;
-			return ((asSameClass != null) && Equals (asSameClass));
+			return (asSameClass != null) && Equals (asSameClass);
 		}
 
 		/// <summary>
@@ -159,32 +205,6 @@ namespace Novartment.Base.Collections.Immutable
 		}
 
 		/// <summary>
-		/// Определяет равенство двух коллекций.
-		/// </summary>
-		/// <param name="first">Коллекция, которая находится слева от оператора равенства.</param>
-		/// <param name="second">Коллекция, которая находится справа от оператора равенства.</param>
-		/// <returns>true, если значения параметров first и second равны; в противном случае — false.</returns>
-		public static bool operator ==(ReadOnlyArray<T> first, ReadOnlyArray<T> second)
-		{
-			return ReferenceEquals (first, null) ?
-				ReferenceEquals (second, null) :
-				first.Equals (second);
-		}
-
-		/// <summary>
-		/// Определяет неравенство двух коллекций.
-		/// </summary>
-		/// <param name="first">Коллекция, который находится слева от оператора равенства.</param>
-		/// <param name="second">Коллекция, который находится справа от оператора равенства.</param>
-		/// <returns>true, если значения параметров first и second не равны; в противном случае — false.</returns>
-		public static bool operator !=(ReadOnlyArray<T> first, ReadOnlyArray<T> second)
-		{
-			return !(ReferenceEquals (first, null) ?
-				ReferenceEquals (second, null) :
-				first.Equals (second));
-		}
-
-		/// <summary>
 		/// Получает структурный хэш-код коллекции.
 		/// </summary>
 		/// <param name="comparer">Объект, вычисляющий хэш-код элементов коллекции.</param>
@@ -195,13 +215,15 @@ namespace Novartment.Base.Collections.Immutable
 			{
 				throw new ArgumentNullException (nameof (comparer));
 			}
+
 			Contract.EndContractBlock ();
 
 			int num = 0;
 			for (var i = (_count >= 8) ? (_count - 8) : 0; i < _count; i++)
 			{
-				num = (((num << 5) + num) ^ comparer.GetHashCode (_items[i]));
+				num = ((num << 5) + num) ^ comparer.GetHashCode (_items[i]);
 			}
+
 			return num;
 		}
 
@@ -217,6 +239,7 @@ namespace Novartment.Base.Collections.Immutable
 			{
 				throw new ArgumentNullException (nameof (comparer));
 			}
+
 			Contract.EndContractBlock ();
 
 			var otherArr = other as ReadOnlyArray<T>;
@@ -224,6 +247,7 @@ namespace Novartment.Base.Collections.Immutable
 			{
 				return false;
 			}
+
 			if (otherArr._items != _items)
 			{
 				for (var i = 0; i < _count; i++)
@@ -235,23 +259,45 @@ namespace Novartment.Base.Collections.Immutable
 					}
 				}
 			}
+
 			return true;
 		}
 
-		#region struct _SimpleArrayEnumerator
-
-		internal struct _SimpleArrayEnumerator : IEnumerator<T>, IDisposable, IEnumerator
+		internal struct SimpleArrayEnumerator : IEnumerator<T>, IDisposable, IEnumerator
 		{
 			private readonly ReadOnlyArray<T> _data;
 			private int _index;
 			private T _currentElement;
 
-			internal _SimpleArrayEnumerator (ReadOnlyArray<T> data)
+			internal SimpleArrayEnumerator (ReadOnlyArray<T> data)
 			{
 				_data = data;
 				_index = -1;
 				_currentElement = default (T);
 			}
+
+			/// <summary>
+			/// Получает текущий элемент перечислителя.
+			/// </summary>
+			public T Current
+			{
+				get
+				{
+					if (_index == -1)
+					{
+						throw new InvalidOperationException("Can not get current element of enumeration because it not started.");
+					}
+
+					if (_index == -2)
+					{
+						throw new InvalidOperationException("Can not get current element of enumeration because it already ended.");
+					}
+
+					return _currentElement;
+				}
+			}
+
+			object IEnumerator.Current => this.Current;
 
 			/// <summary>
 			/// Перемещает перечислитель к следующему элементу строки.
@@ -272,29 +318,10 @@ namespace Novartment.Base.Collections.Immutable
 					_currentElement = default (T);
 					return false;
 				}
+
 				_currentElement = _data._items[_index];
 				return true;
 			}
-
-			/// <summary>
-			/// Получает текущий элемент перечислителя.
-			/// </summary>
-			public T Current
-			{
-				get
-				{
-					if (_index == -1)
-					{
-						throw new InvalidOperationException ("Can not get current element of enumeration because it not started.");
-					}
-					if (_index == -2)
-					{
-						throw new InvalidOperationException ("Can not get current element of enumeration because it already ended.");
-					}
-					return _currentElement;
-				}
-			}
-			object IEnumerator.Current => this.Current;
 
 			/// <summary>
 			/// Возвращает перечислитель в исходное положение.
@@ -312,25 +339,6 @@ namespace Novartment.Base.Collections.Immutable
 			{
 				_index = -2;
 				_currentElement = default (T);
-			}
-		}
-
-		#endregion
-
-		[DebuggerBrowsable (DebuggerBrowsableState.Never),
-		SuppressMessage ("Microsoft.Globalization",
-			"CA1305:SpecifyIFormatProvider",
-			MessageId = "System.String.Format(System.String,System.Object,System.Object)",
-			Justification = "String is not exposed to the end user and will not be localized."),
-		SuppressMessage ("Microsoft.Globalization",
-			"CA1305:SpecifyIFormatProvider",
-			MessageId = "System.String.Format(System.String,System.Object)",
-			Justification = "String is not exposed to the end user and will not be localized.")]
-		private string DebuggerDisplay
-		{
-			get
-			{
-				return $"<{typeof (T).Name}> ({_count})";
 			}
 		}
 	}

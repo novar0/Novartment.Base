@@ -1,9 +1,9 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.Contracts;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Diagnostics.CodeAnalysis;
-using System.Diagnostics.Contracts;
 using Novartment.Base.Collections.Immutable;
 
 namespace Novartment.Base.IO
@@ -11,16 +11,17 @@ namespace Novartment.Base.IO
 	/// <summary>
 	/// Поток-обёртка с уведомлением о текущей позиции.
 	/// </summary>
-	[SuppressMessage ("Microsoft.Naming",
+	[SuppressMessage (
+		"Microsoft.Naming",
 		"CA1711:IdentifiersShouldNotHaveIncorrectSuffix",
 		Justification = "'Stream' suffix intended because of base type is System.IO.Stream.")]
 	public class ObservableStream : Stream,
 		IObservable<FileStreamStatus>
 	{
 		private readonly float _minPercentToReport = 0.1F; // минимальное изменение позиции (в % от размера файла) которое надо рапортовать
-		private long _previousPosition = long.MinValue;
 		private readonly Stream _stream;
 		private readonly object _state;
+		private long _previousPosition = long.MinValue;
 		private long _length; // тут кэшируем размер потока чтобы не вызывать дополнительного I/O
 		private AvlBinarySearchHashTreeNode<IObserver<FileStreamStatus>> _observers;
 
@@ -30,7 +31,8 @@ namespace Novartment.Base.IO
 		/// </summary>
 		/// <param name="stream">Исходный поток, на основе которого будет создана обёртка.</param>
 		/// <param name="state">Объект-состояние, который будет передаваться вместе с данными уведомления.</param>
-		[SuppressMessage ("Microsoft.Design",
+		[SuppressMessage (
+		"Microsoft.Design",
 			"CA1026:DefaultParametersShouldNotBeUsed",
 			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
 		public ObservableStream (Stream stream, object state = null)
@@ -39,10 +41,12 @@ namespace Novartment.Base.IO
 			{
 				throw new ArgumentNullException (nameof (stream));
 			}
+
 			if (!stream.CanSeek)
 			{
 				throw new ArgumentOutOfRangeException (nameof (stream));
 			}
+
 			Contract.EndContractBlock ();
 
 			_stream = stream;
@@ -66,22 +70,50 @@ namespace Novartment.Base.IO
 		/// <summary>Получает значение, которое показывает, может ли для данного потока истечь время ожидания.</summary>
 		public override bool CanTimeout => _stream.CanTimeout;
 
+		/// <summary>Получает или задает позицию в потоке.</summary>
+		public override long Position
+		{
+			get => _stream.Position;
+			set
+			{
+				_stream.Position = value;
+				_length = _stream.Length;
+				ReportProgressInternal();
+			}
+		}
+
 		/// <summary>
 		/// Получает или задает значение в миллисекундах, определяющее период,
 		/// в течение которого поток будет пытаться выполнить операцию чтения, прежде чем истечет время ожидания.
 		/// </summary>
-		public override int ReadTimeout { get { return _stream.ReadTimeout; } set { _stream.ReadTimeout = value; } }
+		public override int ReadTimeout
+		{
+			get => _stream.ReadTimeout;
+
+			set
+			{
+				_stream.ReadTimeout = value;
+			}
+		}
 
 		/// <summary>
 		/// Получает или задает значение в миллисекундах, определяющее период,
 		/// в течение которого поток будет пытаться выполнить операцию записи, прежде чем истечет время ожидания.
 		/// </summary>
-		public override int WriteTimeout { get { return _stream.WriteTimeout; } set { _stream.WriteTimeout = value; } }
+		public override int WriteTimeout
+		{
+			get => _stream.WriteTimeout;
+
+			set
+			{
+				_stream.WriteTimeout = value;
+			}
+		}
 
 		/// <summary>
 		/// Очищает все буферы данного потока и вызывает запись данных буферов в базовое устройство.
 		/// </summary>
-		public override void Flush () { _stream.Flush (); }
+		public override void Flush () => _stream.Flush ();
 
 		/// <summary>
 		/// Асинхронно очищает все буферы для этого потока и вызывает запись всех буферизованных данных в базовое устройство.
@@ -104,20 +136,6 @@ namespace Novartment.Base.IO
 		{
 			return _stream.CopyToAsync (destination, bufferSize, cancellationToken);
 		}
-
-		/// <summary>
-		/// Освобождает неуправляемые ресурсы, используемые объектом, а при необходимости освобождает также управляемые ресурсы.
-		/// </summary>
-		/// <param name="disposing">Значение true позволяет освободить управляемые и неуправляемые ресурсы;
-		/// значение false позволяет освободить только неуправляемые ресурсы.</param>
-		protected override void Dispose (bool disposing)
-		{
-			_observers = null;
-			_stream.Dispose ();
-			base.Dispose (disposing);
-		}
-
-		#region методы установки длины и позиции
 
 		/// <summary>
 		/// Задает длину потока.
@@ -143,22 +161,6 @@ namespace Novartment.Base.IO
 			ReportProgressInternal ();
 			return result;
 		}
-
-		/// <summary>Получает или задает позицию в потоке.</summary>
-		public override long Position
-		{
-			get { return _stream.Position; }
-			set
-			{
-				_stream.Position = value;
-				_length = _stream.Length;
-				ReportProgressInternal ();
-			}
-		}
-
-		#endregion
-
-		#region методы чтения
 
 		/// <summary>
 		/// Считывает последовательность байтов из потока и перемещает позицию в потоке на число считанных байтов.
@@ -202,12 +204,7 @@ namespace Novartment.Base.IO
 			var task = _stream.ReadAsync (buffer, offset, count, cancellationToken);
 			task.ContinueWith (this.ReportProgressInternal1, CancellationToken.None, TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
 			return task;
-
 		}
-
-		#endregion
-
-		#region методы записи
 
 		/// <summary>
 		/// Записывает последовательность байтов в поток и перемещает позицию в нём вперед на число записанных байтов.
@@ -249,7 +246,65 @@ namespace Novartment.Base.IO
 			return task;
 		}
 
-		#endregion
+		/// <summary>
+		/// Уведомляет поставщика о том, что наблюдатель должен получать уведомления.
+		/// </summary>
+		/// <param name="observer">Объект, который должен получать уведомления.</param>
+		/// <returns>Ссылка на интерфейс, которая позволяет наблюдателям прекратить получение уведомлений до того,
+		/// как поставщик закончил отправлять их.</returns>
+		public IDisposable Subscribe (IObserver<FileStreamStatus> observer)
+		{
+			if (observer == null)
+			{
+				throw new ArgumentNullException (nameof (observer));
+			}
+
+			Contract.EndContractBlock ();
+
+			var spinWait = default (SpinWait);
+			while (true)
+			{
+				var state1 = _observers;
+				var newState = _observers.AddItem (observer, ReferenceEqualityComparer.Default);
+
+				// заменяем состояние если оно не изменилось с момента вызова
+				var state2 = Interlocked.CompareExchange (ref _observers, newState, state1);
+				if (state1 == state2)
+				{
+					return DisposeAction.Create (this.UnSubscribe, observer);
+				}
+
+				// состояние изменилось за время вызова, поэтому повторим попытку после паузы
+				spinWait.SpinOnce ();
+			}
+		}
+
+		/// <summary>
+		/// Освобождает неуправляемые ресурсы, используемые объектом, а при необходимости освобождает также управляемые ресурсы.
+		/// </summary>
+		/// <param name="disposing">Значение true позволяет освободить управляемые и неуправляемые ресурсы;
+		/// значение false позволяет освободить только неуправляемые ресурсы.</param>
+		protected override void Dispose (bool disposing)
+		{
+			_observers = null;
+			_stream.Dispose ();
+			base.Dispose (disposing);
+		}
+
+		/// <summary>
+		/// Вызывает уведомление наблюдателей о событии с указанным параметром.
+		/// </summary>
+		/// <param name="value">Значение параметра для уведомления.</param>
+		protected void ObserversNotifyNext (FileStreamStatus value)
+		{
+			using (var enumerator = _observers.GetEnumerator ())
+			{
+				while (enumerator.MoveNext ())
+				{
+					enumerator.Current.OnNext (value);
+				}
+			}
+		}
 
 		private void ReportProgressInternal1 (Task task)
 		{
@@ -271,8 +326,9 @@ namespace Novartment.Base.IO
 				return; // рапортовать нечего, позиция не изменилась
 			}
 
-			if (_previousPosition < 0) // ещё ни разу не рапортовали
+			if (_previousPosition < 0)
 			{
+				// ещё ни разу не рапортовали
 				_previousPosition = current;
 				ObserversNotifyNext (new FileStreamStatus (current, max, _state));
 				return;
@@ -280,12 +336,13 @@ namespace Novartment.Base.IO
 
 			var deltaAbsolute = Math.Abs (current - _previousPosition);
 
-			if ((float)max >= (100.0F / _minPercentToReport)) // проверка на процент изменения нужна только для достаточно крупных файлов
+			if ((float)max >= (100.0F / _minPercentToReport))
 			{
-
+				// проверка на процент изменения нужна только для достаточно крупных файлов
 				var deltaRelativePercent = ((float)deltaAbsolute / (float)max) * 100.0F;
-				if (deltaRelativePercent < _minPercentToReport) // изменение слишком мало чтобы рапортовать
+				if (deltaRelativePercent < _minPercentToReport)
 				{
+					// изменение слишком мало чтобы рапортовать
 					return;
 				}
 			}
@@ -294,71 +351,24 @@ namespace Novartment.Base.IO
 			ObserversNotifyNext (new FileStreamStatus (current, max, _state));
 		}
 
-		#region IObservable<> Members
-
-		/// <summary>
-		/// Вызывает уведомление наблюдателей о событии с указанным параметром.
-		/// </summary>
-		/// <param name="value">Значение параметра для уведомления.</param>
-		protected void ObserversNotifyNext (FileStreamStatus value)
-		{
-			using (var enumerator = _observers.GetEnumerator ())
-			{
-				while (enumerator.MoveNext ())
-				{
-					enumerator.Current.OnNext (value);
-				}
-			}
-		}
-
-		/// <summary>
-		/// Уведомляет поставщика о том, что наблюдатель должен получать уведомления.
-		/// </summary>
-		/// <param name="observer">Объект, который должен получать уведомления.</param>
-		/// <returns>Ссылка на интерфейс, которая позволяет наблюдателям прекратить получение уведомлений до того,
-		/// как поставщик закончил отправлять их.</returns>
-		public IDisposable Subscribe (IObserver<FileStreamStatus> observer)
-		{
-			if (observer == null)
-			{
-				throw new ArgumentNullException (nameof (observer));
-			}
-			Contract.EndContractBlock ();
-
-			var spinWait = new SpinWait ();
-			while (true)
-			{
-				var state1 = _observers;
-				var newState = _observers.AddItem (observer, ReferenceEqualityComparer.Default);
-				// заменяем состояние если оно не изменилось с момента вызова
-				var state2 = Interlocked.CompareExchange (ref _observers, newState, state1);
-				if (state1 == state2)
-				{
-					return DisposeAction.Create (this.UnSubscribe, observer);
-				}
-				// состояние изменилось за время вызова, поэтому повторим попытку после паузы
-				spinWait.SpinOnce ();
-			}
-		}
-
 		private void UnSubscribe (IObserver<FileStreamStatus> observer)
 		{
-			var spinWait = new SpinWait ();
+			var spinWait = default (SpinWait);
 			while (true)
 			{
 				var state1 = _observers;
 				var newState = _observers.RemoveItem (observer, ReferenceEqualityComparer.Default);
+
 				// заменяем состояние если оно не изменилось с момента вызова
 				var state2 = Interlocked.CompareExchange (ref _observers, newState, state1);
 				if (state1 == state2)
 				{
 					return;
 				}
+
 				// состояние изменилось за время вызова, поэтому повторим попытку после паузы
 				spinWait.SpinOnce ();
 			}
 		}
-
-		#endregion
 	}
 }

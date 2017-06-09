@@ -1,7 +1,7 @@
-﻿using System.Security.Cryptography.X509Certificates;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Diagnostics.CodeAnalysis;
 
 namespace Novartment.Base.Net
 {
@@ -10,7 +10,8 @@ namespace Novartment.Base.Net
 	/// с возможностью перехода на уровень TLS
 	/// и с отслеживанием полного времени и времени простоя.
 	/// </summary>
-	[SuppressMessage ("Microsoft.Naming",
+	[SuppressMessage (
+		"Microsoft.Naming",
 		"CA1704:IdentifiersShouldBeSpelledCorrectly",
 		MessageId = "Tls",
 		Justification = "'TLS' represents standard term (Transport Layer Security).")]
@@ -25,7 +26,8 @@ namespace Novartment.Base.Net
 		/// <param name="clientCertificates">The X509CertificateCollection that contains client certificates.</param>
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
 		/// <returns>Новое соединение, защищённое по протоколу TLS.</returns>
-		[SuppressMessage ("Microsoft.Naming",
+		[SuppressMessage (
+		"Microsoft.Naming",
 			"CA1704:IdentifiersShouldBeSpelledCorrectly",
 			MessageId = "Tls",
 			Justification = "'TLS' represents standard term (Transport Layer Security).")]
@@ -40,7 +42,8 @@ namespace Novartment.Base.Net
 		/// <param name="clientCertificateRequired">A Boolean value that specifies whether the client must supply a certificate for authentication.</param>
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
 		/// <returns>Новое соединение, защищённое по протоколу TLS.</returns>
-		[SuppressMessage ("Microsoft.Naming",
+		[SuppressMessage (
+		"Microsoft.Naming",
 			"CA1704:IdentifiersShouldBeSpelledCorrectly",
 			MessageId = "Tls",
 			Justification = "'TLS' represents standard term (Transport Layer Security).")]

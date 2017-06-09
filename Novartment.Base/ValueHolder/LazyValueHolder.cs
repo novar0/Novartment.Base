@@ -14,7 +14,10 @@ namespace Novartment.Base
 		/// Инициализирует новый экземпляр класса LazyValueHolder&lt;T&gt;.
 		/// При отложенной инициализации используется конструктор целевого типа по умолчанию.
 		/// </summary>
-		public LazyValueHolder () : base () { }
+		public LazyValueHolder ()
+			: base ()
+		{
+		}
 
 		/// <summary>
 		/// Инициализирует новый экземпляр класса LazyValueHolder&lt;T&gt;.
@@ -22,21 +25,30 @@ namespace Novartment.Base
 		/// </summary>
 		/// <param name="isThreadSafe">Значение true, если необходимо разрешить параллельное использование этого экземпляра несколькими потоками;
 		/// значение false, если необходимо разрешить одновременное использование этого экземпляра только одним потоком.</param>
-		public LazyValueHolder (bool isThreadSafe) : base (isThreadSafe) { }
+		public LazyValueHolder (bool isThreadSafe)
+			: base (isThreadSafe)
+		{
+		}
 
 		/// <summary>
 		/// Инициализирует новый экземпляр класса LazyValueHolder&lt;T&gt;.
 		/// При отложенной инициализации используется заданная функция инициализации.
 		/// </summary>
 		/// <param name="valueFactory">Делегат, вызываемый для получения отложенно инициализированного значения, когда оно требуется.</param>
-		public LazyValueHolder (Func<T> valueFactory) : base (valueFactory) { }
+		public LazyValueHolder (Func<T> valueFactory)
+			: base (valueFactory)
+		{
+		}
 
 		/// <summary>
 		/// Инициализирует новый экземпляр класса LazyValueHolder&lt;T&gt;,
 		/// который использует конструктор T по умолчанию и заданный потокобезопасный режим.
 		/// </summary>
 		/// <param name="mode">Одно из значений перечисления, определяющее режим потокобезопасности.</param>
-		public LazyValueHolder (LazyThreadSafetyMode mode) : base (mode) { }
+		public LazyValueHolder (LazyThreadSafetyMode mode)
+			: base (mode)
+		{
+		}
 
 		/// <summary>
 		/// Инициализирует новый экземпляр класса LazyValueHolder&lt;T&gt;.
@@ -44,7 +56,10 @@ namespace Novartment.Base
 		/// </summary>
 		/// <param name="valueFactory">Делегат, вызываемый для получения отложенно инициализированного значения, когда оно требуется.</param>
 		/// <param name="isThreadSafe">Значение true, если необходимо разрешить параллельное использование этого экземпляра несколькими потоками.</param>
-		public LazyValueHolder (Func<T> valueFactory, bool isThreadSafe) : base (valueFactory, isThreadSafe) { }
+		public LazyValueHolder (Func<T> valueFactory, bool isThreadSafe)
+			: base (valueFactory, isThreadSafe)
+		{
+		}
 
 		/// <summary>
 		/// Инициализирует новый экземпляр класса LazyValueHolder&lt;T&gt;,
@@ -52,6 +67,9 @@ namespace Novartment.Base
 		/// </summary>
 		/// <param name="valueFactory">Делегат, вызываемый для получения отложенно инициализированного значения, когда оно требуется.</param>
 		/// <param name="mode">Одно из значений перечисления, определяющее режим потокобезопасности.</param>
-		public LazyValueHolder (Func<T> valueFactory, LazyThreadSafetyMode mode) : base (valueFactory, mode) { }
+		public LazyValueHolder (Func<T> valueFactory, LazyThreadSafetyMode mode)
+			: base (valueFactory, mode)
+		{
+		}
 	}
 }

@@ -1,9 +1,9 @@
 ﻿using System;
-using System.Net.Sockets;
+using System.Diagnostics;
 using System.Diagnostics.Contracts;
+using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Diagnostics;
 using Novartment.Base.BinaryStreaming;
 
 namespace Novartment.Base.Net
@@ -21,6 +21,35 @@ namespace Novartment.Base.Net
 		private int _offset = 0;
 		private int _count = 0;
 		private bool _socketClosed = false;
+
+		/// <summary>
+		/// Инициализирует новый экземпляр SocketBufferedSource получающий данные из указанного сокета
+		/// используя указанный буфер.
+		/// </summary>
+		/// <param name="socket">Исходный сокет для чтения данных.</param>
+		/// <param name="buffer">Байтовый буфер, в котором будут содержаться считанные из сокета данные.</param>
+		public SocketBufferedSource (Socket socket, byte[] buffer)
+		{
+			if (socket == null)
+			{
+				throw new ArgumentNullException (nameof (socket));
+			}
+
+			if (buffer == null)
+			{
+				throw new ArgumentNullException (nameof (buffer));
+			}
+
+			if (buffer.Length < 1)
+			{
+				throw new ArgumentOutOfRangeException (nameof (buffer));
+			}
+
+			Contract.EndContractBlock ();
+
+			_socket = socket;
+			_buffer = buffer;
+		}
 
 		/// <summary>
 		/// Получает буфер, в котором содержится некоторая часть данных сокета.
@@ -46,32 +75,6 @@ namespace Novartment.Base.Net
 		/// Содержимое буфера при этом остаётся верным, но больше не будет меняться.</summary>
 		public bool IsExhausted => _socketClosed;
 
-		/// <summary>
-		/// Инициализирует новый экземпляр SocketBufferedSource получающий данные из указанного сокета
-		/// используя указанный буфер.
-		/// </summary>
-		/// <param name="socket">Исходный сокет для чтения данных.</param>
-		/// <param name="buffer">Байтовый буфер, в котором будут содержаться считанные из сокета данные.</param>
-		public SocketBufferedSource (Socket socket, byte[] buffer)
-		{
-			if (socket == null)
-			{
-				throw new ArgumentNullException (nameof (socket));
-			}
-			if (buffer == null)
-			{
-				throw new ArgumentNullException (nameof (buffer));
-			}
-			if (buffer.Length < 1)
-			{
-				throw new ArgumentOutOfRangeException (nameof (buffer));
-			}
-			Contract.EndContractBlock ();
-
-			_socket = socket;
-			_buffer = buffer;
-		}
-
 		/// <summary>Отбрасывает (пропускает) указанное количество данных из начала буфера.</summary>
 		/// <param name="size">Размер данных для пропуска в начале буфера.
 		/// Должен быть меньше чем размер данных в буфере.</param>
@@ -81,6 +84,7 @@ namespace Novartment.Base.Net
 			{
 				throw new ArgumentOutOfRangeException (nameof (size));
 			}
+
 			Contract.EndContractBlock ();
 
 			if (size > 0)
@@ -120,19 +124,19 @@ namespace Novartment.Base.Net
 
 			var bufSegment = new ArraySegment<byte> (_buffer, _offset + _count, _buffer.Length - _offset - _count);
 			var task = _socket.ReceiveAsync (bufSegment, SocketFlags.None);
-			return FillBufferAsyncFinalizer (task);
-		}
+			return FillBufferAsyncFinalizer ();
 
-		private async Task FillBufferAsyncFinalizer (Task<int> task)
-		{
-			var readed = await task.ConfigureAwait (false);
-			if (readed > 0)
+			async Task FillBufferAsyncFinalizer ()
 			{
-				AcceptChunk (readed);
-			}
-			else
-			{
-				SetStreamEnded ();
+				var readed = await task.ConfigureAwait (false);
+				if (readed > 0)
+				{
+					AcceptChunk (readed);
+				}
+				else
+				{
+					SetStreamEnded ();
+				}
 			}
 		}
 
@@ -148,53 +152,59 @@ namespace Novartment.Base.Net
 		/// потому что чтение сокета вообще не поддерживает отмену.
 		/// Для отмены чтения используйте Socket.Close().
 		/// </remarks>
+		/// <returns>Задача, представляющая операцию.</returns>
 		public Task EnsureBufferAsync (int size, CancellationToken cancellationToken)
 		{
 			if ((size < 0) || (size > _buffer.Length))
 			{
 				throw new ArgumentOutOfRangeException (nameof (size));
 			}
+
 			Contract.EndContractBlock ();
 
 			if (cancellationToken.IsCancellationRequested)
 			{
 				return Task.FromCanceled (cancellationToken);
 			}
+
 			if ((size <= _count) || _socketClosed)
 			{
 				if (size > _count)
 				{
 					throw new NotEnoughDataException (size - _count);
 				}
+
 				return Task.CompletedTask;
 			}
-			Defragment ();
-			return EnsureBufferAsyncStateMachine (size, cancellationToken);
-		}
 
-		// запускаем асинхронное чтение источника пока не наберём необходимое количество данных
-		private async Task EnsureBufferAsyncStateMachine (int size, CancellationToken cancellationToken)
-		{
-			var available = _count;
-			var shortage = size - available;
-			while ((shortage > 0) && !_socketClosed)
+			Defragment ();
+			return EnsureBufferAsyncStateMachine ();
+
+			// запускаем асинхронное чтение источника пока не наберём необходимое количество данных
+			async Task EnsureBufferAsyncStateMachine ()
 			{
-				cancellationToken.ThrowIfCancellationRequested ();
-				var bufSegment = new ArraySegment<byte> (_buffer, _offset + _count, _buffer.Length - _offset - _count);
-				var readed = await _socket.ReceiveAsync (bufSegment, SocketFlags.None).ConfigureAwait (false);
-				shortage -= readed;
-				if (readed > 0)
+				var available = _count;
+				var shortage = size - available;
+				while ((shortage > 0) && !_socketClosed)
 				{
-					AcceptChunk (readed);
+					cancellationToken.ThrowIfCancellationRequested ();
+					var bufSegment = new ArraySegment<byte> (_buffer, _offset + _count, _buffer.Length - _offset - _count);
+					var readed = await _socket.ReceiveAsync (bufSegment, SocketFlags.None).ConfigureAwait (false);
+					shortage -= readed;
+					if (readed > 0)
+					{
+						AcceptChunk (readed);
+					}
+					else
+					{
+						SetStreamEnded ();
+					}
 				}
-				else
+
+				if (shortage > 0)
 				{
-					SetStreamEnded ();
+					throw new NotEnoughDataException (shortage);
 				}
-			}
-			if (shortage > 0)
-			{
-				throw new NotEnoughDataException (shortage);
 			}
 		}
 
@@ -228,6 +238,7 @@ namespace Novartment.Base.Net
 				{
 					Array.Copy (_buffer, _offset, _buffer, 0, _count);
 				}
+
 				_offset = 0;
 			}
 		}

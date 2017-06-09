@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Windows;
 using System.Diagnostics.Contracts;
+using System.Windows;
 
 namespace Novartment.Base.UI.Wpf
 {
@@ -12,11 +12,6 @@ namespace Novartment.Base.UI.Wpf
 		IDataContainer
 	{
 		private readonly DataObject _dataObject;
-
-		/// <summary>
-		/// Получает представление объекта данных в виде System.Windows.DataObject.
-		/// </summary>
-		public DataObject InternalDataObject => _dataObject;
 
 		/// <summary>
 		/// Initializes a new instance of the WpfDataContainer class.
@@ -47,6 +42,7 @@ namespace Novartment.Base.UI.Wpf
 			{
 				throw new ArgumentNullException (nameof (format));
 			}
+
 			Contract.EndContractBlock ();
 
 			_dataObject = new DataObject (format, data, true);
@@ -64,6 +60,7 @@ namespace Novartment.Base.UI.Wpf
 			{
 				throw new ArgumentNullException (nameof (format));
 			}
+
 			Contract.EndContractBlock ();
 
 			_dataObject = new DataObject (format, data);
@@ -84,6 +81,7 @@ namespace Novartment.Base.UI.Wpf
 			{
 				throw new ArgumentNullException (nameof (format));
 			}
+
 			Contract.EndContractBlock ();
 
 			_dataObject = new DataObject (format, data, autoConvert);
@@ -99,23 +97,55 @@ namespace Novartment.Base.UI.Wpf
 			{
 				throw new ArgumentNullException (nameof (dataObject));
 			}
+
 			Contract.EndContractBlock ();
 
 			_dataObject = dataObject;
 		}
 
-		#region IDataContainer Members
+		/// <summary>
+		/// Получает представление объекта данных в виде System.Windows.DataObject.
+		/// </summary>
+		public DataObject InternalDataObject => _dataObject;
 
 		/// <summary>
 		/// An array of strings, with each string specifying the name of a format supported by this data object.
 		/// </summary>
 		/// <returns>A collection of strings, with each string specifying the name of a format supported by this data object. </returns>
-		public IReadOnlyList<string> AvailableFormats
+		public IReadOnlyList<string> AvailableFormats => _dataObject.GetFormats (true);
+
+		/// <summary>
+		/// Конвертирует объекты типа IDataContainer в объекты типа IDataObject.
+		/// </summary>
+		/// <param name="data">Исходный обоъект типа IDataContainer.</param>
+		/// <returns>Конечный объект типа IDataObject.</returns>
+		public static System.Runtime.InteropServices.ComTypes.IDataObject ToComDataObject (IDataContainer data)
 		{
-			get
+			var comDataObject = data as System.Runtime.InteropServices.ComTypes.IDataObject;
+			if (comDataObject == null)
 			{
-				return _dataObject.GetFormats (true);
+				if (data is WpfDataContainer dataContainerWpf)
+				{
+					comDataObject = dataContainerWpf._dataObject;
+				}
 			}
+
+			if (comDataObject == null)
+			{
+				throw new InvalidOperationException ("Specified object can not be converted in System.Runtime.InteropServices.ComTypes.IDataObject");
+			}
+
+			return comDataObject;
+		}
+
+		/// <summary>
+		/// Конвертирует объекты типа IDataObject в объекты типа IDataContainer.
+		/// </summary>
+		/// <param name="comDataObject">Исходный обоъект типа IDataObject.</param>
+		/// <returns>Конечный объект типа IDataContainer.</returns>
+		public static IDataContainer FromComDataObject (System.Runtime.InteropServices.ComTypes.IDataObject comDataObject)
+		{
+			return new WpfDataContainer (comDataObject);
 		}
 
 		/// <summary>
@@ -131,6 +161,7 @@ namespace Novartment.Base.UI.Wpf
 			{
 				throw new ArgumentNullException (nameof (format));
 			}
+
 			Contract.EndContractBlock ();
 
 			return _dataObject.GetData (format, autoConvert);
@@ -150,48 +181,10 @@ namespace Novartment.Base.UI.Wpf
 			{
 				throw new ArgumentNullException (nameof (format));
 			}
+
 			Contract.EndContractBlock ();
 
 			_dataObject.SetData (format, value, autoConvert);
 		}
-
-		#endregion
-
-		#region converters for System.Runtime.InteropServices.ComTypes.IDataObject
-
-		/// <summary>
-		/// Конвертирует объекты типа IDataContainer в объекты типа IDataObject.
-		/// </summary>
-		/// <param name="data">Исходный обоъект типа IDataContainer.</param>
-		/// <returns>Конечный объект типа IDataObject.</returns>
-		public static System.Runtime.InteropServices.ComTypes.IDataObject ToComDataObject (IDataContainer data)
-		{
-			var comDataObject = data as System.Runtime.InteropServices.ComTypes.IDataObject;
-			if (comDataObject == null)
-			{
-				var dataContainerWpf = data as WpfDataContainer;
-				if (dataContainerWpf != null)
-				{
-					comDataObject = dataContainerWpf._dataObject;
-				}
-			}
-			if (comDataObject == null)
-			{
-				throw new InvalidOperationException ("Specified object can not be converted in System.Runtime.InteropServices.ComTypes.IDataObject");
-			}
-			return comDataObject;
-		}
-
-		/// <summary>
-		/// Конвертирует объекты типа IDataObject в объекты типа IDataContainer.
-		/// </summary>
-		/// <param name="comDataObject">Исходный обоъект типа IDataObject.</param>
-		/// <returns>Конечный объект типа IDataContainer.</returns>
-		public static IDataContainer FromComDataObject (System.Runtime.InteropServices.ComTypes.IDataObject comDataObject)
-		{
-			return new WpfDataContainer (comDataObject);
-		}
-
-		#endregion
 	}
 }

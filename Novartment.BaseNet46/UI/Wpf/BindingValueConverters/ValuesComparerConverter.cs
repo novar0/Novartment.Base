@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Windows.Data;
 using System.Globalization;
+using System.Windows.Data;
 using System.Windows.Media.Imaging;
 
 namespace Novartment.Base.UI.Wpf
@@ -24,10 +24,12 @@ namespace Novartment.Base.UI.Wpf
 			{
 				return false;
 			}
+
 			if (values[0] == null)
 			{
-				return (values[1] == null);
+				return values[1] == null;
 			}
+
 			return values[0].Equals (values[1]);
 		}
 

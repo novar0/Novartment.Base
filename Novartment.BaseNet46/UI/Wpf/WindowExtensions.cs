@@ -1,8 +1,8 @@
 ﻿using System;
-using System.Windows;
-using System.Windows.Threading;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
+using System.Windows;
+using System.Windows.Threading;
 
 namespace Novartment.Base.UI.Wpf
 {
@@ -15,7 +15,8 @@ namespace Novartment.Base.UI.Wpf
 		/// Проявляет окно и показывает его перед другими окнами.
 		/// </summary>
 		/// <param name="window">Окно, которое необходимо показать.</param>
-		[SuppressMessage ("Microsoft.Design",
+		[SuppressMessage (
+		"Microsoft.Design",
 			"CA1011:ConsiderPassingBaseTypesAsParameters",
 			Justification = "'Window' type required here (passed to BringToFront method).")]
 		public static void MakeVisibleAndScheduleBringToFront (this Window window)
@@ -24,12 +25,14 @@ namespace Novartment.Base.UI.Wpf
 			{
 				throw new ArgumentNullException (nameof (window));
 			}
+
 			Contract.EndContractBlock ();
 
 			if (!window.IsLoaded)
 			{
 				return;
 			}
+
 			window.Visibility = Visibility.Visible;
 			window.Dispatcher.BeginInvoke (DispatcherPriority.Background, new Action<Window> (BringToFront), window);
 		}
@@ -44,12 +47,14 @@ namespace Novartment.Base.UI.Wpf
 			{
 				throw new ArgumentNullException (nameof (window));
 			}
+
 			Contract.EndContractBlock ();
 
 			if (!window.IsLoaded)
 			{
 				return;
 			}
+
 			window.WindowState = WindowState.Normal;
 			window.Activate ();
 		}

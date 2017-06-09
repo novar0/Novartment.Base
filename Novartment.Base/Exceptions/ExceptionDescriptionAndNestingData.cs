@@ -9,15 +9,6 @@ namespace Novartment.Base
 	/// </summary>
 	public class ExceptionDescriptionAndNestingData : ExceptionDescription
 	{
-		/// <summary>Получает уровень исключения в иерархии, начиная с нуля.</summary>
-		public int NestingLevel { get; }
-
-		/// <summary>Получает номер исключения в пределах одного уровня иерархии, начиная с нуля.</summary>
-		public int NumberInLevel { get; }
-
-		/// <summary>Получает общее количество исключений в пределах одного уровня иерархии.</summary>
-		public int TotalInLevel { get; }
-
 		/// <summary>
 		/// Инициализирует новый экземпляр класса ExceptionDescriptionAndNestingData содержащий указанные данные.
 		/// </summary>
@@ -37,12 +28,22 @@ namespace Novartment.Base
 			ICollection<ExceptionDescription> innerExceptions,
 			int nestingLevel,
 			int numberInLevel,
-			int totalInLevel) : base (name, message, details, trace, innerExceptions)
+			int totalInLevel)
+			: base (name, message, details, trace, innerExceptions)
 		{
 			this.NestingLevel = nestingLevel;
 			this.NumberInLevel = numberInLevel;
 			this.TotalInLevel = totalInLevel;
 		}
+
+		/// <summary>Получает уровень исключения в иерархии, начиная с нуля.</summary>
+		public int NestingLevel { get; }
+
+		/// <summary>Получает номер исключения в пределах одного уровня иерархии, начиная с нуля.</summary>
+		public int NumberInLevel { get; }
+
+		/// <summary>Получает общее количество исключений в пределах одного уровня иерархии.</summary>
+		public int TotalInLevel { get; }
 
 		/// <summary>
 		/// Получает одно-строковое краткое представление подробностей об исключении.
@@ -59,12 +60,12 @@ namespace Novartment.Base
 		/// <param name="detailed">Укажите true чтобы получить детальное многостроковое представлени, или false чтобы получить однострочное краткое представление.</param>
 		/// <param name="tracePatternToHide">Строка-образец, который в трассировке стэка будет заменён на многоточие.</param>
 		/// <returns>Строка подробностей об исключении.</returns>
-		[SuppressMessage ("Microsoft.Design",
+		[SuppressMessage (
+		"Microsoft.Design",
 			"CA1026:DefaultParametersShouldNotBeUsed",
 			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
 		public override string ToString (bool detailed, string tracePatternToHide = null)
 		{
-
 			var nestingInfo = ((this.NestingLevel > 0) || ((InnerExceptions != null) && (InnerExceptions.Count > 0))) ?
 				FormattableString.Invariant ($"Level {this.NestingLevel} ") :
 				string.Empty;

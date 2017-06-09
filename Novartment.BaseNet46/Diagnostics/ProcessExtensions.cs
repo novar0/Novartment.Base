@@ -1,10 +1,10 @@
 ﻿using System;
-using System.Diagnostics;
-using System.Threading;
-using System.Threading.Tasks;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Novartment.Base
 {
@@ -28,16 +28,19 @@ namespace Novartment.Base
 			{
 				throw new ArgumentNullException (nameof (process));
 			}
+
 			if (timeoutMilliseconds < 0)
 			{
 				throw new ArgumentOutOfRangeException (nameof (timeoutMilliseconds));
 			}
+
 			Contract.EndContractBlock ();
 
 			if (process.HasExited)
 			{
 				return;
 			}
+
 			try
 			{
 				var isClosed = process.CloseMainWindow ();
@@ -45,12 +48,15 @@ namespace Novartment.Base
 				{
 					process.WaitForExit (timeoutMilliseconds);
 				}
+
 				if (!process.HasExited)
 				{
 					process.Kill ();
 				}
 			}
-			catch (InvalidOperationException) { }
+			catch (InvalidOperationException)
+			{
+			}
 		}
 
 		/// <summary>
@@ -64,11 +70,21 @@ namespace Novartment.Base
 			{
 				throw new ArgumentNullException (nameof (process));
 			}
+
 			Contract.EndContractBlock ();
 
-			try { return (!process.HasExited && (process.Id != 0)); }
-			catch (InvalidOperationException) { return false; }
-			catch (Win32Exception) { return false; }
+			try
+			{
+				return !process.HasExited && (process.Id != 0);
+			}
+			catch (InvalidOperationException)
+			{
+				return false;
+			}
+			catch (Win32Exception)
+			{
+				return false;
+			}
 		}
 
 		/// <summary>
@@ -77,7 +93,8 @@ namespace Novartment.Base
 		/// <param name="process">Созданный, но не запущенный процесс.</param>
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
 		/// <returns>Задача, состояние которой отражает состояние запущенного процесса.</returns>
-		[SuppressMessage ("Microsoft.Reliability",
+		[SuppressMessage (
+		"Microsoft.Reliability",
 			"CA2000:Dispose objects before losing scope",
 			Justification = "'procData' can not be disposed here, it monitors running process and will be disposed when process exited.")]
 		public static Task StartAsync (this Process process, CancellationToken cancellationToken)
@@ -86,12 +103,14 @@ namespace Novartment.Base
 			{
 				throw new ArgumentNullException (nameof (process));
 			}
+
 			Contract.EndContractBlock ();
 
 			if (cancellationToken.IsCancellationRequested)
 			{
 				return Task.FromCanceled (cancellationToken);
 			}
+
 			var procData = new ProcessTaskCompletionSourceWrapper (process, cancellationToken);
 			procData.Start ();
 			return procData.Task;
@@ -105,7 +124,8 @@ namespace Novartment.Base
 		/// <param name="completionMutexName">Имя мьютекса, создание которого запущенным процессом будет означать успешное завершение задачи.</param>
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
 		/// <returns>Задача, состояние которой отражает состояние запущенного процесса.</returns>
-		[SuppressMessage ("Microsoft.Reliability",
+		[SuppressMessage (
+		"Microsoft.Reliability",
 			"CA2000:Dispose objects before losing scope",
 			Justification = "'procData' can not be disposed here, it monitors running process and will be disposed when process exited.")]
 		public static Task StartAsync (this Process process, string completionMutexName, CancellationToken cancellationToken)
@@ -114,18 +134,18 @@ namespace Novartment.Base
 			{
 				throw new ArgumentNullException (nameof (process));
 			}
+
 			Contract.EndContractBlock ();
 
 			if (cancellationToken.IsCancellationRequested)
 			{
 				return Task.FromCanceled (cancellationToken);
 			}
+
 			var procData = new ProcessTaskCompletionSourceWrapper (process, completionMutexName, cancellationToken);
 			procData.Start ();
 			return procData.Task;
 		}
-
-		#region class_ProcessTaskCompletionSourceWrapper
 
 		internal class ProcessTaskCompletionSourceWrapper : TaskCompletionSource<object>,
 			IDisposable
@@ -137,8 +157,10 @@ namespace Novartment.Base
 			private readonly string _mutexName;
 			private readonly Process _process;
 
-			internal ProcessTaskCompletionSourceWrapper (Process process, CancellationToken cancellationToken) :
-				this (process, null, cancellationToken) { }
+			internal ProcessTaskCompletionSourceWrapper (Process process, CancellationToken cancellationToken)
+				: this (process, null, cancellationToken)
+			{
+			}
 
 			internal ProcessTaskCompletionSourceWrapper (Process process, string completionMutexName, CancellationToken cancellationToken)
 				: base (process)
@@ -150,33 +172,9 @@ namespace Novartment.Base
 				{
 					_cTokenReg.Value = cancellationToken.Register (Terminate);
 				}
+
 				process.EnableRaisingEvents = true;
 				process.Exited += ProcessExited;
-			}
-
-			private void TimerTick (bool notUsed)
-			{
-				if (this.Task.IsCompleted)
-				{
-					return;
-				}
-				bool notExists;
-				try
-				{
-					using (new Mutex (false, _mutexName, out notExists)) { }
-				}
-				catch (UnauthorizedAccessException) { notExists = false; }
-				if (!notExists)
-				{
-					_mutexQueryTimer.Value.Stop ();
-					Dispose ();
-					TrySetResult (null);
-				}
-			}
-
-			private void Terminate ()
-			{
-				_process.Terminate (5000);
 			}
 
 			/// <summary>
@@ -189,7 +187,8 @@ namespace Novartment.Base
 				_process.Exited -= ProcessExited;
 			}
 
-			[SuppressMessage ("Microsoft.Reliability",
+			[SuppressMessage (
+				"Microsoft.Reliability",
 				"CA2000:Dispose objects before losing scope",
 				Justification = "'timer' will be disposed by ReusableDisposable object holding it.")]
 			internal void Start ()
@@ -200,13 +199,16 @@ namespace Novartment.Base
 					TrySetCanceled ();
 					return;
 				}
+
 				try
 				{
 					_process.Start ();
 					if (_mutexName != null)
 					{
-						var timer = new AppDomainQueueTimer<bool> (TimerTick, false);
-						timer.Interval = _MutexCheckPeriod;
+						var timer = new AppDomainQueueTimer<bool> (TimerTick, false)
+						{
+							Interval = _MutexCheckPeriod
+						};
 						_mutexQueryTimer.Value = timer;
 						_mutexQueryTimer.Value.Start ();
 					}
@@ -229,6 +231,38 @@ namespace Novartment.Base
 				{
 					Dispose ();
 				}
+			}
+
+			private void TimerTick (bool notUsed)
+			{
+				if (this.Task.IsCompleted)
+				{
+					return;
+				}
+
+				bool notExists;
+				try
+				{
+					using (new Mutex (false, _mutexName, out notExists))
+					{
+					}
+				}
+				catch (UnauthorizedAccessException)
+				{
+					notExists = false;
+				}
+
+				if (!notExists)
+				{
+					_mutexQueryTimer.Value.Stop ();
+					Dispose ();
+					TrySetResult (null);
+				}
+			}
+
+			private void Terminate ()
+			{
+				_process.Terminate (5000);
 			}
 
 			private void ProcessExited (object sender, EventArgs e)
@@ -255,7 +289,5 @@ namespace Novartment.Base
 				TrySetResult (null);
 			}
 		}
-
-		#endregion
 	}
 }

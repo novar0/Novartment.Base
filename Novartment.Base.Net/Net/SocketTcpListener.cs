@@ -1,11 +1,11 @@
 ﻿using System;
-using System.Net;
-using System.Net.Sockets;
-using System.Net.NetworkInformation;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
+using System.Net;
+using System.Net.NetworkInformation;
+using System.Net.Sockets;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Novartment.Base.Net
 {
@@ -25,11 +25,6 @@ namespace Novartment.Base.Net
 		private bool _active;
 
 		/// <summary>
-		/// Получает конечнную точку, на которой производится прослушивание.
-		/// </summary>
-		public IPEndPoint LocalEndpoint => _localEP;
-
-		/// <summary>
 		/// Инициализирует новый экземпляр SocketTcpListener для прослушивания на указанной конечной точке
 		/// и создающий объект-подключение используя указанную фабрику.
 		/// </summary>
@@ -40,11 +35,17 @@ namespace Novartment.Base.Net
 			{
 				throw new ArgumentNullException (nameof (localEP));
 			}
+
 			Contract.EndContractBlock ();
 
 			_localEP = localEP;
 			_socket = new Socket (_localEP.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
 		}
+
+		/// <summary>
+		/// Получает конечнную точку, на которой производится прослушивание.
+		/// </summary>
+		public IPEndPoint LocalEndpoint => _localEP;
 
 		/// <summary>
 		/// Запускает прослушивание.
@@ -63,6 +64,7 @@ namespace Novartment.Base.Net
 					Stop ();
 					throw;
 				}
+
 				_active = true;
 			}
 		}
@@ -70,7 +72,8 @@ namespace Novartment.Base.Net
 		/// <summary>
 		/// Останавливает прослушивание.
 		/// </summary>
-		[SuppressMessage ("Microsoft.Naming",
+		[SuppressMessage (
+		"Microsoft.Naming",
 			"CA1716:IdentifiersShouldNotMatchKeywords",
 			MessageId = "Stop",
 			Justification = "No other name could be applied because base System.Net.Sockets.TcpListener have method 'Stop()'.")]
@@ -86,7 +89,8 @@ namespace Novartment.Base.Net
 		/// </summary>
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
 		/// <returns>Установленное TCP-подключение.</returns>
-		[SuppressMessage ("Microsoft.Reliability",
+		[SuppressMessage (
+		"Microsoft.Reliability",
 			"CA2000:Dispose objects before losing scope",
 			Justification = "new TcpConnection will be returned and disposed outside.")]
 		public Task<ITcpConnection> AcceptTcpClientAsync (CancellationToken cancellationToken)
@@ -94,8 +98,8 @@ namespace Novartment.Base.Net
 			if (!_active)
 			{
 				throw new InvalidOperationException ("stopped");
-
 			}
+
 			if (cancellationToken.IsCancellationRequested)
 			{
 				return Task.FromCanceled<ITcpConnection> (cancellationToken);
@@ -127,8 +131,25 @@ namespace Novartment.Base.Net
 				{
 					return Task.FromCanceled<ITcpConnection> (cancellationToken);
 				}
+
 				throw;
 			}
+		}
+
+		/// <summary>
+		/// Освобождает все используемые ресурсы.
+		/// </summary>
+		[SuppressMessage (
+			"Microsoft.Usage",
+			"CA1816:CallGCSuppressFinalizeCorrectly",
+			Justification = "There is no meaning to introduce a finalizer in derived type.")]
+		[SuppressMessage (
+			"Microsoft.Design",
+			"CA1063:ImplementIDisposableCorrectly",
+			Justification = "Implemented correctly.")]
+		public void Dispose ()
+		{
+			_socket.Dispose ();
 		}
 
 		private static async Task<ITcpConnection> AcceptTcpClientAsyncFinalizer (
@@ -150,21 +171,6 @@ namespace Novartment.Base.Net
 			{
 				disposable?.Dispose ();
 			}
-		}
-
-		/// <summary>
-		/// Освобождает все используемые ресурсы.
-		/// </summary>
-		[SuppressMessage ("Microsoft.Usage",
-			"CA1816:CallGCSuppressFinalizeCorrectly",
-			Justification = "There is no meaning to introduce a finalizer in derived type."),
-		SuppressMessage (
-			"Microsoft.Design",
-			"CA1063:ImplementIDisposableCorrectly",
-			Justification = "Implemented correctly.")]
-		public void Dispose ()
-		{
-			_socket.Dispose ();
 		}
 	}
 }

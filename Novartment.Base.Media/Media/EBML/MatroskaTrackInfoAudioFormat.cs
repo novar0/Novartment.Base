@@ -7,24 +7,15 @@ namespace Novartment.Base.Media
 	/// <summary>
 	/// Информация об аудио-трэке матрёшка-файла.
 	/// </summary>
-	[SuppressMessage ("Microsoft.Naming",
+	[SuppressMessage (
+		"Microsoft.Naming",
 		"CA1704:IdentifiersShouldBeSpelledCorrectly",
 		MessageId = "Matroska",
-		Justification = "'Matroska' represents standard term."),
-	DebuggerDisplay ("{DebuggerDisplay,nq}"),
-	CLSCompliant (false)]
+		Justification = "'Matroska' represents standard term.")]
+	[DebuggerDisplay ("{DebuggerDisplay,nq}")]
+	[CLSCompliant (false)]
 	public class MatroskaTrackInfoAudioFormat
 	{
-		/// <summary>
-		/// Получает частоту дискретизации трэка.
-		/// </summary>
-		public double? SamplingFrequency { get; }
-
-		/// <summary>
-		/// Получает количество каналов трэка.
-		/// </summary>
-		public ulong? Channels { get; }
-
 		/// <summary>
 		/// Инициализирует новый экземпляр класса MatroskaTrackInfoAudioFormat на основе указанных данных.
 		/// </summary>
@@ -36,16 +27,21 @@ namespace Novartment.Base.Media
 			this.Channels = channels;
 		}
 
-		[DebuggerBrowsable (DebuggerBrowsableState.Never),
-		SuppressMessage ("Microsoft.Performance",
+		/// <summary>
+		/// Получает частоту дискретизации трэка.
+		/// </summary>
+		public double? SamplingFrequency { get; }
+
+		/// <summary>
+		/// Получает количество каналов трэка.
+		/// </summary>
+		public ulong? Channels { get; }
+
+		[DebuggerBrowsable (DebuggerBrowsableState.Never)]
+		[SuppressMessage (
+		"Microsoft.Performance",
 			"CA1811:AvoidUncalledPrivateCode",
 			Justification = "Used in DebuggerDisplay attribute.")]
-		private string DebuggerDisplay
-		{
-			get
-			{
-				return FormattableString.Invariant ($"SamplingFrequency = {this.SamplingFrequency}, Channels = {this.Channels}");
-			}
-		}
+		private string DebuggerDisplay => FormattableString.Invariant ($"SamplingFrequency = {this.SamplingFrequency}, Channels = {this.Channels}");
 	}
 }

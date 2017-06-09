@@ -87,6 +87,7 @@ namespace Novartment.Base.Sample
 					}
 				}
 			}
+
 			var tcs = new CancellationTokenSource ();
 			var originateTask = SendMessagesAsync (outgoingMailMessages, originatorLogger, tcs.Token);
 			Console.WriteLine ("SMTP server started. Press ENTER to quit...");

@@ -1,5 +1,4 @@
-﻿
-namespace Novartment.Base.Net.Mime
+﻿namespace Novartment.Base.Net.Mime
 {
 	/// <summary>
 	/// Результат попытки доставки сообщения адресату.

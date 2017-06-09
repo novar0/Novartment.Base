@@ -30,7 +30,9 @@ namespace Novartment.Base
 		/// <param name="isLastSegment">Признако того, что указанная порция исходных данных является последней.</param>
 		/// <returns>Баланс потенциальной операции кодирования.</returns>
 		EncodingBalance Estimate (
-			byte[] source, int offset, int count,
+			byte[] source,
+			int offset,
+			int count,
 			int maxOutCount,
 			int segmentNumber,
 			bool isLastSegment);
@@ -48,8 +50,12 @@ namespace Novartment.Base
 		/// <param name="isLastSegment">Признако того, что указанная порция исходных данных является последней.</param>
 		/// <returns>Баланс операции кодирования.</returns>
 		EncodingBalance Encode (
-			byte[] source, int offset, int count,
-			byte[] destination, int outOffset, int maxOutCount,
+			byte[] source,
+			int offset,
+			int count,
+			byte[] destination,
+			int outOffset,
+			int maxOutCount,
 			int segmentNumber,
 			bool isLastSegment);
 	}
@@ -60,6 +66,18 @@ namespace Novartment.Base
 	public struct EncodingBalance
 	{
 		/// <summary>
+		/// Инициализирует новый экземпляр EncodingBalance с указанным
+		/// количеством использованных и произведённых байтов.
+		/// </summary>
+		/// <param name="bytesProduced">Количество использованных байтов.</param>
+		/// <param name="bytesConsumed">Количество произведённых байтов.</param>
+		public EncodingBalance (int bytesProduced, int bytesConsumed)
+		{
+			this.BytesProduced = bytesProduced;
+			this.BytesConsumed = bytesConsumed;
+		}
+
+		/// <summary>
 		/// Получает количество байтов, произведённых в результате кодирования.
 		/// </summary>
 		public int BytesProduced { get; }
@@ -68,18 +86,6 @@ namespace Novartment.Base
 		/// Получает количество байтов, использованных при кодировании.
 		/// </summary>
 		public int BytesConsumed { get; }
-
-		/// <summary>
-		/// Инициализирует новый экземпляр EncodingBalance с указанным
-		/// количеством использованных и произведённых байтов.
-		/// </summary>
-		/// <param name="bytesProduced"></param>
-		/// <param name="bytesConsumed"></param>
-		public EncodingBalance (int bytesProduced, int bytesConsumed)
-		{
-			this.BytesProduced = bytesProduced;
-			this.BytesConsumed = bytesConsumed;
-		}
 
 		/// <summary>
 		/// Деконструирует данные.

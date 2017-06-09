@@ -72,6 +72,7 @@ namespace Novartment.Base.Test
 					_buffer[_offset + _count + i] = _dataFunction.Invoke (_position + i);
 					i++;
 				}
+
 				if ((_position + i) >= _size)
 				{
 					_isExhausted = true;
@@ -79,6 +80,7 @@ namespace Novartment.Base.Test
 				_count += i;
 				_position += i;
 			}
+
 			return Task.CompletedTask;
 		}
 
@@ -112,6 +114,7 @@ namespace Novartment.Base.Test
 						_buffer[_offset + _count + i] = _dataFunction.Invoke (_position + i);
 						i++;
 					}
+
 					if ((_position + i) >= _size)
 					{
 						_isExhausted = true;
@@ -119,11 +122,13 @@ namespace Novartment.Base.Test
 					_count += i;
 					_position += i;
 				}
+
 				if (shortage > 0)
 				{
 					throw new NotEnoughDataException (shortage);
 				}
 			}
+
 			return Task.CompletedTask;
 		}
 
@@ -141,12 +146,14 @@ namespace Novartment.Base.Test
 				_offset += (int)size;
 				return Task.FromResult (size);
 			}
+
 			if (availableBuffer > 0)
 			{
 				size -= availableBuffer;
 				skipped += availableBuffer;
 				_count = 0;
 			}
+
 			var availableSource = _size - _position;
 			if (size > availableSource)
 			{
@@ -159,6 +166,7 @@ namespace Novartment.Base.Test
 				_position += size;
 				skipped += size;
 			}
+
 			return Task.FromResult (skipped);
 		}
 	}

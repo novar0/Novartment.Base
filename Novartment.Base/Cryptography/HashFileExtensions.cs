@@ -1,9 +1,9 @@
 ﻿using System;
+using System.Diagnostics.Contracts;
 using System.IO;
 using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Diagnostics.Contracts;
 
 namespace Novartment.Base.IO
 {
@@ -33,10 +33,12 @@ namespace Novartment.Base.IO
 			{
 				throw new ArgumentNullException (nameof (hashAlgorithm));
 			}
+
 			if (fileName == null)
 			{
 				throw new ArgumentNullException (nameof (fileName));
 			}
+
 			Contract.EndContractBlock ();
 
 			if (cancellationToken.IsCancellationRequested)
@@ -73,6 +75,7 @@ namespace Novartment.Base.IO
 						{
 							return hashAlgorithm.GetHashAndReset ();
 						}
+
 						hashAlgorithm.AppendData (buffer, 0, bytesRead);
 						position += bytesRead;
 						progress?.Report (new FileStreamStatus (position, length, null));
@@ -109,14 +112,17 @@ namespace Novartment.Base.IO
 			{
 				throw new ArgumentNullException (nameof (hashAlgorithm));
 			}
+
 			if (sourceFileName == null)
 			{
 				throw new ArgumentNullException (nameof (sourceFileName));
 			}
+
 			if (destinationFileName == null)
 			{
 				throw new ArgumentNullException (nameof (destinationFileName));
 			}
+
 			Contract.EndContractBlock ();
 
 			if (cancellationToken.IsCancellationRequested)
@@ -156,6 +162,7 @@ namespace Novartment.Base.IO
 						{
 							return hashAlgorithm.GetHashAndReset ();
 						}
+
 						hashAlgorithm.AppendData (buffer, 0, bytesRead);
 						await writeStream.WriteAsync (buffer, 0, bytesRead, cancellationToken).ConfigureAwait (false);
 						position += bytesRead;

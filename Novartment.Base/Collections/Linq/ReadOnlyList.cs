@@ -1,16 +1,17 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
+using System.Linq;
 
 namespace Novartment.Base.Collections.Linq
 {
 	/// <summary>
 	/// Методы расширения к спискам.
 	/// </summary>
-	[SuppressMessage ("Microsoft.Naming",
+	[SuppressMessage (
+		"Microsoft.Naming",
 		"CA1711:IdentifiersShouldNotHaveIncorrectSuffix",
 		Justification = "Analogous to Enumerable.")]
 	public static class ReadOnlyList
@@ -37,6 +38,7 @@ namespace Novartment.Base.Collections.Linq
 			{
 				throw new ArgumentOutOfRangeException (nameof (count));
 			}
+
 			Contract.EndContractBlock ();
 
 			return (count == 0) ?
@@ -57,6 +59,7 @@ namespace Novartment.Base.Collections.Linq
 			{
 				throw new ArgumentOutOfRangeException (nameof (count));
 			}
+
 			Contract.EndContractBlock ();
 
 			return (count == 0) ?
@@ -76,6 +79,7 @@ namespace Novartment.Base.Collections.Linq
 			{
 				throw new ArgumentNullException (nameof (source));
 			}
+
 			Contract.EndContractBlock ();
 
 			if (source.Count < 1)
@@ -98,6 +102,7 @@ namespace Novartment.Base.Collections.Linq
 			{
 				throw new ArgumentNullException (nameof (source));
 			}
+
 			Contract.EndContractBlock ();
 
 			return (source.Count > 0) ? source[0] : default (TSource);
@@ -115,6 +120,7 @@ namespace Novartment.Base.Collections.Linq
 			{
 				throw new ArgumentNullException (nameof (source));
 			}
+
 			Contract.EndContractBlock ();
 
 			if (source.Count < 1)
@@ -137,6 +143,7 @@ namespace Novartment.Base.Collections.Linq
 			{
 				throw new ArgumentNullException (nameof (source));
 			}
+
 			Contract.EndContractBlock ();
 
 			return (source.Count > 0) ? source[source.Count - 1] : default (TSource);
@@ -155,10 +162,12 @@ namespace Novartment.Base.Collections.Linq
 			{
 				throw new ArgumentNullException (nameof (source));
 			}
+
 			if ((index < 0) || (index >= source.Count))
 			{
 				throw new ArgumentOutOfRangeException (nameof (index));
 			}
+
 			Contract.EndContractBlock ();
 
 			return source[index];
@@ -179,12 +188,14 @@ namespace Novartment.Base.Collections.Linq
 			{
 				throw new ArgumentNullException (nameof (source));
 			}
+
 			Contract.EndContractBlock ();
 
 			if ((index < 0) || (index >= source.Count))
 			{
 				return default (TSource);
 			}
+
 			return source[index];
 		}
 
@@ -197,7 +208,8 @@ namespace Novartment.Base.Collections.Linq
 		/// <param name="defaultValue">Значение, возвращаемое в случае пустого списка.</param>
 		/// <returns>Список, содержащий значение defaultValue, если список source пуст;
 		/// в противном случае возвращается source.</returns>
-		[SuppressMessage ("Microsoft.Design",
+		[SuppressMessage (
+		"Microsoft.Design",
 			"CA1026:DefaultParametersShouldNotBeUsed",
 			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
 		public static IReadOnlyList<TSource> DefaultIfEmpty<TSource> (this IReadOnlyList<TSource> source, TSource defaultValue = default (TSource))
@@ -206,6 +218,7 @@ namespace Novartment.Base.Collections.Linq
 			{
 				throw new ArgumentNullException (nameof (source));
 			}
+
 			Contract.EndContractBlock ();
 
 			return (source.Count > 0) ? source : ReadOnlyList.Repeat (defaultValue, 1);
@@ -224,20 +237,24 @@ namespace Novartment.Base.Collections.Linq
 			{
 				throw new ArgumentNullException (nameof (source));
 			}
+
 			if (count < 0)
 			{
 				throw new ArgumentOutOfRangeException (nameof (count));
 			}
+
 			Contract.EndContractBlock ();
 
 			if (source.Count < 1)
 			{
 				return source;
 			}
+
 			if (count >= source.Count)
 			{
 				return EmptyReadOnlyList<TSource>.GetInstance ();
 			}
+
 			return new SkipReadOnlyList<TSource> (source, count);
 		}
 
@@ -254,20 +271,24 @@ namespace Novartment.Base.Collections.Linq
 			{
 				throw new ArgumentNullException (nameof (source));
 			}
+
 			if (count < 0)
 			{
 				throw new ArgumentOutOfRangeException (nameof (count));
 			}
+
 			Contract.EndContractBlock ();
 
 			if (source.Count < 1)
 			{
 				return EmptyReadOnlyList<TSource>.GetInstance ();
 			}
+
 			if (count >= source.Count)
 			{
 				return source;
 			}
+
 			return new TakeReadOnlyList<TSource> (source, count);
 		}
 
@@ -286,10 +307,12 @@ namespace Novartment.Base.Collections.Linq
 			{
 				throw new ArgumentNullException (nameof (source));
 			}
+
 			if (selector == null)
 			{
 				throw new ArgumentNullException (nameof (selector));
 			}
+
 			Contract.EndContractBlock ();
 
 			return (source.Count < 1) ?
@@ -313,10 +336,12 @@ namespace Novartment.Base.Collections.Linq
 			{
 				throw new ArgumentNullException (nameof (source));
 			}
+
 			if (selector == null)
 			{
 				throw new ArgumentNullException (nameof (selector));
 			}
+
 			Contract.EndContractBlock ();
 
 			return (source.Count < 1) ?
@@ -337,12 +362,14 @@ namespace Novartment.Base.Collections.Linq
 			{
 				throw new ArgumentNullException (nameof (source));
 			}
+
 			Contract.EndContractBlock ();
 
 			if (source.Count < 2)
 			{
 				return source;
 			}
+
 			return new ReverseReadOnlyList<TSource> (source);
 		}
 
@@ -355,7 +382,8 @@ namespace Novartment.Base.Collections.Linq
 		/// <param name="keySelector">Функция, извлекающая ключ из элемента.</param>
 		/// <param name="comparer">Компаратор, используемый для сравнения ключей.</param>
 		/// <returns>Список, элементы которого отсортированы по ключу.</returns>
-		[SuppressMessage ("Microsoft.Design",
+		[SuppressMessage (
+		"Microsoft.Design",
 			"CA1026:DefaultParametersShouldNotBeUsed",
 			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
 		public static IOrderedReadOnlyList<TSource> OrderBy<TSource, TKey> (
@@ -367,10 +395,12 @@ namespace Novartment.Base.Collections.Linq
 			{
 				throw new ArgumentNullException (nameof (source));
 			}
+
 			if (keySelector == null)
 			{
 				throw new ArgumentNullException (nameof (keySelector));
 			}
+
 			Contract.EndContractBlock ();
 
 			return new OrderedReadOnlyList<TSource, TKey> (source, keySelector, comparer, false, null);
@@ -385,7 +415,8 @@ namespace Novartment.Base.Collections.Linq
 		/// <param name="keySelector">Функция, извлекающая ключ из элемента.</param>
 		/// <param name="comparer">Компаратор, используемый для сравнения ключей.</param>
 		/// <returns>Список, элементы которого отсортированы по ключу в порядке убывания.</returns>
-		[SuppressMessage ("Microsoft.Design",
+		[SuppressMessage (
+		"Microsoft.Design",
 			"CA1026:DefaultParametersShouldNotBeUsed",
 			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
 		public static IOrderedReadOnlyList<TSource> OrderByDescending<TSource, TKey> (
@@ -397,10 +428,12 @@ namespace Novartment.Base.Collections.Linq
 			{
 				throw new ArgumentNullException (nameof (source));
 			}
+
 			if (keySelector == null)
 			{
 				throw new ArgumentNullException (nameof (keySelector));
 			}
+
 			Contract.EndContractBlock ();
 
 			return new OrderedReadOnlyList<TSource, TKey> (source, keySelector, comparer, true, null);
@@ -415,7 +448,8 @@ namespace Novartment.Base.Collections.Linq
 		/// <param name="keySelector">Функция, извлекающая ключ из каждого элемента.</param>
 		/// <param name="comparer">Компаратор, используемый для сравнения ключей.</param>
 		/// <returns>Список, элементы которого отсортированы по ключу.</returns>
-		[SuppressMessage ("Microsoft.Design",
+		[SuppressMessage (
+		"Microsoft.Design",
 			"CA1026:DefaultParametersShouldNotBeUsed",
 			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
 		public static IOrderedReadOnlyList<TSource> ThenBy<TSource, TKey> (
@@ -427,12 +461,14 @@ namespace Novartment.Base.Collections.Linq
 			{
 				throw new ArgumentNullException (nameof (source));
 			}
+
 			Contract.EndContractBlock ();
 
 			if (source.Count < 2)
 			{
 				return source;
 			}
+
 			return source.CreateOrderedReadOnlyList<TKey> (keySelector, comparer, false);
 		}
 
@@ -445,7 +481,8 @@ namespace Novartment.Base.Collections.Linq
 		/// <param name="keySelector">Функция, извлекающая ключ из каждого элемента.</param>
 		/// <param name="comparer">Компаратор, используемый для сравнения ключей.</param>
 		/// <returns>Список, элементы которого отсортированы по ключу в порядке убывания.</returns>
-		[SuppressMessage ("Microsoft.Design",
+		[SuppressMessage (
+		"Microsoft.Design",
 			"CA1026:DefaultParametersShouldNotBeUsed",
 			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
 		public static IOrderedReadOnlyList<TSource> ThenByDescending<TSource, TKey> (
@@ -457,12 +494,14 @@ namespace Novartment.Base.Collections.Linq
 			{
 				throw new ArgumentNullException (nameof (source));
 			}
+
 			Contract.EndContractBlock ();
 
 			if (source.Count < 2)
 			{
 				return source;
 			}
+
 			return source.CreateOrderedReadOnlyList<TKey> (keySelector, comparer, true);
 		}
 
@@ -479,20 +518,24 @@ namespace Novartment.Base.Collections.Linq
 			{
 				throw new ArgumentNullException (nameof (first));
 			}
+
 			if (second == null)
 			{
 				throw new ArgumentNullException (nameof (second));
 			}
+
 			Contract.EndContractBlock ();
 
 			if (first.Count < 1)
 			{
 				return second;
 			}
+
 			if (second.Count < 1)
 			{
 				return first;
 			}
+
 			return new ConcatReadOnlyList<TSource> (first, second);
 		}
 
@@ -512,14 +555,17 @@ namespace Novartment.Base.Collections.Linq
 			{
 				throw new ArgumentNullException (nameof (first));
 			}
+
 			if (second == null)
 			{
 				throw new ArgumentNullException (nameof (second));
 			}
+
 			if (selector == null)
 			{
 				throw new ArgumentNullException (nameof (selector));
 			}
+
 			Contract.EndContractBlock ();
 
 			return ((first.Count < 1) || (second.Count < 1)) ?
@@ -527,29 +573,37 @@ namespace Novartment.Base.Collections.Linq
 				new ZipReadOnlyList<TFirst, TSecond, TResult> (first, second, selector);
 		}
 
-		#region private generated collection classes
-
 		internal static class EmptyReadOnlyList<T>
 		{
 			private static volatile EmptySetImplementation _instance;
+
 			internal static EmptySetImplementation GetInstance ()
 			{
 				if (_instance == null)
 				{
 					_instance = new EmptySetImplementation ();
 				}
+
 				return _instance;
 			}
 
 			internal class EmptySetImplementation : IReadOnlyFiniteSet<T>, IReadOnlyList<T>
 			{
 				private readonly IEnumerable<T> _items = Array.Empty<T> ();
-				public EmptySetImplementation () { }
-				public bool Contains (T item) { return false; }
+
+				public EmptySetImplementation()
+				{
+				}
+
 				public int Count => 0;
-				IEnumerator IEnumerable.GetEnumerator () { return _items.GetEnumerator (); }
-				public IEnumerator<T> GetEnumerator () { return _items.GetEnumerator (); }
-				public T this[int index] { get { throw new ArgumentOutOfRangeException (nameof (index)); } }
+
+				public T this[int index] => throw new ArgumentOutOfRangeException(nameof(index));
+
+				public bool Contains (T item) => false;
+
+				IEnumerator IEnumerable.GetEnumerator () => _items.GetEnumerator ();
+
+				public IEnumerator<T> GetEnumerator () => _items.GetEnumerator ();
 			}
 		}
 
@@ -564,6 +618,8 @@ namespace Novartment.Base.Collections.Linq
 				_count = count;
 			}
 
+			public int Count => _count;
+
 			public int this[int index]
 			{
 				get
@@ -572,6 +628,7 @@ namespace Novartment.Base.Collections.Linq
 					{
 						throw new ArgumentOutOfRangeException (nameof (index));
 					}
+
 					return _start + index;
 				}
 			}
@@ -580,8 +637,6 @@ namespace Novartment.Base.Collections.Linq
 			{
 				return (item >= _start) && (item < (_start + _count));
 			}
-
-			public int Count => _count;
 
 			IEnumerator IEnumerable.GetEnumerator ()
 			{
@@ -592,7 +647,7 @@ namespace Novartment.Base.Collections.Linq
 			{
 				for (int i = 0; i < _count; ++i)
 				{
-					yield return (_start + i);
+					yield return _start + i;
 				}
 			}
 		}
@@ -608,6 +663,8 @@ namespace Novartment.Base.Collections.Linq
 				_count = count;
 			}
 
+			public int Count => _count;
+
 			public TResult this[int index]
 			{
 				get
@@ -616,11 +673,10 @@ namespace Novartment.Base.Collections.Linq
 					{
 						throw new ArgumentOutOfRangeException (nameof (index));
 					}
+
 					return _element;
 				}
 			}
-
-			public int Count => _count;
 
 			IEnumerator IEnumerable.GetEnumerator ()
 			{
@@ -647,7 +703,7 @@ namespace Novartment.Base.Collections.Linq
 				_skipCount = skipCount;
 			}
 
-			public int Count => (_source.Count - _skipCount);
+			public int Count => _source.Count - _skipCount;
 
 			public TSource this[int index]
 			{
@@ -657,6 +713,7 @@ namespace Novartment.Base.Collections.Linq
 					{
 						throw new ArgumentOutOfRangeException (nameof (index));
 					}
+
 					return _source[_skipCount + index];
 				}
 			}
@@ -693,6 +750,7 @@ namespace Novartment.Base.Collections.Linq
 					{
 						throw new ArgumentOutOfRangeException (nameof (index));
 					}
+
 					return _source[index];
 				}
 			}
@@ -721,6 +779,19 @@ namespace Novartment.Base.Collections.Linq
 
 			public int Count => _source.Count;
 
+			public TResult this[int index]
+			{
+				get
+				{
+					if ((index < 0) || (index >= this.Count))
+					{
+						throw new ArgumentOutOfRangeException(nameof(index));
+					}
+
+					return _selector.Invoke(_source[index]);
+				}
+			}
+
 			IEnumerator IEnumerable.GetEnumerator ()
 			{
 				return GetEnumerator ();
@@ -731,18 +802,6 @@ namespace Novartment.Base.Collections.Linq
 				foreach (var item in _source)
 				{
 					yield return _selector.Invoke (item);
-				}
-			}
-
-			public TResult this[int index]
-			{
-				get
-				{
-					if ((index < 0) || (index >= this.Count))
-					{
-						throw new ArgumentOutOfRangeException (nameof (index));
-					}
-					return _selector.Invoke (_source[index]);
 				}
 			}
 		}
@@ -768,6 +827,7 @@ namespace Novartment.Base.Collections.Linq
 					{
 						throw new ArgumentOutOfRangeException (nameof (index));
 					}
+
 					return _selector.Invoke (_source[index], index);
 				}
 			}
@@ -806,6 +866,7 @@ namespace Novartment.Base.Collections.Linq
 					{
 						throw new ArgumentOutOfRangeException (nameof (index));
 					}
+
 					return _source[_source.Count - index - 1];
 				}
 			}
@@ -832,7 +893,7 @@ namespace Novartment.Base.Collections.Linq
 				_second = second;
 			}
 
-			public int Count => (_first.Count + _second.Count);
+			public int Count => _first.Count + _second.Count;
 
 			public TSource this[int index]
 			{
@@ -842,6 +903,7 @@ namespace Novartment.Base.Collections.Linq
 					{
 						throw new ArgumentOutOfRangeException (nameof (index));
 					}
+
 					return (index < _first.Count) ? _first[index] : _second[index - _first.Count];
 				}
 			}
@@ -880,6 +942,7 @@ namespace Novartment.Base.Collections.Linq
 					{
 						throw new ArgumentOutOfRangeException (nameof (index));
 					}
+
 					return _selector.Invoke (_first[index], _second[index]);
 				}
 			}
@@ -897,13 +960,18 @@ namespace Novartment.Base.Collections.Linq
 
 		private abstract class OrderedReadOnlyList<TElement> : IOrderedReadOnlyList<TElement>
 		{
-			protected readonly IReadOnlyList<TElement> _source;
+			private readonly IReadOnlyList<TElement> _source;
+
 			private int[] _indexMap = null;
 
 			protected OrderedReadOnlyList (IReadOnlyList<TElement> source)
 			{
 				_source = source;
 			}
+
+			public int Count => _source.Count;
+
+			protected IReadOnlyCollection<TElement> Source => _source;
 
 			public TElement this[int index]
 			{
@@ -914,11 +982,10 @@ namespace Novartment.Base.Collections.Linq
 						var sorter = CreateSorter (null);
 						_indexMap = sorter.CreateIndex ();
 					}
+
 					return _source[_indexMap[index]];
 				}
 			}
-
-			public int Count => _source.Count;
 
 			IEnumerator IEnumerable.GetEnumerator ()
 			{
@@ -934,14 +1001,13 @@ namespace Novartment.Base.Collections.Linq
 						var sorter = CreateSorter (null);
 						_indexMap = sorter.CreateIndex ();
 					}
+
 					for (int i = 0; i < _source.Count; ++i)
 					{
 						yield return _source[_indexMap[i]];
 					}
 				}
 			}
-
-			internal abstract CollectionSorter<TElement> CreateSorter (CollectionSorter<TElement> next);
 
 			IOrderedEnumerable<TElement> IOrderedEnumerable<TElement>.CreateOrderedEnumerable<TKey> (Func<TElement, TKey> keySelector, IComparer<TKey> comparer, bool descending)
 			{
@@ -957,6 +1023,8 @@ namespace Novartment.Base.Collections.Linq
 			{
 				return new OrderedReadOnlyList<TElement, TKey> (_source, keySelector, comparer, descending, this);
 			}
+
+			internal abstract CollectionSorter<TElement> CreateSorter (CollectionSorter<TElement> next);
 		}
 
 		private class OrderedReadOnlyList<TElement, TKey> : OrderedReadOnlyList<TElement>
@@ -973,6 +1041,7 @@ namespace Novartment.Base.Collections.Linq
 				{
 					throw new ArgumentNullException (nameof (source));
 				}
+
 				if (keySelector == null)
 				{
 					throw new ArgumentNullException (nameof (keySelector));
@@ -986,15 +1055,14 @@ namespace Novartment.Base.Collections.Linq
 
 			internal override CollectionSorter<TElement> CreateSorter (CollectionSorter<TElement> next)
 			{
-				CollectionSorter<TElement> sorter = new CollectionSorter<TElement, TKey> (_source, _keySelector, _comparer, _descending, next);
+				CollectionSorter<TElement> sorter = new CollectionSorter<TElement, TKey> (this.Source, _keySelector, _comparer, _descending, next);
 				if (_parent != null)
 				{
 					sorter = _parent.CreateSorter (sorter);
 				}
+
 				return sorter;
 			}
 		}
-
-		#endregion
 	}
 }

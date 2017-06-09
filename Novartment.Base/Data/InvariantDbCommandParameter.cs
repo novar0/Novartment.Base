@@ -6,49 +6,28 @@ using System.Diagnostics.Contracts;
 namespace Novartment.Base.Data
 {
 	/// <summary>
-	/// Значение и его тип для обмена с БД.
-	/// </summary>
-	public struct DbValue
-	{
-		/// <summary>
-		/// Значение.
-		/// </summary>
-		public object Value { get; }
-
-		/// <summary>
-		/// Тип значения.
-		/// </summary>
-		public DbType Type { get; }
-
-		/// <summary>
-		/// Инициализирует новый экземпляр класса DbValue с указанным значением и типом.
-		/// </summary>
-		/// <param name="value">Значение.</param>
-		/// <param name="type">Тип значения.</param>
-		public DbValue (object value, DbType type)
-		{
-			this.Value = value;
-			this.Type = type;
-		}
-
-		/// <summary>
-		/// Деконструирует данные.
-		/// </summary>
-		/// <param name="value">Получает значение.</param>
-		/// <param name="type">Получает тип значения.</param>
-		public void Deconstruct (out object value, out DbType type)
-		{
-			value = this.Value;
-			type = this.Type;
-		}
-	}
-
-	/// <summary>
 	/// Параметр команды.
 	/// </summary>
 	public class InvariantDbCommandParameter :
 		IValueHolder<object>
 	{
+		/// <summary>
+		/// Инициализирует новый экземпляр класса InvariantDbCommandParameter с указанным именем и значением.
+		/// </summary>
+		/// <param name="name">Имя параметра.</param>
+		/// <param name="value">Значение параметра.</param>
+		public InvariantDbCommandParameter (string name, object value)
+		{
+			if (name == null)
+			{
+				throw new ArgumentNullException(nameof(name));
+			}
+
+			Contract.EndContractBlock();
+			this.Name = name;
+			this.Value = value;
+		}
+
 		/// <summary>
 		/// Получает имя параметра.
 		/// </summary>
@@ -65,24 +44,11 @@ namespace Novartment.Base.Data
 		public string Placeholder { get; set; }
 
 		/// <summary>
-		/// Инициализирует новый экземпляр класса InvariantDbCommandParameter с указанным именем и значением.
-		/// </summary>
-		public InvariantDbCommandParameter (string name, object value)
-		{
-			if (name == null)
-			{
-				throw new ArgumentNullException (nameof (name));
-			}
-			Contract.EndContractBlock ();
-			this.Name = name;
-			this.Value = value;
-		}
-
-		/// <summary>
 		/// Получает значение и тип параметра в ограничениях БД.
 		/// </summary>
 		/// <returns>Значение и тип пригодные для БД.</returns>
-		[SuppressMessage ("Microsoft.Design",
+		[SuppressMessage (
+			"Microsoft.Design",
 			"CA1024:UsePropertiesWhereAppropriate",
 			Justification = "The method performs a time-consuming operation and performs a conversion.")]
 		public DbValue GetDbValue ()
@@ -91,20 +57,24 @@ namespace Novartment.Base.Data
 			{
 				return new DbValue (null, DbType.String);
 			}
+
 			var type = this.Value.GetType ();
 			if (this.Value is Array)
 			{
 				return new DbValue (this.Value, DbType.Binary);
 			}
-			if (this.Value is Enum) // перечисление конвертируем в тип-значение
+
+			if (this.Value is Enum)
 			{
+				// перечисление конвертируем в тип-значение
 				type = Enum.GetUnderlyingType (type);
 			}
 
 			return GetDbValueByTypeName (type.FullName);
 		}
 
-		[SuppressMessage ("Microsoft.Maintainability",
+		[SuppressMessage (
+			"Microsoft.Maintainability",
 			"CA1502:AvoidExcessiveComplexity",
 			Justification = "Method not too complex.")]
 		private DbValue GetDbValueByTypeName (string typeName)
@@ -114,20 +84,21 @@ namespace Novartment.Base.Data
 			switch (typeName)
 			{
 				case "System.Boolean": dbType = DbType.Boolean; dbValue = this.Value; break;
-				case "System.Byte": dbType = DbType.Byte; dbValue = (Byte)this.Value; break;
-				case "System.SByte": dbType = DbType.SByte; dbValue = (SByte)this.Value; break;
-				case "System.Int16": dbType = DbType.Int16; dbValue = (Int16)this.Value; break;
-				case "System.UInt16": dbType = DbType.UInt16; dbValue = (UInt16)this.Value; break;
-				case "System.Int32": dbType = DbType.Int32; dbValue = (Int32)this.Value; break;
-				case "System.UInt32": dbType = DbType.UInt32; dbValue = (UInt32)this.Value; break;
-				case "System.Int64": dbType = DbType.Int64; dbValue = (Int64)this.Value; break;
-				case "System.UInt64": dbType = DbType.UInt64; dbValue = (UInt64)this.Value; break;
+				case "System.Byte": dbType = DbType.Byte; dbValue = (byte)this.Value; break;
+				case "System.SByte": dbType = DbType.SByte; dbValue = (sbyte)this.Value; break;
+				case "System.Int16": dbType = DbType.Int16; dbValue = (short)this.Value; break;
+				case "System.UInt16": dbType = DbType.UInt16; dbValue = (ushort)this.Value; break;
+				case "System.Int32": dbType = DbType.Int32; dbValue = (int)this.Value; break;
+				case "System.UInt32": dbType = DbType.UInt32; dbValue = (uint)this.Value; break;
+				case "System.Int64": dbType = DbType.Int64; dbValue = (long)this.Value; break;
+				case "System.UInt64": dbType = DbType.UInt64; dbValue = (ulong)this.Value; break;
 				case "System.DateTime": dbType = DbType.DateTime; dbValue = this.Value; break;
 				case "System.Decimal": dbType = DbType.Decimal; dbValue = this.Value; break;
 				case "System.Single": dbType = DbType.Single; dbValue = this.Value; break;
 				case "System.Double": dbType = DbType.Double; dbValue = this.Value; break;
 				case "System.String": dbType = DbType.String; dbValue = this.Value; break;
 				case "System.Guid": dbType = DbType.Guid; dbValue = this.Value; break;
+
 				// следующие типы автоматически не конвертируются
 				case "System.TimeSpan": // промежуток времени конвертируем в количество секунд
 					dbType = DbType.Double;
@@ -141,6 +112,7 @@ namespace Novartment.Base.Data
 				default:
 					throw new InvalidOperationException ("Type [" + this.Value.GetType ().FullName + "] can not be converted to DbType.");
 			}
+
 			return new DbValue (dbValue, dbType);
 		}
 	}

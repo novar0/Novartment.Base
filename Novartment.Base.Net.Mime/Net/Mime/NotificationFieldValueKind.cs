@@ -1,5 +1,4 @@
-﻿
-namespace Novartment.Base.Net.Mime
+﻿namespace Novartment.Base.Net.Mime
 {
 	/// <summary>
 	/// Тип значения поля уведомления.

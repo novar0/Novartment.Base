@@ -22,10 +22,12 @@ namespace Novartment.Base.Collections
 			{
 				throw new ArgumentNullException (nameof (set));
 			}
+
 			if (other == null)
 			{
 				throw new ArgumentNullException (nameof (other));
 			}
+
 			Contract.EndContractBlock ();
 
 			foreach (var item in other)
@@ -36,7 +38,7 @@ namespace Novartment.Base.Collections
 
 		/// <summary>
 		/// Изменяет текущее множество, чтобы оно содержало только элементы, которые имеются либо в текущем множестве,
-		/// либо в указанной коллекции, но не одновременно в них обоих. 
+		/// либо в указанной коллекции, но не одновременно в них обоих.
 		/// </summary>
 		/// <typeparam name="T">Тип элементов множества.</typeparam>
 		/// <param name="set">Множество, над которым производится операция.</param>
@@ -47,10 +49,12 @@ namespace Novartment.Base.Collections
 			{
 				throw new ArgumentNullException (nameof (set));
 			}
+
 			if (other == null)
 			{
 				throw new ArgumentNullException (nameof (other));
 			}
+
 			Contract.EndContractBlock ();
 
 			foreach (var item in other)
@@ -79,10 +83,12 @@ namespace Novartment.Base.Collections
 			{
 				throw new ArgumentNullException (nameof (set));
 			}
+
 			if (other == null)
 			{
 				throw new ArgumentNullException (nameof (other));
 			}
+
 			Contract.EndContractBlock ();
 
 			set.Clear ();
@@ -105,10 +111,12 @@ namespace Novartment.Base.Collections
 			{
 				throw new ArgumentNullException (nameof (set));
 			}
+
 			if (other == null)
 			{
 				throw new ArgumentNullException (nameof (other));
 			}
+
 			Contract.EndContractBlock ();
 
 			foreach (var item in other)
@@ -131,10 +139,12 @@ namespace Novartment.Base.Collections
 			{
 				throw new ArgumentNullException (nameof (set));
 			}
+
 			if (other == null)
 			{
 				throw new ArgumentNullException (nameof (other));
 			}
+
 			Contract.EndContractBlock ();
 
 			int otherCount = 0;
@@ -150,8 +160,10 @@ namespace Novartment.Base.Collections
 						return true;
 					}
 				}
+
 				otherCount++;
 			}
+
 			return false;
 		}
 
@@ -168,10 +180,12 @@ namespace Novartment.Base.Collections
 			{
 				throw new ArgumentNullException (nameof (set));
 			}
+
 			if (other == null)
 			{
 				throw new ArgumentNullException (nameof (other));
 			}
+
 			Contract.EndContractBlock ();
 
 			int containsCount = 0;
@@ -187,6 +201,7 @@ namespace Novartment.Base.Collections
 					}
 				}
 			}
+
 			return false;
 		}
 
@@ -203,10 +218,12 @@ namespace Novartment.Base.Collections
 			{
 				throw new ArgumentNullException (nameof (set));
 			}
+
 			if (other == null)
 			{
 				throw new ArgumentNullException (nameof (other));
 			}
+
 			Contract.EndContractBlock ();
 
 			int otherCount = 0;
@@ -217,12 +234,14 @@ namespace Novartment.Base.Collections
 				{
 					return false;
 				}
+
 				var setContainsItem = set.Contains (item);
 				if (!setContainsItem)
 				{
 					return false;
 				}
 			}
+
 			return true;
 		}
 
@@ -239,10 +258,12 @@ namespace Novartment.Base.Collections
 			{
 				throw new ArgumentNullException (nameof (set));
 			}
+
 			if (other == null)
 			{
 				throw new ArgumentNullException (nameof (other));
 			}
+
 			Contract.EndContractBlock ();
 
 			foreach (var item in other)
@@ -253,6 +274,7 @@ namespace Novartment.Base.Collections
 					return false;
 				}
 			}
+
 			return true;
 		}
 
@@ -270,10 +292,12 @@ namespace Novartment.Base.Collections
 			{
 				throw new ArgumentNullException (nameof (set));
 			}
+
 			if (other == null)
 			{
 				throw new ArgumentNullException (nameof (other));
 			}
+
 			Contract.EndContractBlock ();
 
 			foreach (var item in other)
@@ -284,6 +308,7 @@ namespace Novartment.Base.Collections
 					return true;
 				}
 			}
+
 			return false;
 		}
 
@@ -300,10 +325,12 @@ namespace Novartment.Base.Collections
 			{
 				throw new ArgumentNullException (nameof (set));
 			}
+
 			if (other == null)
 			{
 				throw new ArgumentNullException (nameof (other));
 			}
+
 			Contract.EndContractBlock ();
 
 			int otherCount = 0;
@@ -315,12 +342,14 @@ namespace Novartment.Base.Collections
 				{
 					containsCount++;
 				}
+
 				otherCount++;
 				if (otherCount > set.Count)
 				{
 					return false;
 				}
 			}
+
 			return containsCount == set.Count;
 		}
 	}

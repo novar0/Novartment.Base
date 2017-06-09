@@ -1,7 +1,6 @@
 ﻿using System;
-using System.Windows;
-using System.Windows.Data;
 using System.Globalization;
+using System.Windows.Data;
 
 namespace Novartment.Base.UI.Wpf
 {
@@ -25,6 +24,7 @@ namespace Novartment.Base.UI.Wpf
 			{
 				throw new ArgumentOutOfRangeException (nameof (value));
 			}
+
 			return conv.ToType (targetType, (culture ?? CultureInfo.InvariantCulture).NumberFormat);
 		}
 
@@ -41,6 +41,7 @@ namespace Novartment.Base.UI.Wpf
 			{
 				throw new ArgumentOutOfRangeException (nameof (value));
 			}
+
 			var enumType = Enum.GetUnderlyingType (targetType);
 			var newValue = conv.ToType (enumType, (culture ?? CultureInfo.InvariantCulture).NumberFormat);
 			var res = Enum.ToObject (targetType, newValue);

@@ -37,7 +37,7 @@ namespace Novartment.Base
 			var flagI = Convert.ToUInt64 (bits, CultureInfo.InvariantCulture);
 			var oldValueI = Convert.ToUInt64 (oldValue, CultureInfo.InvariantCulture);
 			var newValueI = Convert.ToUInt64 (newValue, CultureInfo.InvariantCulture);
-			return (((oldValueI & flagI) == 0) && ((newValueI & flagI) == flagI));
+			return ((oldValueI & flagI) == 0) && ((newValueI & flagI) == flagI);
 		}
 
 		/// <summary>
@@ -53,7 +53,7 @@ namespace Novartment.Base
 			var flagI = Convert.ToUInt64 (bits, CultureInfo.InvariantCulture);
 			var oldValueI = Convert.ToUInt64 (oldValue, CultureInfo.InvariantCulture);
 			var newValueI = Convert.ToUInt64 (newValue, CultureInfo.InvariantCulture);
-			return (((oldValueI & flagI) == flagI) && ((newValueI & flagI) == 0));
+			return ((oldValueI & flagI) == flagI) && ((newValueI & flagI) == 0);
 		}
 
 		/// <summary>
@@ -85,7 +85,7 @@ namespace Novartment.Base
 			var flagI = Convert.ToUInt64 (bits, CultureInfo.InvariantCulture);
 			var oldValueI = Convert.ToUInt64 (oldValue, CultureInfo.InvariantCulture);
 			var newValueI = Convert.ToUInt64 (newValue, CultureInfo.InvariantCulture);
-			for (UInt64 mask = 1; mask > 0; mask <<= 1)
+			for (ulong mask = 1; mask > 0; mask <<= 1)
 			{
 				if (((flagI & mask) != 0) &&
 					((oldValueI & mask) == 0) &&
@@ -94,6 +94,7 @@ namespace Novartment.Base
 					return true;
 				}
 			}
+
 			return false;
 		}
 
@@ -110,7 +111,7 @@ namespace Novartment.Base
 			var flagI = Convert.ToUInt64 (bits, CultureInfo.InvariantCulture);
 			var oldValueI = Convert.ToUInt64 (oldValue, CultureInfo.InvariantCulture);
 			var newValueI = Convert.ToUInt64 (newValue, CultureInfo.InvariantCulture);
-			for (UInt64 mask = 1; mask > 0; mask <<= 1)
+			for (ulong mask = 1; mask > 0; mask <<= 1)
 			{
 				if (((flagI & mask) != 0) &&
 					((oldValueI & mask) != 0) &&
@@ -119,6 +120,7 @@ namespace Novartment.Base
 					return true;
 				}
 			}
+
 			return false;
 		}
 	}

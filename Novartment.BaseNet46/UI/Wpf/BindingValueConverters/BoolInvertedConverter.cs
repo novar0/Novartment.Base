@@ -1,13 +1,13 @@
 ﻿using System;
-using System.Windows.Data;
 using System.Globalization;
+using System.Windows.Data;
 
 namespace Novartment.Base.UI.Wpf
 {
 	/// <summary>
 	/// Инвертирует в обе стороны булевые значение
 	/// </summary>
-	[ValueConversion (typeof (Boolean), typeof (Boolean))]
+	[ValueConversion (typeof (bool), typeof (bool))]
 	public class BoolInvertedConverter :
 		IValueConverter
 	{

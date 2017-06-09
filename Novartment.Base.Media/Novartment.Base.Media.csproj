@@ -14,9 +14,19 @@
     <GenerateAssemblyFileVersionAttribute>false</GenerateAssemblyFileVersionAttribute>
     <GenerateAssemblyInformationalVersionAttribute>false</GenerateAssemblyInformationalVersionAttribute>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-  </PropertyGroup>
+		<CodeAnalysisRuleSet>StyleCop.Analyzers.ruleset</CodeAnalysisRuleSet>
+	</PropertyGroup>
 
-  <ItemGroup>
+	<ItemGroup>
+		<AdditionalFiles Include="StyleCop.Analyzers.ruleset" />
+		<AdditionalFiles Include="stylecop.json" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <PackageReference Include="StyleCop.Analyzers" Version="1.0.2" />
+	</ItemGroup>
+
+	<ItemGroup>
     <ProjectReference Include="..\Novartment.Base\Novartment.Base.csproj" />
   </ItemGroup>
 

@@ -1,7 +1,7 @@
 ﻿using System;
+using System.Diagnostics.Contracts;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Diagnostics.Contracts;
 
 namespace Novartment.Base.BinaryStreaming
 {
@@ -46,6 +46,29 @@ namespace Novartment.Base.BinaryStreaming
 		private long _sizeToSkipOnWrite = 0L;
 
 		/// <summary>
+		/// Инициализирует новый экземпляр BufferedChannel,
+		/// использующий указанный буфер для записи данных.
+		/// </summary>
+		/// <param name="buffer">Байтовый буфер, в котором будут содержаться записанные в канал данные.</param>
+		public BufferedChannel(byte[] buffer)
+		{
+			if (buffer == null)
+			{
+				throw new ArgumentNullException(nameof(buffer));
+			}
+
+			if (buffer.Length < 1)
+			{
+				throw new ArgumentOutOfRangeException(nameof(buffer));
+			}
+
+			Contract.EndContractBlock();
+
+			_buffer = buffer;
+			_pendingDataConsumption.SetResult(0);
+		}
+
+		/// <summary>
 		/// Получает буфер, в котором содержится некоторая часть данных канала.
 		/// Текущая начальная позиция и количество доступных данных содержатся в свойствах Offset и Count,
 		/// при этом сам буфер остаётся неизменным всё время жизни канала.
@@ -83,27 +106,6 @@ namespace Novartment.Base.BinaryStreaming
 			}
 		}
 
-		/// <summary>
-		/// Инициализирует новый экземпляр BufferedChannel,
-		/// использующий указанный буфер для записи данных.
-		/// </summary>
-		/// <param name="buffer">Байтовый буфер, в котором будут содержаться записанные в канал данные.</param>
-		public BufferedChannel (byte[] buffer)
-		{
-			if (buffer == null)
-			{
-				throw new ArgumentNullException (nameof (buffer));
-			}
-			if (buffer.Length < 1)
-			{
-				throw new ArgumentOutOfRangeException (nameof (buffer));
-			}
-			Contract.EndContractBlock ();
-
-			_buffer = buffer;
-			_pendingDataConsumption.SetResult (0);
-		}
-
 		/// <summary>Отбрасывает (пропускает) указанное количество данных из начала буфера канала.</summary>
 		/// <param name="size">Размер данных для пропуска в начале буфера.
 		/// Должен быть меньше чем размер данных в буфере.</param>
@@ -113,6 +115,7 @@ namespace Novartment.Base.BinaryStreaming
 			{
 				throw new ArgumentOutOfRangeException (nameof (size));
 			}
+
 			Contract.EndContractBlock ();
 
 			_offset += size;
@@ -139,6 +142,7 @@ namespace Novartment.Base.BinaryStreaming
 			{
 				throw new ArgumentOutOfRangeException (nameof (size));
 			}
+
 			Contract.EndContractBlock ();
 
 			long skipped = 0L;
@@ -165,27 +169,28 @@ namespace Novartment.Base.BinaryStreaming
 				{
 					return Task.FromResult (skipped);
 				}
+
 				_sizeToSkipOnWrite = size;
 			}
 
 			// этап 3: ждём запись
 			// здесь мы имеем пустой буфер, отсутствие зарезервированных и отложенных данных
 			// в методе записи сразу будет пропущено указанное в _sizeToSkipOnWrite количество
-			return TrySkipAsyncStateMachine (size, skipped, cancellationToken);
-		}
+			return TrySkipAsyncStateMachine ();
 
-		private async Task<long> TrySkipAsyncStateMachine (long size, long skipped, CancellationToken cancellationToken)
-		{
-			while (true)
+			async Task<long> TrySkipAsyncStateMachine ()
 			{
-				await _pendingDataArrival.Task.ConfigureAwait (false);
-				lock (_integrityLocker)
+				while (true)
 				{
-					skipped += (size - _sizeToSkipOnWrite);
-					size = _sizeToSkipOnWrite;
-					if (_isCompleted || (size < 1L))
+					await _pendingDataArrival.Task.ConfigureAwait (false);
+					lock (_integrityLocker)
 					{
-						return skipped;
+						skipped += size - _sizeToSkipOnWrite;
+						size = _sizeToSkipOnWrite;
+						if (_isCompleted || (size < 1L))
+						{
+							return skipped;
+						}
 					}
 				}
 			}
@@ -236,6 +241,7 @@ namespace Novartment.Base.BinaryStreaming
 			{
 				throw new ArgumentOutOfRangeException (nameof (size));
 			}
+
 			Contract.EndContractBlock ();
 
 			if (size <= _count)
@@ -243,42 +249,45 @@ namespace Novartment.Base.BinaryStreaming
 				return Task.CompletedTask;
 			}
 
-			return EnsureBufferAsyncStateMachine (size, cancellationToken);
-		}
+			return EnsureBufferAsyncStateMachine ();
 
-		private async Task EnsureBufferAsyncStateMachine (int size, CancellationToken cancellationToken)
-		{
-			// ждём записи в канал, пока не наберём необходимое количество данных
-			bool isExhausted;
-			do
+			async Task EnsureBufferAsyncStateMachine ()
 			{
-				cancellationToken.ThrowIfCancellationRequested ();
-				lock (_integrityLocker)
+				// ждём записи в канал, пока не наберём необходимое количество данных
+				bool isExhausted;
+				do
 				{
-					// ждать не надо если...
-					if (_pendingDataArrival.Task.IsCompleted) // данные уже поступили либо уже никогда не поступят
+					cancellationToken.ThrowIfCancellationRequested ();
+					lock (_integrityLocker)
+					{
+						// ждать не надо если...
+						if (_pendingDataArrival.Task.IsCompleted)
+						{
+							// данные уже поступили либо уже никогда не поступят
+							AcceptReservedAndPendingData (0L);
+							isExhausted = _isCompleted &&
+								(_destinationReservedCount < 1) &&
+								(_pendingDataCount < 1);
+							continue;
+						}
+					}
+
+					await _pendingDataArrival.Task.ConfigureAwait (false);
+					lock (_integrityLocker)
 					{
 						AcceptReservedAndPendingData (0L);
 						isExhausted = _isCompleted &&
+							_pendingDataArrival.Task.IsCompleted &&
 							(_destinationReservedCount < 1) &&
 							(_pendingDataCount < 1);
-						continue;
 					}
 				}
-				await _pendingDataArrival.Task.ConfigureAwait (false);
-				lock (_integrityLocker)
-				{
-					AcceptReservedAndPendingData (0L);
-					isExhausted = _isCompleted &&
-						_pendingDataArrival.Task.IsCompleted &&
-						(_destinationReservedCount < 1) &&
-						(_pendingDataCount < 1);
-				}
-			} while ((size > _count) && !isExhausted);
+				while ((size > _count) && !isExhausted);
 
-			if (size > _count)
-			{
-				throw new NotEnoughDataException (size - _count);
+				if (size > _count)
+				{
+					throw new NotEnoughDataException (size - _count);
+				}
 			}
 		}
 
@@ -309,14 +318,17 @@ namespace Novartment.Base.BinaryStreaming
 			{
 				throw new ArgumentNullException (nameof (buffer));
 			}
+
 			if ((offset < 0) || (offset > buffer.Length) || ((offset == buffer.Length) && (count > 0)))
 			{
 				throw new ArgumentOutOfRangeException (nameof (offset));
 			}
+
 			if ((count < 0) || ((offset + count) > buffer.Length))
 			{
 				throw new ArgumentOutOfRangeException (nameof (count));
 			}
+
 			Contract.EndContractBlock ();
 
 			lock (_integrityLocker)
@@ -325,6 +337,7 @@ namespace Novartment.Base.BinaryStreaming
 				{
 					throw new InvalidOperationException ("Channel completed. New data can not be written.");
 				}
+
 				// если ожидается пропуск данных, то сразу пропускаем
 				if (_sizeToSkipOnWrite > 0L)
 				{
@@ -333,6 +346,7 @@ namespace Novartment.Base.BinaryStreaming
 					count -= (int)chunkSize;
 					_sizeToSkipOnWrite -= chunkSize;
 				}
+
 				Task result;
 				if (count < 1)
 				{
@@ -351,6 +365,7 @@ namespace Novartment.Base.BinaryStreaming
 						result = _pendingDataConsumption.Task;
 					}
 				}
+
 				_pendingDataArrival.TrySetResult (0);
 				return result;
 			}
@@ -390,6 +405,7 @@ namespace Novartment.Base.BinaryStreaming
 					_count -= (int)size;
 					sizeToSkip -= size;
 				}
+
 				if (_offset > 0)
 				{
 					if (_count > 0)
@@ -398,8 +414,10 @@ namespace Novartment.Base.BinaryStreaming
 						// поэтому можно копировать данные без риска их порчи.
 						Array.Copy (_buffer, _offset, _buffer, 0, _count);
 					}
+
 					_offset = 0;
 				}
+
 				_destinationTailOffset = _count;
 
 				if ((sizeToSkip > 0L) && (_pendingDataCount > 0))
@@ -409,6 +427,7 @@ namespace Novartment.Base.BinaryStreaming
 					_pendingDataOffset += (int)size;
 					_pendingDataCount -= (int)size;
 				}
+
 				var isDataProcessed = ReserveData (_pendingData, _pendingDataOffset, _pendingDataCount);
 				if (isDataProcessed)
 				{
@@ -417,6 +436,7 @@ namespace Novartment.Base.BinaryStreaming
 
 				AcceptReservedData ();
 			}
+
 			return skipped;
 		}
 
@@ -438,6 +458,7 @@ namespace Novartment.Base.BinaryStreaming
 				{
 					_pendingDataArrival = new TaskCompletionSource<int> ();
 				}
+
 				return false;
 			}
 
@@ -461,6 +482,7 @@ namespace Novartment.Base.BinaryStreaming
 				_pendingDataCount = 0;
 				return true;
 			}
+
 			// то, что не влезло, откладываем
 			_pendingData = source;
 			_pendingDataOffset = sourceOffset + chunkSize;

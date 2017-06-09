@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Diagnostics;
-using System.IO;
-using System.Threading;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
+using System.Threading;
 using Novartment.Base.BinaryStreaming;
 
 namespace Novartment.Base.Net
@@ -20,9 +19,51 @@ namespace Novartment.Base.Net
 		IDisposable
 	{
 		private readonly Stopwatch _stopwatch = Stopwatch.StartNew ();
-		private readonly _Reporter _reporter;
+		private readonly Reporter _reporter;
 
 		private long _lastActivity = 0L;
+
+		/// <summary>
+		/// Инициализирует новый экземпляр класса TcpConnection с указанными параметрами.
+		/// </summary>
+		/// <param name="localEndPoint">Атрибуты локальной конечной точки подключения.</param>
+		/// <param name="remoteEndPoint">Атрибуты удалённой конечной точки подключения.</param>
+		/// <param name="reader">Источник данных чтения.</param>
+		/// <param name="writer">Получатель данных записи.</param>
+		public BinaryTcpConnection (
+			IPHostEndPoint localEndPoint,
+			IPHostEndPoint remoteEndPoint,
+			IBufferedSource reader,
+			IBinaryDestination writer)
+		{
+			if (localEndPoint == null)
+			{
+				throw new ArgumentNullException (nameof (localEndPoint));
+			}
+
+			if (remoteEndPoint == null)
+			{
+				throw new ArgumentNullException (nameof (remoteEndPoint));
+			}
+
+			if (reader == null)
+			{
+				throw new ArgumentNullException (nameof (reader));
+			}
+
+			if (writer == null)
+			{
+				throw new ArgumentNullException (nameof (writer));
+			}
+
+			Contract.EndContractBlock ();
+
+			this.LocalEndPoint = localEndPoint;
+			this.RemoteEndPoint = remoteEndPoint;
+			_reporter = new Reporter (this);
+			this.Reader = new ObservableBufferedSource (reader, _reporter);
+			this.Writer = writer;
+		}
 
 		/// <summary>
 		/// Получает источник входящих через подключение данных.
@@ -52,59 +93,16 @@ namespace Novartment.Base.Net
 		/// <summary>
 		/// Получает промежуток времени, прошедший с момента последнего получения входящих данных подключения.
 		/// </summary>
-		public TimeSpan IdleDuration
-		{
-			get
-			{
-				return TimeSpan.FromTicks (_stopwatch.ElapsedTicks - Interlocked.Read (ref _lastActivity));
-			}
-		}
-
-		/// <summary>
-		/// Инициализирует новый экземпляр класса TcpConnection с указанными параметрами.
-		/// </summary>
-		/// <param name="localEndPoint">Атрибуты локальной конечной точки подключения.</param>
-		/// <param name="remoteEndPoint">Атрибуты удалённой конечной точки подключения.</param>
-		/// <param name="reader">Источник данных чтения.</param>
-		/// <param name="writer">Получатель данных записи.</param>
-		public BinaryTcpConnection (
-			IPHostEndPoint localEndPoint,
-			IPHostEndPoint remoteEndPoint,
-			IBufferedSource reader,
-			IBinaryDestination writer)
-		{
-			if (localEndPoint == null)
-			{
-				throw new ArgumentNullException (nameof (localEndPoint));
-			}
-			if (remoteEndPoint == null)
-			{
-				throw new ArgumentNullException (nameof (remoteEndPoint));
-			}
-			if (reader == null)
-			{
-				throw new ArgumentNullException (nameof (reader));
-			}
-			if (writer == null)
-			{
-				throw new ArgumentNullException (nameof (writer));
-			}
-			Contract.EndContractBlock ();
-
-			this.LocalEndPoint = localEndPoint;
-			this.RemoteEndPoint = remoteEndPoint;
-			_reporter = new _Reporter (this);
-			this.Reader = new ObservableBufferedSource (reader, _reporter);
-			this.Writer = writer;
-		}
+		public TimeSpan IdleDuration => TimeSpan.FromTicks (_stopwatch.ElapsedTicks - Interlocked.Read (ref _lastActivity));
 
 		/// <summary>
 		/// Освобождает все используемые ресурсы.
 		/// </summary>
-		[SuppressMessage ("Microsoft.Usage",
+		[SuppressMessage (
+		"Microsoft.Usage",
 			"CA1816:CallGCSuppressFinalizeCorrectly",
-			Justification = "There is no meaning to introduce a finalizer in derived type."),
-		SuppressMessage (
+			Justification = "There is no meaning to introduce a finalizer in derived type.")]
+		[SuppressMessage (
 			"Microsoft.Design",
 			"CA1063:ImplementIDisposableCorrectly",
 			Justification = "Implemented correctly.")]
@@ -115,13 +113,13 @@ namespace Novartment.Base.Net
 			this.Writer.SetComplete ();
 		}
 
-		private class _Reporter :
+		private class Reporter :
 			IProgress<long>,
 			IDisposable
 		{
 			private BinaryTcpConnection _parent;
 
-			internal _Reporter (BinaryTcpConnection parent)
+			internal Reporter (BinaryTcpConnection parent)
 			{
 				_parent = parent;
 			}

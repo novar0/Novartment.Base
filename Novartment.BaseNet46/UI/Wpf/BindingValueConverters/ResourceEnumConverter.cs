@@ -1,48 +1,21 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.ComponentModel;
-using System.Resources;
-using System.Windows.Data;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
+using System.Globalization;
+using System.Resources;
+using System.Windows.Data;
 using Novartment.Base.Collections;
 
 namespace Novartment.Base.UI.Wpf
 {
 	/// <summary>
-	/// «начение перечислени€, св€занное со строковым представлением.
-	/// </summary>
-	public class EnumeratedKeyAndValue
-	{
-		/// <summary>
-		/// ѕолучает значение перечислени€.
-		/// </summary>
-		public Enum Key { get; }
-
-		/// <summary>
-		/// ѕолучает строковое представление значени€ перечислени€.
-		/// </summary>
-		public string Value { get; }
-
-		/// <summary>
-		/// »нициализирует новый экземпл€р класса EnumeratedKeyAndValue с указанным значением и строковым представлением.
-		/// </summary>
-		/// <param name="key">«начение перечислени€.</param>
-		/// <param name="value">—троковое представление значени€ перечислени€.</param>
-		public EnumeratedKeyAndValue (Enum key, string value)
-		{
-			this.Key = key;
-			this.Value = value;
-		}
-	}
-
-	/// <summary>
 	/// Defines a type converter for enum values that converts enum values to and from string representations using resources.
 	/// </summary>
 	/// <remarks>
 	/// This class makes localization of display values for enums in a project easy.
-	/// Simply derive a class from this class and pass the ResourceManager in the constructor.  
+	/// Simply derive a class from this class and pass the ResourceManager in the constructor.
 	/// <code lang="C#" escaped="true">
 	/// class LocalizedEnumConverter : ResourceEnumConverter
 	/// {
@@ -50,7 +23,7 @@ namespace Novartment.Base.UI.Wpf
 	///        : base(type, Properties.Resources.ResourceManager)
 	///    {
 	///    }
-	/// }    
+	/// }
 	/// </code>
 	/// Then define the enum values in the resource editor.
 	/// The names of the resources are simply the enum value prefixed by the
@@ -61,7 +34,6 @@ namespace Novartment.Base.UI.Wpf
 	public class ResourceEnumConverter : EnumConverter,
 		IValueConverter
 	{
-		private class LookupTable : Dictionary<string, object> { }
 		private readonly IDictionary<CultureInfo, LookupTable> _lookupTables = new Dictionary<CultureInfo, LookupTable> ();
 		private readonly ResourceManager _resourceManager;
 		private readonly bool _isFlagEnum = false;
@@ -79,10 +51,12 @@ namespace Novartment.Base.UI.Wpf
 			{
 				throw new ArgumentNullException (nameof (type));
 			}
+
 			if (resourceManager == null)
 			{
 				throw new ArgumentNullException (nameof (resourceManager));
 			}
+
 			Contract.EndContractBlock ();
 
 			_resourceManager = resourceManager;
@@ -95,150 +69,65 @@ namespace Novartment.Base.UI.Wpf
 		}
 
 		/// <summary>
-		/// Get the lookup table for the given culture (creating if necessary).
+		/// Convert the given enum value to string using the registered type converter.
 		/// </summary>
-		private LookupTable GetLookupTable (CultureInfo culture)
-		{
-			LookupTable result;
-			if (culture == null)
-			{
-				culture = CultureInfo.CurrentCulture;
-			}
-
-			var isValueGetted = _lookupTables.TryGetValue (culture, out result);
-			if (!isValueGetted)
-			{
-				result = new LookupTable ();
-				foreach (var value in GetStandardValues ())
-				{
-					var text = GetValueText (culture, value);
-					if (text != null)
-					{
-						result.Add (text, value);
-					}
-				}
-				_lookupTables.Add (culture, result);
-			}
-			return result;
-		}
-
-		/// <summary>
-		/// Return the name of the resource to use.
-		/// </summary>
-		/// <param name="value">The value to get.</param>
-		/// <returns>The name of the resource to use.</returns>
-		protected virtual string GetResourceName (object value)
+		/// <param name="value">The enum value to convert to string.</param>
+		/// <returns>The localized string value for the enum.</returns>
+		public static string ConvertToString (Enum value)
 		{
 			if (value == null)
 			{
 				throw new ArgumentNullException (nameof (value));
 			}
+
 			Contract.EndContractBlock ();
 
-			return value.GetType ().Name + "_" + value;
+			var converter = TypeDescriptor.GetConverter (value.GetType ());
+			return converter.ConvertToString (value);
 		}
 
 		/// <summary>
-		/// Return the text to display for a simple value in the given culture.
+		/// Return a list of the enum values and their associated display text for the given enum type in the current UI Culture.
 		/// </summary>
+		/// <param name="enumType">The enum type to get the values for.</param>
+		/// <returns>
+		/// A list of KeyValuePairs where the key is the enum value and the value is the text to display.
+		/// </returns>
+		/// <remarks>
+		/// This method can be used to provide localized binding to enums in ASP.NET applications.
+		/// Unlike windows forms the standard ASP.NET controls do not use TypeConverters to convert from enum values to the displayed text.
+		/// You can bind an ASP.NET control to the list returned by this method
+		/// by setting the DataValueField to "Key" and theDataTextField to "Value".
+		/// </remarks>
+		public static IReadOnlyList<EnumeratedKeyAndValue> GetValues (Type enumType)
+		{
+			return GetValues (enumType, CultureInfo.CurrentUICulture);
+		}
+
+		/// <summary>
+		/// Return a list of the enum values and their associated display text for the given enum type.
+		/// </summary>
+		/// <param name="enumType">The enum type to get the values for.</param>
 		/// <param name="culture">The culture to get the text for.</param>
-		/// <param name="value">The enum value to get the text for.</param>
-		/// <returns>The localized text.</returns>
-		private string GetValueText (CultureInfo culture, object value)
+		/// <returns>
+		/// A list of KeyValuePairs where the key is the enum value and the value is the text to display.
+		/// </returns>
+		/// <remarks>
+		/// This method can be used to provide localized binding to enums in ASP.NET applications.
+		/// Unlike windows forms the standard ASP.NET controls do not use TypeConverters to convert from enum values to the displayed text.
+		/// You can bind an ASP.NET control to the list returned by this method
+		/// by setting the DataValueField to "Key" and theDataTextField to "Value".
+		/// </remarks>
+		public static IReadOnlyList<EnumeratedKeyAndValue> GetValues (Type enumType, CultureInfo culture)
 		{
-			var resourceName = GetResourceName (value);
-			return _resourceManager.GetString (resourceName, culture) ?? resourceName;
-		}
-
-		/// <summary>
-		/// Return true if the given value is can be represented using a single bit.
-		/// </summary>
-		private static bool IsSingleBitValue (ulong value)
-		{
-			switch (value)
+			var result = new ArrayList<EnumeratedKeyAndValue> ();
+			var converter = TypeDescriptor.GetConverter (enumType);
+			foreach (Enum value in Enum.GetValues (enumType))
 			{
-				case 0:
-					return false;
-				case 1:
-					return true;
-			}
-			return ((value & (value - 1)) == 0);
-		}
-
-		/// <summary>
-		/// Return the text to display for a flag value in the given culture.
-		/// </summary>
-		/// <param name="culture">The culture to get the text for.</param>
-		/// <param name="value">The flag enum value to get the text for.</param>
-		/// <returns>The localized text.</returns>
-		private string GetFlagValueText (CultureInfo culture, object value)
-		{
-			// if there is a standard value then use it
-			//
-			var isValueDefined = Enum.IsDefined (value.GetType (), value);
-			if (isValueDefined)
-			{
-				return GetValueText (culture, value);
+				result.Add (new EnumeratedKeyAndValue (value, converter.ConvertToString (null, culture, value)));
 			}
 
-			// otherwise find the combination of flag bit values
-			// that makes up the value
-			//
-			ulong lValue = Convert.ToUInt32 (value, CultureInfo.InvariantCulture);
-			string result = null;
-			foreach (var flagValue in _flagValues)
-			{
-				ulong lFlagValue = Convert.ToUInt32 (flagValue, CultureInfo.InvariantCulture);
-				var isSingleBitValue = IsSingleBitValue (lFlagValue);
-				if (isSingleBitValue)
-				{
-					if ((lFlagValue & lValue) == lFlagValue)
-					{
-						var valueText = GetValueText (culture, flagValue);
-						result = (result != null) ? (result + ", " + valueText) : valueText;
-					}
-				}
-			}
 			return result;
-		}
-
-		/// <summary>
-		/// Return the Enum value for a simple (non-flagged enum).
-		/// </summary>
-		/// <param name="culture">The culture to convert using.</param>
-		/// <param name="text">The text to convert.</param>
-		/// <returns>The enum value.</returns>
-		private object GetValue (CultureInfo culture, string text)
-		{
-			var lookupTable = GetLookupTable (culture);
-			object result;
-			lookupTable.TryGetValue (text, out result);
-			return result;
-		}
-
-		/// <summary>
-		/// Return the Enum value for a flagged enum.
-		/// </summary>
-		/// <param name="culture">The culture to convert using.</param>
-		/// <param name="text">The text to convert.</param>
-		/// <returns>The enum value.</returns>
-		private object GetFlagValue (CultureInfo culture, string text)
-		{
-			var lookupTable = GetLookupTable (culture);
-			var textValues = text.Split (',');
-			ulong result = 0;
-			foreach (var textValue in textValues)
-			{
-				object value;
-				var trimmedTextValue = textValue.Trim ();
-				var isValueGetted = lookupTable.TryGetValue (trimmedTextValue, out value);
-				if (!isValueGetted)
-				{
-					return null;
-				}
-				result |= Convert.ToUInt32 (value, CultureInfo.InvariantCulture);
-			}
-			return Enum.ToObject (EnumType, result);
 		}
 
 		/// <summary>
@@ -254,14 +143,14 @@ namespace Novartment.Base.UI.Wpf
 			{
 				culture = CultureInfo.CurrentCulture;
 			}
-			var strValue = value as string;
-			if (strValue != null)
+
+			if (value is string strValue)
 			{
-				var result = ((_isFlagEnum) ?
-					GetFlagValue (culture, strValue) :
-					GetValue (culture, strValue)) ?? base.ConvertFrom (context, culture, value);
+				var result = (_isFlagEnum ? GetFlagValue (culture, strValue) : GetValue (culture, strValue))
+					?? base.ConvertFrom (context, culture, value);
 				return result;
 			}
+
 			return base.ConvertFrom (context, culture, value);
 		}
 
@@ -280,74 +169,18 @@ namespace Novartment.Base.UI.Wpf
 				culture = CultureInfo.CurrentCulture;
 			}
 
-			if (value == null) return null;
-			if ((destinationType == typeof (string)) || (destinationType == typeof (object)))
-			{
-				object result = (_isFlagEnum) ?
-					GetFlagValueText (culture, value) : GetValueText (culture, value);
-				return result;
-			}
-			return base.ConvertTo (context, culture, value, destinationType);
-		}
-
-		/// <summary>
-		/// Convert the given enum value to string using the registered type converter.
-		/// </summary>
-		/// <param name="value">The enum value to convert to string.</param>
-		/// <returns>The localized string value for the enum.</returns>
-		static public string ConvertToString (Enum value)
-		{
 			if (value == null)
 			{
-				throw new ArgumentNullException (nameof (value));
+				return null;
 			}
-			Contract.EndContractBlock ();
 
-			var converter = TypeDescriptor.GetConverter (value.GetType ());
-			return converter.ConvertToString (value);
-		}
-
-		/// <summary>
-		/// Return a list of the enum values and their associated display text for the given enum type in the current UI Culture.
-		/// </summary>
-		/// <param name="enumType">The enum type to get the values for.</param>
-		/// <returns>
-		/// A list of KeyValuePairs where the key is the enum value and the value is the text to display.
-		/// </returns>
-		/// <remarks>
-		/// This method can be used to provide localized binding to enums in ASP.NET applications.
-		/// Unlike windows forms the standard ASP.NET controls do not use TypeConverters to convert from enum values to the displayed text.
-		/// You can bind an ASP.NET control to the list returned by this method
-		/// by setting the DataValueField to "Key" and theDataTextField to "Value". 
-		/// </remarks>
-		static public IReadOnlyList<EnumeratedKeyAndValue> GetValues (Type enumType)
-		{
-			return GetValues (enumType, CultureInfo.CurrentUICulture);
-		}
-
-		/// <summary>
-		/// Return a list of the enum values and their associated display text for the given enum type.
-		/// </summary>
-		/// <param name="enumType">The enum type to get the values for.</param>
-		/// <param name="culture">The culture to get the text for.</param>
-		/// <returns>
-		/// A list of KeyValuePairs where the key is the enum value and the value is the text to display.
-		/// </returns>
-		/// <remarks>
-		/// This method can be used to provide localized binding to enums in ASP.NET applications.
-		/// Unlike windows forms the standard ASP.NET controls do not use TypeConverters to convert from enum values to the displayed text.
-		/// You can bind an ASP.NET control to the list returned by this method
-		/// by setting the DataValueField to "Key" and theDataTextField to "Value". 
-		/// </remarks>
-		static public IReadOnlyList<EnumeratedKeyAndValue> GetValues (Type enumType, CultureInfo culture)
-		{
-			var result = new ArrayList<EnumeratedKeyAndValue> ();
-			var converter = TypeDescriptor.GetConverter (enumType);
-			foreach (Enum value in Enum.GetValues (enumType))
+			if ((destinationType == typeof (string)) || (destinationType == typeof (object)))
 			{
-				result.Add (new EnumeratedKeyAndValue (value, converter.ConvertToString (null, culture, value)));
+				object result = _isFlagEnum ? GetFlagValueText (culture, value) : GetValueText (culture, value);
+				return result;
 			}
-			return result;
+
+			return base.ConvertTo (context, culture, value, destinationType);
 		}
 
 		/// <summary>
@@ -382,6 +215,155 @@ namespace Novartment.Base.UI.Wpf
 		object IValueConverter.ConvertBack (object value, Type targetType, object notUsed, CultureInfo culture)
 		{
 			return ConvertFrom (null, culture, value);
+		}
+
+		/// <summary>
+		/// Return the name of the resource to use.
+		/// </summary>
+		/// <param name="value">The value to get.</param>
+		/// <returns>The name of the resource to use.</returns>
+		protected virtual string GetResourceName (object value)
+		{
+			if (value == null)
+			{
+				throw new ArgumentNullException (nameof (value));
+			}
+
+			Contract.EndContractBlock ();
+
+			return value.GetType ().Name + "_" + value;
+		}
+
+		// Return true if the given value is can be represented using a single bit.
+		private static bool IsSingleBitValue (ulong value)
+		{
+			switch (value)
+			{
+				case 0:
+					return false;
+				case 1:
+					return true;
+			}
+
+			return (value & (value - 1)) == 0;
+		}
+
+		// Get the lookup table for the given culture (creating if necessary).
+		private LookupTable GetLookupTable (CultureInfo culture)
+		{
+			if (culture == null)
+			{
+				culture = CultureInfo.CurrentCulture;
+			}
+
+			var isValueGetted = _lookupTables.TryGetValue (culture, out LookupTable result);
+			if (!isValueGetted)
+			{
+				result = new LookupTable ();
+				foreach (var value in GetStandardValues ())
+				{
+					var text = GetValueText (culture, value);
+					if (text != null)
+					{
+						result.Add (text, value);
+					}
+				}
+
+				_lookupTables.Add (culture, result);
+			}
+
+			return result;
+		}
+
+		/// <summary>
+		/// Return the text to display for a simple value in the given culture.
+		/// </summary>
+		/// <param name="culture">The culture to get the text for.</param>
+		/// <param name="value">The enum value to get the text for.</param>
+		/// <returns>The localized text.</returns>
+		private string GetValueText (CultureInfo culture, object value)
+		{
+			var resourceName = GetResourceName (value);
+			return _resourceManager.GetString (resourceName, culture) ?? resourceName;
+		}
+
+		/// <summary>
+		/// Return the text to display for a flag value in the given culture.
+		/// </summary>
+		/// <param name="culture">The culture to get the text for.</param>
+		/// <param name="value">The flag enum value to get the text for.</param>
+		/// <returns>The localized text.</returns>
+		private string GetFlagValueText (CultureInfo culture, object value)
+		{
+			// if there is a standard value then use it
+			var isValueDefined = Enum.IsDefined (value.GetType (), value);
+			if (isValueDefined)
+			{
+				return GetValueText (culture, value);
+			}
+
+			// otherwise find the combination of flag bit values
+			// that makes up the value
+			ulong lValue = Convert.ToUInt32 (value, CultureInfo.InvariantCulture);
+			string result = null;
+			foreach (var flagValue in _flagValues)
+			{
+				ulong lFlagValue = Convert.ToUInt32 (flagValue, CultureInfo.InvariantCulture);
+				var isSingleBitValue = IsSingleBitValue (lFlagValue);
+				if (isSingleBitValue)
+				{
+					if ((lFlagValue & lValue) == lFlagValue)
+					{
+						var valueText = GetValueText (culture, flagValue);
+						result = (result != null) ? (result + ", " + valueText) : valueText;
+					}
+				}
+			}
+
+			return result;
+		}
+
+		/// <summary>
+		/// Return the Enum value for a simple (non-flagged enum).
+		/// </summary>
+		/// <param name="culture">The culture to convert using.</param>
+		/// <param name="text">The text to convert.</param>
+		/// <returns>The enum value.</returns>
+		private object GetValue (CultureInfo culture, string text)
+		{
+			var lookupTable = GetLookupTable (culture);
+			lookupTable.TryGetValue (text, out object result);
+			return result;
+		}
+
+		/// <summary>
+		/// Return the Enum value for a flagged enum.
+		/// </summary>
+		/// <param name="culture">The culture to convert using.</param>
+		/// <param name="text">The text to convert.</param>
+		/// <returns>The enum value.</returns>
+		private object GetFlagValue (CultureInfo culture, string text)
+		{
+			var lookupTable = GetLookupTable (culture);
+			var textValues = text.Split (',');
+			ulong result = 0;
+			foreach (var textValue in textValues)
+			{
+				var trimmedTextValue = textValue.Trim ();
+				var isValueGetted = lookupTable.TryGetValue (trimmedTextValue, out object value);
+				if (!isValueGetted)
+				{
+					return null;
+				}
+
+				result |= Convert.ToUInt32 (value, CultureInfo.InvariantCulture);
+			}
+
+			return Enum.ToObject (EnumType, result);
+		}
+
+		private class LookupTable : Dictionary<string, object>
+		{
 		}
 	}
 }

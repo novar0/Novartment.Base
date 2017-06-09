@@ -1,5 +1,4 @@
-﻿
-namespace Novartment.Base.Collections.Immutable
+﻿namespace Novartment.Base.Collections.Immutable
 {
 	/// <summary>
 	/// Узел односвязного списка.
@@ -12,6 +11,12 @@ namespace Novartment.Base.Collections.Immutable
 		private readonly TItem _value;
 		private readonly SingleLinkedListNode<TItem> _next;
 
+		internal SingleLinkedListNode(TItem value, SingleLinkedListNode<TItem> next)
+		{
+			_value = value;
+			_next = next;
+		}
+
 		/// <summary>
 		/// Получает значение узла.
 		/// </summary>
@@ -21,11 +26,5 @@ namespace Novartment.Base.Collections.Immutable
 		/// Получает следующий узел списка.
 		/// </summary>
 		public SingleLinkedListNode<TItem> Next => _next;
-
-		internal SingleLinkedListNode (TItem value, SingleLinkedListNode<TItem> next)
-		{
-			_value = value;
-			_next = next;
-		}
 	}
 }

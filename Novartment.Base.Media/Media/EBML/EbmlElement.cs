@@ -1,24 +1,25 @@
 ﻿using System;
-using System.Text;
 using System.Diagnostics;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
-using Novartment.Base.Text;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using Novartment.Base.BinaryStreaming;
+using Novartment.Base.Text;
 
 namespace Novartment.Base.Media
 {
 	/// <summary>
 	/// Элемент EBML.
 	/// </summary>
-	[SuppressMessage ("Microsoft.Naming",
+	[SuppressMessage (
+		"Microsoft.Naming",
 		"CA1704:IdentifiersShouldBeSpelledCorrectly",
 		MessageId = "Ebml",
-		Justification = "'EBML' represents standard term."),
-	DebuggerDisplay ("{DebuggerDisplay,nq}"),
-	CLSCompliant (false)]
+		Justification = "'EBML' represents standard term.")]
+	[DebuggerDisplay ("{DebuggerDisplay,nq}")]
+	[CLSCompliant (false)]
 	public class EbmlElement
 	{
 		private static readonly DateTime _MilleniumStart = new DateTime (2001, 1, 1, 0, 0, 0, DateTimeKind.Utc);
@@ -38,11 +39,8 @@ namespace Novartment.Base.Media
 
 		private readonly ulong _size;
 		private readonly IBufferedSource _source;
-		private ulong _readed;
 		private readonly bool _allDataBuffered;
-
-		/// <summary>Получает идентификатор элемента.</summary>
-		public ulong Id { get; }
+		private ulong _readed;
 
 		/// <summary>
 		/// Инициализирует новый экземпляр класса EbmlElement на основе указанных данных.
@@ -56,10 +54,12 @@ namespace Novartment.Base.Media
 			{
 				throw new ArgumentOutOfRangeException (nameof (size));
 			}
+
 			if (source == null)
 			{
 				throw new ArgumentNullException (nameof (source));
 			}
+
 			Contract.EndContractBlock ();
 
 			this.Id = id;
@@ -68,10 +68,39 @@ namespace Novartment.Base.Media
 			_allDataBuffered = size <= (ulong)source.Count;
 		}
 
+		/// <summary>Получает идентификатор элемента.</summary>
+		public ulong Id { get; }
+
+		[DebuggerBrowsable (DebuggerBrowsableState.Never)]
+		[SuppressMessage (
+		"Microsoft.Performance",
+			"CA1811:AvoidUncalledPrivateCode",
+			Justification = "Used in DebuggerDisplay attribute.")]
+		private string DebuggerDisplay => FormattableString.Invariant ($"ID = {this.Id}, Size = {_size}");
+
+		/// <summary>
+		/// Считывает EBML-элемент из указанного источника.
+		/// </summary>
+		/// <param name="source">Источник, содержащий EBML-элемент.</param>
+		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
+		/// <returns>EBML-элемент, считанный из указанного источника.</returns>
+		public static Task<EbmlElement> ParseAsync (IBufferedSource source, CancellationToken cancellationToken)
+		{
+			if (source == null)
+			{
+				throw new ArgumentNullException (nameof (source));
+			}
+
+			Contract.EndContractBlock ();
+
+			return ParseAsyncStateMachine (source, cancellationToken);
+		}
+
 		/// <summary>
 		/// Пропускает всё содержимое элемента.
 		/// </summary>
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
+		/// <returns>Задача, представляющая операцию.</returns>
 		public async Task SkipAllAsync (CancellationToken cancellationToken)
 		{
 			var toSkip = (long)_size - (long)_readed;
@@ -89,7 +118,8 @@ namespace Novartment.Base.Media
 		/// Reads the element data as a signed integer.
 		/// </summary>
 		/// <returns>the element data as a signed integer</returns>
-		[SuppressMessage ("Microsoft.Naming",
+		[SuppressMessage (
+		"Microsoft.Naming",
 			"CA1720:IdentifiersShouldNotContainTypeNames",
 			MessageId = "int",
 			Justification = "The term 'Int' in method name refers to EBML specification, not C#.")]
@@ -99,6 +129,7 @@ namespace Novartment.Base.Media
 			{
 				throw new InvalidOperationException ("Cant read data when all element's data already readed.");
 			}
+
 			long result;
 			switch (_size)
 			{
@@ -157,6 +188,7 @@ namespace Novartment.Base.Media
 				default:
 					throw new FormatException (FormattableString.Invariant ($"Ivalid size ({_size}) of data of type Int. Expected 1 to 8 bytes."));
 			}
+
 			_source.SkipBuffer ((int)_size);
 			_readed += _size;
 			return result;
@@ -166,7 +198,8 @@ namespace Novartment.Base.Media
 		/// Reads the element data as an unsigned integer.
 		/// </summary>
 		/// <returns>the element data as an unsigned integer</returns>
-		[SuppressMessage ("Microsoft.Naming",
+		[SuppressMessage (
+		"Microsoft.Naming",
 			"CA1720:IdentifiersShouldNotContainTypeNames",
 			MessageId = "uint",
 			Justification = "The term 'UInt' in method name refers to EBML specification, not C#.")]
@@ -176,6 +209,7 @@ namespace Novartment.Base.Media
 			{
 				throw new InvalidOperationException ("Cant read data when all element's data already readed.");
 			}
+
 			ulong result;
 			switch (_size)
 			{
@@ -234,6 +268,7 @@ namespace Novartment.Base.Media
 				default:
 					throw new FormatException (FormattableString.Invariant ($"Ivalid size ({_size}) of data of type UInt. Expected 1 to 8 bytes."));
 			}
+
 			_source.SkipBuffer ((int)_size);
 			_readed += _size;
 			return result;
@@ -245,7 +280,8 @@ namespace Novartment.Base.Media
 		/// the element data size is equal to <code>8</code>, then an instance of the <code>Double</code> is returned.
 		/// </summary>
 		/// <returns>the element data as a floating-point number</returns>
-		[SuppressMessage ("Microsoft.Naming",
+		[SuppressMessage (
+		"Microsoft.Naming",
 			"CA1720:IdentifiersShouldNotContainTypeNames",
 			MessageId = "float",
 			Justification = "The term 'Float' in method name refers to EBML specification, not C#.")]
@@ -255,16 +291,19 @@ namespace Novartment.Base.Media
 			{
 				throw new InvalidOperationException ("Cant read data when all element's data already readed.");
 			}
+
 			if ((_size != 4) && (_size != 8))
 			{
 				throw new FormatException (FormattableString.Invariant ($"Ivalid size ({_size}) of data of type Float. Expected 4 or 8 bytes."));
 			}
+
 			var buf = new byte[_size];
 			Array.Copy (_source.Buffer, _source.Offset, buf, 0, (int)_size);
 			if (BitConverter.IsLittleEndian)
 			{
 				Array.Reverse (buf);
 			}
+
 			double result = (_size == 4) ?
 				BitConverter.ToSingle (buf, 0) :
 				BitConverter.ToDouble (buf, 0);
@@ -286,7 +325,8 @@ namespace Novartment.Base.Media
 		/// Reads the element data as an ASCII string.
 		/// </summary>
 		/// <returns>the element data as an ASCII string</returns>
-		[SuppressMessage ("Microsoft.Naming",
+		[SuppressMessage (
+		"Microsoft.Naming",
 			"CA1704:IdentifiersShouldBeSpelledCorrectly",
 			MessageId = "Ascii",
 			Justification = "'ASCII' represents standard term.")]
@@ -296,10 +336,12 @@ namespace Novartment.Base.Media
 			{
 				throw new InvalidOperationException ("Cant read data when all element's data already readed.");
 			}
+
 			if (!_allDataBuffered)
 			{
 				throw new NotSupportedException (FormattableString.Invariant ($"Text data size {_size} is too big. Supported maximum is {_source.Buffer.Length}."));
 			}
+
 			var result = AsciiCharSet.GetString (_source.Buffer, _source.Offset, (int)_size);
 			_source.SkipBuffer ((int)_size);
 			_readed += _size;
@@ -316,10 +358,12 @@ namespace Novartment.Base.Media
 			{
 				throw new InvalidOperationException ("Cant read data when all element's data already readed.");
 			}
+
 			if (!_allDataBuffered)
 			{
 				throw new NotSupportedException (FormattableString.Invariant ($"Text data size {_size} is too big. Supported maximum is {_source.Buffer.Length}."));
 			}
+
 			var result = Encoding.UTF8.GetString (_source.Buffer, _source.Offset, (int)_size);
 			_source.SkipBuffer ((int)_size);
 			_readed += _size;
@@ -346,23 +390,6 @@ namespace Novartment.Base.Media
 			return new EbmlElementCollectionEnumerator (new SizeLimitedBufferedSource (_source, (long)_size));
 		}
 
-		/// <summary>
-		/// Считывает EBML-элемент из указанного источника.
-		/// </summary>
-		/// <param name="source">Источник, содержащий EBML-элемент.</param>
-		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
-		/// <returns>EBML-элемент, считанный из указанного источника.</returns>
-		public static Task<EbmlElement> ParseAsync (IBufferedSource source, CancellationToken cancellationToken)
-		{
-			if (source == null)
-			{
-				throw new ArgumentNullException (nameof (source));
-			}
-			Contract.EndContractBlock ();
-
-			return ParseAsyncStateMachine (source, cancellationToken);
-		}
-
 		private static async Task<EbmlElement> ParseAsyncStateMachine (IBufferedSource source, CancellationToken cancellationToken)
 		{
 			var id = await ReadVIntAsync (source, cancellationToken).ConfigureAwait (false);
@@ -385,10 +412,11 @@ namespace Novartment.Base.Media
 				(4 + _ExtraBytesSize[source.Buffer[source.Offset]]);
 
 			var size = extraBytes + 1;
-			if ((size > source.Buffer.Length))
+			if (size > source.Buffer.Length)
 			{
 				throw new FormatException ();
 			}
+
 			await source.EnsureBufferAsync (size, cancellationToken).ConfigureAwait (false);
 
 			ulong encodedValue = source.Buffer[source.Offset];
@@ -401,6 +429,7 @@ namespace Novartment.Base.Media
 
 			return encodedValue;
 		}
+
 		private static async Task<ulong> ReadVIntValueAsync (IBufferedSource source, CancellationToken cancellationToken)
 		{
 			await source.EnsureBufferAsync (1, cancellationToken).ConfigureAwait (false);
@@ -419,6 +448,7 @@ namespace Novartment.Base.Media
 			{
 				throw new FormatException ();
 			}
+
 			await source.EnsureBufferAsync (size, cancellationToken).ConfigureAwait (false);
 
 			ulong encodedValue = source.Buffer[source.Offset];
@@ -430,18 +460,6 @@ namespace Novartment.Base.Media
 			source.SkipBuffer (size);
 
 			return encodedValue & _DataBitsMask[extraBytes + 1];
-		}
-
-		[DebuggerBrowsable (DebuggerBrowsableState.Never),
-		SuppressMessage ("Microsoft.Performance",
-			"CA1811:AvoidUncalledPrivateCode",
-			Justification = "Used in DebuggerDisplay attribute.")]
-		private string DebuggerDisplay
-		{
-			get
-			{
-				return FormattableString.Invariant ($"ID = {this.Id}, Size = {_size}");
-			}
 		}
 	}
 }

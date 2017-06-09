@@ -1,14 +1,14 @@
 ﻿using System;
-using System.IO;
 using System.Collections;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
 using System.Diagnostics;
-using static System.Linq.Enumerable;
-using Novartment.Base.UnsafeWin32;
-using System.Threading;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
+using System.IO;
+using System.Runtime.InteropServices;
+using System.Threading;
+using Novartment.Base.UnsafeWin32;
+using static System.Linq.Enumerable;
 
 namespace Novartment.Base.Shell
 {
@@ -19,11 +19,11 @@ namespace Novartment.Base.Shell
 	public class ShellItem
 	{
 		private static readonly Guid _GuidIShellItem = new Guid ("43826D1E-E718-42EE-BC55-A1E261C37BFE");
-		private static readonly ShellPropertyKey _ShellPropertyKeySize			= new ShellPropertyKey (new Guid ("B725F130-47EF-101A-A5F1-02608C9EEBAC"), 12);
-		private static readonly ShellPropertyKey _ShellPropertyKeyFileAttributes	= new ShellPropertyKey (new Guid ("B725F130-47EF-101A-A5F1-02608C9EEBAC"), 13);
-		private static readonly ShellPropertyKey _ShellPropertyKeyDateModified	= new ShellPropertyKey (new Guid ("B725F130-47EF-101A-A5F1-02608C9EEBAC"), 14);
-		private static readonly ShellPropertyKey _ShellPropertyKeyDateCreated	= new ShellPropertyKey (new Guid ("B725F130-47EF-101A-A5F1-02608C9EEBAC"), 15);
-		private static readonly ShellPropertyKey _ShellPropertyKeyDateAccessed	= new ShellPropertyKey (new Guid ("B725F130-47EF-101A-A5F1-02608C9EEBAC"), 16);
+		private static readonly ShellPropertyKey _ShellPropertyKeySize = new ShellPropertyKey (new Guid ("B725F130-47EF-101A-A5F1-02608C9EEBAC"), 12);
+		private static readonly ShellPropertyKey _ShellPropertyKeyFileAttributes = new ShellPropertyKey (new Guid ("B725F130-47EF-101A-A5F1-02608C9EEBAC"), 13);
+		private static readonly ShellPropertyKey _ShellPropertyKeyDateModified = new ShellPropertyKey (new Guid ("B725F130-47EF-101A-A5F1-02608C9EEBAC"), 14);
+		private static readonly ShellPropertyKey _ShellPropertyKeyDateCreated = new ShellPropertyKey (new Guid ("B725F130-47EF-101A-A5F1-02608C9EEBAC"), 15);
+		private static readonly ShellPropertyKey _ShellPropertyKeyDateAccessed = new ShellPropertyKey (new Guid ("B725F130-47EF-101A-A5F1-02608C9EEBAC"), 16);
 		private readonly IShellItem _nativeShellItem;
 
 		/// <summary>
@@ -36,6 +36,7 @@ namespace Novartment.Base.Shell
 			{
 				throw new ArgumentNullException (nameof (nativeShellItem));
 			}
+
 			Contract.EndContractBlock ();
 
 			var currentThreadApartmentState = Thread.CurrentThread.GetApartmentState ();
@@ -47,229 +48,23 @@ namespace Novartment.Base.Shell
 			_nativeShellItem = nativeShellItem;
 		}
 
-		/// <summary>
-		/// Получает строку, представляющую объект.
-		/// </summary>
-		/// <returns>Строковое представление объекта.</returns>
-		public override string ToString ()
-		{
-			return this.DisplayNameRelative;
-		}
-
-		/// <summary>
-		/// Получает результат хэш-функции объекта.
-		/// </summary>
-		/// <returns>Хэш-код объекта.</returns>
-		public override int GetHashCode ()
-		{
-			return this.NameAbsolute.GetHashCode ();
-		}
-
-		/// <summary>
-		/// Получает элемент оболочки, соответствующий указанному пути к файлу.
-		/// </summary>
-		/// <param name="path">Полный путь к файлу.</param>
-		/// <returns>Элемент оболочки, соответствующий указанному пути к файлу.</returns>
-		public static ShellItem FromPath (string path)
-		{
-			if (path == null)
-			{
-				throw new ArgumentNullException (nameof (path));
-			}
-			Contract.EndContractBlock ();
-
-			var currentThreadApartmentState = Thread.CurrentThread.GetApartmentState ();
-			if (currentThreadApartmentState != ApartmentState.STA)
-			{
-				throw new ThreadStateException ("For shell functions thread must be STA.");
-			}
-
-			IShellItem nativeShellItem;
-			var guid = _GuidIShellItem;
-			var hr = NativeMethods.Shell32.SHCreateItemFromParsingName (
-				path,
-				IntPtr.Zero,
-				ref guid,
-				out nativeShellItem);
-			if (hr != 0)
-			{
-				throw new ShellException ("Failed to create shell item for path '" + path + "'.", Marshal.GetExceptionForHR (hr));
-			}
-
-			return new ShellItem (nativeShellItem);
-		}
-
-		/// <summary>
-		/// Получает элемент оболочки, соответствующий указанной специально папке.
-		/// </summary>
-		/// <param name="specialFolder">Идентификатор специальной папки.</param>
-		/// <returns>Элемент оболочки, соответствующий указанной специально папке.</returns>
-		public static ShellItem FromSpecialFolder (Environment.SpecialFolder specialFolder)
-		{
-			IntPtr pidlRoot;
-			var hr = NativeMethods.Shell32.SHGetFolderLocation (IntPtr.Zero, specialFolder, IntPtr.Zero, 0, out pidlRoot);
-			if (hr == -2147024894)
-			{
-				return null; // HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND) = 0x80070002
-			}
-			if (hr != 0)
-			{
-				throw new ShellException (FormattableString.Invariant (
-					$"Failed to get special folder '{specialFolder}'."),
-					Marshal.GetExceptionForHR (hr));
-			}
-
-			var currentThreadApartmentState = Thread.CurrentThread.GetApartmentState ();
-			if (currentThreadApartmentState != ApartmentState.STA)
-			{
-				throw new ThreadStateException ("For shell functions thread must be STA.");
-			}
-
-			IShellItem nativeShellItem;
-			hr = NativeMethods.Shell32.SHCreateShellItem (
-				IntPtr.Zero,
-				null,
-				pidlRoot,
-				out nativeShellItem);
-			if (hr != 0)
-			{
-				throw new ShellException ("Failed to create shell item for special folder '" + specialFolder + "'.",
-					Marshal.GetExceptionForHR (hr));
-			}
-
-			return new ShellItem (nativeShellItem);
-		}
-
-		/// <summary>
-		/// Получает массив элементов оболочки из данных объекта для обмена между приложениями.
-		/// </summary>
-		/// <param name="dataContainer">Объект данных объекта для обмена между приложениями.</param>
-		/// <returns>Массив элементов оболочки.
-		/// Первым элементом массива является родительская папка.</returns>
-		/// <remarks>Массив элементов оболочки, полученный из данных объекта для обмена между приложениями.</remarks>
-		public static ShellItem[] FromDataContainer (IDataContainer dataContainer)
-		{
-			if (dataContainer == null)
-			{
-				throw new ArgumentNullException (nameof (dataContainer));
-			}
-			Contract.EndContractBlock ();
-
-			var currentThreadApartmentState = Thread.CurrentThread.GetApartmentState ();
-			if (currentThreadApartmentState != ApartmentState.STA)
-			{
-				throw new ThreadStateException ("For shell functions thread must be STA.");
-			}
-
-			var memStream = dataContainer.GetData (DataContainerFormats.ShellIdList, true) as MemoryStream;
-			if (memStream == null)
-			{
-				return null;
-			}
-			var array = memStream.ToArray ();
-			memStream.Close ();
-
-			var nSize = sizeof (UInt32);
-			var bufSize = array.Length;
-			if (bufSize < (nSize + 1))
-			{
-				throw new FormatException (FormattableString.Invariant (
-					$"Invalid CIDA structure: too small size ({bufSize}), expected min {nSize}."));
-			}
-			ShellItem[] result;
-			var unmanagedBuffer = Marshal.AllocHGlobal (bufSize);
-			try
-			{
-				Marshal.Copy (array, 0, unmanagedBuffer, bufSize);
-
-				var count = (UInt32)Marshal.ReadInt32 (unmanagedBuffer);
-				// убеждаемся что указанное количество элементов (плюс корневой) помещается в переданном буфере
-				if ((count + 1) > (bufSize / nSize))
-				{
-					throw new FormatException (FormattableString.Invariant (
-						$"Invalid CIDA structure: too small size ({bufSize}), expected {(count + 1) * nSize} for specified number of elements ({count})."));
-				}
-				result = new ShellItem[count + 1];
-				var position = nSize;
-				var offset = (UInt32)Marshal.ReadInt32 (unmanagedBuffer, position);
-				if (offset >= bufSize)
-				{
-					throw new FormatException ("Invalid CIDA structure: parent element points outside.");
-				}
-				var pidlRoot = IntPtr.Add (unmanagedBuffer, (int)offset);
-
-				IShellItem nativeShellItem;
-				var hr = NativeMethods.Shell32.SHCreateShellItem (IntPtr.Zero, null, pidlRoot, out nativeShellItem);
-				if (hr != 0)
-				{
-					throw new ShellException ("Failed to create shell item corresponding to the parent element of CIDA structure.",
-						Marshal.GetExceptionForHR (hr));
-				}
-				var shellItem = new ShellItem (nativeShellItem);
-				result[0] = shellItem;
-
-				uint idx = 0;
-				while (idx < count)
-				{
-					position += nSize;
-					offset = (UInt32)Marshal.ReadInt32 (unmanagedBuffer, position);
-					if (offset >= bufSize)
-					{
-						throw new FormatException (FormattableString.Invariant (
-							$"Invalid CIDA structure: element #{idx + 1} points outside."));
-					}
-					var pidl = IntPtr.Add (unmanagedBuffer, (int)offset);
-					hr = NativeMethods.Shell32.SHCreateShellItem (pidlRoot, null, pidl, out nativeShellItem);
-					if (hr != 0)
-					{
-						throw new ShellException (FormattableString.Invariant (
-							$"Failed to create shell item corresponding to the element #{idx + 1} of CIDA structure."),
-							Marshal.GetExceptionForHR (hr));
-					}
-					shellItem = new ShellItem (nativeShellItem);
-					result[idx + 1] = shellItem;
-					idx++;
-				}
-			}
-			finally
-			{
-				Marshal.FreeHGlobal (unmanagedBuffer);
-			}
-
-			return result;
-		}
-
-		/// <summary>
-		/// Получает перечислитель дочерних элементов.
-		/// </summary>
-		/// <returns>Перечислитель дочерних элементов.</returns>
-		public IEnumerable<ShellItem> EnumerateItems ()
-		{
-			var currentThreadApartmentState = Thread.CurrentThread.GetApartmentState ();
-			if (currentThreadApartmentState != ApartmentState.STA)
-			{
-				throw new ThreadStateException ("For shell functions thread must be STA.");
-			}
-
-			var enumerable = new _ShellItemsEnumerable (_nativeShellItem);
-
-			return enumerable.Select (item => new ShellItem (item));
-		}
-
-		/// <summary>
-		/// Получает элемент оболочки в виде COM-интерфейса IShellItem.
-		/// </summary>
-		internal IShellItem NativeShellItem => _nativeShellItem;
-
 		/// <summary>Получает родительский элемент оболочки.</summary>
-		public ShellItem Parent
+		public ShellItem Parent => (_nativeShellItem.GetParent (out IShellItem nativeShellItem) != 0) ?
+					null :
+					new ShellItem (nativeShellItem);
+
+		/// <summary>Returns the editing name relative to the desktop.</summary>
+		public string DisplayNameAbsolute
 		{
 			get
 			{
-				IShellItem nativeShellItem;
-				return (_nativeShellItem.GetParent (out nativeShellItem) != 0) ?
-					null :
-					new ShellItem (nativeShellItem);
+				var hr = _nativeShellItem.GetDisplayName (ShellItemDisplayNameForm.DesktopAbsoluteEditing, out string path);
+				if (hr != 0)
+				{
+					throw new InvalidOperationException ("IShellItem.GetDisplayName() failed.", Marshal.GetExceptionForHR (hr));
+				}
+
+				return path;
 			}
 		}
 
@@ -278,27 +73,12 @@ namespace Novartment.Base.Shell
 		{
 			get
 			{
-				string path;
-				var hr = _nativeShellItem.GetDisplayName (ShellItemDisplayNameForm.Normal, out path);
+				var hr = _nativeShellItem.GetDisplayName (ShellItemDisplayNameForm.Normal, out string path);
 				if (hr != 0)
 				{
 					throw new InvalidOperationException ("IShellItem.GetDisplayName() failed.", Marshal.GetExceptionForHR (hr));
 				}
-				return path;
-			}
-		}
 
-		/// <summary>Returns the editing name relative to the desktop.</summary>
-		public string DisplayNameAbsolute
-		{
-			get
-			{
-				string path;
-				var hr = _nativeShellItem.GetDisplayName (ShellItemDisplayNameForm.DesktopAbsoluteEditing, out path);
-				if (hr != 0)
-				{
-					throw new InvalidOperationException ("IShellItem.GetDisplayName() failed.", Marshal.GetExceptionForHR (hr));
-				}
 				return path;
 			}
 		}
@@ -308,12 +88,12 @@ namespace Novartment.Base.Shell
 		{
 			get
 			{
-				string path;
-				var hr = _nativeShellItem.GetDisplayName (ShellItemDisplayNameForm.ParentRelativeParsing, out path);
+				var hr = _nativeShellItem.GetDisplayName (ShellItemDisplayNameForm.ParentRelativeParsing, out string path);
 				if (hr != 0)
 				{
 					throw new InvalidOperationException ("IShellItem.GetDisplayName() failed.", Marshal.GetExceptionForHR (hr));
 				}
+
 				return path;
 			}
 		}
@@ -323,12 +103,12 @@ namespace Novartment.Base.Shell
 		{
 			get
 			{
-				string path;
-				var hr = _nativeShellItem.GetDisplayName (ShellItemDisplayNameForm.DesktopAbsoluteParsing, out path);
+				var hr = _nativeShellItem.GetDisplayName (ShellItemDisplayNameForm.DesktopAbsoluteParsing, out string path);
 				if (hr != 0)
 				{
 					throw new InvalidOperationException ("IShellItem.GetDisplayName() failed.", Marshal.GetExceptionForHR (hr));
 				}
+
 				return path;
 			}
 		}
@@ -338,12 +118,12 @@ namespace Novartment.Base.Shell
 		{
 			get
 			{
-				string path;
-				var hr = _nativeShellItem.GetDisplayName (ShellItemDisplayNameForm.FileSystemPath, out path);
+				var hr = _nativeShellItem.GetDisplayName (ShellItemDisplayNameForm.FileSystemPath, out string path);
 				if (hr != 0)
 				{
 					throw new InvalidOperationException ("IShellItem.GetDisplayName() failed.", Marshal.GetExceptionForHR (hr));
 				}
+
 				return path;
 			}
 		}
@@ -391,12 +171,13 @@ namespace Novartment.Base.Shell
 				{
 					throw new NotSupportedException ("Failed to get properties of shell item because it does not implements required IShellItem2 interface.");
 				}
-				ulong size;
-				var hr = shellItem.GetUInt64 (_ShellPropertyKeySize, out size);
+
+				var hr = shellItem.GetUInt64 (_ShellPropertyKeySize, out ulong size);
 				if (hr != 0)
 				{
 					return null;
 				}
+
 				return (long)size;
 			}
 		}
@@ -411,12 +192,13 @@ namespace Novartment.Base.Shell
 				{
 					throw new NotSupportedException ("Failed to get properties of shell item because it does not implements required IShellItem2 interface.");
 				}
-				int attributes;
-				var hr = shellItem.GetInt32 (_ShellPropertyKeyFileAttributes, out attributes);
+
+				var hr = shellItem.GetInt32 (_ShellPropertyKeyFileAttributes, out int attributes);
 				if (hr != 0)
 				{
 					return null;
 				}
+
 				return (FileAttributes)attributes;
 			}
 		}
@@ -431,12 +213,13 @@ namespace Novartment.Base.Shell
 				{
 					throw new NotSupportedException ("Failed to get properties of shell item because it does not implements required IShellItem2 interface.");
 				}
-				long time;
-				var hr = shellItem.GetFileTime (_ShellPropertyKeyDateModified, out time);
+
+				var hr = shellItem.GetFileTime (_ShellPropertyKeyDateModified, out long time);
 				if (hr != 0)
 				{
 					return null;
 				}
+
 				return DateTime.FromFileTime (time);
 			}
 		}
@@ -451,12 +234,13 @@ namespace Novartment.Base.Shell
 				{
 					throw new NotSupportedException ("Failed to get properties of shell item because it does not implements required IShellItem2 interface.");
 				}
-				long time;
-				var hr = shellItem.GetFileTime (_ShellPropertyKeyDateCreated, out time);
+
+				var hr = shellItem.GetFileTime (_ShellPropertyKeyDateCreated, out long time);
 				if (hr != 0)
 				{
 					return null;
 				}
+
 				return DateTime.FromFileTime (time);
 			}
 		}
@@ -471,45 +255,272 @@ namespace Novartment.Base.Shell
 				{
 					throw new NotSupportedException ("Failed to get properties of shell item because it does not implements required IShellItem2 interface.");
 				}
-				long time;
-				var hr = shellItem.GetFileTime (_ShellPropertyKeyDateAccessed, out time);
+
+				var hr = shellItem.GetFileTime (_ShellPropertyKeyDateAccessed, out long time);
 				if (hr != 0)
 				{
 					return null;
 				}
+
 				return DateTime.FromFileTime (time);
 			}
 		}
 
-		private static bool CheckAttribute (IShellItem nativeShellItem, ShellItemAttributes attribute)
+		/// <summary>
+		/// Получает элемент оболочки в виде COM-интерфейса IShellItem.
+		/// </summary>
+		internal IShellItem NativeShellItem => _nativeShellItem;
+
+		/// <summary>
+		/// Получает элемент оболочки, соответствующий указанному пути к файлу.
+		/// </summary>
+		/// <param name="path">Полный путь к файлу.</param>
+		/// <returns>Элемент оболочки, соответствующий указанному пути к файлу.</returns>
+		public static ShellItem FromPath (string path)
 		{
-			int result;
-			var hr = nativeShellItem.GetAttributes (attribute, out result);
-			if (hr != 0 && hr != 1)
+			if (path == null)
 			{
-				throw new ShellException (FormattableString.Invariant (
-					$"Failed to get attribute '{attribute}' of shell item."),
+				throw new ArgumentNullException (nameof (path));
+			}
+
+			Contract.EndContractBlock ();
+
+			var currentThreadApartmentState = Thread.CurrentThread.GetApartmentState ();
+			if (currentThreadApartmentState != ApartmentState.STA)
+			{
+				throw new ThreadStateException ("For shell functions thread must be STA.");
+			}
+
+			var guid = _GuidIShellItem;
+			var hr = NativeMethods.Shell32.SHCreateItemFromParsingName (
+				path,
+				IntPtr.Zero,
+				ref guid,
+				out IShellItem nativeShellItem);
+			if (hr != 0)
+			{
+				throw new ShellException ("Failed to create shell item for path '" + path + "'.", Marshal.GetExceptionForHR (hr));
+			}
+
+			return new ShellItem (nativeShellItem);
+		}
+
+		/// <summary>
+		/// Получает элемент оболочки, соответствующий указанной специально папке.
+		/// </summary>
+		/// <param name="specialFolder">Идентификатор специальной папки.</param>
+		/// <returns>Элемент оболочки, соответствующий указанной специально папке.</returns>
+		public static ShellItem FromSpecialFolder (Environment.SpecialFolder specialFolder)
+		{
+			var hr = NativeMethods.Shell32.SHGetFolderLocation (IntPtr.Zero, specialFolder, IntPtr.Zero, 0, out IntPtr pidlRoot);
+			if (hr == -2147024894)
+			{
+				return null; // HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND) = 0x80070002
+			}
+
+			if (hr != 0)
+			{
+				throw new ShellException (
+					FormattableString.Invariant (
+						$"Failed to get special folder '{specialFolder}'."),
+						Marshal.GetExceptionForHR (hr));
+			}
+
+			var currentThreadApartmentState = Thread.CurrentThread.GetApartmentState ();
+			if (currentThreadApartmentState != ApartmentState.STA)
+			{
+				throw new ThreadStateException ("For shell functions thread must be STA.");
+			}
+
+			hr = NativeMethods.Shell32.SHCreateShellItem (
+				IntPtr.Zero,
+				null,
+				pidlRoot,
+				out IShellItem nativeShellItem);
+			if (hr != 0)
+			{
+				throw new ShellException (
+					"Failed to create shell item for special folder '" + specialFolder + "'.",
 					Marshal.GetExceptionForHR (hr));
 			}
+
+			return new ShellItem (nativeShellItem);
+		}
+
+		/// <summary>
+		/// Получает массив элементов оболочки из данных объекта для обмена между приложениями.
+		/// </summary>
+		/// <param name="dataContainer">Объект данных объекта для обмена между приложениями.</param>
+		/// <returns>Массив элементов оболочки.
+		/// Первым элементом массива является родительская папка.</returns>
+		/// <remarks>Массив элементов оболочки, полученный из данных объекта для обмена между приложениями.</remarks>
+		public static ShellItem[] FromDataContainer (IDataContainer dataContainer)
+		{
+			if (dataContainer == null)
+			{
+				throw new ArgumentNullException (nameof (dataContainer));
+			}
+
+			Contract.EndContractBlock ();
+
+			var currentThreadApartmentState = Thread.CurrentThread.GetApartmentState ();
+			if (currentThreadApartmentState != ApartmentState.STA)
+			{
+				throw new ThreadStateException ("For shell functions thread must be STA.");
+			}
+
+			var memStream = dataContainer.GetData (DataContainerFormats.ShellIdList, true) as MemoryStream;
+			if (memStream == null)
+			{
+				return null;
+			}
+
+			var array = memStream.ToArray ();
+			memStream.Close ();
+
+			var nSize = sizeof (uint);
+			var bufSize = array.Length;
+			if (bufSize < (nSize + 1))
+			{
+				throw new FormatException (FormattableString.Invariant (
+					$"Invalid CIDA structure: too small size ({bufSize}), expected min {nSize}."));
+			}
+
+			ShellItem[] result;
+			var unmanagedBuffer = Marshal.AllocHGlobal (bufSize);
+			try
+			{
+				Marshal.Copy (array, 0, unmanagedBuffer, bufSize);
+
+				var count = (uint)Marshal.ReadInt32 (unmanagedBuffer);
+
+				// убеждаемся что указанное количество элементов (плюс корневой) помещается в переданном буфере
+				if ((count + 1) > (bufSize / nSize))
+				{
+					throw new FormatException (FormattableString.Invariant (
+						$"Invalid CIDA structure: too small size ({bufSize}), expected {(count + 1) * nSize} for specified number of elements ({count})."));
+				}
+
+				result = new ShellItem[count + 1];
+				var position = nSize;
+				var offset = (uint)Marshal.ReadInt32 (unmanagedBuffer, position);
+				if (offset >= bufSize)
+				{
+					throw new FormatException ("Invalid CIDA structure: parent element points outside.");
+				}
+
+				var pidlRoot = IntPtr.Add (unmanagedBuffer, (int)offset);
+
+				var hr = NativeMethods.Shell32.SHCreateShellItem (IntPtr.Zero, null, pidlRoot, out IShellItem nativeShellItem);
+				if (hr != 0)
+				{
+					throw new ShellException (
+						"Failed to create shell item corresponding to the parent element of CIDA structure.",
+						Marshal.GetExceptionForHR (hr));
+				}
+
+				var shellItem = new ShellItem (nativeShellItem);
+				result[0] = shellItem;
+
+				uint idx = 0;
+				while (idx < count)
+				{
+					position += nSize;
+					offset = (uint)Marshal.ReadInt32 (unmanagedBuffer, position);
+					if (offset >= bufSize)
+					{
+						throw new FormatException (FormattableString.Invariant (
+							$"Invalid CIDA structure: element #{idx + 1} points outside."));
+					}
+
+					var pidl = IntPtr.Add (unmanagedBuffer, (int)offset);
+					hr = NativeMethods.Shell32.SHCreateShellItem (pidlRoot, null, pidl, out nativeShellItem);
+					if (hr != 0)
+					{
+						throw new ShellException (
+							FormattableString.Invariant (
+								$"Failed to create shell item corresponding to the element #{idx + 1} of CIDA structure."),
+								Marshal.GetExceptionForHR (hr));
+					}
+
+					shellItem = new ShellItem (nativeShellItem);
+					result[idx + 1] = shellItem;
+					idx++;
+				}
+			}
+			finally
+			{
+				Marshal.FreeHGlobal (unmanagedBuffer);
+			}
+
+			return result;
+		}
+
+		/// <summary>
+		/// Получает строку, представляющую объект.
+		/// </summary>
+		/// <returns>Строковое представление объекта.</returns>
+		public override string ToString ()
+		{
+			return this.DisplayNameRelative;
+		}
+
+		/// <summary>
+		/// Получает результат хэш-функции объекта.
+		/// </summary>
+		/// <returns>Хэш-код объекта.</returns>
+		public override int GetHashCode ()
+		{
+			return this.NameAbsolute.GetHashCode ();
+		}
+
+		/// <summary>
+		/// Получает перечислитель дочерних элементов.
+		/// </summary>
+		/// <returns>Перечислитель дочерних элементов.</returns>
+		public IEnumerable<ShellItem> EnumerateItems ()
+		{
+			var currentThreadApartmentState = Thread.CurrentThread.GetApartmentState ();
+			if (currentThreadApartmentState != ApartmentState.STA)
+			{
+				throw new ThreadStateException ("For shell functions thread must be STA.");
+			}
+
+			var enumerable = new ShellItemsEnumerable (_nativeShellItem);
+
+			return enumerable.Select (item => new ShellItem (item));
+		}
+
+		private static bool CheckAttribute (IShellItem nativeShellItem, ShellItemAttributes attribute)
+		{
+			var hr = nativeShellItem.GetAttributes (attribute, out int result);
+			if (hr != 0 && hr != 1)
+			{
+				throw new ShellException (
+					FormattableString.Invariant (
+						$"Failed to get attribute '{attribute}' of shell item."),
+						Marshal.GetExceptionForHR (hr));
+			}
+
 			return hr == 0;
 		}
 
-		#region class _ShellItemsEnumerable
-
-		internal class _ShellItemsEnumerable :
+		internal class ShellItemsEnumerable :
 			IEnumerable<IShellItem>
 		{
-			[SuppressMessage ("Microsoft.Performance",
+			[SuppressMessage (
+		"Microsoft.Performance",
 				"CA1802:UseLiteralsWhereAppropriate",
 				Justification = "No performance gain could be achieved.")]
 			private static readonly string _GuidIEnumShellItems = "70629033-e363-4a28-a567-0db78006e6d7";
-			[SuppressMessage ("Microsoft.Performance",
+			[SuppressMessage (
+		"Microsoft.Performance",
 				"CA1802:UseLiteralsWhereAppropriate",
 				Justification = "No performance gain could be achieved.")]
 			private static readonly string _GuidEnumItemsHandler = "94f60519-2850-4924-aa5a-d15e84868039"; // BHID_EnumItems
 			private readonly IShellItem _nativeShellItem;
 
-			internal _ShellItemsEnumerable (IShellItem nativeShellItem)
+			internal ShellItemsEnumerable (IShellItem nativeShellItem)
 			{
 				_nativeShellItem = nativeShellItem;
 			}
@@ -523,18 +534,15 @@ namespace Novartment.Base.Shell
 			{
 				var guid = new Guid (_GuidIEnumShellItems);
 				var handler = new Guid (_GuidEnumItemsHandler);
-				object enumShellItems;
 				var hr = _nativeShellItem.BindToHandler (
 					IntPtr.Zero,
 					ref handler,
 					ref guid,
-					out enumShellItems);
+					out object enumShellItems);
 				return (hr == 0) ?
 					new ShellItemsEnumerator ((IEnumShellItems)enumShellItems) :
 					((IEnumerable<IShellItem>)Array.Empty<IShellItem> ()).GetEnumerator ();
 			}
 		}
-
-		#endregion
 	}
 }

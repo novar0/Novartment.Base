@@ -1,10 +1,10 @@
 ﻿using System;
-using System.Text;
 using System.Collections.Generic;
-using System.Runtime.Serialization;
 using System.Diagnostics.CodeAnalysis;
-using Novartment.Base.Text;
+using System.Runtime.Serialization;
+using System.Text;
 using Novartment.Base.Collections;
+using Novartment.Base.Text;
 
 namespace Novartment.Base
 {
@@ -25,24 +25,13 @@ namespace Novartment.Base
 		[DataMember (Name = "InnerExceptions")]
 		private ICollection<ExceptionDescription> _innerExceptions;
 
-		/// <summary>Тип исключения.</summary>
-		public string Name => _name;
-		/// <summary>Сообщение исключения.</summary>
-		public string Message => _message;
-		/// <summary>Дополнительная информация исключения.</summary>
-		public string Details => _details;
-		/// <summary>Трассировка стэка исключения.</summary>
-		public string Trace => _trace;
-		/// <summary>Коллекция описаний вложенных исключений.</summary>
-		public ICollection<ExceptionDescription> InnerExceptions => _innerExceptions;
-
 		/// <summary>Инициализирует новый экземпляр класса.</summary>
 		/// <param name="name">Тип исключения.</param>
 		/// <param name="message">Сообщение исключения.</param>
 		/// <param name="details">Дополнительная информация исключения.</param>
 		/// <param name="trace">Трассировка стэка исключения.</param>
 		/// <param name="innerExceptions">Коллекция описаний вложенных исключений.</param>
-		public ExceptionDescription (
+		public ExceptionDescription(
 			string name,
 			string message,
 			string details,
@@ -56,6 +45,21 @@ namespace Novartment.Base
 			_innerExceptions = innerExceptions;
 		}
 
+		/// <summary>Тип исключения.</summary>
+		public string Name => _name;
+
+		/// <summary>Сообщение исключения.</summary>
+		public string Message => _message;
+
+		/// <summary>Дополнительная информация исключения.</summary>
+		public string Details => _details;
+
+		/// <summary>Трассировка стэка исключения.</summary>
+		public string Trace => _trace;
+
+		/// <summary>Коллекция описаний вложенных исключений.</summary>
+		public ICollection<ExceptionDescription> InnerExceptions => _innerExceptions;
+
 		/// <summary>Получает одно-строковое краткое представление подробностей об исключении.</summary>
 		/// <returns>Одна строка подробностей об исключении.</returns>
 		public override string ToString ()
@@ -68,7 +72,8 @@ namespace Novartment.Base
 		/// или false чтобы получить однострочное краткое представление.</param>
 		/// <param name="tracePatternToHide">Строка-образец, который в трассировке стэка будет заменён на многоточие.</param>
 		/// <returns>Строка подробностей об исключении.</returns>
-		[SuppressMessage ("Microsoft.Design",
+		[SuppressMessage (
+		"Microsoft.Design",
 			"CA1026:DefaultParametersShouldNotBeUsed",
 			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
 		public virtual string ToString (bool detailed, string tracePatternToHide = null)
@@ -100,6 +105,7 @@ namespace Novartment.Base
 						strList.Add ("Stack:\r\n" + trace);
 					}
 				}
+
 				result = string.Join (Environment.NewLine, strList);
 			}
 			else
@@ -116,8 +122,10 @@ namespace Novartment.Base
 						sb[idx] = ' ';
 					}
 				}
+
 				result = sb.ToString ();
 			}
+
 			return result;
 		}
 	}

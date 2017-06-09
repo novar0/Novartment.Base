@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using static System.Linq.Enumerable;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using Novartment.Base.Collections.Immutable;
@@ -12,54 +11,6 @@ namespace Novartment.Base
 	/// </summary>
 	public static class EstimatingEncoder
 	{
-		/// <summary>
-		/// Позиция/размер порции данных и выбранный для неё кодировщик.
-		/// </summary>
-		public struct ChunkEncoderSelection
-		{
-			/// <summary>
-			/// Кодировщик, который выбран для порции.
-			/// </summary>
-			public IEstimatingEncoder Encoder { get; }
-
-			/// <summary>
-			/// Начальная позиция порции в исходных данных.
-			/// </summary>
-			public int Offset { get; }
-
-			/// <summary>
-			/// Размер порции.
-			/// </summary>
-			public int Count { get; }
-
-			/// <summary>
-			/// Инициализирует новый экземпляр класса ChunkEncoderSelection с указанным
-			/// кодировщиком, начальной позицией и размером порции.
-			/// </summary>
-			/// <param name="encoder">Получает кодировщик, который выбран для порции.</param>
-			/// <param name="offset">Получает начальная позиция порции в исходных данных.</param>
-			/// <param name="count">Получает размер порции.</param>
-			public ChunkEncoderSelection (IEstimatingEncoder encoder, int offset, int count)
-			{
-				this.Encoder = encoder;
-				this.Offset = offset;
-				this.Count = count;
-			}
-
-			/// <summary>
-			/// Деконструирует данные.
-			/// </summary>
-			/// <param name="encoder">Получает количество байтов, произведённых в результате кодирования.</param>
-			/// <param name="offset">Получает количество байтов, использованных при кодировании.</param>
-			/// <param name="count">Получает количество байтов, использованных при кодировании.</param>
-			public void Deconstruct (out IEstimatingEncoder encoder, out int offset, out int count)
-			{
-				encoder = this.Encoder;
-				offset = this.Offset;
-				count = this.Count;
-			}
-		}
-
 		/// <summary>
 		/// Разбивает указанный массив байтов на произвольные порции размером не более указанного,
 		/// подбирая для каждой порции подходящий кодировщик из списка указанных,
@@ -88,23 +39,26 @@ namespace Novartment.Base
 			Func<int, IEstimatingEncoder, int> funcExtraLength)
 		{
 			// TODO: реализовать поддержку смещения и кол-ва в source
-
 			if (funcEncoders == null)
 			{
 				throw new ArgumentNullException (nameof (funcEncoders));
 			}
+
 			if (source == null)
 			{
 				throw new ArgumentNullException (nameof (source));
 			}
+
 			if (maxOutCount < 1)
 			{
 				throw new ArgumentOutOfRangeException (nameof (maxOutCount));
 			}
+
 			if (funcExtraLength == null)
 			{
 				throw new ArgumentNullException (nameof (funcExtraLength));
 			}
+
 			Contract.EndContractBlock ();
 
 			if (source.Length < 1)
@@ -131,7 +85,8 @@ namespace Novartment.Base
 						variant.SourceOffset + variant.EncodedSource,
 						variant.SourceCount - variant.EncodedSource,
 						maxOutCount - pieceExtraLength,
-						segmentNumber, true);
+						segmentNumber,
+						true);
 					if (bytesConsumed > 0)
 					{
 						var newEncodedDestination = bytesProduced + variant.EncodedDestination + pieceExtraLength;
@@ -169,6 +124,7 @@ namespace Novartment.Base
 					}
 				}
 			}
+
 			if (bestResultOverall == null)
 			{
 				throw new InvalidOperationException ("Data not acceptable for specified encoders.");
@@ -210,12 +166,14 @@ namespace Novartment.Base
 					{
 						continue;
 					}
+
 					var tuple = encoder2.Estimate (
 						source,
 						variant.SourceOffset + variant.EncodedSource,
 						nextValid - (variant.SourceOffset + variant.EncodedSource),
 						maxOutCount - pieceExtraLength,
-						segmentNumber, false);
+						segmentNumber,
+						false);
 					if (tuple.BytesConsumed > 0)
 					{
 						var newEncodedDestination2 = tuple.BytesProduced + variant.EncodedDestination + pieceExtraLength;
@@ -233,18 +191,73 @@ namespace Novartment.Base
 					}
 				}
 			}
+
 			return variants;
+		}
+
+		/// <summary>
+		/// Позиция/размер порции данных и выбранный для неё кодировщик.
+		/// </summary>
+		public struct ChunkEncoderSelection
+		{
+			/// <summary>
+			/// Инициализирует новый экземпляр класса ChunkEncoderSelection с указанным
+			/// кодировщиком, начальной позицией и размером порции.
+			/// </summary>
+			/// <param name="encoder">Получает кодировщик, который выбран для порции.</param>
+			/// <param name="offset">Получает начальная позиция порции в исходных данных.</param>
+			/// <param name="count">Получает размер порции.</param>
+			public ChunkEncoderSelection(IEstimatingEncoder encoder, int offset, int count)
+			{
+				this.Encoder = encoder;
+				this.Offset = offset;
+				this.Count = count;
+			}
+
+			/// <summary>
+			/// Кодировщик, который выбран для порции.
+			/// </summary>
+			public IEstimatingEncoder Encoder { get; }
+
+			/// <summary>
+			/// Начальная позиция порции в исходных данных.
+			/// </summary>
+			public int Offset { get; }
+
+			/// <summary>
+			/// Размер порции.
+			/// </summary>
+			public int Count { get; }
+
+			/// <summary>
+			/// Деконструирует данные.
+			/// </summary>
+			/// <param name="encoder">Получает кодировщик, который выбран для порции.</param>
+			/// <param name="offset">Получает начальную позицию порции в исходных данных.</param>
+			/// <param name="count">Получает размер порции.</param>
+			public void Deconstruct(out IEstimatingEncoder encoder, out int offset, out int count)
+			{
+				encoder = this.Encoder;
+				offset = this.Offset;
+				count = this.Count;
+			}
 		}
 
 		internal class EncodeResult
 		{
-			internal int Index;
-			internal EncodeResult Parent;
-			internal IEstimatingEncoder Encoder;
-			internal int SourceOffset;
-			internal int SourceCount;
-			internal int EncodedSource;
-			internal int EncodedDestination;
+			internal int Index { get; set; }
+
+			internal EncodeResult Parent { get; set; }
+
+			internal IEstimatingEncoder Encoder { get; set; }
+
+			internal int SourceOffset { get; set; }
+
+			internal int SourceCount { get; set; }
+
+			internal int EncodedSource { get; set; }
+
+			internal int EncodedDestination { get; set; }
 		}
 	}
 }

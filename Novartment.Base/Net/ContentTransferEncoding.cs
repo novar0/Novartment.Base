@@ -1,5 +1,4 @@
-﻿
-namespace Novartment.Base.Net
+﻿namespace Novartment.Base.Net
 {
 	/// <summary>
 	/// MIME-кодировка передачи содержимого.

@@ -25,18 +25,22 @@ namespace Novartment.Base.Text
 			{
 				throw new ArgumentNullException (nameof (source));
 			}
+
 			if (oldValue == null)
 			{
 				throw new ArgumentNullException (nameof (oldValue));
 			}
+
 			if (oldValue.Length < 1)
 			{
 				throw new ArgumentOutOfRangeException (nameof (oldValue));
 			}
+
 			if (newValue == null)
 			{
 				throw new ArgumentNullException (nameof (newValue));
 			}
+
 			Contract.EndContractBlock ();
 
 			var sourceLen = source.Length;
@@ -59,14 +63,17 @@ namespace Novartment.Base.Text
 					{
 						strb.Append (source.Substring (currentIdx, len));
 					}
+
 					strb.Append (newValue);
 					currentIdx = foundIdx + oldValueLen;
 				}
-			} while (foundIdx >= 0);
+			}
+			while (foundIdx >= 0);
 			if (currentIdx < (sourceLen - 1))
 			{
 				strb.Append (source.Substring (currentIdx));
 			}
+
 			return strb.ToString ();
 		}
 
@@ -82,6 +89,7 @@ namespace Novartment.Base.Text
 			{
 				throw new ArgumentNullException (nameof (values));
 			}
+
 			Contract.EndContractBlock ();
 
 			var list = new ArrayList<string> (values.Count);
@@ -92,12 +100,15 @@ namespace Novartment.Base.Text
 				{
 					list.Add (lastValue + separator);
 				}
+
 				lastValue = part;
 			}
+
 			if (lastValue != null)
 			{
 				list.Add (lastValue);
 			}
+
 			return list;
 		}
 	}

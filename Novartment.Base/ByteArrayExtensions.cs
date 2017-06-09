@@ -8,7 +8,6 @@ namespace Novartment.Base
 	/// </summary>
 	public static class ByteArrayExtensions
 	{
-
 		/// <summary>
 		/// Вычисляет позицию в массиве байтов первого найденного соответствия образцу.
 		/// </summary>
@@ -23,14 +22,17 @@ namespace Novartment.Base
 			{
 				throw new ArgumentNullException (nameof (source));
 			}
+
 			if (pattern == null)
 			{
 				throw new ArgumentNullException (nameof (pattern));
 			}
+
 			if (pattern.Length < 1)
 			{
 				throw new ArgumentOutOfRangeException (nameof (pattern));
 			}
+
 			Contract.EndContractBlock ();
 
 			if (source.Length < pattern.Length)
@@ -57,22 +59,27 @@ namespace Novartment.Base
 			{
 				throw new ArgumentNullException (nameof (source));
 			}
+
 			if (pattern == null)
 			{
 				throw new ArgumentNullException (nameof (pattern));
 			}
+
 			if (pattern.Length < 1)
 			{
 				throw new ArgumentOutOfRangeException (nameof (pattern));
 			}
+
 			if ((startIndex < 0) || (startIndex > source.Length) || ((startIndex == source.Length) && (count > 0)))
 			{
 				throw new ArgumentOutOfRangeException (nameof (startIndex));
 			}
+
 			if ((count < 0) || ((startIndex + count) > source.Length))
 			{
 				throw new ArgumentOutOfRangeException (nameof (count));
 			}
+
 			Contract.EndContractBlock ();
 
 			var data = KmpBuildTable (pattern);
@@ -88,6 +95,7 @@ namespace Novartment.Base
 					{
 						return m;
 					}
+
 					i++;
 				}
 				else
@@ -103,6 +111,7 @@ namespace Novartment.Base
 					}
 				}
 			}
+
 			return -1;  // not found
 		}
 
@@ -134,6 +143,7 @@ namespace Novartment.Base
 					}
 				}
 			}
+
 			return result;
 		}
 	}

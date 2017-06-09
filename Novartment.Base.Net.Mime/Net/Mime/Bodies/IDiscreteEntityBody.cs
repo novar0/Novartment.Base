@@ -1,6 +1,6 @@
-﻿using System.Threading;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Threading;
 using System.Threading.Tasks;
-using System.Diagnostics.CodeAnalysis;
 using Novartment.Base.BinaryStreaming;
 
 namespace Novartment.Base.Net.Mime
@@ -15,7 +15,8 @@ namespace Novartment.Base.Net.Mime
 		/// Возвращает декодированное тело сущности в виде источника данных.
 		/// </summary>
 		/// <returns>Декодированное тело сущности в виде источника данных.</returns>
-		[SuppressMessage ("Microsoft.Design",
+		[SuppressMessage (
+		"Microsoft.Design",
 			"CA1024:UsePropertiesWhereAppropriate",
 			Justification = "Every time method creates new mutable result.")]
 		IBufferedSource GetDataSource ();

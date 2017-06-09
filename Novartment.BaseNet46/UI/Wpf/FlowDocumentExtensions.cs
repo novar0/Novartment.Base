@@ -1,12 +1,12 @@
 ﻿using System;
-using System.Text.RegularExpressions;
 using System.Collections.Generic;
-using System.Windows;
-using System.Windows.Documents;
-using System.Globalization;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
+using System.Globalization;
+using System.Text.RegularExpressions;
+using System.Windows;
+using System.Windows.Documents;
 using Novartment.Base.Collections;
 
 namespace Novartment.Base.UI.Wpf
@@ -16,6 +16,12 @@ namespace Novartment.Base.UI.Wpf
 	/// </summary>
 	public static class FlowDocumentExtensions
 	{
+		[SuppressMessage (
+			"Microsoft.Performance",
+			"CA1802:UseLiteralsWhereAppropriate",
+			Justification = "No performance gain could be achieved.")]
+		private static readonly string _UrlRegex = @"(?<Protocol>\w+):\/\/(?<Domain>[\w@][\w.:@]+)\/?[\w\.?=%&=\-@/$,]*";
+
 		/// <summary>
 		/// Преобразует части текста, являющиейся ссылками в работающие ссылки.
 		/// </summary>
@@ -26,14 +32,17 @@ namespace Novartment.Base.UI.Wpf
 			{
 				throw new ArgumentNullException (nameof (document));
 			}
+
 			Contract.EndContractBlock ();
 
 			var links = GetLinksInDocument (document);
 			foreach (var item in links)
 			{
-				var link = new Hyperlink (item.Start, item.Finish);
-				link.NavigateUri = new Uri (item.Text);
-				link.ToolTip = string.Format (CultureInfo.InvariantCulture, Resources.OpenLinkTooltip, item.Text);
+				var link = new Hyperlink (item.Start, item.Finish)
+				{
+					NavigateUri = new Uri (item.Text),
+					ToolTip = string.Format (CultureInfo.InvariantCulture, Resources.OpenLinkTooltip, item.Text)
+				};
 				link.Click += HyperLinkClickHandler;
 			}
 		}
@@ -47,17 +56,6 @@ namespace Novartment.Base.UI.Wpf
 			}
 		}
 
-		internal struct LinkData
-		{
-			internal TextPointer Start;
-			internal TextPointer Finish;
-			internal string Text;
-		}
-
-		[SuppressMessage ("Microsoft.Performance",
-			"CA1802:UseLiteralsWhereAppropriate",
-			Justification = "No performance gain could be achieved.")]
-		private static readonly string _UrlRegex = @"(?<Protocol>\w+):\/\/(?<Domain>[\w@][\w.:@]+)\/?[\w\.?=%&=\-@/$,]*";
 		private static IReadOnlyList<LinkData> GetLinksInDocument (FlowDocument document)
 		{
 			var result = new ArrayList<LinkData> ();
@@ -75,7 +73,15 @@ namespace Novartment.Base.UI.Wpf
 					result.Add (linkData);
 				}
 			}
+
 			return result;
+		}
+
+		internal struct LinkData
+		{
+			internal TextPointer Start;
+			internal TextPointer Finish;
+			internal string Text;
 		}
 	}
 }

@@ -10,20 +10,19 @@ namespace Novartment.Base
 	/// <typeparam name="TResult">Тип, возвращаемый заданиями.</typeparam>
 	public class JobCompletionSource<TItem, TResult> : TaskCompletionSource<TResult>
 	{
-		internal class _JobCompletionSourceMarker : JobCompletionSource<TItem, TResult>
+		/// <summary>
+		/// Инициализирует новый экземпляр JobCompletionSource с укзанным входным параметром.
+		/// </summary>
+		/// <param name="state">Входной параметр задания.</param>
+		public JobCompletionSource(TItem state)
+			: base(state)
 		{
-			internal _JobCompletionSourceMarker ()
-				: base (default (TItem))
-			{
-			}
-
-			public override bool IsMarker => true;
 		}
 
 		/// <summary>
 		/// Получает экземпляр производителя выполнения особого задания-маркера.
 		/// </summary>
-		public static JobCompletionSource<TItem, TResult> Marker { get; } = new _JobCompletionSourceMarker ();
+		public static JobCompletionSource<TItem, TResult> Marker { get; } = new JobCompletionSourceMarker ();
 
 		/// <summary>
 		/// Получает признак того, экземпляр является производителем выполнения особого задания-маркера.
@@ -35,13 +34,14 @@ namespace Novartment.Base
 		/// </summary>
 		public TItem Item => (TItem)this.Task.AsyncState;
 
-		/// <summary>
-		/// Инициализирует новый экземпляр JobCompletionSource с укзанным входным параметром.
-		/// </summary>
-		/// <param name="state">Входной параметр задания.</param>
-		public JobCompletionSource (TItem state)
-			: base (state)
+		internal class JobCompletionSourceMarker : JobCompletionSource<TItem, TResult>
 		{
+			internal JobCompletionSourceMarker()
+				: base(default(TItem))
+			{
+			}
+
+			public override bool IsMarker => true;
 		}
 	}
 }

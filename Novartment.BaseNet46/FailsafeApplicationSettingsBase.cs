@@ -1,10 +1,10 @@
 ﻿using System;
-using System.IO;
 using System.ComponentModel;
 using System.Configuration;
-using System.Threading;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
+using System.IO;
+using System.Threading;
 
 namespace Novartment.Base
 {
@@ -15,7 +15,8 @@ namespace Novartment.Base
 	/// </summary>
 	public class FailsafeApplicationSettingsBase : ApplicationSettingsBase
 	{
-		[SuppressMessage ("Microsoft.Performance",
+		[SuppressMessage (
+		"Microsoft.Performance",
 			"CA1802:UseLiteralsWhereAppropriate",
 			Justification = "No performance gain could be achieved.")]
 		private static readonly string _SettingsAreDefaultString = "SettingsAreDefault5F2D9E7B15D04090BFFBC4396EE7ED7D";
@@ -34,7 +35,8 @@ namespace Novartment.Base
 		/// </summary>
 		public bool SaveOnAnyChange
 		{
-			get { return _saveOnAnyChange; }
+			get => _saveOnAnyChange;
+
 			set
 			{
 				if (_saveOnAnyChange != value)
@@ -42,6 +44,40 @@ namespace Novartment.Base
 					_saveOnAnyChange = value;
 					base.OnPropertyChanged (this, new PropertyChangedEventArgs (nameof (this.SaveOnAnyChange)));
 				}
+			}
+		}
+
+		/// <summary>
+		/// Получает или устанавливает признак того,
+		/// что все настройки приложения имеют значение по-умолчанию,
+		/// то есть ещё не сохранялись.
+		/// </summary>
+		/// <remarks>
+		/// Не предназначено для внешнего использования.
+		/// </remarks>
+		[SuppressMessage (
+			"Microsoft.Naming",
+			"CA1709:IdentifiersShouldBeCasedCorrectly",
+			Justification = "This property is not intended to be public and marked as 'public' for technically reasons.")]
+		[UserScopedSetting]
+		[DefaultSettingValue ("True")]
+		public bool SettingsAreDefault5F2D9E7B15D04090BFFBC4396EE7ED7D
+		{
+			get
+			{
+				try
+				{
+					return (bool)this[_SettingsAreDefaultString];
+				}
+				catch (SettingsPropertyNotFoundException)
+				{
+					return true;
+				}
+			}
+
+			set
+			{
+				this[_SettingsAreDefaultString] = value;
 			}
 		}
 
@@ -58,6 +94,7 @@ namespace Novartment.Base
 				{
 					throw new ArgumentNullException (nameof (propertyName));
 				}
+
 				Contract.EndContractBlock ();
 
 				var oldValue = Interlocked.CompareExchange (ref _integrityChecked, 1, 0);
@@ -65,14 +102,17 @@ namespace Novartment.Base
 				{
 					UpgradeIfNeeded ();
 				}
+
 				return base[propertyName];
 			}
+
 			set
 			{
 				if (propertyName == null)
 				{
 					throw new ArgumentNullException (nameof (propertyName));
 				}
+
 				Contract.EndContractBlock ();
 
 				var oldValue = Interlocked.CompareExchange (ref _integrityChecked, 1, 0);
@@ -80,17 +120,20 @@ namespace Novartment.Base
 				{
 					UpgradeIfNeeded ();
 				}
+
 				var propVal = base[propertyName];
 				var needToUpdate = true;
 				if ((propVal == null) && (value == null))
 				{
 					needToUpdate = false;
 				}
+
 				var isProvValueEqualsValue = (propVal != null) && propVal.Equals (value);
 				if (isProvValueEqualsValue)
 				{
 					needToUpdate = false;
 				}
+
 				if (needToUpdate)
 				{
 					base[propertyName] = value;
@@ -109,6 +152,7 @@ namespace Novartment.Base
 			{
 				Save ();
 			}
+
 			base.OnPropertyChanged (sender, e);
 		}
 
@@ -132,38 +176,6 @@ namespace Novartment.Base
 				throw new ApplicationRestartRequiredException (
 					"Failed to load application settings. Setting have been resetted and will take effect after a application restart.",
 					excpt);
-			}
-		}
-
-		/// <summary>
-		/// Получает или устанавливает признак того,
-		/// что все настройки приложения имеют значение по-умолчанию,
-		/// то есть ещё не сохранялись.
-		/// </summary>
-		/// <remarks>
-		/// Не предназначено для внешнего использования.
-		/// </remarks>
-		[SuppressMessage ("Microsoft.Naming",
-			"CA1709:IdentifiersShouldBeCasedCorrectly",
-			Justification = "This property is not intended to be public and marked as 'public' for technically reasons."),
-		UserScopedSettingAttribute]
-		[DefaultSettingValueAttribute ("True")]
-		public bool SettingsAreDefault5F2D9E7B15D04090BFFBC4396EE7ED7D
-		{
-			get
-			{
-				try
-				{
-					return ((bool)(this[_SettingsAreDefaultString]));
-				}
-				catch (SettingsPropertyNotFoundException)
-				{
-					return true;
-				}
-			}
-			set
-			{
-				this[_SettingsAreDefaultString] = value;
 			}
 		}
 	}

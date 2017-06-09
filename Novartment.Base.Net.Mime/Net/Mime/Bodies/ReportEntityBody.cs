@@ -29,16 +29,13 @@ namespace Novartment.Base.Net.Mime
 		(Although it might also be useful to allow the sender to identify the message about which the report was issued,
 		it is hoped that the envelope-id and original-recipient-address returned in the message/report body part will replace the traditional use
 		of the returned content for this purpose.)
+
+		RFC 3464 part 2 "Format of a Delivery Status Notification":
+		The report-type parameter of the multipart/report content is "delivery-status".
+
+		RFC 3798 part 3 "Format of a Message Disposition Notification":
+		The report-type parameter of the multipart/report content is "disposition-notification".
 		*/
-
-		//RFC 3464 part 2 "Format of a Delivery Status Notification":
-		//The report-type parameter of the multipart/report content is "delivery-status".
-		//
-		//RFC 3798 part 3 "Format of a Message Disposition Notification":
-		//The report-type parameter of the multipart/report content is "disposition-notification".
-
-		/// <summary>Получает тип отчёта, определяющий медиа подтип статусной части (второй вложенной сущности). Определено в RFC 6522.</summary>
-		public string ReportType { get; }
 
 		/// <summary>
 		/// Инициализирует новый экземпляр класса ReportEntityBody.
@@ -46,15 +43,17 @@ namespace Novartment.Base.Net.Mime
 		/// <param name="reportType">Тип отчёта, определяющий медиа подтип статусной части (второй вложенной сущности).</param>
 		/// <param name="boundary">Разграничитель частей сущности согласно требованиям RFC 1341 часть 7.2.1,
 		/// либо null для автоматического генерирования разграничителя.</param>
-		[SuppressMessage ("Microsoft.Design",
+		[SuppressMessage (
+			"Microsoft.Design",
 			"CA1026:DefaultParametersShouldNotBeUsed",
 			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
-		public ReportEntityBody (
-			string reportType,
-			string boundary = null) :
-			base (boundary)
+		public ReportEntityBody (string reportType, string boundary = null)
+			: base (boundary)
 		{
 			this.ReportType = reportType;
 		}
+
+		/// <summary>Получает тип отчёта, определяющий медиа подтип статусной части (второй вложенной сущности). Определено в RFC 6522.</summary>
+		public string ReportType { get; }
 	}
 }

@@ -11,15 +11,15 @@ namespace Novartment.Base.UnsafeWin32
 	internal struct CryptProtectPromptParameters
 	{
 		/// <summary>The size, in bytes, of this structure.</summary>
-		internal int cbSize;
+		internal int Size;
 
 		/// <summary>Flags that indicate when prompts to the user are to be displayed.</summary>
-		internal CryptProtectPromptOptions dwPromptFlags;
+		internal CryptProtectPromptOptions PromptFlags;
 
 		/// <summary>Window handle to the parent window.</summary>
-		internal IntPtr hwndApp;
+		internal IntPtr WindowHandle;
 
 		/// <summary>Text of a prompt to be displayed.</summary>
-		internal string szPrompt;
+		internal string Prompt;
 	}
 }

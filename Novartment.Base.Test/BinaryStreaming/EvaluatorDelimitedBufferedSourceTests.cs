@@ -40,14 +40,17 @@ namespace Novartment.Base.Test
 							}
 							epilogueSize++;
 						}
+
 						if (_source.IsExhausted)
 						{
 							_epilogueSize = epilogueSize;
 						}
+
 						return startOffset - _source.Offset;
 					}
 					startOffset++;
 				}
+
 				return _source.Count;
 			}
 		}

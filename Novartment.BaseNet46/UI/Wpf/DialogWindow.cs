@@ -1,7 +1,7 @@
 ﻿using System;
-using System.Windows.Controls;
-using System.Windows;
 using System.ComponentModel;
+using System.Windows;
+using System.Windows.Controls;
 
 namespace Novartment.Base.UI.Wpf
 {
@@ -14,13 +14,9 @@ namespace Novartment.Base.UI.Wpf
 		private UIElement _defaultButton;
 		private int _nErrors;
 
-		/// <summary>
-		/// Получает признак того, что все элементы диалогового окна успешно прошли валидацию данных.
-		/// </summary>
-		public bool DataAreValid => (_nErrors < 1);
-
 		/// <summary>Инициализирует новый экземпляр класса DialogWindow.</summary>
-		public DialogWindow () : this (null)
+		public DialogWindow ()
+			: this (null)
 		{
 		}
 
@@ -37,13 +33,23 @@ namespace Novartment.Base.UI.Wpf
 					owner = mainWindow;
 				}
 			}
+
 			if (owner != null)
 			{
 				this.Owner = owner;
 				this.ShowInTaskbar = false;
 			}
+
 			Validation.AddErrorHandler (this, ValidationErrorHandler);
 		}
+
+		/// <summary>Происходит после изменения свойства.</summary>
+		public event PropertyChangedEventHandler PropertyChanged;
+
+		/// <summary>
+		/// Получает признак того, что все элементы диалогового окна успешно прошли валидацию данных.
+		/// </summary>
+		public bool DataAreValid => _nErrors < 1;
 
 		/// <summary>Создает событие Initialized.</summary>
 		/// <param name="e">Данные для события.</param>
@@ -58,7 +64,17 @@ namespace Novartment.Base.UI.Wpf
 					_defaultButton = button;
 				}
 			}
+
 			base.OnInitialized (e);
+		}
+
+		/// <summary>
+		/// Инициирует событие PropertyChanged с указанным именем свойства.
+		/// </summary>
+		/// <param name="name">Имя свойства.</param>
+		protected virtual void OnPropertyChanged (string name)
+		{
+			this.PropertyChanged?.Invoke (this, new PropertyChangedEventArgs (name));
 		}
 
 		private void ValidationErrorHandler (object sender, ValidationErrorEventArgs e)
@@ -68,10 +84,12 @@ namespace Novartment.Base.UI.Wpf
 				case ValidationErrorEventAction.Added: _nErrors++; break;
 				case ValidationErrorEventAction.Removed: _nErrors--; break;
 			}
+
 			if (_defaultButton != null)
 			{
 				_defaultButton.IsEnabled = this.DataAreValid;
 			}
+
 			OnPropertyChanged ("DataAreValid");
 		}
 
@@ -81,18 +99,6 @@ namespace Novartment.Base.UI.Wpf
 			{
 				this.DialogResult = true;
 			}
-		}
-
-		/// <summary>Происходит после изменения свойства.</summary>
-		public event PropertyChangedEventHandler PropertyChanged;
-
-		/// <summary>
-		/// Инициирует событие PropertyChanged с указанным именем свойства.
-		/// </summary>
-		/// <param name="name">Имя свойства.</param>
-		protected virtual void OnPropertyChanged (string name)
-		{
-			this.PropertyChanged?.Invoke (this, new PropertyChangedEventArgs (name));
 		}
 	}
 }

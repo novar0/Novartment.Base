@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Threading;
-using System.Runtime.InteropServices;
-using Novartment.Base.UnsafeWin32;
 using System.Diagnostics.Contracts;
+using System.Runtime.InteropServices;
+using System.Threading;
+using Novartment.Base.UnsafeWin32;
 
 namespace Novartment.Base.Shell
 {
@@ -26,12 +26,14 @@ namespace Novartment.Base.Shell
 			{
 				throw new ArgumentNullException (nameof (nativeEnumShellItems));
 			}
+
 			Contract.EndContractBlock ();
 
 			if (nativeEnumShellItems == null)
 			{
 				throw new ArgumentNullException (nameof (nativeEnumShellItems));
 			}
+
 			_nativeEnumShellItems = nativeEnumShellItems;
 		}
 
@@ -39,6 +41,7 @@ namespace Novartment.Base.Shell
 		/// Получает текущий элемент перечислителя.
 		/// </summary>
 		public IShellItem Current => _current;
+
 		object IEnumerator.Current => _current;
 
 		/// <summary>
@@ -85,6 +88,7 @@ namespace Novartment.Base.Shell
 			{
 				throw new InvalidOperationException ("IEnumShellItems.Reset() failed.", Marshal.GetExceptionForHR (hr));
 			}
+
 			_current = null;
 		}
 	}

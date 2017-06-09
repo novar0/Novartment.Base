@@ -1,9 +1,9 @@
 ﻿using System;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Security.Cryptography;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
+using System.Security.Cryptography;
+using System.Threading;
+using System.Threading.Tasks;
 using Novartment.Base.BinaryStreaming;
 
 namespace Novartment.Base.Net.Mime
@@ -15,16 +15,13 @@ namespace Novartment.Base.Net.Mime
 	public class DataEntityBody :
 		IDiscreteEntityBody
 	{
-		[SuppressMessage ("Microsoft.Performance",
+		[SuppressMessage (
+		"Microsoft.Performance",
 			"CA1802:UseLiteralsWhereAppropriate",
 			Justification = "No performance gain could be achieved.")]
 		private static readonly int _DefaultEncodeBufferSize = 32000;
 		private byte[] _encodedData;
 		private int _encodedDataSize;
-
-		/// <summary>Получает кодировку передачи содержимого.
-		/// Соответствует полю заголовка "Content-Transfer-Encoding" определённому в RFC 2045 часть 6.</summary>
-		public ContentTransferEncoding TransferEncoding { get; }
 
 		/// <summary>
 		/// Инициализирует новый экземпляр класса DataEntityBody
@@ -37,10 +34,15 @@ namespace Novartment.Base.Net.Mime
 			{
 				throw new ArgumentOutOfRangeException (nameof (transferEncoding));
 			}
+
 			Contract.EndContractBlock ();
 
 			this.TransferEncoding = transferEncoding;
 		}
+
+		/// <summary>Получает кодировку передачи содержимого.
+		/// Соответствует полю заголовка "Content-Transfer-Encoding" определённому в RFC 2045 часть 6.</summary>
+		public ContentTransferEncoding TransferEncoding { get; }
 
 		/// <summary>
 		/// Очищает тело сущности.
@@ -50,8 +52,6 @@ namespace Novartment.Base.Net.Mime
 			_encodedData = null;
 			_encodedDataSize = 0;
 		}
-
-		#region method LoadAsync
 
 		/// <summary>
 		/// Загружает тело сущности из указанного источника данных.
@@ -69,22 +69,19 @@ namespace Novartment.Base.Net.Mime
 			{
 				throw new ArgumentNullException (nameof (source));
 			}
+
 			Contract.EndContractBlock ();
 
 			var task = source.ReadAllBytesAsync (cancellationToken);
-			return LoadAsyncFinalizer (task);
+			return LoadAsyncFinalizer ();
+
+			async Task LoadAsyncFinalizer ()
+			{
+				var result = await task.ConfigureAwait (false);
+				_encodedData = result;
+				_encodedDataSize = result.Length;
+			}
 		}
-
-		private async Task LoadAsyncFinalizer (Task<byte[]> task)
-		{
-			var result = await task.ConfigureAwait (false);
-			_encodedData = result;
-			_encodedDataSize = result.Length;
-		}
-
-		#endregion
-
-		#region method SaveAsync
 
 		/// <summary>
 		/// Сохраняет тело сущности в указанный получатель двоичных данных.
@@ -98,39 +95,37 @@ namespace Novartment.Base.Net.Mime
 			{
 				throw new ArgumentNullException (nameof (destination));
 			}
+
 			Contract.EndContractBlock ();
 
-			return SaveAsyncStateMachine (destination, cancellationToken);
-		}
+			return SaveAsyncStateMachine ();
 
-		private async Task SaveAsyncStateMachine (IBinaryDestination destination, CancellationToken cancellationToken)
-		{
-			var isEmptyBody = (_encodedData == null) || (_encodedDataSize < 1);
-			if (!isEmptyBody)
+			async Task SaveAsyncStateMachine ()
 			{
-				await destination.WriteAsync (_encodedData, 0, _encodedDataSize, cancellationToken).ConfigureAwait (false);
-			}
-			// RFC 5321 part 4.1.1.4:
-			// ... if the message body were passed to the originating SMTP-sender with a final "line" that did not end in <CRLF>;
-			// in that case, the originating SMTP system MUST either reject the message as invalid or
-			// add <CRLF> in order to have the receiving SMTP server recognize the "end of data" condition.
-			if (isEmptyBody ||
-				(_encodedDataSize < 2) ||
-				(_encodedData[_encodedDataSize - 2] != HeaderDecoder.CarriageReturnLinefeed[0]) ||
-				(_encodedData[_encodedDataSize - 1] != HeaderDecoder.CarriageReturnLinefeed[1]))
-			{
-				await destination.WriteAsync (
-					HeaderDecoder.CarriageReturnLinefeed,
-					0,
-					HeaderDecoder.CarriageReturnLinefeed.Length,
-					cancellationToken)
-					.ConfigureAwait (false);
+				var isEmptyBody = (_encodedData == null) || (_encodedDataSize < 1);
+				if (!isEmptyBody)
+				{
+					await destination.WriteAsync (_encodedData, 0, _encodedDataSize, cancellationToken).ConfigureAwait (false);
+				}
+
+				// RFC 5321 part 4.1.1.4:
+				// ... if the message body were passed to the originating SMTP-sender with a final "line" that did not end in <CRLF>;
+				// in that case, the originating SMTP system MUST either reject the message as invalid or
+				// add <CRLF> in order to have the receiving SMTP server recognize the "end of data" condition.
+				if (isEmptyBody ||
+					(_encodedDataSize < 2) ||
+					(_encodedData[_encodedDataSize - 2] != HeaderDecoder.CarriageReturnLinefeed[0]) ||
+					(_encodedData[_encodedDataSize - 1] != HeaderDecoder.CarriageReturnLinefeed[1]))
+				{
+					await destination.WriteAsync (
+						HeaderDecoder.CarriageReturnLinefeed,
+						0,
+						HeaderDecoder.CarriageReturnLinefeed.Length,
+						cancellationToken)
+						.ConfigureAwait (false);
+				}
 			}
 		}
-
-		#endregion
-
-		#region method GetDataSource
 
 		/// <summary>
 		/// Возвращает декодированное тело сущности в виде источника данных.
@@ -167,12 +162,9 @@ namespace Novartment.Base.Net.Mime
 				default:
 					throw new NotSupportedException (FormattableString.Invariant ($"Content-Transfer-Encoding '{this.TransferEncoding}' not supported."));
 			}
+
 			return dst;
 		}
-
-		#endregion
-
-		#region method SetDataAsync
 
 		/// <summary>
 		/// Устанавливает тело сущности считывая данные из указанного источника.
@@ -187,6 +179,7 @@ namespace Novartment.Base.Net.Mime
 			{
 				throw new ArgumentNullException (nameof (data));
 			}
+
 			Contract.EndContractBlock ();
 
 			switch (this.TransferEncoding)
@@ -218,17 +211,6 @@ namespace Novartment.Base.Net.Mime
 			return SetDataAsyncFinalizer (task);
 		}
 
-		private async Task<int> SetDataAsyncFinalizer (Task<byte[]> task)
-		{
-			var result = await task.ConfigureAwait (false);
-
-			_encodedData = result;
-			_encodedDataSize = result.Length;
-			return result.Length;
-		}
-
-		#endregion
-
 		/// <summary>
 		/// Создаёт байтовый буфер для результатов указанного криптографического преобразования
 		/// руководствуясь указанной подсказкой о размере входных данных.
@@ -242,6 +224,7 @@ namespace Novartment.Base.Net.Mime
 			{
 				throw new ArgumentNullException (nameof (cryptoTransform));
 			}
+
 			Contract.EndContractBlock ();
 
 			int blocks;
@@ -257,11 +240,22 @@ namespace Novartment.Base.Net.Mime
 					blocks++;
 				}
 			}
+
 			if (blocks < 1)
 			{
 				blocks = 1;
 			}
+
 			return new byte[blocks * cryptoTransform.OutputBlockSize];
+		}
+
+		private async Task<int> SetDataAsyncFinalizer (Task<byte[]> task)
+		{
+			var result = await task.ConfigureAwait (false);
+
+			_encodedData = result;
+			_encodedDataSize = result.Length;
+			return result.Length;
 		}
 	}
 }

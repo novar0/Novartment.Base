@@ -9,27 +9,35 @@ namespace Novartment.Base.Collections.Immutable
 	/// </summary>
 	/// <typeparam name="T">Тип значения узла.</typeparam>
 	/// <remarks>Значение null является корректным и означает пустое дерево.</remarks>
-	[DebuggerDisplay ("Value = {Value}, Height = {Height}"),
-	SuppressMessage ("Microsoft.Naming",
+	[DebuggerDisplay ("Value = {Value}, Height = {Height}")]
+	[SuppressMessage (
+		"Microsoft.Naming",
 		"CA1704:IdentifiersShouldBeSpelledCorrectly",
 		MessageId = "Avl",
 		Justification = "'AVL-tree' represents standard term.")]
 	public class AvlBinarySearchHashTreeNode<T> :
 		IValueHolder<T>
 	{
-		internal readonly int Hash;
+		private readonly int _hash;
 		private readonly T _value;
+
+		private AvlBinarySearchHashTreeNode (int hash, T value)
+		{
+			_hash = hash;
+			_value = value;
+		}
 
 		/// <summary>
 		/// Получает значение узла.
 		/// </summary>
 		public T Value => _value;
 
-		private AvlBinarySearchHashTreeNode (int hash, T value)
-		{
-			this.Hash = hash;
-			_value = value;
-		}
+		/// <summary>
+		/// Получает хэш узла.
+		/// </summary>
+		public int Hash => _hash;
+
+		internal virtual int Height => 1;
 
 		internal static AvlBinarySearchHashTreeNode<T> Create (int hash, T value, AvlBinarySearchHashTreeNode<T> left, AvlBinarySearchHashTreeNode<T> right)
 		{
@@ -37,6 +45,7 @@ namespace Novartment.Base.Collections.Immutable
 			{
 				return new AvlBinarySearchHashTreeNode<T> (hash, value);
 			}
+
 			var leftHeight = (left == null) ? 0 : left.Height;
 			var rightHeight = (right == null) ? 0 : right.Height;
 			var newHeight = Math.Max (leftHeight, rightHeight);
@@ -44,39 +53,37 @@ namespace Novartment.Base.Collections.Immutable
 			{
 				newHeight++; // глубина увеличивается только если не совпадают хэши
 			}
+
 			return new IntermediateNode (hash, value, left, right, newHeight);
 		}
 
-		internal virtual int Height => 1;
-
-		[DebuggerTypeProxy (typeof (AvlBinarySearchHashTreeNode<>._DebugView))]
+		[DebuggerTypeProxy (typeof (AvlBinarySearchHashTreeNode<>.DebugView))]
 		internal class IntermediateNode : AvlBinarySearchHashTreeNode<T>
 		{
 			private readonly AvlBinarySearchHashTreeNode<T> _leftSubtree;
 			private readonly AvlBinarySearchHashTreeNode<T> _rightSubtree;
 			private readonly int _height;
 
-			internal AvlBinarySearchHashTreeNode<T> LeftSubtree => _leftSubtree;
-			internal AvlBinarySearchHashTreeNode<T> RightSubtree => _rightSubtree;
-			internal override int Height => _height;
-
-			internal IntermediateNode (int hash, T value, AvlBinarySearchHashTreeNode<T> leftSubtree, AvlBinarySearchHashTreeNode<T> rightSubtree, int height)
-				: base (hash, value)
+			internal IntermediateNode(int hash, T value, AvlBinarySearchHashTreeNode<T> leftSubtree, AvlBinarySearchHashTreeNode<T> rightSubtree, int height)
+				: base(hash, value)
 			{
 				_leftSubtree = leftSubtree;
 				_rightSubtree = rightSubtree;
 				_height = height;
 			}
 
+			internal AvlBinarySearchHashTreeNode<T> LeftSubtree => _leftSubtree;
+
+			internal AvlBinarySearchHashTreeNode<T> RightSubtree => _rightSubtree;
+
+			internal override int Height => _height;
 		}
 
-		#region class _DebugView
-
-		internal sealed class _DebugView
+		internal sealed class DebugView
 		{
 			private readonly IntermediateNode _node;
 
-			public _DebugView (IntermediateNode node)
+			public DebugView (IntermediateNode node)
 			{
 				_node = node;
 			}
@@ -89,6 +96,7 @@ namespace Novartment.Base.Collections.Immutable
 					{
 						return null;
 					}
+
 					var items = new T[_node.LeftSubtree.GetCount ()];
 					int i = 0;
 					using (var enumerator = _node.LeftSubtree.GetEnumerator ())
@@ -98,6 +106,7 @@ namespace Novartment.Base.Collections.Immutable
 							items[i++] = enumerator.Current;
 						}
 					}
+
 					return items;
 				}
 			}
@@ -112,6 +121,7 @@ namespace Novartment.Base.Collections.Immutable
 					{
 						return null;
 					}
+
 					var items = new T[_node.RightSubtree.GetCount ()];
 					var i = 0;
 					using (var enumerator = _node.RightSubtree.GetEnumerator ())
@@ -121,11 +131,10 @@ namespace Novartment.Base.Collections.Immutable
 							items[i++] = enumerator.Current;
 						}
 					}
+
 					return items;
 				}
 			}
 		}
-
-		#endregion
 	}
 }

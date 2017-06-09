@@ -1,8 +1,8 @@
 ﻿using System;
+using System.Diagnostics.Contracts;
 using System.IO.Pipes;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Diagnostics.Contracts;
 
 namespace Novartment.Base.IO
 {
@@ -26,6 +26,7 @@ namespace Novartment.Base.IO
 			{
 				throw new ArgumentNullException (nameof (pipeName));
 			}
+
 			Contract.EndContractBlock ();
 
 			_pipeName = pipeName;
@@ -58,6 +59,7 @@ namespace Novartment.Base.IO
 		/// <summary>Посылка сигнала.</summary>
 		/// <param name="millisecondsTimeout">Максимальное время (в миллисекундах) отведённое на отсылку сигнала.</param>
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
+		/// <returns>Задача, представляющая операцию.</returns>
 		public async Task SendSignalAsync (int millisecondsTimeout, CancellationToken cancellationToken)
 		{
 			using (var client = new NamedPipeClientStream (".", _pipeName, PipeDirection.Out))

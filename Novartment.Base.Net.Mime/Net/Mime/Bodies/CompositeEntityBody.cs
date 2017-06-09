@@ -1,12 +1,12 @@
 ﻿using System;
-using static System.Linq.Enumerable;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
-using Novartment.Base.Text;
-using Novartment.Base.Collections;
+using System.Threading;
+using System.Threading.Tasks;
 using Novartment.Base.BinaryStreaming;
+using Novartment.Base.Collections;
+using Novartment.Base.Text;
+using static System.Linq.Enumerable;
 
 namespace Novartment.Base.Net.Mime
 {
@@ -21,31 +21,13 @@ namespace Novartment.Base.Net.Mime
 		private readonly ContentMediaType _defaultPartsMediaType; // медиа-тип по умолчанию для вложенных сущностей
 		private readonly string _defaultPartsMediaSubtype; // медиа-подтип по умолчанию для вложенных сущностей
 
-		/// <summary>Получает коллекцию частей (дочерних сущностей), которые содержатся в теле сущности.</summary>
-		public IAdjustableList<Entity> Parts { get; } = new ArrayList<Entity> ();
-
-		/// <summary>Получает кодировку передачи содержимого тела сущности.</summary>
-		public ContentTransferEncoding TransferEncoding
-		{
-			get
-			{
-				var maxPartsTransferEncoding = (this.Parts.Count < 1) ?
-					ContentTransferEncoding.Unspecified :
-					(ContentTransferEncoding)this.Parts.Max (item => (int)item.TransferEncoding);
-
-				return maxPartsTransferEncoding.GetSuitableCompositeMediaTypeTransferEncoding ();
-			}
-		}
-
-		/// <summary>Получает разграничитель, разделяющий на части сущность с множественным содержимым.</summary>
-		public string Boundary { get; }
-
 		/// <summary>
 		/// Инициализирует новый экземпляр класса CompositeEntityBody с указанным разграничителем частей.
 		/// </summary>
 		/// <param name="boundary">Разграничитель частей сущности согласно требованиям RFC 1341 часть 7.2.1,
 		/// либо null для автоматического генерирования разграничителя.</param>
-		[SuppressMessage ("Microsoft.Design",
+		[SuppressMessage (
+		"Microsoft.Design",
 			"CA1026:DefaultParametersShouldNotBeUsed",
 			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
 		public CompositeEntityBody (string boundary = null)
@@ -78,6 +60,25 @@ namespace Novartment.Base.Net.Mime
 			this.Boundary = boundary ?? ("NextPart=_" + Guid.NewGuid ().ToString ().Replace ("-", string.Empty));
 		}
 
+		/// <summary>Получает коллекцию частей (дочерних сущностей), которые содержатся в теле сущности.</summary>
+		public IAdjustableList<Entity> Parts { get; } = new ArrayList<Entity> ();
+
+		/// <summary>Получает кодировку передачи содержимого тела сущности.</summary>
+		public ContentTransferEncoding TransferEncoding
+		{
+			get
+			{
+				var maxPartsTransferEncoding = (this.Parts.Count < 1) ?
+					ContentTransferEncoding.Unspecified :
+					(ContentTransferEncoding)this.Parts.Max (item => (int)item.TransferEncoding);
+
+				return maxPartsTransferEncoding.GetSuitableCompositeMediaTypeTransferEncoding ();
+			}
+		}
+
+		/// <summary>Получает разграничитель, разделяющий на части сущность с множественным содержимым.</summary>
+		public string Boundary { get; }
+
 		/// <summary>
 		/// Очищает тело сущности.
 		/// </summary>
@@ -93,7 +94,8 @@ namespace Novartment.Base.Net.Mime
 		/// <param name="subBodyFactory">Фабрика, позволяющая создавать тело вложенных сущностей с указанными параметрами.</param>
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
 		/// <returns>Задача, представляющая операцию.</returns>
-		public Task LoadAsync (IBufferedSource source,
+		public Task LoadAsync (
+			IBufferedSource source,
 			Func<EssentialContentProperties, IEntityBody> subBodyFactory,
 			CancellationToken cancellationToken)
 		{
@@ -101,36 +103,36 @@ namespace Novartment.Base.Net.Mime
 			{
 				throw new ArgumentNullException (nameof (source));
 			}
+
 			if (subBodyFactory == null)
 			{
 				throw new ArgumentNullException (nameof (subBodyFactory));
 			}
+
 			Contract.EndContractBlock ();
 
 			this.Parts.Clear ();
 
-			return LoadAsyncStateMachine (source, subBodyFactory, cancellationToken);
-		}
+			return LoadAsyncStateMachine ();
 
-		private async Task LoadAsyncStateMachine (IBufferedSource source,
-			Func<EssentialContentProperties, IEntityBody> subBodyFactory,
-			CancellationToken cancellationToken)
-		{
-			var bodyPartsSource = new BodyPartSource (this.Boundary, source);
-			while (await bodyPartsSource.TrySkipPartAsync (cancellationToken).ConfigureAwait (false))
+			async Task LoadAsyncStateMachine ()
 			{
-				var entity = new Entity ();
-				await entity.LoadAsync (
-					bodyPartsSource,
-					subBodyFactory,
-					_defaultPartsMediaType,
-					_defaultPartsMediaSubtype,
-					cancellationToken).ConfigureAwait (false);
-				this.Parts.Add (entity);
-				if (bodyPartsSource.LastBoundaryClosed)
+				var bodyPartsSource = new BodyPartSource (this.Boundary, source);
+				while (await bodyPartsSource.TrySkipPartAsync (cancellationToken).ConfigureAwait (false))
 				{
-					await bodyPartsSource.TrySkipPartAsync (cancellationToken).ConfigureAwait (false);
-					return;
+					var entity = new Entity ();
+					await entity.LoadAsync (
+						bodyPartsSource,
+						subBodyFactory,
+						_defaultPartsMediaType,
+						_defaultPartsMediaSubtype,
+						cancellationToken).ConfigureAwait (false);
+					this.Parts.Add (entity);
+					if (bodyPartsSource.LastBoundaryClosed)
+					{
+						await bodyPartsSource.TrySkipPartAsync (cancellationToken).ConfigureAwait (false);
+						return;
+					}
 				}
 			}
 		}
@@ -147,6 +149,7 @@ namespace Novartment.Base.Net.Mime
 			{
 				throw new ArgumentNullException (nameof (destination));
 			}
+
 			Contract.EndContractBlock ();
 
 			return SaveAsyncStateMachine (destination, cancellationToken);
@@ -163,6 +166,7 @@ namespace Novartment.Base.Net.Mime
 				await destination.WriteAsync (nextBoundary, 0, nextBoundary.Length, cancellationToken).ConfigureAwait (false);
 				await entity.SaveAsync (destination, cancellationToken).ConfigureAwait (false);
 			}
+
 			await destination.WriteAsync (endBoundary, 0, endBoundary.Length, cancellationToken).ConfigureAwait (false);
 		}
 
@@ -185,10 +189,7 @@ namespace Novartment.Base.Net.Mime
 			return nextBoundary;
 		}
 
-		/// <summary>
-		/// Получает разграничитель последней части в виде массива байтов.
-		/// </summary>
-		/// <returns>Разграничитель последней части в виде массива байтов.</returns>
+		// Получает разграничитель последней части в виде массива байтов.
 		private byte[] GetEndBoundary (byte[] nextBoundary)
 		{
 			var endBoundary = new byte[this.Boundary.Length + 8]; // "\r\n--" + Boundary + "--\r\n"

@@ -8,7 +8,9 @@ namespace Novartment.Base.UnsafeWin32
 	{
 		internal static class Crypt32
 		{
-			[SecurityCritical, SuppressUnmanagedCodeSecurity, DllImport ("crypt32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+			[SecurityCritical]
+			[SuppressUnmanagedCodeSecurity]
+			[DllImport ("crypt32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
 			[return: MarshalAs (UnmanagedType.Bool)]
 			internal static extern bool CryptUnprotectData (
 				ref CryptBlob dataIn,

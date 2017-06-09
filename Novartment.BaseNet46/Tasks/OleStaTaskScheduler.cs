@@ -1,11 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.Concurrent;
-using System.Threading;
-using System.Threading.Tasks;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Runtime.InteropServices;
+using System.Threading;
+using System.Threading.Tasks;
 using Novartment.Base.UnsafeWin32;
 
 namespace Novartment.Base.Tasks
@@ -28,9 +28,6 @@ namespace Novartment.Base.Tasks
 		private readonly Thread[] _threads;
 		private BlockingCollection<Task> _tasks;
 
-		/// <summary>Указывает максимальный уровень параллелизма, который поддерживается данным планировщиком.</summary>
-		public override int MaximumConcurrencyLevel => _threads.Length;
-
 		/// <summary>
 		/// Инициализирует новый экземпляр OleStaTaskScheduler, использующий указанное количество поток исполнения.
 		/// </summary>
@@ -41,6 +38,7 @@ namespace Novartment.Base.Tasks
 			{
 				throw new ArgumentOutOfRangeException (nameof (numberOfThreads));
 			}
+
 			Contract.EndContractBlock ();
 
 			_tasks = new BlockingCollection<Task> ();
@@ -60,49 +58,17 @@ namespace Novartment.Base.Tasks
 			}
 		}
 
-		/// <summary>Ставит задачу в очередь планировщика.</summary>
-		/// <param name="task">Помещаемая в очередь задача.</param>
-		protected override void QueueTask (Task task)
-		{
-			var tasks = _tasks;
-			if (tasks == null)
-			{
-				throw new ObjectDisposedException (GetType ().FullName);
-			}
-			tasks.Add (task);
-		}
-
-		/// <summary>Создает перечислитель задач, которые в настоящее время находятся в очереди исполнения.</summary>
-		/// <returns>Перечисляемый объект, позволяющий отладчику перемещаться по задачам, которые находятся в очереди данного планировщика.</returns>
-		protected override IEnumerable<Task> GetScheduledTasks ()
-		{
-			var tasks = _tasks;
-			if (tasks == null)
-			{
-				throw new ObjectDisposedException (GetType ().FullName);
-			}
-			return tasks.ToArray ();
-		}
-
-		/// <summary>Определяет, можно ли выполнить указанную задачу синхронно, и если возможно, выполняет её.</summary>
-		/// <param name="task">Задача, которую требуется выполнить.</param>
-		/// <param name="taskWasPreviouslyQueued">Логическое значение, указывающее, была ли задача ранее поставлена в очередь.</param>
-		/// <returns>Логическое значение, определяющее, была ли задача выполнена на месте.</returns>
-		protected override bool TryExecuteTaskInline (Task task, bool taskWasPreviouslyQueued)
-		{
-			return (Thread.CurrentThread.GetApartmentState () == ApartmentState.STA) && TryExecuteTask (task);
-		}
+		/// <summary>Указывает максимальный уровень параллелизма, который поддерживается данным планировщиком.</summary>
+		public override int MaximumConcurrencyLevel => _threads.Length;
 
 		/// <summary>
 		/// Освобождает планировщик и останавливает приём новых задач на выполение.
 		/// Метод блокиуется до тех пор, пока все потоки не закончат выполнение.
 		/// </summary>
-		[SuppressMessage ("Microsoft.Usage",
-			"CA1816:CallGCSuppressFinalizeCorrectly",
-			Justification = "There is no meaning to introduce a finalizer in derived type."),
-		SuppressMessage (
+		[SuppressMessage (
 			"Microsoft.Usage",
-			"CA2213:DisposableFieldsShouldBeDisposed")]
+			"CA1816:CallGCSuppressFinalizeCorrectly",
+			Justification = "There is no meaning to introduce a finalizer in derived type.")]
 		[SuppressMessage (
 			"Microsoft.Design",
 			"CA1063:ImplementIDisposableCorrectly",
@@ -117,21 +83,60 @@ namespace Novartment.Base.Tasks
 				{
 					thread.Join ();
 				}
+
 				oldValue.Dispose ();
 			}
+		}
+
+		/// <summary>Ставит задачу в очередь планировщика.</summary>
+		/// <param name="task">Помещаемая в очередь задача.</param>
+		protected override void QueueTask (Task task)
+		{
+			var tasks = _tasks;
+			if (tasks == null)
+			{
+				throw new ObjectDisposedException (GetType ().FullName);
+			}
+
+			tasks.Add (task);
+		}
+
+		/// <summary>Создает перечислитель задач, которые в настоящее время находятся в очереди исполнения.</summary>
+		/// <returns>Перечисляемый объект, позволяющий отладчику перемещаться по задачам, которые находятся в очереди данного планировщика.</returns>
+		protected override IEnumerable<Task> GetScheduledTasks ()
+		{
+			var tasks = _tasks;
+			if (tasks == null)
+			{
+				throw new ObjectDisposedException (GetType ().FullName);
+			}
+
+			return tasks.ToArray ();
+		}
+
+		/// <summary>Определяет, можно ли выполнить указанную задачу синхронно, и если возможно, выполняет её.</summary>
+		/// <param name="task">Задача, которую требуется выполнить.</param>
+		/// <param name="taskWasPreviouslyQueued">Логическое значение, указывающее, была ли задача ранее поставлена в очередь.</param>
+		/// <returns>Логическое значение, определяющее, была ли задача выполнена на месте.</returns>
+		protected override bool TryExecuteTaskInline (Task task, bool taskWasPreviouslyQueued)
+		{
+			return (Thread.CurrentThread.GetApartmentState () == ApartmentState.STA) && TryExecuteTask (task);
 		}
 
 		private void ExecuteTaskFromQueue ()
 		{
 			var hr = NativeMethods.Ole32.OleInitialize (IntPtr.Zero);
-			if ((hr != 0) && (hr != 1)) // S_OK или S_FALSE
+			if ((hr != 0) && (hr != 1))
 			{
+				// S_OK или S_FALSE
 				throw new InvalidOperationException ("OleInitialize() failed.", Marshal.GetExceptionForHR (hr));
 			}
+
 			foreach (var task in _tasks.GetConsumingEnumerable ())
 			{
 				TryExecuteTask (task);
 			}
+
 			NativeMethods.Ole32.OleUninitialize ();
 		}
 	}

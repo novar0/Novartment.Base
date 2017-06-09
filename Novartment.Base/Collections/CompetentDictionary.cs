@@ -1,11 +1,11 @@
 ﻿using System;
-using System.Threading;
 using System.Collections;
-using System.Collections.Specialized;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
+using System.Collections.Specialized;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
+using System.Runtime.InteropServices;
+using System.Threading;
 
 namespace Novartment.Base.Collections
 {
@@ -24,13 +24,15 @@ namespace Novartment.Base.Collections
 	/// * единственный метод, который возвращает реальную информацию о наличии записи - ContainsKey().
 	/// Порождает событие CollectionChanged только вида NotifyCollectionChangedAction.Add.
 	/// </remarks>
-	[SuppressMessage ("Microsoft.Naming",
+	[SuppressMessage (
+		"Microsoft.Naming",
 		"CA1711:IdentifiersShouldNotHaveIncorrectSuffix",
-		Justification = "Implemented interfaces has no association with class name."),
-	SuppressMessage ("Microsoft.Naming",
+		Justification = "Implemented interfaces has no association with class name.")]
+	[SuppressMessage (
+		"Microsoft.Naming",
 		"CA1710:IdentifiersShouldHaveCorrectSuffix",
-		Justification = "Implemented interfaces has no association with class name."),
-	SuppressMessage (
+		Justification = "Implemented interfaces has no association with class name.")]
+	[SuppressMessage (
 		"Microsoft.Design",
 		"CA1063:ImplementIDisposableCorrectly",
 		Justification = "Implemented correctly.")]
@@ -57,7 +59,7 @@ namespace Novartment.Base.Collections
 		private readonly ReaderWriterLockSlim _bucketsLock = new ReaderWriterLockSlim ();
 		private readonly KeyEnumerationProvider _keyEnumerationProvider; // ссылка на внутренний класс
 		private readonly ValueEnumerationProvider _valueEnumerationProvider; // ссылка на внутренний класс
-		private _Entry[] _entries;
+		private Entry[] _entries;
 		private int[] _buckets;
 		private int _count;
 
@@ -74,7 +76,8 @@ namespace Novartment.Base.Collections
 		/// Компаратор, который будет использоваться при сравнении ключей,
 		/// или null, чтобы использовать реализацию компаратора по умолчанию.
 		/// </param>
-		[SuppressMessage ("Microsoft.Design",
+		[SuppressMessage (
+		"Microsoft.Design",
 			"CA1026:DefaultParametersShouldNotBeUsed",
 			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
 		public CompetentDictionary (Func<TKey, TValue> valueFactory, IEqualityComparer<TKey> comparer = null)
@@ -83,6 +86,7 @@ namespace Novartment.Base.Collections
 			{
 				throw new ArgumentNullException (nameof (valueFactory));
 			}
+
 			Contract.EndContractBlock ();
 
 			_keyEnumerationProvider = new KeyEnumerationProvider (this);
@@ -91,9 +95,26 @@ namespace Novartment.Base.Collections
 			_valueFactory = valueFactory;
 		}
 
+		/// <summary>Происходит, когда запись добавляется в словарь.</summary>
+		public event NotifyCollectionChangedEventHandler CollectionChanged;
+
 		/// <summary>Получает число записей, которое содержится в словаре.</summary>
 		/// <returns>Число записей, содержащихся в словаре.</returns>
 		public int Count => _count;
+
+		/// <summary>Получает коллекию ключей словаря.</summary>
+		IEnumerable<TKey> IReadOnlyDictionary<TKey, TValue>.Keys => _keyEnumerationProvider;
+
+		/// <summary>Получает список, содержащий ключи из словаря.</summary>
+		/// <returns>Список System.Collections.Generic.IReadOnlyList&lt;TKey&gt;, содержащий ключи из словаря.</returns>
+		public IReadOnlyList<TKey> Keys => _keyEnumerationProvider;
+
+		/// <summary>Получает коллекию значений словаря.</summary>
+		IEnumerable<TValue> IReadOnlyDictionary<TKey, TValue>.Values => _valueEnumerationProvider;
+
+		/// <summary>Получает список, содержащий значения из словаря.</summary>
+		/// <returns>Список System.Collections.Generic.IReadOnlyList&lt;TValue&gt;, содержащий значения из словаря.</returns>
+		public IReadOnlyList<TValue> Values => _valueEnumerationProvider;
 
 		/// <summary>Возвращает значение, связанное с указанным ключом.</summary>
 		/// <param name="key">Ключ записи, значение которой требуется получить.</param>
@@ -104,11 +125,12 @@ namespace Novartment.Base.Collections
 			{
 				if (key == null)
 				{
-					throw new ArgumentNullException (nameof (key));
+					throw new ArgumentNullException(nameof(key));
 				}
-				Contract.EndContractBlock ();
 
-				return FindOrCreateValue (key);
+				Contract.EndContractBlock();
+
+				return FindOrCreateValue(key);
 			}
 		}
 
@@ -121,6 +143,7 @@ namespace Novartment.Base.Collections
 			{
 				throw new ArgumentOutOfRangeException (nameof (keyValuePair));
 			}
+
 			Contract.EndContractBlock ();
 
 			var value = FindOrCreateValue (keyValuePair.Key);
@@ -139,6 +162,7 @@ namespace Novartment.Base.Collections
 			{
 				throw new ArgumentNullException (nameof (key));
 			}
+
 			Contract.EndContractBlock ();
 
 			var isLockEntered = _bucketsLock.TryEnterReadLock (_lockTimeoutMilliseconds);
@@ -146,8 +170,15 @@ namespace Novartment.Base.Collections
 			{
 				throw new TimeoutException (_lockReadTimeoutMessage);
 			}
-			try { return (FindEntry (key) >= 0); }
-			finally { _bucketsLock.ExitReadLock (); }
+
+			try
+			{
+				return FindEntry (key) >= 0;
+			}
+			finally
+			{
+				_bucketsLock.ExitReadLock ();
+			}
 		}
 
 		/// <summary>Получает значение, связанное с указанным ключом.</summary>
@@ -165,20 +196,11 @@ namespace Novartment.Base.Collections
 			{
 				throw new ArgumentNullException (nameof (key));
 			}
+
 			Contract.EndContractBlock ();
 			value = FindOrCreateValue (key);
 			return true;
 		}
-
-		IEnumerable<TKey> IReadOnlyDictionary<TKey, TValue>.Keys => _keyEnumerationProvider;
-		/// <summary>Получает список, содержащий ключи из словаря.</summary>
-		/// <returns>Список System.Collections.Generic.IReadOnlyList&lt;TKey&gt;, содержащий ключи из словаря.</returns>
-		public IReadOnlyList<TKey> Keys => _keyEnumerationProvider;
-
-		IEnumerable<TValue> IReadOnlyDictionary<TKey, TValue>.Values => _valueEnumerationProvider;
-		/// <summary>Получает список, содержащий значения из словаря.</summary>
-		/// <returns>Список System.Collections.Generic.IReadOnlyList&lt;TValue&gt;, содержащий значения из словаря.</returns>
-		public IReadOnlyList<TValue> Values => _valueEnumerationProvider;
 
 		/// <summary>
 		/// Получает перечислитель элементов словаря.
@@ -188,9 +210,50 @@ namespace Novartment.Base.Collections
 		{
 			return new KeyValuePairEnumerator (this);
 		}
+
+		/// <summary>
+		/// Получает перечислитель элементов словаря.
+		/// </summary>
+		/// <returns>Перечислитель элементов словаря.</returns>
 		IEnumerator IEnumerable.GetEnumerator ()
 		{
 			return GetEnumerator ();
+		}
+
+		/// <summary>Освобождает все внутренние ресурсы и отключает подписчиков на события.</summary>
+		[SuppressMessage (
+		"Microsoft.Usage",
+			"CA1816:CallGCSuppressFinalizeCorrectly",
+			Justification = "There is no meaning to introduce a finalizer in derived type.")]
+		[SuppressMessage (
+			"Microsoft.Design",
+			"CA1063:ImplementIDisposableCorrectly",
+			Justification = "Implemented correctly.")]
+		public void Dispose ()
+		{
+			CollectionChanged = null;
+			_keyEnumerationProvider.Dispose ();
+			_valueEnumerationProvider.Dispose ();
+			_bucketsLock.Dispose ();
+		}
+
+		private static int[] CreateIndex (Entry[] entries, int count)
+		{
+			var size = entries.Length;
+			var buckets = new int[size];
+			for (var i = 0; i < buckets.Length; i++)
+			{
+				buckets[i] = -1;
+			}
+
+			for (var i = 0; i < count; i++)
+			{
+				var index = entries[i].Hash % size;
+				entries[i].Next = buckets[index];
+				buckets[index] = i;
+			}
+
+			return buckets;
 		}
 
 		// вызов этого метода обязательно должен быть внутри захваченного на чтение _bucketsLock
@@ -208,6 +271,7 @@ namespace Novartment.Base.Collections
 					}
 				}
 			}
+
 			return -1;
 		}
 
@@ -219,8 +283,16 @@ namespace Novartment.Base.Collections
 			{
 				throw new TimeoutException (_lockReadTimeoutMessage);
 			}
-			try { foundIndex = FindEntry (key); }
-			finally { _bucketsLock.ExitReadLock (); }
+
+			try
+			{
+				foundIndex = FindEntry (key);
+			}
+			finally
+			{
+				_bucketsLock.ExitReadLock ();
+			}
+
 			if (foundIndex >= 0)
 			{
 				return _entries[foundIndex].Value;
@@ -232,6 +304,7 @@ namespace Novartment.Base.Collections
 			{
 				throw new TimeoutException (_lockWriteTimeoutMessage);
 			}
+
 			int newIndex;
 			try
 			{
@@ -258,18 +331,20 @@ namespace Novartment.Base.Collections
 					{
 						numArray[i] = -1;
 					}
+
 					_buckets = numArray;
-					_entries = new _Entry[initialCapacity];
+					_entries = new Entry[initialCapacity];
 				}
 
 				// увеличиваем размер если надо
 				if (_count >= _entries.Length)
 				{
 					var newCapacity = PrimeNumber.GetGreaterThanOrEqual (_count * 2);
-					var newEntries = new _Entry[newCapacity];
+					var newEntries = new Entry[newCapacity];
 					Array.Copy (_entries, newEntries, _count);
 					_buckets = CreateIndex (_entries, _count);
-					// важно что _entries заменяется на копию, в которой содержится тоже что было раньше
+
+					// важно что _entries заменяется на копию, в которой содержится тоже, что было раньше
 					// иначе будет сбой в методах, не использующих блокировку
 					_entries = newEntries;
 				}
@@ -283,12 +358,15 @@ namespace Novartment.Base.Collections
 				_entries[newIndex].Key = key;
 				_entries[newIndex].Value = newValue;
 				_buckets[index] = newIndex;
+
 				// важно что _count увеличивается только тогда, когда полностью сформирована новая запись
 				// иначе будет сбой в методах, не использующих блокировку
 				_count++;
-
 			}
-			finally { _bucketsLock.ExitWriteLock (); }
+			finally
+			{
+				_bucketsLock.ExitWriteLock ();
+			}
 
 			// уведомляем о добавлении
 			this.CollectionChanged?.Invoke (this, new NotifyCollectionChangedEventArgs (NotifyCollectionChangedAction.Add, new KeyValuePair<TKey, TValue> (key, newValue), newIndex));
@@ -298,46 +376,8 @@ namespace Novartment.Base.Collections
 			return newValue;
 		}
 
-		private static int[] CreateIndex (_Entry[] entries, int count)
-		{
-			var size = entries.Length;
-			var buckets = new int[size];
-			for (var i = 0; i < buckets.Length; i++)
-			{
-				buckets[i] = -1;
-			}
-
-			for (var i = 0; i < count; i++)
-			{
-				var index = entries[i].Hash % size;
-				entries[i].Next = buckets[index];
-				buckets[index] = i;
-			}
-			return buckets;
-		}
-
-		/// <summary>Происходит, когда запись добавляется в словарь.</summary>
-		public event NotifyCollectionChangedEventHandler CollectionChanged;
-
-		/// <summary>Освобождает все внутренние ресурсы и отключает подписчиков на события.</summary>
-		[SuppressMessage ("Microsoft.Usage",
-			"CA1816:CallGCSuppressFinalizeCorrectly",
-			Justification = "There is no meaning to introduce a finalizer in derived type."),
-		SuppressMessage (
-			"Microsoft.Design",
-			"CA1063:ImplementIDisposableCorrectly",
-			Justification = "Implemented correctly.")]
-		public void Dispose ()
-		{
-			CollectionChanged = null;
-			_keyEnumerationProvider.Dispose ();
-			_valueEnumerationProvider.Dispose ();
-			_bucketsLock.Dispose ();
-		}
-
-
 		[StructLayout (LayoutKind.Sequential)]
-		internal struct _Entry
+		private struct Entry
 		{
 			internal int Hash;
 			internal int Next;
@@ -345,19 +385,36 @@ namespace Novartment.Base.Collections
 			internal TValue Value;
 		}
 
-		#region enumerators
-
 		internal class KeyValuePairEnumerator : IEnumerator<KeyValuePair<TKey, TValue>>
 		{
 			private readonly CompetentDictionary<TKey, TValue> _dictionary;
 			private readonly int _count; // кол-во элементов родительского класса запоминаем отдельно для обеспечения повторяемости проходов
 			private int _index;
 			private KeyValuePair<TKey, TValue> _current;
+
 			internal KeyValuePairEnumerator (CompetentDictionary<TKey, TValue> dictionary)
 			{
 				_dictionary = dictionary;
 				_count = dictionary._count;
-				_current = new KeyValuePair<TKey, TValue> ();
+				_current = default (KeyValuePair<TKey, TValue>);
+			}
+
+			/// <summary>
+			/// Получает текущий элемент перечислителя.
+			/// </summary>
+			public KeyValuePair<TKey, TValue> Current => _current;
+
+			object IEnumerator.Current
+			{
+				get
+				{
+					if ((_index == 0) || (_index == (_count + 1)))
+					{
+						throw new InvalidOperationException("Can not get current element of enumeration because it not started or already eneded.");
+					}
+
+					return _current;
+				}
 			}
 
 			/// <summary>
@@ -366,7 +423,7 @@ namespace Novartment.Base.Collections
 			public void Reset ()
 			{
 				_index = 0;
-				_current = new KeyValuePair<TKey, TValue> ();
+				_current = default (KeyValuePair<TKey, TValue>);
 			}
 
 			/// <summary>
@@ -383,31 +440,18 @@ namespace Novartment.Base.Collections
 					_index++;
 					return true;
 				}
-				_index = _count + 1;
-				_current = new KeyValuePair<TKey, TValue> ();
-				return false;
-			}
 
-			/// <summary>
-			/// Получает текущий элемент перечислителя.
-			/// </summary>
-			public KeyValuePair<TKey, TValue> Current => _current;
-			object IEnumerator.Current
-			{
-				get
-				{
-					if ((_index == 0) || (_index == (_count + 1)))
-					{
-						throw new InvalidOperationException ("Can not get current element of enumeration because it not started or already eneded.");
-					}
-					return _current;
-				}
+				_index = _count + 1;
+				_current = default (KeyValuePair<TKey, TValue>);
+				return false;
 			}
 
 			/// <summary>
 			/// Ничего не делает.
 			/// </summary>
-			public void Dispose () { }
+			public void Dispose ()
+			{
+			}
 		}
 
 		[StructLayout (LayoutKind.Sequential)]
@@ -417,17 +461,38 @@ namespace Novartment.Base.Collections
 			private readonly int _count; // кол-во элементов внешнего класса запоминаем для обеспечения повторяемости проходов
 			private int _index;
 			private TKey _currentKey;
-			internal KeyEnumerator (CompetentDictionary<TKey, TValue> dictionary)
+
+			internal KeyEnumerator(CompetentDictionary<TKey, TValue> dictionary)
 			{
 				_dictionary = dictionary;
 				_count = dictionary._count;
-				_currentKey = default (TKey);
+				_currentKey = default(TKey);
+			}
+
+			/// <summary>
+			/// Получает текущий элемент перечислителя.
+			/// </summary>
+			public TKey Current => _currentKey;
+
+			object IEnumerator.Current
+			{
+				get
+				{
+					if ((_index == 0) || (_index == (_count + 1)))
+					{
+						throw new InvalidOperationException("Can not get current element of enumeration because it not started or already ended");
+					}
+
+					return _currentKey;
+				}
 			}
 
 			/// <summary>
 			/// Ничего не делает.
 			/// </summary>
-			public void Dispose () { }
+			public void Dispose ()
+			{
+			}
 
 			/// <summary>
 			/// Перемещает перечислитель к следующему элементу строки.
@@ -443,27 +508,12 @@ namespace Novartment.Base.Collections
 					_index++;
 					return true;
 				}
+
 				_index = _count + 1;
 				_currentKey = default (TKey);
 				return false;
 			}
 
-			/// <summary>
-			/// Получает текущий элемент перечислителя.
-			/// </summary>
-			public TKey Current => _currentKey;
-
-			object IEnumerator.Current
-			{
-				get
-				{
-					if ((_index == 0) || (_index == (_count + 1)))
-					{
-						throw new InvalidOperationException ("Can not get current element of enumeration because it not started or already ended");
-					}
-					return _currentKey;
-				}
-			}
 			void IEnumerator.Reset ()
 			{
 				_index = 0;
@@ -477,6 +527,7 @@ namespace Novartment.Base.Collections
 			private readonly int _count; // кол-во элементов внешнего класса запоминаем для обеспечения повторяемости проходов
 			private int _index;
 			private TValue _currentValue;
+
 			internal ValueEnumerator (CompetentDictionary<TKey, TValue> dictionary)
 			{
 				_dictionary = dictionary;
@@ -485,9 +536,29 @@ namespace Novartment.Base.Collections
 			}
 
 			/// <summary>
+			/// Получает текущий элемент перечислителя.
+			/// </summary>
+			public TValue Current => _currentValue;
+
+			object IEnumerator.Current
+			{
+				get
+				{
+					if ((_index == 0) || (_index == (_count + 1)))
+					{
+						throw new InvalidOperationException("Can not get current element of enumeration because it not started or already ended");
+					}
+
+					return _currentValue;
+				}
+			}
+
+			/// <summary>
 			/// Ничего не делает.
 			/// </summary>
-			public void Dispose () { }
+			public void Dispose ()
+			{
+			}
 
 			/// <summary>
 			/// Перемещает перечислитель к следующему элементу строки.
@@ -503,34 +574,18 @@ namespace Novartment.Base.Collections
 					_index++;
 					return true;
 				}
+
 				_index = _count + 1;
 				_currentValue = default (TValue);
 				return false;
 			}
 
-			/// <summary>
-			/// Получает текущий элемент перечислителя.
-			/// </summary>
-			public TValue Current => _currentValue;
-			object IEnumerator.Current
-			{
-				get
-				{
-					if ((_index == 0) || (_index == (_count + 1)))
-					{
-						throw new InvalidOperationException ("Can not get current element of enumeration because it not started or already ended");
-					}
-					return _currentValue;
-				}
-			}
 			void IEnumerator.Reset ()
 			{
 				_index = 0;
 				_currentValue = default (TValue);
 			}
 		}
-
-		#endregion
 
 		// внутренние классы KeyEnumerationProvider и ValueEnumerationProvider совершенно не нужны
 		// их методы GetEnumerator() должен реализовывать родительский класс
@@ -539,27 +594,63 @@ namespace Novartment.Base.Collections
 		internal sealed class KeyEnumerationProvider : IReadOnlyList<TKey>, IReadOnlyFiniteSet<TKey>, INotifyCollectionChanged, IDisposable
 		{
 			private readonly CompetentDictionary<TKey, TValue> _dictionary; // ссылка на внешний класс из внутреннего
-			public KeyEnumerationProvider (CompetentDictionary<TKey, TValue> dictionary) { _dictionary = dictionary; }
-			IEnumerator IEnumerable.GetEnumerator () { return GetEnumerator (); }
-			public IEnumerator<TKey> GetEnumerator () { return new KeyEnumerator (_dictionary); }
-			public int Count => _dictionary.Count;
-			public TKey this[int index] => _dictionary._entries[index].Key;
+
+			public KeyEnumerationProvider (CompetentDictionary<TKey, TValue> dictionary)
+			{
+				_dictionary = dictionary;
+			}
+
 			public event NotifyCollectionChangedEventHandler CollectionChanged;
-			internal void OnCollectionChanged (NotifyCollectionChangedEventArgs args) { this.CollectionChanged?.Invoke (this, args); }
-			public void Dispose () { CollectionChanged = null; }
-			public bool Contains (TKey key) { return _dictionary.ContainsKey (key); }
+
+			public int Count => _dictionary.Count;
+
+			public TKey this[int index] => _dictionary._entries[index].Key;
+
+			IEnumerator IEnumerable.GetEnumerator () => GetEnumerator ();
+
+			public IEnumerator<TKey> GetEnumerator () => new KeyEnumerator (_dictionary);
+
+			public void Dispose ()
+			{
+				CollectionChanged = null;
+			}
+
+			public bool Contains (TKey key) => _dictionary.ContainsKey (key);
+
+			internal void OnCollectionChanged (NotifyCollectionChangedEventArgs args)
+			{
+				this.CollectionChanged?.Invoke (this, args);
+			}
 		}
+
 		internal sealed class ValueEnumerationProvider : IReadOnlyList<TValue>, INotifyCollectionChanged, IDisposable
 		{
 			private readonly CompetentDictionary<TKey, TValue> _dictionary; // ссылка на внешний класс из внутреннего
-			public ValueEnumerationProvider (CompetentDictionary<TKey, TValue> dictionary) { _dictionary = dictionary; }
-			IEnumerator IEnumerable.GetEnumerator () { return GetEnumerator (); }
-			public IEnumerator<TValue> GetEnumerator () { return new ValueEnumerator (_dictionary); }
-			public int Count => _dictionary.Count;
-			public TValue this[int index] => _dictionary._entries[index].Value;
+
+			public ValueEnumerationProvider (CompetentDictionary<TKey, TValue> dictionary)
+			{
+				_dictionary = dictionary;
+			}
+
 			public event NotifyCollectionChangedEventHandler CollectionChanged;
-			internal void OnCollectionChanged (NotifyCollectionChangedEventArgs args) { this.CollectionChanged?.Invoke (this, args); }
-			public void Dispose () { CollectionChanged = null; }
+
+			public int Count => _dictionary.Count;
+
+			public TValue this[int index] => _dictionary._entries[index].Value;
+
+			IEnumerator IEnumerable.GetEnumerator () => GetEnumerator ();
+
+			public IEnumerator<TValue> GetEnumerator () => new ValueEnumerator (_dictionary);
+
+			public void Dispose ()
+			{
+				CollectionChanged = null;
+			}
+
+			internal void OnCollectionChanged (NotifyCollectionChangedEventArgs args)
+			{
+				this.CollectionChanged?.Invoke (this, args);
+			}
 		}
 	}
 }

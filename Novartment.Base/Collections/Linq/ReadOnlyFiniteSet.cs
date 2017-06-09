@@ -9,7 +9,8 @@ namespace Novartment.Base.Collections.Linq
 	/// <summary>
 	/// Методы расширения к конечным множествам.
 	/// </summary>
-	[SuppressMessage ("Microsoft.Naming",
+	[SuppressMessage (
+		"Microsoft.Naming",
 		"CA1711:IdentifiersShouldNotHaveIncorrectSuffix",
 		Justification = "Analogous to System.Linq.Enumerable.")]
 	public static class ReadOnlyFiniteSet
@@ -36,12 +37,14 @@ namespace Novartment.Base.Collections.Linq
 			{
 				throw new ArgumentOutOfRangeException (nameof (count));
 			}
+
 			Contract.EndContractBlock ();
 
 			if (count < 1)
 			{
 				return ReadOnlyList.EmptyReadOnlyList<int>.GetInstance ();
 			}
+
 			return new ReadOnlyList.RangeReadOnlyList (start, count);
 		}
 
@@ -54,7 +57,8 @@ namespace Novartment.Base.Collections.Linq
 		/// <param name="defaultValue">Значение, возвращаемое в случае пустого множества.</param>
 		/// <returns>Множество, содержащее значение defaultValue, если множество source пустое;
 		/// в противном случае возвращается source.</returns>
-		[SuppressMessage ("Microsoft.Design",
+		[SuppressMessage (
+		"Microsoft.Design",
 			"CA1026:DefaultParametersShouldNotBeUsed",
 			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
 		public static IReadOnlyFiniteSet<TSource> DefaultIfEmpty<TSource> (this IReadOnlyFiniteSet<TSource> source, TSource defaultValue = default (TSource))
@@ -63,6 +67,7 @@ namespace Novartment.Base.Collections.Linq
 			{
 				throw new ArgumentNullException (nameof (source));
 			}
+
 			Contract.EndContractBlock ();
 
 			return (source.Count > 0) ? source : new OneItemReadOnlyFiniteSet<TSource> (defaultValue, null);
@@ -76,11 +81,13 @@ namespace Novartment.Base.Collections.Linq
 		/// <param name="value">Значение, которое требуется найти в множестве.</param>
 		/// <param name="notUsed">Не используется.</param>
 		/// <returns>True, если множество содержит элемент с указанным значением, в противном случае — False.</returns>
-		[SuppressMessage ("Microsoft.Usage",
+		[SuppressMessage (
+			"Microsoft.Usage",
 			"CA1801:ReviewUnusedParameters",
 			MessageId = "notUsed",
-			Justification = "Parameters must be compatible with System.Linq.Enumerable.Contains()."),
-		SuppressMessage ("Microsoft.Design",
+			Justification = "Parameters must be compatible with System.Linq.Enumerable.Contains().")]
+		[SuppressMessage (
+			"Microsoft.Design",
 			"CA1026:DefaultParametersShouldNotBeUsed",
 			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
 		public static bool Contains<TSource> (
@@ -92,6 +99,7 @@ namespace Novartment.Base.Collections.Linq
 			{
 				throw new ArgumentNullException (nameof (source));
 			}
+
 			Contract.EndContractBlock ();
 
 			return source.Contains (value);
@@ -109,12 +117,14 @@ namespace Novartment.Base.Collections.Linq
 			{
 				throw new ArgumentNullException (nameof (source));
 			}
+
 			Contract.EndContractBlock ();
 
 			if (source.Count < 2)
 			{
 				return source;
 			}
+
 			return new ReverseReadOnlyFiniteSet<TSource> (source);
 		}
 
@@ -125,10 +135,13 @@ namespace Novartment.Base.Collections.Linq
 		/// <param name="source">Конечное множество</param>
 		/// <param name="notUsed">Не используется.</param>
 		/// <returns>Указанное множество.</returns>
-		[SuppressMessage ("Microsoft.Usage", "CA1801:ReviewUnusedParameters",
+		[SuppressMessage (
+			"Microsoft.Usage",
+			"CA1801:ReviewUnusedParameters",
 			MessageId = "notUsed",
-			Justification = "Parameters must be compatible with System.Linq.Enumerable.Distinct()."),
-		SuppressMessage ("Microsoft.Design",
+			Justification = "Parameters must be compatible with System.Linq.Enumerable.Distinct().")]
+		[SuppressMessage (
+			"Microsoft.Design",
 			"CA1026:DefaultParametersShouldNotBeUsed",
 			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
 		public static IReadOnlyFiniteSet<TSource> Distinct<TSource> (
@@ -139,6 +152,7 @@ namespace Novartment.Base.Collections.Linq
 			{
 				throw new ArgumentNullException (nameof (source));
 			}
+
 			Contract.EndContractBlock ();
 
 			return source;
@@ -152,10 +166,12 @@ namespace Novartment.Base.Collections.Linq
 		/// <param name="second">Множество, которое будет использовано для получения разности с множеством first.</param>
 		/// <param name="notUsed">Не используется.</param>
 		/// <returns>Множество, представляющее собой разность двух множеств.</returns>
-		[SuppressMessage ("Microsoft.Design",
+		[SuppressMessage (
+			"Microsoft.Design",
 			"CA1026:DefaultParametersShouldNotBeUsed",
-			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change."),
-		SuppressMessage ("Microsoft.Usage",
+			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
+		[SuppressMessage (
+			"Microsoft.Usage",
 			"CA1801:ReviewUnusedParameters",
 			MessageId = "notUsed",
 			Justification = "Parameters must be compatible with System.Linq.Enumerable.Except().")]
@@ -168,16 +184,19 @@ namespace Novartment.Base.Collections.Linq
 			{
 				throw new ArgumentNullException (nameof (first));
 			}
+
 			if (second == null)
 			{
 				throw new ArgumentNullException (nameof (second));
 			}
+
 			Contract.EndContractBlock ();
 
 			if ((first.Count < 1) || (second.Count < 1))
 			{
 				return first;
 			}
+
 			if (first == second)
 			{
 				return ReadOnlyList.EmptyReadOnlyList<TSource>.GetInstance ();
@@ -219,10 +238,12 @@ namespace Novartment.Base.Collections.Linq
 		/// <param name="second">Второе множество для вычисления симметрической разности.</param>
 		/// <param name="notUsed">Не используется.</param>
 		/// <returns>Множество, представляющее собой симметрическую разность двух множеств.</returns>
-		[SuppressMessage ("Microsoft.Design",
+		[SuppressMessage (
+			"Microsoft.Design",
 			"CA1026:DefaultParametersShouldNotBeUsed",
-			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change."),
-		SuppressMessage ("Microsoft.Usage",
+			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
+		[SuppressMessage (
+			"Microsoft.Usage",
 			"CA1801:ReviewUnusedParameters",
 			MessageId = "notUsed",
 			Justification = "Parameters must be compatible with System.Linq.Enumerable.Except().")]
@@ -235,20 +256,24 @@ namespace Novartment.Base.Collections.Linq
 			{
 				throw new ArgumentNullException (nameof (first));
 			}
+
 			if (second == null)
 			{
 				throw new ArgumentNullException (nameof (second));
 			}
+
 			Contract.EndContractBlock ();
 
 			if (first.Count < 1)
 			{
 				return second;
 			}
+
 			if (second.Count < 1)
 			{
 				return first;
 			}
+
 			if (first == second)
 			{
 				return ReadOnlyList.EmptyReadOnlyList<TSource>.GetInstance ();
@@ -264,6 +289,7 @@ namespace Novartment.Base.Collections.Linq
 					count--;
 				}
 			}
+
 			foreach (var item in second)
 			{
 				var firstContainsItem = first.Contains (item);
@@ -284,10 +310,12 @@ namespace Novartment.Base.Collections.Linq
 		/// <param name="second">Второе множество для вычисления пересечения.</param>
 		/// <param name="notUsed">Не используется.</param>
 		/// <returns>Множество, представляющее собой пересечение двух множеств.</returns>
-		[SuppressMessage ("Microsoft.Design",
+		[SuppressMessage (
+			"Microsoft.Design",
 			"CA1026:DefaultParametersShouldNotBeUsed",
-			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change."),
-		SuppressMessage ("Microsoft.Usage",
+			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
+		[SuppressMessage (
+			"Microsoft.Usage",
 			"CA1801:ReviewUnusedParameters",
 			MessageId = "notUsed",
 			Justification = "Parameters must be compatible with System.Linq.Enumerable.Intersect().")]
@@ -300,16 +328,19 @@ namespace Novartment.Base.Collections.Linq
 			{
 				throw new ArgumentNullException (nameof (first));
 			}
+
 			if (second == null)
 			{
 				throw new ArgumentNullException (nameof (second));
 			}
+
 			Contract.EndContractBlock ();
 
 			if ((first.Count < 1) || (first == second))
 			{
 				return first;
 			}
+
 			if (second.Count < 1)
 			{
 				return second;
@@ -345,10 +376,12 @@ namespace Novartment.Base.Collections.Linq
 		/// <param name="second">Второе множество для вычисления объединения.</param>
 		/// <param name="notUsed">Не используется.</param>
 		/// <returns>Множество, представляющее собой объединение двух множеств.</returns>
-		[SuppressMessage ("Microsoft.Design",
+		[SuppressMessage (
+			"Microsoft.Design",
 			"CA1026:DefaultParametersShouldNotBeUsed",
-			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change."),
-		SuppressMessage ("Microsoft.Usage",
+			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
+		[SuppressMessage (
+			"Microsoft.Usage",
 			"CA1801:ReviewUnusedParameters",
 			MessageId = "notUsed",
 			Justification = "Parameters must be compatible with System.Linq.Enumerable.Union().")]
@@ -361,16 +394,19 @@ namespace Novartment.Base.Collections.Linq
 			{
 				throw new ArgumentNullException (nameof (first));
 			}
+
 			if (second == null)
 			{
 				throw new ArgumentNullException (nameof (second));
 			}
+
 			Contract.EndContractBlock ();
 
 			if (first.Count < 1)
 			{
 				return second;
 			}
+
 			if ((second.Count < 1) || (first == second))
 			{
 				return first;
@@ -398,19 +434,17 @@ namespace Novartment.Base.Collections.Linq
 			return new UnionReadOnlyFiniteSet<TSource> (first, second, count);
 		}
 
-		#region private generated collection classes
-
 		private class ReverseReadOnlyFiniteSet<TSource> : IReadOnlyFiniteSet<TSource>
 		{
 			private readonly IReadOnlyFiniteSet<TSource> _source;
 			private TSource[] _buffer = null;
 
-			public int Count => _source.Count;
-
 			internal ReverseReadOnlyFiniteSet (IReadOnlyFiniteSet<TSource> source)
 			{
 				_source = source;
 			}
+
+			public int Count => _source.Count;
 
 			public bool Contains (TSource item)
 			{
@@ -421,6 +455,7 @@ namespace Novartment.Base.Collections.Linq
 			{
 				return GetEnumerator ();
 			}
+
 			public IEnumerator<TSource> GetEnumerator ()
 			{
 				if (_buffer == null)
@@ -429,6 +464,7 @@ namespace Novartment.Base.Collections.Linq
 					Array.Reverse (buf);
 					_buffer = buf;
 				}
+
 				return ((IEnumerable<TSource>)_buffer).GetEnumerator ();
 			}
 		}
@@ -438,13 +474,13 @@ namespace Novartment.Base.Collections.Linq
 			private readonly T[] _item = new T[1];
 			private readonly IEqualityComparer<T> _comparer;
 
-			public int Count => 1;
-
 			internal OneItemReadOnlyFiniteSet (T item, IEqualityComparer<T> comparer)
 			{
 				_item[0] = item;
 				_comparer = comparer ?? EqualityComparer<T>.Default;
 			}
+
+			public int Count => 1;
 
 			public bool Contains (T item)
 			{
@@ -455,6 +491,7 @@ namespace Novartment.Base.Collections.Linq
 			{
 				return GetEnumerator ();
 			}
+
 			public IEnumerator<T> GetEnumerator ()
 			{
 				return ((IEnumerable<T>)_item).GetEnumerator ();
@@ -477,23 +514,24 @@ namespace Novartment.Base.Collections.Linq
 				_count = count;
 			}
 
+			public int Count => _count;
+
 			public bool Contains (TSource item)
 			{
-				return (_first.Contains (item) && !_second.Contains (item));
+				return _first.Contains (item) && !_second.Contains (item);
 			}
-
-			public int Count => _count;
 
 			IEnumerator IEnumerable.GetEnumerator ()
 			{
 				return GetEnumerator ();
 			}
+
 			public IEnumerator<TSource> GetEnumerator ()
 			{
 				foreach (var item in _first)
 				{
-					var _secondContainsItem = _second.Contains (item);
-					if (!_secondContainsItem)
+					var secondContainsItem = _second.Contains (item);
+					if (!secondContainsItem)
 					{
 						yield return item;
 					}
@@ -517,17 +555,18 @@ namespace Novartment.Base.Collections.Linq
 				_count = count;
 			}
 
+			public int Count => _count;
+
 			public bool Contains (TSource item)
 			{
-				return (_first.Contains (item) ^ _second.Contains (item));
+				return _first.Contains (item) ^ _second.Contains (item);
 			}
-
-			public int Count => _count;
 
 			IEnumerator IEnumerable.GetEnumerator ()
 			{
 				return GetEnumerator ();
 			}
+
 			public IEnumerator<TSource> GetEnumerator ()
 			{
 				foreach (var item in _first)
@@ -538,6 +577,7 @@ namespace Novartment.Base.Collections.Linq
 						yield return item;
 					}
 				}
+
 				foreach (var item in _second)
 				{
 					var firstContainsItem = _first.Contains (item);
@@ -565,17 +605,18 @@ namespace Novartment.Base.Collections.Linq
 				_count = count;
 			}
 
+			public int Count => _count;
+
 			public bool Contains (TSource item)
 			{
-				return (_first.Contains (item) && _second.Contains (item));
+				return _first.Contains (item) && _second.Contains (item);
 			}
-
-			public int Count => _count;
 
 			IEnumerator IEnumerable.GetEnumerator ()
 			{
 				return GetEnumerator ();
 			}
+
 			public IEnumerator<TSource> GetEnumerator ()
 			{
 				foreach (var item in _second)
@@ -605,23 +646,25 @@ namespace Novartment.Base.Collections.Linq
 				_count = count;
 			}
 
+			public int Count => _count;
+
 			public bool Contains (TSource item)
 			{
-				return (_first.Contains (item) || _second.Contains (item));
+				return _first.Contains (item) || _second.Contains (item);
 			}
-
-			public int Count => _count;
 
 			IEnumerator IEnumerable.GetEnumerator ()
 			{
 				return GetEnumerator ();
 			}
+
 			public IEnumerator<TSource> GetEnumerator ()
 			{
 				foreach (var item in _first)
 				{
 					yield return item;
 				}
+
 				foreach (var item in _second)
 				{
 					var firstContainsItem = _first.Contains (item);
@@ -632,7 +675,5 @@ namespace Novartment.Base.Collections.Linq
 				}
 			}
 		}
-
-		#endregion
 	}
 }

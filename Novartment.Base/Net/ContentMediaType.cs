@@ -1,5 +1,4 @@
-﻿
-namespace Novartment.Base.Net
+﻿namespace Novartment.Base.Net
 {
 	/// <summary>
 	/// Медиатип согласно <url>http://www.iana.org/assignments/media-types</url>.

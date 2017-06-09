@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Threading;
 using System.Diagnostics.Contracts;
+using System.Threading;
 
 namespace Novartment.Base.UI
 {
@@ -22,12 +22,14 @@ namespace Novartment.Base.UI
 			{
 				throw new ArgumentNullException (nameof (view));
 			}
+
 			Contract.EndContractBlock ();
 
 			if (cancellationToken.IsCancellationRequested)
 			{
 				return false;
 			}
+
 			bool? dialogResult;
 			if (!cancellationToken.CanBeCanceled)
 			{
@@ -35,17 +37,13 @@ namespace Novartment.Base.UI
 			}
 			else
 			{
-				using (cancellationToken.Register (SetDialogResultCancel<TResult>, view, true))
+				using (cancellationToken.Register (obj => { ((IDialogView<TResult>)obj).DialogResult = false; }, view, true))
 				{
 					dialogResult = view.ShowDialog ();
 				}
 			}
+
 			return dialogResult;
-		}
-		private static void SetDialogResultCancel<TResult> (object obj)
-		{
-			var view = (IDialogView<TResult>)obj;
-			view.DialogResult = false;
 		}
 
 		/// <summary>
@@ -63,10 +61,12 @@ namespace Novartment.Base.UI
 			{
 				throw new ArgumentNullException (nameof (view));
 			}
+
 			if (successAction == null)
 			{
 				throw new ArgumentNullException (nameof (successAction));
 			}
+
 			Contract.EndContractBlock ();
 
 			var dialogResult = ShowDialog (view, cancellationToken);
@@ -74,6 +74,7 @@ namespace Novartment.Base.UI
 			{
 				successAction.Invoke (view.ViewModel.Result);
 			}
+
 			return dialogResult;
 		}
 	}

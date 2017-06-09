@@ -1,8 +1,8 @@
 ﻿using System;
-using static System.Linq.Enumerable;
+using System.Globalization;
 using System.Windows;
 using System.Windows.Data;
-using System.Globalization;
+using static System.Linq.Enumerable;
 
 namespace Novartment.Base.UI.Wpf
 {
@@ -24,11 +24,13 @@ namespace Novartment.Base.UI.Wpf
 			{
 				return DependencyProperty.UnsetValue;
 			}
+
 			var isContainsNull = values.Contains (null) || values.Contains (DependencyProperty.UnsetValue);
 			if (isContainsNull)
 			{
 				return DependencyProperty.UnsetValue;
 			}
+
 			var element = values[0] as FrameworkElement;
 			return (element != null) ?
 				element.TryFindResource (string.Format (CultureInfo.InvariantCulture, (string)parameter, values)) :
@@ -42,8 +44,6 @@ namespace Novartment.Base.UI.Wpf
 		/// <param name="culture">Язык и региональные параметры, используемые в преобразователе.</param>
 		/// <returns>Массив значений, преобразованных из целевых значений назад в исходные значения.</returns>
 		public object[] ConvertBack (object value, Type[] targetTypes, object parameter, CultureInfo culture)
-		{
-			throw new NotSupportedException ();
-		}
+			=> throw new NotSupportedException ();
 	}
 }

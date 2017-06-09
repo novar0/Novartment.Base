@@ -85,6 +85,7 @@ namespace Novartment.Base.Test
 				{
 					distances[j-1] = hashes2[j] - hashes2[j - 1];
 				}
+
 				var min = distances.Min ();
 				var max = distances.Max ();
 				Assert.InRange (min, 21U, uint.MaxValue); // может иногда нарушаться, повторите тест

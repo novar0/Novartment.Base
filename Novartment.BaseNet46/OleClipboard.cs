@@ -1,10 +1,10 @@
 ﻿using System;
-using System.Runtime.InteropServices;
-using System.Security;
-using System.Threading;
-using System.Runtime.InteropServices.ComTypes;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
+using System.Runtime.InteropServices;
+using System.Runtime.InteropServices.ComTypes;
+using System.Security;
+using System.Threading;
 using Novartment.Base.UnsafeWin32;
 
 namespace Novartment.Base
@@ -22,13 +22,15 @@ namespace Novartment.Base
 		IClipboard
 	{
 		/// <summary>Количество попыток выполнения запрошенных операций.</summary>
-		[SuppressMessage ("Microsoft.Performance",
+		[SuppressMessage (
+		"Microsoft.Performance",
 			"CA1802:UseLiteralsWhereAppropriate",
 			Justification = "No performance gain could be achieved.")]
 		private static readonly int _RetryCount = 10;
 
 		/// <summary>Пауза между попытками выполнения запрошенных операций (миллисекунды).</summary>
-		[SuppressMessage ("Microsoft.Performance",
+		[SuppressMessage (
+		"Microsoft.Performance",
 			"CA1802:UseLiteralsWhereAppropriate",
 			Justification = "No performance gain could be achieved.")]
 		private static readonly int _RetryPeriodMs = 100;
@@ -50,10 +52,12 @@ namespace Novartment.Base
 			{
 				throw new ArgumentNullException (nameof (toComDataObjectConverter));
 			}
+
 			if (fromComDataObjectConverter == null)
 			{
 				throw new ArgumentNullException (nameof (fromComDataObjectConverter));
 			}
+
 			Contract.EndContractBlock ();
 
 			_toComDataObjectConverter = toComDataObjectConverter;
@@ -80,10 +84,12 @@ namespace Novartment.Base
 				{
 					break;
 				}
+
 				if (--num == 0)
 				{
 					Marshal.ThrowExceptionForHR (hr);
 				}
+
 				Thread.Sleep (_RetryPeriodMs);
 			}
 		}
@@ -100,6 +106,7 @@ namespace Novartment.Base
 			{
 				throw new ArgumentNullException (nameof (data));
 			}
+
 			Contract.EndContractBlock ();
 
 			var currentThreadApartmentState = Thread.CurrentThread.GetApartmentState ();
@@ -118,8 +125,10 @@ namespace Novartment.Base
 				{
 					break;
 				}
+
 				Thread.Sleep (_RetryPeriodMs);
 			}
+
 			Marshal.ThrowExceptionForHR (hr);
 			return hr == 0;
 		}
@@ -150,12 +159,15 @@ namespace Novartment.Base
 				{
 					break;
 				}
+
 				if (--num == 0)
 				{
 					Marshal.ThrowExceptionForHR (hr);
 				}
+
 				Thread.Sleep (_RetryPeriodMs);
 			}
+
 			return _fromComDataObjectConverter.Invoke (result);
 		}
 
@@ -170,6 +182,7 @@ namespace Novartment.Base
 			{
 				throw new ArgumentNullException (nameof (dataObject));
 			}
+
 			Contract.EndContractBlock ();
 
 			var currentThreadApartmentState = Thread.CurrentThread.GetApartmentState ();
@@ -187,10 +200,12 @@ namespace Novartment.Base
 				{
 					break;
 				}
+
 				if (--num == 0)
 				{
 					Marshal.ThrowExceptionForHR (hr);
 				}
+
 				Thread.Sleep (_RetryPeriodMs);
 			}
 		}

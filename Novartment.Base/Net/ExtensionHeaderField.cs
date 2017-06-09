@@ -9,11 +9,6 @@ namespace Novartment.Base.Net
 	public class ExtensionHeaderField : HeaderField
 	{
 		/// <summary>
-		/// Получает имя поля заголовка.
-		/// </summary>
-		public string ExtensionName { get; }
-
-		/// <summary>
 		/// Инициализирует новый экземпляр класса ExtensionHeaderField с указанным именем и значением.
 		/// </summary>
 		/// <param name="extensionName">Имя поля заголовка.</param>
@@ -25,9 +20,15 @@ namespace Novartment.Base.Net
 			{
 				throw new ArgumentNullException (nameof (extensionName));
 			}
+
 			Contract.EndContractBlock ();
 
 			this.ExtensionName = extensionName;
 		}
+
+		/// <summary>
+		/// Получает имя поля заголовка.
+		/// </summary>
+		public string ExtensionName { get; }
 	}
 }

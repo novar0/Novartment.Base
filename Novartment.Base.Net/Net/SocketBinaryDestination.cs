@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Net.Sockets;
 using System.Diagnostics.Contracts;
+using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 using Novartment.Base.BinaryStreaming;
@@ -19,7 +19,7 @@ namespace Novartment.Base.Net
 		/// <summary>
 		/// Инициализирует новый экземпляр SocketBinaryDestination для записи в указанный сокет.
 		/// </summary>
-		/// <param name="socket"></param>
+		/// <param name="socket">Сокет, в который будет производиться запись.</param>
 		public SocketBinaryDestination (Socket socket)
 		{
 			_socket = socket;
@@ -52,14 +52,17 @@ namespace Novartment.Base.Net
 			{
 				throw new ArgumentNullException (nameof (buffer));
 			}
+
 			if ((offset < 0) || (offset > buffer.Length) || ((offset == buffer.Length) && (count > 0)))
 			{
 				throw new ArgumentOutOfRangeException (nameof (offset));
 			}
+
 			if ((count < 0) || ((offset + count) > buffer.Length))
 			{
 				throw new ArgumentOutOfRangeException (nameof (count));
 			}
+
 			Contract.EndContractBlock ();
 
 			if (_isCompleted)

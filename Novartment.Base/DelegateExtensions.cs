@@ -12,8 +12,9 @@ namespace Novartment.Base
 	/// </remarks>
 	public static class DelegateExtensions
 	{
-		#region method ParameterAsBaseType
-
+#pragma warning disable SA1618 // Generic type parameters must be documented
+#pragma warning disable SA1615 // Element return value must be documented
+#pragma warning disable SA1611 // Element parameters must be documented
 		/// <summary>
 		/// Меняет тип параметра указанного делегата на базовый, от которого он наследован.
 		/// Создает Action&lt;TBase&gt; из Action&lt;TInherited&gt;,
@@ -24,7 +25,8 @@ namespace Novartment.Base
 			"Microsoft.Design",
 			"CA1062:Validate arguments of public methods",
 			Justification = "NullReferenceException is the intended behaviour")]
-		public static void ParameterAsBaseType<TBase, TInherited> (this Action<TInherited> action, TBase parameter) where TInherited : TBase
+		public static void ParameterAsBaseType<TBase, TInherited> (this Action<TInherited> action, TBase parameter)
+			where TInherited : TBase
 		{
 			action.Invoke ((TInherited)parameter);
 		}
@@ -39,14 +41,11 @@ namespace Novartment.Base
 			"Microsoft.Design",
 			"CA1062:Validate arguments of public methods",
 			Justification = "NullReferenceException is the intended behaviour")]
-		public static TResult ParameterAsBaseType<TBase, TInherited, TResult> (this Func<TInherited, TResult> action, TBase parameter) where TInherited : TBase
+		public static TResult ParameterAsBaseType<TBase, TInherited, TResult> (this Func<TInherited, TResult> action, TBase parameter)
+			where TInherited : TBase
 		{
 			return action.Invoke ((TInherited)parameter);
 		}
-
-		#endregion
-
-		#region method ParameterAsObject
 
 		/// <summary>
 		/// Меняет тип параметра указанного делегата на Object.
@@ -138,20 +137,17 @@ namespace Novartment.Base
 			return function.Invoke ((T1)parameter1, parameter2, parameter3);
 		}
 
-		#endregion
-
-		#region method AddParameter
-
 		/// <summary>
 		/// Декаррирует указанный делегат, снабжая его дополнительным параметром указанного типа.
 		/// Создает Action&lt;T&gt; из Action,
 		/// позволяя передать метод, не требующий параметров туда, где требуется метод с параметром.
 		/// </summary>
-		[SuppressMessage ("Microsoft.Usage",
+		[SuppressMessage (
+			"Microsoft.Usage",
 			"CA1801:ReviewUnusedParameters",
 			MessageId = "parameter",
-			Justification = "Not used parameter is intended."),
-		SuppressMessage (
+			Justification = "Not used parameter is intended.")]
+		[SuppressMessage (
 			"Microsoft.Design",
 			"CA1062:Validate arguments of public methods",
 			Justification = "NullReferenceException is the intended behaviour")]
@@ -165,11 +161,12 @@ namespace Novartment.Base
 		/// Создает Func&lt;T, TResult&gt; из Func&lt;TResult&gt;,
 		/// позволяя передать метод, не требующий параметров туда, где требуется метод с параметром.
 		/// </summary>
-		[SuppressMessage ("Microsoft.Usage",
+		[SuppressMessage (
+			"Microsoft.Usage",
 			"CA1801:ReviewUnusedParameters",
 			MessageId = "parameter",
-			Justification = "Not used parameter is intended."),
-		SuppressMessage (
+			Justification = "Not used parameter is intended.")]
+		[SuppressMessage (
 			"Microsoft.Design",
 			"CA1062:Validate arguments of public methods",
 			Justification = "NullReferenceException is the intended behaviour")]
@@ -177,7 +174,8 @@ namespace Novartment.Base
 		{
 			return function.Invoke ();
 		}
-
-		#endregion
+#pragma warning restore SA1611 // Element parameters must be documented
+#pragma warning restore SA1615 // Element return value must be documented
+#pragma warning restore SA1618 // Generic type parameters must be documented
 	}
 }

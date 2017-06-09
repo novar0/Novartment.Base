@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Runtime.InteropServices;
 using System.Diagnostics.Contracts;
+using System.Runtime.InteropServices;
 using Novartment.Base.UnsafeWin32;
 
 namespace Novartment.Base
@@ -25,15 +25,16 @@ namespace Novartment.Base
 			{
 				throw new ArgumentNullException (nameof (value));
 			}
+
 			Contract.EndContractBlock ();
 
 			// Create BLOBs to hold data.
-			var plainTextBlob = new CryptBlob ();
-			var cipherTextBlob = new CryptBlob ();
-			var entropyBlob = new CryptBlob ();
+			var plainTextBlob = default (CryptBlob);
+			var cipherTextBlob = default (CryptBlob);
+			var entropyBlob = default (CryptBlob);
 
 			// We only need prompt structure because it is a required parameter.
-			var prompt = new CryptProtectPromptParameters ();
+			var prompt = default (CryptProtectPromptParameters);
 			InitPrompt (ref prompt);
 
 			try
@@ -45,10 +46,9 @@ namespace Novartment.Base
 				InitBLOB (null, ref entropyBlob);
 
 				// Call DPAPI to decrypt data.
-				string description;
 				var success = NativeMethods.Crypt32.CryptUnprotectData (
 					ref cipherTextBlob,
-					out description,
+					out string description,
 					ref entropyBlob,
 					IntPtr.Zero,
 					ref prompt,
@@ -72,13 +72,14 @@ namespace Novartment.Base
 				}
 
 				// Allocate memory to hold plaintext.
-				var plainTextBytes = new byte[plainTextBlob.cbData];
+				var plainTextBytes = new byte[plainTextBlob.CountBytesData];
 
 				// Copy ciphertext from the BLOB to a byte array.
-				Marshal.Copy (plainTextBlob.pbData,
-							 plainTextBytes,
-							 0,
-							 plainTextBlob.cbData);
+				Marshal.Copy (
+					plainTextBlob.PointerBytesData,
+					plainTextBytes,
+					0,
+					plainTextBlob.CountBytesData);
 
 				// Return the result.
 				return plainTextBytes;
@@ -87,19 +88,19 @@ namespace Novartment.Base
 			// Free all memory allocated for BLOBs.
 			finally
 			{
-				if (plainTextBlob.pbData != IntPtr.Zero)
+				if (plainTextBlob.PointerBytesData != IntPtr.Zero)
 				{
-					Marshal.FreeHGlobal (plainTextBlob.pbData);
+					Marshal.FreeHGlobal (plainTextBlob.PointerBytesData);
 				}
 
-				if (cipherTextBlob.pbData != IntPtr.Zero)
+				if (cipherTextBlob.PointerBytesData != IntPtr.Zero)
 				{
-					Marshal.FreeHGlobal (cipherTextBlob.pbData);
+					Marshal.FreeHGlobal (cipherTextBlob.PointerBytesData);
 				}
 
-				if (entropyBlob.pbData != IntPtr.Zero)
+				if (entropyBlob.PointerBytesData != IntPtr.Zero)
 				{
-					Marshal.FreeHGlobal (entropyBlob.pbData);
+					Marshal.FreeHGlobal (entropyBlob.PointerBytesData);
 				}
 			}
 		}
@@ -112,10 +113,10 @@ namespace Novartment.Base
 		/// </param>
 		private static void InitPrompt (ref CryptProtectPromptParameters ps)
 		{
-			ps.cbSize = Marshal.SizeOf (typeof (CryptProtectPromptParameters));
-			ps.dwPromptFlags = CryptProtectPromptOptions.None;
-			ps.hwndApp = IntPtr.Zero;
-			ps.szPrompt = null;
+			ps.Size = Marshal.SizeOf (typeof (CryptProtectPromptParameters));
+			ps.PromptFlags = CryptProtectPromptOptions.None;
+			ps.WindowHandle = IntPtr.Zero;
+			ps.Prompt = null;
 		}
 
 		/// <summary>
@@ -133,13 +134,13 @@ namespace Novartment.Base
 			data = data ?? Array.Empty<byte> ();
 
 			// Allocate memory for the BLOB data.
-			blob.pbData = Marshal.AllocHGlobal (data.Length);
+			blob.PointerBytesData = Marshal.AllocHGlobal (data.Length);
 
 			// Specify number of bytes in the BLOB.
-			blob.cbData = data.Length;
+			blob.CountBytesData = data.Length;
 
 			// Copy data from original source to the BLOB structure.
-			Marshal.Copy (data, 0, blob.pbData, data.Length);
+			Marshal.Copy (data, 0, blob.PointerBytesData, data.Length);
 		}
 	}
 }

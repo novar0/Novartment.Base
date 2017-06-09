@@ -8,7 +8,8 @@ namespace Novartment.Base.Net
 	/// <summary>
 	/// Методы расширения для коллекции AddrSpec.
 	/// </summary>
-	[SuppressMessage ("Microsoft.Naming",
+	[SuppressMessage (
+		"Microsoft.Naming",
 		"CA1704:IdentifiersShouldBeSpelledCorrectly",
 		MessageId = "Addr",
 		Justification = "'add-spec' represents standard term.")]
@@ -26,10 +27,12 @@ namespace Novartment.Base.Net
 			{
 				throw new ArgumentNullException (nameof (collection));
 			}
+
 			if (address == null)
 			{
 				throw new ArgumentNullException (nameof (address));
 			}
+
 			Contract.EndContractBlock ();
 
 			var addrSpec = AddrSpec.Parse (address);

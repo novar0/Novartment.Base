@@ -4,19 +4,22 @@ using System.Threading.Tasks;
 
 namespace Novartment.Base.BinaryStreaming
 {
+	/// <content>
+	/// Класс-обёртка StreamBinaryDestination для представления Stream в виде IBinaryDestination.
+	/// </content>
 	public static partial class StreamExtensions
 	{
-		internal class _StreamBinaryDestination :
+		internal class StreamBinaryDestination :
 			IBinaryDestination
 		{
 			private readonly Stream _stream;
 
-			internal Stream BaseStream => _stream;
-
-			internal _StreamBinaryDestination (Stream writableStream)
+			internal StreamBinaryDestination(Stream writableStream)
 			{
 				_stream = writableStream;
 			}
+
+			internal Stream BaseStream => _stream;
 
 			public Task WriteAsync (byte[] buffer, int offset, int count, CancellationToken cancellationToken)
 			{

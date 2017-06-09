@@ -1,5 +1,4 @@
-﻿
-namespace Novartment.Base.Text
+﻿namespace Novartment.Base.Text
 {
 	/// <summary>
 	/// Тип элемента структурированного значения.
