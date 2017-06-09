@@ -422,31 +422,28 @@ namespace Novartment.Base.BinaryStreaming
 
 			Contract.EndContractBlock ();
 
-			return WriteToAsyncStateMachine (source, destination, cancellationToken);
-		}
+			return WriteToAsyncStateMachine ();
 
-		private static async Task<long> WriteToAsyncStateMachine (
-			this IBufferedSource source,
-			IBinaryDestination destination,
-			CancellationToken cancellationToken)
-		{
-			long resultSize = 0;
-			while (true)
+			async Task<long> WriteToAsyncStateMachine ()
 			{
-				await source.FillBufferAsync (cancellationToken).ConfigureAwait (false);
-				var available = source.Count;
-				if (available <= 0)
+				long resultSize = 0;
+				while (true)
 				{
-					break;
+					await source.FillBufferAsync (cancellationToken).ConfigureAwait (false);
+					var available = source.Count;
+					if (available <= 0)
+					{
+						break;
+					}
+
+					cancellationToken.ThrowIfCancellationRequested ();
+					await destination.WriteAsync (source.Buffer, source.Offset, available, cancellationToken).ConfigureAwait (false);
+					resultSize += available;
+					source.SkipBuffer (available);
 				}
 
-				cancellationToken.ThrowIfCancellationRequested ();
-				await destination.WriteAsync (source.Buffer, source.Offset, available, cancellationToken).ConfigureAwait (false);
-				resultSize += available;
-				source.SkipBuffer (available);
+				return resultSize;
 			}
-
-			return resultSize;
 		}
 	}
 }

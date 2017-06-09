@@ -96,19 +96,19 @@ namespace Novartment.Base
 
 			public IEnumerator<ExceptionDescriptionAndNestingData> GetEnumerator ()
 			{
-				var stack = new ArrayList<ExceptionDescriptionAndNestingData> ();
-				stack.Add (new ExceptionDescriptionAndNestingData (
-					_rootException.Name,
-					_rootException.Message,
-					_rootException.Details,
-					_rootException.Trace,
-					_rootException.InnerExceptions,
-					0,
-					0,
-					1));
-
-				ExceptionDescriptionAndNestingData data;
-				while (stack.TryTakeLast (out data))
+				var stack = new ArrayList<ExceptionDescriptionAndNestingData>
+				{
+					new ExceptionDescriptionAndNestingData (
+						_rootException.Name,
+						_rootException.Message,
+						_rootException.Details,
+						_rootException.Trace,
+						_rootException.InnerExceptions,
+						0,
+						0,
+						1)
+				};
+				while (stack.TryTakeLast (out ExceptionDescriptionAndNestingData data))
 				{
 					var level = data.NestingLevel;
 

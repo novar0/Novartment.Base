@@ -169,22 +169,23 @@ namespace Novartment.Base.BinaryStreaming
 			}
 
 			Defragment ();
-			return EnsureBufferAsyncStateMachine (size, cancellationToken);
-		}
 
-		private async Task EnsureBufferAsyncStateMachine (int size, CancellationToken cancellationToken)
-		{
-			var shortage = size - _count;
+			return EnsureBufferAsyncStateMachine ();
 
-			while ((shortage > 0) && !_isExhausted)
+			async Task EnsureBufferAsyncStateMachine ()
 			{
-				var sizeTransformed = await FillBufferChunkAsync (cancellationToken).ConfigureAwait (false);
-				shortage -= sizeTransformed;
-			}
+				var shortage = size - _count;
 
-			if (shortage > 0)
-			{
-				throw new NotEnoughDataException (shortage);
+				while ((shortage > 0) && !_isExhausted)
+				{
+					var sizeTransformed = await FillBufferChunkAsync (cancellationToken).ConfigureAwait (false);
+					shortage -= sizeTransformed;
+				}
+
+				if (shortage > 0)
+				{
+					throw new NotEnoughDataException (shortage);
+				}
 			}
 		}
 
@@ -210,21 +211,22 @@ namespace Novartment.Base.BinaryStreaming
 			}
 
 			var task = _source.FillBufferAsync (cancellationToken);
-			return FillBufferChunkAsyncFinalizer (task);
-		}
 
-		private async Task<int> FillBufferChunkAsyncFinalizer (Task task)
-		{
-			await task.ConfigureAwait (false);
-			if ((_source.Count < _cryptoTransform.InputBlockSize) && !_source.IsExhausted)
+			return FillBufferChunkAsyncFinalizer ();
+
+			async Task<int> FillBufferChunkAsyncFinalizer ()
 			{
-				throw new InvalidOperationException (FormattableString.Invariant (
-					$"Source (buffer size={_source.Buffer.Length}) can't provide enough data to transform single block (size={_cryptoTransform.InputBlockSize})."));
-			}
+				await task.ConfigureAwait (false);
+				if ((_source.Count < _cryptoTransform.InputBlockSize) && !_source.IsExhausted)
+				{
+					throw new InvalidOperationException (FormattableString.Invariant (
+						$"Source (buffer size={_source.Buffer.Length}) can't provide enough data to transform single block (size={_cryptoTransform.InputBlockSize})."));
+				}
 
-			var sizeTransformed = LoadFromTransformedSource ();
-			_count += sizeTransformed;
-			return sizeTransformed;
+				sizeTransformed = LoadFromTransformedSource ();
+				_count += sizeTransformed;
+				return sizeTransformed;
+			}
 		}
 
 		// Получает размер данных источника, необходимых чтобы заполнить указанное количество байтов результата трансформации.

@@ -16,7 +16,7 @@ namespace Novartment.Base.Net.Mime
 		IDiscreteEntityBody
 	{
 		[SuppressMessage (
-		"Microsoft.Performance",
+			"Microsoft.Performance",
 			"CA1802:UseLiteralsWhereAppropriate",
 			Justification = "No performance gain could be achieved.")]
 		private static readonly int _DefaultEncodeBufferSize = 32000;
@@ -73,6 +73,7 @@ namespace Novartment.Base.Net.Mime
 			Contract.EndContractBlock ();
 
 			var task = source.ReadAllBytesAsync (cancellationToken);
+
 			return LoadAsyncFinalizer ();
 
 			async Task LoadAsyncFinalizer ()
@@ -208,7 +209,17 @@ namespace Novartment.Base.Net.Mime
 			}
 
 			var task = BufferedSourceExtensions.ReadAllBytesAsync (data, cancellationToken);
-			return SetDataAsyncFinalizer (task);
+
+			return SetDataAsyncFinalizer ();
+
+			async Task<int> SetDataAsyncFinalizer ()
+			{
+				var result = await task.ConfigureAwait (false);
+
+				_encodedData = result;
+				_encodedDataSize = result.Length;
+				return result.Length;
+			}
 		}
 
 		/// <summary>
@@ -247,15 +258,6 @@ namespace Novartment.Base.Net.Mime
 			}
 
 			return new byte[blocks * cryptoTransform.OutputBlockSize];
-		}
-
-		private async Task<int> SetDataAsyncFinalizer (Task<byte[]> task)
-		{
-			var result = await task.ConfigureAwait (false);
-
-			_encodedData = result;
-			_encodedDataSize = result.Length;
-			return result.Length;
 		}
 	}
 }

@@ -70,7 +70,34 @@ namespace Novartment.Base.Net
 			Contract.EndContractBlock ();
 
 			var task = Dns.GetHostAddressesAsync (remoteUri.Host);
-			return CreateAsyncFinalizer (task, remoteUri, addressFamily, cancellationToken);
+
+			return CreateAsyncFinalizer ();
+
+			async Task<ITcpConnection> CreateAsyncFinalizer ()
+			{
+				var addrs = await task.ConfigureAwait (false);
+				IPAddress ipAddress = null;
+				foreach (var addr in addrs)
+				{
+					if (addr.AddressFamily == addressFamily)
+					{
+						ipAddress = addr;
+						break;
+					}
+				}
+
+				if (ipAddress == null)
+				{
+					throw new InvalidOperationException (FormattableString.Invariant (
+						$"Host {remoteUri.Host} does not have any IP-addresses of {addressFamily} family."));
+				}
+
+				var remoteEndpoint = new IPHostEndPoint (ipAddress, remoteUri.Port)
+				{
+					HostName = remoteUri.Host
+				};
+				return await CreateAsync (remoteEndpoint, cancellationToken).ConfigureAwait (false);
+			}
 		}
 
 		/// <summary>
@@ -280,36 +307,6 @@ namespace Novartment.Base.Net
 		{
 			return (sslPolicyErrors == SslPolicyErrors.None) ||
 					(!_authenticateAsServerClientCertificateRequired && (sslPolicyErrors == SslPolicyErrors.RemoteCertificateNotAvailable));
-		}
-
-		private static async Task<ITcpConnection> CreateAsyncFinalizer (
-			Task<IPAddress[]> task,
-			Uri remoteUri,
-			AddressFamily addressFamily,
-			CancellationToken cancellationToken)
-		{
-			var addrs = await task.ConfigureAwait (false);
-			IPAddress ipAddress = null;
-			foreach (var addr in addrs)
-			{
-				if (addr.AddressFamily == addressFamily)
-				{
-					ipAddress = addr;
-					break;
-				}
-			}
-
-			if (ipAddress == null)
-			{
-				throw new InvalidOperationException (FormattableString.Invariant (
-					$"Host {remoteUri.Host} does not have any IP-addresses of {addressFamily} family."));
-			}
-
-			var remoteEndpoint = new IPHostEndPoint (ipAddress, remoteUri.Port)
-			{
-				HostName = remoteUri.Host
-			};
-			return await CreateAsync (remoteEndpoint, cancellationToken).ConfigureAwait (false);
 		}
 
 		private static async Task<ITcpConnection> CreateAsyncFializer (

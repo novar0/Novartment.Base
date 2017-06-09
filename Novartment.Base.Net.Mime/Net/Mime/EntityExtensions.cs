@@ -367,6 +367,7 @@ namespace Novartment.Base.Net.Mime
 
 			var newBody = new DataEntityBody (ContentTransferEncoding.Base64);
 			var task = newBody.SetDataAsync (data, cancellationToken);
+
 			return AddImagePartAsyncFinalizer ();
 
 			async Task<Entity> AddImagePartAsyncFinalizer ()
@@ -431,6 +432,7 @@ namespace Novartment.Base.Net.Mime
 					transferEncoding :
 					ContentTransferEncoding.Base64);
 			var task = newBody.SetDataAsync (data, cancellationToken);
+
 			return AddApplicationPartAsyncFinalizer ();
 
 			async Task<Entity> AddApplicationPartAsyncFinalizer ()
@@ -486,6 +488,7 @@ namespace Novartment.Base.Net.Mime
 			var dataObservable = new ObservableBufferedSource (data, observer);
 
 			var task = attachmentBody.SetDataAsync (dataObservable, cancellationToken);
+
 			return AddAttachmentAsyncFinalizer ();
 
 			async Task<Entity> AddAttachmentAsyncFinalizer ()
@@ -527,15 +530,17 @@ namespace Novartment.Base.Net.Mime
 
 			var fileInfo = new FileInfo (fileName);
 			var stream = fileInfo.OpenRead ();
+			Task<Entity> task;
 			try
 			{
 				// TODO: размер буфера сделать конфигурируемым
-				var task = AddAttachmentAsync (
+				task = AddAttachmentAsync (
 					entity,
 					stream.AsBufferedSource (new byte[Math.Min (fileInfo.Length, 4096L)]),
 					fileInfo.Name,
 					cancellationToken);
-				return AddAttachmentAsyncFinalizer (task);
+
+				return AddAttachmentAsyncFinalizer ();
 			}
 			catch
 			{
@@ -543,7 +548,7 @@ namespace Novartment.Base.Net.Mime
 				throw;
 			}
 
-			async Task<Entity> AddAttachmentAsyncFinalizer (Task<Entity> task)
+			async Task<Entity> AddAttachmentAsyncFinalizer ()
 			{
 				Entity attachment;
 				try

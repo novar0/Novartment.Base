@@ -402,40 +402,39 @@ namespace Novartment.Base.Net.Smtp
 				_remoteEndPoint,
 				_sender.RemoteCertificate,
 				_authenticatedUser));
+			Task task;
 			try
 			{
 				// тут может возникнуть UnacceptableSmtpMailboxException или другое исключение
-				var task = newTransaction.StartAsync (mailFromCommand.ReturnPath, cancellationToken);
-				return ProcessCommandMailFromFinalizer (task, newTransaction, mailFromCommand.RequestedContentTransferEncoding);
+				task = newTransaction.StartAsync (mailFromCommand.ReturnPath, cancellationToken);
+
+				return ProcessCommandMailFromFinalizer ();
 			}
 			catch
 			{
 				newTransaction.Dispose ();
 				throw;
 			}
-		}
 
-		private async Task<SmtpReplyWithGroupingMark> ProcessCommandMailFromFinalizer (
-			Task task,
-			IMailDataTransferTransaction transaction,
-			ContentTransferEncoding requestedEncoding)
-		{
-			try
+			async Task<SmtpReplyWithGroupingMark> ProcessCommandMailFromFinalizer ()
 			{
-				await task.ConfigureAwait (false);
-			}
-			catch
-			{
-				transaction.Dispose ();
-				throw;
-			}
+				try
+				{
+					await task.ConfigureAwait (false);
+				}
+				catch
+				{
+					newTransaction.Dispose ();
+					throw;
+				}
 
-			_currentTransaction = transaction;
-			_currentTransactionRequestedEncoding = requestedEncoding;
+				_currentTransaction = newTransaction;
+				_currentTransactionRequestedEncoding = mailFromCommand.RequestedContentTransferEncoding;
 
-			// RFC 2920:
-			// RSET, MAIL FROM, RCPT TO can all appear anywhere in a pipelined command group
-			return SmtpReply.OK.AllowGrouping ();
+				// RFC 2920:
+				// RSET, MAIL FROM, RCPT TO can all appear anywhere in a pipelined command group
+				return SmtpReply.OK.AllowGrouping ();
+			}
 		}
 
 		private async Task<SmtpReplyWithGroupingMark> ProcessCommandRcptTo (SmtpRcptToCommand rcptToCommand, CancellationToken cancellationToken)

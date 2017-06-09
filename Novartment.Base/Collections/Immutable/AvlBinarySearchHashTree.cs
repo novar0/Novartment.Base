@@ -162,8 +162,7 @@ namespace Novartment.Base.Collections.Immutable
 			}
 
 			AvlBinarySearchHashTreeNode<T> result;
-			var intermediateNode = treeNode as AvlBinarySearchHashTreeNode<T>.IntermediateNode;
-			if (intermediateNode != null)
+			if (treeNode is AvlBinarySearchHashTreeNode<T>.IntermediateNode intermediateNode)
 			{ // промежуточный узел
 				var leftSubtree = intermediateNode.LeftSubtree;
 				var rightSubtree = intermediateNode.RightSubtree;
@@ -207,8 +206,7 @@ namespace Novartment.Base.Collections.Immutable
 			}
 
 			var hash = comparer.GetHashCode (value);
-			var intermediateNode = treeNode as AvlBinarySearchHashTreeNode<T>.IntermediateNode;
-			if (intermediateNode != null)
+			if (treeNode is AvlBinarySearchHashTreeNode<T>.IntermediateNode intermediateNode)
 			{ // промежуточный узел
 				var leftSubtree = intermediateNode.LeftSubtree;
 				var rightSubtree = intermediateNode.RightSubtree;

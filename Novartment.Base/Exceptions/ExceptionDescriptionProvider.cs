@@ -44,22 +44,19 @@ namespace Novartment.Base
 
 			Contract.EndContractBlock ();
 
-			var customErrorException = exception as CustomErrorException;
-			if (customErrorException != null)
+			if (exception is CustomErrorException customErrorException)
 			{
 				return customErrorException.InnerExceptions ?? ReadOnlyList.Empty<Exception> ();
 			}
 
 			IReadOnlyList<Exception> innerExcpts = null;
 
-			var aggregateException = exception as AggregateException;
-			if ((aggregateException != null) && (aggregateException.InnerExceptions != null))
+			if (exception is AggregateException aggregateException && (aggregateException.InnerExceptions != null))
 			{
 				innerExcpts = aggregateException.InnerExceptions.AsReadOnlyList ();
 			}
 
-			var reflectionTypeLoadException = exception as ReflectionTypeLoadException;
-			if ((reflectionTypeLoadException != null) && (reflectionTypeLoadException.LoaderExceptions != null))
+			if (exception is ReflectionTypeLoadException reflectionTypeLoadException && (reflectionTypeLoadException.LoaderExceptions != null))
 			{
 				innerExcpts = reflectionTypeLoadException.LoaderExceptions.AsReadOnlyList ();
 			}
@@ -126,8 +123,7 @@ namespace Novartment.Base
 
 			Contract.EndContractBlock ();
 
-			var customErrorException = exception as CustomErrorException;
-			if (customErrorException != null)
+			if (exception is CustomErrorException customErrorException)
 			{
 				return customErrorException.Message;
 			}
@@ -135,8 +131,7 @@ namespace Novartment.Base
 			string message = null;
 
 			// для AggregateException сообщение совершенно неинформативно, заменяем его на сообщение первого вложенного исключения
-			var aggregateException = exception as AggregateException;
-			if ((aggregateException != null) && (aggregateException.InnerExceptions != null))
+			if (exception is AggregateException aggregateException && (aggregateException.InnerExceptions != null))
 			{
 				if (aggregateException.InnerExceptions.Count > 0)
 				{
@@ -161,52 +156,44 @@ namespace Novartment.Base
 
 			Contract.EndContractBlock ();
 
-			var customErrorException = exception as CustomErrorException;
-			if (customErrorException != null)
+			if (exception is CustomErrorException customErrorException)
 			{
 				return customErrorException.Details;
 			}
 
 			string details = null;
 
-			var argumentException = exception as ArgumentException;
-			if (argumentException != null)
+			if (exception is ArgumentException argumentException)
 			{
 				details = "ParamName = " + argumentException.ParamName;
 
-				var cultureNotFoundException = argumentException as CultureNotFoundException;
-				if (cultureNotFoundException != null)
+				if (argumentException is CultureNotFoundException cultureNotFoundException)
 				{
 					details += ", InvalidCultureName = " + cultureNotFoundException.InvalidCultureName;
 				}
 			}
 
-			var objectDisposedException = exception as ObjectDisposedException;
-			if (objectDisposedException != null)
+			if (exception is ObjectDisposedException objectDisposedException)
 			{
 				details = "ObjectName = " + objectDisposedException.ObjectName;
 			}
 
-			var fileNotFoundException = exception as FileNotFoundException;
-			if (fileNotFoundException != null)
+			if (exception is FileNotFoundException fileNotFoundException)
 			{
 				details = "FileName = " + fileNotFoundException.FileName;
 			}
 
-			var badImageFormatException = exception as BadImageFormatException;
-			if (badImageFormatException != null)
+			if (exception is BadImageFormatException badImageFormatException)
 			{
 				details = "FileName = " + badImageFormatException.FileName;
 			}
 
-			var typeInitializationException = exception as TypeInitializationException;
-			if (typeInitializationException != null)
+			if (exception is TypeInitializationException typeInitializationException)
 			{
 				details = "TypeName = " + typeInitializationException.TypeName;
 			}
 
-			var typeLoadException = exception as TypeLoadException;
-			if (typeLoadException != null)
+			if (exception is TypeLoadException typeLoadException)
 			{
 				details = "TypeName = " + typeLoadException.TypeName;
 			}

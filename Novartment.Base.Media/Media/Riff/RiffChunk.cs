@@ -82,27 +82,27 @@ namespace Novartment.Base.Media
 				throw new FormatException ("Specified source is too small for Riff-chunk. Expected minimum 8 bytes.", exception);
 			}
 
-			return ParseAsyncFinalizer (task, source);
-		}
+			return ParseAsyncFinalizer ();
 
-		private static async Task<RiffChunk> ParseAsyncFinalizer (Task task, IBufferedSource source)
-		{
-			try
+			async Task<RiffChunk> ParseAsyncFinalizer ()
 			{
-				await task.ConfigureAwait (false);
+				try
+				{
+					await task.ConfigureAwait (false);
+				}
+				catch (NotEnoughDataException exception)
+				{
+					throw new FormatException ("Specified source is too small for Riff-chunk. Expected minimum 8 bytes.", exception);
+				}
+
+				var id = AsciiCharSet.GetString (source.Buffer, source.Offset, 4);
+				var size = (long)BitConverter.ToUInt32 (source.Buffer, source.Offset + 4);
+				source.SkipBuffer (8);
+
+				var data = new SizeLimitedBufferedSource (source, size);
+
+				return new RiffChunk (id, data);
 			}
-			catch (NotEnoughDataException exception)
-			{
-				throw new FormatException ("Specified source is too small for Riff-chunk. Expected minimum 8 bytes.", exception);
-			}
-
-			var id = AsciiCharSet.GetString (source.Buffer, source.Offset, 4);
-			var size = (long)BitConverter.ToUInt32 (source.Buffer, source.Offset + 4);
-			source.SkipBuffer (8);
-
-			var data = new SizeLimitedBufferedSource (source, size);
-
-			return new RiffChunk (id, data);
 		}
 	}
 }

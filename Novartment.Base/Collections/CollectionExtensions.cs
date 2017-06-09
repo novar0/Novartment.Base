@@ -254,11 +254,9 @@ namespace Novartment.Base.Collections
 
 			Contract.EndContractBlock ();
 
-			var reservableCapacityCollection = collection as IReservedCapacityCollection<T>;
-			if (reservableCapacityCollection != null)
+			if (collection is IReservedCapacityCollection<T> reservableCapacityCollection)
 			{
-				int count;
-				var isCounted = TryGetCount (items, out count);
+				var isCounted = TryGetCount (items, out int count);
 				if (isCounted)
 				{
 					reservableCapacityCollection.EnsureCapacity (collection.Count + count);
@@ -297,8 +295,7 @@ namespace Novartment.Base.Collections
 
 			Contract.EndContractBlock ();
 
-			int count;
-			var isCounted = items.TryGetCount (out count);
+			var isCounted = items.TryGetCount (out int count);
 			if (isCounted)
 			{ // количество вставляемых элементов известно, можно заранее зарезервировать место
 				if (count > 0)
@@ -616,8 +613,7 @@ namespace Novartment.Base.Collections
 
 			Contract.EndContractBlock ();
 
-			var fifoCollection = source as IFifoCollection<T>;
-			if (fifoCollection != null)
+			if (source is IFifoCollection<T> fifoCollection)
 			{
 				var isPeeked = fifoCollection.TryPeekFirst (out item);
 				if (isPeeked)
@@ -627,8 +623,7 @@ namespace Novartment.Base.Collections
 			}
 			else
 			{
-				var readOnlyList = source as IReadOnlyList<T>;
-				if (readOnlyList != null)
+				if (source is IReadOnlyList<T> readOnlyList)
 				{
 					if (readOnlyList.Count > 0)
 					{
@@ -638,8 +633,7 @@ namespace Novartment.Base.Collections
 				}
 				else
 				{
-					var list = source as IList<T>;
-					if (list != null)
+					if (source is IList<T> list)
 					{
 						if (list.Count > 0)
 						{
@@ -683,8 +677,7 @@ namespace Novartment.Base.Collections
 
 			Contract.EndContractBlock ();
 
-			var lifoCollection = source as ILifoCollection<T>;
-			if (lifoCollection != null)
+			if (source is ILifoCollection<T> lifoCollection)
 			{
 				var isPeeked = lifoCollection.TryPeekLast (out item);
 				if (isPeeked)
@@ -694,8 +687,7 @@ namespace Novartment.Base.Collections
 			}
 			else
 			{
-				var readOnlyList = source as IReadOnlyList<T>;
-				if (readOnlyList != null)
+				if (source is IReadOnlyList<T> readOnlyList)
 				{
 					var count = readOnlyList.Count;
 					if (count > 0)
@@ -706,8 +698,7 @@ namespace Novartment.Base.Collections
 				}
 				else
 				{
-					var list = source as IList<T>;
-					if (list != null)
+					if (source is IList<T> list)
 					{
 						var count = list.Count;
 						if (count > 0)
@@ -758,22 +749,19 @@ namespace Novartment.Base.Collections
 
 			Contract.EndContractBlock ();
 
-			var countable1 = source as IReadOnlyCollection<T>;
-			if (countable1 != null)
+			if (source is IReadOnlyCollection<T> countable1)
 			{
 				count = countable1.Count;
 				return true;
 			}
 
-			var countable2 = source as ICollection<T>;
-			if (countable2 != null)
+			if (source is ICollection<T> countable2)
 			{
 				count = countable2.Count;
 				return true;
 			}
 
-			var countable3 = source as ICollection;
-			if (countable3 != null)
+			if (source is ICollection countable3)
 			{
 				count = countable3.Count;
 				return true;
@@ -877,8 +865,7 @@ namespace Novartment.Base.Collections
 			T[] array;
 			int length;
 
-			var collection1 = source as IArrayDuplicableCollection<T>;
-			if (collection1 != null)
+			if (source is IArrayDuplicableCollection<T> collection1)
 			{
 				length = collection1.Count;
 				array = new T[length];
@@ -890,8 +877,7 @@ namespace Novartment.Base.Collections
 				return array;
 			}
 
-			var collection2 = source as ICollection<T>;
-			if (collection2 != null)
+			if (source is ICollection<T> collection2)
 			{
 				length = collection2.Count;
 				array = new T[length];
@@ -903,8 +889,7 @@ namespace Novartment.Base.Collections
 				return array;
 			}
 
-			var collection3 = source as ICollection;
-			if (collection3 != null)
+			if (source is ICollection collection3)
 			{
 				length = collection3.Count;
 				array = new T[length];
@@ -916,8 +901,7 @@ namespace Novartment.Base.Collections
 				return array;
 			}
 
-			var collection4 = source as IReadOnlyCollection<T>;
-			if (collection4 != null)
+			if (source is IReadOnlyCollection<T> collection4)
 			{
 				length = collection4.Count;
 				array = new T[length];
@@ -934,8 +918,7 @@ namespace Novartment.Base.Collections
 			}
 
 			length = 0;
-			int cnt;
-			array = new T[TryGetCount (source, out cnt) ? cnt : 4];
+			array = new T[TryGetCount (source, out int cnt) ? cnt : 4];
 			foreach (var item in source)
 			{
 				if (array.Length == length)
@@ -981,8 +964,7 @@ namespace Novartment.Base.Collections
 			T[] array;
 			int length;
 
-			var collection1 = source as IArrayDuplicableCollection<T>;
-			if (collection1 != null)
+			if (source is IArrayDuplicableCollection<T> collection1)
 			{
 				length = collection1.Count;
 				array = new T[length];
@@ -994,8 +976,7 @@ namespace Novartment.Base.Collections
 				return new ArrayList<T> (array);
 			}
 
-			var collection2 = source as ICollection<T>;
-			if (collection2 != null)
+			if (source is ICollection<T> collection2)
 			{
 				length = collection2.Count;
 				array = new T[length];
@@ -1007,8 +988,7 @@ namespace Novartment.Base.Collections
 				return new ArrayList<T> (array);
 			}
 
-			var collection3 = source as ICollection;
-			if (collection3 != null)
+			if (source is ICollection collection3)
 			{
 				length = collection3.Count;
 				array = new T[length];
@@ -1020,8 +1000,7 @@ namespace Novartment.Base.Collections
 				return new ArrayList<T> (array);
 			}
 
-			var collection4 = source as IReadOnlyCollection<T>;
-			if (collection4 != null)
+			if (source is IReadOnlyCollection<T> collection4)
 			{
 				length = collection4.Count;
 				array = new T[length];
@@ -1038,8 +1017,7 @@ namespace Novartment.Base.Collections
 			}
 
 			length = 0;
-			int cnt;
-			array = new T[TryGetCount (source, out cnt) ? cnt : 4];
+			array = new T[TryGetCount (source, out int cnt) ? cnt : 4];
 			foreach (var item in source)
 			{
 				if (array.Length == length)

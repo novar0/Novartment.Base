@@ -182,35 +182,36 @@ namespace Novartment.Base.BinaryStreaming
 				}
 
 				Defragment ();
-				return EnsureBufferAsyncAsyncStateMachine (size, cancellationToken);
-			}
 
-			// запускаем асинхронное чтение источника пока не наберём необходимое количество данных
-			private async Task EnsureBufferAsyncAsyncStateMachine (int size, CancellationToken cancellationToken)
-			{
-				var available = _count;
-				var shortage = size - available;
-				while ((shortage > 0) && !_streamEnded)
-				{
-					var readed = await _stream.ReadAsync (
-						_buffer,
-						_offset + _count,
-						_buffer.Length - _offset - _count,
-						cancellationToken).ConfigureAwait (false);
-					shortage -= readed;
-					if (readed > 0)
-					{
-						_count += readed;
-					}
-					else
-					{
-						_streamEnded = true;
-					}
-				}
+				return EnsureBufferAsyncAsyncStateMachine ();
 
-				if (shortage > 0)
+				// запускаем асинхронное чтение источника пока не наберём необходимое количество данных
+				async Task EnsureBufferAsyncAsyncStateMachine ()
 				{
-					throw new NotEnoughDataException (shortage);
+					var available = _count;
+					var shortage = size - available;
+					while ((shortage > 0) && !_streamEnded)
+					{
+						var readed = await _stream.ReadAsync (
+							_buffer,
+							_offset + _count,
+							_buffer.Length - _offset - _count,
+							cancellationToken).ConfigureAwait (false);
+						shortage -= readed;
+						if (readed > 0)
+						{
+							_count += readed;
+						}
+						else
+						{
+							_streamEnded = true;
+						}
+					}
+
+					if (shortage > 0)
+					{
+						throw new NotEnoughDataException (shortage);
+					}
 				}
 			}
 

@@ -102,44 +102,44 @@ namespace Novartment.Base.Media
 					exception);
 			}
 
-			return ParseAsyncFinalizer (task, source);
-		}
+			return ParseAsyncFinalizer ();
 
-		private static async Task<AviStreamInfoAudioFormat> ParseAsyncFinalizer (Task task, IBufferedSource source)
-		{
-			try
+			async Task<AviStreamInfoAudioFormat> ParseAsyncFinalizer ()
 			{
-				await task.ConfigureAwait (false);
-			}
-			catch (NotEnoughDataException exception)
-			{
-				throw new FormatException (
-					"Insuficient size of RIFF-chunk 'strf' for stream of type 'auds'. Expected minimum 18 bytes.",
-					exception);
-			}
+				try
+				{
+					await task.ConfigureAwait (false);
+				}
+				catch (NotEnoughDataException exception)
+				{
+					throw new FormatException (
+						"Insuficient size of RIFF-chunk 'strf' for stream of type 'auds'. Expected minimum 18 bytes.",
+						exception);
+				}
 
-			/*  WORD	wFormatTag;
-				WORD	nChannels;
-				DWORD	nSamplesPerSec;
-				DWORD	nAvgBytesPerSec;
-				WORD	nBlockAlign;
-				WORD	wBitsPerSample;
-				WORD	cbSize;
-			*/
-			var formatTag = BitConverter.ToUInt16 (source.Buffer, source.Offset);
-			var channels = BitConverter.ToUInt16 (source.Buffer, source.Offset + 2);
-			var samplesPerSec = BitConverter.ToUInt32 (source.Buffer, source.Offset + 4);
-			var averageBytesPerSecond = BitConverter.ToUInt32 (source.Buffer, source.Offset + 8);
-			var blockAlign = BitConverter.ToUInt16 (source.Buffer, source.Offset + 12);
-			var bitsPerSample = BitConverter.ToUInt16 (source.Buffer, source.Offset + 14);
+				/*  WORD	wFormatTag;
+					WORD	nChannels;
+					DWORD	nSamplesPerSec;
+					DWORD	nAvgBytesPerSec;
+					WORD	nBlockAlign;
+					WORD	wBitsPerSample;
+					WORD	cbSize;
+				*/
+				var formatTag = BitConverter.ToUInt16 (source.Buffer, source.Offset);
+				var channels = BitConverter.ToUInt16 (source.Buffer, source.Offset + 2);
+				var samplesPerSec = BitConverter.ToUInt32 (source.Buffer, source.Offset + 4);
+				var averageBytesPerSecond = BitConverter.ToUInt32 (source.Buffer, source.Offset + 8);
+				var blockAlign = BitConverter.ToUInt16 (source.Buffer, source.Offset + 12);
+				var bitsPerSample = BitConverter.ToUInt16 (source.Buffer, source.Offset + 14);
 
-			return new AviStreamInfoAudioFormat (
-				formatTag,
-				channels,
-				samplesPerSec,
-				averageBytesPerSecond,
-				blockAlign,
-				bitsPerSample);
+				return new AviStreamInfoAudioFormat (
+					formatTag,
+					channels,
+					samplesPerSec,
+					averageBytesPerSecond,
+					blockAlign,
+					bitsPerSample);
+			}
 		}
 	}
 }

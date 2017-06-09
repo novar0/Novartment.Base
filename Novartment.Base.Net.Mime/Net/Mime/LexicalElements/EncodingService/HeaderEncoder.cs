@@ -482,45 +482,42 @@ namespace Novartment.Base.Net.Mime
 
 			Contract.EndContractBlock ();
 
-			return SaveHeaderAsyncStateMachine (fields, destination, cancellationToken);
-		}
+			return SaveHeaderAsyncStateMachine ();
 
-		private static async Task<int> SaveHeaderAsyncStateMachine (
-			IReadOnlyCollection<HeaderFieldBuilder> fields,
-			IBinaryDestination destination,
-			CancellationToken cancellationToken)
-		{
-			int totalSize = 0;
-			var bytes = ArrayPool<byte>.Shared.Rent (MaxOneFieldSize);
-			foreach (var fieldBuilder in fields)
+			async Task<int> SaveHeaderAsyncStateMachine ()
 			{
-				cancellationToken.ThrowIfCancellationRequested ();
-				var field = fieldBuilder.ToHeaderField (HeaderEncoder.MaxLineLengthRecommended);
-				var name = HeaderFieldNameHelper.GetName (field.Name);
-				var size = name.Length;
-				AsciiCharSet.GetBytes (name, 0, size, bytes, 0);
-				bytes[size++] = (byte)':';
-				var isEmpty = string.IsNullOrEmpty (field.Value);
-				if (!isEmpty)
+				int totalSize = 0;
+				var bytes = ArrayPool<byte>.Shared.Rent (MaxOneFieldSize);
+				foreach (var fieldBuilder in fields)
 				{
-					if ((field.Value[0] != ' ') && (field.Value[0] != '\t') && ((field.Value[0] != '\r') || (field.Value.Length < 2) || (field.Value[1] != '\n')))
+					cancellationToken.ThrowIfCancellationRequested ();
+					var field = fieldBuilder.ToHeaderField (HeaderEncoder.MaxLineLengthRecommended);
+					var name = HeaderFieldNameHelper.GetName (field.Name);
+					var size = name.Length;
+					AsciiCharSet.GetBytes (name, 0, size, bytes, 0);
+					bytes[size++] = (byte)':';
+					var isEmpty = string.IsNullOrEmpty (field.Value);
+					if (!isEmpty)
 					{
-						bytes[size++] = (byte)' ';
+						if ((field.Value[0] != ' ') && (field.Value[0] != '\t') && ((field.Value[0] != '\r') || (field.Value.Length < 2) || (field.Value[1] != '\n')))
+						{
+							bytes[size++] = (byte)' ';
+						}
+
+						AsciiCharSet.GetBytes (field.Value, 0, field.Value.Length, bytes, size);
+						size += field.Value.Length;
 					}
 
-					AsciiCharSet.GetBytes (field.Value, 0, field.Value.Length, bytes, size);
-					size += field.Value.Length;
+					bytes[size++] = (byte)'\r';
+					bytes[size++] = (byte)'\n';
+					await destination.WriteAsync (bytes, 0, size, cancellationToken).ConfigureAwait (false);
+					totalSize += size;
 				}
 
-				bytes[size++] = (byte)'\r';
-				bytes[size++] = (byte)'\n';
-				await destination.WriteAsync (bytes, 0, size, cancellationToken).ConfigureAwait (false);
-				totalSize += size;
+				ArrayPool<byte>.Shared.Return (bytes);
+
+				return totalSize;
 			}
-
-			ArrayPool<byte>.Shared.Return (bytes);
-
-			return totalSize;
 		}
 	}
 }

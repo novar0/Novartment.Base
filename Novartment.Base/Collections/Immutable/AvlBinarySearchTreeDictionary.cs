@@ -236,8 +236,7 @@ namespace Novartment.Base.Collections.Immutable
 				return treeNode;
 			}
 
-			var intermediateNode = treeNode as AvlBinarySearchTreeDictionaryNode<TKey, TValue>.IntermediateNode;
-			if (intermediateNode != null)
+			if (treeNode is AvlBinarySearchTreeDictionaryNode<TKey, TValue>.IntermediateNode intermediateNode)
 			{
 				if (num < 0)
 				{

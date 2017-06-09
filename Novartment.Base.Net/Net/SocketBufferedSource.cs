@@ -124,6 +124,7 @@ namespace Novartment.Base.Net
 
 			var bufSegment = new ArraySegment<byte> (_buffer, _offset + _count, _buffer.Length - _offset - _count);
 			var task = _socket.ReceiveAsync (bufSegment, SocketFlags.None);
+
 			return FillBufferAsyncFinalizer ();
 
 			async Task FillBufferAsyncFinalizer ()

@@ -96,67 +96,67 @@ namespace Novartment.Base.Net.Smtp
 
 			Contract.EndContractBlock ();
 
-			return StartAsyncStateMachine (connection, cancellationToken);
-		}
+			return StartAsyncStateMachine ();
 
-		private async Task StartAsyncStateMachine (ITcpConnection connection, CancellationToken cancellationToken)
-		{
-			var sender = new TcpConnectionSmtpCommandTransport (connection, _logger);
-			using (var session = new SmtpDeliveryProtocolSession (
-				sender,
-				connection.RemoteEndPoint,
-				_transactionFactory,
-				connection.LocalEndPoint.HostName,
-				_securityParameters,
-				_logger))
+			async Task StartAsyncStateMachine ()
 			{
-				if (cancellationToken.CanBeCanceled)
+				var sender = new TcpConnectionSmtpCommandTransport (connection, _logger);
+				using (var session = new SmtpDeliveryProtocolSession (
+					sender,
+					connection.RemoteEndPoint,
+					_transactionFactory,
+					connection.LocalEndPoint.HostName,
+					_securityParameters,
+					_logger))
 				{
-					cancellationToken.ThrowIfCancellationRequested ();
-
-					// на отмену регистрируем посылку прощального ответа
-					cancellationToken.Register (session.Dispose, false);
-				}
-
-				await session.StartAsync (cancellationToken).ConfigureAwait (false);
-
-				// запускаем цикл обработки команд
-				while (true)
-				{
-					try
+					if (cancellationToken.CanBeCanceled)
 					{
-						var continueProcesssing = await session.ReceiveCommandSendReplyAsync (cancellationToken).ConfigureAwait (false);
-						if (!continueProcesssing)
+						cancellationToken.ThrowIfCancellationRequested ();
+
+						// на отмену регистрируем посылку прощального ответа
+						cancellationToken.Register (session.Dispose, false);
+					}
+
+					await session.StartAsync (cancellationToken).ConfigureAwait (false);
+
+					// запускаем цикл обработки команд
+					while (true)
+					{
+						try
 						{
-							break;
+							var continueProcesssing = await session.ReceiveCommandSendReplyAsync (cancellationToken).ConfigureAwait (false);
+							if (!continueProcesssing)
+							{
+								break;
+							}
 						}
-					}
-					catch (OperationCanceledException)
-					{
-						_logger?.Warn (string.Format (
-							"Canceling protocol with {0}.",
-							connection.RemoteEndPoint));
-						throw;
-					}
-					catch (Exception excpt)
-					{
-						// Отдельно отслеживаем запрос отмены при ObjectDisposedException.
-						// Такая комбинация означает отмену операции с объектом, не поддерживающим отмену отдельных операций.
-						if (cancellationToken.IsCancellationRequested &&
-							((excpt is ObjectDisposedException) ||
-							((excpt is IOException) && (excpt.InnerException is ObjectDisposedException))))
+						catch (OperationCanceledException)
 						{
 							_logger?.Warn (string.Format (
 								"Canceling protocol with {0}.",
 								connection.RemoteEndPoint));
-							cancellationToken.ThrowIfCancellationRequested ();
+							throw;
 						}
+						catch (Exception excpt)
+						{
+							// Отдельно отслеживаем запрос отмены при ObjectDisposedException.
+							// Такая комбинация означает отмену операции с объектом, не поддерживающим отмену отдельных операций.
+							if (cancellationToken.IsCancellationRequested &&
+								((excpt is ObjectDisposedException) ||
+								((excpt is IOException) && (excpt.InnerException is ObjectDisposedException))))
+							{
+								_logger?.Warn (string.Format (
+									"Canceling protocol with {0}.",
+									connection.RemoteEndPoint));
+								cancellationToken.ThrowIfCancellationRequested ();
+							}
 
-						_logger?.Warn (string.Format (
-							"Aborting protocol with {0}. {1}",
-							connection.RemoteEndPoint,
-							ExceptionDescriptionProvider.GetDescription (excpt)));
-						throw;
+							_logger?.Warn (string.Format (
+								"Aborting protocol with {0}. {1}",
+								connection.RemoteEndPoint,
+								ExceptionDescriptionProvider.GetDescription (excpt)));
+							throw;
+						}
 					}
 				}
 			}

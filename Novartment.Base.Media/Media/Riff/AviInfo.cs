@@ -97,101 +97,101 @@ namespace Novartment.Base.Media
 
 			Contract.EndContractBlock ();
 
-			return ParseAsyncStateMachine (source, cancellationToken);
-		}
+			return ParseAsyncStateMachine ();
 
-		private static async Task<AviInfo> ParseAsyncStateMachine (IBufferedSource source, CancellationToken cancellationToken)
-		{
-			var rootChunk = await RiffChunk.ParseAsync (source, cancellationToken).ConfigureAwait (false);
-			if (rootChunk.Id != "RIFF")
+			async Task<AviInfo> ParseAsyncStateMachine ()
 			{
-				throw new FormatException ("Root chunk is not 'RIFF'.");
-			}
-
-			if (!rootChunk.IsSubChunkList)
-			{
-				throw new FormatException ("Root RIFF-chunk does not contain any subchunks.");
-			}
-
-			await source.EnsureBufferAsync (4, cancellationToken).ConfigureAwait (false);
-			var reader = new RiffChunkListReader (rootChunk.Source);
-			if (reader.ListId != "AVI ")
-			{
-				throw new FormatException ("Specified source is not valid RIFF/AVI.");
-			}
-
-			var isMovedToNextChunk = await reader.MoveNextAsync (cancellationToken).ConfigureAwait (false);
-			if (!isMovedToNextChunk)
-			{
-				throw new FormatException ("Specified source is not valid RIFF/AVI.");
-			}
-
-			var aviChunk = reader.Current;
-
-			if (!aviChunk.IsSubChunkList)
-			{
-				throw new FormatException ("Specified source does not contain RIFF-chunk with main header 'LIST/hdrl'.");
-			}
-
-			await source.EnsureBufferAsync (4, cancellationToken).ConfigureAwait (false);
-			reader = new RiffChunkListReader (aviChunk.Source);
-			if ((reader == null) ||
-				(reader.ListId != "hdrl"))
-			{
-				throw new FormatException ("Specified source does not contain RIFF-chunk with main header 'LIST/hdrl'.");
-			}
-
-			uint microSecPerFrame = 0;
-			uint flags = 0;
-			uint totalFrames = 0;
-			uint width = 0;
-			uint height = 0;
-			var streamInfos = new ArrayList<AviStreamInfo> ();
-			while (await reader.MoveNextAsync (cancellationToken).ConfigureAwait (false))
-			{
-				var chunk = reader.Current;
-				if (chunk.Id == "avih")
+				var rootChunk = await RiffChunk.ParseAsync (source, cancellationToken).ConfigureAwait (false);
+				if (rootChunk.Id != "RIFF")
 				{
-					/*
-					DWORD dwMicroSecPerFrame;
-					DWORD dwMaxBytesPerSec;
-					DWORD dwPaddingGranularity;
-					DWORD dwFlags;
-					DWORD dwTotalFrames;
-					DWORD dwInitialFrames;
-					DWORD dwStreams;
-					DWORD dwSuggestedBufferSize;
-					DWORD dwWidth;
-					DWORD dwHeight;
-					DWORD dwReserved[4];
-					*/
-					await chunk.Source.EnsureBufferAsync (56, cancellationToken).ConfigureAwait (false); // "To small size of RIFF-chunk 'avih'. Expected minimum 56 bytes.");
-					microSecPerFrame = BitConverter.ToUInt32 (chunk.Source.Buffer, chunk.Source.Offset);
-					flags = BitConverter.ToUInt32 (chunk.Source.Buffer, chunk.Source.Offset + 12);
-					totalFrames = BitConverter.ToUInt32 (chunk.Source.Buffer, chunk.Source.Offset + 16);
-					width = BitConverter.ToUInt32 (chunk.Source.Buffer, chunk.Source.Offset + 32);
-					height = BitConverter.ToUInt32 (chunk.Source.Buffer, chunk.Source.Offset + 36);
+					throw new FormatException ("Root chunk is not 'RIFF'.");
 				}
 
-				if (chunk.IsSubChunkList)
+				if (!rootChunk.IsSubChunkList)
 				{
-					await chunk.Source.EnsureBufferAsync (4, cancellationToken).ConfigureAwait (false);
-					var subReader = new RiffChunkListReader (chunk.Source);
-					if (subReader.ListId == "strl")
+					throw new FormatException ("Root RIFF-chunk does not contain any subchunks.");
+				}
+
+				await source.EnsureBufferAsync (4, cancellationToken).ConfigureAwait (false);
+				var reader = new RiffChunkListReader (rootChunk.Source);
+				if (reader.ListId != "AVI ")
+				{
+					throw new FormatException ("Specified source is not valid RIFF/AVI.");
+				}
+
+				var isMovedToNextChunk = await reader.MoveNextAsync (cancellationToken).ConfigureAwait (false);
+				if (!isMovedToNextChunk)
+				{
+					throw new FormatException ("Specified source is not valid RIFF/AVI.");
+				}
+
+				var aviChunk = reader.Current;
+
+				if (!aviChunk.IsSubChunkList)
+				{
+					throw new FormatException ("Specified source does not contain RIFF-chunk with main header 'LIST/hdrl'.");
+				}
+
+				await source.EnsureBufferAsync (4, cancellationToken).ConfigureAwait (false);
+				reader = new RiffChunkListReader (aviChunk.Source);
+				if ((reader == null) ||
+					(reader.ListId != "hdrl"))
+				{
+					throw new FormatException ("Specified source does not contain RIFF-chunk with main header 'LIST/hdrl'.");
+				}
+
+				uint microSecPerFrame = 0;
+				uint flags = 0;
+				uint totalFrames = 0;
+				uint width = 0;
+				uint height = 0;
+				var streamInfos = new ArrayList<AviStreamInfo> ();
+				while (await reader.MoveNextAsync (cancellationToken).ConfigureAwait (false))
+				{
+					var chunk = reader.Current;
+					if (chunk.Id == "avih")
 					{
-						var streamInfo = await AviStreamInfo.ParseAsync (subReader, cancellationToken).ConfigureAwait (false);
-						streamInfos.Add (streamInfo);
+						/*
+						DWORD dwMicroSecPerFrame;
+						DWORD dwMaxBytesPerSec;
+						DWORD dwPaddingGranularity;
+						DWORD dwFlags;
+						DWORD dwTotalFrames;
+						DWORD dwInitialFrames;
+						DWORD dwStreams;
+						DWORD dwSuggestedBufferSize;
+						DWORD dwWidth;
+						DWORD dwHeight;
+						DWORD dwReserved[4];
+						*/
+						await chunk.Source.EnsureBufferAsync (56, cancellationToken).ConfigureAwait (false); // "To small size of RIFF-chunk 'avih'. Expected minimum 56 bytes.");
+						microSecPerFrame = BitConverter.ToUInt32 (chunk.Source.Buffer, chunk.Source.Offset);
+						flags = BitConverter.ToUInt32 (chunk.Source.Buffer, chunk.Source.Offset + 12);
+						totalFrames = BitConverter.ToUInt32 (chunk.Source.Buffer, chunk.Source.Offset + 16);
+						width = BitConverter.ToUInt32 (chunk.Source.Buffer, chunk.Source.Offset + 32);
+						height = BitConverter.ToUInt32 (chunk.Source.Buffer, chunk.Source.Offset + 36);
+					}
+
+					if (chunk.IsSubChunkList)
+					{
+						await chunk.Source.EnsureBufferAsync (4, cancellationToken).ConfigureAwait (false);
+						var subReader = new RiffChunkListReader (chunk.Source);
+						if (subReader.ListId == "strl")
+						{
+							var streamInfo = await AviStreamInfo.ParseAsync (subReader, cancellationToken).ConfigureAwait (false);
+							streamInfos.Add (streamInfo);
+						}
 					}
 				}
-			}
 
-			return new AviInfo (
-				microSecPerFrame,
-				flags,
-				totalFrames,
-				width,
-				height,
-				streamInfos);
+				return new AviInfo (
+					microSecPerFrame,
+					flags,
+					totalFrames,
+					width,
+					height,
+					streamInfos);
+			}
 		}
 	}
 }

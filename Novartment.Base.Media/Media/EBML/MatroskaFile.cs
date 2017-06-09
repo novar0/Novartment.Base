@@ -35,24 +35,22 @@ namespace Novartment.Base.Media
 
 			Contract.EndContractBlock ();
 
-			return ParseSegmentInformationAsyncStateMachine (source, cancellationToken);
-		}
+			return ParseSegmentInformationAsyncStateMachine ();
 
-		private static async Task<MatroskaSegmentInfo> ParseSegmentInformationAsyncStateMachine (
-			IBufferedSource source,
-			CancellationToken cancellationToken)
-		{
-			var reader = new EbmlElementCollectionEnumerator (source);
-			while (await reader.MoveNextAsync (cancellationToken).ConfigureAwait (false))
+			async Task<MatroskaSegmentInfo> ParseSegmentInformationAsyncStateMachine ()
 			{
-				if (reader.Current.Id == 0x18538067UL)
+				var reader = new EbmlElementCollectionEnumerator (source);
+				while (await reader.MoveNextAsync (cancellationToken).ConfigureAwait (false))
 				{
-					var element = await MatroskaSegmentInfo.ParseAsync (reader.Current.ReadSubElements (), cancellationToken).ConfigureAwait (false);
-					return element;
+					if (reader.Current.Id == 0x18538067UL)
+					{
+						var element = await MatroskaSegmentInfo.ParseAsync (reader.Current.ReadSubElements (), cancellationToken).ConfigureAwait (false);
+						return element;
+					}
 				}
-			}
 
-			throw new InvalidOperationException ("Segment Information not found");
+				throw new InvalidOperationException ("Segment Information not found");
+			}
 		}
 	}
 }

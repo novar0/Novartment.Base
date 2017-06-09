@@ -36,8 +36,10 @@ namespace Novartment.Base
 				return Task.FromCanceled (cancellationToken);
 			}
 
-			var proc = new Process ();
-			proc.StartInfo = startInfo;
+			var proc = new Process ()
+			{
+				StartInfo = startInfo
+			};
 			return proc.StartAsync (cancellationToken);
 		}
 
@@ -72,8 +74,10 @@ namespace Novartment.Base
 				return Task.FromCanceled (cancellationToken);
 			}
 
-			var proc = new Process ();
-			proc.StartInfo = startInfo;
+			var proc = new Process ()
+			{
+				StartInfo = startInfo
+			};
 			return proc.StartAsync (completionMutexName, cancellationToken);
 		}
 	}

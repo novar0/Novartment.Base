@@ -472,8 +472,7 @@ namespace Novartment.Base.Collections.Linq
 			var array = new TSource[source.Count];
 			if (source.Count > 0)
 			{
-				var arrayDuplicableCollection = source as IArrayDuplicableCollection<TSource>;
-				if (arrayDuplicableCollection != null)
+				if (source is IArrayDuplicableCollection<TSource> arrayDuplicableCollection)
 				{
 					arrayDuplicableCollection.CopyTo (array, 0);
 				}
@@ -738,8 +737,7 @@ namespace Novartment.Base.Collections.Linq
 					var sorter = CreateSorter (null);
 					var map = sorter.CreateIndex ();
 
-					var list = _source as IReadOnlyList<TElement>;
-					if (list != null)
+					if (_source is IReadOnlyList<TElement> list)
 					{
 						for (int i = 0; i < list.Count; ++i)
 						{

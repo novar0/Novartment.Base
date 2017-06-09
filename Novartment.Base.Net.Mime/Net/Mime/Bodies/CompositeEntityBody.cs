@@ -152,22 +152,22 @@ namespace Novartment.Base.Net.Mime
 
 			Contract.EndContractBlock ();
 
-			return SaveAsyncStateMachine (destination, cancellationToken);
-		}
+			return SaveAsyncStateMachine ();
 
-		private async Task SaveAsyncStateMachine (IBinaryDestination destination, CancellationToken cancellationToken)
-		{
-			var nextBoundary = GetNextBoundary ();
-			var endBoundary = GetEndBoundary (nextBoundary);
-
-			foreach (var entity in this.Parts)
+			async Task SaveAsyncStateMachine ()
 			{
-				cancellationToken.ThrowIfCancellationRequested ();
-				await destination.WriteAsync (nextBoundary, 0, nextBoundary.Length, cancellationToken).ConfigureAwait (false);
-				await entity.SaveAsync (destination, cancellationToken).ConfigureAwait (false);
-			}
+				var nextBoundary = GetNextBoundary ();
+				var endBoundary = GetEndBoundary (nextBoundary);
 
-			await destination.WriteAsync (endBoundary, 0, endBoundary.Length, cancellationToken).ConfigureAwait (false);
+				foreach (var entity in this.Parts)
+				{
+					cancellationToken.ThrowIfCancellationRequested ();
+					await destination.WriteAsync (nextBoundary, 0, nextBoundary.Length, cancellationToken).ConfigureAwait (false);
+					await entity.SaveAsync (destination, cancellationToken).ConfigureAwait (false);
+				}
+
+				await destination.WriteAsync (endBoundary, 0, endBoundary.Length, cancellationToken).ConfigureAwait (false);
+			}
 		}
 
 		/// <summary>

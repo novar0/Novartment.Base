@@ -98,6 +98,7 @@ namespace Novartment.Base.Net.Mime
 
 			var headerSource = new TemplateSeparatedBufferedSource (source, HeaderDecoder.CarriageReturnLinefeed2, false);
 			var task = HeaderDecoder.LoadHeaderFieldsAsync (headerSource, cancellationToken);
+
 			return LoadAsyncFinalizer ();
 
 			async Task LoadAsyncFinalizer ()
@@ -135,18 +136,15 @@ namespace Novartment.Base.Net.Mime
 			var header = new ArrayList<HeaderFieldBuilder> ();
 			CreateHeader (header);
 
-			return SaveAsyncStateMachine (destination, header, cancellationToken);
-		}
+			return SaveAsyncStateMachine ();
 
-		private async Task SaveAsyncStateMachine (
-			IBinaryDestination destination,
-			ArrayList<HeaderFieldBuilder> header,
-			CancellationToken cancellationToken)
-		{
-			await HeaderEncoder.SaveHeaderAsync (header, destination, cancellationToken)
-				.ConfigureAwait (false);
-			await destination.WriteAsync (HeaderDecoder.CarriageReturnLinefeed, 0, HeaderDecoder.CarriageReturnLinefeed.Length, cancellationToken)
-				.ConfigureAwait (false);
+			async Task SaveAsyncStateMachine ()
+			{
+				await HeaderEncoder.SaveHeaderAsync (header, destination, cancellationToken)
+					.ConfigureAwait (false);
+				await destination.WriteAsync (HeaderDecoder.CarriageReturnLinefeed, 0, HeaderDecoder.CarriageReturnLinefeed.Length, cancellationToken)
+					.ConfigureAwait (false);
+			}
 		}
 
 		// Создаёт коллекцию свойств уведомления об изменении дислокации сообщения

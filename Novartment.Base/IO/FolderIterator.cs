@@ -79,11 +79,11 @@ namespace Novartment.Base.IO
 		/// <returns>Интерфейс, который может использоваться для перебора элементов.</returns>
 		public IEnumerator<FileData> GetEnumerator ()
 		{
-			var stack = new ArrayList<string> ();
-			stack.Add (string.Empty);
-
-			string item;
-			while (stack.TryTakeLast (out item))
+			var stack = new ArrayList<string>
+			{
+				string.Empty
+			};
+			while (stack.TryTakeLast (out string item))
 			{
 				var dirInfo = new DirectoryInfo (Path.Combine (_baseFolder, item));
 				foreach (var subitem in dirInfo.EnumerateFileSystemInfos ())

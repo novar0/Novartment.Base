@@ -212,37 +212,37 @@ namespace Novartment.Base.BinaryStreaming
 				return Task.FromResult (size);
 			}
 
-			return TrySkipAsyncStateMachine (size, cancellationToken);
-		}
+			return TrySkipAsyncStateMachine ();
 
-		private async Task<long> TrySkipAsyncStateMachine (long size, CancellationToken cancellationToken)
-		{
-			var available = _count;
-
-			long skipped = available;
-
-			// пропускаем весь буфер
-			size -= (long)available;
-			SkipBuffer (available);
-
-			bool isJobSetted;
-			do
+			async Task<long> TrySkipAsyncStateMachine ()
 			{
-				var currentSourceSkipped = await _currentSourceJob.Item.TrySkipAsync (size, cancellationToken).ConfigureAwait (false);
-				size -= currentSourceSkipped;
-				skipped += currentSourceSkipped;
-				CheckIfSourceExhausted ();
-				if ((size <= 0) || _isProviderCompleted)
+				var available = _count;
+
+				long skipped = available;
+
+				// пропускаем весь буфер
+				size -= (long)available;
+				SkipBuffer (available);
+
+				bool isJobSetted;
+				do
 				{
-					break;
+					var currentSourceSkipped = await _currentSourceJob.Item.TrySkipAsync (size, cancellationToken).ConfigureAwait (false);
+					size -= currentSourceSkipped;
+					skipped += currentSourceSkipped;
+					CheckIfSourceExhausted ();
+					if ((size <= 0) || _isProviderCompleted)
+					{
+						break;
+					}
+
+					var newJob = await _sourceProvider.TakeJobAsync (cancellationToken).ConfigureAwait (false);
+					isJobSetted = SetNewJob (newJob);
 				}
+				while (isJobSetted);
 
-				var newJob = await _sourceProvider.TakeJobAsync (cancellationToken).ConfigureAwait (false);
-				isJobSetted = SetNewJob (newJob);
+				return skipped;
 			}
-			while (isJobSetted);
-
-			return skipped;
 		}
 
 		private async Task<bool> EnsureSomethingInSourceAsync (CancellationToken cancellationToken)

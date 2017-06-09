@@ -146,6 +146,7 @@ namespace Novartment.Base.BinaryStreaming
 			}
 
 			var task = _source.FillBufferAsync (cancellationToken);
+
 			return FillBufferAsyncFinalizer ();
 
 			async Task FillBufferAsyncFinalizer ()
@@ -189,20 +190,20 @@ namespace Novartment.Base.BinaryStreaming
 				return Task.CompletedTask;
 			}
 
-			return EnsureBufferAsyncStateMachine (size, cancellationToken);
-		}
+			return EnsureBufferAsyncStateMachine ();
 
-		private async Task EnsureBufferAsyncStateMachine (int size, CancellationToken cancellationToken)
-		{
-			while ((size > _countInBuffer) && !_source.IsExhausted)
+			async Task EnsureBufferAsyncStateMachine ()
 			{
-				await _source.FillBufferAsync (cancellationToken).ConfigureAwait (false);
-				UpdateLimits ((long)_countInBuffer + _countRemainder);
-			}
+				while ((size > _countInBuffer) && !_source.IsExhausted)
+				{
+					await _source.FillBufferAsync (cancellationToken).ConfigureAwait (false);
+					UpdateLimits ((long)_countInBuffer + _countRemainder);
+				}
 
-			if (size > _countInBuffer)
-			{
-				throw new NotEnoughDataException (size - _countInBuffer);
+				if (size > _countInBuffer)
+				{
+					throw new NotEnoughDataException (size - _countInBuffer);
+				}
 			}
 		}
 

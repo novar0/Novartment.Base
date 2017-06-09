@@ -59,9 +59,10 @@ namespace Novartment.Base.Net
 		private async Task AcceptConnectionsLoop ()
 		{
 			_logger?.Info ("Started accepting connections to " + _listener.LocalEndpoint);
+			Task startingTask;
+			ITcpConnection connection;
 			try
 			{
-				ITcpConnection connection;
 				while (!_acceptConnectionsLoopCancellation.IsCancellationRequested)
 				{
 					connection = await _listener.AcceptTcpClientAsync (_acceptConnectionsLoopCancellation.Token).ConfigureAwait (false);
@@ -74,7 +75,6 @@ namespace Novartment.Base.Net
 
 					// на каждое подключением создаём источник отмены, потому что каждое может отменятся независимо от других по тайм-ауту
 					var cts = new CancellationTokenSource ();
-					Task startingTask;
 					try
 					{
 						startingTask = _protocol.StartAsync (connection, cts.Token);
@@ -85,7 +85,7 @@ namespace Novartment.Base.Net
 						throw;
 					}
 
-					var finishingTask = AcceptedConnectionFinalizer (startingTask, connection);
+					var finishingTask = AcceptedConnectionFinalizer ();
 					var client = new ConnectedClient (connection, finishingTask, cts);
 					_connections[connection.RemoteEndPoint] = client;
 				}
@@ -95,18 +95,18 @@ namespace Novartment.Base.Net
 				Interlocked.Exchange (ref _acceptConnectionsLoopCancellation, null)?.Dispose (); // отменять уже нечего
 				_logger?.Info ("Stopped accepting connections to " + _listener.LocalEndpoint);
 			}
-		}
 
-		private async Task AcceptedConnectionFinalizer (Task protocolProcessing, ITcpConnection connection)
-		{
-			try
+			async Task AcceptedConnectionFinalizer ()
 			{
-				await protocolProcessing.ConfigureAwait (false);
-			}
-			finally
-			{
-				_connections.TryRemove (connection.RemoteEndPoint, out ConnectedClient connectionProtocolTask);
-				connection.Dispose ();
+				try
+				{
+					await startingTask.ConfigureAwait (false);
+				}
+				finally
+				{
+					_connections.TryRemove (connection.RemoteEndPoint, out ConnectedClient connectionProtocolTask);
+					connection.Dispose ();
+				}
 			}
 		}
 	}

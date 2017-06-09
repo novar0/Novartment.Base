@@ -93,7 +93,15 @@ namespace Novartment.Base.Media
 
 			Contract.EndContractBlock ();
 
-			return ParseAsyncStateMachine (source, cancellationToken);
+			return ParseAsyncStateMachine ();
+
+			async Task<EbmlElement> ParseAsyncStateMachine ()
+			{
+				var id = await ReadVIntAsync (source, cancellationToken).ConfigureAwait (false);
+				var size = await ReadVIntValueAsync (source, cancellationToken).ConfigureAwait (false);
+				await source.FillBufferAsync (cancellationToken).ConfigureAwait (false);
+				return new EbmlElement (id, size, source);
+			}
 		}
 
 		/// <summary>
@@ -388,14 +396,6 @@ namespace Novartment.Base.Media
 		{
 			_readed += _size;
 			return new EbmlElementCollectionEnumerator (new SizeLimitedBufferedSource (_source, (long)_size));
-		}
-
-		private static async Task<EbmlElement> ParseAsyncStateMachine (IBufferedSource source, CancellationToken cancellationToken)
-		{
-			var id = await ReadVIntAsync (source, cancellationToken).ConfigureAwait (false);
-			var size = await ReadVIntValueAsync (source, cancellationToken).ConfigureAwait (false);
-			await source.FillBufferAsync (cancellationToken).ConfigureAwait (false);
-			return new EbmlElement (id, size, source);
 		}
 
 		private static async Task<ulong> ReadVIntAsync (IBufferedSource source, CancellationToken cancellationToken)

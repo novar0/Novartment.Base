@@ -46,33 +46,29 @@ namespace Novartment.Base.Net.Smtp
 			}
 
 			return (recipients.Count > 0) ?
-				OriginateTransactionStateMachine (message, transactionFactory, recipients, cancellationToken) :
+				OriginateTransactionStateMachine () :
 				Task.CompletedTask;
-		}
 
-		// Парралельно идут два асинхронных процесса:
-		// 1. Запись данных в message.SaveAsync().
-		// 3. Чтение этих же данных в transaction.TransferDataAndFinishAsync().
-		// Посредником/медиатором служит канал BufferedChannel.
-		private static async Task OriginateTransactionStateMachine (
-			this IMailMessage<AddrSpec> message,
-			TransactionFactory transactionFactory,
-			IReadOnlyCollection<AddrSpec> recipients,
-			CancellationToken cancellationToken)
-		{
-			using (var transaction = transactionFactory.Invoke (message.TransferEncoding))
+			// Парралельно идут два асинхронных процесса:
+			// 1. Запись данных в message.SaveAsync().
+			// 3. Чтение этих же данных в transaction.TransferDataAndFinishAsync().
+			// Посредником/медиатором служит канал BufferedChannel.
+			async Task OriginateTransactionStateMachine ()
 			{
-				var returnPath = (message.Originators.Count > 0) ? message.Originators[0] : null;
-				await transaction.StartAsync (returnPath, cancellationToken).ConfigureAwait (false);
-				foreach (var recipient in recipients)
+				using (var transaction = transactionFactory.Invoke (message.TransferEncoding))
 				{
-					await transaction.TryAddRecipientAsync (recipient, cancellationToken).ConfigureAwait (false);
-				}
+					var returnPath = (message.Originators.Count > 0) ? message.Originators[0] : null;
+					await transaction.StartAsync (returnPath, cancellationToken).ConfigureAwait (false);
+					foreach (var recipient in recipients)
+					{
+						await transaction.TryAddRecipientAsync (recipient, cancellationToken).ConfigureAwait (false);
+					}
 
-				var channel = new BufferedChannel (new byte[8192]); // TcpClient.SendBufferSize default value is 8192 bytes
-				var writeTask = WriteToChannelAsync (message, channel, cancellationToken);
-				var readTask = ReadFromChannelAsync (transaction, channel, cancellationToken);
-				await Task.WhenAll (writeTask, readTask).ConfigureAwait (false);
+					var channel = new BufferedChannel (new byte[8192]); // TcpClient.SendBufferSize default value is 8192 bytes
+					var writeTask = WriteToChannelAsync (message, channel, cancellationToken);
+					var readTask = ReadFromChannelAsync (transaction, channel, cancellationToken);
+					await Task.WhenAll (writeTask, readTask).ConfigureAwait (false);
+				}
 			}
 		}
 

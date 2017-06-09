@@ -335,8 +335,7 @@ namespace Novartment.Base.Data
 					var placeHolder = string.Format (CultureInfo.InvariantCulture, _parameterPlaceholder, _globalParamNumber++);
 
 					var (dbValue, dbType) = param.GetDbValue ();
-					DbType newDbType;
-					var isReplacementFound = _dbTypeReplacements.TryGetValue (dbType, out newDbType);
+					var isReplacementFound = _dbTypeReplacements.TryGetValue (dbType, out DbType newDbType);
 					if (isReplacementFound)
 					{
 						dbType = newDbType;

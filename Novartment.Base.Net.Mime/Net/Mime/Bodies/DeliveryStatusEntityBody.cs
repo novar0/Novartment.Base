@@ -151,7 +151,23 @@ namespace Novartment.Base.Net.Mime
 			var header = new ArrayList<HeaderFieldBuilder> ();
 			CreateHeader (header);
 
-			return SaveAsyncStateMachine (destination, header, cancellationToken);
+			return SaveAsyncStateMachine ();
+
+			async Task SaveAsyncStateMachine ()
+			{
+				await HeaderEncoder.SaveHeaderAsync (header, destination, cancellationToken)
+					.ConfigureAwait (false);
+				await destination.WriteAsync (HeaderDecoder.CarriageReturnLinefeed, 0, HeaderDecoder.CarriageReturnLinefeed.Length, cancellationToken)
+					.ConfigureAwait (false);
+				foreach (var recipientBlock in this.Recipients)
+				{
+					var headerFields = CreateHeaderRecipient (recipientBlock);
+					await HeaderEncoder.SaveHeaderAsync (headerFields, destination, cancellationToken)
+						.ConfigureAwait (false);
+					await destination.WriteAsync (HeaderDecoder.CarriageReturnLinefeed, 0, HeaderDecoder.CarriageReturnLinefeed.Length, cancellationToken)
+						.ConfigureAwait (false);
+				}
+			}
 		}
 
 		// Создаёт коллекцию свойств уведомления о статусе доставки сообщения конкретному адресату
@@ -373,25 +389,6 @@ namespace Novartment.Base.Net.Mime
 			}
 
 			return fields.GetReadOnlyView ();
-		}
-
-		private async Task SaveAsyncStateMachine (
-			IBinaryDestination destination,
-			ArrayList<HeaderFieldBuilder> header,
-			CancellationToken cancellationToken)
-		{
-			await HeaderEncoder.SaveHeaderAsync (header, destination, cancellationToken)
-				.ConfigureAwait (false);
-			await destination.WriteAsync (HeaderDecoder.CarriageReturnLinefeed, 0, HeaderDecoder.CarriageReturnLinefeed.Length, cancellationToken)
-				.ConfigureAwait (false);
-			foreach (var recipientBlock in this.Recipients)
-			{
-				var headerFields = CreateHeaderRecipient (recipientBlock);
-				await HeaderEncoder.SaveHeaderAsync (headerFields, destination, cancellationToken)
-					.ConfigureAwait (false);
-				await destination.WriteAsync (HeaderDecoder.CarriageReturnLinefeed, 0, HeaderDecoder.CarriageReturnLinefeed.Length, cancellationToken)
-					.ConfigureAwait (false);
-			}
 		}
 
 		// Создаёт коллекцию свойств уведомления о статусе доставки сообщения

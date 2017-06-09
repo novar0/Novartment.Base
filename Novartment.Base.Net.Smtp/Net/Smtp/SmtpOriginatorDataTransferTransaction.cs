@@ -65,6 +65,7 @@ namespace Novartment.Base.Net.Smtp
 
 			var cmd = new SmtpMailFromCommand (returnPath, _requiredEncodingSupport, null);
 			var task = _session.ProcessCommandAsync (cmd, cancellationToken);
+
 			return StartAsyncFinalizer ();
 
 			async Task StartAsyncFinalizer ()
@@ -99,6 +100,7 @@ namespace Novartment.Base.Net.Smtp
 
 			var cmd = new SmtpRcptToCommand (recipient);
 			var task = _session.ProcessCommandAsync (cmd, cancellationToken);
+
 			return TryAddRecipientAsyncFinalizer ();
 
 			async Task<RecipientAcceptanceState> TryAddRecipientAsyncFinalizer ()

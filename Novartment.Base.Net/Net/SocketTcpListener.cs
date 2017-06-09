@@ -119,10 +119,11 @@ namespace Novartment.Base.Net
 				tokenRegistration = cancellationToken.Register (Stop, false);
 			}
 
+			Task<Socket> task;
 			try
 			{
-				var task = _socket.AcceptAsync ();
-				return AcceptTcpClientAsyncFinalizer (task, localHostFqdn, tokenRegistration, cancellationToken);
+				task = _socket.AcceptAsync ();
+				return AcceptTcpClientAsyncFinalizer ();
 			}
 			catch (Exception excpt)
 			{
@@ -133,6 +134,23 @@ namespace Novartment.Base.Net
 				}
 
 				throw;
+			}
+
+			async Task<ITcpConnection> AcceptTcpClientAsyncFinalizer ()
+			{
+				try
+				{
+					var connectedSocket = await task.ConfigureAwait (false);
+					return new SocketBinaryTcpConnection (connectedSocket, localHostFqdn, null);
+				}
+				catch (ObjectDisposedException) when (cancellationToken.IsCancellationRequested)
+				{
+					throw new TaskCanceledException (task);
+				}
+				finally
+				{
+					tokenRegistration?.Dispose ();
+				}
 			}
 		}
 
@@ -150,27 +168,6 @@ namespace Novartment.Base.Net
 		public void Dispose ()
 		{
 			_socket.Dispose ();
-		}
-
-		private static async Task<ITcpConnection> AcceptTcpClientAsyncFinalizer (
-			Task<Socket> task,
-			string localHostFqdn,
-			IDisposable disposable,
-			CancellationToken cancellationToken)
-		{
-			try
-			{
-				var connectedSocket = await task.ConfigureAwait (false);
-				return new SocketBinaryTcpConnection (connectedSocket, localHostFqdn, null);
-			}
-			catch (ObjectDisposedException) when (cancellationToken.IsCancellationRequested)
-			{
-				throw new TaskCanceledException (task);
-			}
-			finally
-			{
-				disposable?.Dispose ();
-			}
 		}
 	}
 }

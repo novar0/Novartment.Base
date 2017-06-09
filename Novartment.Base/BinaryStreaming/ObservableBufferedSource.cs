@@ -148,11 +148,11 @@ namespace Novartment.Base.BinaryStreaming
 
 			Contract.EndContractBlock ();
 
-			var fastSkipSource = _source as IFastSkipBufferedSource;
-			if (fastSkipSource != null)
+			Task<long> task;
+			if (_source is IFastSkipBufferedSource fastSkipSource)
 			{
-				var task = fastSkipSource.TryFastSkipAsync (size, cancellationToken);
-				return TryFastSkipAsyncFinalizer (task);
+				task = fastSkipSource.TryFastSkipAsync (size, cancellationToken);
+				return TryFastSkipAsyncFinalizer ();
 			}
 
 			// источник не поддерживает быстрый пропуск,
@@ -174,40 +174,40 @@ namespace Novartment.Base.BinaryStreaming
 				return Task.FromResult ((long)available);
 			}
 
-			return TrySkipAsyncStateMachine (size, cancellationToken);
-		}
+			return TrySkipAsyncStateMachine ();
 
-		private async Task<long> TryFastSkipAsyncFinalizer (Task<long> task)
-		{
-			var size = await task.ConfigureAwait (false);
-			_progress.Report (size);
-			return size;
-		}
-
-		private async Task<long> TrySkipAsyncStateMachine (long size, CancellationToken cancellationToken)
-		{
-			long skipped = 0L;
-			do
+			async Task<long> TrySkipAsyncStateMachine ()
 			{
-				// пропускаем всё что в буфере
-				var available = _source.Count;
-				_source.SkipBuffer (available);
-				_progress.Report (available);
-				size -= (long)available;
-				skipped += (long)available;
+				long skipped = 0L;
+				do
+				{
+					// пропускаем всё что в буфере
+					available = _source.Count;
+					_source.SkipBuffer (available);
+					_progress.Report (available);
+					size -= (long)available;
+					skipped += (long)available;
 
-				// заполняем буфер
-				await _source.FillBufferAsync (cancellationToken).ConfigureAwait (false);
+					// заполняем буфер
+					await _source.FillBufferAsync (cancellationToken).ConfigureAwait (false);
+				}
+				while (!_source.IsExhausted && (size > (long)_source.Count));
+
+				// пропускаем частично буфер
+				var reminder = (int)Math.Min (size, (long)_source.Count);
+				_source.SkipBuffer (reminder);
+				_progress.Report (reminder);
+				skipped += reminder;
+
+				return skipped;
 			}
-			while (!_source.IsExhausted && (size > (long)_source.Count));
 
-			// пропускаем частично буфер
-			var reminder = (int)Math.Min (size, (long)_source.Count);
-			_source.SkipBuffer (reminder);
-			_progress.Report (reminder);
-			skipped += reminder;
-
-			return skipped;
+			async Task<long> TryFastSkipAsyncFinalizer ()
+			{
+				size = await task.ConfigureAwait (false);
+				_progress.Report (size);
+				return size;
+			}
 		}
 	}
 }

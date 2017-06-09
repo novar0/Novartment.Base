@@ -63,10 +63,8 @@ namespace Novartment.Base.Shell
 		/// false, если перечислитель достиг конца.</returns>
 		public bool MoveNext ()
 		{
-			IShellItem shellItem;
-			uint numItemsReturned;
 			uint itemsRequested = 1;
-			var hr = _nativeEnumShellItems.Next (itemsRequested, out shellItem, out numItemsReturned);
+			var hr = _nativeEnumShellItems.Next (itemsRequested, out IShellItem shellItem, out uint numItemsReturned);
 
 			if ((numItemsReturned < itemsRequested) || (hr != 0))
 			{

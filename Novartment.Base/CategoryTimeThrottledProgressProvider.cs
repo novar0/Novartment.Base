@@ -109,11 +109,10 @@ namespace Novartment.Base
 		{
 			var categorizedData = value as ICategory;
 			var category = (categorizedData == null) ? 0 : categorizedData.Category;
-			ReportEvent reportEvent;
 			bool needReport = false;
 			lock (_dictionaryLocker)
 			{
-				var found = _categoryPostponedData.TryGetItem (category, _categoryComparer, out reportEvent);
+				var found = _categoryPostponedData.TryGetItem (category, _categoryComparer, out ReportEvent reportEvent);
 				if (found && ((DateTime.Now - reportEvent.Time) < _intervalToSendProgressUpdates))
 				{
 					// минимальный интервал от прошлого уведомления такой категории ещё не прошёл, поэтому заменяем отложенное ранее

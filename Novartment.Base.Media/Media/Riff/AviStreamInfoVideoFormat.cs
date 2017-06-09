@@ -104,46 +104,46 @@ namespace Novartment.Base.Media
 					exception);
 			}
 
-			return ParseAsyncFinalizer (task, source);
-		}
+			return ParseAsyncFinalizer ();
 
-		private static async Task<AviStreamInfoVideoFormat> ParseAsyncFinalizer (Task task, IBufferedSource source)
-		{
-			try
+			async Task<AviStreamInfoVideoFormat> ParseAsyncFinalizer ()
 			{
-				await task.ConfigureAwait (false);
-			}
-			catch (NotEnoughDataException exception)
-			{
-				throw new FormatException (
-					"Insuficient size of RIFF-chunk 'strf' for stream of type 'vids'. Expected minimum 36 bytes.",
-					exception);
-			}
+				try
+				{
+					await task.ConfigureAwait (false);
+				}
+				catch (NotEnoughDataException exception)
+				{
+					throw new FormatException (
+						"Insuficient size of RIFF-chunk 'strf' for stream of type 'vids'. Expected minimum 36 bytes.",
+						exception);
+				}
 
-			/*
-				LONG	biWidth;
-				LONG	biHeight;
-				WORD	biPlanes;
-				WORD	biBitCount;
-				DWORD	biCompression;
-				DWORD	biSizeImage;
-				LONG	biXPelsPerMeter;
-				LONG	biYPelsPerMeter;
-				DWORD	biClrUsed;
-				DWORD	biClrImportant;
-			*/
-			var compressionNumber = BitConverter.ToUInt32 (source.Buffer, source.Offset + 16);
-			var codecId = (compressionNumber >= 0x20202020) ?
-				AsciiCharSet.GetString (source.Buffer, source.Offset + 16, 4) :
-				compressionNumber.ToString (CultureInfo.InvariantCulture);
-			var videoInfo = new AviStreamInfoVideoFormat (
-				BitConverter.ToUInt32 (source.Buffer, source.Offset + 4),
-				BitConverter.ToUInt32 (source.Buffer, source.Offset + 8),
-				BitConverter.ToUInt32 (source.Buffer, source.Offset + 12),
-				BitConverter.ToUInt32 (source.Buffer, source.Offset + 14),
-				codecId,
-				BitConverter.ToUInt32 (source.Buffer, source.Offset + 20));
-			return videoInfo;
+				/*
+					LONG	biWidth;
+					LONG	biHeight;
+					WORD	biPlanes;
+					WORD	biBitCount;
+					DWORD	biCompression;
+					DWORD	biSizeImage;
+					LONG	biXPelsPerMeter;
+					LONG	biYPelsPerMeter;
+					DWORD	biClrUsed;
+					DWORD	biClrImportant;
+				*/
+				var compressionNumber = BitConverter.ToUInt32 (source.Buffer, source.Offset + 16);
+				var codecId = (compressionNumber >= 0x20202020) ?
+					AsciiCharSet.GetString (source.Buffer, source.Offset + 16, 4) :
+					compressionNumber.ToString (CultureInfo.InvariantCulture);
+				var videoInfo = new AviStreamInfoVideoFormat (
+					BitConverter.ToUInt32 (source.Buffer, source.Offset + 4),
+					BitConverter.ToUInt32 (source.Buffer, source.Offset + 8),
+					BitConverter.ToUInt32 (source.Buffer, source.Offset + 12),
+					BitConverter.ToUInt32 (source.Buffer, source.Offset + 14),
+					codecId,
+					BitConverter.ToUInt32 (source.Buffer, source.Offset + 20));
+				return videoInfo;
+			}
 		}
 	}
 }

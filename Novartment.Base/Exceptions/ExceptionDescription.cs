@@ -82,9 +82,11 @@ namespace Novartment.Base
 
 			if (detailed)
 			{
-				var strList = new ArrayList<string> ();
-				strList.Add (_name);
-				strList.Add ("Message: " + _message);
+				var strList = new ArrayList<string>
+				{
+					_name,
+					"Message: " + _message
+				};
 				if (_details != null)
 				{
 					strList.Add ("Details: " + _details);
