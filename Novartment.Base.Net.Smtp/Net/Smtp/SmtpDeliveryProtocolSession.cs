@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Novartment.Base.BinaryStreaming;
 using Novartment.Base.Collections;
 
@@ -25,7 +26,7 @@ namespace Novartment.Base.Net.Smtp
 		private readonly Func<MailDeliverySourceData, IMailDataTransferTransaction> _currentTransactionFactory;
 		private readonly string _hostFqdn;
 		private readonly SmtpServerSecurityParameters _securityParameters;
-		private readonly ILogWriter _logger;
+		private readonly ILogger _logger;
 
 		private bool _clientIdentified = false;
 		private IMailDataTransferTransaction _currentTransaction = null;
@@ -44,7 +45,7 @@ namespace Novartment.Base.Net.Smtp
 			Func<MailDeliverySourceData, IMailDataTransferTransaction> transactionFactory,
 			string hostFqdn,
 			SmtpServerSecurityParameters securityParameters,
-			ILogWriter logger)
+			ILogger logger)
 		{
 			_sender = sender;
 			_remoteEndPoint = remoteEndPoint;
@@ -108,13 +109,13 @@ namespace Novartment.Base.Net.Smtp
 			}
 			catch (InvalidCredentialException)
 			{
-				_logger?.Warn ("User authenticator failed to check supplied credentials.");
+				_logger?.LogWarning ("User authenticator failed to check supplied credentials.");
 				reply = SmtpReply.AuthenticationCredentialsInvalid;
 			}
 			catch (UnacceptableSmtpMailboxException excpt)
 			{
 				// 553  Requested action not taken: mailbox name not allowed
-				_logger?.Warn (string.Format ("Not acceptable mailbox {0}", excpt.Mailbox.ToAngleString ()));
+				_logger?.LogWarning (string.Format ("Not acceptable mailbox {0}", excpt.Mailbox.ToAngleString ()));
 				reply = SmtpReply.MailboxNotAllowed;
 			}
 			catch (BadSequenceOfSmtpCommandsException)
@@ -125,14 +126,14 @@ namespace Novartment.Base.Net.Smtp
 			catch (NoValidRecipientsException)
 			{
 				// 554 No valid recipients
-				_logger?.Warn ("No accepted recipients");
+				_logger?.LogWarning ("No accepted recipients");
 				reply = SmtpReply.NoValidRecipients;
 			}
 			catch (Exception excpt) when (!(
 				(excpt is OperationCanceledException) ||
 				(excpt is UnrecoverableProtocolException)))
 			{ // 451  Requested action aborted: local error in processing
-				_logger?.Error ("Exception processing command. " + excpt.Message);
+				_logger?.LogError ("Exception processing command. " + excpt.Message);
 				reply = SmtpReply.LocalError;
 			}
 
@@ -180,19 +181,19 @@ namespace Novartment.Base.Net.Smtp
 		{
 			if (command is SmtpUnknownCommand)
 			{
-				_logger?.Warn ("Unknown command. " + ((SmtpUnknownCommand)command).Message);
+				_logger?.LogWarning ("Unknown command. " + ((SmtpUnknownCommand)command).Message);
 				return Task.FromResult (SmtpReply.NotImplemented.DisallowGrouping ());
 			}
 
 			if (command is SmtpTooLongCommand)
 			{
-				_logger?.Warn ("Line with command too long.");
+				_logger?.LogWarning ("Line with command too long.");
 				return Task.FromResult (SmtpReply.LineTooLong.DisallowGrouping ());
 			}
 
 			if (command is SmtpInvalidSyntaxCommand)
 			{
-				_logger?.Warn ("Invalid syntax in command. " + ((SmtpInvalidSyntaxCommand)command).Message);
+				_logger?.LogWarning ("Invalid syntax in command. " + ((SmtpInvalidSyntaxCommand)command).Message);
 				if (command.CommandType == SmtpCommandType.Bdat)
 				{
 					ResetTransaction ();

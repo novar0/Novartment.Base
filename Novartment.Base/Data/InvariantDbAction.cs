@@ -4,6 +4,7 @@ using System.Data.Common;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Globalization;
+using Microsoft.Extensions.Logging;
 using Novartment.Base.Collections;
 using Novartment.Base.Collections.Linq;
 
@@ -19,7 +20,7 @@ namespace Novartment.Base.Data
 		private readonly IAdjustableCollection<InvariantDbCommandParameter> _plusParameters = new ArrayList<InvariantDbCommandParameter> ();
 		private readonly IAdjustableCollection<InvariantDbCommandParameter> _keyParameters = new ArrayList<InvariantDbCommandParameter> ();
 		private readonly IDbConnectionManager _connectionManager;
-		private readonly ILogWriter _logger;
+		private readonly ILogger _logger;
 
 		/// <summary>
 		/// Инициализирует новый экземпляр класса InvariantDbAction.
@@ -30,7 +31,7 @@ namespace Novartment.Base.Data
 		"Microsoft.Design",
 			"CA1026:DefaultParametersShouldNotBeUsed",
 			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
-		public InvariantDbAction (IDbConnectionManager connectionManager, ILogWriter logger = null)
+		public InvariantDbAction (IDbConnectionManager connectionManager, ILogger logger = null)
 		{
 			if (connectionManager == null)
 			{
@@ -144,7 +145,7 @@ namespace Novartment.Base.Data
 				cmdText = "SELECT * FROM " + _connectionManager.FormatObjectName (tableName, schemaName);
 			}
 
-			_logger?.Trace (FormattableString.Invariant ($"Executing: {cmdText}"));
+			_logger?.LogTrace (FormattableString.Invariant ($"Executing: {cmdText}"));
 			dbCommand.CommandText = cmdText;
 			var reader = dbCommand.ExecuteReader ();
 			return new DisposableValueLinkedWithDbCommand<DbDataReader> (reader, dbCommand);
@@ -194,7 +195,7 @@ namespace Novartment.Base.Data
 					.Concat (_plusParameters.Select (param => param.Placeholder)));
 
 				var cmdText = "INSERT INTO " + _connectionManager.FormatObjectName (tableName, schemaName) + " (" + columnList + ") VALUES (" + valueList + ")";
-				_logger?.Trace (FormattableString.Invariant ($"Executing: {cmdText}"));
+				_logger?.LogTrace (FormattableString.Invariant ($"Executing: {cmdText}"));
 				dbCommand.CommandText = cmdText;
 				dbCommand.ExecuteNonQuery ();
 				return _connectionManager.GetLastIdentityValue ();
@@ -241,7 +242,7 @@ namespace Novartment.Base.Data
 					_keyParameters.Select (param => _connectionManager.FormatObjectName (param.Name) + "=" + param.Placeholder));
 
 				var cmdText = "UPDATE " + _connectionManager.FormatObjectName (tableName, schemaName) + " SET " + columnList + " WHERE " + keyColumnList;
-				_logger?.Trace (FormattableString.Invariant ($"Executing: {cmdText}"));
+				_logger?.LogTrace (FormattableString.Invariant ($"Executing: {cmdText}"));
 				dbCommand.CommandText = cmdText;
 				dbCommand.ExecuteNonQuery ();
 			}
@@ -316,7 +317,7 @@ namespace Novartment.Base.Data
 					_keyParameters.Select (param => _connectionManager.FormatObjectName (param.Name) + "=" + param.Placeholder));
 
 				var cmdText = "SELECT COUNT(*) FROM " + _connectionManager.FormatObjectName (tableName, schemaName) + " WHERE " + columnList;
-				_logger?.Trace (FormattableString.Invariant ($"Executing: {cmdText}"));
+				_logger?.LogTrace (FormattableString.Invariant ($"Executing: {cmdText}"));
 				dbCommand.CommandText = cmdText;
 				return dbCommand.ExecuteScalar ();
 			}
@@ -357,7 +358,7 @@ namespace Novartment.Base.Data
 					_keyParameters.Select (param => _connectionManager.FormatObjectName (param.Name) + "=" + param.Placeholder));
 
 				var cmdText = "DELETE " + _connectionManager.FormatObjectName (tableName, schemaName) + " WHERE " + columnList;
-				_logger?.Trace (FormattableString.Invariant ($"Executing: {cmdText}"));
+				_logger?.LogTrace (FormattableString.Invariant ($"Executing: {cmdText}"));
 				dbCommand.CommandText = cmdText;
 				dbCommand.ExecuteNonQuery ();
 			}
@@ -385,7 +386,7 @@ namespace Novartment.Base.Data
 
 			Contract.EndContractBlock ();
 
-			_logger?.Trace (FormattableString.Invariant ($"Executing procedure: {procedureName}"));
+			_logger?.LogTrace (FormattableString.Invariant ($"Executing procedure: {procedureName}"));
 			using (var dbCommand = _connectionManager.CreateCommand (_parameters, true))
 			{
 				dbCommand.CommandTimeout = this.CommandTimeout;
@@ -418,7 +419,7 @@ namespace Novartment.Base.Data
 
 			Contract.EndContractBlock ();
 
-			_logger?.Trace (FormattableString.Invariant ($"Executing procedure: {procedureName}"));
+			_logger?.LogTrace (FormattableString.Invariant ($"Executing procedure: {procedureName}"));
 			var dbCommand = _connectionManager.CreateCommand (_parameters, true);
 			dbCommand.CommandTimeout = this.CommandTimeout;
 			dbCommand.CommandText = _connectionManager.FormatObjectName (procedureName, schemaName);
@@ -446,7 +447,7 @@ namespace Novartment.Base.Data
 
 			Contract.EndContractBlock ();
 
-			_logger?.Trace (FormattableString.Invariant ($"Executing function: {functionName}"));
+			_logger?.LogTrace (FormattableString.Invariant ($"Executing function: {functionName}"));
 			using (var dbCommand = _connectionManager.CreateCommand (_parameters, false))
 			{
 				dbCommand.CommandTimeout = this.CommandTimeout;

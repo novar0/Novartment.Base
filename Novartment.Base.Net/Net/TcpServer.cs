@@ -5,6 +5,7 @@ using System.Diagnostics.Contracts;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Novartment.Base.Collections;
 
 namespace Novartment.Base.Net
@@ -20,7 +21,7 @@ namespace Novartment.Base.Net
 		IDisposable
 	{
 		private readonly Func<IPEndPoint, ITcpListener> _listenerFactory;
-		private readonly ILogWriter _logger;
+		private readonly ILogger _logger;
 		private readonly ConcurrentBag<ListenerBinding> _bindings = new ConcurrentBag<ListenerBinding> ();
 		private readonly Timer _watchdogTimer;
 
@@ -38,7 +39,7 @@ namespace Novartment.Base.Net
 			"Microsoft.Design",
 			"CA1026:DefaultParametersShouldNotBeUsed",
 			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
-		public TcpServer (Func<IPEndPoint, ITcpListener> listenerFactory, ILogWriter logger = null)
+		public TcpServer (Func<IPEndPoint, ITcpListener> listenerFactory, ILogger<TcpServer> logger = null)
 		{
 			if (listenerFactory == null)
 			{
@@ -127,19 +128,9 @@ namespace Novartment.Base.Net
 		/// </summary>
 		/// <param name="abortActiveConnections">Specify True to abort active connections.</param>
 		/// <returns>Task representing stoping server.</returns>
-		[SuppressMessage (
-			"Microsoft.Globalization",
-			"CA1303:Do not pass literals as localized parameters",
-			MessageId = "Novartment.Base.ILogWriter.Info(System.String)",
-			Justification = "String is not exposed to the end user and will not be localized.")]
-		[SuppressMessage (
-			"Microsoft.Globalization",
-			"CA1303:Do not pass literals as localized parameters",
-			MessageId = "Novartment.Base.ILogWriter.Trace(System.String)",
-			Justification = "String is not exposed to the end user and will not be localized.")]
 		public Task StopAsync (bool abortActiveConnections)
 		{
-			_logger?.Info (FormattableString.Invariant ($"Stopping listeners: {_bindings.Count}"));
+			_logger?.LogInformation (FormattableString.Invariant ($"Stopping listeners: {_bindings.Count}"));
 
 			// для каждого из прослушивателей и клиентов собираем задачу означающую завершение
 			var tasksToWait = new ArrayList<Task> ();
@@ -157,7 +148,7 @@ namespace Novartment.Base.Net
 				{
 					if (abortActiveConnections)
 					{
-						_logger?.Trace (FormattableString.Invariant ($"Aborting client {client.EndPoint}"));
+						_logger?.LogTrace (FormattableString.Invariant ($"Aborting client {client.EndPoint}"));
 					}
 
 					var task = client.EndProcessing (abortActiveConnections);
@@ -166,7 +157,7 @@ namespace Novartment.Base.Net
 				}
 			}
 
-			_logger?.Trace (FormattableString.Invariant ($"Waiting completion of {listeners} listeners and {clients} connections."));
+			_logger?.LogTrace (FormattableString.Invariant ($"Waiting completion of {listeners} listeners and {clients} connections."));
 
 			var globalWaitTask = Task.WhenAll (tasksToWait);
 
@@ -231,11 +222,6 @@ namespace Novartment.Base.Net
 			return Math.Min (1000, Math.Max (1, (int)inverval));
 		}
 
-		[SuppressMessage (
-		"Microsoft.Globalization",
-			"CA1303:Do not pass literals as localized parameters",
-			MessageId = "Novartment.Base.ILogWriter.Warn(System.String)",
-			Justification = "String is not exposed to the end user and will not be localized.")]
 		private void WatchdogTimerCallback (object state)
 		{
 			// защищаемся от реитерации
@@ -254,7 +240,7 @@ namespace Novartment.Base.Net
 				{
 					if ((connectionTimeout != Timeout.InfiniteTimeSpan) && (client.Duration >= connectionTimeout))
 					{
-						_logger?.Warn (FormattableString.Invariant (
+						_logger?.LogWarning (FormattableString.Invariant (
 							$"Disconnecting client {client.EndPoint} because of connection time ({client.Duration}) exceeds limit ({connectionTimeout})."));
 						client.EndProcessing (true);
 					}
@@ -262,7 +248,7 @@ namespace Novartment.Base.Net
 					{
 						if ((connectionTimeout != Timeout.InfiniteTimeSpan) && (client.IdleDuration >= idleTimeout))
 						{
-							_logger?.Warn (FormattableString.Invariant (
+							_logger?.LogWarning (FormattableString.Invariant (
 								$"Disconnecting client {client.EndPoint} because of idle time ({client.IdleDuration}) exceeds limit ({idleTimeout})."));
 							client.EndProcessing (true);
 						}

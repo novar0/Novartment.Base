@@ -3,6 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Novartment.Base.BinaryStreaming;
 using Novartment.Base.Collections;
 
@@ -13,7 +14,7 @@ namespace Novartment.Base.Net.Smtp
 	{
 		private readonly SmtpOriginatorProtocolSession _session;
 		private readonly ContentTransferEncoding _requiredEncodingSupport;
-		private readonly ILogWriter _logger;
+		private readonly ILogger _logger;
 		private readonly ArrayList<AddrSpec> _acceptedRecipients = new ArrayList<AddrSpec> (1);
 		private string _startingReturnPath = null;
 		private TransactionStatus _status = TransactionStatus.NotStarted;
@@ -21,7 +22,7 @@ namespace Novartment.Base.Net.Smtp
 		internal SmtpOriginatorDataTransferTransaction (
 			SmtpOriginatorProtocolSession session,
 			ContentTransferEncoding requiredEncodingSupport,
-			ILogWriter logger = null)
+			ILogger logger = null)
 		{
 			if (session == null)
 			{
@@ -43,17 +44,12 @@ namespace Novartment.Base.Net.Smtp
 			Finished = 5
 		}
 
-		[SuppressMessage (
-		"Microsoft.Globalization",
-			"CA1303:Do not pass literals as localized parameters",
-			MessageId = "Novartment.Base.ILogWriter.Trace(System.String)",
-			Justification = "String is not exposed to the end user and will not be localized.")]
 		public void Dispose ()
 		{
 			_acceptedRecipients.Clear ();
 			_startingReturnPath = null;
 			_status = TransactionStatus.Finished;
-			_logger?.Trace ("Data transfer transaction disposed.");
+			_logger?.LogTrace ("Data transfer transaction disposed.");
 		}
 
 		public Task StartAsync (AddrSpec returnPath, CancellationToken cancellationToken)
@@ -153,7 +149,7 @@ namespace Novartment.Base.Net.Smtp
 				throw new InvalidOperationException ("Requested binary encoding, but BINARYMIME requires exactSize to be known.");
 			}
 
-			_logger?.Info ("Starting transfering mail data from " + _startingReturnPath + " to " + string.Join (",", _acceptedRecipients));
+			_logger?.LogInformation ("Starting transfering mail data from " + _startingReturnPath + " to " + string.Join (",", _acceptedRecipients));
 			_status = TransactionStatus.Finished; // заранее на случай исключений
 			var isServerSupportsChunking = _session.ServerSupportedExtensions.Contains ("CHUNKING");
 			return ((exactSize >= 0) && isServerSupportsChunking) ?
@@ -170,7 +166,7 @@ namespace Novartment.Base.Net.Smtp
 				throw new InvalidOperationException (string.Join ("\r\n", reply.Text));
 			}
 
-			_logger?.Trace ("Mail data transfer completed.");
+			_logger?.LogTrace ("Mail data transfer completed.");
 		}
 
 		private async Task TransferDataWithoutChunking (IBufferedSource data, CancellationToken cancellationToken)
@@ -188,7 +184,7 @@ namespace Novartment.Base.Net.Smtp
 				throw new InvalidOperationException (string.Join ("\r\n", result.Text));
 			}
 
-			_logger?.Trace ("Mail data transfer completed.");
+			_logger?.LogTrace ("Mail data transfer completed.");
 		}
 	}
 }

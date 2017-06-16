@@ -7,6 +7,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Text.RegularExpressions;
 using System.Threading;
+using Microsoft.Extensions.Logging;
 using Novartment.Base.Collections;
 using Novartment.Base.Collections.Immutable;
 using Novartment.Base.Text;
@@ -21,7 +22,7 @@ namespace Novartment.Base
 		"CA1710:IdentifiersShouldHaveCorrectSuffix",
 		Justification = "Implemented interfaces has no association with class name.")]
 	public class SimpleEventLog :
-		ILogWriter,
+		ILogger,
 		IReadOnlyList<SimpleEventRecord>,
 		IPatternsReplacer,
 		IArrayDuplicableCollection<SimpleEventRecord>,
@@ -71,15 +72,15 @@ namespace Novartment.Base
 			{
 				if (value <= 0)
 				{
-					throw new ArgumentOutOfRangeException(nameof(value));
+					throw new ArgumentOutOfRangeException (nameof (value));
 				}
 
-				Contract.EndContractBlock();
+				Contract.EndContractBlock ();
 
 				if (_recordLimit != value)
 				{
 					_recordLimit = value;
-					OnPropertyChanged(new PropertyChangedEventArgs(nameof(this.RecordLimit)));
+					OnPropertyChanged (new PropertyChangedEventArgs (nameof (this.RecordLimit)));
 				}
 			}
 		}
@@ -95,8 +96,8 @@ namespace Novartment.Base
 				if (value != _logLevel)
 				{
 					_logLevel = value;
-					OnPropertyChanged(new PropertyChangedEventArgs(nameof(this.LoggingLevel)));
-					OnLoggerReconfigured();
+					OnPropertyChanged (new PropertyChangedEventArgs (nameof (this.LoggingLevel)));
+					OnLoggerReconfigured ();
 				}
 			}
 		}
@@ -112,7 +113,7 @@ namespace Novartment.Base
 				if (_replacementEnabled != value)
 				{
 					_replacementEnabled = value;
-					OnPropertyChanged(new PropertyChangedEventArgs(nameof(this.ReplacementEnabled)));
+					OnPropertyChanged (new PropertyChangedEventArgs (nameof (this.ReplacementEnabled)));
 				}
 			}
 		}
@@ -121,42 +122,6 @@ namespace Novartment.Base
 		/// Получает или устанавливает строку которая будет вставлена вместо встреченных шаблонов.
 		/// </summary>
 		public string ReplacementValue { get; set; }
-
-		/// <summary>
-		/// Gets a value indicating whether logging is enabled for the <c>Trace</c> level.
-		/// </summary>
-		/// <returns>A value of <see langword="true" /> if logging is enabled for the <c>Trace</c> level, otherwise it returns <see langword="false" />.</returns>
-		public bool IsTraceEnabled => _logLevel >= LogLevel.Trace;
-
-		/// <summary>
-		/// Gets a value indicating whether logging is enabled for the <c>Debug</c> level.
-		/// </summary>
-		/// <returns>A value of <see langword="true" /> if logging is enabled for the <c>Debug</c> level, otherwise it returns <see langword="false" />.</returns>
-		public bool IsDebugEnabled => _logLevel >= LogLevel.Debug;
-
-		/// <summary>
-		/// Gets a value indicating whether logging is enabled for the <c>Info</c> level.
-		/// </summary>
-		/// <returns>A value of <see langword="true" /> if logging is enabled for the <c>Info</c> level, otherwise it returns <see langword="false" />.</returns>
-		public bool IsInfoEnabled => _logLevel >= LogLevel.Info;
-
-		/// <summary>
-		/// Gets a value indicating whether logging is enabled for the <c>Warn</c> level.
-		/// </summary>
-		/// <returns>A value of <see langword="true" /> if logging is enabled for the <c>Warn</c> level, otherwise it returns <see langword="false" />.</returns>
-		public bool IsWarnEnabled => _logLevel >= LogLevel.Warn;
-
-		/// <summary>
-		/// Gets a value indicating whether logging is enabled for the <c>Error</c> level.
-		/// </summary>
-		/// <returns>A value of <see langword="true" /> if logging is enabled for the <c>Error</c> level, otherwise it returns <see langword="false" />.</returns>
-		public bool IsErrorEnabled => _logLevel >= LogLevel.Error;
-
-		/// <summary>
-		/// Gets a value indicating whether logging is enabled for the <c>Fatal</c> level.
-		/// </summary>
-		/// <returns>A value of <see langword="true" /> if logging is enabled for the <c>Fatal</c> level, otherwise it returns <see langword="false" />.</returns>
-		public bool IsFatalEnabled => _logLevel >= LogLevel.Fatal;
 
 		/// <summary>
 		/// Получает запись с указанным номером.
@@ -285,74 +250,50 @@ namespace Novartment.Base
 		}
 
 		/// <summary>
+		/// Writes a log entry.
+		/// </summary>
+		/// <typeparam name="TState">Type of state.</typeparam>
+		/// <param name="logLevel">Entry will be written on this level.</param>
+		/// <param name="eventId">Id of the event.</param>
+		/// <param name="state">The entry to be written. Can be also an object.</param>
+		/// <param name="exception">The exception related to this entry.</param>
+		/// <param name="formatter">Function to create a string message of the state and exception.</param>
+		public void Log<TState> (LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
+		{
+			if (formatter == null)
+			{
+				throw new ArgumentNullException (nameof (formatter));
+			}
+
+			Contract.EndContractBlock ();
+
+			var message = formatter.Invoke (state, exception);
+
+			LogEvent (logLevel, message);
+		}
+
+		/// <summary>
+		/// Checks if the given logLevel is enabled.
+		/// </summary>
+		/// <param name="logLevel">level to be checked.</param>
+		/// <returns>true if enabled.</returns>
+		public bool IsEnabled (LogLevel logLevel) => _logLevel <= logLevel;
+
+		/// <summary>
+		/// Begins a logical operation scope.
+		/// </summary>
+		/// <typeparam name="TState">Type of state.</typeparam>
+		/// <param name="state">The identifier for the scope.</param>
+		/// <returns>An IDisposable that ends the logical operation scope on dispose.</returns>
+		public IDisposable BeginScope<TState> (TState state) => null;
+
+		/// <summary>
 		/// Получает перечислитель элементов списка.
 		/// </summary>
 		/// <returns>Перечислитель элементов списка.</returns>
 		IEnumerator IEnumerable.GetEnumerator ()
 		{
 			return GetEnumerator ();
-		}
-
-		/// <summary>
-		/// Writes the diagnostic message at the <c>Trace</c> level.
-		/// Most detailed information. Expect these to be written to logs only.
-		/// </summary>
-		/// <param name="message">Log message.</param>
-		public void Trace (string message)
-		{
-			LogEvent (LogLevel.Trace, message);
-		}
-
-		/// <summary>
-		/// Writes the diagnostic message at the <c>Debug</c> level.
-		/// Detailed information on the flow through the system. Expect these to be written to logs only.
-		/// </summary>
-		/// <param name="message">Log message.</param>
-		public void Debug (string message)
-		{
-			LogEvent (LogLevel.Debug, message);
-		}
-
-		/// <summary>
-		/// Writes the diagnostic message at the <c>Info</c> level.
-		/// Interesting runtime events (startup/shutdown). Expect these to be immediately visible on a console,
-		/// so be conservative and keep to a minimum.
-		/// </summary>
-		/// <param name="message">Log message.</param>
-		public void Info (string message)
-		{
-			LogEvent (LogLevel.Info, message);
-		}
-
-		/// <summary>
-		/// Writes the diagnostic message at the <c>Warn</c> level.
-		/// Use of deprecated APIs, poor use of API, 'almost' errors, other runtime situations that are undesirable or unexpected,
-		/// but not necessarily "wrong". Expect these to be immediately visible on a status console.
-		/// </summary>
-		/// <param name="message">Log message.</param>
-		public void Warn (string message)
-		{
-			LogEvent (LogLevel.Warn, message);
-		}
-
-		/// <summary>
-		/// Writes the diagnostic message at the <c>Error</c> level.
-		/// Other runtime errors or unexpected conditions. Expect these to be immediately visible on a status console.
-		/// </summary>
-		/// <param name="message">Log message.</param>
-		public void Error (string message)
-		{
-			LogEvent (LogLevel.Error, message);
-		}
-
-		/// <summary>
-		/// Writes the diagnostic message at the <c>Fatal</c> level.
-		/// Severe errors that cause premature termination. Expect these to be immediately visible on a status console.
-		/// </summary>
-		/// <param name="message">Log message.</param>
-		public void Fatal (string message)
-		{
-			LogEvent (LogLevel.Fatal, message);
 		}
 
 		/// <summary>

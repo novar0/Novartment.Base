@@ -4,6 +4,7 @@ using System.Diagnostics.Contracts;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace Novartment.Base.Net.Smtp
 {
@@ -16,7 +17,7 @@ namespace Novartment.Base.Net.Smtp
 	{
 		private readonly Func<MailDeliverySourceData, IMailDataTransferTransaction> _transactionFactory;
 		private readonly SmtpServerSecurityParameters _securityParameters;
-		private readonly ILogWriter _logger;
+		private readonly ILogger _logger;
 
 		/// <summary>
 		/// Инициализирует новый экземпляр SmtpDeliveryProtocol
@@ -38,7 +39,7 @@ namespace Novartment.Base.Net.Smtp
 		public SmtpDeliveryProtocol (
 			Func<MailDeliverySourceData, IMailDataTransferTransaction> transactionFactory,
 			SmtpServerSecurityParameters securityParameters,
-			ILogWriter logger = null)
+			ILogger<SmtpDeliveryProtocol> logger = null)
 		{
 			if (transactionFactory == null)
 			{
@@ -132,7 +133,7 @@ namespace Novartment.Base.Net.Smtp
 						}
 						catch (OperationCanceledException)
 						{
-							_logger?.Warn (string.Format (
+							_logger?.LogWarning (string.Format (
 								"Canceling protocol with {0}.",
 								connection.RemoteEndPoint));
 							throw;
@@ -145,13 +146,13 @@ namespace Novartment.Base.Net.Smtp
 								((excpt is ObjectDisposedException) ||
 								((excpt is IOException) && (excpt.InnerException is ObjectDisposedException))))
 							{
-								_logger?.Warn (string.Format (
+								_logger?.LogWarning (string.Format (
 									"Canceling protocol with {0}.",
 									connection.RemoteEndPoint));
 								cancellationToken.ThrowIfCancellationRequested ();
 							}
 
-							_logger?.Warn (string.Format (
+							_logger?.LogWarning (string.Format (
 								"Aborting protocol with {0}. {1}",
 								connection.RemoteEndPoint,
 								ExceptionDescriptionProvider.GetDescription (excpt)));

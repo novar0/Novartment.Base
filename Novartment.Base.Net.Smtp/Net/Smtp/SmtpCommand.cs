@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using Microsoft.Extensions.Logging;
 using Novartment.Base.BinaryStreaming;
 using Novartment.Base.Text;
 
@@ -50,17 +51,7 @@ namespace Novartment.Base.Net.Smtp
 		}
 
 		// Разбор синтаксиса.
-		[SuppressMessage (
-			"Microsoft.Globalization",
-			"CA1303:Do not pass literals as localized parameters",
-			MessageId = "Novartment.Base.ILogWriter.Trace(System.String)",
-			Justification = "String is not exposed to the end user and will not be localized.")]
-		[SuppressMessage (
-			"Microsoft.Globalization",
-			"CA1303:Do not pass literals as localized parameters",
-			MessageId = "Novartment.Base.Net.Smtp.SmtpInvalidSyntaxCommand.#ctor(Novartment.Base.Net.Smtp.SmtpCommandType,System.String)",
-			Justification = "String is not exposed to the end user and will not be localized.")]
-		internal static SmtpCommand Parse (IBufferedSource source, ExpectedInputType expectedInputType, ILogWriter logger)
+		internal static SmtpCommand Parse (IBufferedSource source, ExpectedInputType expectedInputType, ILogger logger)
 		{
 			if (expectedInputType == ExpectedInputType.Data)
 			{
@@ -78,7 +69,7 @@ namespace Novartment.Base.Net.Smtp
 				return new SmtpInvalidSyntaxCommand (SmtpCommandType.Unknown, "Ending CRLF not found in command.");
 			}
 
-			logger?.Trace ("<<< " + AsciiCharSet.GetStringMaskingInvalidChars (buffer, offset, countToCRLF, '?'));
+			logger?.LogTrace ("<<< " + AsciiCharSet.GetStringMaskingInvalidChars (buffer, offset, countToCRLF, '?'));
 
 			// RFC 5321 part 4.5.3.1.4:
 			// The maximum total length of a command line including the command word and the <CRLF> is 512 octets.
@@ -225,11 +216,6 @@ namespace Novartment.Base.Net.Smtp
 			return countToCRLF;
 		}
 
-		[SuppressMessage (
-			"Microsoft.Globalization",
-			"CA1303:Do not pass literals as localized parameters",
-			MessageId = "Novartment.Base.Net.Smtp.SmtpInvalidSyntaxCommand.#ctor(Novartment.Base.Net.Smtp.SmtpCommandType,System.String)",
-			Justification = "String is not exposed to the end user and will not be localized.")]
 		private static SmtpCommand ParseAuthenticationResponse (IBufferedSource source, int countToCRLF)
 		{
 			// RFC 4953 part 4: If the client wishes to cancel the authentication exchange, it issues a line with a single "*".
@@ -254,11 +240,6 @@ namespace Novartment.Base.Net.Smtp
 			return new SmtpSaslResponseCommand (response);
 		}
 
-		[SuppressMessage (
-		"Microsoft.Globalization",
-			"CA1303:Do not pass literals as localized parameters",
-			MessageId = "Novartment.Base.Net.Smtp.SmtpInvalidSyntaxCommand.#ctor(Novartment.Base.Net.Smtp.SmtpCommandType,System.String)",
-			Justification = "String is not exposed to the end user and will not be localized.")]
 		private static SmtpCommand ParseMailFrom (BytesChunkEnumerator chunkEnumerator)
 		{
 			var isAngleBracketedValueFound = chunkEnumerator.MoveToNextBracketedValue (0x20, (byte)'<', (byte)'>');
@@ -356,11 +337,6 @@ namespace Novartment.Base.Net.Smtp
 			return new SmtpMailFromCommand (returnPath, bodyType, associatedMailbox);
 		}
 
-		[SuppressMessage (
-		"Microsoft.Globalization",
-			"CA1303:Do not pass literals as localized parameters",
-			MessageId = "Novartment.Base.Net.Smtp.SmtpInvalidSyntaxCommand.#ctor(Novartment.Base.Net.Smtp.SmtpCommandType,System.String)",
-			Justification = "String is not exposed to the end user and will not be localized.")]
 		private static SmtpCommand ParseRcptTo (BytesChunkEnumerator chunkEnumerator)
 		{
 			var isAngleBracketedValueFound = chunkEnumerator.MoveToNextBracketedValue (0x20, (byte)'<', (byte)'>');
@@ -384,11 +360,6 @@ namespace Novartment.Base.Net.Smtp
 			return new SmtpRcptToCommand (recepient);
 		}
 
-		[SuppressMessage (
-		"Microsoft.Globalization",
-			"CA1303:Do not pass literals as localized parameters",
-			MessageId = "Novartment.Base.Net.Smtp.SmtpInvalidSyntaxCommand.#ctor(Novartment.Base.Net.Smtp.SmtpCommandType,System.String)",
-			Justification = "String is not exposed to the end user and will not be localized.")]
 		private static SmtpCommand ParseBdat (BytesChunkEnumerator chunkEnumerator, IBufferedSource source)
 		{
 			// Любая ошибка в обработке BDAT - очень нехороший случай,
@@ -423,11 +394,6 @@ namespace Novartment.Base.Net.Smtp
 			return new SmtpBdatCommand (source, size, isLast);
 		}
 
-		[SuppressMessage (
-		"Microsoft.Globalization",
-			"CA1303:Do not pass literals as localized parameters",
-			MessageId = "Novartment.Base.Net.Smtp.SmtpInvalidSyntaxCommand.#ctor(Novartment.Base.Net.Smtp.SmtpCommandType,System.String)",
-			Justification = "String is not exposed to the end user and will not be localized.")]
 		private static SmtpCommand ParseAuth (BytesChunkEnumerator chunkEnumerator)
 		{
 			var isParameterFound = chunkEnumerator.MoveToNextChunk (0x20, 0x20);

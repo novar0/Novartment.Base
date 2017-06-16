@@ -5,6 +5,7 @@ using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Novartment.Base.BinaryStreaming;
 using Novartment.Base.Text;
 
@@ -17,13 +18,13 @@ namespace Novartment.Base.Net.Smtp
 	internal class TcpConnectionSmtpCommandTransport :
 		ISmtpCommandTransport
 	{
-		private readonly ILogWriter _logger;
+		private readonly ILogger _logger;
 		private IBufferedSource _reader;
 		private IBinaryDestination _writer;
 		private ITcpConnection _connection;
 		private string _pendingReplies = null;
 
-		internal TcpConnectionSmtpCommandTransport (ITcpConnection connection, ILogWriter logger = null)
+		internal TcpConnectionSmtpCommandTransport (ITcpConnection connection, ILogger logger = null)
 		{
 			if (connection == null)
 			{
@@ -56,10 +57,10 @@ namespace Novartment.Base.Net.Smtp
 				throw new UnrecoverableProtocolException ("Connection is not TLS-capable.");
 			}
 
-			_logger?.Trace ("Starting TLS as client...");
+			_logger?.LogTrace ("Starting TLS as client...");
 			var newConnection = await tlsCapableConnection.StartTlsClientAsync (clientCertificates, CancellationToken.None)
 				.ConfigureAwait (false);
-			_logger?.Info (FormattableString.Invariant (
+			_logger?.LogInformation (FormattableString.Invariant (
 				$@"Started TLS client: Protocol={newConnection.TlsProtocol}, Cipher={newConnection.CipherAlgorithm}/{newConnection.CipherStrength}, Hash={GetHashAlgorithmName (newConnection.HashAlgorithm)}/{newConnection.HashStrength}, KeyExchange={GetExchangeAlgorithmName (newConnection.KeyExchangeAlgorithm)}/{newConnection.KeyExchangeStrength}"));
 			SetConnection (newConnection);
 		}
@@ -72,10 +73,10 @@ namespace Novartment.Base.Net.Smtp
 				throw new InvalidOperationException ("Connection is not TLS-capable.");
 			}
 
-			_logger?.Trace ("Starting TLS as server...");
+			_logger?.LogTrace ("Starting TLS as server...");
 			var newConnection = await tlsCapableConnection.StartTlsServerAsync (serverCertificate, clientCertificateRequired, CancellationToken.None)
 				.ConfigureAwait (false);
-			_logger?.Info (FormattableString.Invariant (
+			_logger?.LogInformation (FormattableString.Invariant (
 				$@"Started TLS server: Protocol={newConnection.TlsProtocol}, Cipher={newConnection.CipherAlgorithm}/{newConnection.CipherStrength}, Hash={GetHashAlgorithmName (newConnection.HashAlgorithm)}/{newConnection.HashStrength}, KeyExchange={GetExchangeAlgorithmName (newConnection.KeyExchangeAlgorithm)}/{newConnection.KeyExchangeStrength}"));
 			SetConnection (newConnection);
 		}
@@ -193,12 +194,6 @@ namespace Novartment.Base.Net.Smtp
 			return command;
 		}
 
-		[SuppressMessage (
-			"Microsoft.Globalization",
-			"CA1303:Do not pass literals as localized parameters",
-			MessageId = "Novartment.Base.ILogWriter.Trace(System.String)",
-			Justification = "String is not exposed to the end user and will not be localized."),
-		]
 		private Task SendTextAsync (string text, CancellationToken cancellationToken)
 		{
 			var size = text.Length;
@@ -206,7 +201,7 @@ namespace Novartment.Base.Net.Smtp
 			AsciiCharSet.GetBytes (text, 0, size, buf, 0);
 
 			var isCRLF = (size > 1) && (buf[size - 2] == 0x0d) && (buf[size - 1] == 0x0a);
-			_logger?.Trace (">>> " + (isCRLF ? text.Substring (0, size - 2) : text));
+			_logger?.LogTrace (">>> " + (isCRLF ? text.Substring (0, size - 2) : text));
 
 			_pendingReplies = null;
 			return _writer.WriteAsync (buf, 0, size, cancellationToken);

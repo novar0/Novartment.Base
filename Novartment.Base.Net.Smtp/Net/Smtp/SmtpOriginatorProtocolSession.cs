@@ -29,11 +29,6 @@ namespace Novartment.Base.Net.Smtp
 
 		internal IReadOnlyFiniteSet<string> ServerSupportedExtensions => _serverSupportedExtensions;
 
-		[SuppressMessage (
-			"Microsoft.Globalization",
-			"CA1303:Do not pass literals as localized parameters",
-			MessageId = "Novartment.Base.ILogWriter.Trace(System.String)",
-			Justification = "String is not exposed to the end user and will not be localized.")]
 		public void Dispose ()
 		{
 			var oldValue = Interlocked.Exchange (ref _completed, 1);

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
+using Microsoft.Extensions.Logging;
 using Novartment.Base.BinaryStreaming;
 using Novartment.Base.Collections;
 using Novartment.Base.Text;
@@ -165,12 +166,7 @@ namespace Novartment.Base.Net.Smtp
 			return new SmtpReply (334, new string[] { Convert.ToBase64String (challenge) });
 		}
 
-		[SuppressMessage (
-		"Microsoft.Globalization",
-			"CA1303:Do not pass literals as localized parameters",
-			MessageId = "Novartment.Base.ILogWriter.Trace(System.String)",
-			Justification = "String is not exposed to the end user and will not be localized.")]
-		internal static SmtpReply Parse (IBufferedSource source, ILogWriter logger)
+		internal static SmtpReply Parse (IBufferedSource source, ILogger logger)
 		{
 			// RFC 5321 part 4.2:
 			// Only the EHLO, EXPN, and HELP commands are expected to result in multiline replies in normal circumstances;
@@ -192,7 +188,7 @@ namespace Novartment.Base.Net.Smtp
 				}
 				while ((source.Buffer[source.Offset + idx - 1] != 0x0d) || (source.Buffer[source.Offset + idx] != 0x0a));
 				idx++;
-				logger?.Trace ("<<< " + AsciiCharSet.GetStringMaskingInvalidChars (source.Buffer, source.Offset, idx - 2, '?'));
+				logger?.LogTrace ("<<< " + AsciiCharSet.GetStringMaskingInvalidChars (source.Buffer, source.Offset, idx - 2, '?'));
 
 				// RFC 5321 part 4.5.3.1.5:
 				// The maximum total length of a reply line including the reply code and the <CRLF> is 512 octets.

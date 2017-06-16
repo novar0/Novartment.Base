@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Linq;
-using Novartment.Base;
+using Microsoft.Extensions.Logging;
 using Novartment.Base.UI;
 using Novartment.Base.UI.Wpf;
 using Novartment.Base.Shell;
@@ -14,13 +14,13 @@ namespace Novartment.Base.SampleWpf
 {
 	public enum CheckSeverity : int
 	{
-		[System.ComponentModel.Description ("ОК")]
+		[Description ("ОК")]
 		OK = 0,
-		[System.ComponentModel.Description ("Не проверено")]
+		[Description ("Не проверено")]
 		NotChecked = 1,
-		[System.ComponentModel.Description ("Предупреждение")]
+		[Description ("Предупреждение")]
 		Warning = 2,
-		[System.ComponentModel.Description ("Ошибка")]
+		[Description ("Ошибка")]
 		Error = 3
 	}
 
@@ -94,7 +94,7 @@ namespace Novartment.Base.SampleWpf
 			_copyItemTask = new CollectionContextCommandedRepeatableTask<SimpleEventRecord> (CopyItem, _taskSchedulerShell);//, Properties.Resources.TaskCopyEventLogTitle);
 			_clearItemsTask = new CollectionContextCommandedRepeatableTask<SimpleEventRecord> (ClearItems, TaskScheduler.Default);//, Properties.Resources.TaskClearEventLogTitle);
 
-			_eventLog.Info (string.Format ("Запущена программа версии {0}", Version));
+			_eventLog.LogInformation (string.Format ("Запущена программа версии {0}", Version));
 		}
 
 		#region IDragSource
@@ -241,7 +241,7 @@ namespace Novartment.Base.SampleWpf
 		private void ProcessData (object state, CancellationToken cancellationToken)
 		{
 			// выполнение фоновых работ, в том числе вызов сервисов типа _dataSerivce.DoSomeWork ();
-			_eventLog.Info ("Запуск задачи");
+			_eventLog.LogInformation ("Запуск задачи");
 			Thread.Sleep (1000);
 			throw new ArgumentException ("Имитация исключительной ситуации", "state");
 		}
@@ -251,15 +251,15 @@ namespace Novartment.Base.SampleWpf
 			switch (args.Value.Status)
 			{
 				case TaskStatus.Faulted:
-					_eventLog.Error (
+					_eventLog.LogError (
 						string.Format (Properties.Resources.TaskCompletedException, title));
 					_application.ReportException (args.Value.Exception, null, title);
 					break;
 				case TaskStatus.Canceled:
-					_eventLog.Warn (string.Format (Properties.Resources.TaskCompletedCanceled, title));
+					_eventLog.LogWarning (string.Format (Properties.Resources.TaskCompletedCanceled, title));
 					break;
 				case TaskStatus.RanToCompletion:
-					_eventLog.Info (string.Format (Properties.Resources.TaskCompleted, title));
+					_eventLog.LogInformation (string.Format (Properties.Resources.TaskCompleted, title));
 					break;
 			}
 		}

@@ -7,6 +7,7 @@ using System.Net.NetworkInformation;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Novartment.Base.Collections;
 using Novartment.Base.Net;
 using Novartment.Base.Net.Smtp;
@@ -46,8 +47,12 @@ namespace Novartment.Base.Sample
 		public static async Task StartSmtpServer ()
 		{
 			Encoding.RegisterProvider (CodePagesEncodingProvider.Instance);
-			ILogWriter deliveryLogger = new DebugOutputLogWriter ("del**");
-			ILogWriter originatorLogger = new DebugOutputLogWriter ("org**");
+
+			var loggerFactory = new LoggerFactory ().AddDebug (LogLevel.Trace);
+			var tcpServerLogger = loggerFactory.CreateLogger<TcpServer> ();
+			var deliveryLogger = loggerFactory.CreateLogger<SmtpDeliveryProtocol> ();
+			var originatorLogger = loggerFactory.CreateLogger<SmtpOriginatorProtocol> ();
+
 			var localDomains = new string[] { "mychel.ru", "domain.org" };
 			var mailPickupDirectory = @".\Pickup";
 			var mailDropDirectory = @".\Drop";
@@ -56,14 +61,14 @@ namespace Novartment.Base.Sample
 			Directory.CreateDirectory (mailPickupDirectory);
 
 			// запускаем SMTP сервер, который будет принимать и сохранять сообщения в файл
-			var deliveryServer = new TcpServer (endpoint => new SocketTcpListener (endpoint), deliveryLogger);
+			var deliveryServer = new TcpServer (endpoint => new SocketTcpListener (endpoint), tcpServerLogger);
 			var localDomainsSet = new HashSet<string> (localDomains);
 			var serverCertificate = new X509Certificate2 ("MyServer.pfx", "password");
 			var deliveryProtocol = new SmtpDeliveryProtocol (
 				srcAttribs => new DeliveryToFileDataTransferTransaction (srcAttribs, mailDropDirectory, mailPickupDirectory, localDomainsSet),
-				//SmtpServerSecurityParameters.NoSecurity,
+				SmtpServerSecurityParameters.NoSecurity,
 				//SmtpServerSecurityParameters.UseServerAndRequireClientCertificate (serverCertificate),
-				SmtpServerSecurityParameters.UseServerCertificateAndClientAuthenticator (serverCertificate, FindUser),
+				//SmtpServerSecurityParameters.UseServerCertificateAndClientAuthenticator (serverCertificate, FindUser),
 				deliveryLogger);
 			deliveryServer.AddListenEndpoint (new IPEndPoint (IPAddress.Any, 25), deliveryProtocol);
 
@@ -107,7 +112,7 @@ namespace Novartment.Base.Sample
 
 		private static async Task SendMessagesAsync (
 			IReadOnlyDictionary<string, CompetentDictionary<string, MailMessageData>> outgoingMailMessages,
-			ILogWriter originatorLogger,
+			ILogger<SmtpOriginatorProtocol> originatorLogger,
 			CancellationToken cancellationToken)
 		{
 			var clientCertificates = new X509CertificateCollection ();
@@ -118,8 +123,8 @@ namespace Novartment.Base.Sample
 				var serverNameAndAddr = GetMailServerOfDomain (domainData.Key);
 				var originatorProtocol = new SmtpOriginatorProtocol (
 					(factory, ct) => OriginateTransactionsAsync (domainData.Value, factory, ct),
-					//SmtpClientSecurityParameters.AllowNoSecurity,
-					SmtpClientSecurityParameters.RequireEncryptionUseCredentials (new NetworkCredential ("User Name", "paSsWORd")),
+					SmtpClientSecurityParameters.AllowNoSecurity,
+					//SmtpClientSecurityParameters.RequireEncryptionUseCredentials (new NetworkCredential ("User Name", "paSsWORd")),
 					//SmtpClientSecurityParameters.RequireEncryptionUseClientCertificate (clientCertificates),
 					originatorLogger);
 				using (var connection = await SocketBinaryTcpConnection.CreateAsync (serverNameAndAddr, cancellationToken)

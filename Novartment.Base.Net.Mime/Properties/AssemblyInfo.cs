@@ -8,7 +8,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyProduct ("Novartment.Base")]
 [assembly: AssemblyCopyright ("Copyright © 2014-2017")]
 [assembly: NeutralResourcesLanguage ("en")]
-[assembly: CLSCompliant (true)]
+[assembly: CLSCompliant (false)]
 [assembly: ComVisible (false)]
 [assembly: InternalsVisibleTo ("Novartment.Base.Net.Mime.Test")]
 [assembly: AssemblyVersion ("3.1")]

@@ -5,6 +5,7 @@ using System.Data.Common;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Globalization;
+using Microsoft.Extensions.Logging;
 
 namespace Novartment.Base.Data
 {
@@ -31,7 +32,7 @@ namespace Novartment.Base.Data
 		private readonly object _transactionLocker = new object ();
 
 		private readonly ReusableDisposable<DbTransaction> _activeTransaction = new ReusableDisposable<DbTransaction> ();
-		private readonly ILogWriter _logger;
+		private readonly ILogger _logger;
 		private int _globalParamNumber; // номера параметров для sql server должны быть уникальными в пределах транзакции
 
 		/// <summary>
@@ -45,7 +46,11 @@ namespace Novartment.Base.Data
 		"Microsoft.Design",
 			"CA1026:DefaultParametersShouldNotBeUsed",
 			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
-		public InvariantDbConnectionManager (DbProviderFactory factory, string connectionString, int commandTimeout, ILogWriter logger = null)
+		public InvariantDbConnectionManager (
+			DbProviderFactory factory,
+			string connectionString,
+			int commandTimeout,
+			ILogger<InvariantDbConnectionManager> logger = null)
 		{
 			if (factory == null)
 			{
@@ -125,7 +130,7 @@ namespace Novartment.Base.Data
 				return null;
 			}
 
-			_logger?.Trace (FormattableString.Invariant ($"Executing: {_lastIdentityStatement}"));
+			_logger?.LogTrace (FormattableString.Invariant ($"Executing: {_lastIdentityStatement}"));
 			var dbCommand = CreateCommand ();
 			dbCommand.CommandText = _lastIdentityStatement;
 			return dbCommand.ExecuteScalar ();
@@ -158,11 +163,6 @@ namespace Novartment.Base.Data
 		/// <summary>
 		/// Начинает транзакцию.
 		/// </summary>
-		[SuppressMessage (
-		"Microsoft.Globalization",
-			"CA1303:Do not pass literals as localized parameters",
-			MessageId = "Novartment.Base.ILogWriter.Error(System.String)",
-			Justification = "String is not exposed to the end user and will not be localized.")]
 		public void BeginTransaction ()
 		{
 			lock (_connectionLocker)
@@ -170,7 +170,7 @@ namespace Novartment.Base.Data
 				if (_workDbConnection.State != ConnectionState.Open)
 				{
 					var msg = "Can not create new transaction for closed connection.";
-					_logger?.Error (msg);
+					_logger?.LogError (msg);
 					throw new InvalidOperationException (msg);
 				}
 
@@ -179,7 +179,7 @@ namespace Novartment.Base.Data
 					if (_activeTransaction.Value != null)
 					{
 						var msg = "Can not create new transaction while previous is not ended.";
-						_logger?.Error (msg);
+						_logger?.LogError (msg);
 						throw new InvalidOperationException (msg);
 					}
 
@@ -193,11 +193,6 @@ namespace Novartment.Base.Data
 		/// <summary>
 		/// Подтверждает начатую транзакцию.
 		/// </summary>
-		[SuppressMessage (
-		"Microsoft.Globalization",
-			"CA1303:Do not pass literals as localized parameters",
-			MessageId = "Novartment.Base.ILogWriter.Error(System.String)",
-			Justification = "String is not exposed to the end user and will not be localized.")]
 		public void Commit ()
 		{
 			lock (_transactionLocker)
@@ -205,7 +200,7 @@ namespace Novartment.Base.Data
 				if (_activeTransaction.Value == null)
 				{
 					var msg = "Can not commit not started transaction.";
-					_logger?.Error (msg);
+					_logger?.LogError (msg);
 					throw new InvalidOperationException (msg);
 				}
 
@@ -248,24 +243,19 @@ namespace Novartment.Base.Data
 		/// <summary>
 		/// Открывает подключение.
 		/// </summary>
-		[SuppressMessage (
-		"Microsoft.Globalization",
-			"CA1303:Do not pass literals as localized parameters",
-			MessageId = "Novartment.Base.ILogWriter.Debug(System.String)",
-			Justification = "String is not exposed to the end user and will not be localized.")]
 		public void OpenConnection ()
 		{
 			lock (_connectionLocker)
 			{
 				if (_workDbConnection.State == ConnectionState.Closed)
 				{
-					_logger?.Info (FormattableString.Invariant ($"Opening connection to DB [{_workDbConnection.ConnectionString}]."));
+					_logger?.LogInformation (FormattableString.Invariant ($"Opening connection to DB [{_workDbConnection.ConnectionString}]."));
 					_workDbConnection.Open ();
-					_logger?.Debug ("DB connection opened.");
+					_logger?.LogDebug ("DB connection opened.");
 				}
 				else
 				{
-					_logger?.Warn (FormattableString.Invariant ($"Can not open DB connection wich already opened (State={_workDbConnection.State})."));
+					_logger?.LogWarning (FormattableString.Invariant ($"Can not open DB connection wich already opened (State={_workDbConnection.State})."));
 				}
 			}
 		}
@@ -273,17 +263,12 @@ namespace Novartment.Base.Data
 		/// <summary>
 		/// Закрывает подключение.
 		/// </summary>
-		[SuppressMessage (
-		"Microsoft.Globalization",
-			"CA1303:Do not pass literals as localized parameters",
-			MessageId = "Novartment.Base.ILogWriter.Info(System.String)",
-			Justification = "String is not exposed to the end user and will not be localized.")]
 		public void CloseConnection ()
 		{
 			lock (_connectionLocker)
 			{
 				_workDbConnection.Close ();
-				_logger?.Info ("DB connection closed.");
+				_logger?.LogInformation ("DB connection closed.");
 			}
 		}
 
@@ -303,11 +288,6 @@ namespace Novartment.Base.Data
 		/// <param name="useRealParameterNames">Признак использования настоящих имён параметром.
 		/// Если не указан, то будут использоваться номерные заполнители.</param>
 		/// <returns>Созданная команда.</returns>
-		[SuppressMessage (
-		"Microsoft.Globalization",
-			"CA1303:Do not pass literals as localized parameters",
-			MessageId = "Novartment.Base.ILogWriter.Error(System.String)",
-			Justification = "String is not exposed to the end user and will not be localized.")]
 		public DbCommand CreateCommand (IReadOnlyCollection<InvariantDbCommandParameter> parameters, bool useRealParameterNames)
 		{
 			DbCommand dbCommand;
@@ -316,7 +296,7 @@ namespace Novartment.Base.Data
 				if (_workDbConnection.State != ConnectionState.Open)
 				{
 					var msg = "Can not create command for closed connection.";
-					_logger?.Error (msg);
+					_logger?.LogError (msg);
 					throw new InvalidOperationException (msg);
 				}
 
@@ -349,7 +329,7 @@ namespace Novartment.Base.Data
 					dbCommand.Parameters.Add (dataParam);
 
 					var type = (param.Value == null) ? "null" : param.Value.GetType ().Name;
-					_logger?.Trace (FormattableString.Invariant ($"name={dataParam.ParameterName} value={param.Value} type={type} DbType={dataParam.DbType}"));
+					_logger?.LogTrace (FormattableString.Invariant ($"name={dataParam.ParameterName} value={param.Value} type={type} DbType={dataParam.DbType}"));
 				}
 			}
 
