@@ -25,12 +25,13 @@ namespace Novartment.Base.Net
 	public class SocketBinaryTcpConnection : BinaryTcpConnection,
 		ITlsCapableConnection
 	{
+		private readonly Socket _socket;
 		private bool _authenticateAsServerClientCertificateRequired;
 
 		// Инициализирует новый экземпляр TlsCapableConnection на основе указанного подключенного сокета.
 		// Created TlsCapableConnection will take ownership of the specified connectedSocket.
 		[SuppressMessage (
-		"Microsoft.Reliability",
+			"Microsoft.Reliability",
 			"CA2000:Dispose objects before losing scope",
 			Justification = "new NetworkStream will be stored in property 'Reader' and disposed later.")]
 		internal SocketBinaryTcpConnection (Socket connectedSocket, string localHostName, string remoteHostName)
@@ -40,6 +41,7 @@ namespace Novartment.Base.Net
 			new SocketBufferedSource (connectedSocket, new byte[connectedSocket.ReceiveBufferSize]),
 			new SocketBinaryDestination (connectedSocket))
 		{
+			_socket = connectedSocket;
 		}
 
 		/// <summary>
@@ -71,9 +73,9 @@ namespace Novartment.Base.Net
 
 			var task = Dns.GetHostAddressesAsync (remoteUri.Host);
 
-			return CreateAsyncFinalizer ();
+			return CreateAsyncUriFinalizer ();
 
-			async Task<ITcpConnection> CreateAsyncFinalizer ()
+			async Task<ITcpConnection> CreateAsyncUriFinalizer ()
 			{
 				var addrs = await task.ConfigureAwait (false);
 				IPAddress ipAddress = null;
@@ -94,7 +96,7 @@ namespace Novartment.Base.Net
 
 				var remoteEndpoint = new IPHostEndPoint (ipAddress, remoteUri.Port)
 				{
-					HostName = remoteUri.Host
+					HostName = remoteUri.Host,
 				};
 				return await CreateAsync (remoteEndpoint, cancellationToken).ConfigureAwait (false);
 			}
@@ -107,7 +109,7 @@ namespace Novartment.Base.Net
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
 		/// <returns>Задача, результатом которой будет установленное TCP-подключение</returns>
 		[SuppressMessage (
-		"Microsoft.Reliability",
+			"Microsoft.Reliability",
 			"CA2000:Dispose objects before losing scope",
 			Justification = "new TcpConnection will be returned and disposed outside.")]
 		public static Task<ITcpConnection> CreateAsync (IPHostEndPoint remoteEndpoint, CancellationToken cancellationToken)
@@ -138,7 +140,7 @@ namespace Novartment.Base.Net
 			try
 			{
 				var task = socket.ConnectAsync (remoteEndpoint);
-				return CreateAsyncFializer (task, localHostFqdn, remoteEndpoint.HostName, socket, tokenRegistration, cancellationToken);
+				return CreateAsyncFinalizer (task);
 			}
 			catch (ObjectDisposedException)
 			{
@@ -149,6 +151,25 @@ namespace Novartment.Base.Net
 				}
 
 				throw;
+			}
+
+			async Task<ITcpConnection> CreateAsyncFinalizer (Task task)
+			{
+				try
+				{
+					await task.ConfigureAwait (false);
+					return new SocketBinaryTcpConnection (socket, localHostFqdn, remoteEndpoint.HostName);
+				}
+				catch (ObjectDisposedException)
+				{
+					tokenRegistration?.Dispose ();
+					cancellationToken.ThrowIfCancellationRequested ();
+					throw;
+				}
+				finally
+				{
+					tokenRegistration?.Dispose ();
+				}
 			}
 		}
 
@@ -224,7 +245,10 @@ namespace Novartment.Base.Net
 		/// <param name="clientCertificateRequired">A Boolean value that specifies whether the client must supply a certificate for authentication.</param>
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
 		/// <returns>Новое соединение, защищённое по протоколу TLS.</returns>
-		public Task<ITlsConnection> StartTlsServerAsync (X509Certificate serverCertificate, bool clientCertificateRequired, CancellationToken cancellationToken)
+		public Task<ITlsConnection> StartTlsServerAsync (
+			X509Certificate serverCertificate,
+			bool clientCertificateRequired,
+			CancellationToken cancellationToken)
 		{
 			if (serverCertificate == null)
 			{
@@ -283,6 +307,14 @@ namespace Novartment.Base.Net
 		}
 
 		/// <summary>
+		/// Вызывается в унаследованных классах перед освобождением всех ресурсов базового объекта.
+		/// </summary>
+		protected override void OnDisposing ()
+		{
+			_socket.Dispose ();
+		}
+
+		/// <summary>
 		/// Проверяет параметры аутентификации как клиента.
 		/// </summary>
 		/// <param name="sender">Источник, запросивший проверку.</param>
@@ -307,31 +339,6 @@ namespace Novartment.Base.Net
 		{
 			return (sslPolicyErrors == SslPolicyErrors.None) ||
 					(!_authenticateAsServerClientCertificateRequired && (sslPolicyErrors == SslPolicyErrors.RemoteCertificateNotAvailable));
-		}
-
-		private static async Task<ITcpConnection> CreateAsyncFializer (
-			Task task,
-			string localHostFqdn,
-			string remoteHostName,
-			Socket socket,
-			IDisposable disposable,
-			CancellationToken cancellationToken)
-		{
-			try
-			{
-				await task.ConfigureAwait (false);
-				return new SocketBinaryTcpConnection (socket, localHostFqdn, remoteHostName);
-			}
-			catch (ObjectDisposedException)
-			{
-				disposable?.Dispose ();
-				cancellationToken.ThrowIfCancellationRequested ();
-				throw;
-			}
-			finally
-			{
-				disposable?.Dispose ();
-			}
 		}
 	}
 }

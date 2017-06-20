@@ -12,6 +12,7 @@ namespace Novartment.Base.Net.Test
 		private readonly AutoResetEvent _startedEvent = new AutoResetEvent (false);
 
 		internal IReadOnlyList<ITcpConnection> Connections => _connections;
+
 		internal EventWaitHandle StartedEvent => _startedEvent;
 
 		internal TcpConnectionProtocolMock ()
@@ -23,9 +24,15 @@ namespace Novartment.Base.Net.Test
 			_connections.Add (connection);
 			var stopSignaler = new TaskCompletionSource<int> ();
 			_stopSignalers[connection.RemoteEndPoint] = stopSignaler;
-			cancellationToken.Register (() => stopSignaler.TrySetCanceled (), false);
+			cancellationToken.Register (Cancel, connection.RemoteEndPoint, false);
 			_startedEvent.Set ();
 			return stopSignaler.Task;
+		}
+
+		private void Cancel (object remoteEndPointObject)
+		{
+			var remoteEndPoint = (IPEndPoint)remoteEndPointObject;
+			_stopSignalers[remoteEndPoint].TrySetCanceled ();
 		}
 
 		internal void FinishHandlingConnection (IPEndPoint remoteEndPoint)

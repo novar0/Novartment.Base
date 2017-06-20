@@ -93,13 +93,14 @@ namespace Novartment.Base.Net
 		/// <summary>
 		/// Получает промежуток времени, прошедший с момента последнего получения входящих данных подключения.
 		/// </summary>
-		public TimeSpan IdleDuration => TimeSpan.FromTicks (_stopwatch.ElapsedTicks - Interlocked.Read (ref _lastActivity));
+		public TimeSpan IdleDuration => TimeSpan.FromSeconds (
+			(_stopwatch.ElapsedTicks - Interlocked.Read (ref _lastActivity)) / (double)Stopwatch.Frequency);
 
 		/// <summary>
 		/// Освобождает все используемые ресурсы.
 		/// </summary>
 		[SuppressMessage (
-		"Microsoft.Usage",
+			"Microsoft.Usage",
 			"CA1816:CallGCSuppressFinalizeCorrectly",
 			Justification = "There is no meaning to introduce a finalizer in derived type.")]
 		[SuppressMessage (
@@ -108,9 +109,17 @@ namespace Novartment.Base.Net
 			Justification = "Implemented correctly.")]
 		public void Dispose ()
 		{
+			OnDisposing ();
 			_reporter.Dispose ();
 			_stopwatch.Stop ();
 			this.Writer.SetComplete ();
+		}
+
+		/// <summary>
+		/// Вызывается в унаследованных классах перед освобождением всех ресурсов базового объекта.
+		/// </summary>
+		protected virtual void OnDisposing ()
+		{
 		}
 
 		private class Reporter :

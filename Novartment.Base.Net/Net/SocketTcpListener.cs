@@ -73,7 +73,7 @@ namespace Novartment.Base.Net
 		/// Останавливает прослушивание.
 		/// </summary>
 		[SuppressMessage (
-		"Microsoft.Naming",
+			"Microsoft.Naming",
 			"CA1716:IdentifiersShouldNotMatchKeywords",
 			MessageId = "Stop",
 			Justification = "No other name could be applied because base System.Net.Sockets.TcpListener have method 'Stop()'.")]
@@ -90,7 +90,7 @@ namespace Novartment.Base.Net
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
 		/// <returns>Установленное TCP-подключение.</returns>
 		[SuppressMessage (
-		"Microsoft.Reliability",
+			"Microsoft.Reliability",
 			"CA2000:Dispose objects before losing scope",
 			Justification = "new TcpConnection will be returned and disposed outside.")]
 		public Task<ITcpConnection> AcceptTcpClientAsync (CancellationToken cancellationToken)

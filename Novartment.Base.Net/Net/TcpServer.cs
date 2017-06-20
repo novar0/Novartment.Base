@@ -22,12 +22,13 @@ namespace Novartment.Base.Net
 	{
 		private readonly Func<IPEndPoint, ITcpListener> _listenerFactory;
 		private readonly ILogger _logger;
-		private readonly ConcurrentBag<ListenerBinding> _bindings = new ConcurrentBag<ListenerBinding> ();
+		private readonly ConcurrentDictionary<IPEndPoint, ListenerBinding> _bindings = new ConcurrentDictionary<IPEndPoint, ListenerBinding> ();
 		private readonly Timer _watchdogTimer;
 
 		private int _timerCallbackRunnig = 0;
 		private TimeSpan _connectionTotalTimeout = TimeSpan.FromMinutes (10.0);
 		private TimeSpan _connectionIdleTimeout = TimeSpan.FromMinutes (1.0);
+		private TimeSpan _protocolCancelingTimeout = TimeSpan.FromMinutes (1.0);
 
 		/// <summary>
 		/// Инициализирует новый экземпляр TcpServer, создающий объекты-прослушиватели подключений используя указанную фабрику
@@ -95,14 +96,32 @@ namespace Novartment.Base.Net
 		}
 
 		/// <summary>
+		/// Gets or sets timeout of canceling protocols. Minimum one millisecond or Timeout.InfiniteTimeSpan.
+		/// </summary>
+		public TimeSpan ProtocolCancelingTimeout
+		{
+			get => _protocolCancelingTimeout;
+
+			set
+			{
+				if ((value != Timeout.InfiniteTimeSpan) && (value.TotalMilliseconds < 1.0))
+				{
+					throw new ArgumentOutOfRangeException (nameof (value));
+				}
+
+				_protocolCancelingTimeout = value;
+				var interval = CalculateWatchdogTimerInterval ();
+				_watchdogTimer.Change (interval, interval);
+			}
+		}
+
+		/// <summary>
 		/// Запускает фоновое прослушивание на указанной конечной точке.
 		/// Для каждого подключения будет вызван указанный обработчик.
 		/// </summary>
 		/// <param name="endPoint">Конечная точки, на которой будет производиться прослушивание подключений.</param>
 		/// <param name="protocol">Обработчик для входящих подключений.</param>
-		public void AddListenEndpoint (
-			IPEndPoint endPoint,
-			ITcpConnectionProtocol protocol)
+		public void AddListenEndpoint (IPEndPoint endPoint, ITcpConnectionProtocol protocol)
 		{
 			if (endPoint == null)
 			{
@@ -119,8 +138,12 @@ namespace Novartment.Base.Net
 			// TODO: добавить проверку чтобы не стартовала пока идёт остановка в методе Stop()
 			ITcpListener listener = _listenerFactory.Invoke (endPoint);
 			var binding = new ListenerBinding (listener, protocol, _logger);
+			if (!_bindings.TryAdd (endPoint, binding))
+			{
+				throw new InvalidOperationException ($"Specified EndPoint {endPoint} already listening.");
+			}
+
 			binding.Start ();
-			_bindings.Add (binding);
 		}
 
 		/// <summary>
@@ -137,31 +160,56 @@ namespace Novartment.Base.Net
 			var listeners = 0;
 			var clients = 0;
 
-			while (_bindings.TryTake (out ListenerBinding binding))
+			var bindingsToDelete = new ArrayList<IPEndPoint> (_bindings.Count);
+
+			foreach (var bindingEntry in _bindings)
 			{
+				var binding = bindingEntry.Value;
+
 				binding.Cancel ();
-				tasksToWait.Add (binding.AcceptingConnectionsTask);
-				listeners++;
 
-				// останавливаем все сессии
-				foreach (var client in binding.ConnectedClients)
+				// освободим и удалим сразу те привязки, в которых нет активных клиентов
+				// привязки, в которых есть активные клиенты, будут опрашиваться по таймеру и удалятся после отключения клиентов
+				if (binding.ConnectedClients.Count < 1)
 				{
-					if (abortActiveConnections)
-					{
-						_logger?.LogTrace (FormattableString.Invariant ($"Aborting client {client.EndPoint}"));
-					}
-
-					var task = client.EndProcessing (abortActiveConnections);
-					tasksToWait.Add (task);
-					clients++;
+					binding.Dispose ();
+					bindingsToDelete.Add (bindingEntry.Key);
 				}
+				else
+				{
+					tasksToWait.Add (binding.AcceptingConnectionsTask);
+					listeners++;
+
+					// останавливаем все сессии
+					foreach (var client in binding.ConnectedClients)
+					{
+						if (abortActiveConnections)
+						{
+							_logger?.LogTrace (FormattableString.Invariant ($"Aborting client {client.EndPoint}."));
+						}
+
+						var task = client.EndProcessing (abortActiveConnections);
+						tasksToWait.Add (task);
+						clients++;
+					}
+				}
+			}
+
+			foreach (var endPoint in bindingsToDelete)
+			{
+				_bindings.TryRemove (endPoint, out var notUsed);
+			}
+
+			if (tasksToWait.Count < 1)
+			{
+				return Task.CompletedTask;
 			}
 
 			_logger?.LogTrace (FormattableString.Invariant ($"Waiting completion of {listeners} listeners and {clients} connections."));
 
 			var globalWaitTask = Task.WhenAll (tasksToWait);
 
-			// игнорируем исключения
+			// игнорируем исключения: никому не интересны проблемы в процессе "умирания" прослушивателей и протоколов
 			return globalWaitTask.ContinueWith (
 				t => { },
 				CancellationToken.None,
@@ -185,10 +233,12 @@ namespace Novartment.Base.Net
 			_watchdogTimer.Dispose ();
 
 			// освобождаем все прослушиватели и соединения
-			while (_bindings.TryTake (out ListenerBinding binding))
+			foreach (var binding in _bindings.Values)
 			{
 				binding?.Dispose ();
 			}
+
+			_bindings.Clear ();
 		}
 
 		private int CalculateWatchdogTimerInterval ()
@@ -226,34 +276,70 @@ namespace Novartment.Base.Net
 		{
 			// защищаемся от реитерации
 			var oldValue = Interlocked.CompareExchange (ref _timerCallbackRunnig, 1, 0);
-			if (oldValue != 0)
+			if ((oldValue != 0) || (_connectionTotalTimeout == Timeout.InfiniteTimeSpan))
 			{
 				return;
 			}
 
-			var connectionTimeout = _connectionTotalTimeout;
-			var idleTimeout = _connectionIdleTimeout;
+			var bindingsToDelete = new ArrayList<IPEndPoint> (_bindings.Count);
 
-			foreach (var binding in _bindings)
+			foreach (var bindingEntry in _bindings)
 			{
+				var binding = bindingEntry.Value;
+
+				// посчитаем сколько у привязки живых клиентов чтобы позже удалить остановленные привязки, в которых их нет
+				var aliveClients = 0;
 				foreach (var client in binding.ConnectedClients)
 				{
-					if ((connectionTimeout != Timeout.InfiniteTimeSpan) && (client.Duration >= connectionTimeout))
+					switch (client.State)
 					{
-						_logger?.LogWarning (FormattableString.Invariant (
-							$"Disconnecting client {client.EndPoint} because of connection time ({client.Duration}) exceeds limit ({connectionTimeout})."));
-						client.EndProcessing (true);
-					}
-					else
-					{
-						if ((connectionTimeout != Timeout.InfiniteTimeSpan) && (client.IdleDuration >= idleTimeout))
-						{
-							_logger?.LogWarning (FormattableString.Invariant (
-								$"Disconnecting client {client.EndPoint} because of idle time ({client.IdleDuration}) exceeds limit ({idleTimeout})."));
-							client.EndProcessing (true);
-						}
+						case ProcessState.InProgress:
+							if (client.Duration >= _connectionTotalTimeout)
+							{
+								_logger?.LogWarning (FormattableString.Invariant (
+									$"Canceling protocol with client {client.EndPoint} because of connection time ({client.Duration}) exceeds limit ({_connectionTotalTimeout})."));
+								client.EndProcessing (true);
+							}
+							else
+							{
+								if (client.IdleDuration >= _connectionIdleTimeout)
+								{
+									_logger?.LogWarning (FormattableString.Invariant (
+										$"Canceling protocol with client {client.EndPoint} because of idle time exceeds limit {_connectionIdleTimeout}."));
+									client.EndProcessing (true);
+								}
+							}
+
+							aliveClients++;
+							break;
+						case ProcessState.Canceling:
+							if ((client.Duration - client.CancelDurationStart) >= _protocolCancelingTimeout)
+							{
+								_logger?.LogWarning (FormattableString.Invariant (
+									$"Disconnecting client {client.EndPoint} because of protocol not finished canceling in {_protocolCancelingTimeout}."));
+								client.Dispose ();
+							}
+							else
+							{
+								aliveClients++;
+							}
+
+							break;
+						case ProcessState.Disposed:
+							break;
 					}
 				}
+
+				if (((binding.State == ProcessState.Canceling) || (binding.State == ProcessState.Disposed)) && (aliveClients < 1))
+				{
+					binding.Dispose ();
+					bindingsToDelete.Add (bindingEntry.Key);
+				}
+			}
+
+			foreach (var endPoint in bindingsToDelete)
+			{
+				_bindings.TryRemove (endPoint, out var notUsed);
 			}
 
 			_timerCallbackRunnig = 0;

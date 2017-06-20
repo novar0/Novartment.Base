@@ -104,7 +104,7 @@ namespace Novartment.Base.Net.Test
 		{
 			_lastActivity = _stopwatch.ElapsedMilliseconds;
 		}
-		
+
 		public void Dispose ()
 		{
 			_disposed = true;

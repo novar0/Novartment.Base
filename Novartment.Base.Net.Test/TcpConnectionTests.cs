@@ -12,6 +12,7 @@ namespace Novartment.Base.Net.Test
 		public void SetComplete () { }
 		public Task WriteAsync (byte[] buffer, int offset, int count, CancellationToken cancellationToken) { return Task.CompletedTask; }
 	}
+
 	internal class EndlessSource : IBufferedSource
 	{
 		public byte[] Buffer => new byte[20];
@@ -22,9 +23,11 @@ namespace Novartment.Base.Net.Test
 		public Task FillBufferAsync (CancellationToken cancellationToken) => Task.CompletedTask;
 		public void SkipBuffer (int size) { }
 	}
+
 	public class TcpConnectionTests
 	{
-		[Fact, Trait ("Category", "Net")]
+		[Fact]
+		[Trait ("Category", "Net")]
 		public void DurationCalculation ()
 		{
 			var point1 = new IPHostEndPoint (IPAddress.Loopback, 2123) { HostName = "Host 101" };
@@ -52,6 +55,7 @@ namespace Novartment.Base.Net.Test
 
 			// после активности разница в продолжительностях стала большой
 			connection.Reader.EnsureBufferAsync (10, CancellationToken.None).Wait ();
+			connection.Reader.SkipBuffer (5);
 			var delta2 = connection.Duration.TotalMilliseconds - connection.IdleDuration.TotalMilliseconds;
 			Assert.InRange (Math.Abs (delta2), 100.0, double.MaxValue); // TODO: иногда тут 94
 		}

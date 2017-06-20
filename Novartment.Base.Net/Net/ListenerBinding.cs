@@ -25,6 +25,8 @@ namespace Novartment.Base.Net
 			_logger = logger;
 		}
 
+		internal ProcessState State { get; private set; } = ProcessState.InProgress;
+
 		internal ICollection<ConnectedClient> ConnectedClients => _connections.Values;
 
 		internal Task AcceptingConnectionsTask => _acceptingConnectionsTask;
@@ -37,6 +39,7 @@ namespace Novartment.Base.Net
 			}
 
 			SafeMethods.TryDispose (_listener);
+			this.State = ProcessState.Disposed;
 		}
 
 		internal void Start ()
@@ -55,11 +58,13 @@ namespace Novartment.Base.Net
 		{
 			_listener.Stop ();
 			_acceptConnectionsLoopCancellation?.Cancel ();
+			this.State = ProcessState.Canceling;
 		}
 
 		private async Task AcceptConnectionsLoop ()
 		{
-			_logger?.LogInformation ("Started accepting connections to " + _listener.LocalEndpoint);
+			_logger?.LogInformation (FormattableString.Invariant (
+				$"Listener {_listener.LocalEndpoint}: started accepting connections."));
 			Task protocolTask;
 			ITcpConnection connection;
 			try
@@ -67,8 +72,6 @@ namespace Novartment.Base.Net
 				while (!_acceptConnectionsLoopCancellation.IsCancellationRequested)
 				{
 					connection = await _listener.AcceptTcpClientAsync (_acceptConnectionsLoopCancellation.Token).ConfigureAwait (false);
-					_logger?.LogTrace (FormattableString.Invariant (
-						$"Client connected {connection.RemoteEndPoint} -> {connection.LocalEndPoint} "));
 					if (_acceptConnectionsLoopCancellation.IsCancellationRequested)
 					{
 						break;
@@ -86,18 +89,21 @@ namespace Novartment.Base.Net
 						throw;
 					}
 
-					var finishingTask = AcceptedConnectionFinalizer ();
+					var finishingTask = AcceptedConnectionFinalizer (connection);
 					var client = new ConnectedClient (connection, finishingTask, cts);
 					_connections[connection.RemoteEndPoint] = client;
+
+					_logger?.LogTrace (FormattableString.Invariant (
+						$"Listener {_listener.LocalEndpoint}: new client connected {connection.RemoteEndPoint}. Connected clients {_connections.Count}."));
 				}
 			}
 			finally
 			{
 				Interlocked.Exchange (ref _acceptConnectionsLoopCancellation, null)?.Dispose (); // отменять уже нечего
-				_logger?.LogInformation ("Stopped accepting connections to " + _listener.LocalEndpoint);
+				_logger?.LogInformation ($"Listener {_listener.LocalEndpoint}: stopped accepting connections. Connected clients {_connections.Count}.");
 			}
 
-			async Task AcceptedConnectionFinalizer ()
+			async Task AcceptedConnectionFinalizer (ITcpConnection cntn)
 			{
 				try
 				{
@@ -105,10 +111,10 @@ namespace Novartment.Base.Net
 				}
 				finally
 				{
-					_connections.TryRemove (connection.RemoteEndPoint, out ConnectedClient connectionProtocolTask);
-					connection.Dispose ();
+					_connections.TryRemove (cntn.RemoteEndPoint, out ConnectedClient connectionProtocolTask);
+					cntn.Dispose ();
 					_logger?.LogTrace (FormattableString.Invariant (
-						$"Client disconnected {connection.RemoteEndPoint} -> {connection.LocalEndPoint} "));
+						$"Listener {_listener.LocalEndpoint}: client disconnected {cntn.RemoteEndPoint}. Connected clients {_connections.Count}."));
 				}
 			}
 		}

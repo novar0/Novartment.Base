@@ -129,7 +129,19 @@ namespace Novartment.Base.Net
 
 			async Task FillBufferAsyncFinalizer ()
 			{
-				var readed = await task.ConfigureAwait (false);
+				int readed;
+				try
+				{
+					readed = await task.ConfigureAwait (false);
+				}
+				catch (ObjectDisposedException) when (cancellationToken.IsCancellationRequested)
+				{
+					// Операции с сокетами не поддерживают отмену, поэтому в случае отмены обычно сокет просто закрывают,
+					// что вызывает ObjectDisposedException.
+					// В таком случае мы проглатываем ObjectDisposedException и генерируем вместо него TaskCanceledException.
+					throw new TaskCanceledException (task);
+				}
+
 				if (readed > 0)
 				{
 					AcceptChunk (readed);
@@ -190,7 +202,20 @@ namespace Novartment.Base.Net
 				{
 					cancellationToken.ThrowIfCancellationRequested ();
 					var bufSegment = new ArraySegment<byte> (_buffer, _offset + _count, _buffer.Length - _offset - _count);
-					var readed = await _socket.ReceiveAsync (bufSegment, SocketFlags.None).ConfigureAwait (false);
+					int readed;
+					var task = _socket.ReceiveAsync (bufSegment, SocketFlags.None);
+					try
+					{
+						readed = await task.ConfigureAwait (false);
+					}
+					catch (ObjectDisposedException) when (cancellationToken.IsCancellationRequested)
+					{
+						// Операции с сокетами не поддерживают отмену, поэтому в случае отмены обычно сокет просто закрывают,
+						// что вызывает ObjectDisposedException.
+						// В таком случае мы проглатываем ObjectDisposedException и генерируем вместо него TaskCanceledException.
+						throw new TaskCanceledException (task);
+					}
+
 					shortage -= readed;
 					if (readed > 0)
 					{

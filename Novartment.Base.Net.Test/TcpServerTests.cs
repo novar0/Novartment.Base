@@ -8,106 +8,101 @@ namespace Novartment.Base.Net.Test
 {
 	public class TcpServerTests
 	{
-		[Fact, Trait ("Category", "Net")]
+		[Fact]
+		[Trait ("Category", "Net")]
 		public void ProtocolCalledOnConnect ()
 		{
-			var listeners = new List<TcpListenerMock> ();
+			var listeners = new Stack<TcpListenerMock> ();
 			var listenerFactory = new Func<IPEndPoint, ITcpListener> (endpoint =>
 				{
 					var newListener = new TcpListenerMock (endpoint);
-					listeners.Add (newListener);
+					listeners.Push (newListener);
 					return newListener;
 				});
 			var protocol1 = new TcpConnectionProtocolMock ();
 			var protocol2 = new TcpConnectionProtocolMock ();
 
 			var srv = new TcpServer (listenerFactory, null);
-			var localAddr1 = new IPAddress (9087423L);
-			var localPort1 = 2554;
-			var localAddr2 = new IPAddress (522209L);
-			var localPort2 = 19720;
-			var remoteAddr1 = new IPAddress (1144955L);
-			var remotePort1 = 32701;
-			var remoteAddr2 = new IPAddress (38755L);
-			var remotePort2 = 25;
-			var remoteAddr3 = new IPAddress (3124777L);
-			var remotePort3 = 8008;
-			var remoteEndPoint1 = new IPEndPoint (remoteAddr1, remotePort1);
-			var remoteEndPoint2 = new IPEndPoint (remoteAddr2, remotePort2);
-			var remoteEndPoint3 = new IPEndPoint (remoteAddr3, remotePort3);
+			var protocol1localEndPoint = new IPEndPoint (new IPAddress (9087423L), 2554);
+			var protocol2localEndPoint = new IPEndPoint (new IPAddress (522209L), 19720);
+			var protocol1remoteEndPoint1 = new IPEndPoint (new IPAddress (1144955L), 32701);
+			var protocol1remoteEndPoint2 = new IPEndPoint (new IPAddress (38755L), 25);
+			var protocol2remoteEndPoint = new IPEndPoint (new IPAddress (3124777L), 8008);
 
 			// на каждую добавленную точку прослушивания должен быть создан запущенный прослушиватель на указанный адрес/порт
 			Assert.Equal (0, listeners.Count);
-			srv.AddListenEndpoint (new IPEndPoint (localAddr1, localPort1), protocol1);
+			srv.AddListenEndpoint (protocol1localEndPoint, protocol1);
 			Assert.Equal (1, listeners.Count);
-			var listener1 = listeners[0];
-			Assert.Equal (localAddr1, listener1.LocalEndpoint.Address);
-			Assert.Equal (localPort1, listener1.LocalEndpoint.Port);
-			Assert.True (listener1.IsStarted);
+			var protocol1listener = listeners.Pop ();
+			Assert.Equal (protocol1localEndPoint.Address, protocol1listener.LocalEndpoint.Address);
+			Assert.Equal (protocol1localEndPoint.Port, protocol1listener.LocalEndpoint.Port);
+			Assert.True (protocol1listener.IsStarted);
 
-			srv.AddListenEndpoint (new IPEndPoint (localAddr2, localPort2), protocol2);
-			Assert.Equal (2, listeners.Count);
-			var listener2 = listeners[1];
-			Assert.Equal (localAddr2, listener2.LocalEndpoint.Address);
-			Assert.Equal (localPort2, listener2.LocalEndpoint.Port);
-			Assert.True (listener2.IsStarted);
+			srv.AddListenEndpoint (protocol2localEndPoint, protocol2);
+			Assert.Equal (1, listeners.Count);
+			var protocol2listener = listeners.Pop ();
+			Assert.Equal (protocol2localEndPoint.Address, protocol2listener.LocalEndpoint.Address);
+			Assert.Equal (protocol2localEndPoint.Port, protocol2listener.LocalEndpoint.Port);
+			Assert.True (protocol2listener.IsStarted);
 
 			// на каждое установленное соединение должен быть вызыван обработчик
 			Assert.Equal (0, protocol1.Connections.Count);
-			listener1.SimulateIncomingConnection (remoteEndPoint1);
+			protocol1listener.SimulateIncomingConnection (protocol1remoteEndPoint1);
 			protocol1.StartedEvent.WaitOne (); // ждём пока в TcpServer создаётся объект соединения и обработчика
 			Assert.Equal (1, protocol1.Connections.Count);
-			var listener1connection1 = (TcpConnectionMock)protocol1.Connections[0];
-			Assert.False (listener1connection1.IsDisposed);
-			Assert.Equal (localAddr1, listener1connection1.LocalEndPoint.Address);
-			Assert.Equal (localPort1, listener1connection1.LocalEndPoint.Port);
-			Assert.Equal (remoteAddr1, listener1connection1.RemoteEndPoint.Address);
-			Assert.Equal (remotePort1, listener1connection1.RemoteEndPoint.Port);
+			var protocol1connection1 = (TcpConnectionMock)protocol1.Connections[0];
+			Assert.False (protocol1connection1.IsDisposed);
+			Assert.Equal (protocol1localEndPoint.Address, protocol1connection1.LocalEndPoint.Address);
+			Assert.Equal (protocol1localEndPoint.Port, protocol1connection1.LocalEndPoint.Port);
+			Assert.Equal (protocol1remoteEndPoint1.Address, protocol1connection1.RemoteEndPoint.Address);
+			Assert.Equal (protocol1remoteEndPoint1.Port, protocol1connection1.RemoteEndPoint.Port);
 
 			Assert.Equal (0, protocol2.Connections.Count);
-			listener2.SimulateIncomingConnection (remoteEndPoint3);
+			protocol2listener.SimulateIncomingConnection (protocol2remoteEndPoint);
 			protocol2.StartedEvent.WaitOne (); // ждём пока в TcpServer создаётся объект соединения и обработчика
 			Assert.Equal (1, protocol2.Connections.Count);
-			var listener2connection1 = (TcpConnectionMock)protocol2.Connections[0];
-			Assert.False (listener2connection1.IsDisposed);
-			Assert.Equal (localAddr2, listener2connection1.LocalEndPoint.Address);
-			Assert.Equal (localPort2, listener2connection1.LocalEndPoint.Port);
-			Assert.Equal (remoteAddr3, listener2connection1.RemoteEndPoint.Address);
-			Assert.Equal (remotePort3, listener2connection1.RemoteEndPoint.Port);
+			var protocol2connection = (TcpConnectionMock)protocol2.Connections[0];
+			Assert.False (protocol2connection.IsDisposed);
+			Assert.Equal (protocol2localEndPoint.Address, protocol2connection.LocalEndPoint.Address);
+			Assert.Equal (protocol2localEndPoint.Port, protocol2connection.LocalEndPoint.Port);
+			Assert.Equal (protocol2remoteEndPoint.Address, protocol2connection.RemoteEndPoint.Address);
+			Assert.Equal (protocol2remoteEndPoint.Port, protocol2connection.RemoteEndPoint.Port);
 
-			listener1.SimulateIncomingConnection (remoteEndPoint2);
+			protocol1listener.SimulateIncomingConnection (protocol1remoteEndPoint2);
 			protocol1.StartedEvent.WaitOne (); // ждём пока в TcpServer создаётся объект соединения и обработчика
 			Assert.Equal (2, protocol1.Connections.Count);
-			var listener1connection2 = (TcpConnectionMock)protocol1.Connections[1];
-			Assert.False (listener1connection2.IsDisposed);
-			Assert.Equal (localAddr1, listener1connection2.LocalEndPoint.Address);
-			Assert.Equal (localPort1, listener1connection2.LocalEndPoint.Port);
-			Assert.Equal (remoteAddr2, listener1connection2.RemoteEndPoint.Address);
-			Assert.Equal (remotePort2, listener1connection2.RemoteEndPoint.Port);
+			var protocol1connection2 = (TcpConnectionMock)protocol1.Connections[1];
+			Assert.False (protocol1connection2.IsDisposed);
+			Assert.Equal (protocol1localEndPoint.Address, protocol1connection2.LocalEndPoint.Address);
+			Assert.Equal (protocol1localEndPoint.Port, protocol1connection2.LocalEndPoint.Port);
+			Assert.Equal (protocol1remoteEndPoint2.Address, protocol1connection2.RemoteEndPoint.Address);
+			Assert.Equal (protocol1remoteEndPoint2.Port, protocol1connection2.RemoteEndPoint.Port);
 
 			// после завершения обработки соединение должно быть закрыто/освобождено
-			protocol1.FinishHandlingConnection (remoteEndPoint2);
-			listener1connection2.DisposedEvent.WaitOne ();
-			Assert.False (listener1connection1.IsDisposed);
-			Assert.False (listener2connection1.IsDisposed);
+			protocol1.FinishHandlingConnection (protocol1remoteEndPoint2);
+			protocol1connection2.DisposedEvent.WaitOne ();
+			Assert.False (protocol1connection1.IsDisposed);
+			Assert.True (protocol1connection2.IsDisposed);
+			Assert.False (protocol2connection.IsDisposed);
 
-			protocol2.FinishHandlingConnection (remoteEndPoint3);
-			listener2connection1.DisposedEvent.WaitOne ();
-			Assert.False (listener1connection1.IsDisposed);
-			Assert.True (listener1connection2.IsDisposed);
-			Assert.True (listener2connection1.IsDisposed);
+			protocol2.FinishHandlingConnection (protocol2remoteEndPoint);
+			protocol2connection.DisposedEvent.WaitOne ();
+			Assert.False (protocol1connection1.IsDisposed);
+			Assert.True (protocol1connection2.IsDisposed);
+			Assert.True (protocol2connection.IsDisposed);
 
 			// после остановки сервера прослушиватели должны быть остановлены.
 			// обработка первого соединения ещё не завершилась и должна быть отменена
-			srv.StopAsync (true).Wait ();
-			listener1connection1.DisposedEvent.WaitOne ();
-			Assert.True (listener1connection1.IsDisposed);
-			WaitHandle.WaitAll (new WaitHandle[] { listener1.StopedEvent, listener2.StopedEvent });
-			Assert.False (listener2.IsStarted);
-			Assert.False (listener1.IsStarted);
+			srv.StopAsync (true).GetAwaiter ().GetResult ();
+			protocol1connection1.DisposedEvent.WaitOne ();
+			Assert.True (protocol1connection1.IsDisposed);
+			WaitHandle.WaitAll (new WaitHandle[] { protocol1listener.StopedEvent, protocol2listener.StopedEvent });
+			Assert.False (protocol2listener.IsStarted);
+			Assert.False (protocol1listener.IsStarted);
 		}
 
-		[Fact, Trait ("Category", "Net")]
+		[Fact]
+		[Trait ("Category", "Net")]
 		public void IdleTimeoutExpiration ()
 		{
 			TcpListenerMock listener = null;
