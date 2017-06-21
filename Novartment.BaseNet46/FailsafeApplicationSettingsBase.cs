@@ -16,7 +16,7 @@ namespace Novartment.Base
 	public class FailsafeApplicationSettingsBase : ApplicationSettingsBase
 	{
 		[SuppressMessage (
-		"Microsoft.Performance",
+			"Microsoft.Performance",
 			"CA1802:UseLiteralsWhereAppropriate",
 			Justification = "No performance gain could be achieved.")]
 		private static readonly string _SettingsAreDefaultString = "SettingsAreDefault5F2D9E7B15D04090BFFBC4396EE7ED7D";

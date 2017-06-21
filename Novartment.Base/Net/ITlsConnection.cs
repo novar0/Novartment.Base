@@ -30,7 +30,7 @@ namespace Novartment.Base.Net
 		/// Gets a value that indicates the security protocol used to authenticate this connection.
 		/// </summary>
 		[SuppressMessage (
-		"Microsoft.Naming",
+			"Microsoft.Naming",
 			"CA1704:IdentifiersShouldBeSpelledCorrectly",
 			MessageId = "Tls",
 			Justification = "'TLS' represents standard term (Transport Layer Security).")]

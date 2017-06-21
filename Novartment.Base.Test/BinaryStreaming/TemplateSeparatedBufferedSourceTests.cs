@@ -1,12 +1,13 @@
 ﻿using System.Threading;
-using Xunit;
 using Novartment.Base.BinaryStreaming;
+using Xunit;
 
 namespace Novartment.Base.Test
 {
 	public class TemplateSeparatedBufferedSourceTests
 	{
-		[Fact, Trait ("Category", "BufferedSource")]
+		[Fact]
+		[Trait ("Category", "BufferedSource")]
 		public void RequestSkipPart ()
 		{
 			byte templPos = 162;
@@ -16,7 +17,7 @@ namespace Novartment.Base.Test
 				FillFunction (templPos + 1),
 				FillFunction (templPos + 2),
 				FillFunction (templPos + 3),
-				FillFunction (templPos + 4)
+				FillFunction (templPos + 4),
 			};
 			long skipBeforeLimitingSize = 0xfffffffd;
 			long secondPartPos = (skipBeforeLimitingSize | 0xffL) + 1L + (long)templPos + separator.Length;
@@ -56,7 +57,7 @@ namespace Novartment.Base.Test
 			{
 				FillFunction (253),
 				FillFunction (254),
-				FillFunction (255)
+				FillFunction (255),
 			};
 			subSrc = new BigBufferedSourceMock (768, srcBufSize, FillFunction);
 			src = new TemplateSeparatedBufferedSource (subSrc, separator, false);
@@ -65,6 +66,7 @@ namespace Novartment.Base.Test
 			Assert.True (src.TrySkipPartAsync (CancellationToken.None).Result);
 			Assert.False (src.TrySkipPartAsync (CancellationToken.None).Result);
 		}
+
 		private static void SkipToEnd (IBufferedSource source, int size)
 		{
 			long skipped = 0L;
@@ -83,6 +85,7 @@ namespace Novartment.Base.Test
 
 			Assert.Equal (size, skipped);
 		}
+
 		private static byte FillFunction (long position)
 		{
 			return (byte)(0xAA ^ (position & 0xFF));

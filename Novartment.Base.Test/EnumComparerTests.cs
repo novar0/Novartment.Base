@@ -5,7 +5,8 @@ namespace Novartment.Base.Test
 {
 	public class EnumComparerTests
 	{
-		[Fact, Trait ("Category", "EnumComparer")]
+		[Fact]
+		[Trait ("Category", "EnumComparer")]
 		public void AllBitsChanged ()
 		{
 			Assert.False (EnumComparer.AllBitsChanged (
@@ -26,7 +27,8 @@ namespace Novartment.Base.Test
 				FileAttributes.Archive | FileAttributes.Compressed | FileAttributes.Hidden));
 		}
 
-		[Fact, Trait ("Category", "EnumComparer")]
+		[Fact]
+		[Trait ("Category", "EnumComparer")]
 		public void AllBitsSet ()
 		{
 			Assert.False (EnumComparer.AllBitsSet (
@@ -43,7 +45,8 @@ namespace Novartment.Base.Test
 				FileAttributes.Archive | FileAttributes.Compressed | FileAttributes.Hidden));
 		}
 
-		[Fact, Trait ("Category", "EnumComparer")]
+		[Fact]
+		[Trait ("Category", "EnumComparer")]
 		public void AllBitsUnset ()
 		{
 			Assert.False (EnumComparer.AllBitsUnset (
@@ -60,7 +63,8 @@ namespace Novartment.Base.Test
 				FileAttributes.Archive));
 		}
 
-		[Fact, Trait ("Category", "EnumComparer")]
+		[Fact]
+		[Trait ("Category", "EnumComparer")]
 		public void AnyBitsChanged ()
 		{
 			Assert.False (EnumComparer.AnyBitsChanged (
@@ -85,7 +89,8 @@ namespace Novartment.Base.Test
 				FileAttributes.Archive | FileAttributes.Compressed | FileAttributes.Hidden));
 		}
 
-		[Fact, Trait ("Category", "EnumComparer")]
+		[Fact]
+		[Trait ("Category", "EnumComparer")]
 		public void AnyBitsSet ()
 		{
 			Assert.False (EnumComparer.AnyBitsSet (
@@ -106,7 +111,8 @@ namespace Novartment.Base.Test
 				FileAttributes.Archive | FileAttributes.Hidden));
 		}
 
-		[Fact, Trait ("Category", "EnumComparer")]
+		[Fact]
+		[Trait ("Category", "EnumComparer")]
 		public void AnyBitsUnset ()
 		{
 			Assert.False (EnumComparer.AnyBitsUnset (

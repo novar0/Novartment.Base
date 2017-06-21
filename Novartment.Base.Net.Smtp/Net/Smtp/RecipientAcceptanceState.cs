@@ -18,6 +18,6 @@
 		FailureMailboxTemporarilyUnavailable = 3,
 
 		/// <summary>Получатель не добавлен из-за его недоступности.</summary>
-		FailureMailboxUnavailable = 4
+		FailureMailboxUnavailable = 4,
 	}
 }

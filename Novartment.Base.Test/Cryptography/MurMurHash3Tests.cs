@@ -1,13 +1,14 @@
 ﻿using System;
-using static System.Linq.Enumerable;
 using System.Text;
 using Xunit;
+using static System.Linq.Enumerable;
 
 namespace Novartment.Base.Test
 {
 	public class MurmurHash3Tests
 	{
-		[Fact, Trait ("Category", "Cryptography.MurmurHash3")]
+		[Fact]
+		[Trait ("Category", "Cryptography.MurmurHash3")]
 		public void ConstantValues ()
 		{
 			var provider = new MurmurHash3 (0);
@@ -30,7 +31,7 @@ namespace Novartment.Base.Test
 				BitConverter.ToUInt32 (provider.ComputeHash (BitConverter.GetBytes (int.MinValue)), 0),
 				BitConverter.ToUInt32 (provider.ComputeHash (BitConverter.GetBytes (int.MaxValue)), 0));
 			Assert.NotEqual (
-				BitConverter.ToUInt32 (provider.ComputeHash (Encoding.UTF8.GetBytes ("")), 0),
+				BitConverter.ToUInt32 (provider.ComputeHash (Encoding.UTF8.GetBytes (string.Empty)), 0),
 				BitConverter.ToUInt32 (provider.ComputeHash (Encoding.UTF8.GetBytes ("0")), 0));
 			Assert.NotEqual (
 				MurmurHash3.GetHashCode ('0'),
@@ -44,18 +45,26 @@ namespace Novartment.Base.Test
 				MurmurHash3.GetHashCode (new byte[] { 0 }),
 				MurmurHash3.GetHashCode (new byte[] { 0, 0 }));
 
+#pragma warning disable SA1139 // Use literal suffix notation instead of casting
+
 			// concrete values
-			Assert.Equal ((uint)0x1b20e026,
+			Assert.Equal (
+				(uint)0x1b20e026,
 				BitConverter.ToUInt32 (provider.ComputeHash (BitConverter.GetBytes (1717859169)), 0));
-			Assert.Equal ((uint)0x14570c6f,
+			Assert.Equal (
+				(uint)0x14570c6f,
 				BitConverter.ToUInt32 (provider.ComputeHash (Encoding.UTF8.GetBytes ("asd")), 0));
-			Assert.Equal ((uint)0xa46b5209,
+			Assert.Equal (
+				(uint)0xa46b5209,
 				BitConverter.ToUInt32 (provider.ComputeHash (Encoding.UTF8.GetBytes ("asdfqwer")), 0));
-			Assert.Equal ((uint)0xa3cfe04b,
+			Assert.Equal (
+				(uint)0xa3cfe04b,
 				BitConverter.ToUInt32 (provider.ComputeHash (Encoding.UTF8.GetBytes ("asdfqwerty")), 0));
+#pragma warning restore SA1139 // Use literal suffix notation instead of casting
 		}
 
-		[Fact, Trait ("Category", "Cryptography.MurmurHash3")]
+		[Fact]
+		[Trait ("Category", "Cryptography.MurmurHash3")]
 		public void CollisionsForSequentialNumbers ()
 		{
 			// collisions for large set of sequential numbers
@@ -68,7 +77,8 @@ namespace Novartment.Base.Test
 			Assert.Equal (hashes.Length, uniques.Count ());
 		}
 
-		[Fact, Trait ("Category", "Cryptography.MurmurHash3")]
+		[Fact]
+		[Trait ("Category", "Cryptography.MurmurHash3")]
 		public void DistributionForSmallSet ()
 		{
 			// distribution for small set of values
@@ -83,24 +93,30 @@ namespace Novartment.Base.Test
 				var distances = new uint[hashes2.Length - 1];
 				for (int j = 1; j < hashes2.Length; j++)
 				{
-					distances[j-1] = hashes2[j] - hashes2[j - 1];
+					distances[j - 1] = hashes2[j] - hashes2[j - 1];
 				}
 
 				var min = distances.Min ();
 				var max = distances.Max ();
 				Assert.InRange (min, 21U, uint.MaxValue); // может иногда нарушаться, повторите тест
-				Assert.InRange (max, 0U, (uint.MaxValue / 2U)); // может иногда нарушаться, повторите тест
+				Assert.InRange (max, 0U, uint.MaxValue / 2U); // может иногда нарушаться, повторите тест
 			}
 		}
 
-		[Fact, Trait ("Category", "Cryptography.MurmurHash3")]
+		[Fact]
+		[Trait ("Category", "Cryptography.MurmurHash3")]
 		public void CollisionsForRandomChunks ()
 		{
 			// collisions for random chunks
 			var rnd = new Random ();
 			byte[] buf;
 			var hashes = Range (0, 100000)
-				.Select (item => { buf = new byte[rnd.Next (4, 50)]; rnd.NextBytes (buf); return MurmurHash3.GetHashCode (buf); })
+				.Select (item =>
+				{
+					buf = new byte[rnd.Next (4, 50)];
+					rnd.NextBytes (buf);
+					return MurmurHash3.GetHashCode (buf);
+				})
 				.ToArray ();
 			var uniques = hashes.GroupBy (item => item);
 			var collisions = hashes.Length - uniques.Count ();

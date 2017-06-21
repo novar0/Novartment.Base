@@ -323,7 +323,7 @@ namespace Novartment.Base.Shell
 				throw new ShellException (
 					FormattableString.Invariant (
 						$"Failed to get special folder '{specialFolder}'."),
-						Marshal.GetExceptionForHR (hr));
+					Marshal.GetExceptionForHR (hr));
 			}
 
 			var currentThreadApartmentState = Thread.CurrentThread.GetApartmentState ();
@@ -440,7 +440,7 @@ namespace Novartment.Base.Shell
 						throw new ShellException (
 							FormattableString.Invariant (
 								$"Failed to create shell item corresponding to the element #{idx + 1} of CIDA structure."),
-								Marshal.GetExceptionForHR (hr));
+							Marshal.GetExceptionForHR (hr));
 					}
 
 					shellItem = new ShellItem (nativeShellItem);
@@ -499,7 +499,7 @@ namespace Novartment.Base.Shell
 				throw new ShellException (
 					FormattableString.Invariant (
 						$"Failed to get attribute '{attribute}' of shell item."),
-						Marshal.GetExceptionForHR (hr));
+					Marshal.GetExceptionForHR (hr));
 			}
 
 			return hr == 0;
@@ -509,12 +509,12 @@ namespace Novartment.Base.Shell
 			IEnumerable<IShellItem>
 		{
 			[SuppressMessage (
-		"Microsoft.Performance",
+				"Microsoft.Performance",
 				"CA1802:UseLiteralsWhereAppropriate",
 				Justification = "No performance gain could be achieved.")]
 			private static readonly string _GuidIEnumShellItems = "70629033-e363-4a28-a567-0db78006e6d7";
 			[SuppressMessage (
-		"Microsoft.Performance",
+				"Microsoft.Performance",
 				"CA1802:UseLiteralsWhereAppropriate",
 				Justification = "No performance gain could be achieved.")]
 			private static readonly string _GuidEnumItemsHandler = "94f60519-2850-4924-aa5a-d15e84868039"; // BHID_EnumItems

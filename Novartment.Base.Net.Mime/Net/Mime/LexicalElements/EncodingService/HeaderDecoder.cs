@@ -588,7 +588,7 @@ namespace Novartment.Base.Net.Mime
 				Value1 = actionMode,
 				Value2 = sendingMode,
 				Value3 = dispositionType,
-				List = modifiers
+				List = modifiers,
 			};
 		}
 

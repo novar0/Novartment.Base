@@ -27,7 +27,7 @@ namespace Novartment.Base.Net
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
 		/// <returns>Новое соединение, защищённое по протоколу TLS.</returns>
 		[SuppressMessage (
-		"Microsoft.Naming",
+			"Microsoft.Naming",
 			"CA1704:IdentifiersShouldBeSpelledCorrectly",
 			MessageId = "Tls",
 			Justification = "'TLS' represents standard term (Transport Layer Security).")]
@@ -43,7 +43,7 @@ namespace Novartment.Base.Net
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
 		/// <returns>Новое соединение, защищённое по протоколу TLS.</returns>
 		[SuppressMessage (
-		"Microsoft.Naming",
+			"Microsoft.Naming",
 			"CA1704:IdentifiersShouldBeSpelledCorrectly",
 			MessageId = "Tls",
 			Justification = "'TLS' represents standard term (Transport Layer Security).")]

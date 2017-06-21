@@ -94,7 +94,7 @@ namespace Novartment.Base
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
 		/// <returns>Задача, состояние которой отражает состояние запущенного процесса.</returns>
 		[SuppressMessage (
-		"Microsoft.Reliability",
+			"Microsoft.Reliability",
 			"CA2000:Dispose objects before losing scope",
 			Justification = "'procData' can not be disposed here, it monitors running process and will be disposed when process exited.")]
 		public static Task StartAsync (this Process process, CancellationToken cancellationToken)
@@ -125,7 +125,7 @@ namespace Novartment.Base
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
 		/// <returns>Задача, состояние которой отражает состояние запущенного процесса.</returns>
 		[SuppressMessage (
-		"Microsoft.Reliability",
+			"Microsoft.Reliability",
 			"CA2000:Dispose objects before losing scope",
 			Justification = "'procData' can not be disposed here, it monitors running process and will be disposed when process exited.")]
 		public static Task StartAsync (this Process process, string completionMutexName, CancellationToken cancellationToken)
@@ -207,7 +207,7 @@ namespace Novartment.Base
 					{
 						var timer = new AppDomainQueueTimer<bool> (TimerTick, false)
 						{
-							Interval = _MutexCheckPeriod
+							Interval = _MutexCheckPeriod,
 						};
 						_mutexQueryTimer.Value = timer;
 						_mutexQueryTimer.Value.Start ();

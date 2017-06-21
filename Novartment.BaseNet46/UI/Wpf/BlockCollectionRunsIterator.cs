@@ -32,7 +32,7 @@ namespace Novartment.Base.UI.Wpf
 		{
 			var stack = new ArrayList<BlockCollection>
 			{
-				_collection
+				_collection,
 			};
 
 			while (stack.TryTakeLast (out BlockCollection collection))

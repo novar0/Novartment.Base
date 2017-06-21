@@ -1,21 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
-using static System.Linq.Enumerable;
 using System.IO;
 using System.Security.Cryptography;
+using System.Text;
 using System.Threading;
-using Xunit;
 using Novartment.Base.BinaryStreaming;
+using Xunit;
+using static System.Linq.Enumerable;
 
 namespace Novartment.Base.Net.Mime.Test
 {
 	public class MailMessageTests
 	{
-		[Fact, Trait ("Category", "Mime")]
+		[Fact]
+		[Trait ("Category", "Mime")]
 		public void Load_AllHeaderFields ()
 		{
-			string Template1 =
+			string template1 =
 				"Received: from ChelMKMail.mailinator.com ([10.2.6.173]) by itc-serv01.chmk.mechelgroup.ru with Microsoft SMTPSVC(6.0.3790.4675);\tTue, 15 May 2012 07:49:27 +0600\r\n" +
 				"Resent-Message-ID: <111aaabbb@server.com>\r\n" +
 				"Resent-From: <gateway@mechel.com>\r\n" +
@@ -52,7 +53,7 @@ namespace Novartment.Base.Net.Mime.Test
 
 			var msg = new MailMessage ();
 			msg.LoadAsync (
-				new ArrayBufferedSource (Encoding.ASCII.GetBytes (Template1)),
+				new ArrayBufferedSource (Encoding.ASCII.GetBytes (template1)),
 				EntityBodyFactory.Create,
 				CancellationToken.None).Wait ();
 
@@ -74,7 +75,7 @@ namespace Novartment.Base.Net.Mime.Test
 			Assert.Equal ("server.com", msg.Trace[2].ResentMessageId.Domain);
 			Assert.Equal (new DateTimeOffset (2012, 5, 15, 3, 49, 22, new TimeSpan (1, 0, 0)), msg.Trace[2].ResentDate);
 
-			//common
+			// common
 			Assert.Equal (1, msg.From.Count);
 			Assert.Equal ("asutp_espc2", msg.From[0].Address.LocalPart);
 			Assert.Equal ("server10.espc2.mechel.com", msg.From[0].Address.Domain);
@@ -100,30 +101,30 @@ namespace Novartment.Base.Net.Mime.Test
 			// to
 			Assert.Equal (1, msg.RecipientTo.Count);
 			Assert.IsType<Mailbox> (msg.RecipientTo[0]);
-			Assert.Equal ("manager", (msg.RecipientTo[0]).Address.LocalPart);
-			Assert.Equal ("itc-serv01.chmk.mechelgroup.ru", (msg.RecipientTo[0]).Address.Domain);
+			Assert.Equal ("manager", msg.RecipientTo[0].Address.LocalPart);
+			Assert.Equal ("itc-serv01.chmk.mechelgroup.ru", msg.RecipientTo[0].Address.Domain);
 
-			//cc
+			// cc
 			Assert.Equal (4, msg.RecipientCC.Count);
 			var arr = msg.RecipientCC;
 			Assert.Null (arr[0].Name);
 			Assert.IsType<Mailbox> (arr[0]);
-			Assert.Equal ("no.name", (arr[0]).Address.LocalPart);
-			Assert.Equal ("mailinator.com", (arr[0]).Address.Domain);
+			Assert.Equal ("no.name", arr[0].Address.LocalPart);
+			Assert.Equal ("mailinator.com", arr[0].Address.Domain);
 			Assert.Equal ("Recipient A.B. \"First\"", arr[1].Name);
 			Assert.IsType<Mailbox> (arr[1]);
-			Assert.Equal ("sp1", (arr[1]).Address.LocalPart);
-			Assert.Equal ("some strange domain", (arr[1]).Address.Domain);
+			Assert.Equal ("sp1", arr[1].Address.LocalPart);
+			Assert.Equal ("some strange domain", arr[1].Address.Domain);
 			Assert.Equal ("new совсем one 222", arr[2].Name);
 			Assert.IsType<Mailbox> (arr[2]);
-			Assert.Equal ("namewith,comma", (arr[2]).Address.LocalPart);
-			Assert.Equal ("mailinator.com", (arr[2]).Address.Domain);
+			Assert.Equal ("namewith,comma", arr[2].Address.LocalPart);
+			Assert.Equal ("mailinator.com", arr[2].Address.Domain);
 			Assert.Equal ("Идея состоит в том, чтобы писать тесты для каждой нетривиальной функции или метода", arr[3].Name);
 			Assert.IsType<Mailbox> (arr[3]);
-			Assert.Equal ("sp3", (arr[3]).Address.LocalPart);
-			Assert.Equal ("mailinator.com", (arr[3]).Address.Domain);
+			Assert.Equal ("sp3", arr[3].Address.LocalPart);
+			Assert.Equal ("mailinator.com", arr[3].Address.Domain);
 
-			//DispositionNotificationTo
+			// DispositionNotificationTo
 			Assert.Equal (3, msg.DispositionNotificationTo.Count);
 			Assert.Equal ("some one", msg.DispositionNotificationTo[0].Name);
 			Assert.Equal ("addr1", msg.DispositionNotificationTo[0].Address.LocalPart);
@@ -135,7 +136,7 @@ namespace Novartment.Base.Net.Mime.Test
 			Assert.Equal ("addr.ru", msg.DispositionNotificationTo[2].Address.LocalPart);
 			Assert.Equal ("server3.com", msg.DispositionNotificationTo[2].Address.Domain);
 
-			//DispositionNotificationOptions
+			// DispositionNotificationOptions
 			Assert.Equal (2, msg.DispositionNotificationOptions.Count);
 			Assert.Equal ("signed-receipt-protocol", msg.DispositionNotificationOptions[0].Name);
 			Assert.Equal (DispositionNotificationParameterImportance.Optional, msg.DispositionNotificationOptions[0].Importance);
@@ -146,7 +147,7 @@ namespace Novartment.Base.Net.Mime.Test
 			Assert.Equal ("sha1", msg.DispositionNotificationOptions[1].Values[0]);
 			Assert.Equal ("md5", msg.DispositionNotificationOptions[1].Values[1]);
 
-			//AcceptLanguages
+			// AcceptLanguages
 			Assert.Equal (4, msg.AcceptLanguages.Count);
 			Assert.Equal ("ru-ru", msg.AcceptLanguages[0].Value);
 			Assert.Equal (1.0m, msg.AcceptLanguages[0].Importance);
@@ -157,7 +158,7 @@ namespace Novartment.Base.Net.Mime.Test
 			Assert.Equal ("en", msg.AcceptLanguages[3].Value);
 			Assert.Equal (0.3m, msg.AcceptLanguages[3].Importance);
 
-			//List*
+			// List*
 			Assert.NotNull (msg.MailingList);
 			Assert.Equal ("lenas-jokes.da39efc25c530ad145d41b86f7420c3b.021999.localhost", msg.MailingList.Id);
 			Assert.Equal ("Lena's Personal <Joke> List", msg.MailingList.Description);
@@ -180,7 +181,8 @@ namespace Novartment.Base.Net.Mime.Test
 			Assert.Equal ("server10/espc2/mechel third", msg.ReturnPath.Domain);
 		}
 
-		[Fact, Trait ("Category", "Mime")]
+		[Fact]
+		[Trait ("Category", "Mime")]
 		public void Load_Simple ()
 		{
 			MailMessage msg;
@@ -196,18 +198,18 @@ namespace Novartment.Base.Net.Mime.Test
 			Assert.Equal ("no.name", msg.RecipientCC[0].Address.LocalPart);
 			Assert.Equal ("mailinator.com", msg.RecipientCC[0].Address.Domain);
 			Assert.Equal ("Recipient A.B. \"First\"", msg.RecipientCC[1].Name);
-			Assert.Equal ("sp1", (msg.RecipientCC[1]).Address.LocalPart);
-			Assert.Equal ("some strange domain", (msg.RecipientCC[1]).Address.Domain);
+			Assert.Equal ("sp1", msg.RecipientCC[1].Address.LocalPart);
+			Assert.Equal ("some strange domain", msg.RecipientCC[1].Address.Domain);
 			Assert.Equal ("new совсем one 222", msg.RecipientCC[2].Name);
-			Assert.Equal ("namewith,comma", (msg.RecipientCC[2]).Address.LocalPart);
-			Assert.Equal ("mailinator.com", (msg.RecipientCC[2]).Address.Domain);
+			Assert.Equal ("namewith,comma", msg.RecipientCC[2].Address.LocalPart);
+			Assert.Equal ("mailinator.com", msg.RecipientCC[2].Address.Domain);
 			Assert.Equal ("Идея состоит в том, чтобы писать тесты для каждой нетривиальной функции или метода", msg.RecipientCC[3].Name);
-			Assert.Equal ("sp3", (msg.RecipientCC[3]).Address.LocalPart);
-			Assert.Equal ("mailinator.com", (msg.RecipientCC[3]).Address.Domain);
+			Assert.Equal ("sp3", msg.RecipientCC[3].Address.LocalPart);
+			Assert.Equal ("mailinator.com", msg.RecipientCC[3].Address.Domain);
 
 			Assert.Equal (1, msg.RecipientTo.Count);
-			Assert.Equal ("sp", (msg.RecipientTo[0]).Address.LocalPart);
-			Assert.Equal ("mailinator.com", (msg.RecipientTo[0]).Address.Domain);
+			Assert.Equal ("sp", msg.RecipientTo[0].Address.LocalPart);
+			Assert.Equal ("mailinator.com", msg.RecipientTo[0].Address.Domain);
 
 			Assert.Equal (4, msg.ExtraFields.Count);
 			var extField = (ExtensionHeaderField)msg.ExtraFields[0];
@@ -223,7 +225,7 @@ namespace Novartment.Base.Net.Mime.Test
 			Assert.Equal ("X-MimeOLE", extField.ExtensionName);
 			Assert.Equal ("Produced By Microsoft MimeOLE V6.00.3790.4913", msg.ExtraFields[3].Value);
 
-			//body
+			// body
 			Assert.IsType<TextEntityBody> (msg.Body);
 			Assert.Equal (ContentMediaType.Text, msg.Type);
 			Assert.Equal ("plain", msg.Subtype);
@@ -232,7 +234,8 @@ namespace Novartment.Base.Net.Mime.Test
 			Assert.Equal ("koi8-r", ((TextEntityBody)msg.Body).Encoding.WebName);
 		}
 
-		[Fact, Trait ("Category", "Mime")]
+		[Fact]
+		[Trait ("Category", "Mime")]
 		public void Load_WithAttachment ()
 		{
 			MailMessage msg;
@@ -240,8 +243,10 @@ namespace Novartment.Base.Net.Mime.Test
 			{
 				msg = new MailMessage ();
 				msg.LoadAsync (fs.AsBufferedSource (new byte[1024]), EntityBodyFactory.Create, CancellationToken.None).Wait ();
-				//Assert.Equal (fs.Length, fs.Position, "Поток данных сообщения прочитан не полностью");
+
+				// Assert.Equal (fs.Length, fs.Position, "Поток данных сообщения прочитан не полностью");
 			}
+
 			Assert.Equal (1, msg.From.Count);
 			Assert.Equal ("asutp_espc2", msg.From[0].Address.LocalPart);
 			Assert.Equal ("server10.espc2.mechel.com", msg.From[0].Address.Domain);
@@ -295,12 +300,14 @@ namespace Novartment.Base.Net.Mime.Test
 			{
 				hash = prov.ComputeHash (data);
 			}
+
 			Assert.Equal<byte> (
 				new byte[] { 0x63, 0x4B, 0xD3, 0x11, 0x80, 0xE6, 0xE5, 0xB8, 0xE3, 0xFA, 0xD5, 0xF3, 0xBD, 0x10, 0x4D, 0x50 },
 				hash);
 		}
 
-		[Fact, Trait ("Category", "Mime")]
+		[Fact]
+		[Trait ("Category", "Mime")]
 		public void Load_DeliveryReportMail ()
 		{
 			MailMessage msg;
@@ -310,6 +317,7 @@ namespace Novartment.Base.Net.Mime.Test
 				msg.LoadAsync (fs.AsBufferedSource (new byte[1024]), EntityBodyFactory.Create, CancellationToken.None).Wait ();
 				Assert.Equal (fs.Length, fs.Position); // Поток данных сообщения прочитан не полностью
 			}
+
 			Assert.Equal ("postmaster", msg.From[0].Address.LocalPart);
 			Assert.Equal ("itc-serv01.chmk.mechelgroup.ru", msg.From[0].Address.Domain);
 			Assert.Equal ("2V1WYw6Z100000137", msg.MessageId.LocalPart);
@@ -337,8 +345,10 @@ namespace Novartment.Base.Net.Mime.Test
 			Assert.IsType<TextEntityBody> (part1.Body);
 			Assert.Equal (ContentMediaType.Text, part1.Type);
 			Assert.Equal ("plain", part1.Subtype);
-			//Assert.Equal ("unicode-1-1-utf-7", part1.Charset);
-			Assert.Equal ("This is an automatically generated Delivery Status Notification.\r\n\r\nDelivery to the following recipients failed.\r\n\r\n       quality@itc-serv01.chmk.mechelgroup.ru\r\n\r\n\r\n\r\n",
+
+			// Assert.Equal ("unicode - 1 - 1-utf-7", part1.Charset);
+			Assert.Equal (
+				"This is an automatically generated Delivery Status Notification.\r\n\r\nDelivery to the following recipients failed.\r\n\r\n       quality@itc-serv01.chmk.mechelgroup.ru\r\n\r\n\r\n\r\n",
 				((TextEntityBody)part1.Body).GetText ());
 
 			// delivery status body
@@ -364,8 +374,8 @@ namespace Novartment.Base.Net.Mime.Test
 			Assert.Equal ("espc6", nestedMsg.From[0].Address.LocalPart);
 			Assert.Equal ("mailinator.com", nestedMsg.From[0].Address.Domain);
 			Assert.Equal ("Константин Теличко", nestedMsg.From[0].Name);
-			Assert.Equal ("quality", (nestedMsg.RecipientTo[0]).Address.LocalPart);
-			Assert.Equal ("itc-serv01.chmk.mechelgroup.ru", (nestedMsg.RecipientTo[0]).Address.Domain);
+			Assert.Equal ("quality", nestedMsg.RecipientTo[0].Address.LocalPart);
+			Assert.Equal ("itc-serv01.chmk.mechelgroup.ru", nestedMsg.RecipientTo[0].Address.Domain);
 			Assert.Equal (2, nestedMsg.ExtraFields.Count);
 			extField = (ExtensionHeaderField)nestedMsg.ExtraFields[0];
 			Assert.Equal ("X-MIMETrack", extField.ExtensionName);
@@ -378,7 +388,8 @@ namespace Novartment.Base.Net.Mime.Test
 				((TextEntityBody)nestedMsg.Body).GetText ());
 		}
 
-		[Fact, Trait ("Category", "Mime")]
+		[Fact]
+		[Trait ("Category", "Mime")]
 		public void Save_AllHeaderFields ()
 		{
 			var msg = MailMessage.CreateSimpleText ("html", Encoding.ASCII, ContentTransferEncoding.EightBit);
@@ -409,9 +420,11 @@ namespace Novartment.Base.Net.Mime.Test
 			msg.AcceptLanguages.Add (new QualityValueParameter ("en", 0.5m));
 			msg.AcceptLanguages.AddOrderedByQuality ("ru-ru");
 			msg.AcceptLanguages.AddOrderedByQuality ("ru");
-			msg.MailingList = new MailingList ();
-			msg.MailingList.Id = "lenas-jokes.da39efc25c530ad145d41b86f7420c3b.021999.localhost";
-			msg.MailingList.Description = "Lena's Personal <Joke> List";
+			msg.MailingList = new MailingList ()
+			{
+				Id = "lenas-jokes.da39efc25c530ad145d41b86f7420c3b.021999.localhost",
+				Description = "Lena's Personal <Joke> List",
+			};
 			msg.MailingList.HelpCommands.Add ("ftp://ftp.host.com/list.txt");
 			msg.MailingList.HelpCommands.Add ("mailto:list@host.com?subject=help");
 			msg.MailingList.UnsubscribeCommands.Add ("mailto:list-manager@host.com?body=unsubscribe%20list");
@@ -437,6 +450,7 @@ namespace Novartment.Base.Net.Mime.Test
 			Assert.Equal ("\r\n\r\n012\r\n", body); // в конце добавился CRLF как требует стандарт SMTP
 
 			Assert.Equal ("Accept-Language: en-us, en, ru-ru, ru", headers[0]);
+
 			// "Bcc: Ling King <lion.king@africa.com>" не будет, для соблюдения приватности
 			Assert.Equal ("CC: one man <one@mail.ru>, man 2 <two@gmail.ru>, <three@hotmail.com>", headers[1]);
 			Assert.Equal ("Comments: addresses may be rewritten while the message is in transit", headers[2]);
@@ -486,7 +500,8 @@ namespace Novartment.Base.Net.Mime.Test
 			Assert.Equal ("To: <manager@itc-serv01.chmk.mechelgroup.ru>", headers[21]);
 		}
 
-		[Fact, Trait ("Category", "Mime")]
+		[Fact]
+		[Trait ("Category", "Mime")]
 		public void Save_WithAttachment ()
 		{
 			var msg = MailMessage.CreateComposite (MultipartMediaSubtypeNames.Mixed);
@@ -513,6 +528,7 @@ namespace Novartment.Base.Net.Mime.Test
 			Assert.Equal ("Content-Type: multipart/mixed;\r\n boundary=\"" + sampleBoundary + "\"", headers[1]);
 			Assert.StartsWith ("Date: ", headers[2], StringComparison.OrdinalIgnoreCase);
 			Assert.Equal ("From: =?utf-8?B?0KHQtdGA0LPQtdC5INCf0L7QvdC+0LzQsNGA0ZHQsg==?=\r\n <noone@mailinator.com>", headers[3]);
+
 			// домен текущего компьютера может быть длинным, поэтому возможен перенос на новую строку
 			var messageIdStr = "<" + msg.MessageId.LocalPart + "@" + msg.MessageId.Domain + ">";
 			if (("Message-ID: " + messageIdStr).Length <= 78)
@@ -523,6 +539,7 @@ namespace Novartment.Base.Net.Mime.Test
 			{
 				Assert.Equal ("Message-ID:\r\n " + messageIdStr, headers[4]);
 			}
+
 			Assert.Equal ("MIME-Version: 1.0", headers[5]);
 			Assert.Equal ("Subject: =?utf-8?B?0YLQtdC80LAg0YHQvtC+0LHRidC10L3QuNGP?=", headers[6]);
 			Assert.Equal ("To: =?utf-8?B?0JDQtNGA0LXRgdCw0YIg0J7QtNC40L0=?= <sp1@mailinator.com>,\r\n =?utf-8?B?0JDQtNGA0LXRgdCw0YIg0JTQstCw?= <sp2@mailinator.com>,\r\n =?utf-8?B?0JDQtNGA0LXRgdCw0YIg0KLRgNC4?= <sp3@mailinator.com>", headers[7]);
@@ -530,7 +547,8 @@ namespace Novartment.Base.Net.Mime.Test
 			var parts = SplitToParts (elements[8], "\r\n--" + sampleBoundary);
 			Assert.Equal (4, parts.Count);
 			Assert.Equal ("\r\n\r\n", parts[0]);
-			Assert.Equal ('-', parts[3][0]); Assert.Equal ('-', parts[3][1]);
+			Assert.Equal ('-', parts[3][0]);
+			Assert.Equal ('-', parts[3][1]);
 
 			var subElements1 = SplitToElements (parts[1].Substring (2));
 			Assert.Equal (3, subElements1.Count);
@@ -547,7 +565,8 @@ namespace Novartment.Base.Net.Mime.Test
 			Assert.StartsWith ("Content-Disposition: attachment; filename=test4.ico; size=318", subHeaders2[0], StringComparison.OrdinalIgnoreCase);
 			Assert.Equal ("Content-Transfer-Encoding: base64", subHeaders2[1]);
 			Assert.Equal ("Content-Type: application/octet-stream", subHeaders2[2]);
-			Assert.Equal ("\r\n\r\nAAABAAEAEBAQAAEABAAoAQAAFgAAACgAAAAQAAAAIAAAAAEABAAAAAAAAAAAAAAAAAAAAAAAEAAA\r\n" +
+			Assert.Equal (
+				"\r\n\r\nAAABAAEAEBAQAAEABAAoAQAAFgAAACgAAAAQAAAAIAAAAAEABAAAAAAAAAAAAAAAAAAAAAAAEAAA\r\n" +
 				"AAAAAAAEAgQAhIOEAMjHyABIR0gA6ejpAGlqaQCpqKkAKCgoAPz9/AAZGBkAmJiYANjZ2ABXWFcA\r\n" +
 				"ent6ALm6uQA8OjwAiIiIiIiIiIiIiI4oiL6IiIiIgzuIV4iIiIhndo53KIiIiB/WvXoYiIiIfEZf\r\n" +
 				"WBSIiIEGi/foqoiIgzuL84i9iIjpGIoMiEHoiMkos3FojmiLlUipYliEWIF+iDe0GoRa7D6GPbjc\r\n" +
@@ -555,8 +574,6 @@ namespace Novartment.Base.Net.Mime.Test
 				"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\r\n",
 				subBody2);
 		}
-
-		#region private helper methods
 
 		// разбираем сохраненное сообщение на заголовки и тело
 		private static IReadOnlyList<string> SplitToElements (string source)
@@ -576,8 +593,10 @@ namespace Novartment.Base.Net.Mime.Test
 							{
 								start += 2;
 							}
+
 							result.Add (source.Substring (start, pos - start));
 						}
+
 						break;
 					}
 
@@ -587,12 +606,15 @@ namespace Novartment.Base.Net.Mime.Test
 						{
 							start += 2;
 						}
+
 						result.Add (source.Substring (start, pos - start));
 						start = pos;
 					}
 				}
+
 				pos++;
 			}
+
 			result.Add (source.Substring (pos));
 			return result;
 		}
@@ -609,13 +631,13 @@ namespace Novartment.Base.Net.Mime.Test
 				{
 					break;
 				}
+
 				result.Add (source.Substring (pos, idx - pos));
 				pos = idx + delimiter.Length;
-			} while (true);
+			}
+			while (true);
 			result.Add (source.Substring (pos));
 			return result;
 		}
-
-		#endregion
 	}
 }

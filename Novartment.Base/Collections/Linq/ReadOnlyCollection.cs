@@ -59,7 +59,7 @@ namespace Novartment.Base.Collections.Linq
 		/// <param name="source">Коллекция, элементы которой требуется подсчитать.</param>
 		/// <returns>Число элементов в коллекции.</returns>
 		[SuppressMessage (
-		"Microsoft.Naming",
+			"Microsoft.Naming",
 			"CA1720:IdentifiersShouldNotContainTypeNames",
 			MessageId = "long",
 			Justification = "Analogous to Enumerable.LongCount().")]
@@ -85,7 +85,7 @@ namespace Novartment.Base.Collections.Linq
 		/// <returns>Коллекция, содержащая значение defaultValue, если коллекция source пуста;
 		/// в противном случае возвращается source.</returns>
 		[SuppressMessage (
-		"Microsoft.Design",
+			"Microsoft.Design",
 			"CA1026:DefaultParametersShouldNotBeUsed",
 			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
 		public static IReadOnlyCollection<TSource> DefaultIfEmpty<TSource> (this IReadOnlyCollection<TSource> source, TSource defaultValue = default (TSource))
@@ -259,7 +259,7 @@ namespace Novartment.Base.Collections.Linq
 		/// <param name="comparer">Компаратор, используемый для сравнения ключей.</param>
 		/// <returns>Коллекция, элементы которого отсортированы по ключу.</returns>
 		[SuppressMessage (
-		"Microsoft.Design",
+			"Microsoft.Design",
 			"CA1026:DefaultParametersShouldNotBeUsed",
 			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
 		public static IOrderedReadOnlyCollection<TSource> OrderBy<TSource, TKey> (
@@ -292,7 +292,7 @@ namespace Novartment.Base.Collections.Linq
 		/// <param name="comparer">Компаратор, используемый для сравнения ключей.</param>
 		/// <returns>Коллекция, элементы которого отсортированы по ключу в порядке убывания.</returns>
 		[SuppressMessage (
-		"Microsoft.Design",
+			"Microsoft.Design",
 			"CA1026:DefaultParametersShouldNotBeUsed",
 			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
 		public static IOrderedReadOnlyCollection<TSource> OrderByDescending<TSource, TKey> (
@@ -325,7 +325,7 @@ namespace Novartment.Base.Collections.Linq
 		/// <param name="comparer">Компаратор, используемый для сравнения ключей.</param>
 		/// <returns>Коллекция, элементы которой отсортированы по ключу.</returns>
 		[SuppressMessage (
-		"Microsoft.Design",
+			"Microsoft.Design",
 			"CA1026:DefaultParametersShouldNotBeUsed",
 			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
 		public static IOrderedReadOnlyCollection<TSource> ThenBy<TSource, TKey> (
@@ -358,7 +358,7 @@ namespace Novartment.Base.Collections.Linq
 		/// <param name="comparer">Компаратор, используемый для сравнения ключей.</param>
 		/// <returns>Коллекция, элементы которой отсортированы по ключу в порядке убывания.</returns>
 		[SuppressMessage (
-		"Microsoft.Design",
+			"Microsoft.Design",
 			"CA1026:DefaultParametersShouldNotBeUsed",
 			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
 		public static IOrderedReadOnlyCollection<TSource> ThenByDescending<TSource, TKey> (

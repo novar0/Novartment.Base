@@ -41,7 +41,7 @@ namespace Novartment.Base
 		/// <param name="tracePatternToHide">Строка-образец, который в трассировке стэка будет заменён на многоточие.</param>
 		/// <returns>Последовательность строк, составляющих описание исключения.</returns>
 		[SuppressMessage (
-		"Microsoft.Design",
+			"Microsoft.Design",
 			"CA1026:DefaultParametersShouldNotBeUsed",
 			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
 		public static IReadOnlyList<string> GetFullInfo (this ExceptionDescription exceptionDescription, string tracePatternToHide = null)
@@ -106,7 +106,7 @@ namespace Novartment.Base
 						_rootException.InnerExceptions,
 						0,
 						0,
-						1)
+						1),
 				};
 				while (stack.TryTakeLast (out ExceptionDescriptionAndNestingData data))
 				{

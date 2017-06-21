@@ -419,7 +419,7 @@ namespace Novartment.Base.Collections.Immutable
 				{
 					Key = treeNode.Key,
 					Value = treeNode.Value,
-					Node = null
+					Node = null,
 				};
 			}
 
@@ -432,7 +432,7 @@ namespace Novartment.Base.Collections.Immutable
 				{
 					Key = intermediateNode.Key,
 					Value = intermediateNode.Value,
-					Node = right
+					Node = right,
 				};
 			}
 
@@ -442,7 +442,7 @@ namespace Novartment.Base.Collections.Immutable
 			{
 				Key = tuple.Key,
 				Value = tuple.Value,
-				Node = newNode
+				Node = newNode,
 			};
 		}
 

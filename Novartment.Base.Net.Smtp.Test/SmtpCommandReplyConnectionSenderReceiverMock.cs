@@ -1,26 +1,30 @@
 ﻿using System;
-using System.IO;
 using System.Collections.Generic;
+using System.IO;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Security.Cryptography.X509Certificates;
-using Novartment.Base.Net.Smtp;
 using Novartment.Base.BinaryStreaming;
+using Novartment.Base.Net.Smtp;
 
 namespace Novartment.Base.Smtp.Test
 {
 	internal class SmtpCommandReplyConnectionSenderReceiverMock : ISmtpCommandTransport
 	{
-		internal Queue<SmtpCommand> ReceivedCommands = new Queue<SmtpCommand> ();
-		internal Queue<SmtpCommand> SendedCommands = new Queue<SmtpCommand> ();
-		internal Queue<string> SendedDataBlocks = new Queue<string> ();
-		internal Queue<SmtpReply> ReceivedReplies = new Queue<SmtpReply> ();
-		internal Queue<SmtpReply> SendedReplies = new Queue<SmtpReply> ();
-
 		public bool TlsEstablished => false;
 
 		public X509Certificate RemoteCertificate => null;
+
+		internal Queue<SmtpCommand> ReceivedCommands { get; } = new Queue<SmtpCommand> ();
+
+		internal Queue<SmtpCommand> SendedCommands { get; } = new Queue<SmtpCommand> ();
+
+		internal Queue<string> SendedDataBlocks { get; } = new Queue<string> ();
+
+		internal Queue<SmtpReply> ReceivedReplies { get; } = new Queue<SmtpReply> ();
+
+		internal Queue<SmtpReply> SendedReplies { get; } = new Queue<SmtpReply> ();
 
 		public Task SendCommandAsync (SmtpCommand command, CancellationToken cancellationToken)
 		{
@@ -48,14 +52,14 @@ namespace Novartment.Base.Smtp.Test
 						{
 							break;
 						}
+
 						strm.Write (source.Buffer, source.Offset, source.Count);
 						source.SkipBuffer (source.Count);
 					}
 				}
 				finally
 				{
-					ArraySegment<byte> buf;
-					strm.TryGetBuffer (out buf);
+					strm.TryGetBuffer (out ArraySegment<byte> buf);
 					var str = Encoding.ASCII.GetString (buf.Array, buf.Offset, (int)strm.Length);
 					this.SendedDataBlocks.Enqueue (str);
 				}
@@ -71,7 +75,6 @@ namespace Novartment.Base.Smtp.Test
 		{
 			return Task.FromResult (this.ReceivedCommands.Dequeue ());
 		}
-
 
 		public Task StartTlsClientAsync (X509CertificateCollection clientCertificates)
 		{

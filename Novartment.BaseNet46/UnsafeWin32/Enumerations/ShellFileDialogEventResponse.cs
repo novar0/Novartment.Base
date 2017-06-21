@@ -20,6 +20,6 @@
 		/// <summary>
 		/// The application has determined that the file should not be returned from the dialog.
 		/// </summary>
-		Refuse = 0x00000002
+		Refuse = 0x00000002,
 	}
 }

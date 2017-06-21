@@ -1,17 +1,16 @@
 ﻿using System.Text;
-using static System.Linq.Enumerable;
 using System.Threading;
 using Xunit;
 
 namespace Novartment.Base.Net.Mime.Test
 {
-
 	public class HeaderEncoderTests
 	{
-		[Fact, Trait ("Category", "Mime.HeaderEncoder")]
+		[Fact]
+		[Trait ("Category", "Mime.HeaderEncoder")]
 		public void EncodeUnstructured ()
 		{
-			var values = HeaderEncoder.EncodeUnstructured ("");
+			var values = HeaderEncoder.EncodeUnstructured (string.Empty);
 			Assert.Equal (0, values.Count);
 
 			values = HeaderEncoder.EncodeUnstructured ("value");
@@ -74,7 +73,8 @@ namespace Novartment.Base.Net.Mime.Test
 			Assert.Equal (" again", values[16]);
 		}
 
-		[Fact, Trait ("Category", "Mime.HeaderEncoder")]
+		[Fact]
+		[Trait ("Category", "Mime.HeaderEncoder")]
 		public void EncodePhrase ()
 		{
 			// пробельные символы в начале, конце и середине
@@ -108,10 +108,12 @@ namespace Novartment.Base.Net.Mime.Test
 			values = HeaderEncoder.EncodePhrase ("!#$%&'*+-/=?^_`{|}~abyzABYZ0189");
 			Assert.Equal (1, values.Count);
 			Assert.Equal ("!#$%&'*+-/=?^_`{|}~abyzABYZ0189", values[0]);
+
 			// максимум что можно представить в виде quotable
 			values = HeaderEncoder.EncodePhrase ("!\"#$%&'()*+,-./0123456789:;<=>?@ABYZ[\\]^_`abyz{|}~");
 			Assert.Equal (1, values.Count);
 			Assert.Equal ("\"!\\\"#$%&'()*+,-./0123456789:;<=>?@ABYZ[\\\\]^_`abyz{|}~\"", values[0]);
+
 			// требуется кодирование
 			values = HeaderEncoder.EncodePhrase ("ABYZ©9810abyz!*+-/");
 			Assert.Equal (1, values.Count);
@@ -124,16 +126,19 @@ namespace Novartment.Base.Net.Mime.Test
 			values = HeaderEncoder.EncodePhrase ("=?utf-8?B?0JY=?=");
 			Assert.Equal (1, values.Count);
 			Assert.Equal ("=?utf-8?B?PT91dGYtOD9CPzBKWT0/PQ==?=", values[0]);
+
 			// похоже на кодированное слово (среди непохожих)
 			values = HeaderEncoder.EncodePhrase ("abc =?utf-8?B?0JY=?= def");
 			Assert.Equal (3, values.Count);
 			Assert.Equal ("abc", values[0]);
 			Assert.Equal (" =?utf-8?B?PT91dGYtOD9CPzBKWT0/PQ==?=", values[1]);
 			Assert.Equal (" def", values[2]);
+
 			// похоже на кодированное слово (выделено табами)
 			values = HeaderEncoder.EncodePhrase ("abc\t=?utf-8?B?0JY=?=\tdef");
 			Assert.Equal (1, values.Count);
 			Assert.Equal ("=?utf-8?B?YWJjCT0/dXRmLTg/Qj8wSlk9Pz0JZGVm?=", values[0]);
+
 			// не похоже на кодированное слово (не выделено пробельными символами)
 			values = HeaderEncoder.EncodePhrase ("aaa_=?utf-8?B?0JY=?=_bbb");
 			Assert.Equal (1, values.Count);
@@ -145,28 +150,34 @@ namespace Novartment.Base.Net.Mime.Test
 			Assert.Equal (2, values.Count);
 			Assert.Equal ("abyz!#$%&'*+-", values[0]);
 			Assert.Equal (" ABYZ0189/=?^_`{|}~", values[1]);
+
 			// q q - объединять можно чтобы съэкономить две кавычки. нужно ли?
 			values = HeaderEncoder.EncodePhrase ("@ABYZ 0123456789;");
 			Assert.Equal (1, values.Count);
 			Assert.Equal ("\"@ABYZ 0123456789;\"", values[0]);
+
 			// e e - объединять нужно чтобы прилично съэкономить на обрамлении encoded-word
 			values = HeaderEncoder.EncodePhrase ("ABYZ©9810 abyz§!*+-/");
 			Assert.Equal (1, values.Count);
 			Assert.Equal ("=?utf-8?B?QUJZWsKpOTgxMCBhYnl6wqchKistLw==?=", values[0]);
+
 			// q a q - объединять можно чтобы съэкономить две кавычки. нужно ли?
 			values = HeaderEncoder.EncodePhrase ("@ABYZ value 0123456789;");
 			Assert.Equal (1, values.Count);
 			Assert.Equal ("\"@ABYZ value 0123456789;\"", values[0]);
+
 			// q e q - объединять невозможно
 			values = HeaderEncoder.EncodePhrase ("@ABYZ §2000 0123456789;");
 			Assert.Equal (3, values.Count);
 			Assert.Equal ("\"@ABYZ\"", values[0]);
 			Assert.Equal (" =?utf-8?B?wqcyMDAw?=", values[1]);
 			Assert.Equal (" \"0123456789;\"", values[2]);
+
 			// e a e - объединять нужно чтобы прилично съэкономить на обрамлении encoded-word
 			values = HeaderEncoder.EncodePhrase ("ABYZ©9810 value abyz§!*+-/");
 			Assert.Equal (1, values.Count);
 			Assert.Equal ("=?utf-8?B?QUJZWsKpOTgxMCB2YWx1ZSBhYnl6wqchKistLw==?=", values[0]);
+
 			// e q e - объединять можно чтобы съэкономить на обрамлении encoded-word, но зависит от размера q посередине. нужно ли?
 			values = HeaderEncoder.EncodePhrase ("ABYZ©9810 @ABYZ abyz§!*+-/");
 			Assert.Equal (1, values.Count);
@@ -186,7 +197,8 @@ namespace Novartment.Base.Net.Mime.Test
 			Assert.Equal (" again", values[8]);
 		}
 
-		[Fact, Trait ("Category", "Mime.HeaderEncoder")]
+		[Fact]
+		[Trait ("Category", "Mime.HeaderEncoder")]
 		public void EncodeMailbox ()
 		{
 			var values = HeaderEncoder.EncodeMailbox (new Mailbox (new AddrSpec ("someone", "server.com"), null));
@@ -210,7 +222,8 @@ namespace Novartment.Base.Net.Mime.Test
 			Assert.Equal ("<\"really-long-address(for.one.line)\"@[some literal domain]>", values[5]);
 		}
 
-		[Fact, Trait ("Category", "Mime.HeaderEncoder")]
+		[Fact]
+		[Trait ("Category", "Mime.HeaderEncoder")]
 		public void SaveHeader ()
 		{
 			var src = new HeaderFieldBuilder[0];
@@ -218,11 +231,12 @@ namespace Novartment.Base.Net.Mime.Test
 			HeaderEncoder.SaveHeaderAsync (src, bytes, CancellationToken.None).Wait ();
 			Assert.Equal (0, bytes.Count);
 
-			src = new HeaderFieldBuilder[] {
+			src = new HeaderFieldBuilder[]
+			{
 				HeaderFieldBuilder.CreateExactValue (HeaderFieldName.ContentType, "text/plain"),
 				HeaderFieldBuilder.CreateExactValue (HeaderFieldName.ConversionWithLoss, null),
-				HeaderFieldBuilder.CreateUnstructured (HeaderFieldName.Received, "by server10.espc2.mechel.com (8.8.8/1.37) id CAA22933; Tue, 15 May 2012 02:49:22 +0100" ),
-				HeaderFieldBuilder.CreateExactValue (HeaderFieldName.ContentMD5, ":Q2hlY2sgSW50ZWdyaXR5IQ==")
+				HeaderFieldBuilder.CreateUnstructured (HeaderFieldName.Received, "by server10.espc2.mechel.com (8.8.8/1.37) id CAA22933; Tue, 15 May 2012 02:49:22 +0100"),
+				HeaderFieldBuilder.CreateExactValue (HeaderFieldName.ContentMD5, ":Q2hlY2sgSW50ZWdyaXR5IQ=="),
 			};
 			src[0].AddParameter ("format", "flowed");
 			src[0].AddParameter ("charset", "koi8-r");

@@ -40,7 +40,7 @@ namespace Novartment.Base.Collections
 		/// или null чтобы использовать компаратор по умолчанию.
 		/// </param>
 		[SuppressMessage (
-		"Microsoft.Design",
+			"Microsoft.Design",
 			"CA1026:DefaultParametersShouldNotBeUsed",
 			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
 		public ConcurrentTreeSet (IComparer<T> comparer = null)

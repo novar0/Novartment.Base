@@ -28,7 +28,7 @@ namespace Novartment.Base.Data
 		/// <param name="connectionManager">IDbConnectionManager.</param>
 		/// <param name="logger">Опциональный объект-журнал для записей о событиях. Укажите null если не требуется.</param>
 		[SuppressMessage (
-		"Microsoft.Design",
+			"Microsoft.Design",
 			"CA1026:DefaultParametersShouldNotBeUsed",
 			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
 		public InvariantDbAction (IDbConnectionManager connectionManager, ILogger logger = null)

@@ -42,6 +42,6 @@ namespace Novartment.Base.Media
 		Buttons = 0x12,
 
 		/// <summary>Управление.</summary>
-		Control = 0x20
+		Control = 0x20,
 	}
 }

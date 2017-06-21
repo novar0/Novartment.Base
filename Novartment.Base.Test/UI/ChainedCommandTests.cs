@@ -1,33 +1,13 @@
 ﻿using System.Collections.Generic;
-using Xunit;
 using Novartment.Base.UI;
+using Xunit;
 
 namespace Novartment.Base.Test
 {
 	public class ChainedCommandTests
 	{
-		internal class ChainedCommandMock : ChainedCommandBase
-		{
-			internal List<object> CanExecutes = new List<object> ();
-			internal List<object> Executes = new List<object> ();
-
-			internal ChainedCommandMock (CommandChain commandChain) : base (commandChain)
-			{
-			}
-
-			protected override bool CanExecuteThis (object parameter)
-			{
-				CanExecutes.Add (parameter);
-				return parameter != null;
-			}
-
-			protected override void ExecuteThis (object parameter)
-			{
-				Executes.Add (parameter);
-			}
-		}
-
-		[Fact, Trait ("Category", "UI")]
+		[Fact]
+		[Trait ("Category", "UI")]
 		public void NoChain ()
 		{
 			CommandChain commandChain = null;
@@ -92,7 +72,8 @@ namespace Novartment.Base.Test
 			Assert.Equal (2, cmd3.CanExecutes.Count);
 		}
 
-		[Fact, Trait ("Category", "UI")]
+		[Fact]
+		[Trait ("Category", "UI")]
 		public void ExecuteOnlyThis_CanExecuteWhenThis ()
 		{
 			var commandChain = new CommandChain (false, ExecutionAbilityChainBehavior.WhenThis);
@@ -157,7 +138,8 @@ namespace Novartment.Base.Test
 			Assert.Equal (2, cmd3.CanExecutes.Count);
 		}
 
-		[Fact, Trait ("Category", "UI")]
+		[Fact]
+		[Trait ("Category", "UI")]
 		public void ExecuteOnlyThis_CanExecuteWhenAny ()
 		{
 			var commandChain = new CommandChain (false, ExecutionAbilityChainBehavior.WhenAny);
@@ -238,7 +220,8 @@ namespace Novartment.Base.Test
 			Assert.Equal (6, cmd3.CanExecutes.Count);
 		}
 
-		[Fact, Trait ("Category", "UI")]
+		[Fact]
+		[Trait ("Category", "UI")]
 		public void ExecuteOnlyThis_CanExecuteWhenAll ()
 		{
 			var commandChain = new CommandChain (false, ExecutionAbilityChainBehavior.WhenAll);
@@ -316,7 +299,8 @@ namespace Novartment.Base.Test
 			Assert.Equal (6 + 6 + 6 + 6, cmd1.CanExecutes.Count + cmd2.CanExecutes.Count + cmd3.CanExecutes.Count);
 		}
 
-		[Fact, Trait ("Category", "UI")]
+		[Fact]
+		[Trait ("Category", "UI")]
 		public void ExecuteAll_CanExecuteWhenThis ()
 		{
 			var commandChain = new CommandChain (true, ExecutionAbilityChainBehavior.WhenThis);
@@ -381,7 +365,8 @@ namespace Novartment.Base.Test
 			Assert.Equal (2, cmd3.CanExecutes.Count);
 		}
 
-		[Fact, Trait ("Category", "UI")]
+		[Fact]
+		[Trait ("Category", "UI")]
 		public void ExecuteAll_CanExecuteWhenAny ()
 		{
 			var commandChain = new CommandChain (true, ExecutionAbilityChainBehavior.WhenAny);
@@ -462,7 +447,8 @@ namespace Novartment.Base.Test
 			Assert.Equal (6, cmd3.CanExecutes.Count);
 		}
 
-		[Fact, Trait ("Category", "UI")]
+		[Fact]
+		[Trait ("Category", "UI")]
 		public void ExecuteAll_CanExecuteWhenAll ()
 		{
 			var commandChain = new CommandChain (true, ExecutionAbilityChainBehavior.WhenAll);
@@ -538,6 +524,29 @@ namespace Novartment.Base.Test
 			Assert.Equal (6 + 6 + 6 + 5, cmd1.CanExecutes.Count + cmd2.CanExecutes.Count + cmd3.CanExecutes.Count);
 			Assert.False (cmd3.CanExecute (null));
 			Assert.Equal (6 + 6 + 6 + 6, cmd1.CanExecutes.Count + cmd2.CanExecutes.Count + cmd3.CanExecutes.Count);
+		}
+
+		internal class ChainedCommandMock : ChainedCommandBase
+		{
+			internal ChainedCommandMock (CommandChain commandChain)
+				: base (commandChain)
+			{
+			}
+
+			internal List<object> CanExecutes { get; } = new List<object> ();
+
+			internal List<object> Executes { get; } = new List<object> ();
+
+			protected override bool CanExecuteThis (object parameter)
+			{
+				CanExecutes.Add (parameter);
+				return parameter != null;
+			}
+
+			protected override void ExecuteThis (object parameter)
+			{
+				Executes.Add (parameter);
+			}
 		}
 	}
 }

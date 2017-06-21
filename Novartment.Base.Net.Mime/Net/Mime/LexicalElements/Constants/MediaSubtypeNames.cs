@@ -26,7 +26,7 @@ namespace Novartment.Base.Net.Mime
 		/// "application/sdp". Определено в RFC 4566.
 		/// </summary>
 		[SuppressMessage (
-		"Microsoft.Naming",
+			"Microsoft.Naming",
 			"CA1704:IdentifiersShouldBeSpelledCorrectly",
 			MessageId = "Sdp",
 			Justification = "'SDP' represents standard term.")]
@@ -46,7 +46,7 @@ namespace Novartment.Base.Net.Mime
 		/// "application/x-pkcs7-signature". Определено в RFC 2311,2633.
 		/// </summary>
 		[SuppressMessage (
-		"Microsoft.Naming",
+			"Microsoft.Naming",
 			"CA1704:IdentifiersShouldBeSpelledCorrectly",
 			MessageId = "Pkcs",
 			Justification = "'PKCS' represents standard term.")]
@@ -56,7 +56,7 @@ namespace Novartment.Base.Net.Mime
 		/// "application/pkcs7-mime". Определено в RFC 5751.
 		/// </summary>
 		[SuppressMessage (
-		"Microsoft.Naming",
+			"Microsoft.Naming",
 			"CA1704:IdentifiersShouldBeSpelledCorrectly",
 			MessageId = "Pkcs",
 			Justification = "'PKCS' represents standard term.")]

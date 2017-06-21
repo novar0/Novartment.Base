@@ -29,7 +29,7 @@ namespace Novartment.Base.Net
 		/// Останавливает прослушивание.
 		/// </summary>
 		[SuppressMessage (
-		"Microsoft.Naming",
+			"Microsoft.Naming",
 			"CA1716:IdentifiersShouldNotMatchKeywords",
 			MessageId = "Stop",
 			Justification = "No other name could be applied because base System.Net.Sockets.TcpListener have method 'Stop()'.")]

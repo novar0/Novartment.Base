@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Text;
 using System.Threading;
-using static System.Linq.Enumerable;
-using Xunit;
 using Novartment.Base.BinaryStreaming;
+using Xunit;
+using static System.Linq.Enumerable;
 
 namespace Novartment.Base.Net.Mime.Test
 {
@@ -16,7 +16,8 @@ namespace Novartment.Base.Net.Mime.Test
 "Original-Message-ID: <199509192301.23456@example.org>\r\n" +
 "Disposition: manual-action/MDN-sent-manually; displayed\r\n\r\n";
 
-		[Fact, Trait ("Category", "Mime")]
+		[Fact]
+		[Trait ("Category", "Mime")]
 		public void Load ()
 		{
 			var body = new DispositionNotificationEntityBody ();
@@ -38,24 +39,26 @@ namespace Novartment.Base.Net.Mime.Test
 			Assert.Equal (0, body.WarningInfo.Count);
 		}
 
-		[Fact, Trait ("Category", "Mime")]
+		[Fact]
+		[Trait ("Category", "Mime")]
 		public void Save ()
 		{
-			var body = new DispositionNotificationEntityBody ();
-			body.ReportingUserAgentName = "joes-pc.cs.example.com";
-			body.ReportingUserAgentProduct = "Foomail 97.1";
-			body.OriginalRecipient = new NotificationFieldValue (NotificationFieldValueKind.Mailbox, "Joe_Recipient@example.com");
-			body.FinalRecipient = new NotificationFieldValue (NotificationFieldValueKind.Mailbox, "Joe_Recipient@example.com");
-			body.OriginalMessageId = new AddrSpec ("199509192301.23456", "example.org");
-			body.Disposition = MessageDispositionChangedAction.ManuallyDisplayed;
-
+			var body = new DispositionNotificationEntityBody ()
+			{
+				ReportingUserAgentName = "joes-pc.cs.example.com",
+				ReportingUserAgentProduct = "Foomail 97.1",
+				OriginalRecipient = new NotificationFieldValue (NotificationFieldValueKind.Mailbox, "Joe_Recipient@example.com"),
+				FinalRecipient = new NotificationFieldValue (NotificationFieldValueKind.Mailbox, "Joe_Recipient@example.com"),
+				OriginalMessageId = new AddrSpec ("199509192301.23456", "example.org"),
+				Disposition = MessageDispositionChangedAction.ManuallyDisplayed,
+			};
 			var bytes = new BinaryDestinationMock (8192);
 			body.SaveAsync (bytes, CancellationToken.None).Wait ();
 			var text = Encoding.UTF8.GetString (bytes.Buffer, 0, bytes.Count);
 			var lines = text.Split (new string[] { "\r\n" }, StringSplitOptions.None);
 			Assert.Equal (7, lines.Length);
-			Assert.Equal ("", lines[5]);
-			Assert.Equal ("", lines[6]);
+			Assert.Equal (string.Empty, lines[5]);
+			Assert.Equal (string.Empty, lines[6]);
 
 			var lines2 = lines.Take (5).OrderBy (item => item, StringComparer.OrdinalIgnoreCase).ToArray ();
 

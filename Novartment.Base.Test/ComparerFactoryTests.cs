@@ -1,19 +1,12 @@
-﻿using Xunit;
-using System.Diagnostics;
+﻿using System.Diagnostics;
+using Xunit;
 
 namespace Novartment.Base.Test
 {
 	public class ComparerFactoryTests
 	{
-		[DebuggerDisplay ("#{Number} Prop1 = {Prop1} Prop2 = {Prop2}")]
-		internal class Mock5
-		{
-			public int Number { get; set; }
-			public string Prop1 { get; set; }
-			public int Prop2 { get; set; }
-		}
-
-		[Fact, Trait ("Category", "ComparerFactory")]
+		[Fact]
+		[Trait ("Category", "ComparerFactory")]
 		public void UsePropertySelector ()
 		{
 			var item1 = new Mock5 { Number = 1, Prop1 = "aab", Prop2 = -91 };
@@ -42,7 +35,8 @@ namespace Novartment.Base.Test
 			Assert.Equal (1, comparer.Compare (item1, item3));
 		}
 
-		[Fact, Trait ("Category", "ComparerFactory")]
+		[Fact]
+		[Trait ("Category", "ComparerFactory")]
 		public void UsePropertyName ()
 		{
 			var item1 = new Mock5 { Number = 1, Prop1 = "aab", Prop2 = -91 };
@@ -78,6 +72,16 @@ namespace Novartment.Base.Test
 			Assert.Equal (0, comparer.Compare (item1, item5));
 			Assert.Equal (-1, comparer.Compare (item1, item2));
 			Assert.Equal (1, comparer.Compare (item2, item3));
+		}
+
+		[DebuggerDisplay ("#{Number} Prop1 = {Prop1} Prop2 = {Prop2}")]
+		internal class Mock5
+		{
+			public int Number { get; set; }
+
+			public string Prop1 { get; set; }
+
+			public int Prop2 { get; set; }
 		}
 	}
 }

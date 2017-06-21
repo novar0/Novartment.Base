@@ -1,9 +1,9 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Threading;
 using System.Threading.Tasks;
-using System.ComponentModel;
-using Xunit;
 using Novartment.Base.UI;
+using Xunit;
 
 namespace Novartment.Base.Test
 {
@@ -20,7 +20,8 @@ namespace Novartment.Base.Test
 		private static int _stopCommanCanExecuteChanged2;
 		private static int _stopCommanCanExecuteChanged3;
 
-		[Fact, Trait ("Category", "UI")]
+		[Fact]
+		[Trait ("Category", "UI")]
 		public void Commands ()
 		{
 			_propertyChangedCount1 = 0;
@@ -245,47 +246,65 @@ namespace Novartment.Base.Test
 			}
 		}
 
-		private void OnStartCommandCanExecuteChanged1 (object sender, EventArgs e)
-		{
-			_startCommanCanExecuteChanged1++;
-		}
-		private void OnStartCommandCanExecuteChanged2 (object sender, EventArgs e)
-		{
-			_startCommanCanExecuteChanged2++;
-		}
-		private void OnStartCommandCanExecuteChanged3 (object sender, EventArgs e)
-		{
-			_startCommanCanExecuteChanged3++;
-		}
-		private void OnStopCommandCanExecuteChanged1 (object sender, EventArgs e)
-		{
-			_stopCommanCanExecuteChanged1++;
-		}
-		private void OnStopCommandCanExecuteChanged2 (object sender, EventArgs e)
-		{
-			_stopCommanCanExecuteChanged2++;
-		}
-		private void OnStopCommandCanExecuteChanged3 (object sender, EventArgs e)
-		{
-			_stopCommanCanExecuteChanged3++;
-		}
-		private void OnPropertyChanged1 (object sender, PropertyChangedEventArgs e)
-		{
-			if (e.PropertyName == "IsRunning") _propertyChangedCount1++;
-		}
-		private void OnPropertyChanged2 (object sender, PropertyChangedEventArgs e)
-		{
-			if (e.PropertyName == "IsRunning") _propertyChangedCount2++;
-		}
-		private void OnPropertyChanged3 (object sender, PropertyChangedEventArgs e)
-		{
-			if (e.PropertyName == "IsRunning") _propertyChangedCount3++;
-		}
 		private static Task CreateNewTask (object state, CancellationToken cToken)
 		{
 			var tcs = (TaskCompletionSource<int>)state;
 			cToken.Register (() => tcs.TrySetCanceled ());
 			return tcs.Task;
+		}
+
+		private void OnStartCommandCanExecuteChanged1 (object sender, EventArgs e)
+		{
+			_startCommanCanExecuteChanged1++;
+		}
+
+		private void OnStartCommandCanExecuteChanged2 (object sender, EventArgs e)
+		{
+			_startCommanCanExecuteChanged2++;
+		}
+
+		private void OnStartCommandCanExecuteChanged3 (object sender, EventArgs e)
+		{
+			_startCommanCanExecuteChanged3++;
+		}
+
+		private void OnStopCommandCanExecuteChanged1 (object sender, EventArgs e)
+		{
+			_stopCommanCanExecuteChanged1++;
+		}
+
+		private void OnStopCommandCanExecuteChanged2 (object sender, EventArgs e)
+		{
+			_stopCommanCanExecuteChanged2++;
+		}
+
+		private void OnStopCommandCanExecuteChanged3 (object sender, EventArgs e)
+		{
+			_stopCommanCanExecuteChanged3++;
+		}
+
+		private void OnPropertyChanged1 (object sender, PropertyChangedEventArgs e)
+		{
+			if (e.PropertyName == "IsRunning")
+			{
+				_propertyChangedCount1++;
+			}
+		}
+
+		private void OnPropertyChanged2 (object sender, PropertyChangedEventArgs e)
+		{
+			if (e.PropertyName == "IsRunning")
+			{
+				_propertyChangedCount2++;
+			}
+		}
+
+		private void OnPropertyChanged3 (object sender, PropertyChangedEventArgs e)
+		{
+			if (e.PropertyName == "IsRunning")
+			{
+				_propertyChangedCount3++;
+			}
 		}
 	}
 }

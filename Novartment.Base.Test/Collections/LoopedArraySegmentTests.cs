@@ -5,7 +5,8 @@ namespace Novartment.Base.Test
 {
 	public class LoopedArraySegmentTests
 	{
-		[Fact, Trait ("Category", "Collections.LoopedArraySegment")]
+		[Fact]
+		[Trait ("Category", "Collections.LoopedArraySegment")]
 		public void Misc ()
 		{
 			var template = new int[] { -408, -407, -406, -405, -404, -20, 99, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 112 };
@@ -17,6 +18,7 @@ namespace Novartment.Base.Test
 			{
 				Assert.Equal (template[i], seg[i]);
 			}
+
 			Assert.Equal<int> (template, seg);
 
 			seg = new LoopedArraySegment<int> (copy, 16, 3);

@@ -558,7 +558,7 @@ namespace Novartment.Base.Collections
 		/// выбранных с использованием указанный компаратора.
 		/// </returns>
 		[SuppressMessage (
-		"Microsoft.Design",
+			"Microsoft.Design",
 			"CA1026:DefaultParametersShouldNotBeUsed",
 			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
 		public static IAdjustableFiniteSet<T> ToHashSet<T> (this IEnumerable<T> source, IEqualityComparer<T> comparer = null)

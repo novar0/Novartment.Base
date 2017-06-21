@@ -41,6 +41,6 @@ namespace Novartment.Base.UI
 		Scroll = -2147483648, // 0x80000000,
 
 		/// <summary>Все возможные действия.</summary>
-		All = -2147483641 // 0x80000007
+		All = -2147483641, // 0x80000007
 	}
 }

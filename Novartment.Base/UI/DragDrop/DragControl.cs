@@ -15,6 +15,6 @@
 		MouseButtonMiddle = 2,
 
 		/// <summary>The right mouse button.</summary>
-		MouseButtonRight = 3
+		MouseButtonRight = 3,
 	}
 }

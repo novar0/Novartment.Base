@@ -1,18 +1,17 @@
 ﻿using System;
+using System.Deployment.Application;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Diagnostics;
-using System.Threading;
-using System.Deployment.Application;
 using System.Runtime.CompilerServices;
+using System.Text;
+using System.Threading;
 using Novartment.Base.IO;
 using Novartment.Base.UI.Wpf;
 
 // ВНИМАНИЕ!
 // Этот исходник должен лежать в корне проекта
 // чтобы корректно работало преобразование путей к исходным файлам при показе трассировки стэка исключения.
-
 namespace Novartment.Base.SampleWpf
 {
 	public static class GlobalSetup
@@ -24,9 +23,6 @@ namespace Novartment.Base.SampleWpf
 
 		private static readonly int _InstanceSearchTimeout = 1000;
 
-		/// <summary>
-		/// Application Entry Point.
-		/// </summary>
 		[STAThread]
 		public static int Main (string[] args)
 		{
@@ -35,7 +31,10 @@ namespace Novartment.Base.SampleWpf
 
 		public static int MainEx (string[] args, [CallerFilePath]string sourceFileName = "")
 		{
-			foreach (var listener in Debug.Listeners.OfType<DefaultTraceListener> ()) listener.AssertUiEnabled = true;
+			foreach (var listener in Debug.Listeners.OfType<DefaultTraceListener> ())
+			{
+				listener.AssertUiEnabled = true;
+			}
 
 			if ((_ClickOnceURL != null) && !Debugger.IsAttached && !ApplicationDeployment.IsNetworkDeployed)
 			{// запрещаем запускать EXE напрямую, перенаправляем через ClickOnce-запускатель
@@ -54,9 +53,14 @@ namespace Novartment.Base.SampleWpf
 					{
 						listener.SendSignalAsync (_InstanceSearchTimeout, CancellationToken.None).Wait ();
 					}
-					catch { } // исключения тут не важны, всё равно процесс завершается
+					catch
+					{
+						// исключения тут не важны, всё равно процесс завершается
+					}
+
 					return (int)ProcessExitCode.AlreadyRunningInstanceDetected;
 				}
+
 				using (var exitProgramCTS = new CancellationTokenSource ())
 				{
 					int result = (int)ProcessExitCode.Ok;

@@ -73,7 +73,7 @@ namespace Novartment.Base.UI.Wpf
 		/// Освобождает занимаемые объектом ресурсы.
 		/// </summary>
 		[SuppressMessage (
-		"Microsoft.Usage",
+			"Microsoft.Usage",
 			"CA1816:CallGCSuppressFinalizeCorrectly",
 			Justification = "There is no meaning to introduce a finalizer in derived type.")]
 		[SuppressMessage (

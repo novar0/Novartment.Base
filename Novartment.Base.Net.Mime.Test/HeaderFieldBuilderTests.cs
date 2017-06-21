@@ -7,7 +7,8 @@ namespace Novartment.Base.Net.Mime.Test
 {
 	public class HeaderFieldBuilderTests
 	{
-		[Fact, Trait ("Category", "Mime.HeaderEncoder")]
+		[Fact]
+		[Trait ("Category", "Mime.HeaderEncoder")]
 		public void CreateExactValue ()
 		{
 			// invalid characters
@@ -26,7 +27,8 @@ namespace Novartment.Base.Net.Mime.Test
 			Assert.Equal ("\r\n really.very.long.value.20000000000000000", headerField.Value);
 		}
 
-		[Fact, Trait ("Category", "Mime.HeaderEncoder")]
+		[Fact]
+		[Trait ("Category", "Mime.HeaderEncoder")]
 		public void CreateWithParameters ()
 		{
 			// one parameter
@@ -70,7 +72,8 @@ namespace Novartment.Base.Net.Mime.Test
 				headerField.Value);
 		}
 
-		[Fact, Trait ("Category", "Mime.HeaderEncoder")]
+		[Fact]
+		[Trait ("Category", "Mime.HeaderEncoder")]
 		public void CreateAtomAndUnstructured ()
 		{
 			var values = HeaderFieldBuilder.CreateAtomAndUnstructured (HeaderFieldName.Supersedes, "type", "value").ToHeaderField (int.MaxValue);
@@ -80,7 +83,8 @@ namespace Novartment.Base.Net.Mime.Test
 			Assert.Equal ("dns; 2000 =?utf-8?B?0JDQtNGA0LXRgdCw0YIg0J7QtNC40L0=?=", values.Value);
 		}
 
-		[Fact, Trait ("Category", "Mime.HeaderEncoder")]
+		[Fact]
+		[Trait ("Category", "Mime.HeaderEncoder")]
 		public void CreateUnstructuredPair ()
 		{
 			var values = HeaderFieldBuilder.CreateUnstructuredPair (HeaderFieldName.Supersedes, "value", null).ToHeaderField (int.MaxValue);
@@ -90,7 +94,8 @@ namespace Novartment.Base.Net.Mime.Test
 			Assert.Equal ("Lena's Personal <Joke> List; =?utf-8?B?0YHQu9C+0LLQviB0byB0aGUg0YHQvdC+0LLQsA==?=", values.Value);
 		}
 
-		[Fact, Trait ("Category", "Mime.HeaderEncoder")]
+		[Fact]
+		[Trait ("Category", "Mime.HeaderEncoder")]
 		public void CreateTokensAndDate ()
 		{
 			var dt = new DateTimeOffset (634726649620000000L, TimeSpan.FromHours (3));
@@ -114,7 +119,8 @@ namespace Novartment.Base.Net.Mime.Test
 			Assert.Equal ("by CMK-SLNS06.chmk.mechelgroup.ru from server10.espc2.mechel.com ([10.2.21.210]) with ESMTP id 2012051507492777-49847; 15 May 2012 07:49:27 +0000", values.Value);
 		}
 
-		[Fact, Trait ("Category", "Mime.HeaderEncoder")]
+		[Fact]
+		[Trait ("Category", "Mime.HeaderEncoder")]
 		public void CreatePhraseAndId ()
 		{
 			var values = HeaderFieldBuilder.CreatePhraseAndId (HeaderFieldName.Supersedes, "lenas-jokes.da39efc25c530ad145d41b86f7420c3b.021999.localhost", null).ToHeaderField (int.MaxValue);
@@ -124,26 +130,27 @@ namespace Novartment.Base.Net.Mime.Test
 			Assert.Equal ("Lena's Personal \"<Joke>\" List <lenas-jokes.da39efc25c530ad145d41b86f7420c3b.021999.localhost>", values.Value);
 		}
 
-		[Fact, Trait ("Category", "Mime.HeaderEncoder")]
+		[Fact]
+		[Trait ("Category", "Mime.HeaderEncoder")]
 		public void CreatePhraseList ()
 		{
 			var values = HeaderFieldBuilder.CreatePhraseList (HeaderFieldName.Supersedes, new string[0]).ToHeaderField (int.MaxValue);
-			Assert.Equal ("", values.Value);
+			Assert.Equal (string.Empty, values.Value);
 
 			values = HeaderFieldBuilder.CreatePhraseList (HeaderFieldName.Supersedes, new string[] { "keyword" }).ToHeaderField (int.MaxValue);
 			Assert.Equal ("keyword", values.Value);
 
 			values = HeaderFieldBuilder.CreatePhraseList (HeaderFieldName.Supersedes, new string[] { "keyword", "KEY WORD", "Richard H. Nixon", "ключслово" }).ToHeaderField (int.MaxValue);
 			Assert.Equal ("keyword, KEY WORD, Richard \"H.\" Nixon, =?utf-8?B?0LrQu9GO0YfRgdC70L7QstC+?=", values.Value);
-
 		}
 
-		[Fact, Trait ("Category", "Mime.HeaderEncoder")]
+		[Fact]
+		[Trait ("Category", "Mime.HeaderEncoder")]
 		public void CreateMailboxList ()
 		{
 			var mailboxes = new List<Mailbox> ();
 			var values = HeaderFieldBuilder.CreateMailboxList (HeaderFieldName.Supersedes, mailboxes).ToHeaderField (int.MaxValue);
-			Assert.Equal ("", values.Value);
+			Assert.Equal (string.Empty, values.Value);
 
 			mailboxes.Add (new Mailbox ("one@mail.ru", "one man"));
 
@@ -163,40 +170,51 @@ namespace Novartment.Base.Net.Mime.Test
 			Assert.Equal ("=?utf-8?B?0JDQtNGA0LXRgdCw0YIg0J7QtNC40L0=?= <sp1@mailinator.com>, =?utf-8?B?0JDQtNGA0LXRgdCw0YIg0JTQstCw?= <sp2@mailinator.com>, =?utf-8?B?0JDQtNGA0LXRgdCw0YIg0KLRgNC4?= <sp3@mailinator.com>", values.Value);
 		}
 
-		[Fact, Trait ("Category", "Mime.HeaderEncoder")]
+		[Fact]
+		[Trait ("Category", "Mime.HeaderEncoder")]
 		public void CreateAngleBracketedList ()
 		{
 			var values = HeaderFieldBuilder.CreateAngleBracketedList (HeaderFieldName.Supersedes, new string[0]).ToHeaderField (int.MaxValue);
-			Assert.Equal ("", values.Value);
+			Assert.Equal (string.Empty, values.Value);
 
 			values = HeaderFieldBuilder.CreateAngleBracketedList (HeaderFieldName.Supersedes, new string[] { "mailto:list@host.com?subject=help" }).ToHeaderField (int.MaxValue);
 			Assert.Equal ("<mailto:list@host.com?subject=help>", values.Value);
 
-			values = HeaderFieldBuilder.CreateAngleBracketedList (HeaderFieldName.Supersedes, new string[] {
+			var data = new string[]
+			{
 				"mailto:list@host.com?subject=help",
 				"ftp://ftp.host.com/list.txt",
 				"magnet:?xt=urn:tree:tiger:Z4URQ35KGEQW3YZZTIM7YXS3OLKLHFJ3M43DPHQ&xl=8539516502&dn=12.mkv",
-				"some currently unknown command"
-			}).ToHeaderField (int.MaxValue);
+				"some currently unknown command",
+			};
+			values = HeaderFieldBuilder.CreateAngleBracketedList (HeaderFieldName.Supersedes, data).ToHeaderField (int.MaxValue);
 			Assert.Equal ("<mailto:list@host.com?subject=help>, <ftp://ftp.host.com/list.txt>, <magnet:?xt=urn:tree:tiger:Z4URQ35KGEQW3YZZTIM7YXS3OLKLHFJ3M43DPHQ&xl=8539516502&dn=12.mkv>, <some currently unknown command>", values.Value);
 		}
 
-		[Fact, Trait ("Category", "Mime.HeaderEncoder")]
+		[Fact]
+		[Trait ("Category", "Mime.HeaderEncoder")]
 		public void CreateDispositionNotificationParameterList ()
 		{
-			var values = HeaderFieldBuilder.CreateDispositionNotificationParameterList (HeaderFieldName.Supersedes, new DispositionNotificationParameter[] {
+			var parameters = new DispositionNotificationParameter[]
+			{
 				new DispositionNotificationParameter ("signed-receipt", DispositionNotificationParameterImportance.Optional, "pkcs7-signature"),
-			}).ToHeaderField (int.MaxValue);
+			};
+			var values = HeaderFieldBuilder.CreateDispositionNotificationParameterList (HeaderFieldName.Supersedes, parameters)
+				.ToHeaderField (int.MaxValue);
 			Assert.Equal ("signed-receipt=optional,pkcs7-signature", values.Value);
 
-			values = HeaderFieldBuilder.CreateDispositionNotificationParameterList (HeaderFieldName.Supersedes, new DispositionNotificationParameter[] {
+			parameters = new DispositionNotificationParameter[]
+			{
 				new DispositionNotificationParameter ("signed-receipt", DispositionNotificationParameterImportance.Optional, "pkcs7-signature"),
-				new DispositionNotificationParameter ("signed-receipt-micalg", DispositionNotificationParameterImportance.Required, "sha1").AddValue ("md5")
-			}).ToHeaderField (int.MaxValue);
+				new DispositionNotificationParameter ("signed-receipt-micalg", DispositionNotificationParameterImportance.Required, "sha1").AddValue ("md5"),
+			};
+			values = HeaderFieldBuilder.CreateDispositionNotificationParameterList (HeaderFieldName.Supersedes, parameters)
+				.ToHeaderField (int.MaxValue);
 			Assert.Equal ("signed-receipt=optional,pkcs7-signature; signed-receipt-micalg=required,sha1,md5", values.Value);
 		}
 
-		[Fact, Trait ("Category", "Mime.HeaderEncoder")]
+		[Fact]
+		[Trait ("Category", "Mime.HeaderEncoder")]
 		public void CreateDisposition ()
 		{
 			var bulder = HeaderFieldBuilder.CreateDisposition (HeaderFieldName.Supersedes, "value1", "value2", "value3", new string[0]).ToHeaderField (int.MaxValue);
@@ -205,6 +223,5 @@ namespace Novartment.Base.Net.Mime.Test
 			bulder = HeaderFieldBuilder.CreateDisposition (HeaderFieldName.Supersedes, "manual-action", "MDN-sent-manually", "displayed", new string[] { "value1", "value2", "value3" }).ToHeaderField (int.MaxValue);
 			Assert.Equal ("manual-action/MDN-sent-manually; displayed/value1,value2,value3", bulder.Value);
 		}
-
 	}
 }

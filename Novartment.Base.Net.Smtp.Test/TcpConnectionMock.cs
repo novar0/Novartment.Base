@@ -1,30 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Net;
 using System.Diagnostics;
-using System.Threading;
-using System.Threading.Tasks;
-using Novartment.Base.Net;
+using System.Net;
 using Novartment.Base.BinaryStreaming;
+using Novartment.Base.Net;
 
 namespace Novartment.Base.Smtp.Test
 {
-	internal class StringWritingStream : IBinaryDestination
-	{
-		private readonly Queue<string> _queue = new Queue<string> ();
-		internal Queue<string> Queue => _queue;
-
-		public Task WriteAsync (byte[] buffer, int offset, int count, CancellationToken cancellationToken)
-		{
-			var str = Encoding.ASCII.GetString (buffer, offset, count);
-			_queue.Enqueue (str);
-			return Task.CompletedTask;
-		}
-
-		public void SetComplete () { }
-	}
-
 	internal class TcpConnectionMock : ITcpConnection
 	{
 		private readonly IPHostEndPoint _localEndpoint;
@@ -34,9 +15,6 @@ namespace Novartment.Base.Smtp.Test
 		private readonly Stopwatch _stopwatch = Stopwatch.StartNew ();
 		private bool _disposed = false;
 		private long _lastActivity;
-
-		internal StringWritingStream OutData => _outData;
-		internal bool IsDisposed => _disposed;
 
 		internal TcpConnectionMock (
 			IPEndPoint localEndpoint,
@@ -49,13 +27,13 @@ namespace Novartment.Base.Smtp.Test
 		internal TcpConnectionMock (
 			IPEndPoint localEndpoint,
 			IPEndPoint remoteEndpoint,
-			byte[] inData, int count)
+			byte[] inData,
+			int count)
 		{
 			_localEndpoint = new IPHostEndPoint (localEndpoint);
 			_remoteEndpoint = new IPHostEndPoint (remoteEndpoint);
 			_inData = new ArrayBufferedSource (inData, 0, count);
 		}
-
 
 		internal TcpConnectionMock (
 			IPEndPoint localEndpoint,
@@ -77,7 +55,11 @@ namespace Novartment.Base.Smtp.Test
 		{
 			get
 			{
-				if (_disposed) throw new InvalidOperationException ();
+				if (_disposed)
+				{
+					throw new InvalidOperationException ();
+				}
+
 				return _inData;
 			}
 		}
@@ -86,7 +68,11 @@ namespace Novartment.Base.Smtp.Test
 		{
 			get
 			{
-				if (_disposed) throw new InvalidOperationException ();
+				if (_disposed)
+				{
+					throw new InvalidOperationException ();
+				}
+
 				return _outData;
 			}
 		}
@@ -98,6 +84,10 @@ namespace Novartment.Base.Smtp.Test
 		public bool IsAuthenticated => false;
 
 		public bool IsEncrypted => false;
+
+		internal StringWritingStream OutData => _outData;
+
+		internal bool IsDisposed => _disposed;
 
 		public void UpdateActivity ()
 		{

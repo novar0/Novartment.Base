@@ -1,19 +1,19 @@
 ﻿using System;
-using System.Text;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Security.Cryptography.X509Certificates;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Novartment.Base.BinaryStreaming;
 using Novartment.Base.Collections;
 using Novartment.Base.Net;
-using Novartment.Base.Net.Smtp;
 using Novartment.Base.Net.Mime;
+using Novartment.Base.Net.Smtp;
 using Novartment.Base.Text;
-using Novartment.Base.BinaryStreaming;
 
 namespace Novartment.Base.Sample
 {
@@ -37,9 +37,8 @@ namespace Novartment.Base.Sample
 			{
 				var protocol = new SmtpOriginatorProtocol (
 					msg.OriginateTransaction,
-					SmtpClientSecurityParameters.AllowNoSecurity
-					//SmtpClientSecurityParameters.RequireEncryptionUseCredentials (new NetworkCredential ("user", "password"))
-					);
+					SmtpClientSecurityParameters.AllowNoSecurity);
+					/* SmtpClientSecurityParameters.RequireEncryptionUseCredentials (new NetworkCredential ("user", "password"))); */
 				await protocol.StartAsync (connection, cancellationToken).ConfigureAwait (false);
 			}
 		}
@@ -67,8 +66,8 @@ namespace Novartment.Base.Sample
 			var deliveryProtocol = new SmtpDeliveryProtocol (
 				srcAttribs => new DeliveryToFileDataTransferTransaction (srcAttribs, mailDropDirectory, mailPickupDirectory, localDomainsSet),
 				SmtpServerSecurityParameters.NoSecurity,
-				//SmtpServerSecurityParameters.UseServerAndRequireClientCertificate (serverCertificate),
-				//SmtpServerSecurityParameters.UseServerCertificateAndClientAuthenticator (serverCertificate, FindUser),
+				/* SmtpServerSecurityParameters.UseServerAndRequireClientCertificate (serverCertificate), */
+				/* SmtpServerSecurityParameters.UseServerCertificateAndClientAuthenticator (serverCertificate, FindUser), */
 				deliveryLogger);
 			deliveryServer.AddListenEndpoint (new IPEndPoint (IPAddress.Any, 25), deliveryProtocol);
 
@@ -98,6 +97,7 @@ namespace Novartment.Base.Sample
 			Console.WriteLine ("SMTP server started. Press ENTER to quit...");
 			Console.ReadLine ();
 			Console.WriteLine ("Waiting clients and server to stop...");
+
 			// командуем СТОП и ожидаем остановки клиентов и сервера
 			tcs.Cancel ();
 			var deliveryTask = deliveryServer.StopAsync (true);
@@ -115,8 +115,11 @@ namespace Novartment.Base.Sample
 			ILogger<SmtpOriginatorProtocol> originatorLogger,
 			CancellationToken cancellationToken)
 		{
-			var clientCertificates = new X509CertificateCollection ();
-			clientCertificates.Add (new X509Certificate2 ("MyClient.pfx", "password"));
+			var clientCertificates = new X509CertificateCollection
+			{
+				new X509Certificate2 ("MyClient.pfx", "password"),
+			};
+
 			// соединяемся с каждым доменом назначения и отправляем предназначенные ему письма
 			foreach (var domainData in outgoingMailMessages)
 			{
@@ -124,8 +127,8 @@ namespace Novartment.Base.Sample
 				var originatorProtocol = new SmtpOriginatorProtocol (
 					(factory, ct) => OriginateTransactionsAsync (domainData.Value, factory, ct),
 					SmtpClientSecurityParameters.AllowNoSecurity,
-					//SmtpClientSecurityParameters.RequireEncryptionUseCredentials (new NetworkCredential ("User Name", "paSsWORd")),
-					//SmtpClientSecurityParameters.RequireEncryptionUseClientCertificate (clientCertificates),
+					/* SmtpClientSecurityParameters.RequireEncryptionUseCredentials (new NetworkCredential ("User Name", "paSsWORd")), */
+					/* SmtpClientSecurityParameters.RequireEncryptionUseClientCertificate (clientCertificates), */
 					originatorLogger);
 				using (var connection = await SocketBinaryTcpConnection.CreateAsync (serverNameAndAddr, cancellationToken)
 					.ConfigureAwait (false))
@@ -140,12 +143,6 @@ namespace Novartment.Base.Sample
 		{
 			// запрашиваем у DNS адрес почтового сервера для указанного домена
 			return new IPHostEndPoint (IPAddress.Loopback, 25) { HostName = "localhost" };
-		}
-
-		internal class MailMessageData
-		{
-			internal AddrSpec ReturnPath;
-			internal ArrayList<AddrSpec> Recipients = new ArrayList<AddrSpec> (1);
 		}
 
 		private static async Task OriginateTransactionsAsync (
@@ -163,12 +160,20 @@ namespace Novartment.Base.Sample
 				{
 					await transaction.TryAddRecipientAsync (recipient, cancellationToken).ConfigureAwait (false);
 				}
+
 				using (var fs = new FileStream (messageFileData.Key, FileMode.Open, FileAccess.Read))
 				{
 					var msgSource = fs.AsBufferedSource (new byte[1000]);
 					await transaction.TransferDataAndFinishAsync (msgSource, fs.Length, cancellationToken).ConfigureAwait (false);
 				}
 			}
+		}
+
+		internal class MailMessageData
+		{
+			internal AddrSpec ReturnPath { get; set; }
+
+			internal ArrayList<AddrSpec> Recipients { get; } = new ArrayList<AddrSpec> (1);
 		}
 
 		internal class DeliveryToFileDataTransferTransaction : IMailDataTransferTransaction
@@ -218,9 +223,11 @@ namespace Novartment.Base.Sample
 					Path.Combine (
 						isMailDestinationLocal ? _mailDropDirectory : _mailPickupDirectory,
 						fileName),
-					FileMode.Create, FileAccess.Write))
+					FileMode.Create,
+					FileAccess.Write))
 				{
 					var destination = destStream.AsBinaryDestination ();
+
 					// RFC 5321 part 3.6.3:
 					// a relay SMTP has no need to inspect or act upon the header section or body of the message data and
 					// MUST NOT do so except to add its own "Received:" header field
@@ -233,6 +240,7 @@ namespace Novartment.Base.Sample
 						var buf = Encoding.ASCII.GetBytes (returnPath);
 						await destination.WriteAsync (buf, 0, buf.Length, cancellationToken).ConfigureAwait (false);
 					}
+
 					// RFC 5321 part 4.4:
 					// When an SMTP server receives a message for delivery or further processing,
 					// it MUST insert trace ("time stamp" or "Received") information at the beginning of the message content.
@@ -240,7 +248,8 @@ namespace Novartment.Base.Sample
 					var localHostFqdn = string.IsNullOrWhiteSpace (ipProps.DomainName) ?
 						ipProps.HostName :
 						ipProps.HostName + "." + ipProps.DomainName;
-					var received = string.Format ("Received: FROM {0} ({1}) BY {2};\r\n {3}\r\n",
+					var received = string.Format (
+						"Received: FROM {0} ({1}) BY {2};\r\n {3}\r\n",
 						_deliverySourceAttributes.EndPoint.HostName,
 						_deliverySourceAttributes.EndPoint.Address,
 						localHostFqdn,

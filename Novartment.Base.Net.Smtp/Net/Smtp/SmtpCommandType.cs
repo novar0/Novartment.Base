@@ -17,6 +17,6 @@
 		StartTls = 12,
 		Auth = 13,
 		SaslResponse = 14,
-		NoCommand = 255
+		NoCommand = 255,
 	}
 }

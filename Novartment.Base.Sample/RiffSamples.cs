@@ -1,12 +1,12 @@
 ﻿using System;
-using static System.Linq.Enumerable;
 using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Novartment.Base.BinaryStreaming;
 using Novartment.Base.Collections;
 using Novartment.Base.Media;
-using Novartment.Base.BinaryStreaming;
+using static System.Linq.Enumerable;
 
 namespace Novartment.Base.Sample
 {
@@ -29,21 +29,20 @@ namespace Novartment.Base.Sample
 
 					var secondsGlobal = (double)aviInfo.MicroSecPerFrame * (double)aviInfo.TotalFrames / 1000000.0f;
 
-					AviStreamInfo videoStream;
-					if (aviInfo.Streams.Where (item => item.VideoFormat != null).TryGetFirst (out videoStream))
+					if (aviInfo.Streams.Where (item => item.VideoFormat != null).TryGetFirst (out AviStreamInfo videoStream))
 					{
 						var frameDuration = (double)videoStream.Scale / (double)videoStream.Rate;
 						var secondsVideo = ((double)videoStream.Length + (double)videoStream.Start) * frameDuration;
 					}
 
-					AviStreamInfo audioStream;
-					if (aviInfo.Streams.Where (item => item.AudioFormat != null).TryGetFirst (out audioStream))
+					if (aviInfo.Streams.Where (item => item.AudioFormat != null).TryGetFirst (out AviStreamInfo audioStream))
 					{
 						var sampleDuration = 1.0f / (double)audioStream.Rate;
 						var secondsAudio = ((double)audioStream.Length + (double)audioStream.Start) * sampleDuration;
 					}
 
-					chapsText.AppendFormat ("CHAPTER{1:00}={0:hh\\:mm\\:ss\\.fff}\r\nCHAPTER{1:00}NAME={6} ({2}x{3}px {4}ch {5}Hz)\r\n",
+					chapsText.AppendFormat (
+						"CHAPTER{1:00}={0:hh\\:mm\\:ss\\.fff}\r\nCHAPTER{1:00}NAME={6} ({2}x{3}px {4}ch {5}Hz)\r\n",
 						duration,
 						idx,
 						videoStream.VideoFormat.Width,

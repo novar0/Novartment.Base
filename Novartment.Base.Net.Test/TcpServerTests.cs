@@ -113,8 +113,10 @@ namespace Novartment.Base.Net.Test
 			});
 			var protocol = new TcpConnectionProtocolMock ();
 
-			var srv = new TcpServer (listenerFactory, null);
-			srv.ConnectionIdleTimeout = TimeSpan.FromMilliseconds (200.0);
+			var srv = new TcpServer (listenerFactory, null)
+			{
+				ConnectionIdleTimeout = TimeSpan.FromMilliseconds (200.0),
+			};
 			srv.AddListenEndpoint (new IPEndPoint (new IPAddress (9087423L), 2554), protocol);
 
 			// отключение по простою
@@ -124,6 +126,7 @@ namespace Novartment.Base.Net.Test
 			connection.UpdateActivity ();
 			Thread.Sleep ((int)(srv.ConnectionIdleTimeout.TotalMilliseconds / 2.0));
 			Assert.False (connection.IsDisposed);
+
 			// тут должен сработать таймаут простоя
 			Thread.Sleep ((int)(srv.ConnectionIdleTimeout.TotalMilliseconds * 3.0));
 			Assert.True (connection.IsDisposed);
@@ -131,7 +134,8 @@ namespace Novartment.Base.Net.Test
 			srv.StopAsync (true);
 		}
 
-		[Fact, Trait ("Category", "Net")]
+		[Fact]
+		[Trait ("Category", "Net")]
 		public void TotalTimeoutExpiration ()
 		{
 			TcpListenerMock listener = null;
@@ -142,8 +146,10 @@ namespace Novartment.Base.Net.Test
 			});
 			var protocol = new TcpConnectionProtocolMock ();
 
-			var srv = new TcpServer (listenerFactory, null);
-			srv.ConnectionTimeout = TimeSpan.FromMilliseconds (500.0);
+			var srv = new TcpServer (listenerFactory, null)
+			{
+				ConnectionTimeout = TimeSpan.FromMilliseconds (500.0),
+			};
 			srv.AddListenEndpoint (new IPEndPoint (new IPAddress (9087423L), 2554), protocol);
 
 			// отключение по полному времени
@@ -155,12 +161,14 @@ namespace Novartment.Base.Net.Test
 
 			Thread.Sleep (updateInterval);
 			Assert.False (connection.IsDisposed);
+
 			// тут должен сработать таймаут полного времени коннекта
 			for (int i = 0; i < 10; i++)
 			{
 				connection.UpdateActivity ();
 				Thread.Sleep (updateInterval);
 			}
+
 			Assert.True (connection.IsDisposed);
 
 			srv.StopAsync (true);

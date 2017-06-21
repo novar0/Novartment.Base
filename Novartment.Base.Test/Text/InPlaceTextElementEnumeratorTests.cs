@@ -6,13 +6,15 @@ namespace Novartment.Base.Test
 {
 	public class InPlaceTextElementEnumeratorTests
 	{
-		[Fact, Trait ("Category", "Text.InPlaceTextElementEnumerator")]
+		[Fact]
+		[Trait ("Category", "Text.InPlaceTextElementEnumerator")]
 		public void Enumerate ()
 		{
-			var enumerator = new InPlaceTextElementEnumerator ("");
+			var enumerator = new InPlaceTextElementEnumerator (string.Empty);
 			Assert.False (enumerator.MoveNext ());
 
-			var template = new String (new char[] {
+			var template = new string (new char[]
+			{
 				'\u0020',
 				'\u0073',
 				'\u0416',
@@ -25,42 +27,57 @@ namespace Novartment.Base.Test
 				'\u2009',
 				'\u2001',
 				'\u00A0',
-				'\u0070'});
+				'\u0070',
+			});
 			enumerator = new InPlaceTextElementEnumerator (template, 1, template.Length - 2);
 
 			Assert.True (enumerator.MoveNext ());
-			Assert.Equal (1, enumerator.CurrentPosition); Assert.Equal (1, enumerator.CurrentLength);
+			Assert.Equal (1, enumerator.CurrentPosition);
+			Assert.Equal (1, enumerator.CurrentLength);
 			Assert.True (enumerator.MoveNext ());
-			Assert.Equal (2, enumerator.CurrentPosition); Assert.Equal (1, enumerator.CurrentLength);
+			Assert.Equal (2, enumerator.CurrentPosition);
+			Assert.Equal (1, enumerator.CurrentLength);
 			Assert.True (enumerator.MoveNext ());
-			Assert.Equal (3, enumerator.CurrentPosition); Assert.Equal (1, enumerator.CurrentLength);
+			Assert.Equal (3, enumerator.CurrentPosition);
+			Assert.Equal (1, enumerator.CurrentLength);
 			Assert.True (enumerator.MoveNext ());
-			Assert.Equal (4, enumerator.CurrentPosition); Assert.Equal (2, enumerator.CurrentLength);
-
+			Assert.Equal (4, enumerator.CurrentPosition);
+			Assert.Equal (2, enumerator.CurrentLength);
 
 			enumerator.Reset ();
 			Assert.True (enumerator.MoveNext ());
-			Assert.Equal (1, enumerator.CurrentPosition); Assert.Equal (1, enumerator.CurrentLength);
+			Assert.Equal (1, enumerator.CurrentPosition);
+			Assert.Equal (1, enumerator.CurrentLength);
 			Assert.True (enumerator.MoveNext ());
-			Assert.Equal (2, enumerator.CurrentPosition); Assert.Equal (1, enumerator.CurrentLength);
+			Assert.Equal (2, enumerator.CurrentPosition);
+			Assert.Equal (1, enumerator.CurrentLength);
 			Assert.True (enumerator.MoveNext ());
-			Assert.Equal (3, enumerator.CurrentPosition); Assert.Equal (1, enumerator.CurrentLength);
+			Assert.Equal (3, enumerator.CurrentPosition);
+			Assert.Equal (1, enumerator.CurrentLength);
 			Assert.True (enumerator.MoveNext ());
-			Assert.Equal (4, enumerator.CurrentPosition); Assert.Equal (2, enumerator.CurrentLength);
+			Assert.Equal (4, enumerator.CurrentPosition);
+			Assert.Equal (2, enumerator.CurrentLength);
 			Assert.True (enumerator.MoveNext ());
-			Assert.Equal (6, enumerator.CurrentPosition); Assert.Equal (3, enumerator.CurrentLength);
+			Assert.Equal (6, enumerator.CurrentPosition);
+			Assert.Equal (3, enumerator.CurrentLength);
 			Assert.True (enumerator.MoveNext ());
-			Assert.Equal (9, enumerator.CurrentPosition); Assert.Equal (2, enumerator.CurrentLength);
+			Assert.Equal (9, enumerator.CurrentPosition);
+			Assert.Equal (2, enumerator.CurrentLength);
 			Assert.True (enumerator.MoveNext ());
-			Assert.Equal (11, enumerator.CurrentPosition); Assert.Equal (1, enumerator.CurrentLength);
+			Assert.Equal (11, enumerator.CurrentPosition);
+			Assert.Equal (1, enumerator.CurrentLength);
 			Assert.True (enumerator.MoveNext ());
-			Assert.Equal (12, enumerator.CurrentPosition); Assert.Equal (1, enumerator.CurrentLength);
+			Assert.Equal (12, enumerator.CurrentPosition);
+			Assert.Equal (1, enumerator.CurrentLength);
 			Assert.True (enumerator.MoveNext ());
-			Assert.Equal (13, enumerator.CurrentPosition); Assert.Equal (1, enumerator.CurrentLength);
+			Assert.Equal (13, enumerator.CurrentPosition);
+			Assert.Equal (1, enumerator.CurrentLength);
 			Assert.True (enumerator.MoveNext ());
-			Assert.Equal (14, enumerator.CurrentPosition); Assert.Equal (1, enumerator.CurrentLength);
+			Assert.Equal (14, enumerator.CurrentPosition);
+			Assert.Equal (1, enumerator.CurrentLength);
 			Assert.True (enumerator.MoveNext ());
-			Assert.Equal (15, enumerator.CurrentPosition); Assert.Equal (1, enumerator.CurrentLength);
+			Assert.Equal (15, enumerator.CurrentPosition);
+			Assert.Equal (1, enumerator.CurrentLength);
 			Assert.False (enumerator.MoveNext ());
 		}
 	}

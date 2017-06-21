@@ -40,7 +40,7 @@ namespace Novartment.Base
 		/// Укажите True чтобы сохранять без трансформации встречающиеся в исходных данных символы перевода строки.
 		/// </param>
 		[SuppressMessage (
-		"Microsoft.Design",
+			"Microsoft.Design",
 			"CA1026:DefaultParametersShouldNotBeUsed",
 			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
 		public ToQuotedPrintableWithLineBreaksConverter (bool isText = false)

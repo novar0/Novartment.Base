@@ -5,28 +5,38 @@ namespace Novartment.Base.Net.Mime.Test
 {
 	public class StructuredValueElementTests
 	{
-		[Fact, Trait ("Category", "Mime")]
+		[Fact]
+		[Trait ("Category", "Mime")]
 		public void Decode ()
 		{
-			Assert.Equal ("=?aa?bb?cc?",
+			Assert.Equal (
+				"=?aa?bb?cc?",
 				new StructuredValueElement (StructuredValueElementType.Value, "=?aa?bb?cc?").Decode ());
-			Assert.Equal (";",
+			Assert.Equal (
+				";",
 				new StructuredValueElement (';').Decode ());
-			Assert.Equal ("=?aa?bb?cc?",
+			Assert.Equal (
+				"=?aa?bb?cc?",
 				new StructuredValueElement (StructuredValueElementType.QuotedValue, "=?aa?bb?cc?").Decode ());
-			Assert.Equal ("=?aa?bb?cc?",
+			Assert.Equal (
+				"=?aa?bb?cc?",
 				new StructuredValueElement (StructuredValueElementType.SquareBracketedValue, "=?aa?bb?cc?").Decode ());
-			Assert.Equal ("some   \"one\"",
+			Assert.Equal (
+				"some   \"one\"",
 				new StructuredValueElement (StructuredValueElementType.SquareBracketedValue, "some   \\\"one\\\"").Decode ());
-			Assert.Equal ("some   \"one\"",
+			Assert.Equal (
+				"some   \"one\"",
 				new StructuredValueElement (StructuredValueElementType.QuotedValue, "some   \\\"one\\\"").Decode ());
-			Assert.Equal ("тема сообщения текст сообщения",
+			Assert.Equal (
+				"тема сообщения текст сообщения",
 				new StructuredValueElement (StructuredValueElementType.Value, "=?utf-8*ru-ru?B?0YLQtdC80LAg0YHQvtC+0LHRidC10L3QuNGPINGC0LXQutGB0YIg0YHQvtC+0LHRidC10L3QuNGP?=").Decode ());
-			Assert.Equal ("тема сообщения текст сообщения",
+			Assert.Equal (
+				"тема сообщения текст сообщения",
 				new StructuredValueElement (StructuredValueElementType.QuotedValue, "=?utf-8*ru-ru?B?0YLQtdC80LAg0YHQvtC+0LHRidC10L3QuNGPINGC0LXQutGB0YIg0YHQvtC+0LHRidC10L3QuNGP?=").Decode ());
 		}
 
-		[Fact, Trait ("Category", "Mime")]
+		[Fact]
+		[Trait ("Category", "Mime")]
 		public void Parse_Collection ()
 		{
 			var elements = StructuredValueElementCollection.Parse (
@@ -55,7 +65,8 @@ namespace Novartment.Base.Net.Mime.Test
 			Assert.Equal ("uvw", elements[8].Value);
 		}
 
-		[Fact, Trait ("Category", "Mime")]
+		[Fact]
+		[Trait ("Category", "Mime")]
 		public void Decode_Collection ()
 		{
 			var elements = new StructuredValueElement[]
@@ -65,7 +76,7 @@ namespace Novartment.Base.Net.Mime.Test
 				new StructuredValueElement (StructuredValueElementType.Value, "=?utf-8?B?INGD0YHQuNC70LXQvdC90YvRhQ==?="),
 				new StructuredValueElement (StructuredValueElementType.Value, "=?us-ascii?q?some_text?="),
 				new StructuredValueElement (';'),
-				new StructuredValueElement (StructuredValueElementType.QuotedValue, "i\\\\jkl")
+				new StructuredValueElement (StructuredValueElementType.QuotedValue, "i\\\\jkl"),
 			};
 			var result = StructuredValueElementCollection.Decode (elements, elements.Length);
 			Assert.Equal ("abc ,  усиленныхsome text ; i\\jkl", result);

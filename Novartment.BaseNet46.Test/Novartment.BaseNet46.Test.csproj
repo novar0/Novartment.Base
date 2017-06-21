@@ -6,7 +6,13 @@
     <AssemblyName>Novartment.BaseNet46.Test</AssemblyName>
     <PackageId>Novartment.BaseNet46.Test</PackageId>
     <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
-  </PropertyGroup>
+		<CodeAnalysisRuleSet>StyleCop.Analyzers.ruleset</CodeAnalysisRuleSet>
+	</PropertyGroup>
+
+  <ItemGroup>
+    <AdditionalFiles Include="StyleCop.Analyzers.ruleset" />
+    <AdditionalFiles Include="stylecop.json" />
+  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Novartment.BaseNet46\Novartment.BaseNet46.csproj" />
@@ -18,7 +24,12 @@
     <PackageReference Include="xunit" Version="2.2.0" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net46' ">
+	<ItemGroup>
+		<AdditionalFiles Include="StyleCop.Analyzers.ruleset" />
+		<AdditionalFiles Include="stylecop.json" />
+	</ItemGroup>
+
+	<ItemGroup Condition=" '$(TargetFramework)' == 'net46' ">
     <PackageReference Include="Microsoft.NETCore.Platforms" Version="1.1.0" />
     <Reference Include="System" />
 		<Reference Include="WindowsBase" />

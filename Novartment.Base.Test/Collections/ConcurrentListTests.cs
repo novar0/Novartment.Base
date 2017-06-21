@@ -8,7 +8,8 @@ namespace Novartment.Base.Test
 {
 	public class ConcurrentListTests
 	{
-		[Fact, Trait ("Category", "Collections.ConcurrentList")]
+		[Fact]
+		[Trait ("Category", "Collections.ConcurrentList")]
 		public void AddTake ()
 		{
 			var events = new List<NotifyCollectionChangedEventArgs> ();
@@ -17,9 +18,8 @@ namespace Novartment.Base.Test
 			var c1 = new ConcurrentList<int> (t1);
 			var c2 = new ConcurrentList<int> ();
 			c2.CollectionChanged += (sender, args) => events.Add (args);
-			int v1;
 
-			//Add
+			// Add
 			c2.Add (4);
 			Assert.Equal (eventN + 1, events.Count);
 			Assert.Equal (NotifyCollectionChangedAction.Add, events[eventN].Action);
@@ -29,7 +29,7 @@ namespace Novartment.Base.Test
 			Assert.Equal (-1, events[eventN].OldStartingIndex);
 			Assert.Null (events[eventN].OldItems);
 
-			//Add
+			// Add
 			c2.Add (1);
 			eventN++;
 			Assert.Equal (eventN + 1, events.Count);
@@ -40,7 +40,7 @@ namespace Novartment.Base.Test
 			Assert.Equal (-1, events[eventN].OldStartingIndex);
 			Assert.Null (events[eventN].OldItems);
 
-			//Add
+			// Add
 			c2.Add (2);
 			eventN++;
 			Assert.Equal (eventN + 1, events.Count);
@@ -51,7 +51,7 @@ namespace Novartment.Base.Test
 			Assert.Equal (-1, events[eventN].OldStartingIndex);
 			Assert.Null (events[eventN].OldItems);
 
-			//Add
+			// Add
 			c2.Add (2);
 			eventN++;
 			Assert.Equal (eventN + 1, events.Count);
@@ -62,7 +62,7 @@ namespace Novartment.Base.Test
 			Assert.Equal (-1, events[eventN].OldStartingIndex);
 			Assert.Null (events[eventN].OldItems);
 
-			//Add
+			// Add
 			c2.Add (-5);
 			eventN++;
 			Assert.Equal (eventN + 1, events.Count);
@@ -75,7 +75,7 @@ namespace Novartment.Base.Test
 			Assert.Equal (5, c2.Count);
 			Assert.Equal (-5, c2[4]);
 
-			//set this[]
+			// set this[]
 			c2[4] = 3;
 			eventN++;
 			Assert.Equal (eventN + 1, events.Count);
@@ -89,8 +89,8 @@ namespace Novartment.Base.Test
 			Assert.Equal (3, c2[4]);
 			Assert.NotEqual<int> (c1, c2);
 
-			//TryTakeFirst
-			Assert.True (c2.TryTakeFirst (out v1));
+			// TryTakeFirst
+			Assert.True (c2.TryTakeFirst (out int v1));
 			eventN++;
 			Assert.Equal (eventN + 1, events.Count);
 			Assert.Equal (NotifyCollectionChangedAction.Remove, events[eventN].Action);
@@ -106,7 +106,7 @@ namespace Novartment.Base.Test
 			c2.CopyTo (t2, 0);
 			Assert.Equal<int> (t1, c2);
 
-			//TryTakeLast
+			// TryTakeLast
 			Assert.True (c2.TryTakeLast (out v1));
 			eventN++;
 			Assert.Equal (eventN + 1, events.Count);
@@ -119,7 +119,7 @@ namespace Novartment.Base.Test
 			Assert.Equal (3, c2.Count);
 			Assert.Equal (3, v1);
 
-			//Clear
+			// Clear
 			c2.Clear ();
 			eventN++;
 			Assert.Equal (eventN + 1, events.Count);
@@ -130,29 +130,30 @@ namespace Novartment.Base.Test
 			Assert.Null (events[eventN].OldItems);
 			Assert.Equal (0, c2.Count);
 
-			//TryPeekLast
+			// TryPeekLast
 			v1 = int.MaxValue;
 			Assert.False (c2.TryPeekLast (out v1));
 			Assert.Equal (0, v1);
 			Assert.Equal (eventN + 1, events.Count);
 
-			//TryTakeFirst
+			// TryTakeFirst
 			v1 = int.MaxValue;
 			Assert.False (c2.TryTakeFirst (out v1));
 			Assert.Equal (0, v1);
 			Assert.Equal (eventN + 1, events.Count);
 		}
 
-		[Fact, Trait ("Category", "Collections.ConcurrentList")]
+		[Fact]
+		[Trait ("Category", "Collections.ConcurrentList")]
 		public void InsertRemove ()
 		{
-			//создаём такое состояние массива чтобы он переходил через край
+			// создаём такое состояние массива чтобы он переходил через край
 			var events = new List<NotifyCollectionChangedEventArgs> ();
 			int eventN = 0;
 			var c2 = new ConcurrentList<int> ();
 			c2.CollectionChanged += (sender, args) => events.Add (args);
 
-			//Insert
+			// Insert
 			c2.Insert (0, -1);
 			var c1 = new ConcurrentList<int> (new int[] { -1 });
 			Assert.Equal<int> (c1, c2);
@@ -164,7 +165,7 @@ namespace Novartment.Base.Test
 			Assert.Equal (-1, events[eventN].OldStartingIndex);
 			Assert.Null (events[eventN].OldItems);
 
-			//Insert
+			// Insert
 			c2.Insert (0, -2);
 			c1 = new ConcurrentList<int> (new int[] { -2, -1 });
 			Assert.Equal<int> (c1, c2);
@@ -177,7 +178,7 @@ namespace Novartment.Base.Test
 			Assert.Equal (-1, events[eventN].OldStartingIndex);
 			Assert.Null (events[eventN].OldItems);
 
-			//Insert
+			// Insert
 			c2.Insert (1, -3);
 			c1 = new ConcurrentList<int> (new int[] { -2, -3, -1 });
 			Assert.Equal<int> (c1, c2);
@@ -190,7 +191,7 @@ namespace Novartment.Base.Test
 			Assert.Equal (-1, events[eventN].OldStartingIndex);
 			Assert.Null (events[eventN].OldItems);
 
-			//Insert
+			// Insert
 			c2.Insert (3, -4);
 			c1 = new ConcurrentList<int> (new int[] { -2, -3, -1, -4 });
 			Assert.Equal<int> (c1, c2);
@@ -203,7 +204,7 @@ namespace Novartment.Base.Test
 			Assert.Equal (-1, events[eventN].OldStartingIndex);
 			Assert.Null (events[eventN].OldItems);
 
-			//RemoveAt
+			// RemoveAt
 			c2.RemoveAt (0);
 			c1 = new ConcurrentList<int> (new int[] { -3, -1, -4 });
 			Assert.Equal<int> (c1, c2);
@@ -216,7 +217,7 @@ namespace Novartment.Base.Test
 			Assert.Equal (1, events[eventN].OldItems.Count);
 			Assert.Equal (-2, events[eventN].OldItems[0]);
 
-			//RemoveAt
+			// RemoveAt
 			c2.RemoveAt (1);
 			c1 = new ConcurrentList<int> (new int[] { -3, -4 });
 			Assert.Equal<int> (c1, c2);
@@ -229,7 +230,7 @@ namespace Novartment.Base.Test
 			Assert.Equal (1, events[eventN].OldItems.Count);
 			Assert.Equal (-1, events[eventN].OldItems[0]);
 
-			//RemoveAt
+			// RemoveAt
 			c2.RemoveAt (1);
 			c1 = new ConcurrentList<int> (new int[] { -3 });
 			Assert.Equal<int> (c1, c2);
@@ -242,7 +243,7 @@ namespace Novartment.Base.Test
 			Assert.Equal (1, events[eventN].OldItems.Count);
 			Assert.Equal (-4, events[eventN].OldItems[0]);
 
-			//Insert
+			// Insert
 			c2.Insert (1, -5);
 			c1 = new ConcurrentList<int> (new int[] { -3, -5 });
 			Assert.Equal<int> (c1, c2);
@@ -256,7 +257,8 @@ namespace Novartment.Base.Test
 			Assert.Null (events[eventN].OldItems);
 		}
 
-		[Fact, Trait ("Category", "Collections.ConcurrentList")]
+		[Fact]
+		[Trait ("Category", "Collections.ConcurrentList")]
 		public void InsertRemoveRange ()
 		{
 			var events = new List<NotifyCollectionChangedEventArgs> ();
@@ -265,7 +267,7 @@ namespace Novartment.Base.Test
 			Assert.Equal<int> (new int[] { 8, 9, 1, 2 }, c2);
 			c2.CollectionChanged += (sender, args) => events.Add (args);
 
-			//InsertRange
+			// InsertRange
 			c2.InsertRange (0, 3);
 			Assert.Equal<int> (new int[] { 0, 0, 0, 8, 9, 1, 2 }, c2);
 			Assert.Equal (eventN + 1, events.Count);
@@ -278,7 +280,7 @@ namespace Novartment.Base.Test
 			Assert.Equal (-1, events[eventN].OldStartingIndex);
 			Assert.Null (events[eventN].OldItems);
 
-			//InsertRange
+			// InsertRange
 			c2.InsertRange (7, 1);
 			Assert.Equal<int> (new int[] { 0, 0, 0, 8, 9, 1, 2, 0 }, c2);
 			eventN++;
@@ -290,7 +292,7 @@ namespace Novartment.Base.Test
 			Assert.Equal (-1, events[eventN].OldStartingIndex);
 			Assert.Null (events[eventN].OldItems);
 
-			//InsertRange
+			// InsertRange
 			c2.InsertRange (3, 12);
 			Assert.Equal<int> (new int[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 9, 1, 2, 0 }, c2);
 			eventN++;
@@ -303,7 +305,7 @@ namespace Novartment.Base.Test
 			Assert.Equal (-1, events[eventN].OldStartingIndex);
 			Assert.Null (events[eventN].OldItems);
 
-			//RemoveRange
+			// RemoveRange
 			c2.RemoveRange (3, 12);
 			Assert.Equal<int> (new int[] { 0, 0, 0, 8, 9, 1, 2, 0 }, c2);
 			eventN++;
@@ -316,7 +318,7 @@ namespace Novartment.Base.Test
 			Assert.Equal (-1, events[eventN].NewStartingIndex);
 			Assert.Null (events[eventN].NewItems);
 
-			//RemoveRange
+			// RemoveRange
 			c2.RemoveRange (7, 1);
 			Assert.Equal<int> (new int[] { 0, 0, 0, 8, 9, 1, 2 }, c2);
 			eventN++;
@@ -328,7 +330,7 @@ namespace Novartment.Base.Test
 			Assert.Equal (-1, events[eventN].NewStartingIndex);
 			Assert.Null (events[eventN].NewItems);
 
-			//RemoveRange
+			// RemoveRange
 			c2.RemoveRange (0, 7);
 			eventN++;
 			Assert.Equal (eventN + 1, events.Count);

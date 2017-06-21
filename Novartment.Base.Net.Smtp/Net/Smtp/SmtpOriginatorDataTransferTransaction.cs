@@ -41,7 +41,7 @@ namespace Novartment.Base.Net.Smtp
 			NotStarted = 0,
 			Started = 1,
 			RecipientsSpecified = 2,
-			Finished = 5
+			Finished = 5,
 		}
 
 		public void Dispose ()

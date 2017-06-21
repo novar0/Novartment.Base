@@ -16,6 +16,6 @@
 		Status = 2,
 
 		/// <summary>Name of the host.</summary>
-		Host = 3
+		Host = 3,
 	}
 }

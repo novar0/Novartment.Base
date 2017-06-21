@@ -44,7 +44,7 @@ namespace Novartment.Base
 
 		/// <summary>Standard Windows OEM text data format.</summary>
 		[SuppressMessage (
-		"Microsoft.Naming",
+			"Microsoft.Naming",
 			"CA1704:IdentifiersShouldBeSpelledCorrectly",
 			MessageId = "Oem",
 			Justification = "'OEM' represents standard term.")]
@@ -101,25 +101,25 @@ namespace Novartment.Base
 		private static readonly string _FileNameW = "FileNameW";
 
 		[SuppressMessage (
-		"Microsoft.Performance",
+			"Microsoft.Performance",
 			"CA1802:UseLiteralsWhereAppropriate",
 			Justification = "No performance gain could be achieved.")]
 		private static readonly string _StringFormat = "System.String";
 
 		[SuppressMessage (
-		"Microsoft.Performance",
+			"Microsoft.Performance",
 			"CA1802:UseLiteralsWhereAppropriate",
 			Justification = "No performance gain could be achieved.")]
 		private static readonly string _DrawingBitmapFormat = "System.Drawing.Bitmap";
 
 		[SuppressMessage (
-		"Microsoft.Performance",
+			"Microsoft.Performance",
 			"CA1802:UseLiteralsWhereAppropriate",
 			Justification = "No performance gain could be achieved.")]
 		private static readonly string _DrawingImagingMetafileFormat = "System.Drawing.Imaging.Metafile";
 
 		[SuppressMessage (
-		"Microsoft.Performance",
+			"Microsoft.Performance",
 			"CA1802:UseLiteralsWhereAppropriate",
 			Justification = "No performance gain could be achieved.")]
 		private static readonly string _WindowsMediaImagingBitmapSource = "System.Windows.Media.Imaging.BitmapSource";

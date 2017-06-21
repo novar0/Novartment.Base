@@ -15,7 +15,9 @@
 		/// <summary>If the Shell items are not the same, test the file system paths.</summary>
 		TestFilesysPathIfNotEqual = 0x20000000,
 
+#pragma warning disable SA1139 // Use literal suffix notation instead of casting
 		/// <summary>Exact comparison of two instances of a Shell item.</summary>
-		AllFields = unchecked ((int)0x80000000)
+		AllFields = unchecked ((int)0x80000000),
+#pragma warning restore SA1139 // Use literal suffix notation instead of casting
 	}
 }

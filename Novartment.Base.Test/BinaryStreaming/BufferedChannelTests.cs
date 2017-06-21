@@ -1,16 +1,17 @@
 ﻿using System;
 using System.IO;
+using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Security.Cryptography;
-using Xunit;
 using Novartment.Base.BinaryStreaming;
+using Xunit;
 
 namespace Novartment.Base.Test
 {
 	public class BufferedChannelTests
 	{
-		[Fact, Trait ("Category", "BufferedSource")]
+		[Fact]
+		[Trait ("Category", "BufferedSource")]
 		public void Skip_MoreThanWrited ()
 		{
 			// пропуск больше чем записано
@@ -30,7 +31,8 @@ namespace Novartment.Base.Test
 			Assert.Equal (0x4000000 + 0x1ffffff, skipTask.Result);
 		}
 
-		[Fact, Trait ("Category", "BufferedSource")]
+		[Fact]
+		[Trait ("Category", "BufferedSource")]
 		public void Skip_LongSizeWithTinyBuffer ()
 		{
 			// пропуск больше чем 32битное число байтов через крохотный буфер
@@ -45,10 +47,12 @@ namespace Novartment.Base.Test
 				Assert.True (writeTask.IsCompleted);
 				Assert.False (skipTask.IsCompleted);
 			}
+
 			for (int i = 0; i < 80; i++)
 			{
 				buf[i] = (byte)(i + 120);
 			}
+
 			writeTask = channel.WriteAsync (buf, 0, 80, CancellationToken.None);
 			Thread.Sleep (50);
 			Assert.True (skipTask.IsCompleted);
@@ -76,11 +80,12 @@ namespace Novartment.Base.Test
 			Assert.Equal (0, channel.Count);
 		}
 
-		[Theory, Trait ("Category", "BufferedSource"),
-		InlineData (10, 2560000, 2560),
-		InlineData (100, 2560, 25),
-		InlineData (10, 2560, 2560000),
-		InlineData (100, 25, 2560)]
+		[Theory]
+		[Trait ("Category", "BufferedSource")]
+		[InlineData (10, 2560000, 2560)]
+		[InlineData (100, 2560, 25)]
+		[InlineData (10, 2560, 2560000)]
+		[InlineData (100, 25, 2560)]
 		public void ConcurrentWriteRead (int chunkCount, int chunkSize, int bufferSize)
 		{
 			var src = new byte[chunkSize];
@@ -105,8 +110,7 @@ namespace Novartment.Base.Test
 				}
 				dstData.Seek (0L, SeekOrigin.Begin);
 				var dstHasher = SHA1.Create ();
-				ArraySegment<byte> buf2;
-				Assert.True (dstData.TryGetBuffer (out buf2));
+				Assert.True (dstData.TryGetBuffer (out ArraySegment<byte> buf2));
 				return dstHasher.ComputeHash (buf2.Array, buf2.Offset, buf2.Count);
 			});
 
@@ -122,8 +126,7 @@ namespace Novartment.Base.Test
 
 			srcData.Seek (0L, SeekOrigin.Begin);
 			var srcHasher = SHA1.Create ();
-			ArraySegment<byte> buf;
-			Assert.True (srcData.TryGetBuffer (out buf));
+			Assert.True (srcData.TryGetBuffer (out ArraySegment<byte> buf));
 			var srcHash = srcHasher.ComputeHash (buf.Array, buf.Offset, buf.Count);
 			var dstHash = readTask.Result;
 			Assert.Equal (BitConverter.ToUInt64 (srcHash, 0), BitConverter.ToUInt64 (dstHash, 0));
@@ -131,7 +134,8 @@ namespace Novartment.Base.Test
 			Assert.Equal (BitConverter.ToUInt32 (srcHash, 16), BitConverter.ToUInt32 (dstHash, 16));
 		}
 
-		[Fact, Trait ("Category", "BufferedSource")]
+		[Fact]
+		[Trait ("Category", "BufferedSource")]
 		public void ReadFirst ()
 		{
 			var channel = new BufferedChannel (new byte[] { 96, 95, 94, 93, 92, 91, 90 });
@@ -223,7 +227,8 @@ namespace Novartment.Base.Test
 			Assert.ThrowsAsync<NotEnoughDataException> (async () => await channel.EnsureBufferAsync (1, CancellationToken.None));
 		}
 
-		[Fact, Trait ("Category", "BufferedSource")]
+		[Fact]
+		[Trait ("Category", "BufferedSource")]
 		public void WriteFirst ()
 		{
 			var channel = new BufferedChannel (new byte[] { 96, 95, 94, 93, 92, 91, 90 });
@@ -267,7 +272,7 @@ namespace Novartment.Base.Test
 			Assert.Equal (111, channel.Buffer[6]);
 
 			// пишем когда нет свободного места в хвосте буфера
-			//data.AcceptTail (4); // в хвосте нет свободных байтов
+			// data.AcceptTail (4); // в хвосте нет свободных байтов
 			channel.SkipBuffer (5);
 			writeTask = channel.WriteAsync (srcData, 3, 3, CancellationToken.None);
 			Thread.Sleep (50);

@@ -1,7 +1,7 @@
 ﻿using System;
+using System.ServiceModel;
 using Autofac;
 using Autofac.Features.OwnedInstances;
-using System.ServiceModel;
 using Novartment.Base.UI;
 using Novartment.Base.UI.Wpf;
 
@@ -14,6 +14,11 @@ namespace Novartment.Base.SampleWpf
 	{
 		private static readonly IValueHolder<IContainer> _container = new LazyValueHolder<IContainer> (BuildContainer);
 
+		public static ComponentApplication ComposeApplication ()
+		{
+			return _container.Value.Resolve<ComponentApplication> ();
+		}
+
 		private static IContainer BuildContainer ()
 		{
 			var builder = new Autofac.ContainerBuilder ();
@@ -25,8 +30,7 @@ namespace Novartment.Base.SampleWpf
 				.SingleInstance ();
 			builder.Register (c => new ComponentApplication (
 				c.ResolveNamed<Func<System.Windows.Window>> ("main"),
-				c.ResolveNamed<Func<UserLevelExceptionData, IDialogView<bool?>>> ("ExceptionReport")
-				)).SingleInstance ();
+				c.ResolveNamed<Func<UserLevelExceptionData, IDialogView<bool?>>> ("ExceptionReport"))).SingleInstance ();
 			builder.Register (c => new WpfDataContainer ())
 				.As<IDataContainer> ();
 			builder.Register (c => new OleClipboard (WpfDataContainer.ToComDataObject, WpfDataContainer.FromComDataObject))
@@ -41,8 +45,7 @@ namespace Novartment.Base.SampleWpf
 				c.Resolve<IClipboard> (),
 				c.Resolve<Func<IDataContainer>> (),
 				c.Resolve<ISerivceInterface> (),
-				c.ResolveNamed<Func<MessageBoxFormData, Owned<IDialogView<System.Windows.MessageBoxResult>>>> ("MessageBox", p)
-				))
+				c.ResolveNamed<Func<MessageBoxFormData, Owned<IDialogView<System.Windows.MessageBoxResult>>>> ("MessageBox", p)))
 				.As<MainViewModel> ()
 				.As<IDragDropSource> ()
 				.As<IDragDropTarget> ()
@@ -59,14 +62,14 @@ namespace Novartment.Base.SampleWpf
 				c.Resolve<MainViewModel> (),
 				c.Resolve<AppSettings> (),
 				c.Resolve<IDragDropSource> (),
-				c.Resolve<IDragDropTarget> ()
-				)).Named<System.Windows.Window> ("main").SingleInstance ();
+				c.Resolve<IDragDropTarget> ()))
+				.Named<System.Windows.Window> ("main").SingleInstance ();
 			builder.Register ((c, p) => new ExceptionDetailsForm (
-				c.ResolveNamed<IDialogViewModel<bool?>> ("ExceptionReport", p)
-				)).Named<IDialogView<bool?>> ("ExceptionReport");
+				c.ResolveNamed<IDialogViewModel<bool?>> ("ExceptionReport", p)))
+				.Named<IDialogView<bool?>> ("ExceptionReport");
 			builder.Register ((c, p) => new MessageBoxForm (
-				c.ResolveNamed<IDialogViewModel<System.Windows.MessageBoxResult>> ("MessageBox", p))
-				).Named<IDialogView<System.Windows.MessageBoxResult>> ("MessageBox");
+				c.ResolveNamed<IDialogViewModel<System.Windows.MessageBoxResult>> ("MessageBox", p)))
+				.Named<IDialogView<System.Windows.MessageBoxResult>> ("MessageBox");
 
 			// web-service
 			builder.Register (c =>
@@ -80,15 +83,9 @@ namespace Novartment.Base.SampleWpf
 			Autofac.Integration.Wcf.RegistrationExtensions.UseWcfSafeRelease (
 				builder.Register (c => c.Resolve<ChannelFactory<ISerivceInterface>> ().CreateChannel ()));
 
-
 			var container = builder.Build ();
 
 			return container;
-		}
-
-		public static ComponentApplication ComposeApplication ()
-		{
-			return _container.Value.Resolve<ComponentApplication> ();
 		}
 	}
 }

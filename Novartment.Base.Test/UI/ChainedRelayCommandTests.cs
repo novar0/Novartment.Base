@@ -1,13 +1,16 @@
 ﻿using System.Collections.Generic;
-using Xunit;
 using Novartment.Base.UI;
+using Xunit;
 
 namespace Novartment.Base.Test
 {
-	public class RelayCommandTests
+	public class ChainedRelayCommandTests
 	{
 		private int _canExecuteCount;
 		private int _executeCount;
+		private List<string> _canExecuteCalls;
+		private List<string> _executeCalls;
+
 		[Fact]
 		[Trait ("Category", "UI")]
 		public void ChainedRelayCommand_CallDelegates ()
@@ -30,18 +33,7 @@ namespace Novartment.Base.Test
 			Assert.Equal (2, _canExecuteCount);
 			Assert.Equal (2, _executeCount);
 		}
-		private bool CanExecute1 ()
-		{
-			_canExecuteCount++;
-			return true;
-		}
-		private void Execute1 ()
-		{
-			_executeCount++;
-		}
 
-		private List<string> _canExecuteCalls;
-		private List<string> _executeCalls;
 		[Fact]
 		[Trait ("Category", "UI")]
 		public void ChainedRelayCommand_CallDelegatesParam ()
@@ -68,11 +60,24 @@ namespace Novartment.Base.Test
 			Assert.Equal (2, _executeCalls.Count);
 			Assert.Equal ("01234ABC", _executeCalls[1]);
 		}
+
+		private bool CanExecute1 ()
+		{
+			_canExecuteCount++;
+			return true;
+		}
+
+		private void Execute1 ()
+		{
+			_executeCount++;
+		}
+
 		private bool CanExecute2 (string parameter)
 		{
 			_canExecuteCalls.Add (parameter);
 			return parameter != null;
 		}
+
 		private void Execute2 (string parameter)
 		{
 			_executeCalls.Add (parameter);

@@ -20,6 +20,6 @@
 		/// <summary>
 		/// Доступны только директории файловой системы.
 		/// </summary>
-		FileSystem = 2
+		FileSystem = 2,
 	}
 }

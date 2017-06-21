@@ -123,7 +123,7 @@ namespace Novartment.Base.Collections
 		/// Получает внутренний массив, в котором хранятся элементы списка.
 		/// </summary>
 		[SuppressMessage(
-		"Microsoft.Performance",
+			"Microsoft.Performance",
 			"CA1819:PropertiesShouldNotReturnArrays",
 			Justification = "This is clearly a property and write access to array is intended.")]
 		public T[] Array => _items;
@@ -716,7 +716,7 @@ namespace Novartment.Base.Collections
 		/// Если массив зациклен через край, то перед сортировкой будет произведено копирование меньшей части.
 		/// </remarks>
 		[SuppressMessage (
-		"Microsoft.Design",
+			"Microsoft.Design",
 			"CA1026:DefaultParametersShouldNotBeUsed",
 			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
 		public void Sort (IComparer<T> comparer = null)

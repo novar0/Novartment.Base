@@ -50,8 +50,8 @@ namespace Novartment.Base.UI
 		/// Значение по умолчанию null означает что команда всегда готова к выполнению.</param>
 		[SuppressMessage (
 			"Microsoft.Design",
-		"CA1026:DefaultParametersShouldNotBeUsed",
-		Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
+			"CA1026:DefaultParametersShouldNotBeUsed",
+			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
 		public ChainedRelayCommand (CommandChain commandChain, Action execute, Func<bool> canExecute = null)
 			: base (commandChain)
 		{

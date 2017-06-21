@@ -41,7 +41,7 @@ namespace Novartment.Base.UI.Wpf
 				var link = new Hyperlink (item.Start, item.Finish)
 				{
 					NavigateUri = new Uri (item.Text),
-					ToolTip = string.Format (CultureInfo.InvariantCulture, Resources.OpenLinkTooltip, item.Text)
+					ToolTip = string.Format (CultureInfo.InvariantCulture, Resources.OpenLinkTooltip, item.Text),
 				};
 				link.Click += HyperLinkClickHandler;
 			}

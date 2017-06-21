@@ -1,5 +1,4 @@
 ﻿using System;
-using static System.Linq.Enumerable;
 using Novartment.Base.Text;
 using Xunit;
 
@@ -7,7 +6,8 @@ namespace Novartment.Base.Test
 {
 	public class StringExtensionsTests
 	{
-		[Fact, Trait ("Category", "Text.StringExtensions")]
+		[Fact]
+		[Trait ("Category", "Text.StringExtensions")]
 		public void Replace ()
 		{
 			Assert.Equal (
@@ -21,7 +21,8 @@ namespace Novartment.Base.Test
 				"12345\r\n123456 123456789 456".Replace ("456", "*^&", StringComparison.OrdinalIgnoreCase));
 		}
 
-		[Fact, Trait ("Category", "Text.StringExtensions")]
+		[Fact]
+		[Trait ("Category", "Text.StringExtensions")]
 		public void AppendSeparator ()
 		{
 			var src = new string[0];

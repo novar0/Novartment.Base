@@ -118,6 +118,8 @@ namespace Novartment.Base.UnsafeWin32
 		/// </summary>
 		FileSystem = 0x40000000,
 
+#pragma warning disable SA1139 // Use literal suffix notation instead of casting
+
 		/// <summary>
 		/// The specified folders have subfolders.
 		/// </summary>
@@ -127,6 +129,8 @@ namespace Novartment.Base.UnsafeWin32
 		/// This flag is a mask for the contents attributes.
 		/// </summary>
 		ContentsMask = unchecked ((int)0x80000000),
+
+#pragma warning restore SA1139 // Use literal suffix notation instead of casting
 
 		/// <summary>
 		/// When specified as input, instructs the folder to validate that the items exist.
@@ -180,10 +184,12 @@ namespace Novartment.Base.UnsafeWin32
 		/// </summary>
 		StorageCapabilityMask = 0x70C50008,
 
+#pragma warning disable SA1139 // Use literal suffix notation instead of casting
 		/// <summary>
 		/// Mask used to remove certain values that are considered
 		/// to cause slow calculations or lack context.
 		/// </summary>
 		PkeyMask = unchecked ((int)0x81044000),
+#pragma warning restore SA1139 // Use literal suffix notation instead of casting
 	}
 }

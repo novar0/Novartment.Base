@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;

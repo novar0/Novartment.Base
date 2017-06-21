@@ -14,6 +14,6 @@
 		/// <summary>
 		/// Use a bitwise OR to combine the attributes across items.
 		/// </summary>
-		Or = 0x00000002
+		Or = 0x00000002,
 	}
 }

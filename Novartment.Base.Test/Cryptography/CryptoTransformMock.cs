@@ -21,9 +21,20 @@ namespace Novartment.Base.Test
 
 		public CryptoTransformMock (int inputBlockSize, int outputBlockSize, int inputCacheBlocks, bool canTransformMultipleBlocks)
 		{
-			if (inputBlockSize < 1) throw new ArgumentOutOfRangeException (nameof (inputBlockSize));
-			if (outputBlockSize < 1) throw new ArgumentOutOfRangeException (nameof (inputBlockSize));
-			if (inputCacheBlocks < 0) throw new ArgumentOutOfRangeException (nameof (inputCacheBlocks));
+			if (inputBlockSize < 1)
+			{
+				throw new ArgumentOutOfRangeException (nameof (inputBlockSize));
+			}
+
+			if (outputBlockSize < 1)
+			{
+				throw new ArgumentOutOfRangeException (nameof (inputBlockSize));
+			}
+
+			if (inputCacheBlocks < 0)
+			{
+				throw new ArgumentOutOfRangeException (nameof (inputCacheBlocks));
+			}
 
 			_inputBlockSize = inputBlockSize;
 			_outputBlockSize = outputBlockSize;
@@ -43,7 +54,9 @@ namespace Novartment.Base.Test
 		/// <summary>
 		/// Ничего не делает.
 		/// </summary>
-		public void Dispose () { }
+		public void Dispose ()
+		{
+		}
 
 		public int TransformBlock (byte[] inputBuffer, int inputOffset, int inputCount, byte[] outputBuffer, int outputOffset)
 		{
@@ -77,7 +90,7 @@ namespace Novartment.Base.Test
 				throw new ArgumentOutOfRangeException (nameof (inputCount));
 			}
 
-			//Trace.WriteLine (string.Format ("---TransformBlock: inputBuffer.Length = {0}, inputOffset = {1}, inputCount = {2}, outputBuffer.Length = {3}, outputOffset = {4}, cachedBlocks = {5}", inputBuffer.Length, inputOffset, inputCount, outputBuffer.Length, outputOffset, _cachedBlocks));
+			// Trace.WriteLine (string.Format ("---TransformBlock: inputBuffer.Length = {0}, inputOffset = {1}, inputCount = {2}, outputBuffer.Length = {3}, outputOffset = {4}, cachedBlocks = {5}", inputBuffer.Length, inputOffset, inputCount, outputBuffer.Length, outputOffset, _cachedBlocks));
 			if ((inputCount % _inputBlockSize) != 0)
 			{
 				throw new InvalidOperationException ("inputCount must be multiple of InputBlockSize");
@@ -91,6 +104,7 @@ namespace Novartment.Base.Test
 			}
 
 			int result;
+
 			// все влезет в кэш, на выход - ничего
 			if ((_cachedBlocks + inputBlocks) <= _cacheBlocksLimit)
 			{
@@ -104,8 +118,10 @@ namespace Novartment.Base.Test
 				if (_cachedBlocks > 0)
 				{
 					var blocksFromCache = Math.Min (_cachedBlocks, inputBlocks);
+
 					// преобразуем часть кэша в выход
 					Transform (_cache, 0, outputBuffer, outputOffset, blocksFromCache);
+
 					// сдвигаем остаток кэша в начало
 					Array.Copy (_cache, blocksFromCache * _inputBlockSize, _cache, 0, (_cachedBlocks - blocksFromCache) * _inputBlockSize);
 					_cachedBlocks -= blocksFromCache;
@@ -122,9 +138,38 @@ namespace Novartment.Base.Test
 				_cachedBlocks += inputBlocks - outputBlocks;
 				result = inputBlocks * _outputBlockSize;
 			}
-			//Trace.WriteLine (string.Format ("---TransformBlock: result = {0}", result));
+
+			// Trace.WriteLine (string.Format ("---TransformBlock: result = {0}", result));
 			return result;
 		}
+
+		public byte[] TransformFinalBlock (byte[] inputBuffer, int inputOffset, int inputCount)
+		{
+			// Trace.WriteLine (string.Format ("---TransformFinalBlock: inputBuffer.Length = {0}, inputOffset = {1}, inputCount = {2}, cachedBlocks = {3}", inputBuffer.Length, inputOffset, inputCount, _cachedBlocks));
+			var inputBlocks = inputCount / _inputBlockSize;
+			var inputReminder = inputCount - (inputBlocks * _inputBlockSize);
+			var outputReminder = Math.Min (inputReminder, _outputBlockSize);
+			var result = new byte[((_cachedBlocks + inputBlocks) * _outputBlockSize) + outputReminder];
+
+			// данные из кэша
+			Transform (_cache, 0, result, 0, _cachedBlocks);
+			var outputOffset = _cachedBlocks * _outputBlockSize;
+
+			// данные входа кратно блокам
+			Transform (inputBuffer, inputOffset, result, outputOffset, inputBlocks);
+			inputOffset += inputBlocks * _inputBlockSize;
+			outputOffset += inputBlocks * _outputBlockSize;
+
+			// оставшиеся данные
+			for (int j = 0; j < outputReminder; j++)
+			{
+				result[outputOffset + j] = (byte)~inputBuffer[inputOffset + (j % inputReminder)];
+			}
+
+			// Trace.WriteLine (string.Format ("---TransformFinalBlock: result.Length = {0}", result.Length));
+			return result;
+		}
+
 		private void Transform (byte[] input, int inputOffset, byte[] output, int outputOffset, int nBlocks)
 		{
 			for (int i = 0; i < nBlocks; i++)
@@ -136,29 +181,6 @@ namespace Novartment.Base.Test
 					output[outIndex] = (byte)~input[inIndex];
 				}
 			}
-		}
-
-		public byte[] TransformFinalBlock (byte[] inputBuffer, int inputOffset, int inputCount)
-		{
-			//Trace.WriteLine (string.Format ("---TransformFinalBlock: inputBuffer.Length = {0}, inputOffset = {1}, inputCount = {2}, cachedBlocks = {3}", inputBuffer.Length, inputOffset, inputCount, _cachedBlocks));
-			var inputBlocks = inputCount / _inputBlockSize;
-			var inputReminder = inputCount - inputBlocks * _inputBlockSize;
-			var outputReminder = Math.Min (inputReminder, _outputBlockSize);
-			var result = new byte[(_cachedBlocks + inputBlocks) * _outputBlockSize + outputReminder];
-			// данные из кэша
-			Transform (_cache, 0, result, 0, _cachedBlocks);
-			var outputOffset = _cachedBlocks * _outputBlockSize;
-			// данные входа кратно блокам
-			Transform (inputBuffer, inputOffset, result, outputOffset, inputBlocks);
-			inputOffset += inputBlocks * _inputBlockSize;
-			outputOffset += inputBlocks * _outputBlockSize;
-			// оставшиеся данные
-			for (int j = 0; j < outputReminder; j++)
-			{
-				result[outputOffset + j] = (byte)~inputBuffer[inputOffset + (j % inputReminder)];
-			}
-			//Trace.WriteLine (string.Format ("---TransformFinalBlock: result.Length = {0}", result.Length));
-			return result;
 		}
 	}
 }

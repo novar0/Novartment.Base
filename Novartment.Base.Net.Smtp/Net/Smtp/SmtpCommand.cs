@@ -26,7 +26,7 @@ namespace Novartment.Base.Net.Smtp
 		{
 			Command,
 			Data,
-			AuthenticationResponse
+			AuthenticationResponse,
 		}
 
 		internal SmtpCommandType CommandType { get; }
@@ -160,7 +160,7 @@ namespace Novartment.Base.Net.Smtp
 		}
 
 		[SuppressMessage (
-		"Microsoft.Maintainability",
+			"Microsoft.Maintainability",
 			"CA1502:AvoidExcessiveComplexity",
 			Justification = "Method not too complex.")]
 		private static SmtpCommandType GetCommandType (BytesChunkEnumerator chunkEnumerator)

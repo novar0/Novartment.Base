@@ -2,44 +2,49 @@
 using System.Net;
 using System.Text;
 using System.Threading;
-using Xunit;
+using Novartment.Base.BinaryStreaming;
 using Novartment.Base.Net;
 using Novartment.Base.Net.Smtp;
-using Novartment.Base.BinaryStreaming;
+using Xunit;
 
 namespace Novartment.Base.Smtp.Test
 {
-
 	public class SmtpDeliveryProtocolTests
 	{
-		[Fact, Trait ("Category", "Net.Smtp")]
+		[Fact]
+		[Trait ("Category", "Net.Smtp")]
 		public void CommandPipelining ()
 		{
 			var allowedRecipient1 = new AddrSpec ("ned", "innosoft.com");
 			var allowedRecipient2 = new AddrSpec ("dan", "wikipedia.net");
 			var allowedRecipient3 = new AddrSpec ("postmater", "github.com");
 			var disallowedRecipient = new AddrSpec ("nsb", "thumper.bellcore.com");
-			var inData = 
+			var inData =
 				"EHLO dbc.mtview.ca.us\r\n" +
+
 				// точка синхронизации, тут сервер должен послать все накопившиеся ответы
 				"MAIL FROM:<mrose@dbc.mtview.ca.us>\r\n" +
 				"RCPT TO:" + allowedRecipient1.ToAngleString () + "\r\n" +
 				"RCPT TO:" + allowedRecipient2.ToAngleString () + "\r\n" +
 				"RCPT TO:" + allowedRecipient3.ToAngleString () + "\r\n" +
 				"DATA\r\n" +
+
 				// точка синхронизации, тут сервер должен послать все накопившиеся ответы
 				"22 sample\r\n\r\ndata 22\r\n.\r\n" +
 				"MAIL FROM:<mrose@dbc.mtview.ca.us>\r\n" +
 				"RCPT TO:" + disallowedRecipient.ToAngleString () + "\r\n" +
 				"RCPT TO:" + disallowedRecipient.ToAngleString () + "\r\n" +
 				"BDAT 5\r\n12345" + // две BDAT команды не принимаются сервером (нет получателей) но должны быть корректно пропущены
+
 				// точка синхронизации, тут сервер должен послать все накопившиеся ответы
 				"BDAT 3 LAST\r\n678" +
+
 				// точка синхронизации, тут сервер должен послать все накопившиеся ответы
 				"RSET\r\n" +
 				"MAIL FROM:<mrose@dbc.mtview.ca.us>\r\n" +
 				"RCPT TO:" + allowedRecipient1.ToAngleString () + "\r\n" +
 				"DATA\r\n" +
+
 				// точка синхронизации, тут сервер должен послать все накопившиеся ответы
 				"QUIT\r\n.\r\n" + // тут слово QUIT является данными, а не командой
 				"QUIT\r\n";
@@ -70,10 +75,18 @@ namespace Novartment.Base.Smtp.Test
 			for (i = 0; i < (group.Length - 2); i++)
 			{
 				Assert.StartsWith ("250-", group[i], StringComparison.OrdinalIgnoreCase);
-				if (group[i].Substring (4) == "PIPELINING") keywordFound = true;
+				if (group[i].Substring (4) == "PIPELINING")
+				{
+					keywordFound = true;
+				}
 			}
+
 			Assert.StartsWith ("250 ", group[i], StringComparison.OrdinalIgnoreCase);
-			if (group[i].Substring (4) == "PIPELINING") keywordFound = true;
+			if (group[i].Substring (4) == "PIPELINING")
+			{
+				keywordFound = true;
+			}
+
 			Assert.True (keywordFound);
 			Assert.Equal (0, group[i + 1].Length);
 

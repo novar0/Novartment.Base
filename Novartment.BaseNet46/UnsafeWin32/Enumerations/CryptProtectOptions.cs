@@ -39,6 +39,6 @@ namespace Novartment.Base.UnsafeWin32
 
 		/// <summary>Regenerate the local machine protection.</summary>
 		/// <remarks>Константа CRYPTPROTECT_CRED_REGENERATE.</remarks>
-		CredentialRegenerate = 0x80
+		CredentialRegenerate = 0x80,
 	}
 }

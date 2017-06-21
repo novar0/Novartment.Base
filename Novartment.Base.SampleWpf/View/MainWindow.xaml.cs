@@ -9,8 +9,9 @@ namespace Novartment.Base.SampleWpf
 		Enter,
 		Over,
 		Leave,
-		Drop
+		Drop,
 	}
+
 	/// <summary>
 	/// Interaction logic for MainWindow.xaml
 	/// </summary>

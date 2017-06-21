@@ -6,23 +6,27 @@ namespace Novartment.Base.Test
 {
 	public class AsciiCharSetTests
 	{
-		[Fact, Trait ("Category", "Text.AsciiCharSet")]
+		[Fact]
+		[Trait ("Category", "Text.AsciiCharSet")]
 		public void AllOfClass ()
 		{
 			Assert.True (AsciiCharSet.IsAllOfClass ("89235460", AsciiCharClasses.Digit));
 			Assert.False (AsciiCharSet.IsAllOfClass ("8923 460", AsciiCharClasses.Digit));
 			Assert.False (AsciiCharSet.IsAllOfClass ("🔓8923🔧460", AsciiCharClasses.Digit));
 		}
-		[Fact, Trait ("Category", "Text.AsciiCharSet")]
+
+		[Fact]
+		[Trait ("Category", "Text.AsciiCharSet")]
 		public void AnyOfClass ()
 		{
 			Assert.True (AsciiCharSet.IsAnyOfClass ("klOI H2 JtfKU+_*(^#f f", AsciiCharClasses.Digit));
 			Assert.True (AsciiCharSet.IsAnyOfClass ("🔒👎klOI H👍2 JtfKU+_*(^#f f", AsciiCharClasses.Digit));
-			Assert.False (AsciiCharSet.IsAnyOfClass ("", AsciiCharClasses.Digit));
+			Assert.False (AsciiCharSet.IsAnyOfClass (string.Empty, AsciiCharClasses.Digit));
 			Assert.False (AsciiCharSet.IsAnyOfClass ("klOI H JtfKU+_*(^#f f🔨", AsciiCharClasses.Digit));
 		}
 
-		[Fact, Trait ("Category", "Text.AsciiCharSet")]
+		[Fact]
+		[Trait ("Category", "Text.AsciiCharSet")]
 		public void GetBytes ()
 		{
 			var buf = new byte[100];
@@ -39,30 +43,34 @@ namespace Novartment.Base.Test
 			Assert.Equal (buf[8], 126);
 		}
 
-		[Fact, Trait ("Category", "Text.AsciiCharSet")]
+		[Fact]
+		[Trait ("Category", "Text.AsciiCharSet")]
 		public void GetBytes_Exception ()
 		{
 			var buf = new byte[100];
 			Assert.Throws<FormatException> (() => AsciiCharSet.GetBytes (" Ж ", 0, " Ж ".Length, buf, 0));
 		}
 
-		[Fact, Trait ("Category", "Text.AsciiCharSet")]
+		[Fact]
+		[Trait ("Category", "Text.AsciiCharSet")]
 		public void GetString ()
 		{
 			var buf = new byte[] { 123, 32, 33, 48, 57, 65, 122, 125, 126 };
-			Assert.Equal ("", AsciiCharSet.GetString (buf, 0, 0));
+			Assert.Equal (string.Empty, AsciiCharSet.GetString (buf, 0, 0));
 			Assert.Equal ("{ !09Az}~", AsciiCharSet.GetString (buf, 0, buf.Length));
 			Assert.Equal ("z}~", AsciiCharSet.GetString (buf, 6, 3));
 		}
 
-		[Fact, Trait ("Category", "Text.AsciiCharSet")]
+		[Fact]
+		[Trait ("Category", "Text.AsciiCharSet")]
 		public void GetString_Exception ()
 		{
 			var buf = new byte[] { 33, 133, 32 };
 			Assert.Throws<FormatException> (() => AsciiCharSet.GetString (buf, 0, buf.Length));
 		}
 
-		[Fact, Trait ("Category", "Text.AsciiCharSet")]
+		[Fact]
+		[Trait ("Category", "Text.AsciiCharSet")]
 		public void Quote ()
 		{
 			Assert.Equal ("\"source\"", AsciiCharSet.Quote ("source"));
@@ -72,13 +80,15 @@ namespace Novartment.Base.Test
 			Assert.Equal ("\"source\taa\\\\bb \\\"net\\\"\"", AsciiCharSet.Quote ("source\taa\\bb \"net\""));
 		}
 
-		[Fact, Trait ("Category", "Text.AsciiCharSet")]
+		[Fact]
+		[Trait ("Category", "Text.AsciiCharSet")]
 		public void Quote_Exception ()
 		{
 			Assert.Throws<FormatException> (() => AsciiCharSet.Quote ("sourceЖ"));
 		}
 
-		[Fact, Trait ("Category", "AsciiCharSet")]
+		[Fact]
+		[Trait ("Category", "AsciiCharSet")]
 		public void IsValidInternetDomainName ()
 		{
 			// legal
@@ -86,8 +96,9 @@ namespace Novartment.Base.Test
 			Assert.True (AsciiCharSet.IsValidInternetDomainName ("www.asus.com"));
 			Assert.True (AsciiCharSet.IsValidInternetDomainName ("forum.ru-board.com"));
 			Assert.True (AsciiCharSet.IsValidInternetDomainName ("www.asus!$#&%+.com"));
+
 			// illegal
-			Assert.False (AsciiCharSet.IsValidInternetDomainName (""));
+			Assert.False (AsciiCharSet.IsValidInternetDomainName (string.Empty));
 			Assert.False (AsciiCharSet.IsValidInternetDomainName ("."));
 			Assert.False (AsciiCharSet.IsValidInternetDomainName (".."));
 			Assert.False (AsciiCharSet.IsValidInternetDomainName ("www.asus."));

@@ -1,14 +1,14 @@
 ﻿using System.IO;
 using System.Threading;
-using Xunit;
 using Novartment.Base.BinaryStreaming;
+using Xunit;
 
 namespace Novartment.Base.Media.Test
 {
-
 	public class RiffParserTests
 	{
-		[Fact, Trait ("Category", "Media.RiffParser")]
+		[Fact]
+		[Trait ("Category", "Media.RiffParser")]
 		public void AviInfo_Parse ()
 		{
 			using (var fs = new FileStream (@"test.avi", FileMode.Open, FileAccess.Read))

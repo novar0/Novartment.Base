@@ -6,7 +6,8 @@ namespace Novartment.Base.Test
 {
 	public class HexTests
 	{
-		[Fact, Trait ("Category", "Text.Hex")]
+		[Fact]
+		[Trait ("Category", "Text.Hex")]
 		public void ParseByte ()
 		{
 			Assert.Equal (0, Hex.ParseByte ("00"));
@@ -17,7 +18,8 @@ namespace Novartment.Base.Test
 			Assert.Equal (0xff, Hex.ParseByte ("Ff"));
 		}
 
-		[Fact, Trait ("Category", "Text.Hex")]
+		[Fact]
+		[Trait ("Category", "Text.Hex")]
 		public void OctetsUpper ()
 		{
 			Assert.Equal ("00", Hex.OctetsUpper[0]);
@@ -25,7 +27,8 @@ namespace Novartment.Base.Test
 			Assert.Equal ("FF", Hex.OctetsUpper[0xff]);
 		}
 
-		[Fact, Trait ("Category", "Text.Hex")]
+		[Fact]
+		[Trait ("Category", "Text.Hex")]
 		public void ParseByte_Exception ()
 		{
 			Assert.Throws<FormatException> (() => Hex.ParseByte ("1g"));

@@ -2,9 +2,9 @@
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Novartment.Base.BinaryStreaming;
 using Novartment.Base.Net;
 using Novartment.Base.Net.Mime;
-using Novartment.Base.BinaryStreaming;
 
 namespace Novartment.Base.Sample
 {
@@ -72,7 +72,6 @@ namespace Novartment.Base.Sample
 				await msg.SaveAsync (stream.AsBinaryDestination (), cancellationToken).ConfigureAwait (false);
 			}
 		}
-
 
 		// создаём ответ на сообщение
 		public static async Task MessageCreateReplyAsync (CancellationToken cancellationToken)

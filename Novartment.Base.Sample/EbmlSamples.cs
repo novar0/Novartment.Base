@@ -1,12 +1,12 @@
 ﻿using System;
-using static System.Linq.Enumerable;
 using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Novartment.Base.BinaryStreaming;
 using Novartment.Base.Collections;
 using Novartment.Base.Media;
-using Novartment.Base.BinaryStreaming;
+using static System.Linq.Enumerable;
 
 namespace Novartment.Base.Sample
 {
@@ -14,6 +14,7 @@ namespace Novartment.Base.Sample
 	{
 		private static readonly string _folder = @"D:\Temp";
 		private static readonly string _mask = @"*.mkv";
+
 		public static async Task CreateChaptersFromMultipleMkvs (CancellationToken cancellationToken)
 		{
 			int idx = 1;
@@ -25,13 +26,12 @@ namespace Novartment.Base.Sample
 				{
 					var stream = fs.AsBufferedSource (new byte[1024]);
 					var segment = await MatroskaFile.ParseSegmentInformationAsync (stream, cancellationToken).ConfigureAwait (false);
-					MatroskaTrackInfo videoStream;
-					if (segment.Tracks.Where (item => item.VideoFormat != null).TryGetFirst (out videoStream))
+					if (segment.Tracks.Where (item => item.VideoFormat != null).TryGetFirst (out MatroskaTrackInfo videoStream))
 					{
-						MatroskaTrackInfo audioStream;
-						if (segment.Tracks.Where (item => item.AudioFormat != null).TryGetFirst (out audioStream))
+						if (segment.Tracks.Where (item => item.AudioFormat != null).TryGetFirst (out MatroskaTrackInfo audioStream))
 						{
-							chapsText.AppendFormat ("CHAPTER{1:00}={0:hh\\:mm\\:ss\\.fff}\r\nCHAPTER{1:00}NAME={6} ({2}x{3}px {4}ch {5}Hz)\r\n",
+							chapsText.AppendFormat (
+								"CHAPTER{1:00}={0:hh\\:mm\\:ss\\.fff}\r\nCHAPTER{1:00}NAME={6} ({2}x{3}px {4}ch {5}Hz)\r\n",
 								durationTotal,
 								idx,
 								videoStream.VideoFormat.PixelWidth,

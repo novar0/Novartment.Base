@@ -1,19 +1,15 @@
 ﻿using System;
-using Enumerable = System.Linq.Enumerable;
 using System.Collections.Generic;
 using System.Globalization;
 using Xunit;
+using Enumerable = System.Linq.Enumerable;
 
 namespace Novartment.Base.Collections.Linq.Test
 {
 	public class ReadOnlyCollectionTests
 	{
-		private static IReadOnlyList<T> ToArray<T> (IEnumerable<T> enumerable)
-		{
-			return Enumerable.ToArray (enumerable);
-		}
-
-		[Fact, Trait ("Category", "Collections.Linq")]
+		[Fact]
+		[Trait ("Category", "Collections.Linq")]
 		public void Any_ ()
 		{
 			Assert.False (ReadOnlyCollection.Any (new int[0]));
@@ -21,7 +17,8 @@ namespace Novartment.Base.Collections.Linq.Test
 			Assert.True (ReadOnlyCollection.Any (new string[] { "one", "two", "three" }));
 		}
 
-		[Fact, Trait ("Category", "Collections.Linq")]
+		[Fact]
+		[Trait ("Category", "Collections.Linq")]
 		public void Count_ ()
 		{
 			Assert.Equal (0, ReadOnlyCollection.Count (new int[0]));
@@ -32,7 +29,8 @@ namespace Novartment.Base.Collections.Linq.Test
 			Assert.Equal (3L, ReadOnlyCollection.LongCount (new string[] { "one", "two", "three" }));
 		}
 
-		[Fact, Trait ("Category", "Collections.Linq")]
+		[Fact]
+		[Trait ("Category", "Collections.Linq")]
 		public void DefaultIfEmpty_ ()
 		{
 			var collection = ToArray (ReadOnlyCollection.DefaultIfEmpty (new int[0], 999));
@@ -53,7 +51,8 @@ namespace Novartment.Base.Collections.Linq.Test
 			Assert.Equal ("one", collection2[2]);
 		}
 
-		[Fact, Trait ("Category", "Collections.Linq")]
+		[Fact]
+		[Trait ("Category", "Collections.Linq")]
 		public void Skip_ ()
 		{
 			var collection = ToArray (ReadOnlyCollection.Skip (new int[0], 3));
@@ -79,7 +78,8 @@ namespace Novartment.Base.Collections.Linq.Test
 			Assert.Equal ("one", collection2[0]);
 		}
 
-		[Fact, Trait ("Category", "Collections.Linq")]
+		[Fact]
+		[Trait ("Category", "Collections.Linq")]
 		public void Take_ ()
 		{
 			var collection = ToArray (ReadOnlyCollection.Take (new int[0], 3));
@@ -109,7 +109,8 @@ namespace Novartment.Base.Collections.Linq.Test
 			Assert.Equal ("three", collection2[0]);
 		}
 
-		[Fact, Trait ("Category", "Collections.Linq")]
+		[Fact]
+		[Trait ("Category", "Collections.Linq")]
 		public void Select_ ()
 		{
 			var collection = ToArray (ReadOnlyCollection.Select (new int[0], item => item * 2));
@@ -129,7 +130,8 @@ namespace Novartment.Base.Collections.Linq.Test
 			Assert.Equal ("one_", collection2[2]);
 		}
 
-		[Fact, Trait ("Category", "Collections.Linq")]
+		[Fact]
+		[Trait ("Category", "Collections.Linq")]
 		public void SelectIdx ()
 		{
 			var collection = ToArray (ReadOnlyCollection.Select (new int[0], (item, idx) => item * idx));
@@ -149,7 +151,8 @@ namespace Novartment.Base.Collections.Linq.Test
 			Assert.Equal ("one2", collection2[2]);
 		}
 
-		[Fact, Trait ("Category", "Collections.Linq")]
+		[Fact]
+		[Trait ("Category", "Collections.Linq")]
 		public void Reverse_ ()
 		{
 			var collection = ToArray (ReadOnlyCollection.Reverse (new int[0]));
@@ -175,16 +178,8 @@ namespace Novartment.Base.Collections.Linq.Test
 			Assert.Equal ("three", collection2[2]);
 		}
 
-		private class StringLenComparer : IComparer<string>
-		{
-			public int Compare (string x, string y)
-			{
-				if (x == null) return (y == null) ? 0 : -1;
-				if (y == null) return 1;
-				return x.Length.CompareTo (y.Length);
-			}
-		}
-		[Fact, Trait ("Category", "Collections.Linq")]
+		[Fact]
+		[Trait ("Category", "Collections.Linq")]
 		public void Ordering ()
 		{
 			var collection = ToArray (ReadOnlyCollection.OrderBy (new int[0], item => item * 3));
@@ -215,11 +210,11 @@ namespace Novartment.Base.Collections.Linq.Test
 			Assert.Equal (1, collection[2]);
 
 			var sizeComparer = new StringLenComparer ();
-			var col = new string[] { "333", "222", "111", "11", "1111", null, "aaa", "a", "" };
+			var col = new string[] { "333", "222", "111", "11", "1111", null, "aaa", "a", string.Empty };
 			var collection2 = ToArray (ReadOnlyCollection.ThenBy (ReadOnlyCollection.OrderBy (col, item => item, sizeComparer), item => item, null));
 			Assert.Equal (9, collection2.Count);
 			Assert.Equal (null, collection2[0]);
-			Assert.Equal ("", collection2[1]);
+			Assert.Equal (string.Empty, collection2[1]);
 			Assert.Equal ("a", collection2[2]);
 			Assert.Equal ("11", collection2[3]);
 			Assert.Equal ("111", collection2[4]);
@@ -237,13 +232,13 @@ namespace Novartment.Base.Collections.Linq.Test
 			Assert.Equal ("aaa", collection2[4]);
 			Assert.Equal ("11", collection2[5]);
 			Assert.Equal ("a", collection2[6]);
-			Assert.Equal ("", collection2[7]);
+			Assert.Equal (string.Empty, collection2[7]);
 			Assert.Equal (null, collection2[8]);
 
 			collection2 = ToArray (ReadOnlyCollection.ThenByDescending (ReadOnlyCollection.OrderBy (col, item => item, sizeComparer), item => item, null));
 			Assert.Equal (9, collection2.Count);
 			Assert.Equal (null, collection2[0]);
-			Assert.Equal ("", collection2[1]);
+			Assert.Equal (string.Empty, collection2[1]);
 			Assert.Equal ("a", collection2[2]);
 			Assert.Equal ("11", collection2[3]);
 			Assert.Equal ("aaa", collection2[4]);
@@ -253,7 +248,8 @@ namespace Novartment.Base.Collections.Linq.Test
 			Assert.Equal ("1111", collection2[8]);
 		}
 
-		[Fact, Trait ("Category", "Collections.Linq")]
+		[Fact]
+		[Trait ("Category", "Collections.Linq")]
 		public void Concat_ ()
 		{
 			var collection = ToArray (ReadOnlyCollection.Concat (new int[0], new int[0]));
@@ -277,7 +273,8 @@ namespace Novartment.Base.Collections.Linq.Test
 			Assert.Equal (4, collection[4]);
 		}
 
-		[Fact, Trait ("Category", "Collections.Linq")]
+		[Fact]
+		[Trait ("Category", "Collections.Linq")]
 		public void Zip_ ()
 		{
 			var collection = ToArray (ReadOnlyCollection.Zip (new int[0], new decimal[0], (i1, i2) => i1.ToString (CultureInfo.InvariantCulture) + i2.ToString (CultureInfo.InvariantCulture)));
@@ -293,7 +290,8 @@ namespace Novartment.Base.Collections.Linq.Test
 			Assert.Equal ("12.2", collection[2]);
 		}
 
-		[Fact, Trait ("Category", "Collections.Linq")]
+		[Fact]
+		[Trait ("Category", "Collections.Linq")]
 		public void ToArray_ ()
 		{
 			var collection0 = ReadOnlyCollection.ToArray (new DateTime[0]);
@@ -309,6 +307,29 @@ namespace Novartment.Base.Collections.Linq.Test
 			Assert.Equal ("two", collection2[1]);
 			Assert.Equal ("one", collection2[2]);
 			Assert.Equal ("zero", collection2[3]);
+		}
+
+		private static IReadOnlyList<T> ToArray<T> (IEnumerable<T> enumerable)
+		{
+			return Enumerable.ToArray (enumerable);
+		}
+
+		private class StringLenComparer : IComparer<string>
+		{
+			public int Compare (string x, string y)
+			{
+				if (x == null)
+				{
+					return (y == null) ? 0 : -1;
+				}
+
+				if (y == null)
+				{
+					return 1;
+				}
+
+				return x.Length.CompareTo (y.Length);
+			}
 		}
 	}
 }

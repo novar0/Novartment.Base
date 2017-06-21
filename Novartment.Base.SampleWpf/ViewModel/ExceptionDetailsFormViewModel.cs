@@ -5,22 +5,12 @@ using Novartment.Base.UI.Wpf;
 
 namespace Novartment.Base.SampleWpf
 {
-	public class ExceptionDetailsFormViewModel : BaseViewModel, IDialogViewModel<bool?>
+	public class ExceptionDetailsFormViewModel : BaseViewModel,
+		IDialogViewModel<bool?>
 	{
-		private readonly string ExceptionStringSeparator = Environment.NewLine + "------------------------------" + Environment.NewLine;
+		private readonly string exceptionStringSeparator = Environment.NewLine + "------------------------------" + Environment.NewLine;
 		private readonly UserLevelExceptionData _data;
 		private readonly IValueHolder<string> _details;
-
-		public bool? Result { get { return true; } }
-
-		public string FailedUser { get { return _data.FailedUser; } }
-		public string FailedFramework { get { return _data.FailedFramework; } }
-		public string FailedAssemblyName { get { return _data.FailedAssemblyName; } }
-		public string FailedAssemblyVersion { get { return _data.FailedAssemblyVersion; } }
-		public string FailedAction { get { return _data.FailedAction; } }
-		public string RecommendedSoltion { get { return _data.RecommendedSolution; } }
-		public string Message { get { return _data.Exception.Message; } }
-		public string Details { get { return _details.Value; } }
 
 		public ExceptionDetailsFormViewModel (UserLevelExceptionData data)
 		{
@@ -28,11 +18,29 @@ namespace Novartment.Base.SampleWpf
 			_details = new LazyValueHolder<string> (InitializeDetails);
 		}
 
+		public bool? Result => true;
+
+		public string FailedUser => _data.FailedUser;
+
+		public string FailedFramework => _data.FailedFramework;
+
+		public string FailedAssemblyName => _data.FailedAssemblyName;
+
+		public string FailedAssemblyVersion => _data.FailedAssemblyVersion;
+
+		public string FailedAction => _data.FailedAction;
+
+		public string RecommendedSoltion => _data.RecommendedSolution;
+
+		public string Message => _data.Exception.Message;
+
+		public string Details => _details.Value;
+
 		private string InitializeDetails ()
 		{
-			var fullDetails = string.Join (ExceptionStringSeparator, _data.Exception.GetFullInfo (ComponentApplication.Current.SourceDirectory));
+			var fullDetails = string.Join (exceptionStringSeparator, _data.Exception.GetFullInfo (ComponentApplication.Current.SourceDirectory));
 			return
-				$"Время: {DateTime.Now:yyyy-MM-dd HH:mm:ss}\r\nПользователь: {FailedUser}\r\nСистема: {FailedFramework}\r\nПрограмма: {FailedAssemblyName} {FailedAssemblyVersion}\r\nОперация: {FailedAction}\r\nИсключения:{ExceptionStringSeparator}{fullDetails}";
+				$"Время: {DateTime.Now:yyyy-MM-dd HH:mm:ss}\r\nПользователь: {FailedUser}\r\nСистема: {FailedFramework}\r\nПрограмма: {FailedAssemblyName} {FailedAssemblyVersion}\r\nОперация: {FailedAction}\r\nИсключения:{exceptionStringSeparator}{fullDetails}";
 		}
 	}
 }

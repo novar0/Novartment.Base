@@ -1,10 +1,10 @@
 ﻿using System;
-using System.Threading;
-using System.Text;
 using System.Collections.Generic;
-using static System.Linq.Enumerable;
-using Xunit;
+using System.Text;
+using System.Threading;
 using Novartment.Base.BinaryStreaming;
+using Xunit;
+using static System.Linq.Enumerable;
 
 namespace Novartment.Base.Net.Mime.Test
 {
@@ -15,34 +15,37 @@ namespace Novartment.Base.Net.Mime.Test
 			Encoding.RegisterProvider (CodePagesEncodingProvider.Instance);
 		}
 
-		[Fact, Trait ("Category", "Mime")]
+		[Fact]
+		[Trait ("Category", "Mime")]
 		public void LoadDefaultValues ()
 		{
-			var TextTemplate1 = "Subject: testing1\r\nDate: Tue, 15 May 2012 14:16:26 +0600\r\nFrom: one@server.com\r\nTo: y@server.org\r\n\r\nHello!\r\n";
-			var TextTemplate2 = "Subject: testing2\r\nDate: Tue, 15 May 2013 16:16:26 +0600\r\nFrom: two@server.com\r\nTo: z@server.org\r\n\r\nEhllo!\r\n";
+			var textTemplate1 = "Subject: testing1\r\nDate: Tue, 15 May 2012 14:16:26 +0600\r\nFrom: one@server.com\r\nTo: y@server.org\r\n\r\nHello!\r\n";
+			var textTemplate2 = "Subject: testing2\r\nDate: Tue, 15 May 2013 16:16:26 +0600\r\nFrom: two@server.com\r\nTo: z@server.org\r\n\r\nEhllo!\r\n";
 
 			// для multipart/mixed вложенные части, для которых не указан Content-Type, должны получаться text/plain
-			var DefaultTextTypeTemplate = new string[] {
+			var defaultTextTypeTemplate = new string[]
+			{
 				"Content-type: multipart/mixed; boundary=nextpart",
-				"",
+				string.Empty,
 				"--nextpart",
-				"",
-				"",
-				TextTemplate1,
+				string.Empty,
+				string.Empty,
+				textTemplate1,
 				"--nextpart",
-				"",
-				"",
-				TextTemplate2,
-				"--nextpart--"
+				string.Empty,
+				string.Empty,
+				textTemplate2,
+				"--nextpart--",
 			};
 
-			var srcText = string.Join ("\r\n", DefaultTextTypeTemplate);
+			var srcText = string.Join ("\r\n", defaultTextTypeTemplate);
 			var src = new ArrayBufferedSource (Encoding.ASCII.GetBytes (srcText));
 			var entity = new Entity ();
 			entity.LoadAsync (
 				src,
 				EntityBodyFactory.Create,
-				Entity.DefaultType, Entity.DefaultSubtype,
+				Entity.DefaultType,
+				Entity.DefaultSubtype,
 				CancellationToken.None).Wait ();
 
 			Assert.Equal (ContentMediaType.Multipart, entity.Type);
@@ -57,7 +60,7 @@ namespace Novartment.Base.Net.Mime.Test
 			Assert.IsType<TextEntityBody> (part1.Body);
 			var body1 = (TextEntityBody)part1.Body;
 			var text1 = body1.GetText ();
-			Assert.Equal (TextTemplate1, text1);
+			Assert.Equal (textTemplate1, text1);
 
 			var part2 = rootBody.Parts[1];
 			Assert.Equal (ContentMediaType.Unspecified, part2.Type);
@@ -66,30 +69,32 @@ namespace Novartment.Base.Net.Mime.Test
 			Assert.IsType<TextEntityBody> (part2.Body);
 			var body2 = (TextEntityBody)part2.Body;
 			var text2 = body2.GetText ();
-			Assert.Equal (TextTemplate2, text2);
+			Assert.Equal (textTemplate2, text2);
 
 			// для multipart/digest вложенные части, для которых не указан Content-Type, должны получаться message/rfc822
-			var DefaultMessagetTypeTemplate = new string[] {
+			var defaultMessagetTypeTemplate = new string[]
+			{
 				"Content-type: multipart/digest; boundary=nextpart",
-				"",
+				string.Empty,
 				"--nextpart",
-				"",
-				"",
-				TextTemplate1,
+				string.Empty,
+				string.Empty,
+				textTemplate1,
 				"--nextpart",
-				"",
-				"",
-				TextTemplate2,
-				"--nextpart--"
+				string.Empty,
+				string.Empty,
+				textTemplate2,
+				"--nextpart--",
 			};
 
-			srcText = string.Join ("\r\n", DefaultMessagetTypeTemplate);
+			srcText = string.Join ("\r\n", defaultMessagetTypeTemplate);
 			src = new ArrayBufferedSource (Encoding.ASCII.GetBytes (srcText));
 			entity = new Entity ();
 			entity.LoadAsync (
 				src,
 				EntityBodyFactory.Create,
-				Entity.DefaultType, Entity.DefaultSubtype,
+				Entity.DefaultType,
+				Entity.DefaultSubtype,
 				CancellationToken.None).Wait ();
 
 			Assert.Equal (ContentMediaType.Multipart, entity.Type);
@@ -114,10 +119,11 @@ namespace Novartment.Base.Net.Mime.Test
 			Assert.Equal ("testing2", msgBody2.Message.Subject);
 		}
 
-		[Fact, Trait ("Category", "Mime")]
+		[Fact]
+		[Trait ("Category", "Mime")]
 		public void Load ()
 		{
-			string Template1 = 
+			string template1 =
 				"Content-Type: text/plain;\tformat=flowed;\tcharset=\"us-ascii\";\treply-type=original\r\n" +
 				"Content-Disposition: attachment;\tfilename*0*=windows-1251''This%20document%20specifies%20an;\tfilename*1=\" Internet standards track protocol for the \";\tfilename*2*=%F4%F3%ED%EA%F6%E8%E8;\tfilename*3=\" and requests discussion and suggestions.txt\";\tmodification-date=\"Thu, 24 Nov 2011 09:48:27 +0700\";\tcreation-date=\"Tue, 10 Jul 2012 10:01:06 +0600\";\tread-date=\"Wed, 11 Jul 2012 10:40:13 +0600\";\tsize=\"318\"\r\n" +
 				"Content-Transfer-Encoding: 8bit\r\n" +
@@ -134,14 +140,15 @@ namespace Novartment.Base.Net.Mime.Test
 				"Content-features: (& (color=Binary)\t(image-file-structure=TIFF-limited)\t(dpi=400)\t(dpi-xyratio=1)\t(paper-size=A4)\t(image-coding=MMR)\t(MRC-mode=0)\t(ua-media=stationery) )\r\n" +
 				"Content-alternative: (& (color=Binary)\t(image-file-structure=TIFF-minimal)\t(dpi=200)\t(dpi-xyratio=1)\t(paper-size=A4)\t(image-coding=MH)\t(MRC-mode=0)\t(ua-media=stationery) )\r\n" +
 				"Content-alternative: (& (color=Binary)\t(image-file-structure=TIFF-minimal)\t(dpi=100)\t(dpi-xyratio=1)\t(paper-size=A5)\t(image-coding=MH)\t(MRC-mode=0)\t(ua-media=stationery) )\r\n" +
-				"Content-Language: i-mingo, de, el, en (This is a dictionary), fr, it\r\n\r\n" + 
+				"Content-Language: i-mingo, de, el, en (This is a dictionary), fr, it\r\n\r\n" +
 				"some text";
 
 			var entity = new Entity ();
 			entity.LoadAsync (
-				new ArrayBufferedSource (Encoding.ASCII.GetBytes (Template1)),
+				new ArrayBufferedSource (Encoding.ASCII.GetBytes (template1)),
 				parameters => new TextEntityBody (Encoding.ASCII, parameters.TransferEncoding),
-				Entity.DefaultType, Entity.DefaultSubtype,
+				Entity.DefaultType,
+				Entity.DefaultSubtype,
 				CancellationToken.None).Wait ();
 
 			Assert.Equal (ContentMediaType.Text, entity.Type);
@@ -206,25 +213,28 @@ namespace Novartment.Base.Net.Mime.Test
 			Assert.Equal ("us-ascii", ((TextEntityBody)entity.Body).Encoding.WebName);
 		}
 
-		[Fact, Trait ("Category", "Mime")]
+		[Fact]
+		[Trait ("Category", "Mime")]
 		public void Save ()
 		{
 			var body = new TextEntityBody (Encoding.GetEncoding ("koi8-r"), ContentTransferEncoding.EightBit);
 			body.SetDataAsync (new ArrayBufferedSource (new byte[] { 48, 49, 50 }), CancellationToken.None).Wait ();
-			var entity = new Entity (body, ContentMediaType.Text, "plain");
-			entity.DispositionType = ContentDispositionType.Attachment;
-			entity.FileName = "This document specifies an Internet standards track protocol for the функции and requests discussion and suggestions.txt";
-			entity.Size = 318;
-			entity.CreationDate = new DateTimeOffset (new DateTime (634775112660000000L), TimeSpan.FromHours (6));
-			entity.ModificationDate = new DateTimeOffset (new DateTime (634577249070000000L), TimeSpan.FromHours (6));
-			entity.ReadDate = new DateTimeOffset (new DateTime (634776000130000000L), TimeSpan.FromHours (6));
-			entity.MD5 = new byte[] { 0x43, 0x68, 0x65, 0x63, 0x6b, 0x20, 0x49, 0x6e, 0x74, 0x65, 0x67, 0x72, 0x69, 0x74, 0x79, 0x21 };
-			entity.Id = new AddrSpec ("201205150149.CAA11933", "server10.shop3.company.com");
-			entity.Description = "Mongolian написаны in the Cyrillic script as used in Mongolia";
-			entity.Duration = new TimeSpan (0, 0, 12387);
-			entity.Base = "http://www.ietf.cnri.reston.va.us/images/";
-			entity.Location = "foo1.bar1";
-			entity.Features = "(& (color=Binary) (image-file-structure=TIFF-limited) (dpi=400) (dpi-xyratio=1) (paper-size=A4) (image-coding=MMR) (MRC-mode=0) (ua-media=stationery) )";
+			var entity = new Entity (body, ContentMediaType.Text, "plain")
+			{
+				DispositionType = ContentDispositionType.Attachment,
+				FileName = "This document specifies an Internet standards track protocol for the функции and requests discussion and suggestions.txt",
+				Size = 318,
+				CreationDate = new DateTimeOffset (new DateTime (634775112660000000L), TimeSpan.FromHours (6)),
+				ModificationDate = new DateTimeOffset (new DateTime (634577249070000000L), TimeSpan.FromHours (6)),
+				ReadDate = new DateTimeOffset (new DateTime (634776000130000000L), TimeSpan.FromHours (6)),
+				MD5 = new byte[] { 0x43, 0x68, 0x65, 0x63, 0x6b, 0x20, 0x49, 0x6e, 0x74, 0x65, 0x67, 0x72, 0x69, 0x74, 0x79, 0x21 },
+				Id = new AddrSpec ("201205150149.CAA11933", "server10.shop3.company.com"),
+				Description = "Mongolian написаны in the Cyrillic script as used in Mongolia",
+				Duration = new TimeSpan (0, 0, 12387),
+				Base = "http://www.ietf.cnri.reston.va.us/images/",
+				Location = "foo1.bar1",
+				Features = "(& (color=Binary) (image-file-structure=TIFF-limited) (dpi=400) (dpi-xyratio=1) (paper-size=A4) (image-coding=MMR) (MRC-mode=0) (ua-media=stationery) )",
+			};
 			entity.Alternatives.Add ("(& (color=Binary) (image-file-structure=TIFF-minimal) (dpi=200) (dpi-xyratio=1) (paper-size=A4) (image-coding=MH) (MRC-mode=0) (ua-media=stationery) )");
 			entity.Alternatives.Add ("(& (color=Binary) (image-file-structure=TIFF-minimal) (dpi=100) (dpi-xyratio=1) (paper-size=A5) (image-coding=MH) (MRC-mode=0) (ua-media=stationery) )");
 			entity.Languages.Add ("i-mingo");
@@ -240,19 +250,23 @@ namespace Novartment.Base.Net.Mime.Test
 			var bodyText = elements[13];
 			Assert.Equal ("\r\n\r\n012\r\n", bodyText);
 
-			Assert.Equal ("Content-alternative: (& (color=Binary) (image-file-structure=TIFF-minimal)\r\n" +
+			Assert.Equal (
+				"Content-alternative: (& (color=Binary) (image-file-structure=TIFF-minimal)\r\n" +
 				" (dpi=100) (dpi-xyratio=1) (paper-size=A5) (image-coding=MH) (MRC-mode=0)\r\n" +
 				" (ua-media=stationery) )",
 				headers[0]);
-			Assert.Equal ("Content-alternative: (& (color=Binary) (image-file-structure=TIFF-minimal)\r\n" +
+			Assert.Equal (
+				"Content-alternative: (& (color=Binary) (image-file-structure=TIFF-minimal)\r\n" +
 				" (dpi=200) (dpi-xyratio=1) (paper-size=A4) (image-coding=MH) (MRC-mode=0)\r\n" +
 				" (ua-media=stationery) )",
 				headers[1]);
 			Assert.Equal ("Content-Base: http://www.ietf.cnri.reston.va.us/images/", headers[2]);
-			Assert.Equal ("Content-Description: Mongolian =?utf-8?B?0L3QsNC/0LjRgdCw0L3Riw==?= in the\r\n" +
+			Assert.Equal (
+				"Content-Description: Mongolian =?utf-8?B?0L3QsNC/0LjRgdCw0L3Riw==?= in the\r\n" +
 				" Cyrillic script as used in Mongolia",
 				headers[3]);
-			Assert.Equal ("Content-Disposition: attachment;\r\n" +
+			Assert.Equal (
+				"Content-Disposition: attachment;\r\n" +
 				" filename*0*=utf-8''This%20document%20specifies%20an%20Internet%20standards;\r\n" +
 				" filename*1=\" track protocol for the \";\r\n" +
 				" filename*2*=%D1%84%D1%83%D0%BD%D0%BA%D1%86%D0%B8%D0%B8;\r\n" +
@@ -262,7 +276,8 @@ namespace Novartment.Base.Net.Mime.Test
 				" read-date=\"11 Jul 2012 10:40:13 +0600\"; size=318",
 				headers[4]);
 			Assert.Equal ("Content-Duration: 12387", headers[5]);
-			Assert.Equal ("Content-features: (& (color=Binary) (image-file-structure=TIFF-limited)\r\n" +
+			Assert.Equal (
+				"Content-features: (& (color=Binary) (image-file-structure=TIFF-limited)\r\n" +
 				" (dpi=400) (dpi-xyratio=1) (paper-size=A4) (image-coding=MMR) (MRC-mode=0)\r\n" +
 				" (ua-media=stationery) )",
 				headers[6]);
@@ -282,9 +297,9 @@ namespace Novartment.Base.Net.Mime.Test
 			int pos = 0;
 			while (pos < source.Length - 1)
 			{
-				if (source[pos] == '\r' && source[pos+1] == '\n')
+				if (source[pos] == '\r' && source[pos + 1] == '\n')
 				{
-					if ((pos < (source.Length - 2)) && source[pos+2] == '\r' && source[pos+3] == '\n')
+					if ((pos < (source.Length - 2)) && source[pos + 2] == '\r' && source[pos + 3] == '\n')
 					{
 						if (start < pos)
 						{
@@ -292,8 +307,10 @@ namespace Novartment.Base.Net.Mime.Test
 							{
 								start += 2;
 							}
+
 							result.Add (source.Substring (start, pos - start));
 						}
+
 						break;
 					}
 
@@ -303,12 +320,15 @@ namespace Novartment.Base.Net.Mime.Test
 						{
 							start += 2;
 						}
+
 						result.Add (source.Substring (start, pos - start));
 						start = pos;
 					}
 				}
+
 				pos++;
 			}
+
 			result.Add (source.Substring (pos));
 			return result;
 		}

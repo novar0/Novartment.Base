@@ -23,14 +23,14 @@ namespace Novartment.Base
 	{
 		/// <summary>Количество попыток выполнения запрошенных операций.</summary>
 		[SuppressMessage (
-		"Microsoft.Performance",
+			"Microsoft.Performance",
 			"CA1802:UseLiteralsWhereAppropriate",
 			Justification = "No performance gain could be achieved.")]
 		private static readonly int _RetryCount = 10;
 
 		/// <summary>Пауза между попытками выполнения запрошенных операций (миллисекунды).</summary>
 		[SuppressMessage (
-		"Microsoft.Performance",
+			"Microsoft.Performance",
 			"CA1802:UseLiteralsWhereAppropriate",
 			Justification = "No performance gain could be achieved.")]
 		private static readonly int _RetryPeriodMs = 100;

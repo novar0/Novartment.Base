@@ -23,6 +23,6 @@
 		/// <remarks>
 		/// Same as Atom, but additionaly excludes symbols '/', '?' and '='.
 		/// </remarks>
-		Token = 3
+		Token = 3,
 	}
 }

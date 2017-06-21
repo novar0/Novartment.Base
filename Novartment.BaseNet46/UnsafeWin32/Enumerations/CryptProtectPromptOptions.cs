@@ -25,6 +25,6 @@ namespace Novartment.Base.UnsafeWin32
 
 		/// <summary>Требуется строгий варианта запроса.</summary>
 		/// <remarks>Константа CRYPTPROTECT_PROMPT_REQUIRE_STRONG.</remarks>
-		RequireStrong = 0x10
+		RequireStrong = 0x10,
 	}
 }

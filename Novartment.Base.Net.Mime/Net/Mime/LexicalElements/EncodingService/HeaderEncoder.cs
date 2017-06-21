@@ -388,7 +388,7 @@ namespace Novartment.Base.Net.Mime
 			{
 				new AsciiCharClassEstimatingEncoder (AsciiCharClasses.Token),
 				new QuotedStringEstimatingEncoder (AsciiCharClasses.Visible | AsciiCharClasses.WhiteSpace),
-				extendedParameterEncoder
+				extendedParameterEncoder,
 			});
 			var bytes = _encoding.GetBytes (value);
 			var extra = " *=;".Length + name.Length;

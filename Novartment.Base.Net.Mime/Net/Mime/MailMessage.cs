@@ -209,7 +209,7 @@ namespace Novartment.Base.Net.Mime
 				FormattableString.Invariant ($"Count={this.Trace.Count}: {this.Trace[0].ReceivedTime.Value.LocalDateTime} {this.Trace[0].ReceivedParameters} ...");
 
 		[SuppressMessage (
-		"Microsoft.Performance",
+			"Microsoft.Performance",
 			"CA1811:AvoidUncalledPrivateCode",
 			Justification = "Used in DebuggerDisplay attribute.")]
 		[DebuggerBrowsable (DebuggerBrowsableState.Never)]
@@ -336,7 +336,7 @@ namespace Novartment.Base.Net.Mime
 		/// Укажите ContentTransferEncoding.Unspecified чтобы использовать универсальную (возможно неоптимальную) кодировку.</param>
 		/// <returns>Созданное сообщение.</returns>
 		[SuppressMessage (
-		"Microsoft.Design",
+			"Microsoft.Design",
 			"CA1026:DefaultParametersShouldNotBeUsed",
 			Justification = "Parameters have clear right 'default' values and there is no plausible reason why the default might need to change.")]
 		public static MailMessage CreateSimpleText (
@@ -359,7 +359,7 @@ namespace Novartment.Base.Net.Mime
 		/// Укажите null чтобы использовать тип по умолчанию ("mixed").</param>
 		/// <returns>Созданное сообщение.</returns>
 		[SuppressMessage (
-		"Microsoft.Design",
+			"Microsoft.Design",
 			"CA1026:DefaultParametersShouldNotBeUsed",
 			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
 		public static MailMessage CreateComposite (string subtype = null)

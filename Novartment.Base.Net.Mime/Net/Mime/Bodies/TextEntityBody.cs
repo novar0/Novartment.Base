@@ -19,7 +19,7 @@ namespace Novartment.Base.Net.Mime
 		/// RFC 2046 4.1.2. The default character set, US-ASCII.
 		/// </summary>
 		[SuppressMessage (
-		"Microsoft.Security",
+			"Microsoft.Security",
 			"CA2104:DoNotDeclareReadOnlyMutableReferenceTypes",
 			Justification = "Encoding is immutable.")]
 		public static readonly Encoding DefaultEncoding = Encoding.GetEncoding ("us-ascii");

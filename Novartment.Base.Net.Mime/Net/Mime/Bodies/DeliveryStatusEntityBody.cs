@@ -291,7 +291,7 @@ namespace Novartment.Base.Net.Mime
 				DiagnosticCode = diagnosticCode,
 				LastAttemptDate = lastAttemptDate,
 				FinalLogId = finalLogId,
-				WillRetryUntil = willRetryUntil
+				WillRetryUntil = willRetryUntil,
 			};
 		}
 

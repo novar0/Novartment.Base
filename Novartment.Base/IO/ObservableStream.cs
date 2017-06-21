@@ -32,7 +32,7 @@ namespace Novartment.Base.IO
 		/// <param name="stream">Исходный поток, на основе которого будет создана обёртка.</param>
 		/// <param name="state">Объект-состояние, который будет передаваться вместе с данными уведомления.</param>
 		[SuppressMessage (
-		"Microsoft.Design",
+			"Microsoft.Design",
 			"CA1026:DefaultParametersShouldNotBeUsed",
 			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
 		public ObservableStream (Stream stream, object state = null)

@@ -3,28 +3,17 @@ using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Xunit;
+using Novartment.Base.BinaryStreaming;
 using Novartment.Base.Net;
 using Novartment.Base.Net.Smtp;
-using Novartment.Base.BinaryStreaming;
+using Xunit;
 
 namespace Novartment.Base.Smtp.Test
 {
 	public class SmtpOriginatorProtocolTests
 	{
-		internal class SmtpTransactionOriginatorMock
-		{
-			internal int CallCount = 0;
-
-			public Task OriginateTransactionsAsync (TransactionFactory transactionFactory, CancellationToken cancellationToken)
-			{
-				if (transactionFactory == null) throw new ArgumentNullException (nameof (transactionFactory));
-				this.CallCount++;
-				return Task.CompletedTask;
-			}
-		}
-
-		[Fact, Trait ("Category", "Net.Smtp")]
+		[Fact]
+		[Trait ("Category", "Net.Smtp")]
 		public void Workflow ()
 		{
 			var received =
@@ -65,7 +54,8 @@ namespace Novartment.Base.Smtp.Test
 			Assert.StartsWith ("QUIT", sended[2], StringComparison.OrdinalIgnoreCase);
 		}
 
-		[Fact, Trait ("Category", "Net.Smtp")]
+		[Fact]
+		[Trait ("Category", "Net.Smtp")]
 		public void UnexpectedStop ()
 		{
 			// сервер сразу отвечает что недоступен
@@ -109,6 +99,22 @@ namespace Novartment.Base.Smtp.Test
 			Assert.Equal (2, sended.Length);
 			Assert.StartsWith ("EHLO ", sended[0], StringComparison.OrdinalIgnoreCase);
 			Assert.StartsWith ("QUIT", sended[1], StringComparison.OrdinalIgnoreCase);
+		}
+
+		internal class SmtpTransactionOriginatorMock
+		{
+			internal int CallCount { get; private set; } = 0;
+
+			public Task OriginateTransactionsAsync (TransactionFactory transactionFactory, CancellationToken cancellationToken)
+			{
+				if (transactionFactory == null)
+				{
+					throw new ArgumentNullException (nameof (transactionFactory));
+				}
+
+				this.CallCount++;
+				return Task.CompletedTask;
+			}
 		}
 	}
 }

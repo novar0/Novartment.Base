@@ -38,6 +38,6 @@ namespace Novartment.Base.UI
 
 		/// <summary>Активирована клавиша ALT.</summary>
 		/// <remarks>Константа MK_ALT.</remarks>
-		AltKey = 32
+		AltKey = 32,
 	}
 }

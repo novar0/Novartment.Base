@@ -1,25 +1,20 @@
-﻿using System.ComponentModel;
-using System.Collections.Generic;
-using System.Collections.Specialized;
+﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Threading;
-using Xunit;
 using Novartment.Base.UI.Wpf;
+using Xunit;
 
 namespace Novartment.Base.Net46.Test
 {
 	public class LiteListCollectionViewTests
 	{
-		[DebuggerDisplay ("#{Number} Prop1 = {Prop1} Prop2 = {Prop2}")]
-		internal class Mock4
-		{
-			public int Number { get; set; }
-			public string Prop1 { get; set; }
-			public int Prop2 { get; set; }
-		}
+		private int _eventN;
 
-		[Fact, Trait ("Category", "LiteListCollectionView")]
+		[Fact]
+		[Trait ("Category", "LiteListCollectionView")]
 		public void DeferRefresh ()
 		{
 			var events = new List<NotifyCollectionChangedEventArgs> ();
@@ -33,7 +28,11 @@ namespace Novartment.Base.Net46.Test
 			list.Add (item1);
 
 			var view = new LiteListCollectionView<Mock4> (list);
-			if (view.NeedsRefresh) view.Refresh ();
+			if (view.NeedsRefresh)
+			{
+				view.Refresh ();
+			}
+
 			(view as ICollectionView).CollectionChanged += (sender, args) => events.Add (args);
 			Assert.Equal (1, view.Count);
 			Assert.Equal (item1, view.GetItemAt (0));
@@ -108,10 +107,11 @@ namespace Novartment.Base.Net46.Test
 			Assert.Equal (0, view.Count);
 			Assert.False (view.NeedsRefresh);
 
-			Thread.Sleep (result / 100000 + 1); // используем result чтобы компилятор не удалил его вычисление как ненужное
+			Thread.Sleep ((result / 100000) + 1); // используем result чтобы компилятор не удалил его вычисление как ненужное
 		}
 
-		[Fact, Trait ("Category", "LiteListCollectionView")]
+		[Fact]
+		[Trait ("Category", "LiteListCollectionView")]
 		public void FilteredOperations ()
 		{
 			var events = new List<NotifyCollectionChangedEventArgs> ();
@@ -125,7 +125,11 @@ namespace Novartment.Base.Net46.Test
 			list.Add (item2);
 			list.Add (item3);
 			var view = new LiteListCollectionView<Mock4> (list);
-			if (view.NeedsRefresh) view.Refresh ();
+			if (view.NeedsRefresh)
+			{
+				view.Refresh ();
+			}
+
 			(view as ICollectionView).CollectionChanged += (sender, args) => events.Add (args);
 
 			Assert.Equal (3, view.Count);
@@ -160,7 +164,6 @@ namespace Novartment.Base.Net46.Test
 			Assert.Equal (0, view.IndexOf (item2));
 			Assert.Equal (1, view.IndexOf (item3));
 			Assert.Equal (-1, view.IndexOf (item4));
-
 
 			// change filter
 			view.Filter = item => (item as Mock4).Prop1 != "ZZZ";
@@ -228,6 +231,7 @@ namespace Novartment.Base.Net46.Test
 			Assert.Equal (-1, view.IndexOf (item2));
 			Assert.Equal (-1, view.IndexOf (item3));
 			Assert.Equal (1, view.IndexOf (item4));
+
 			// SourceCollection.Replace from pass to no-pass
 			list[2] = item2;
 			eventN++;
@@ -248,6 +252,7 @@ namespace Novartment.Base.Net46.Test
 			Assert.Equal (-1, view.IndexOf (item2));
 			Assert.Equal (-1, view.IndexOf (item3));
 			Assert.Equal (1, view.IndexOf (item4));
+
 			// SourceCollection.Replace from no-pass to pass
 			list[2] = item3;
 			eventN++;
@@ -347,7 +352,8 @@ namespace Novartment.Base.Net46.Test
 			Assert.Equal (3, view.IndexOf (item4));
 		}
 
-		[Fact, Trait ("Category", "LiteListCollectionView")]
+		[Fact]
+		[Trait ("Category", "LiteListCollectionView")]
 		public void SortedOperations ()
 		{
 			var events = new List<NotifyCollectionChangedEventArgs> ();
@@ -361,7 +367,11 @@ namespace Novartment.Base.Net46.Test
 			list.Add (item2);
 			list.Add (item3);
 			var view = new LiteListCollectionView<Mock4> (list);
-			if (view.NeedsRefresh) view.Refresh ();
+			if (view.NeedsRefresh)
+			{
+				view.Refresh ();
+			}
+
 			(view as ICollectionView).CollectionChanged += (sender, args) => events.Add (args);
 
 			// Count
@@ -510,6 +520,7 @@ namespace Novartment.Base.Net46.Test
 			Assert.True (view.Contains (item4));
 			Assert.Equal (1, view.IndexOf (item1));
 			Assert.Equal (-1, view.IndexOf (item2));
+
 			// item3 в исходном списке есть в двух позициях 1 и 2, что соответствует позициям 3 и 0 в предствлении.
 			// метод IndexOf() осуществляется поиск в исходном списке,
 			// поэтому item3 в представлении будет найден в позиции 3 (исходная позиция 1), а не 0 (исходная позиция 2)
@@ -538,9 +549,9 @@ namespace Novartment.Base.Net46.Test
 			Assert.Equal (0, view.IndexOf (item3));
 			Assert.Equal (2, view.IndexOf (item4));
 		}
-		int eventN;
 
-		[Fact, Trait ("Category", "LiteListCollectionView")]
+		[Fact]
+		[Trait ("Category", "LiteListCollectionView")]
 		public void ManualMoveCurrent ()
 		{
 			var list = new ObservableCollection<Mock4> ();
@@ -552,9 +563,13 @@ namespace Novartment.Base.Net46.Test
 			list.Add (item3);
 
 			var view = new LiteListCollectionView<Mock4> (list);
-			if (view.NeedsRefresh) view.Refresh ();
-			view.CurrentChanged += (sender, args) => eventN++;
-			eventN = 0;
+			if (view.NeedsRefresh)
+			{
+				view.Refresh ();
+			}
+
+			view.CurrentChanged += (sender, args) => _eventN++;
+			_eventN = 0;
 
 			Assert.Equal (3, view.Count);
 			Assert.Equal (item2, view[1]);
@@ -568,21 +583,21 @@ namespace Novartment.Base.Net46.Test
 			Assert.False (view.IsCurrentAfterLast);
 
 			view.MoveCurrentToLast ();
-			Assert.Equal (1, eventN); // есть событие
+			Assert.Equal (1, _eventN); // есть событие
 			Assert.Equal (2, view.CurrentPosition);
 			Assert.Equal (item3, view.CurrentItem);
 			Assert.False (view.IsCurrentBeforeFirst);
 			Assert.False (view.IsCurrentAfterLast);
 
 			view.MoveCurrentToFirst ();
-			Assert.Equal (2, eventN); // есть событие
+			Assert.Equal (2, _eventN); // есть событие
 			Assert.Equal (0, view.CurrentPosition);
 			Assert.Equal (item1, view.CurrentItem);
 			Assert.False (view.IsCurrentBeforeFirst);
 			Assert.False (view.IsCurrentAfterLast);
 
 			view.MoveCurrentToNext ();
-			Assert.Equal (3, eventN); // есть событие
+			Assert.Equal (3, _eventN); // есть событие
 			Assert.Equal (1, view.CurrentPosition);
 			Assert.Equal (item2, view.CurrentItem);
 			Assert.False (view.IsCurrentBeforeFirst);
@@ -590,14 +605,14 @@ namespace Novartment.Base.Net46.Test
 
 			// MoveCurrentToPosition to another position
 			view.MoveCurrentToPosition (2);
-			Assert.Equal (4, eventN); // есть событие
+			Assert.Equal (4, _eventN); // есть событие
 			Assert.Equal (2, view.CurrentPosition);
 			Assert.Equal (item3, view.CurrentItem);
 			Assert.False (view.IsCurrentBeforeFirst);
 			Assert.False (view.IsCurrentAfterLast);
 
 			view.MoveCurrentToPrevious ();
-			Assert.Equal (5, eventN); // есть событие
+			Assert.Equal (5, _eventN); // есть событие
 			Assert.Equal (1, view.CurrentPosition);
 			Assert.Equal (item2, view.CurrentItem);
 			Assert.False (view.IsCurrentBeforeFirst);
@@ -605,7 +620,7 @@ namespace Novartment.Base.Net46.Test
 
 			// MoveCurrentToPosition to same position
 			view.MoveCurrentToPosition (1);
-			Assert.Equal (5, eventN); // нет события
+			Assert.Equal (5, _eventN); // нет события
 			Assert.Equal (1, view.CurrentPosition);
 			Assert.Equal (item2, view.CurrentItem);
 			Assert.False (view.IsCurrentBeforeFirst);
@@ -614,14 +629,15 @@ namespace Novartment.Base.Net46.Test
 			// Отменённое перемещение
 			view.CurrentChanging += (obj, args) => args.Cancel = true;
 			view.MoveCurrentToLast ();
-			Assert.Equal (5, eventN); // нет события
+			Assert.Equal (5, _eventN); // нет события
 			Assert.Equal (1, view.CurrentPosition); // позиция не изменилась
 			Assert.Equal (item2, view.CurrentItem);
 			Assert.False (view.IsCurrentBeforeFirst);
 			Assert.False (view.IsCurrentAfterLast);
 		}
 
-		[Fact, Trait ("Category", "LiteListCollectionView")]
+		[Fact]
+		[Trait ("Category", "LiteListCollectionView")]
 		public void AutomaticChangeCurrent ()
 		{
 			var list = new ObservableCollection<Mock4> ();
@@ -634,9 +650,13 @@ namespace Novartment.Base.Net46.Test
 			list.Add (item3);
 
 			var view = new LiteListCollectionView<Mock4> (list);
-			if (view.NeedsRefresh) view.Refresh ();
-			view.CurrentChanged += (sender, args) => eventN++;
-			eventN = 0;
+			if (view.NeedsRefresh)
+			{
+				view.Refresh ();
+			}
+
+			view.CurrentChanged += (sender, args) => _eventN++;
+			_eventN = 0;
 
 			Assert.Equal (3, view.Count);
 			Assert.Equal (item1, view[0]);
@@ -651,7 +671,7 @@ namespace Novartment.Base.Net46.Test
 
 			// устанавливаем текущим последний элемент
 			view.MoveCurrentToLast ();
-			Assert.Equal (1, eventN); // есть событие
+			Assert.Equal (1, _eventN); // есть событие
 			Assert.Equal (2, view.CurrentPosition);
 			Assert.Equal (item3, view.CurrentItem);
 			Assert.False (view.IsCurrentBeforeFirst);
@@ -659,7 +679,7 @@ namespace Novartment.Base.Net46.Test
 
 			// SourceCollection.RemoveAt before current
 			list.RemoveAt (1);
-			Assert.Equal (1, eventN); // нет события
+			Assert.Equal (1, _eventN); // нет события
 			Assert.Equal (1, view.CurrentPosition);
 			Assert.Equal (item3, view.CurrentItem);
 			Assert.False (view.IsCurrentBeforeFirst);
@@ -667,7 +687,7 @@ namespace Novartment.Base.Net46.Test
 
 			// SourceCollection.Insert before current (в представлении добавится в конец)
 			list.Insert (1, item2);
-			Assert.Equal (1, eventN); // нет события
+			Assert.Equal (1, _eventN); // нет события
 			Assert.Equal (1, view.CurrentPosition);
 			Assert.Equal (item3, view.CurrentItem);
 			Assert.False (view.IsCurrentBeforeFirst);
@@ -675,7 +695,7 @@ namespace Novartment.Base.Net46.Test
 
 			// Refresh с изменением порядка элементов
 			view.Refresh ();
-			Assert.Equal (2, eventN); // есть событие
+			Assert.Equal (2, _eventN); // есть событие
 			Assert.Equal (2, view.CurrentPosition);
 			Assert.Equal (item3, view.CurrentItem);
 			Assert.False (view.IsCurrentBeforeFirst);
@@ -683,7 +703,7 @@ namespace Novartment.Base.Net46.Test
 
 			// SourceCollection.Add
 			list.Add (item4);
-			Assert.Equal (2, eventN); // нет события
+			Assert.Equal (2, _eventN); // нет события
 			Assert.Equal (2, view.CurrentPosition);
 			Assert.Equal (item3, view.CurrentItem);
 			Assert.False (view.IsCurrentBeforeFirst);
@@ -691,19 +711,29 @@ namespace Novartment.Base.Net46.Test
 
 			// SourceCollection.RemoveAt current
 			list.RemoveAt (2);
-			Assert.Equal (3, eventN); // есть событие
+			Assert.Equal (3, _eventN); // есть событие
 			Assert.Equal (2, view.CurrentPosition);
 			Assert.Equal (item4, view.CurrentItem);
 			Assert.False (view.IsCurrentBeforeFirst);
-			Assert.False (view.IsCurrentAfterLast); ;
+			Assert.False (view.IsCurrentAfterLast);
 
 			// SourceCollection[] set current
 			list[2] = item3;
-			Assert.Equal (4, eventN); // есть событие
+			Assert.Equal (4, _eventN); // есть событие
 			Assert.Equal (2, view.CurrentPosition);
 			Assert.Equal (item3, view.CurrentItem);
 			Assert.False (view.IsCurrentBeforeFirst);
 			Assert.False (view.IsCurrentAfterLast);
+		}
+
+		[DebuggerDisplay ("#{Number} Prop1 = {Prop1} Prop2 = {Prop2}")]
+		internal class Mock4
+		{
+			public int Number { get; set; }
+
+			public string Prop1 { get; set; }
+
+			public int Prop2 { get; set; }
 		}
 	}
 }

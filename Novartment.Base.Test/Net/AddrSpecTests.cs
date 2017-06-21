@@ -5,7 +5,8 @@ namespace Novartment.Base.Net.Test
 {
 	public class AddrSpecTests
 	{
-		[Fact, Trait ("Category", "Net")]
+		[Fact]
+		[Trait ("Category", "Net")]
 		public void Creation_Exception ()
 		{
 			Assert.Throws<ArgumentOutOfRangeException> (() => new AddrSpec ("юж", "someserver.ru"));
@@ -13,7 +14,8 @@ namespace Novartment.Base.Net.Test
 			Assert.Throws<ArgumentOutOfRangeException> (() => new AddrSpec ("someone", "[someserver].ru"));
 		}
 
-		[Fact, Trait ("Category", "Net")]
+		[Fact]
+		[Trait ("Category", "Net")]
 		public void Parse ()
 		{
 			var addr = AddrSpec.Parse ("someone@someserver.ru");
@@ -25,7 +27,8 @@ namespace Novartment.Base.Net.Test
 			Assert.Equal (" some literal domain  ", addr.Domain);
 		}
 
-		[Fact, Trait ("Category", "Net")]
+		[Fact]
+		[Trait ("Category", "Net")]
 		public void ParseException ()
 		{
 			Assert.Throws<FormatException> (() => AddrSpec.Parse ("someone@someserver.ru a"));
@@ -34,7 +37,8 @@ namespace Novartment.Base.Net.Test
 			Assert.Throws<FormatException> (() => AddrSpec.Parse ("someone@(someserver.ru)"));
 		}
 
-		[Fact, Trait ("Category", "Net")]
+		[Fact]
+		[Trait ("Category", "Net")]
 		public void ToString_ ()
 		{
 			var values = new AddrSpec ("someone", "someserver.ru").ToString ();
@@ -50,7 +54,8 @@ namespace Novartment.Base.Net.Test
 			Assert.Equal ("\"real(addr)\"@[some literal domain]", values);
 		}
 
-		[Fact, Trait ("Category", "Net")]
+		[Fact]
+		[Trait ("Category", "Net")]
 		public void Equals_ ()
 		{
 			Assert.True (new AddrSpec ("someone", "someserver.ru").Equals (new AddrSpec ("someone", "someserver.ru")));

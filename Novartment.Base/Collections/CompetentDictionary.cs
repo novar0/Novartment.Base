@@ -77,7 +77,7 @@ namespace Novartment.Base.Collections
 		/// или null, чтобы использовать реализацию компаратора по умолчанию.
 		/// </param>
 		[SuppressMessage (
-		"Microsoft.Design",
+			"Microsoft.Design",
 			"CA1026:DefaultParametersShouldNotBeUsed",
 			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
 		public CompetentDictionary (Func<TKey, TValue> valueFactory, IEqualityComparer<TKey> comparer = null)
@@ -222,7 +222,7 @@ namespace Novartment.Base.Collections
 
 		/// <summary>Освобождает все внутренние ресурсы и отключает подписчиков на события.</summary>
 		[SuppressMessage (
-		"Microsoft.Usage",
+			"Microsoft.Usage",
 			"CA1816:CallGCSuppressFinalizeCorrectly",
 			Justification = "There is no meaning to introduce a finalizer in derived type.")]
 		[SuppressMessage (

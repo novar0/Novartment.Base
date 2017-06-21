@@ -3,14 +3,14 @@ using Xunit;
 
 namespace Novartment.Base.Net.Mime.Test
 {
-
 	public class MimeWordCollectionTests
 	{
-		[Fact, Trait ("Category", "Mime")]
+		[Fact]
+		[Trait ("Category", "Mime")]
 		public void ParseWords ()
 		{
 			var words = new MimeWordCollection (999);
-			var templBytes = Encoding.UTF8.GetBytes ("");
+			var templBytes = Encoding.UTF8.GetBytes (string.Empty);
 			words.ParseWords (templBytes, false, 999);
 			Assert.Equal (0, words.Count);
 

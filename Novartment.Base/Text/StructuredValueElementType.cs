@@ -24,6 +24,6 @@
 		AngleBracketedValue = 5,
 
 		/// <summary>Значение в квадратных скобках.</summary>
-		SquareBracketedValue = 6
+		SquareBracketedValue = 6,
 	}
 }

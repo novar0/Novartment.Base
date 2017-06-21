@@ -1,12 +1,12 @@
-﻿using static System.Linq.Enumerable;
-using Novartment.Base.Collections;
+﻿using Novartment.Base.Collections;
 using Xunit;
 
 namespace Novartment.Base.Test
 {
 	public class AvlTreeSetTests
 	{
-		[Fact, Trait ("Category", "Collections.Set")]
+		[Fact]
+		[Trait ("Category", "Collections.Set")]
 		public void Misc ()
 		{
 			var set = new AvlTreeSet<int> ();
@@ -46,6 +46,7 @@ namespace Novartment.Base.Test
 			Assert.Equal (3, set.Count);
 			set.Add (110);
 			Assert.Equal (4, set.Count);
+
 			// где то тут должен случиться перекос вправо внутреннего двоичного дерева
 			set.Add (102);
 			Assert.Equal (5, set.Count);
@@ -58,6 +59,7 @@ namespace Novartment.Base.Test
 			set.Add (109);
 			set.Add (99);
 			Assert.Equal (13, set.Count);
+
 			// где то тут должен случиться перекос влево внутреннего двоичного дерева
 			set.Add (-408);
 			set.Add (-407);

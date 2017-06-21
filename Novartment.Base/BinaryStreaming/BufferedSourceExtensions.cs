@@ -282,8 +282,10 @@ namespace Novartment.Base.BinaryStreaming
 				while (!source.IsExhausted)
 				{
 					cancellationToken.ThrowIfCancellationRequested ();
-					var sizeScanned = offset - source.Offset; // запоминаем сколько мы уже просмотрели от начала, потому что начало сдвинется при запросе новых данных
-															  // запрашиваем дополнительные данные (старые данные останутся в буфере)
+
+					// запоминаем сколько мы уже просмотрели от начала, потому что начало сдвинется при запросе новых данных
+					// запрашиваем дополнительные данные (старые данные останутся в буфере)
+					var sizeScanned = offset - source.Offset;
 					await source.FillBufferAsync (cancellationToken).ConfigureAwait (false);
 					offset = source.Offset + sizeScanned;
 					end = source.Offset + source.Count;

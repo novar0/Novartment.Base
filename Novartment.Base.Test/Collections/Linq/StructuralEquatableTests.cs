@@ -4,7 +4,8 @@ namespace Novartment.Base.Collections.Linq.Test
 {
 	public class StructuralEquatableTests
 	{
-		[Fact, Trait ("Category", "Collections.Linq")]
+		[Fact]
+		[Trait ("Category", "Collections.Linq")]
 		public void SequenceEqual ()
 		{
 			var a0 = new byte[0];

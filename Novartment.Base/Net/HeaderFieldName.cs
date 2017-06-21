@@ -189,7 +189,7 @@ namespace Novartment.Base.Net
 
 		/// <summary>X.400 IPM extensions discarded. "Discarded-X400-IPMS-Extensions" header field in RFC 2156.</summary>
 		[SuppressMessage (
-		"Microsoft.Naming",
+			"Microsoft.Naming",
 			"CA1704:IdentifiersShouldBeSpelledCorrectly",
 			MessageId = "Ipms",
 			Justification = "Name corresponds to RFC-specified header field name.")]
@@ -197,7 +197,7 @@ namespace Novartment.Base.Net
 
 		/// <summary>X.400 MTS extensions discarded. "Discarded-X400-MTS-Extensions" header field in RFC 2156.</summary>
 		[SuppressMessage (
-		"Microsoft.Naming",
+			"Microsoft.Naming",
 			"CA1704:IdentifiersShouldBeSpelledCorrectly",
 			MessageId = "Mts",
 			Justification = "Name corresponds to RFC-specified header field name.")]
@@ -214,7 +214,7 @@ namespace Novartment.Base.Net
 
 		/// <summary>X400 MTS-Identifier. "X400-MTS-Identifier" header field in RFC 2156.</summary>
 		[SuppressMessage (
-		"Microsoft.Naming",
+			"Microsoft.Naming",
 			"CA1704:IdentifiersShouldBeSpelledCorrectly",
 			MessageId = "Mts",
 			Justification = "Name corresponds to RFC-specified header field name.")]
@@ -279,7 +279,7 @@ namespace Novartment.Base.Net
 
 		/// <summary>"DSN-Gateway". Name of the gateway or MTA that translated a foreign (non-Internet) delivery status notification into this DSN.</summary>
 		[SuppressMessage (
-		"Microsoft.Naming",
+			"Microsoft.Naming",
 			"CA1704:IdentifiersShouldBeSpelledCorrectly",
 			MessageId = "Dsn",
 			Justification = "Name corresponds to RFC-specified header field name.")]
@@ -323,7 +323,7 @@ namespace Novartment.Base.Net
 
 		/// <summary>"MDN-Gateway". Name of the gateway or MTA that translated a foreign (non-Internet) message disposition notification into this MDN.</summary>
 		[SuppressMessage (
-		"Microsoft.Naming",
+			"Microsoft.Naming",
 			"CA1704:IdentifiersShouldBeSpelledCorrectly",
 			MessageId = "Mdn",
 			Justification = "Name corresponds to RFC-specified header field name.")]
@@ -342,6 +342,6 @@ namespace Novartment.Base.Net
 		Warning = 102,
 
 		/// <summary>Нестандартное дополнительное имя. Для использования в расширениях протоколов.</summary>
-		Extension = 0x7ffffff
+		Extension = 0x7ffffff,
 	}
 }

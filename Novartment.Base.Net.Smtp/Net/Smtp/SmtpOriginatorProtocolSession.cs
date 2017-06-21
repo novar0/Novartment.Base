@@ -16,14 +16,14 @@ namespace Novartment.Base.Net.Smtp
 	internal class SmtpOriginatorProtocolSession :
 		IDisposable
 	{
-		private readonly ISmtpCommandTransport _sender;
+		private readonly ISmtpCommandTransport _transport;
 		private readonly AvlHashTreeSet<string> _serverSupportedExtensions = new AvlHashTreeSet<string> (StringComparer.OrdinalIgnoreCase);
 		private readonly string _hostFqdn;
 		private int _completed = 0;
 
 		internal SmtpOriginatorProtocolSession (ISmtpCommandTransport sender, string hostFqdn)
 		{
-			_sender = sender;
+			_transport = sender;
 			_hostFqdn = hostFqdn ?? "anonym";
 		}
 
@@ -36,7 +36,7 @@ namespace Novartment.Base.Net.Smtp
 			{
 				try
 				{
-					_sender.SendCommandAsync (SmtpCommand.Quit, CancellationToken.None).Wait ();
+					_transport.SendCommandAsync (SmtpCommand.Quit, CancellationToken.None).Wait ();
 				}
 				catch (ObjectDisposedException)
 				{
@@ -81,7 +81,7 @@ namespace Novartment.Base.Net.Smtp
 
 			try
 			{
-				await _sender.StartTlsClientAsync (clientCertificates).ConfigureAwait (false);
+				await _transport.StartTlsClientAsync (clientCertificates).ConfigureAwait (false);
 			}
 			catch (Exception excpt)
 			{
@@ -189,17 +189,17 @@ namespace Novartment.Base.Net.Smtp
 						return SmtpReply.OK;
 					}
 
-					await _sender.SendCommandAsync (command, cancellationToken).ConfigureAwait (false);
+					await _transport.SendCommandAsync (command, cancellationToken).ConfigureAwait (false);
 					break;
 				case SmtpCommandType.NoCommand:
 					// NoCommand означает ничего не посылать, только получить ответ
 					break;
 				case SmtpCommandType.Bdat:
-					await _sender.SendCommandAsync (command, cancellationToken).ConfigureAwait (false);
+					await _transport.SendCommandAsync (command, cancellationToken).ConfigureAwait (false);
 					var bdatCmd = (SmtpBdatCommand)command;
 					try
 					{
-						await _sender.SendBinaryAsync (bdatCmd.Source, cancellationToken).ConfigureAwait (false);
+						await _transport.SendBinaryAsync (bdatCmd.Source, cancellationToken).ConfigureAwait (false);
 					}
 					catch (NotEnoughDataException excpt)
 					{
@@ -212,7 +212,7 @@ namespace Novartment.Base.Net.Smtp
 					break;
 				case SmtpCommandType.ActualData:
 					var actualDataCmd = (SmtpActualDataCommand)command;
-					await _sender.SendBinaryAsync (actualDataCmd.Source, cancellationToken).ConfigureAwait (false);
+					await _transport.SendBinaryAsync (actualDataCmd.Source, cancellationToken).ConfigureAwait (false);
 					var isPartSkipped = await actualDataCmd.Source.TrySkipPartAsync (cancellationToken).ConfigureAwait (false);
 					if (isPartSkipped)
 					{
@@ -222,15 +222,15 @@ namespace Novartment.Base.Net.Smtp
 
 					var endMarker = new byte[] { 0x0d, 0x0a, (byte)'.', 0x0d, 0x0a };
 					var endMarkerSrc = new ArrayBufferedSource (endMarker);
-					await _sender.SendBinaryAsync (endMarkerSrc, cancellationToken).ConfigureAwait (false);
+					await _transport.SendBinaryAsync (endMarkerSrc, cancellationToken).ConfigureAwait (false);
 					break;
 				default:
-					await _sender.SendCommandAsync (command, cancellationToken).ConfigureAwait (false);
+					await _transport.SendCommandAsync (command, cancellationToken).ConfigureAwait (false);
 					break;
 			}
 
 			// получаем ответ
-			var reply = await _sender.ReceiveReplyAsync (cancellationToken).ConfigureAwait (false);
+			var reply = await _transport.ReceiveReplyAsync (cancellationToken).ConfigureAwait (false);
 
 			if (reply.Code == 421)
 			{

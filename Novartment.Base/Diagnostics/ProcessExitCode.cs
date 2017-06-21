@@ -24,6 +24,6 @@
 		NeedRestart = 5,
 
 		/// <summary>Запрет запуска во время процесса установки.</summary>
-		InstallationRunningLaunchNotAllowed = 6
+		InstallationRunningLaunchNotAllowed = 6,
 	}
 }

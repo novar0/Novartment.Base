@@ -158,7 +158,7 @@ namespace Novartment.Base.Text
 /* | 0x7c 124 */ (short)(AsciiCharClasses.Visible | AsciiCharClasses.Domain | AsciiCharClasses.QEncodingAllowedInUnstructured | AsciiCharClasses.Atom | AsciiCharClasses.Token | AsciiCharClasses.ExtendedToken),
 /* } 0x7d 125 */ (short)(AsciiCharClasses.Visible | AsciiCharClasses.Domain | AsciiCharClasses.QEncodingAllowedInUnstructured | AsciiCharClasses.Atom | AsciiCharClasses.Token | AsciiCharClasses.ExtendedToken),
 /* ~ 0x7e 126 */ (short)(AsciiCharClasses.Visible | AsciiCharClasses.Domain | AsciiCharClasses.QEncodingAllowedInUnstructured | AsciiCharClasses.Atom | AsciiCharClasses.Token | AsciiCharClasses.ExtendedToken | AsciiCharClasses.UrlSchemePart),
-/*   0x7f 127 */ 0
+/*   0x7f 127 */ 0,
 		});
 
 		/// <summary>

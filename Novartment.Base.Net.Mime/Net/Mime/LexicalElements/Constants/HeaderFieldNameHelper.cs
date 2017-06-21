@@ -109,7 +109,7 @@ namespace Novartment.Base.Net.Mime
 			[HeaderFieldName.Disposition] = HeaderFieldNames.Disposition,
 			[HeaderFieldName.Failure] = HeaderFieldNames.Failure,
 			[HeaderFieldName.Error] = HeaderFieldNames.Error,
-			[HeaderFieldName.Warning] = HeaderFieldNames.Warning
+			[HeaderFieldName.Warning] = HeaderFieldNames.Warning,
 		};
 
 		private static Dictionary<string, HeaderFieldName> _headerTypeNames = new Dictionary<string, HeaderFieldName> (StringComparer.OrdinalIgnoreCase)
@@ -215,7 +215,7 @@ namespace Novartment.Base.Net.Mime
 			[HeaderFieldNames.Disposition] = HeaderFieldName.Disposition,
 			[HeaderFieldNames.Failure] = HeaderFieldName.Failure,
 			[HeaderFieldNames.Error] = HeaderFieldName.Error,
-			[HeaderFieldNames.Warning] = HeaderFieldName.Warning
+			[HeaderFieldNames.Warning] = HeaderFieldName.Warning,
 		};
 
 		/// <summary>

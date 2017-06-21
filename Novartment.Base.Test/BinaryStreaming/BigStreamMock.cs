@@ -59,6 +59,7 @@ namespace Novartment.Base.Test
 				{
 					throw new NotSupportedException ();
 				}
+
 				_position = value;
 			}
 		}
@@ -74,6 +75,7 @@ namespace Novartment.Base.Test
 				{
 					buffer[offset + i] = _dataFunction (_position + (long)i);
 				}
+
 				_position += readed;
 			}
 
@@ -82,7 +84,11 @@ namespace Novartment.Base.Test
 
 		public override long Seek (long offset, SeekOrigin origin)
 		{
-			if (!_canSeek) throw new NotSupportedException ();
+			if (!_canSeek)
+			{
+				throw new NotSupportedException ();
+			}
+
 			switch (origin)
 			{
 				case SeekOrigin.Begin:
@@ -96,12 +102,18 @@ namespace Novartment.Base.Test
 					break;
 			}
 
-			if (_position < 0) _position = 0;
+			if (_position < 0)
+			{
+				_position = 0;
+			}
+
 			return _position;
 		}
 
 		public override void Flush () => throw new NotSupportedException ();
+
 		public override void SetLength (long value) => throw new NotSupportedException ();
+
 		public override void Write (byte[] buffer, int offset, int count) => throw new NotSupportedException ();
 	}
 }

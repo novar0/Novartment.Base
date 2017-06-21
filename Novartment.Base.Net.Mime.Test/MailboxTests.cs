@@ -5,7 +5,8 @@ namespace Novartment.Base.Net.Mime.Test
 {
 	public class MailboxTests
 	{
-		[Fact, Trait ("Category", "Mime")]
+		[Fact]
+		[Trait ("Category", "Mime")]
 		public void Parse ()
 		{
 			var mailbox = Mailbox.Parse ("postmaster@server.com");
@@ -24,7 +25,8 @@ namespace Novartment.Base.Net.Mime.Test
 			Assert.Equal ("some literal domain", mailbox.Address.Domain);
 		}
 
-		[Fact, Trait ("Category", "Mime")]
+		[Fact]
+		[Trait ("Category", "Mime")]
 		public void Parse_Exception ()
 		{
 			Assert.Throws<FormatException> (() => Mailbox.Parse ("@"));
@@ -37,7 +39,8 @@ namespace Novartment.Base.Net.Mime.Test
 			Assert.Throws<FormatException> (() => Mailbox.Parse ("Bill Clinton postmaster@server.com"));
 		}
 
-		[Fact, Trait ("Category", "Mime")]
+		[Fact]
+		[Trait ("Category", "Mime")]
 		public void ToString_ ()
 		{
 			var mailbox = new Mailbox ("some-one@server.com");
@@ -48,7 +51,8 @@ namespace Novartment.Base.Net.Mime.Test
 			Assert.Equal ("Bill Clinton <\"real(addr)\"@[some literal domain]>", mailbox.ToString ());
 		}
 
-		[Fact, Trait ("Category", "Mime")]
+		[Fact]
+		[Trait ("Category", "Mime")]
 		public void Equals_ ()
 		{
 			Assert.Equal (

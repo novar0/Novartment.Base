@@ -7,15 +7,8 @@ namespace Novartment.Base.Test
 {
 	public class ArrayListTests
 	{
-		[DebuggerDisplay ("#{Number} Prop1 = {Prop1} Prop2 = {Prop2}")]
-		public class Mock4
-		{
-			public int Number { get; set; }
-			public string Prop1 { get; set; }
-			public int Prop2 { get; set; }
-		}
-
-		[Fact, Trait ("Category", "Collections.ArrayList")]
+		[Fact]
+		[Trait ("Category", "Collections.ArrayList")]
 		public void Construction ()
 		{
 			// по умолчанию
@@ -34,6 +27,7 @@ namespace Novartment.Base.Test
 			Assert.Equal (2, list.Count);
 			Assert.Equal (t1[1], list[0]);
 			Assert.Equal (t1[2], list[1]);
+
 			// проверяем что изменение исходных данных влияет и на копию и наоборот
 			t1[2] = 222;
 			Assert.Equal (t1[2], list[1]);
@@ -41,7 +35,8 @@ namespace Novartment.Base.Test
 			Assert.Equal (t1[1], list[0]);
 		}
 
-		[Fact, Trait ("Category", "Collections.ArrayList")]
+		[Fact]
+		[Trait ("Category", "Collections.ArrayList")]
 		public void ChangeCapacity ()
 		{
 			var list = new ArrayList<int> (6);
@@ -58,30 +53,31 @@ namespace Novartment.Base.Test
 			Assert.Equal (0, list.Array.Length);
 		}
 
-		[Fact, Trait ("Category", "Collections.ArrayList")]
+		[Fact]
+		[Trait ("Category", "Collections.ArrayList")]
 		public void AddTake ()
 		{
 			var t1 = new int[] { 1, 2, 2, 3 };
 			var c1 = new ArrayList<int> (t1);
-			var c2 = new ArrayList<int> ();
-			int v1;
-
-			//Add
-			c2.Add (4);
-			c2.Add (1);
-			c2.Add (2);
-			c2.Add (2);
-			c2.Add (-5);
+			var c2 = new ArrayList<int>
+			{
+				// Add
+				4,
+				1,
+				2,
+				2,
+				-5,
+			};
 			Assert.Equal (5, c2.Count);
 			Assert.Equal (-5, c2[4]);
 
-			//set this[]
+			// set this[]
 			c2[4] = 3;
 			Assert.Equal (3, c2[4]);
 			Assert.NotEqual<int> (c1, c2);
-			
-			//TryTakeFirst
-			Assert.True (c2.TryTakeFirst (out v1));
+
+			// TryTakeFirst
+			Assert.True (c2.TryTakeFirst (out int v1));
 			Assert.Equal (4, c2.Count);
 			Assert.Equal (4, v1);
 			Assert.Equal<int> (c1, c2);
@@ -89,12 +85,12 @@ namespace Novartment.Base.Test
 			c2.CopyTo (t2, 0);
 			Assert.Equal<int> (t1, t2);
 
-			//TryTakeLast
+			// TryTakeLast
 			Assert.True (c2.TryTakeLast (out v1));
 			Assert.Equal (3, c2.Count);
 			Assert.Equal (3, v1);
 
-			//Add
+			// Add
 			c2.Add (-5);
 			Assert.Equal (4, c2.Count);
 			Assert.Equal (1, c2[0]);
@@ -102,28 +98,29 @@ namespace Novartment.Base.Test
 			Assert.Equal (2, c2[2]);
 			Assert.Equal (-5, c2[3]);
 
-			//Clear
+			// Clear
 			c2.Clear ();
 			Assert.Equal (0, c2.Count);
 
-			//TryPeekLast
+			// TryPeekLast
 			v1 = int.MaxValue;
 			Assert.False (c2.TryPeekLast (out v1));
 			Assert.Equal (0, v1);
 
-			//TryTakeFirst
+			// TryTakeFirst
 			v1 = int.MaxValue;
 			Assert.False (c2.TryTakeFirst (out v1));
 			Assert.Equal (0, v1);
 		}
 
-		[Fact, Trait ("Category", "Collections.ArrayList")]
+		[Fact]
+		[Trait ("Category", "Collections.ArrayList")]
 		public void InsertRemove ()
 		{
-			//создаём такое состояние массива чтобы он переходил через край
+			// создаём такое состояние массива чтобы он переходил через край
 			var c2 = new ArrayList<int> ();
 
-			//Insert
+			// Insert
 			c2.Insert (0, -1);
 			var c1 = new ArrayList<int> (new int[] { -1 });
 			Assert.Equal<int> (c1, c2);
@@ -137,7 +134,7 @@ namespace Novartment.Base.Test
 			c1 = new ArrayList<int> (new int[] { -2, -3, -1, -4 });
 			Assert.Equal<int> (c1, c2);
 
-			//RemoveAt
+			// RemoveAt
 			c2.RemoveAt (0);
 			c1 = new ArrayList<int> (new int[] { -3, -1, -4 });
 			Assert.Equal<int> (c1, c2);
@@ -148,19 +145,20 @@ namespace Novartment.Base.Test
 			c1 = new ArrayList<int> (new int[] { -3 });
 			Assert.Equal<int> (c1, c2);
 
-			//Insert
+			// Insert
 			c2.Insert (1, -5);
 			c1 = new ArrayList<int> (new int[] { -3, -5 });
 			Assert.Equal<int> (c1, c2);
 		}
 
-		[Fact, Trait ("Category", "Collections.ArrayList")]
+		[Fact]
+		[Trait ("Category", "Collections.ArrayList")]
 		public void InsertRemoveRange ()
 		{
 			var c2 = new ArrayList<int> (new int[] { 8, 9, 1, 2 });
 			Assert.Equal<int> (new int[] { 8, 9, 1, 2 }, c2);
 
-			//InsertRange
+			// InsertRange
 			c2.InsertRange (0, 3);
 			Assert.Equal<int> (new int[] { 0, 0, 0, 8, 9, 1, 2 }, c2);
 			c2.InsertRange (7, 1);
@@ -168,7 +166,7 @@ namespace Novartment.Base.Test
 			c2.InsertRange (3, 12);
 			Assert.Equal<int> (new int[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 9, 1, 2, 0 }, c2);
 
-			//RemoveRange
+			// RemoveRange
 			c2.RemoveRange (3, 12);
 			Assert.Equal<int> (new int[] { 0, 0, 0, 8, 9, 1, 2, 0 }, c2);
 			c2.RemoveRange (7, 1);
@@ -176,14 +174,17 @@ namespace Novartment.Base.Test
 			c2.RemoveRange (0, 7);
 		}
 
-		[Fact, Trait ("Category", "Collections.ArrayList")]
+		[Fact]
+		[Trait ("Category", "Collections.ArrayList")]
 		public void Defagment ()
 		{
 			// пустой
-			var c2 = new ArrayList<int> (4);
-			c2.Add (-1);
-			c2.Add (-2);
-			c2.Add (-3);
+			var c2 = new ArrayList<int> (4)
+			{
+				-1,
+				-2,
+				-3,
+			};
 			c2.RemoveAt (0);
 			c2.RemoveAt (0);
 			c2.RemoveAt (0);
@@ -201,11 +202,13 @@ namespace Novartment.Base.Test
 			Assert.Equal (0, c2.Array[3]);
 
 			// нет дырок, нет зацикливания
-			c2 = new ArrayList<int> (4);
-			c2.Add (-1);
-			c2.Add (-2);
-			c2.Add (-3);
-			c2.Add (-4);
+			c2 = new ArrayList<int> (4)
+			{
+				-1,
+				-2,
+				-3,
+				-4,
+			};
 			Assert.Equal (4, c2.Array.Length);
 			Assert.Equal (-1, c2.Array[0]);
 			Assert.Equal (-2, c2.Array[1]);
@@ -219,11 +222,13 @@ namespace Novartment.Base.Test
 			Assert.Equal (-4, c2.Array[3]);
 
 			// дырка в начале
-			c2 = new ArrayList<int> (4);
-			c2.Add (-1);
-			c2.Add (-2);
-			c2.Add (-3);
-			c2.Add (-4);
+			c2 = new ArrayList<int> (4)
+			{
+				-1,
+				-2,
+				-3,
+				-4,
+			};
 			c2.RemoveAt (0);
 			Assert.Equal (4, c2.Array.Length);
 			Assert.Equal (0, c2.Array[0]);
@@ -256,7 +261,8 @@ namespace Novartment.Base.Test
 			Assert.Equal (-4, c2.Array[3]);
 		}
 
-		[Fact, Trait ("Category", "Collections.ArrayList")]
+		[Fact]
+		[Trait ("Category", "Collections.ArrayList")]
 		public void SortDefault ()
 		{
 			var template = new int[] { 23456, 10, 100, 1, 0, -10, -200, };
@@ -297,14 +303,17 @@ namespace Novartment.Base.Test
 			Assert.Equal (23456, list[4]);
 		}
 
-		[Fact, Trait ("Category", "Collections.ArrayList")]
+		[Fact]
+		[Trait ("Category", "Collections.ArrayList")]
 		public void SortCustom ()
 		{
-			var template = new Mock4[] {
+			var template = new Mock4[]
+			{
 				new Mock4 { Number = 1, Prop1 = "aab", Prop2 = 91 },
 				new Mock4 { Number = 2, Prop1 = "ZZZ", Prop2 = 110 },
 				new Mock4 { Number = 3, Prop1 = "aaa", Prop2 = 444 },
-				new Mock4 { Number = 4, Prop1 = "шшш", Prop2 = 273 } };
+				new Mock4 { Number = 4, Prop1 = "шшш", Prop2 = 273 },
+			};
 			var copy = new Mock4[template.Length];
 			Array.Copy (template, copy, template.Length);
 			var list = new ArrayList<Mock4> (copy);
@@ -320,6 +329,16 @@ namespace Novartment.Base.Test
 			Assert.Equal (template[3], list[1]);
 			Assert.Equal (template[1], list[2]);
 			Assert.Equal (template[0], list[3]);
+		}
+
+		[DebuggerDisplay ("#{Number} Prop1 = {Prop1} Prop2 = {Prop2}")]
+		public class Mock4
+		{
+			public int Number { get; set; }
+
+			public string Prop1 { get; set; }
+
+			public int Prop2 { get; set; }
 		}
 	}
 }

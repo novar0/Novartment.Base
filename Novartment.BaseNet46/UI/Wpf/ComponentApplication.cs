@@ -210,7 +210,7 @@ namespace Novartment.Base.UI.Wpf
 		/// устанавливается режим приёма сообщений об обновлении буфера обмена, транслируемый в события ClipboardUpdated.
 		/// </remarks>
 		[SuppressMessage (
-		"Microsoft.Design",
+			"Microsoft.Design",
 			"CA1031:DoNotCatchGeneralExceptionTypes",
 			Justification = "The exception is top-level and will be presented to user.")]
 		public new ProcessExitCode Run ()
@@ -259,7 +259,7 @@ namespace Novartment.Base.UI.Wpf
 		/// <param name="failedAction">Выполняемое программой действие, при выполнении которого произошло исключение.</param>
 		/// <param name="recommendedSolution">Рекомендуемое пользователю действие.</param>
 		[SuppressMessage (
-		"Microsoft.Design",
+			"Microsoft.Design",
 			"CA1026:DefaultParametersShouldNotBeUsed",
 			Justification = "Parameters have clear right 'default' values and there is no plausible reason why the default might need to change.")]
 		[MethodImpl (MethodImplOptions.NoInlining)]

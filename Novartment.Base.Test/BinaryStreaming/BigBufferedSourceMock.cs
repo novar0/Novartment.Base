@@ -18,14 +18,6 @@ namespace Novartment.Base.Test
 		private int _count = 0;
 		private bool _isExhausted = false;
 
-		public byte[] Buffer => _buffer;
-
-		public int Offset => _offset;
-
-		public int Count => _count;
-
-		public bool IsExhausted => _isExhausted;
-
 		public BigBufferedSourceMock (long size, int bufferSize, Func<long, byte> dataFunction)
 		{
 			if (bufferSize < 1)
@@ -37,6 +29,14 @@ namespace Novartment.Base.Test
 			_buffer = new byte[bufferSize];
 			_dataFunction = dataFunction;
 		}
+
+		public byte[] Buffer => _buffer;
+
+		public int Offset => _offset;
+
+		public int Count => _count;
+
+		public bool IsExhausted => _isExhausted;
 
 		public void SkipBuffer (int size)
 		{
@@ -63,6 +63,7 @@ namespace Novartment.Base.Test
 					{
 						Array.Copy (_buffer, _offset, _buffer, 0, _count);
 					}
+
 					_offset = 0;
 				}
 
@@ -77,6 +78,7 @@ namespace Novartment.Base.Test
 				{
 					_isExhausted = true;
 				}
+
 				_count += i;
 				_position += i;
 			}
@@ -95,6 +97,7 @@ namespace Novartment.Base.Test
 			{
 				var available = _count;
 				var shortage = size - available;
+
 				// данных в буфере достаточно или запрашивать их безполезно
 				if ((shortage > 0) && !_isExhausted)
 				{
@@ -105,6 +108,7 @@ namespace Novartment.Base.Test
 						{
 							Array.Copy (_buffer, _offset, _buffer, 0, available);
 						}
+
 						_offset = 0;
 					}
 
@@ -119,6 +123,7 @@ namespace Novartment.Base.Test
 					{
 						_isExhausted = true;
 					}
+
 					_count += i;
 					_position += i;
 				}

@@ -1,5 +1,5 @@
-﻿using System.Net;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -7,17 +7,17 @@ namespace Novartment.Base.Net.Test
 {
 	internal class TcpConnectionProtocolMock : ITcpConnectionProtocol
 	{
+		private readonly AutoResetEvent _startedEvent = new AutoResetEvent (false);
 		private List<ITcpConnection> _connections = new List<ITcpConnection> ();
 		private Dictionary<IPEndPoint, TaskCompletionSource<int>> _stopSignalers = new Dictionary<IPEndPoint, TaskCompletionSource<int>> ();
-		private readonly AutoResetEvent _startedEvent = new AutoResetEvent (false);
-
-		internal IReadOnlyList<ITcpConnection> Connections => _connections;
-
-		internal EventWaitHandle StartedEvent => _startedEvent;
 
 		internal TcpConnectionProtocolMock ()
 		{
 		}
+
+		internal IReadOnlyList<ITcpConnection> Connections => _connections;
+
+		internal EventWaitHandle StartedEvent => _startedEvent;
 
 		public Task StartAsync (ITcpConnection connection, CancellationToken cancellationToken)
 		{
@@ -29,15 +29,15 @@ namespace Novartment.Base.Net.Test
 			return stopSignaler.Task;
 		}
 
+		internal void FinishHandlingConnection (IPEndPoint remoteEndPoint)
+		{
+			_stopSignalers[remoteEndPoint].TrySetResult (0);
+		}
+
 		private void Cancel (object remoteEndPointObject)
 		{
 			var remoteEndPoint = (IPEndPoint)remoteEndPointObject;
 			_stopSignalers[remoteEndPoint].TrySetCanceled ();
-		}
-
-		internal void FinishHandlingConnection (IPEndPoint remoteEndPoint)
-		{
-			_stopSignalers[remoteEndPoint].TrySetResult (0);
 		}
 	}
 }

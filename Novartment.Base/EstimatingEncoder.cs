@@ -100,7 +100,7 @@ namespace Novartment.Base
 								SourceOffset = variant.SourceOffset + variant.EncodedSource,
 								SourceCount = variant.SourceCount - variant.EncodedSource,
 								EncodedSource = bytesConsumed,
-								EncodedDestination = newEncodedDestination
+								EncodedDestination = newEncodedDestination,
 							};
 							if (resultVariant.EncodedSource < resultVariant.SourceCount)
 							{
@@ -185,7 +185,7 @@ namespace Novartment.Base
 							SourceOffset = variant.SourceOffset + variant.EncodedSource,
 							SourceCount = variant.SourceCount - variant.EncodedSource,
 							EncodedSource = tuple.BytesConsumed,
-							EncodedDestination = newEncodedDestination2
+							EncodedDestination = newEncodedDestination2,
 						};
 						variants = variants.AddItem (resultVariant2);
 					}

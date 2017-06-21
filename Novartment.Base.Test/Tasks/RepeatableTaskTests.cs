@@ -1,14 +1,15 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Xunit;
 using Novartment.Base.Tasks;
+using Xunit;
 
 namespace Novartment.Base.Test
 {
 	public class RepeatableTaskTests
 	{
-		[Fact, Trait ("Category", "Tasks")]
+		[Fact]
+		[Trait ("Category", "Tasks")]
 		public void SwitchContextFromTaskFactory ()
 		{
 			var context = new SynchronizationContextMock ();
@@ -49,7 +50,8 @@ namespace Novartment.Base.Test
 			}
 		}
 
-		[Fact, Trait ("Category", "Tasks")]
+		[Fact]
+		[Trait ("Category", "Tasks")]
 		public void SwitchContextFromAction ()
 		{
 			var context = new SynchronizationContextMock ();
@@ -92,7 +94,8 @@ namespace Novartment.Base.Test
 			}
 		}
 
-		[Fact, Trait ("Category", "Tasks")]
+		[Fact]
+		[Trait ("Category", "Tasks")]
 		public void MultiRunFromTaskFactory ()
 		{
 			var monitor = new RepeatableTaskMock ();
@@ -177,7 +180,8 @@ namespace Novartment.Base.Test
 			}
 		}
 
-		[Fact, Trait ("Category", "Tasks")]
+		[Fact]
+		[Trait ("Category", "Tasks")]
 		public void MultiRunFromAction ()
 		{
 			var monitor = new RepeatableTaskMock ();

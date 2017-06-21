@@ -1,26 +1,14 @@
 ﻿using System;
-using static System.Linq.Enumerable;
 using Novartment.Base.Collections;
 using Xunit;
+using static System.Linq.Enumerable;
 
 namespace Novartment.Base.Test
 {
-	// Тривиальная обёртка чтобы реализовать поддержку IAdjustableList
-	internal class AdjustableList_<T> : System.Collections.Generic.List<T>, IAdjustableList<T>, IArrayDuplicableCollection<T>
-	{
-		public AdjustableList_ () : base () { }
-		public AdjustableList_ (System.Collections.Generic.IEnumerable<T> collection) : base (collection) { }
-		public bool IsEmpty { get { throw new NotImplementedException (); } }
-		public void InsertRange (int index, int count) { throw new NotImplementedException (); }
-		public bool TryPeekFirst (out T item) { throw new NotImplementedException (); }
-		public bool TryTakeFirst (out T item) { throw new NotImplementedException (); }
-		public bool TryPeekLast (out T item) { throw new NotImplementedException (); }
-		public bool TryTakeLast (out T item) { throw new NotImplementedException (); }
-	}
-
 	public class CollectionExtensionsTests
 	{
-		[Fact, Trait ("Category", "Collections.CollectionExtensions")]
+		[Fact]
+		[Trait ("Category", "Collections.CollectionExtensions")]
 		public void Array_LoopedArraySegmentClear ()
 		{
 			var data = new int[] { 8, 3, 2, 10, -11, 11, 4, 4, 20, 7 };
@@ -40,7 +28,8 @@ namespace Novartment.Base.Test
 			Assert.Equal<int> (new int[] { 8, 3, 0, 10, -11, 11, 4, 4, 20, 7 }, data);
 		}
 
-		[Fact, Trait ("Category", "Collections.CollectionExtensions")]
+		[Fact]
+		[Trait ("Category", "Collections.CollectionExtensions")]
 		public void Array_LoopedArraySegmentCopy ()
 		{
 			var data = new int[] { 8, 3, 2, 10, -11, 11, 4, 4, 20, 7 };
@@ -55,7 +44,8 @@ namespace Novartment.Base.Test
 			Assert.Equal<int> (new int[] { 20, 3, 2, 10, 10, -11, 11, 4, 20, 7 }, data);
 		}
 
-		[Fact, Trait ("Category", "Collections.CollectionExtensions")]
+		[Fact]
+		[Trait ("Category", "Collections.CollectionExtensions")]
 		public void AppendableCollection_AddRange ()
 		{
 			var t1 = new int[] { 8, 3, 2, 10, -11, 11, 4, 4, 20, 7 };
@@ -65,7 +55,8 @@ namespace Novartment.Base.Test
 			Assert.Equal<int> (new int[] { 8, 3, 2, 10, -11, 11, 4, 4, 20, 7, 973, 973, 973 }, list1);
 		}
 
-		[Fact, Trait ("Category", "Collections.CollectionExtensions")]
+		[Fact]
+		[Trait ("Category", "Collections.CollectionExtensions")]
 		public void AppendableCollection_InsertRange ()
 		{
 			var t1 = new int[] { 8, 3, 2, 10, -11, 11, 4, 4, 20, 7 };
@@ -75,7 +66,8 @@ namespace Novartment.Base.Test
 			Assert.Equal<int> (new int[] { 8, 3, 2, 973, 973, 973, 10, -11, 11, 4, 4, 20, 7 }, list1);
 		}
 
-		[Fact, Trait ("Category", "Collections.CollectionExtensions")]
+		[Fact]
+		[Trait ("Category", "Collections.CollectionExtensions")]
 		public void Enumerable_Split ()
 		{
 			var t1 = new int[] { 8, 3, 2, 10, -11, 11, 4, 4, 20, 7 };
@@ -104,7 +96,8 @@ namespace Novartment.Base.Test
 			Assert.Equal<int> (new int[] { 7 }, t2[2]);
 		}
 
-		[Fact, Trait ("Category", "Collections.CollectionExtensions")]
+		[Fact]
+		[Trait ("Category", "Collections.CollectionExtensions")]
 		public void AdjustableList_RemoveWhere ()
 		{
 			var t1 = new int[] { 8, 3, 2, 10, -11, 11, 4, 4, 20, 7 };
@@ -126,7 +119,8 @@ namespace Novartment.Base.Test
 			Assert.Equal<int> (new int[] { 8, 3, 2, 10, -11, 11, 4, 4, 20, 7 }, c1);
 		}
 
-		[Fact, Trait ("Category", "Collections.CollectionExtensions")]
+		[Fact]
+		[Trait ("Category", "Collections.CollectionExtensions")]
 		public void AdjustableList_RemoveItems ()
 		{
 			var t1 = new int[] { 8, 3, 2, 10, -11, 11, 4, 4, 20, 7 };
@@ -148,7 +142,8 @@ namespace Novartment.Base.Test
 			Assert.Equal<int> (new int[0], c1);
 		}
 
-		[Fact, Trait ("Category", "Collections.CollectionExtensions")]
+		[Fact]
+		[Trait ("Category", "Collections.CollectionExtensions")]
 		public void AdjustableList_RemoveAtMany ()
 		{
 			var t1 = new int[] { 8, 3, 2, 10, -11, 11, 4, 4, 20, 7 };
@@ -186,7 +181,8 @@ namespace Novartment.Base.Test
 			Assert.Equal<int> (new int[] { -11 }, c1);
 		}
 
-		[Fact, Trait ("Category", "Collections.CollectionExtensions")]
+		[Fact]
+		[Trait ("Category", "Collections.CollectionExtensions")]
 		public void Enumerable_WhereNotNull ()
 		{
 			var list1 = Repeat<string> (null, 2)
@@ -200,7 +196,8 @@ namespace Novartment.Base.Test
 			Assert.Equal ("123", list2[2]);
 		}
 
-		[Fact, Trait ("Category", "Collections.CollectionExtensions")]
+		[Fact]
+		[Trait ("Category", "Collections.CollectionExtensions")]
 		public void Enumerable_TryGetCount ()
 		{
 			var list1 = Repeat<string> (null, 2)
@@ -208,13 +205,13 @@ namespace Novartment.Base.Test
 				.Concat (Repeat<string> (null, 3))
 				.Concat (Repeat<string> ("123", 2));
 			var list2 = list1.ToArray ();
-			int cnt;
-			Assert.False (CollectionExtensions.TryGetCount (list1, out cnt));
+			Assert.False (CollectionExtensions.TryGetCount (list1, out int cnt));
 			Assert.True (CollectionExtensions.TryGetCount (list2, out cnt));
 			Assert.Equal (8, cnt);
 		}
 
-		[Fact, Trait ("Category", "Collections.CollectionExtensions")]
+		[Fact]
+		[Trait ("Category", "Collections.CollectionExtensions")]
 		public void Enumerable_DuplicateToArray ()
 		{
 			var list1 = Repeat<int> (0, 2)
@@ -244,6 +241,34 @@ namespace Novartment.Base.Test
 			Assert.Equal (333, res2[5]);
 			Assert.Equal (-1, res2[6]);
 			Assert.Equal (-1, res2[7]);
+		}
+
+		// Тривиальная обёртка чтобы реализовать поддержку IAdjustableList
+		internal class AdjustableList_<T> : System.Collections.Generic.List<T>,
+			IAdjustableList<T>,
+			IArrayDuplicableCollection<T>
+		{
+			public AdjustableList_ ()
+				: base ()
+			{
+			}
+
+			public AdjustableList_ (System.Collections.Generic.IEnumerable<T> collection)
+				: base (collection)
+			{
+			}
+
+			public bool IsEmpty => throw new NotImplementedException ();
+
+			public void InsertRange (int index, int count) => throw new NotImplementedException ();
+
+			public bool TryPeekFirst (out T item) => throw new NotImplementedException ();
+
+			public bool TryTakeFirst (out T item) => throw new NotImplementedException ();
+
+			public bool TryPeekLast (out T item) => throw new NotImplementedException ();
+
+			public bool TryTakeLast (out T item) => throw new NotImplementedException ();
 		}
 	}
 }

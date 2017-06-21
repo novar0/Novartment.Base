@@ -31,7 +31,7 @@ namespace Novartment.Base.UI.Wpf
 		{
 			var stack = new ArrayList<InlineCollection>
 			{
-				_collection
+				_collection,
 			};
 			while (stack.TryTakeLast (out InlineCollection collection))
 			{

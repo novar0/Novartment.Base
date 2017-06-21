@@ -6,7 +6,8 @@ namespace Novartment.Base.Test
 {
 	public class InternetDateTimeTests
 	{
-		[Fact, Trait ("Category", "Text.InternetDateTime")]
+		[Fact]
+		[Trait ("Category", "Text.InternetDateTime")]
 		public void Parse ()
 		{
 			Assert.Equal (
@@ -20,10 +21,11 @@ namespace Novartment.Base.Test
 				InternetDateTime.Parse ("15 Jun 1892 23:12 -0630"));
 		}
 
-		[Fact, Trait ("Category", "Text.InternetDateTime")]
+		[Fact]
+		[Trait ("Category", "Text.InternetDateTime")]
 		public void ParseException ()
 		{
-			Assert.Throws<FormatException> (() => InternetDateTime.Parse (""));
+			Assert.Throws<FormatException> (() => InternetDateTime.Parse (string.Empty));
 			Assert.Throws<FormatException> (() => InternetDateTime.Parse ("first May 2012 02:49:22 +0100"));
 			Assert.Throws<FormatException> (() => InternetDateTime.Parse ("Tue, 15"));
 			Assert.Throws<FormatException> (() => InternetDateTime.Parse ("15 July 2012 02:49:22 +0100"));
@@ -36,7 +38,8 @@ namespace Novartment.Base.Test
 			Assert.Throws<FormatException> (() => InternetDateTime.Parse ("15 May 2012 02:49:22 Moscow"));
 		}
 
-		[Fact, Trait ("Category", "Text.InternetDateTime")]
+		[Fact]
+		[Trait ("Category", "Text.InternetDateTime")]
 		public void ToInternetString ()
 		{
 			Assert.Equal (

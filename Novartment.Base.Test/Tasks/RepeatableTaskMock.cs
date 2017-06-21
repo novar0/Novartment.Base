@@ -12,7 +12,7 @@ namespace Novartment.Base.Test
 		SampleValue3 = 2,
 		StartNotConfirmed = 4,
 		ProcessingException = 5,
-		ProcessingCancel = 6
+		ProcessingCancel = 6,
 	}
 
 	internal class RepeatableTaskMock
@@ -31,14 +31,21 @@ namespace Novartment.Base.Test
 		private readonly CompletedTaskData[] _completedTaskData = new CompletedTaskData[MaxCount];
 
 		internal TaskCompletionSource<int>[] CreatedEvent => _taskCreated;
+
 		internal TaskCompletionSource<int>[] StartingEvent => _taskStarting;
+
 		internal TaskCompletionSource<int>[] StartedEvent => _taskStarted;
+
 		internal TaskCompletionSource<int>[] EndedEvent => _taskEnded;
+
 		internal CompletedTaskData[] CompletedTaskData => _completedTaskData;
 
 		internal int[] CreationThreadId => _creationThreadId;
+
 		internal int[] StartingThreadId => _startingThreadId;
+
 		internal int[] StartedThreadId => _startedThreadId;
+
 		internal int[] EndedThreadId => _endedThreadId;
 
 		internal void Complete (TaskArgument arg)
@@ -60,6 +67,7 @@ namespace Novartment.Base.Test
 					tcs.SetCanceled ();
 					return;
 				}
+
 				tcs.SetResult (0);
 			}
 		}
@@ -67,27 +75,45 @@ namespace Novartment.Base.Test
 		internal Task TaskFactory (object state, CancellationToken cToken)
 		{
 			var index = (int)state;
-			if (_taskCreated[index] == null) throw new InvalidOperationException ($"not started task {index}");
+			if (_taskCreated[index] == null)
+			{
+				throw new InvalidOperationException ($"not started task {index}");
+			}
+
 			_creationThreadId[index] = Thread.CurrentThread.ManagedThreadId;
 			_taskCreated[index].SetResult (0);
 			var tcs = new TaskCompletionSource<int> (cToken);
 			_taskCompletionSource[index] = tcs;
 			return tcs.Task;
 		}
+
 		internal void TaskAction (object state, CancellationToken cToken)
 		{
 			var index = (int)state;
-			if (_taskCreated[index] == null) throw new InvalidOperationException ($"not started task {index}");
+			if (_taskCreated[index] == null)
+			{
+				throw new InvalidOperationException ($"not started task {index}");
+			}
+
 			_creationThreadId[index] = Thread.CurrentThread.ManagedThreadId;
 			_taskCreated[index].SetResult (0);
 			_endTaskSignaler[index].WaitOne ();
-			if (((TaskArgument)state) == TaskArgument.ProcessingException) throw new ArithmeticException ("test exception");
+			if (((TaskArgument)state) == TaskArgument.ProcessingException)
+			{
+				throw new ArithmeticException ("test exception");
+			}
+
 			cToken.ThrowIfCancellationRequested ();
 		}
+
 		internal void OnStarting (object sender, TaskStartingEventArgs args)
 		{
 			var index = (int)args.State;
-			if (_taskCreated[index] != null) throw new InvalidOperationException ($"already started task {index}");
+			if (_taskCreated[index] != null)
+			{
+				throw new InvalidOperationException ($"already started task {index}");
+			}
+
 			_taskCreated[index] = new TaskCompletionSource<int> ();
 			_taskStarting[index] = new TaskCompletionSource<int> ();
 			_taskStarted[index] = new TaskCompletionSource<int> ();
@@ -100,18 +126,28 @@ namespace Novartment.Base.Test
 				args.Cancel = true;
 			}
 		}
+
 		internal void OnStarted (object sender, DataEventArgs<object> args)
 		{
 			var index = (int)args.Value;
-			if (_taskCreated[index] == null) throw new InvalidOperationException ($"not started task {index}");
+			if (_taskCreated[index] == null)
+			{
+				throw new InvalidOperationException ($"not started task {index}");
+			}
+
 			_startedThreadId[index] = Thread.CurrentThread.ManagedThreadId;
 			_taskStarted[index].SetResult (0);
 		}
+
 		internal void OnEnded (object sender, DataEventArgs<CompletedTaskData> args)
 		{
 			var index = (int)args.Value.State;
 			_completedTaskData[index] = args.Value;
-			if (_taskCreated[index] == null) throw new InvalidOperationException ($"not started task {index}");
+			if (_taskCreated[index] == null)
+			{
+				throw new InvalidOperationException ($"not started task {index}");
+			}
+
 			_endedThreadId[index] = Thread.CurrentThread.ManagedThreadId;
 			_taskEnded[index].SetResult (0);
 		}

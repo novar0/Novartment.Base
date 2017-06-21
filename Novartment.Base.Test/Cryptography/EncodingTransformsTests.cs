@@ -1,5 +1,5 @@
-﻿using System.Text;
-using System.Security.Cryptography;
+﻿using System.Security.Cryptography;
+using System.Text;
 using Xunit;
 
 namespace Novartment.Base.Test
@@ -15,7 +15,8 @@ namespace Novartment.Base.Test
 		private static readonly string Template2MostlyAsciiText = "Заголовок текста\r\n\r\n\r\n\r\n\r\n\r\nGetStringattObj.ContentDisposition.Param_FdileName ??\t\t\t\t\r\n\t\td in b   \r\n   ContentType.Param_Name01  23\r\n45\t6\r\n\t\tcoder.TransformFinalBlock (buf, nBlocks * coder.InputBlockSize, buf.Length - nBlocks * coder.InputBlockSize)";
 		private static readonly string Template2QuotedPrintable = "=D0=97=D0=B0=D0=B3=D0=BE=D0=BB=D0=BE=D0=B2=D0=BE=D0=BA =D1=82=D0=B5=D0=BA=\r\n=D1=81=D1=82=D0=B0\r\n\r\n\r\n\r\n\r\n\r\nGetStringattObj.ContentDisposition.Param_FdileName ??\t\t\t=09\r\n\t\td in b  =20\r\n   ContentType.Param_Name01  23\r\n45\t6\r\n\t\tcoder.TransformFinalBlock (buf, nBlocks * coder.InputBlockSize, buf.Lengt=\r\nh - nBlocks * coder.InputBlockSize)";
 
-		[Fact, Trait ("Category", "Cryptography.CryptoTransform")]
+		[Fact]
+		[Trait ("Category", "Cryptography.CryptoTransform")]
 		public void FromBase64Converter ()
 		{
 			ICryptoTransform coder = new FromBase64Converter ();
@@ -28,7 +29,8 @@ namespace Novartment.Base.Test
 			Assert.Equal (Template1Html, resutlStr);
 		}
 
-		[Fact, Trait ("Category", "Cryptography.CryptoTransform")]
+		[Fact]
+		[Trait ("Category", "Cryptography.CryptoTransform")]
 		public void ToQuotedPrintableWithLineBreaksTransform_Text ()
 		{
 			ICryptoTransform coder = new ToQuotedPrintableWithLineBreaksConverter (true);
@@ -39,7 +41,7 @@ namespace Novartment.Base.Test
 			var result1 = new byte[buf.Length * 4];
 			int nBlocks = buf.Length / coder.InputBlockSize;
 			var size = coder.TransformBlock (buf, 0, nBlocks * coder.InputBlockSize, result1, 0);
-			var result2 = coder.TransformFinalBlock (buf, nBlocks * coder.InputBlockSize, buf.Length - nBlocks * coder.InputBlockSize);
+			var result2 = coder.TransformFinalBlock (buf, nBlocks * coder.InputBlockSize, buf.Length - (nBlocks * coder.InputBlockSize));
 			var resutlStr = Encoding.UTF8.GetString (result1, 0, size) + Encoding.UTF8.GetString (result2, 0, result2.Length);
 			Assert.Equal ("DOCTYPE-html PUBLIC*123456", resutlStr);
 
@@ -48,12 +50,13 @@ namespace Novartment.Base.Test
 			result1 = new byte[buf.Length * 4];
 			nBlocks = buf.Length / coder.InputBlockSize;
 			size = coder.TransformBlock (buf, 0, nBlocks * coder.InputBlockSize, result1, 0);
-			result2 = coder.TransformFinalBlock (buf, nBlocks * coder.InputBlockSize, buf.Length - nBlocks * coder.InputBlockSize);
+			result2 = coder.TransformFinalBlock (buf, nBlocks * coder.InputBlockSize, buf.Length - (nBlocks * coder.InputBlockSize));
 			resutlStr = Encoding.UTF8.GetString (result1, 0, size) + Encoding.UTF8.GetString (result2, 0, result2.Length);
 			Assert.Equal (Template2QuotedPrintable, resutlStr);
 		}
 
-		[Fact, Trait ("Category", "Cryptography.CryptoTransform")]
+		[Fact]
+		[Trait ("Category", "Cryptography.CryptoTransform")]
 		public void FromQuotedPrintableTransform_Text ()
 		{
 			ICryptoTransform coder = new FromQuotedPrintableConverter ();
@@ -63,7 +66,8 @@ namespace Novartment.Base.Test
 			Assert.Equal (Template2MostlyAsciiText, Encoding.UTF8.GetString (result, 0, size));
 		}
 
-		[Fact, Trait ("Category", "Cryptography.CryptoTransform")]
+		[Fact]
+		[Trait ("Category", "Cryptography.CryptoTransform")]
 		public void ToQuotedPrintableWithLineBreaksTransform_Binary ()
 		{
 			ICryptoTransform coder = new ToQuotedPrintableWithLineBreaksConverter (false);
@@ -74,12 +78,13 @@ namespace Novartment.Base.Test
 			var result1 = new byte[buf.Length * 4];
 			int nBlocks = buf.Length / coder.InputBlockSize;
 			var size = coder.TransformBlock (buf, 0, nBlocks * coder.InputBlockSize, result1, 0);
-			var result2 = coder.TransformFinalBlock (buf, nBlocks * coder.InputBlockSize, buf.Length - nBlocks * coder.InputBlockSize);
+			var result2 = coder.TransformFinalBlock (buf, nBlocks * coder.InputBlockSize, buf.Length - (nBlocks * coder.InputBlockSize));
 			var resutlStr = Encoding.UTF8.GetString (result1, 0, size) + Encoding.UTF8.GetString (result2, 0, result2.Length);
 			Assert.Equal (Template1QuotedPrintable, resutlStr);
 		}
 
-		[Fact, Trait ("Category", "Cryptography.CryptoTransform")]
+		[Fact]
+		[Trait ("Category", "Cryptography.CryptoTransform")]
 		public void FromQuotedPrintableTransform_Binary ()
 		{
 			ICryptoTransform coder = new FromQuotedPrintableConverter ();
@@ -89,7 +94,8 @@ namespace Novartment.Base.Test
 			Assert.Equal (Template1Html, Encoding.UTF8.GetString (result, 0, size));
 		}
 
-		[Fact, Trait ("Category", "Cryptography.CryptoTransform")]
+		[Fact]
+		[Trait ("Category", "Cryptography.CryptoTransform")]
 		public void ToBase64WithLineBreaksTransform ()
 		{
 			ICryptoTransform coder = new ToBase64WithLineBreaksConverter ();
@@ -99,7 +105,7 @@ namespace Novartment.Base.Test
 			var buf = Encoding.UTF8.GetBytes (Template1Html);
 			var result1 = new byte[buf.Length * 2];
 			var size = coder.TransformBlock (buf, 0, 11 * 57, result1, 0);
-			var result2 = coder.TransformFinalBlock (buf, 11 * 57, buf.Length - 11 * 57);
+			var result2 = coder.TransformFinalBlock (buf, 11 * 57, buf.Length - (11 * 57));
 			var resutlStr = Encoding.UTF8.GetString (result1, 0, size) + Encoding.UTF8.GetString (result2, 0, result2.Length);
 			Assert.Equal (Template1Base64, resutlStr);
 		}

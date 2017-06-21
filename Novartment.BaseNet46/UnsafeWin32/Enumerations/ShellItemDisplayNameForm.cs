@@ -10,6 +10,8 @@
 		/// <remarks>SIGDN_NORMALDISPLAY = 0 + SIGDN_NORMAL</remarks>
 		Normal = 0x00000000,
 
+#pragma warning disable SA1139 // Use literal suffix notation instead of casting
+
 		/// <summary>Returns the parsing name relative to the parent folder.</summary>
 		/// <remarks>SIGDN_PARENTRELATIVEPARSING = 1 + SIGDN_INFOLDER | SIGDN_FORPARSING</remarks>
 		ParentRelativeParsing = unchecked ((int)0x80018001),
@@ -45,6 +47,8 @@
 
 		/// <summary>Returns the path relative to the parent folder suitable for display to the user.</summary>
 		/// <remarks>SIGDN_PARENTRELATIVEFORU = 9 + SIGDN_INFOLDER | SHGDN_FORADDRESSBAR</remarks>
-		ParentRelativeForUI = unchecked ((int)0x80094001)
+		ParentRelativeForUI = unchecked ((int)0x80094001),
+
+#pragma warning restore SA1139 // Use literal suffix notation instead of casting
 	}
 }

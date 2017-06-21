@@ -25,8 +25,7 @@ namespace Novartment.Base.Net
 		private bool _active;
 
 		/// <summary>
-		/// Инициализирует новый экземпляр SocketTcpListener для прослушивания на указанной конечной точке
-		/// и создающий объект-подключение используя указанную фабрику.
+		/// Инициализирует новый экземпляр SocketTcpListener для прослушивания на указанной конечной точке.
 		/// </summary>
 		/// <param name="localEP">Конечная точка, на которой будет осуществляться прослушивание.</param>
 		public SocketTcpListener (IPEndPoint localEP)

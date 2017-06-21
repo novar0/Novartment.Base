@@ -12,7 +12,8 @@ namespace Novartment.Base.Test
 			Encoding.RegisterProvider (CodePagesEncodingProvider.Instance);
 		}
 
-		[Fact, Trait ("Category", "Text.Rfc2047EncodedWord")]
+		[Fact]
+		[Trait ("Category", "Text.Rfc2047EncodedWord")]
 		public void Parse_QEncoding ()
 		{
 			Assert.Equal (
@@ -26,7 +27,8 @@ namespace Novartment.Base.Test
 				Rfc2047EncodedWord.Parse ("=?windows-1251*ru-ru?Q?=C8=E4=E5=FF_=F1=EE=F1=F2=EE=E8=F2_=E2_=F2=EE=EC?="));
 		}
 
-		[Fact, Trait ("Category", "Text.Rfc2047EncodedWord")]
+		[Fact]
+		[Trait ("Category", "Text.Rfc2047EncodedWord")]
 		public void Parse_BEncoding ()
 		{
 			Assert.Equal (
@@ -43,7 +45,8 @@ namespace Novartment.Base.Test
 				Rfc2047EncodedWord.Parse ("=?utf-8?B?INC80LXRgNCw0YU=?=")); // длина кратно 3 + 2
 		}
 
-		[Fact, Trait ("Category", "Text.Rfc2047EncodedWord")]
+		[Fact]
+		[Trait ("Category", "Text.Rfc2047EncodedWord")]
 		public void ParseException ()
 		{
 			Assert.Throws<FormatException> (() => Rfc2047EncodedWord.Parse ("=?a?B??"));
@@ -61,7 +64,8 @@ namespace Novartment.Base.Test
 			Assert.Throws<FormatException> (() => Rfc2047EncodedWord.Parse ("=?utf-8*ru-ru?B?0YLQtdC80LAg0YHQvtC+0LHRidC10L3QuNGPINGC0LXQutGB0YIg0YHQvtC+0LHRidC10L3QuNG?="));
 		}
 
-		[Fact, Trait ("Category", "Text.Rfc2047EncodedWord")]
+		[Fact]
+		[Trait ("Category", "Text.Rfc2047EncodedWord")]
 		public void IsValid ()
 		{
 			// legal
@@ -69,6 +73,7 @@ namespace Novartment.Base.Test
 			Assert.True (Rfc2047EncodedWord.IsValid ("=?utf-8*ru-ru?B?0YLQtdC80LAg0YHQvtC+0LHRidC10L3QuNGPINGC0LXQutGB0YIg0YHQvtC+0LHRidC10L3QuNGP?="));
 			Assert.True (Rfc2047EncodedWord.IsValid ("=?windows-1251?Q?new_=F1=EE=E2=F1=E5=EC_one_222?="));
 			Assert.True (Rfc2047EncodedWord.IsValid ("=?us-ascii?new-method?%20%30%40?="));
+
 			// illegal
 			Assert.False (Rfc2047EncodedWord.IsValid ("sdfs"));
 			Assert.False (Rfc2047EncodedWord.IsValid ("=?sdfs"));
@@ -80,9 +85,9 @@ namespace Novartment.Base.Test
 			Assert.False (Rfc2047EncodedWord.IsValid (" =?utf-8?q?some_text?="));
 			Assert.False (Rfc2047EncodedWord.IsValid ("=?utf-8?q?some_text?= "));
 			Assert.False (Rfc2047EncodedWord.IsValid ("=?utf-8?q?some_text ?="));
-			//Assert.False (Rfc2047EncodedWord.IsValid ("=?utf-8?q?some?text?="));
-			//Assert.False (Rfc2047EncodedWord.IsValid ("=?utf-8?some_text?="));
-			//Assert.False (Rfc2047EncodedWord.IsValid ("=?utf/8?q?some_text?="));
+			/* Assert.False (Rfc2047EncodedWord.IsValid ("=?utf-8?q?some?text?="));
+			Assert.False (Rfc2047EncodedWord.IsValid ("=?utf-8?some_text?="));
+			Assert.False (Rfc2047EncodedWord.IsValid ("=?utf/8?q?some_text?=")); */
 		}
 	}
 }

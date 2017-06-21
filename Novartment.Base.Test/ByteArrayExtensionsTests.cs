@@ -4,7 +4,8 @@ namespace Novartment.Base.Test
 {
 	public class ByteArrayExtensionsTests
 	{
-		[Fact, Trait ("Category", "ByteArrayExtensions")]
+		[Fact]
+		[Trait ("Category", "ByteArrayExtensions")]
 		public void IndexOf ()
 		{
 			Assert.Equal (-1, ByteArrayExtensions.IndexOf (new byte[] { }, new byte[] { 0, 1, 2 }));

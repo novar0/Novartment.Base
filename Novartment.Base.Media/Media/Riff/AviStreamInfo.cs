@@ -129,7 +129,7 @@ namespace Novartment.Base.Media
 
 		[DebuggerBrowsable (DebuggerBrowsableState.Never)]
 		[SuppressMessage (
-		"Microsoft.Performance",
+			"Microsoft.Performance",
 			"CA1811:AvoidUncalledPrivateCode",
 			Justification = "Used in DebuggerDisplay attribute.")]
 		private string DebuggerDisplay => FormattableString.Invariant ($"Type = {this.Kind}, Handler = {this.Handler}, Length = {this.Length}");

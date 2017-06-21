@@ -39,7 +39,7 @@ namespace Novartment.Base.IO
 		/// Проверяется полное совпадение без учёта регистра.
 		/// </param>
 		[SuppressMessage (
-		"Microsoft.Design",
+			"Microsoft.Design",
 			"CA1062:Validate arguments of public methods",
 			MessageId = "1",
 			Justification = "'fileNameFilter' validated indirectly.")]
@@ -81,7 +81,7 @@ namespace Novartment.Base.IO
 		{
 			var stack = new ArrayList<string>
 			{
-				string.Empty
+				string.Empty,
 			};
 			while (stack.TryTakeLast (out string item))
 			{

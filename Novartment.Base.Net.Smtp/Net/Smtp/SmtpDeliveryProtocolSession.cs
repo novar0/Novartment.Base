@@ -18,10 +18,10 @@ namespace Novartment.Base.Net.Smtp
 		{
 			"PIPELINING", // RFC 2920
 			"8BITMIME", // RFC 6152
-			"BINARYMIME", "CHUNKING" // RFC 3030
+			"BINARYMIME", "CHUNKING", // RFC 3030
 		};
 
-		private readonly ISmtpCommandTransport _sender;
+		private readonly ISmtpCommandTransport _transport;
 		private readonly IPHostEndPoint _remoteEndPoint;
 		private readonly Func<MailDeliverySourceData, IMailDataTransferTransaction> _currentTransactionFactory;
 		private readonly string _hostFqdn;
@@ -40,14 +40,14 @@ namespace Novartment.Base.Net.Smtp
 		private object _authenticatedUser = null;
 
 		internal SmtpDeliveryProtocolSession (
-			ISmtpCommandTransport sender,
+			ISmtpCommandTransport transport,
 			IPHostEndPoint remoteEndPoint,
 			Func<MailDeliverySourceData, IMailDataTransferTransaction> transactionFactory,
 			string hostFqdn,
 			SmtpServerSecurityParameters securityParameters,
 			ILogger logger)
 		{
-			_sender = sender;
+			_transport = transport;
 			_remoteEndPoint = remoteEndPoint;
 			_currentTransactionFactory = transactionFactory;
 			_hostFqdn = hostFqdn;
@@ -69,7 +69,7 @@ namespace Novartment.Base.Net.Smtp
 				// посылка прощального ответа необязательна, поэтому игнорируем исключения если связи уже нет
 				try
 				{
-					_sender.SendReplyAsync (SmtpReply.ServiceNotAvailable, false, CancellationToken.None).Wait ();
+					_transport.SendReplyAsync (SmtpReply.ServiceNotAvailable, false, CancellationToken.None).GetAwaiter ().GetResult ();
 				}
 				catch (IOException)
 				{
@@ -92,12 +92,12 @@ namespace Novartment.Base.Net.Smtp
 			// TODO: сделать конфигурируемым имя, используемое в качестве приветствия
 			var assembly = this.GetType ().GetTypeInfo ().Assembly.GetName ();
 			var reply = SmtpReply.CreateServiceReady (assembly.Name, assembly.Version);
-			return _sender.SendReplyAsync (reply, false, cancellationToken);
+			return _transport.SendReplyAsync (reply, false, cancellationToken);
 		}
 
 		internal async Task<bool> ReceiveCommandSendReplyAsync (CancellationToken cancellationToken)
 		{
-			var command = await _sender.ReceiveCommandAsync (_expectedInput, cancellationToken).ConfigureAwait (false);
+			var command = await _transport.ReceiveCommandAsync (_expectedInput, cancellationToken).ConfigureAwait (false);
 
 			SmtpReply reply;
 			bool canBeGrouped = false;
@@ -148,11 +148,11 @@ namespace Novartment.Base.Net.Smtp
 				}
 			}
 
-			await _sender.SendReplyAsync (reply, canBeGrouped, cancellationToken).ConfigureAwait (false);
+			await _transport.SendReplyAsync (reply, canBeGrouped, cancellationToken).ConfigureAwait (false);
 
 			if (reply == SmtpReply.ReadyToStartTls)
 			{
-				await _sender
+				await _transport
 					.StartTlsServerAsync (_securityParameters.ServerCertificate, _securityParameters.ClientCertificateRequired)
 					.ConfigureAwait (false);
 
@@ -282,13 +282,13 @@ namespace Novartment.Base.Net.Smtp
 
 			// RFC 3207 part 4.2:
 			// A server MUST NOT return the STARTTLS extension in response to an EHLO command received after a TLS handshake has completed.
-			if ((_securityParameters.ServerCertificate != null) && !_sender.TlsEstablished)
+			if ((_securityParameters.ServerCertificate != null) && !_transport.TlsEstablished)
 			{
 				supportedExtensions.Add ("STARTTLS");
 			}
 
 			// разрешаем аутентификацию только если соединение зашифровано и предоставлен аутентификатор
-			if (_sender.TlsEstablished && (_securityParameters.ClientAuthenticator != null))
+			if (_transport.TlsEstablished && (_securityParameters.ClientAuthenticator != null))
 			{
 				supportedExtensions.Add ("AUTH PLAIN");
 			}
@@ -300,7 +300,7 @@ namespace Novartment.Base.Net.Smtp
 		{
 			return ((_securityParameters.ServerCertificate == null) ?
 						SmtpReply.UnableToInitializeSecurity :
-						_sender.TlsEstablished ? // TLS уже запущен
+						_transport.TlsEstablished ? // TLS уже запущен
 							SmtpReply.TlsNotAvailable :
 							SmtpReply.ReadyToStartTls)
 					.DisallowGrouping ();
@@ -326,7 +326,7 @@ namespace Novartment.Base.Net.Smtp
 				return SmtpReply.UnrecognizedAuthenticationType.DisallowGrouping ();
 			}
 
-			if (!_sender.TlsEstablished)
+			if (!_transport.TlsEstablished)
 			{
 				// TLS не запущен
 				// RFC 4954 part 4:
@@ -386,7 +386,7 @@ namespace Novartment.Base.Net.Smtp
 				throw new BadSequenceOfSmtpCommandsException ();
 			}
 
-			if ((_securityParameters.ServerCertificate != null) && !_sender.TlsEstablished)
+			if ((_securityParameters.ServerCertificate != null) && !_transport.TlsEstablished)
 			{
 				// требуется шифрование, а соединение не TLS
 				return Task.FromResult (SmtpReply.MustUseStartTlsFirst.AllowGrouping ());
@@ -401,7 +401,7 @@ namespace Novartment.Base.Net.Smtp
 			ResetTransaction ();
 			var newTransaction = _currentTransactionFactory.Invoke (new MailDeliverySourceData (
 				_remoteEndPoint,
-				_sender.RemoteCertificate,
+				_transport.RemoteCertificate,
 				_authenticatedUser));
 			Task task;
 			try

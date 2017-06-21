@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Text;
 using System.Threading;
-using static System.Linq.Enumerable;
-using Xunit;
 using Novartment.Base.BinaryStreaming;
+using Xunit;
+using static System.Linq.Enumerable;
 
 namespace Novartment.Base.Net.Mime.Test
 {
-
 	public class DeliveryStatusEntityBodyTests
 	{
 		private static readonly string Template1 =
@@ -19,7 +18,8 @@ namespace Novartment.Base.Net.Mime.Test
 			"Action: failed\r\n" +
 			"Status: 5.0.0\r\n";
 
-		[Fact, Trait ("Category", "Mime")]
+		[Fact]
+		[Trait ("Category", "Mime")]
 		public void Load ()
 		{
 			var body = new DeliveryStatusEntityBody ();
@@ -39,13 +39,16 @@ namespace Novartment.Base.Net.Mime.Test
 			Assert.Equal ("5.0.0", body.Recipients[0].Status);
 		}
 
-		[Fact, Trait ("Category", "Mime")]
+		[Fact]
+		[Trait ("Category", "Mime")]
 		public void Save ()
 		{
-			var body = new DeliveryStatusEntityBody ();
-			body.MailTransferAgent = new NotificationFieldValue (NotificationFieldValueKind.Host, "itc-serv01.chmk.mechelgroup.ru");
-			body.ReceivedFromMailTransferAgent = new NotificationFieldValue (NotificationFieldValueKind.Host, "ChelMKMail.mailinator.com");
-			body.ArrivalDate = new DateTimeOffset (634725101050000000L, new TimeSpan (-3, 0, 0));
+			var body = new DeliveryStatusEntityBody ()
+			{
+				MailTransferAgent = new NotificationFieldValue (NotificationFieldValueKind.Host, "itc-serv01.chmk.mechelgroup.ru"),
+				ReceivedFromMailTransferAgent = new NotificationFieldValue (NotificationFieldValueKind.Host, "ChelMKMail.mailinator.com"),
+				ArrivalDate = new DateTimeOffset (634725101050000000L, new TimeSpan (-3, 0, 0)),
+			};
 			var recipient = new RecipientDeliveryStatus (
 				new NotificationFieldValue (NotificationFieldValueKind.Mailbox, "quality@itc-serv01.chmk.mechelgroup.ru"),
 				DeliveryAttemptResult.Failed,
@@ -57,9 +60,9 @@ namespace Novartment.Base.Net.Mime.Test
 			var text = Encoding.UTF8.GetString (bytes.Buffer, 0, bytes.Count);
 			var lines = text.Split (new string[] { "\r\n" }, StringSplitOptions.None);
 			Assert.Equal (9, lines.Length);
-			Assert.Equal ("", lines[3]);
-			Assert.Equal ("", lines[7]);
-			Assert.Equal ("", lines[8]);
+			Assert.Equal (string.Empty, lines[3]);
+			Assert.Equal (string.Empty, lines[7]);
+			Assert.Equal (string.Empty, lines[8]);
 
 			var lines2 = lines.Take (3).OrderBy (item => item, StringComparer.OrdinalIgnoreCase).ToArray ();
 			int idx = 0;

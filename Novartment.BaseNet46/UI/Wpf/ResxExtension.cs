@@ -589,7 +589,7 @@ namespace Novartment.Base.UI.Wpf
 		/// <param name="target">The Target object.</param>
 		/// <param name="value">The name of the Resx.</param>
 		[SuppressMessage (
-		"Microsoft.Naming",
+			"Microsoft.Naming",
 			"CA1704:IdentifiersShouldBeSpelledCorrectly",
 			MessageId = "Resx",
 			Justification = "'RESX' is the standard term for resource files.")]

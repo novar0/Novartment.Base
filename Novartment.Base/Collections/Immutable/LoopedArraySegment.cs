@@ -80,7 +80,7 @@ namespace Novartment.Base.Collections.Immutable
 		/// Получает исходный массив сегмента.
 		/// </summary>
 		[SuppressMessage (
-		"Microsoft.Performance",
+			"Microsoft.Performance",
 			"CA1819:PropertiesShouldNotReturnArrays",
 			Justification = "This is clearly a property and write access to array is intended.")]
 		public T[] Array => _items;

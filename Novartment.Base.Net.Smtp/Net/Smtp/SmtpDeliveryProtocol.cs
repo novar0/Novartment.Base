@@ -29,7 +29,7 @@ namespace Novartment.Base.Net.Smtp
 		/// устнавливающие использование шифрования и аутентификации при выполнении транзакций.</param>
 		/// <param name="logger">Журнал для записи событий. Укажите null если запись не нужна.</param>
 		[SuppressMessage (
-		"Microsoft.Design",
+			"Microsoft.Design",
 			"CA1026:DefaultParametersShouldNotBeUsed",
 			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
 		[SuppressMessage (
@@ -101,9 +101,9 @@ namespace Novartment.Base.Net.Smtp
 
 			async Task StartAsyncStateMachine ()
 			{
-				var sender = new TcpConnectionSmtpCommandTransport (connection, _logger);
+				var transport = new TcpConnectionSmtpCommandTransport (connection, _logger);
 				using (var session = new SmtpDeliveryProtocolSession (
-					sender,
+					transport,
 					connection.RemoteEndPoint,
 					_transactionFactory,
 					connection.LocalEndPoint.HostName,

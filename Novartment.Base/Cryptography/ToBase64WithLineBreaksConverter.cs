@@ -19,7 +19,7 @@ namespace Novartment.Base
 		ICryptoTransform
 	{
 		[SuppressMessage (
-		"Microsoft.Performance",
+			"Microsoft.Performance",
 			"CA1802:UseLiteralsWhereAppropriate",
 			Justification = "No performance gain could be achieved.")]
 		private static readonly int _maxLineLen = 76;

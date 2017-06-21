@@ -187,7 +187,7 @@ namespace Novartment.Base.UI.Wpf
 		/// </summary>
 		/// <returns>The value from the resources if possible otherwise the default value.</returns>
 		[SuppressMessage (
-		"Microsoft.Design",
+			"Microsoft.Design",
 			"CA1024:UsePropertiesWhereAppropriate",
 			Justification = "This method supposed to do some work in derived classes and can not be property.")]
 		protected abstract object GetValue ();

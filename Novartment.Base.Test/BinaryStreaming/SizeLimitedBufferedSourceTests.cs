@@ -1,12 +1,13 @@
 ﻿using System.Threading;
-using Xunit;
 using Novartment.Base.BinaryStreaming;
+using Xunit;
 
 namespace Novartment.Base.Test
 {
 	public class SizeLimitedBufferedSourceTests
 	{
-		[Fact, Trait ("Category", "BufferedSource")]
+		[Fact]
+		[Trait ("Category", "BufferedSource")]
 		public void RequestSkip ()
 		{
 			long skipBeforeLimitingSize = int.MaxValue;
@@ -22,8 +23,8 @@ namespace Novartment.Base.Test
 			var src = new SizeLimitedBufferedSource (subSrc, limitingSize);
 			src.EnsureBufferAsync (skipBufferSize + 3, CancellationToken.None).Wait ();
 			Assert.Equal (FillFunction (skipBeforeLimitingSize), src.Buffer[src.Offset]);
-			Assert.Equal (FillFunction (skipBeforeLimitingSize+1), src.Buffer[src.Offset+1]);
-			Assert.Equal (FillFunction (skipBeforeLimitingSize+2), src.Buffer[src.Offset+2]);
+			Assert.Equal (FillFunction (skipBeforeLimitingSize + 1), src.Buffer[src.Offset + 1]);
+			Assert.Equal (FillFunction (skipBeforeLimitingSize + 2), src.Buffer[src.Offset + 2]);
 			src.SkipBuffer (skipBufferSize);
 			Assert.Equal (FillFunction (skipBeforeLimitingSize + skipBufferSize), src.Buffer[src.Offset]);
 			Assert.Equal (FillFunction (skipBeforeLimitingSize + skipBufferSize + 1), src.Buffer[src.Offset + 1]);
@@ -57,6 +58,7 @@ namespace Novartment.Base.Test
 			Assert.Equal (FillFunction (skipBeforeLimitingSize + skipBufferSize + skipBufferSize + 2), src.Buffer[src.Offset + 2]);
 			Assert.Equal (limitingSize - skipBufferSize - skipBufferSize, src.TryFastSkipAsync (long.MaxValue, CancellationToken.None).Result);
 		}
+
 		private static byte FillFunction (long position)
 		{
 			return (byte)(0xAA ^ (position & 0xFF));

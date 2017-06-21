@@ -6,10 +6,11 @@ namespace Novartment.Base.Test
 {
 	public class StructuredStringReaderTests
 	{
-		[Fact, Trait ("Category", "Text.StructuredStringReader")]
+		[Fact]
+		[Trait ("Category", "Text.StructuredStringReader")]
 		public void Parse ()
 		{
-			var parser = new StructuredStringReader ("");
+			var parser = new StructuredStringReader (string.Empty);
 			Assert.Equal (0, parser.Source.Length);
 			Assert.Equal (0, parser.Position);
 			Assert.Equal (-1, parser.NextChar);
@@ -24,7 +25,7 @@ namespace Novartment.Base.Test
 			Assert.Equal ((int)'a', parser.NextNextChar);
 			Assert.False (parser.IsExhausted);
 			Assert.Equal (0x1F44D, parser.SkipChar ()); // 👍
-			Assert.Equal ((int)'a', parser.SkipChar ()); 
+			Assert.Equal ((int)'a', parser.SkipChar ());
 			Assert.Equal (0x1F44E, parser.NextChar); // 👎
 			Assert.Equal (0x1F527, parser.NextNextChar); // 🔧
 			Assert.Equal (0x1F44E, parser.SkipChar ()); // 👎

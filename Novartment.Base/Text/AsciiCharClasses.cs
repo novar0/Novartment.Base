@@ -91,6 +91,6 @@ namespace Novartment.Base.Text
 		/// <summary>
 		/// Алфавит кодировки Base64 согласно RFC 2045 часть 6.8.
 		/// </summary>
-		Base64Alphabet = 0x1000
+		Base64Alphabet = 0x1000,
 	}
 }

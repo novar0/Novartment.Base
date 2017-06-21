@@ -7,23 +7,31 @@ namespace Novartment.Base.Net.Mime.Test
 {
 	internal class BinaryDestinationMock : IBinaryDestination
 	{
+		private readonly byte[] _buffer;
 		private bool _completed = false;
 		private int _count = 0;
-		private readonly byte[] _buffer;
-
-		public byte[] Buffer => _buffer;
-
-		public int Count => _count;
 
 		public BinaryDestinationMock (int maxSize)
 		{
 			_buffer = new byte[maxSize];
 		}
 
+		public byte[] Buffer => _buffer;
+
+		public int Count => _count;
+
 		public void Write (byte[] buffer, int offset, int count)
 		{
-			if (_completed) throw new InvalidOperationException ("Can not write to completed destination.");
-			if (count > _buffer.Length - _count) throw new InvalidOperationException ("Insufficient buffer size.");
+			if (_completed)
+			{
+				throw new InvalidOperationException ("Can not write to completed destination.");
+			}
+
+			if (count > _buffer.Length - _count)
+			{
+				throw new InvalidOperationException ("Insufficient buffer size.");
+			}
+
 			Array.Copy (buffer, offset, _buffer, _count, count);
 			_count += count;
 		}

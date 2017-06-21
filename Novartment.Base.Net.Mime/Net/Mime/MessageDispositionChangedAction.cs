@@ -29,6 +29,6 @@
 
 		/// <summary>Сообщение удалено автоматически.</summary>
 		/// Соответствует action-mode = "automatic-action", disposition-type = "deleted".
-		AutomaticallyDeleted = 4
+		AutomaticallyDeleted = 4,
 	}
 }

@@ -43,7 +43,7 @@ namespace Novartment.Base.Data
 		/// <param name="commandTimeout">Время (в секундах) ожидания выполнения команды перед тем как она будет прервана с ошибкой.</param>
 		/// <param name="logger">Опциональный объект-журнал для записей о событиях. Укажите null если не требуется.</param>
 		[SuppressMessage (
-		"Microsoft.Design",
+			"Microsoft.Design",
 			"CA1026:DefaultParametersShouldNotBeUsed",
 			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
 		public InvariantDbConnectionManager (
@@ -143,7 +143,7 @@ namespace Novartment.Base.Data
 		/// <param name="schemaName">Имя схемы. Укажите null если схему указывать не нужно.</param>
 		/// <returns>Сформатированное имя объекта.</returns>
 		[SuppressMessage (
-		"Microsoft.Design",
+			"Microsoft.Design",
 			"CA1026:DefaultParametersShouldNotBeUsed",
 			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
 		public string FormatObjectName (string objectName, string schemaName = null)

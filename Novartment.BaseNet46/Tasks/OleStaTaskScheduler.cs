@@ -50,7 +50,7 @@ namespace Novartment.Base.Tasks
 				var thread = new Thread (threadStart)
 				{
 					IsBackground = true,
-					Name = GetType ().Name + i
+					Name = GetType ().Name + i,
 				};
 				thread.SetApartmentState (ApartmentState.STA);
 				thread.Start ();

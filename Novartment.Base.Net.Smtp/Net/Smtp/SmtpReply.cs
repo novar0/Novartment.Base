@@ -143,7 +143,7 @@ namespace Novartment.Base.Net.Smtp
 			// ehlo-line = ehlo-keyword *( SP ehlo-param )
 			var text = new ArrayList<string>
 			{
-				hostFqdn
+				hostFqdn,
 			};
 			foreach (var ext in supportedExtensions)
 			{

@@ -10,13 +10,18 @@ namespace Novartment.Base.Net.Mime.Test
 		private static readonly string Template2 = " two\tthree";
 		private static readonly string Template3 = " \\^ between SLASHES ^\\ \"quoted\"";
 		private static readonly string Template4 = "кириллица";
+		private static readonly string Template10 = "Идея stop2020 состоит в том";
+		private static readonly string Template10ResultEncoded = "=?windows-1251?Q?=C8=E4=E5=FF_stop2020_=F1=EE=F1=F2=EE=E8=F2_=E2_=F2=EE=EC?=";
+		private static readonly string Template20 = "тема сообщения текст сообщения";
+		private static readonly string Template20ResultEncoded = "=?utf-8?B?0YLQtdC80LAg0YHQvtC+0LHRidC10L3QuNGPINGC0LXQutGB0YIg0YHQvtC+0LHRidC10L3QuNGP?=";
 
 		public EstimatingEncoderTests ()
 		{
 			Encoding.RegisterProvider (CodePagesEncodingProvider.Instance);
 		}
 
-		[Fact, Trait ("Category", "Text.EstimatingEncoder")]
+		[Fact]
+		[Trait ("Category", "Text.EstimatingEncoder")]
 		public void AsciiCharClass_EstimateEncode ()
 		{
 			var encoding = Encoding.UTF8;
@@ -57,7 +62,8 @@ namespace Novartment.Base.Net.Mime.Test
 			Assert.Equal (7, tuple.BytesConsumed);
 		}
 
-		[Fact, Trait ("Category", "Text.EstimatingEncoder")]
+		[Fact]
+		[Trait ("Category", "Text.EstimatingEncoder")]
 		public void QuotedString_EstimateEncode ()
 		{
 			var encoding = Encoding.UTF8;
@@ -66,17 +72,24 @@ namespace Novartment.Base.Net.Mime.Test
 			var encodedBuf = new byte[999];
 
 			// неподходящие элементы в начале
-			var tuple = encoder.Estimate (buf, (Template1.Length + Template2.Length + Template3.Length), buf.Length - (Template1.Length + Template2.Length + Template3.Length), 99999, 0, false);
+			var tuple = encoder.Estimate (
+				buf,
+				Template1.Length + Template2.Length + Template3.Length,
+				buf.Length - (Template1.Length + Template2.Length + Template3.Length),
+				99999,
+				0,
+				false);
 			Assert.Equal (0, tuple.BytesProduced);
 			Assert.Equal (0, tuple.BytesConsumed);
 			tuple = encoder.Encode (
 					buf,
-					(Template1.Length + Template2.Length + Template3.Length),
+					Template1.Length + Template2.Length + Template3.Length,
 					buf.Length - (Template1.Length + Template2.Length + Template3.Length),
 					encodedBuf,
 					0,
 					encodedBuf.Length,
-					0, false);
+					0,
+					false);
 			Assert.Equal (0, tuple.BytesProduced);
 			Assert.Equal (0, tuple.BytesConsumed);
 
@@ -106,9 +119,8 @@ namespace Novartment.Base.Net.Mime.Test
 			Assert.Equal (1, tuple.BytesConsumed);
 		}
 
-		private static readonly string Template10 = "Идея stop2020 состоит в том";
-		private static readonly string Template10ResultEncoded = "=?windows-1251?Q?=C8=E4=E5=FF_stop2020_=F1=EE=F1=F2=EE=E8=F2_=E2_=F2=EE=EC?=";
-		[Fact, Trait ("Category", "Text.EstimatingEncoder")]
+		[Fact]
+		[Trait ("Category", "Text.EstimatingEncoder")]
 		public void EncodedWordQ_EstimateEncode ()
 		{
 			var encoding = Encoding.GetEncoding ("windows-1251");
@@ -147,9 +159,8 @@ namespace Novartment.Base.Net.Mime.Test
 			Assert.Equal (2, tuple.BytesConsumed);
 		}
 
-		private static readonly string Template20 = "тема сообщения текст сообщения";
-		private static readonly string Template20ResultEncoded = "=?utf-8?B?0YLQtdC80LAg0YHQvtC+0LHRidC10L3QuNGPINGC0LXQutGB0YIg0YHQvtC+0LHRidC10L3QuNGP?=";
-		[Fact, Trait ("Category", "Text.EstimatingEncoder")]
+		[Fact]
+		[Trait ("Category", "Text.EstimatingEncoder")]
 		public void EncodedWordB_EstimateEncode ()
 		{
 			var encoding = Encoding.UTF8;

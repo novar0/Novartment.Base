@@ -89,6 +89,6 @@ namespace Novartment.Base.UnsafeWin32
 
 		/// <summary>Indicates to the Open dialog box that the preview pane should always be displayed.</summary>
 		/// <remarks>FOS_FORCEPREVIEWPANEON</remarks>
-		ForcePreviewPane = 0x40000000
+		ForcePreviewPane = 0x40000000,
 	}
 }

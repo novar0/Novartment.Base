@@ -19,7 +19,7 @@ namespace Novartment.Base
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
 		/// <returns>Задача, состояние которой отражает состояние запущенного процесса.</returns>
 		[SuppressMessage (
-		"Microsoft.Reliability",
+			"Microsoft.Reliability",
 			"CA2000:Dispose objects before losing scope",
 			Justification = "'proc' can not be disposed here, it represents running process.")]
 		public static Task StartProcessAsync (this ProcessStartInfo startInfo, CancellationToken cancellationToken)
@@ -38,7 +38,7 @@ namespace Novartment.Base
 
 			var proc = new Process ()
 			{
-				StartInfo = startInfo
+				StartInfo = startInfo,
 			};
 			return proc.StartAsync (cancellationToken);
 		}
@@ -52,7 +52,7 @@ namespace Novartment.Base
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
 		/// <returns>Задача, представляющаю собой запущенный процесс.</returns>
 		[SuppressMessage (
-		"Microsoft.Reliability",
+			"Microsoft.Reliability",
 			"CA2000:Dispose objects before losing scope",
 			Justification = "'proc' can not be disposed here, it represents running process.")]
 		public static Task StartProcessAsync (this ProcessStartInfo startInfo, string completionMutexName, CancellationToken cancellationToken)
@@ -76,7 +76,7 @@ namespace Novartment.Base
 
 			var proc = new Process ()
 			{
-				StartInfo = startInfo
+				StartInfo = startInfo,
 			};
 			return proc.StartAsync (completionMutexName, cancellationToken);
 		}

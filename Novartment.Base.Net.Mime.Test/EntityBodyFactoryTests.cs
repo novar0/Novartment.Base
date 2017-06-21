@@ -4,14 +4,15 @@ namespace Novartment.Base.Net.Mime.Test
 {
 	public class EntityBodyFactoryTests
 	{
-		[Fact, Trait ("Category", "Mime")]
+		[Fact]
+		[Trait ("Category", "Mime")]
 		public void Create ()
 		{
 			var props = new EssentialContentProperties ()
 			{
 				Type = ContentMediaType.Application,
 				Subtype = "octet-stream",
-				TransferEncoding = ContentTransferEncoding.EightBit
+				TransferEncoding = ContentTransferEncoding.EightBit,
 			};
 			Assert.IsAssignableFrom<IDiscreteEntityBody> (EntityBodyFactory.Create (props));
 
@@ -19,7 +20,7 @@ namespace Novartment.Base.Net.Mime.Test
 			{
 				Type = ContentMediaType.Audio,
 				Subtype = "aaa",
-				TransferEncoding = ContentTransferEncoding.EightBit
+				TransferEncoding = ContentTransferEncoding.EightBit,
 			};
 			Assert.IsAssignableFrom<IDiscreteEntityBody> (EntityBodyFactory.Create (props));
 
@@ -27,7 +28,7 @@ namespace Novartment.Base.Net.Mime.Test
 			{
 				Type = ContentMediaType.Image,
 				Subtype = "aaa",
-				TransferEncoding = ContentTransferEncoding.EightBit
+				TransferEncoding = ContentTransferEncoding.EightBit,
 			};
 			Assert.IsAssignableFrom<IDiscreteEntityBody> (EntityBodyFactory.Create (props));
 
@@ -35,7 +36,7 @@ namespace Novartment.Base.Net.Mime.Test
 			{
 				Type = ContentMediaType.Video,
 				Subtype = "aaa",
-				TransferEncoding = ContentTransferEncoding.EightBit
+				TransferEncoding = ContentTransferEncoding.EightBit,
 			};
 			Assert.IsAssignableFrom<IDiscreteEntityBody> (EntityBodyFactory.Create (props));
 
@@ -43,7 +44,7 @@ namespace Novartment.Base.Net.Mime.Test
 			{
 				Type = ContentMediaType.Text,
 				Subtype = "html",
-				TransferEncoding = ContentTransferEncoding.EightBit
+				TransferEncoding = ContentTransferEncoding.EightBit,
 			};
 			props.Parameters.Add (new HeaderFieldParameter ("charset", "utf-8"));
 			Assert.IsType<TextEntityBody> (EntityBodyFactory.Create (props));
@@ -52,7 +53,7 @@ namespace Novartment.Base.Net.Mime.Test
 			{
 				Type = ContentMediaType.Multipart,
 				Subtype = "mixed",
-				TransferEncoding = ContentTransferEncoding.EightBit
+				TransferEncoding = ContentTransferEncoding.EightBit,
 			};
 			props.Parameters.Add (new HeaderFieldParameter ("boundary", "--xxxx"));
 			Assert.IsAssignableFrom<ICompositeEntityBody> (EntityBodyFactory.Create (props));
@@ -61,7 +62,7 @@ namespace Novartment.Base.Net.Mime.Test
 			{
 				Type = ContentMediaType.Multipart,
 				Subtype = "digest",
-				TransferEncoding = ContentTransferEncoding.EightBit
+				TransferEncoding = ContentTransferEncoding.EightBit,
 			};
 			props.Parameters.Add (new HeaderFieldParameter ("boundary", "--xxxx"));
 			Assert.IsType<DigestEntityBody> (EntityBodyFactory.Create (props));
@@ -70,7 +71,7 @@ namespace Novartment.Base.Net.Mime.Test
 			{
 				Type = ContentMediaType.Multipart,
 				Subtype = "report",
-				TransferEncoding = ContentTransferEncoding.EightBit
+				TransferEncoding = ContentTransferEncoding.EightBit,
 			};
 			props.Parameters.Add (new HeaderFieldParameter ("boundary", "--xxxx"));
 			props.Parameters.Add (new HeaderFieldParameter ("report-type", "xxxx"));
@@ -80,7 +81,7 @@ namespace Novartment.Base.Net.Mime.Test
 			{
 				Type = ContentMediaType.Message,
 				Subtype = "rfc822",
-				TransferEncoding = ContentTransferEncoding.EightBit
+				TransferEncoding = ContentTransferEncoding.EightBit,
 			};
 			Assert.IsType<MessageEntityBody> (EntityBodyFactory.Create (props));
 
@@ -88,7 +89,7 @@ namespace Novartment.Base.Net.Mime.Test
 			{
 				Type = ContentMediaType.Message,
 				Subtype = "delivery-status",
-				TransferEncoding = ContentTransferEncoding.EightBit
+				TransferEncoding = ContentTransferEncoding.EightBit,
 			};
 			Assert.IsType<DeliveryStatusEntityBody> (EntityBodyFactory.Create (props));
 
@@ -96,7 +97,7 @@ namespace Novartment.Base.Net.Mime.Test
 			{
 				Type = ContentMediaType.Message,
 				Subtype = "disposition-notification",
-				TransferEncoding = ContentTransferEncoding.EightBit
+				TransferEncoding = ContentTransferEncoding.EightBit,
 			};
 			Assert.IsType<DispositionNotificationEntityBody> (EntityBodyFactory.Create (props));
 		}

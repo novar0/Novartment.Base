@@ -1,29 +1,14 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
-using Xunit;
 using Novartment.Base.BinaryStreaming;
+using Xunit;
 
 namespace Novartment.Base.Test
 {
 	public class AggregatingBufferedSourceTests
 	{
-		internal class ProcessingTaskProviderMock : IJobProvider<IBufferedSource, int>
-		{
-			private readonly JobCompletionSource<IBufferedSource, int>[] _sources;
-			private int index = 0;
-
-			internal ProcessingTaskProviderMock (JobCompletionSource<IBufferedSource, int>[] sources)
-			{
-				_sources = sources;
-			}
-
-			public Task<JobCompletionSource<IBufferedSource, int>> TakeJobAsync (CancellationToken cancellationToken)
-			{
-				return Task.FromResult (_sources[index++]);
-			}
-		}
-
-		[Fact, Trait ("Category", "BufferedSource")]
+		[Fact]
+		[Trait ("Category", "BufferedSource")]
 		public void RequestSkip ()
 		{
 			int srcBufSize = 20;
@@ -78,9 +63,26 @@ namespace Novartment.Base.Test
 			src.FillBufferAsync (CancellationToken.None).Wait ();
 			Assert.True (src.IsExhausted);
 		}
+
 		private static byte FillFunction (long position)
 		{
 			return (byte)(0xAA ^ (position & 0xFF));
+		}
+
+		internal class ProcessingTaskProviderMock : IJobProvider<IBufferedSource, int>
+		{
+			private readonly JobCompletionSource<IBufferedSource, int>[] _sources;
+			private int index = 0;
+
+			internal ProcessingTaskProviderMock (JobCompletionSource<IBufferedSource, int>[] sources)
+			{
+				_sources = sources;
+			}
+
+			public Task<JobCompletionSource<IBufferedSource, int>> TakeJobAsync (CancellationToken cancellationToken)
+			{
+				return Task.FromResult (_sources[index++]);
+			}
 		}
 	}
 }

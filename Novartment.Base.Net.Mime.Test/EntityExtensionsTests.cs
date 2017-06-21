@@ -1,14 +1,14 @@
-﻿using System.Threading;
-using System.Text;
-using static System.Linq.Enumerable;
-using Xunit;
+﻿using System.Text;
+using System.Threading;
 using Novartment.Base.BinaryStreaming;
+using Xunit;
 
 namespace Novartment.Base.Net.Mime.Test
 {
 	public class EntityExtensionsTests
 	{
-		[Fact, Trait ("Category", "Mime")]
+		[Fact]
+		[Trait ("Category", "Mime")]
 		public void GetChildContentParts ()
 		{
 			var pkcs7Body = new DataEntityBody (ContentTransferEncoding.Base64);
@@ -18,9 +18,10 @@ namespace Novartment.Base.Net.Mime.Test
 			compositeBody.Parts.Add (new Entity (new TextEntityBody (Encoding.UTF8, ContentTransferEncoding.Binary), ContentMediaType.Text, "plain"));
 			compositeBody.Parts.Add (new Entity (new TextEntityBody (Encoding.UTF8, ContentTransferEncoding.Binary), ContentMediaType.Text, "html"));
 
-			var msgBody = new MessageEntityBody ();
-			msgBody.Message = MailMessage.CreateSimpleText ("zip", Encoding.ASCII, ContentTransferEncoding.Binary);
-
+			var msgBody = new MessageEntityBody ()
+			{
+				Message = MailMessage.CreateSimpleText ("zip", Encoding.ASCII, ContentTransferEncoding.Binary),
+			};
 			var singlePartBody = new DataEntityBody (ContentTransferEncoding.Base64);
 
 			var rootBody = new CompositeEntityBody ();

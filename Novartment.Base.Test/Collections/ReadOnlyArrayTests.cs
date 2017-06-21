@@ -7,7 +7,8 @@ namespace Novartment.Base.Test
 {
 	public class ReadOnlyArrayTests
 	{
-		[Fact, Trait ("Category", "Collections.ReadOnlyArray")]
+		[Fact]
+		[Trait ("Category", "Collections.ReadOnlyArray")]
 		public void Misc ()
 		{
 			var t1 = new int[] { 100, -200, 0, 1 };

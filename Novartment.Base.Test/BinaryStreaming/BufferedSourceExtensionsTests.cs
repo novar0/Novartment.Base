@@ -1,12 +1,13 @@
 ﻿using System.Threading;
-using Xunit;
 using Novartment.Base.BinaryStreaming;
+using Xunit;
 
 namespace Novartment.Base.Test
 {
 	public class BufferedSourceExtensionsTests
 	{
-		[Fact, Trait ("Category", "BufferedSource")]
+		[Fact]
+		[Trait ("Category", "BufferedSource")]
 		public void IsEmpty ()
 		{
 			var src = new BigBufferedSourceMock (0, 1, FillFunction);
@@ -29,7 +30,8 @@ namespace Novartment.Base.Test
 			Assert.True (BufferedSourceExtensions.IsEmpty (src));
 		}
 
-		[Fact, Trait ("Category", "BufferedSource")]
+		[Fact]
+		[Trait ("Category", "BufferedSource")]
 		public void IndexOf ()
 		{
 			int bufSize = 120;
@@ -38,7 +40,7 @@ namespace Novartment.Base.Test
 			src.FillBufferAsync (CancellationToken.None).Wait ();
 			Assert.Equal (0, BufferedSourceExtensions.IndexOfAsync (src, FillFunction(0), CancellationToken.None).Result);
 			Assert.Equal (1, BufferedSourceExtensions.IndexOfAsync (src, FillFunction (1), CancellationToken.None).Result);
-			Assert.Equal (bufSize-1, BufferedSourceExtensions.IndexOfAsync (src, FillFunction (bufSize-1), CancellationToken.None).Result);
+			Assert.Equal (bufSize - 1, BufferedSourceExtensions.IndexOfAsync (src, FillFunction (bufSize - 1), CancellationToken.None).Result);
 			Assert.Equal (-1, BufferedSourceExtensions.IndexOfAsync (src, FillFunction (bufSize), CancellationToken.None).Result);
 			Assert.Equal (-1, BufferedSourceExtensions.IndexOfAsync (src, FillFunction (bufSize + skipSize - 1), CancellationToken.None).Result);
 			Assert.Equal (-1, BufferedSourceExtensions.IndexOfAsync (src, FillFunction (bufSize + skipSize), CancellationToken.None).Result);
@@ -51,7 +53,8 @@ namespace Novartment.Base.Test
 			Assert.Equal (-1, BufferedSourceExtensions.IndexOfAsync (src, FillFunction (bufSize + skipSize), CancellationToken.None).Result);
 		}
 
-		[Fact, Trait ("Category", "BufferedSource")]
+		[Fact]
+		[Trait ("Category", "BufferedSource")]
 		public void Read ()
 		{
 			int srcBufSize = 32768;
@@ -68,18 +71,20 @@ namespace Novartment.Base.Test
 			{
 				Assert.Equal (FillFunction ((long)(skip + i)), buf[readBufOffset + i]);
 			}
+
 			src.TryFastSkipAsync (long.MaxValue - (long)srcBufSize - 3, CancellationToken.None).Wait ();
 			Assert.Equal (3, BufferedSourceExtensions.ReadAsync (src, buf, 0, buf.Length, CancellationToken.None).Result);
 		}
 
-		[Theory, Trait ("Category", "BufferedSource"),
-		InlineData (0, 16), // пустой источник
-		InlineData (1163, 387), // чтение больше буфера
-		InlineData (1163, 10467)] // чтение меньше буфера
+		[Theory]
+		[Trait ("Category", "BufferedSource")]
+		[InlineData (0, 16)] // пустой источник
+		[InlineData (1163, 387)] // чтение больше буфера
+		[InlineData (1163, 10467)] // чтение меньше буфера
 		public void ReadAllBytes (int testSampleSize, int srcBufSize)
 		{
 			long skipSize = long.MaxValue - (long)testSampleSize;
-			
+
 			var src = new BigBufferedSourceMock (long.MaxValue, srcBufSize, FillFunction);
 			src.TryFastSkipAsync (skipSize, CancellationToken.None).Wait ();
 			var result = BufferedSourceExtensions.ReadAllBytesAsync (src, CancellationToken.None).Result;
@@ -90,7 +95,8 @@ namespace Novartment.Base.Test
 			}
 		}
 
-		[Fact, Trait ("Category", "BufferedSource")]
+		[Fact]
+		[Trait ("Category", "BufferedSource")]
 		public void WriteTo ()
 		{
 			int testSampleSize = 1163;

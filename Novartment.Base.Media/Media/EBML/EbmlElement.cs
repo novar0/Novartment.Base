@@ -34,7 +34,7 @@ namespace Novartment.Base.Media
 			(1L << 35) - 1,
 			(1L << 42) - 1,
 			(1L << 49) - 1,
-			(1L << 56) - 1
+			(1L << 56) - 1,
 		};
 
 		private readonly ulong _size;
@@ -73,7 +73,7 @@ namespace Novartment.Base.Media
 
 		[DebuggerBrowsable (DebuggerBrowsableState.Never)]
 		[SuppressMessage (
-		"Microsoft.Performance",
+			"Microsoft.Performance",
 			"CA1811:AvoidUncalledPrivateCode",
 			Justification = "Used in DebuggerDisplay attribute.")]
 		private string DebuggerDisplay => FormattableString.Invariant ($"ID = {this.Id}, Size = {_size}");
@@ -127,7 +127,7 @@ namespace Novartment.Base.Media
 		/// </summary>
 		/// <returns>the element data as a signed integer</returns>
 		[SuppressMessage (
-		"Microsoft.Naming",
+			"Microsoft.Naming",
 			"CA1720:IdentifiersShouldNotContainTypeNames",
 			MessageId = "int",
 			Justification = "The term 'Int' in method name refers to EBML specification, not C#.")]
@@ -207,7 +207,7 @@ namespace Novartment.Base.Media
 		/// </summary>
 		/// <returns>the element data as an unsigned integer</returns>
 		[SuppressMessage (
-		"Microsoft.Naming",
+			"Microsoft.Naming",
 			"CA1720:IdentifiersShouldNotContainTypeNames",
 			MessageId = "uint",
 			Justification = "The term 'UInt' in method name refers to EBML specification, not C#.")]
@@ -289,7 +289,7 @@ namespace Novartment.Base.Media
 		/// </summary>
 		/// <returns>the element data as a floating-point number</returns>
 		[SuppressMessage (
-		"Microsoft.Naming",
+			"Microsoft.Naming",
 			"CA1720:IdentifiersShouldNotContainTypeNames",
 			MessageId = "float",
 			Justification = "The term 'Float' in method name refers to EBML specification, not C#.")]
@@ -334,7 +334,7 @@ namespace Novartment.Base.Media
 		/// </summary>
 		/// <returns>the element data as an ASCII string</returns>
 		[SuppressMessage (
-		"Microsoft.Naming",
+			"Microsoft.Naming",
 			"CA1704:IdentifiersShouldBeSpelledCorrectly",
 			MessageId = "Ascii",
 			Justification = "'ASCII' represents standard term.")]

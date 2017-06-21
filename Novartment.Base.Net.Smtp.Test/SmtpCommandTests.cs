@@ -1,19 +1,19 @@
 ﻿using System;
 using System.Text;
 using System.Threading;
+using Novartment.Base.BinaryStreaming;
 using Novartment.Base.Net;
 using Novartment.Base.Net.Smtp;
 using Xunit;
-using Novartment.Base.BinaryStreaming;
 
 namespace Novartment.Base.Smtp.Test
 {
-
 	public class SmtpCommandTests
 	{
 		private readonly string _quitCommand = "QUIT\r\n";
 
-		[Fact, Trait ("Category", "Net.Smtp")]
+		[Fact]
+		[Trait ("Category", "Net.Smtp")]
 		public void Parse ()
 		{
 			// UnknownCommand
@@ -128,7 +128,7 @@ namespace Novartment.Base.Smtp.Test
 			source = new ArrayBufferedSource (Encoding.ASCII.GetBytes (cmdStr + _quitCommand));
 			cmd = SmtpCommand.Parse (source, SmtpCommand.ExpectedInputType.Command, null);
 			Assert.Equal (SmtpCommandType.Helo, cmd.CommandType);
-			Assert.IsType< SmtpHeloCommand> (cmd);
+			Assert.IsType<SmtpHeloCommand> (cmd);
 			var cmdHelo = (SmtpHeloCommand)cmd;
 			Assert.Equal (id, cmdHelo.ClientIdentification);
 			Assert.Equal (cmdStr.Length, source.Offset);
@@ -392,7 +392,8 @@ namespace Novartment.Base.Smtp.Test
 			Assert.Equal (cmdStr.Length, source.Offset);
 		}
 
-		[Fact, Trait ("Category", "Net.Smtp")]
+		[Fact]
+		[Trait ("Category", "Net.Smtp")]
 		public void ToString_ ()
 		{
 			var str = SmtpCommand.Data.ToString ();
@@ -435,7 +436,8 @@ namespace Novartment.Base.Smtp.Test
 			Assert.Equal ("BDAT 4611686018427387904 LAST\r\n", str);
 		}
 
-		[Fact, Trait ("Category", "Net.Smtp")]
+		[Fact]
+		[Trait ("Category", "Net.Smtp")]
 		public void Construction ()
 		{
 			// размер источника равен указанному

@@ -61,7 +61,7 @@ namespace Novartment.Base.Net.Mime
 			var result = new ArrayList<Entity> ();
 			var entitiesQueue = new ArrayList<Entity>
 			{
-				entity
+				entity,
 			};
 			while (entitiesQueue.TryTakeFirst (out Entity currentEntity))
 			{
@@ -253,7 +253,7 @@ namespace Novartment.Base.Net.Mime
 
 			var newBody = new MessageEntityBody
 			{
-				Message = includeContent ? message : message.CreateCopyWithoutContent ()
+				Message = includeContent ? message : message.CreateCopyWithoutContent (),
 			};
 			var newEntity = new Entity (
 				newBody,
@@ -499,7 +499,7 @@ namespace Novartment.Base.Net.Mime
 				{
 					DispositionType = ContentDispositionType.Attachment,
 					FileName = fileName,
-					Size = observer.Size
+					Size = observer.Size,
 				};
 				compositeEntityBody.Parts.Add (attachment);
 				return attachment;

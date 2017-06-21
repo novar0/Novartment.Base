@@ -1,14 +1,14 @@
 ﻿using System;
-using System.ComponentModel;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Linq;
 using Microsoft.Extensions.Logging;
-using Novartment.Base.UI;
-using Novartment.Base.UI.Wpf;
 using Novartment.Base.Shell;
 using Novartment.Base.Tasks;
+using Novartment.Base.UI;
+using Novartment.Base.UI.Wpf;
 
 namespace Novartment.Base.SampleWpf
 {
@@ -21,7 +21,7 @@ namespace Novartment.Base.SampleWpf
 		[Description ("Предупреждение")]
 		Warning = 2,
 		[Description ("Ошибка")]
-		Error = 3
+		Error = 3,
 	}
 
 	public class MainViewModel : BaseViewModel,
@@ -37,23 +37,10 @@ namespace Novartment.Base.SampleWpf
 		private readonly System.ServiceModel.Channels.IOutputChannel _dataService;
 		private readonly Func<MessageBoxFormData, Autofac.Features.OwnedInstances.Owned<IDialogView<System.Windows.MessageBoxResult>>> _messageBoxFactory;
 		private readonly TaskScheduler _taskSchedulerShell = new OleStaTaskScheduler (1);
-		private string _dataFormats = "drop here";
-
-		public ICollectionView EventsList { get { return _eventsListView; } }
-		public string Version { get { return ComponentApplication.Current.Version; } }
-		public string DataFormats { get { return _dataFormats; } }
-
-		#region tasks
-
 		private readonly CommandedRepeatableTask _refreshDataTask;
 		private readonly CommandedRepeatableTask _copyItemTask;
 		private readonly CommandedRepeatableTask _clearItemsTask;
-
-		public CommandedRepeatableTask RrefreshDataTask { get { return _refreshDataTask; } }
-		public CommandedRepeatableTask CopyItemTask { get { return _copyItemTask; } }
-		public CommandedRepeatableTask ClearItemsTask { get { return _clearItemsTask; } }
-
-		#endregion
+		private string _dataFormats = "drop here";
 
 		public MainViewModel (
 			ComponentApplication application,
@@ -81,23 +68,44 @@ namespace Novartment.Base.SampleWpf
 				using (var dialog = _messageBoxFactory.Invoke (new MessageBoxFormData ()
 				{
 					Title = Properties.Resources.TaskStartingPromptTitle,
-					Message = Properties.Resources.TaskStartingPromptText
+					Message = Properties.Resources.TaskStartingPromptText,
 				}))
 				{
-					if (dialog.Value.ShowDialog () != true) e.Cancel = true;
+					if (dialog.Value.ShowDialog () != true)
+					{
+						e.Cancel = true;
+					}
 				}
+
 				Thread.CurrentThread.CurrentUICulture = new System.Globalization.CultureInfo ("en-US");
-				Novartment.Base.UI.Wpf.ResxExtension.UpdateAllTargets ();
+				ResxExtension.UpdateAllTargets ();
 			};
 			_refreshDataTask.TaskEnded += (e, args) => LogTaskEnded (args, Properties.Resources.TaskProcessingTitle);
 
-			_copyItemTask = new CollectionContextCommandedRepeatableTask<SimpleEventRecord> (CopyItem, _taskSchedulerShell);//, Properties.Resources.TaskCopyEventLogTitle);
-			_clearItemsTask = new CollectionContextCommandedRepeatableTask<SimpleEventRecord> (ClearItems, TaskScheduler.Default);//, Properties.Resources.TaskClearEventLogTitle);
+			_copyItemTask = new CollectionContextCommandedRepeatableTask<SimpleEventRecord> (CopyItem, _taskSchedulerShell); // , Properties.Resources.TaskCopyEventLogTitle);
+			_clearItemsTask = new CollectionContextCommandedRepeatableTask<SimpleEventRecord> (ClearItems, TaskScheduler.Default); // , Properties.Resources.TaskClearEventLogTitle);
 
 			_eventLog.LogInformation (string.Format ("Запущена программа версии {0}", Version));
 		}
 
-		#region IDragSource
+		public ICollectionView EventsList => _eventsListView;
+
+		public string Version => ComponentApplication.Current.Version;
+
+		public string DataFormats => _dataFormats;
+
+		public CommandedRepeatableTask RrefreshDataTask => _refreshDataTask;
+
+		public CommandedRepeatableTask CopyItemTask => _copyItemTask;
+
+		public CommandedRepeatableTask ClearItemsTask => _clearItemsTask;
+
+		public override void Dispose ()
+		{
+			_clearItemsTask.Dispose ();
+			_copyItemTask.Dispose ();
+			_refreshDataTask.Dispose ();
+		}
 
 		DragStartData IDragDropSource.DragStart (double x, double y, DragControl mouseButton)
 		{
@@ -105,7 +113,7 @@ namespace Novartment.Base.SampleWpf
 			return new DragStartData ()
 				{
 					Object = new WpfDataContainer (DataContainerFormats.Text, "hello from another app!"),
-					AllowedEffects = DragDropEffects.All
+					AllowedEffects = DragDropEffects.All,
 				};
 		}
 
@@ -140,10 +148,6 @@ namespace Novartment.Base.SampleWpf
 				// удалить перемещенный объект
 			}
 		}
-
-		#endregion
-
-		#region IDragDropTarget
 
 		void IDragDropTarget.DragLeave ()
 		{
@@ -193,6 +197,7 @@ namespace Novartment.Base.SampleWpf
 		DragDropEffects IDragDropTarget.Drop (IDataContainer data, DragDropKeyStates keyStates, double x, double y, DragDropEffects allowedEffects)
 		{
 			System.Diagnostics.Trace.WriteLine (string.Format ("Приемник: брошено в {0}/{1} с модификаторами {2}", x, y, keyStates));
+
 			// получаем список объектов оболочки. если их нет, то берем просто текст
 			ShellItem[] shellItems;
 			if ((shellItems = ShellItem.FromDataContainer (data)) != null)
@@ -203,6 +208,7 @@ namespace Novartment.Base.SampleWpf
 			{
 				_dataFormats = (string)data.GetData (DataContainerFormats.UnicodeText, true);
 			}
+
 			RaisePropertyChanged ("DataFormats");
 			if (((keyStates & DragDropKeyStates.AltKey) == DragDropKeyStates.AltKey) && ((allowedEffects & DragDropEffects.Link) == DragDropEffects.Link))
 			{
@@ -221,8 +227,6 @@ namespace Novartment.Base.SampleWpf
 
 			return DragDropEffects.None;
 		}
-
-		#endregion
 
 		private void CopyItem (ContextCollectionData<SimpleEventRecord> data, CancellationToken cancellationToken)
 		{
@@ -262,13 +266,6 @@ namespace Novartment.Base.SampleWpf
 					_eventLog.LogInformation (string.Format (Properties.Resources.TaskCompleted, title));
 					break;
 			}
-		}
-
-		public override void Dispose ()
-		{
-			_clearItemsTask.Dispose ();
-			_copyItemTask.Dispose ();
-			_refreshDataTask.Dispose ();
 		}
 	}
 }

@@ -7,11 +7,11 @@ namespace Novartment.Base.Test
 {
 	public class AvlBinarySearchTreeDictionaryTests
 	{
-		[Fact, Trait ("Category", "Collections.AvlBinarySearchTreeDictionary")]
+		[Fact]
+		[Trait ("Category", "Collections.AvlBinarySearchTreeDictionary")]
 		public void OperationsOnValueKey ()
 		{
 			AvlBinarySearchTreeDictionaryNode<int, string> map = null;
-			string value;
 			IComparer<int> comparer = Comparer<int>.Default;
 
 			var enumerator = map.GetEnumerator ();
@@ -21,7 +21,7 @@ namespace Novartment.Base.Test
 
 			Assert.Equal (0, map.GetCount ());
 			Assert.False (map.ContainsKey (10, comparer));
-			Assert.False (map.TryGetItem (0, comparer, out value));
+			Assert.False (map.TryGetItem (0, comparer, out string value));
 
 			map = map.RemoveKey (0, comparer);
 			Assert.Equal (0, map.GetCount ());
@@ -34,7 +34,7 @@ namespace Novartment.Base.Test
 			Assert.True (map.TryGetItem (10, comparer, out value));
 			Assert.Equal ("10", value);
 
-			map = map.SetValue (-20, "", comparer);
+			map = map.SetValue (-20, string.Empty, comparer);
 			Assert.Equal (2, map.GetCount ());
 
 			map = map.SetValue (-20, "-20", comparer);
@@ -66,6 +66,7 @@ namespace Novartment.Base.Test
 			Assert.Equal (3, map.GetCount ());
 			map = map.SetValue (110, "110", comparer);
 			Assert.Equal (4, map.GetCount ());
+
 			// где то тут должен случиться перекос вправо внутреннего двоичного дерева
 			map = map.SetValue (102, "102", comparer);
 			Assert.Equal (5, map.GetCount ());
@@ -78,6 +79,7 @@ namespace Novartment.Base.Test
 			map = map.SetValue (109, "109", comparer);
 			map = map.SetValue (99, "99", comparer);
 			Assert.Equal (13, map.GetCount ());
+
 			// где то тут должен случиться перекос влево внутреннего двоичного дерева
 			map = map.SetValue (-408, "-408", comparer);
 			map = map.SetValue (-407, "-407", comparer);
@@ -99,17 +101,18 @@ namespace Novartment.Base.Test
 				values[idx] = enumerator.Current.Value;
 				idx++;
 			}
+
 			enumerator.Dispose ();
 			Assert.Equal (18, idx);
 			Assert.Equal<int> (templateKeys, keys);
 			Assert.Equal<string> (templateValues, values);
 		}
 
-		[Fact, Trait ("Category", "Collections.AvlBinarySearchTreeDictionary")]
+		[Fact]
+		[Trait ("Category", "Collections.AvlBinarySearchTreeDictionary")]
 		public void OperationsOnReferenceKey ()
 		{
 			AvlBinarySearchTreeDictionaryNode<string, int> map = null;
-			int value;
 			IComparer<string> comparer = StringComparer.Ordinal;
 
 			var enumerator = map.GetEnumerator ();
@@ -119,7 +122,7 @@ namespace Novartment.Base.Test
 
 			Assert.Equal (0, map.GetCount ());
 			Assert.False (map.ContainsKey ("10", comparer));
-			Assert.False (map.TryGetItem ("0", comparer, out value));
+			Assert.False (map.TryGetItem ("0", comparer, out int value));
 
 			map = map.RemoveKey ("0", comparer);
 			Assert.Equal (0, map.GetCount ());
@@ -164,6 +167,7 @@ namespace Novartment.Base.Test
 			Assert.Equal (3, map.GetCount ());
 			map = map.SetValue ("110", 110, comparer);
 			Assert.Equal (4, map.GetCount ());
+
 			// где то тут должен случиться перекос вправо внутреннего двоичного дерева
 			map = map.SetValue ("102", 102, comparer);
 			Assert.Equal (5, map.GetCount ());
@@ -176,6 +180,7 @@ namespace Novartment.Base.Test
 			map = map.SetValue ("109", 109, comparer);
 			map = map.SetValue ("99", 99, comparer);
 			Assert.Equal (13, map.GetCount ());
+
 			// где то тут должен случиться перекос влево внутреннего двоичного дерева
 			map = map.SetValue ("-408", -408, comparer);
 			map = map.SetValue ("-407", -407, comparer);
@@ -197,13 +202,15 @@ namespace Novartment.Base.Test
 				values[idx] = enumerator.Current.Value;
 				idx++;
 			}
+
 			enumerator.Dispose ();
 			Assert.Equal (18, idx);
 			Assert.Equal<string> (templateKeys, keys);
 			Assert.Equal<int> (templateValues, values);
 		}
 
-		[Fact, Trait ("Category", "Collections.AvlBinarySearchTreeDictionary")]
+		[Fact]
+		[Trait ("Category", "Collections.AvlBinarySearchTreeDictionary")]
 		public void UsingDifferentComparers ()
 		{
 			AvlBinarySearchTreeDictionaryNode<string, int> map1 = null;

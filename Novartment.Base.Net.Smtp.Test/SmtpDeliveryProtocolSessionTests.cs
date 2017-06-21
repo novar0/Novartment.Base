@@ -3,17 +3,19 @@ using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Xunit;
+using Novartment.Base.BinaryStreaming;
 using Novartment.Base.Net;
 using Novartment.Base.Net.Smtp;
-using Novartment.Base.BinaryStreaming;
+using Xunit;
 
 namespace Novartment.Base.Smtp.Test
 {
-
 	public class SmtpDeliveryProtocolSessionTests
 	{
-		[Fact, Trait ("Category", "Net.Smtp")]
+		private TransactionBehavior _transactionBehavior = TransactionBehavior.Normal;
+
+		[Fact]
+		[Trait ("Category", "Net.Smtp")]
 		public void InvalidSequenceOfCommands ()
 		{
 			var createdTransactionsCount = 0;
@@ -85,7 +87,8 @@ namespace Novartment.Base.Smtp.Test
 			Assert.Equal (0, sender.SendedReplies.Count);
 		}
 
-		[Fact, Trait ("Category", "Net.Smtp")]
+		[Fact]
+		[Trait ("Category", "Net.Smtp")]
 		public void ValidateTransaction ()
 		{
 			var validReversePath = new AddrSpec ("source", "client.com");
@@ -150,7 +153,8 @@ namespace Novartment.Base.Smtp.Test
 			Assert.Equal (0, sender.SendedReplies.Count);
 		}
 
-		[Fact, Trait ("Category", "Net.Smtp")]
+		[Fact]
+		[Trait ("Category", "Net.Smtp")]
 		public void MultipleTransactions ()
 		{
 			var createdTransactionsCount = 0;
@@ -330,7 +334,8 @@ namespace Novartment.Base.Smtp.Test
 			Assert.False (trctn.Disposed);
 		}
 
-		[Fact, Trait ("Category", "Net.Smtp")]
+		[Fact]
+		[Trait ("Category", "Net.Smtp")]
 		public void Reset ()
 		{
 			var createdTransactionsCount = 0;
@@ -436,8 +441,8 @@ namespace Novartment.Base.Smtp.Test
 			Assert.Null (session.CurrentTransaction);
 		}
 
-		private TransactionBehavior _transactionBehavior = TransactionBehavior.Normal;
-		[Fact, Trait ("Category", "Net.Smtp")]
+		[Fact]
+		[Trait ("Category", "Net.Smtp")]
 		public void ExceptionInTransaction ()
 		{
 			var createdTransactionsCount = 0;
@@ -449,8 +454,7 @@ namespace Novartment.Base.Smtp.Test
 				srcAttribs =>
 				{
 					createdTransactionsCount++;
-					lastTransaction = new SmtDataTransferTransactionMock (srcAttribs, null, null,
-						_transactionBehavior);
+					lastTransaction = new SmtDataTransferTransactionMock (srcAttribs, null, null, _transactionBehavior);
 					return lastTransaction;
 				},
 				"test.localhost",
@@ -559,7 +563,8 @@ namespace Novartment.Base.Smtp.Test
 			Assert.True (trctn.Disposed);
 		}
 
-		[Fact, Trait ("Category", "Net.Smtp")]
+		[Fact]
+		[Trait ("Category", "Net.Smtp")]
 		public void MergingBdatChunks ()
 		{
 			var createdTransactionsCount = 0;
@@ -606,7 +611,8 @@ namespace Novartment.Base.Smtp.Test
 			Assert.Equal (mailBodyChunk1 + mailBodyChunk2, trctn.ReadedData);
 		}
 
-		[Fact, Trait ("Category", "Net.Smtp")]
+		[Fact]
+		[Trait ("Category", "Net.Smtp")]
 		public void UnexpectedEndOfData ()
 		{
 			var createdTransactionsCount = 0;
@@ -634,6 +640,7 @@ namespace Novartment.Base.Smtp.Test
 			Assert.Equal (1, createdTransactionsCount);
 			var mailBody = "Hello";
 			var mailBodyBytes = Encoding.ASCII.GetBytes (mailBody);
+
 			// источник не сможет пропустить разделитель, что означает неожиданный обрыв данных
 			var src = new ArrayBufferedSource (mailBodyBytes);
 			sender.ReceivedCommands.Enqueue (new SmtpActualDataCommand (src, true));
@@ -648,6 +655,7 @@ namespace Novartment.Base.Smtp.Test
 
 			// сессия с передачей данных командой BDAT
 			trctn = SetUpTransaction (session, sender);
+
 			// укажем размер больше чем у источника, что означает неожиданный обрыв данных
 			var src2 = new SizeLimitedBufferedSource (new ArrayBufferedSource (mailBodyBytes), mailBodyBytes.Length + 555);
 			sender.ReceivedCommands.Enqueue (new SmtpBdatCommand (src2, mailBodyBytes.Length + 555, false));
@@ -661,7 +669,8 @@ namespace Novartment.Base.Smtp.Test
 			Assert.True (trctn.Disposed);
 		}
 
-		[Fact, Trait ("Category", "Net.Smtp")]
+		[Fact]
+		[Trait ("Category", "Net.Smtp")]
 		public void UnrecoverableInvalidSyntax ()
 		{
 			var createdTransactionsCount = 0;
@@ -689,7 +698,8 @@ namespace Novartment.Base.Smtp.Test
 			Assert.True (trctn.Disposed);
 		}
 
-		[Fact, Trait ("Category", "Net.Smtp")]
+		[Fact]
+		[Trait ("Category", "Net.Smtp")]
 		public void MailFromCancellation ()
 		{
 			var createdTransactionsCount = 0;
@@ -729,7 +739,8 @@ namespace Novartment.Base.Smtp.Test
 			Assert.Null (session.CurrentTransaction);
 		}
 
-		[Fact, Trait ("Category", "Net.Smtp")]
+		[Fact]
+		[Trait ("Category", "Net.Smtp")]
 		public void RcptToCancellation ()
 		{
 			var createdTransactionsCount = 0;
@@ -780,7 +791,8 @@ namespace Novartment.Base.Smtp.Test
 			Assert.NotNull (session.CurrentTransaction);
 		}
 
-		[Fact, Trait ("Category", "Net.Smtp")]
+		[Fact]
+		[Trait ("Category", "Net.Smtp")]
 		public void ActualDataCancellation ()
 		{
 			var createdTransactionsCount = 0;
@@ -816,7 +828,8 @@ namespace Novartment.Base.Smtp.Test
 			Assert.Equal (0, sender.SendedReplies.Count);
 		}
 
-		[Fact, Trait ("Category", "Net.Smtp")]
+		[Fact]
+		[Trait ("Category", "Net.Smtp")]
 		public void BdatCancellation ()
 		{
 			var createdTransactionsCount = 0;

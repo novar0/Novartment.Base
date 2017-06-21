@@ -25,7 +25,7 @@ namespace Novartment.Base
 		/// на основе указанной функции получения ключа объекта,
 		/// который можно использовать для их сравнения.</returns>
 		[SuppressMessage (
-		"Microsoft.Design",
+			"Microsoft.Design",
 			"CA1026:DefaultParametersShouldNotBeUsed",
 			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
 		public static IComparer<TItem> CreateFromPropertySelector<TItem, TKey> (
@@ -54,7 +54,7 @@ namespace Novartment.Base
 		/// на основе указанного имени свойства и направления сортировки,
 		/// который можно использовать для их сравнения.</returns>
 		[SuppressMessage (
-		"Microsoft.Design",
+			"Microsoft.Design",
 			"CA1026:DefaultParametersShouldNotBeUsed",
 			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
 		public static IComparer<TItem> CreateFromPropertyName<TItem> (

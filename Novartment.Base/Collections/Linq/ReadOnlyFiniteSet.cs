@@ -58,7 +58,7 @@ namespace Novartment.Base.Collections.Linq
 		/// <returns>Множество, содержащее значение defaultValue, если множество source пустое;
 		/// в противном случае возвращается source.</returns>
 		[SuppressMessage (
-		"Microsoft.Design",
+			"Microsoft.Design",
 			"CA1026:DefaultParametersShouldNotBeUsed",
 			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
 		public static IReadOnlyFiniteSet<TSource> DefaultIfEmpty<TSource> (this IReadOnlyFiniteSet<TSource> source, TSource defaultValue = default (TSource))

@@ -39,7 +39,7 @@ namespace Novartment.Base
 		/// </summary>
 		/// <param name="propertyChangedEventArgs">Аргументы события PropertyChanged.</param>
 		[SuppressMessage (
-		"Microsoft.Design",
+			"Microsoft.Design",
 			"CA1030:UseEventsWhereAppropriate",
 			Justification = "Already event")]
 		protected virtual void RaisePropertyChanged (PropertyChangedEventArgs propertyChangedEventArgs)

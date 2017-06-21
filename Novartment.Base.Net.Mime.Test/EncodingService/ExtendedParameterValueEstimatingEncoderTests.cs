@@ -3,7 +3,6 @@ using Xunit;
 
 namespace Novartment.Base.Net.Mime.Test
 {
-
 	public class ExtendedParameterValueEstimatingEncoderTests
 	{
 		private static readonly string Template1 = "token#numer_one2001";
@@ -13,7 +12,8 @@ namespace Novartment.Base.Net.Mime.Test
 		private static readonly string TemplateResultEncodedSection0Prolog = "utf-8''";
 		private static readonly string TemplateResultEncoded = "token#numer_one2001%20two%09three%20%5C^%20between%20SLASHES%20^%5C%20%22quoted%22%D0%BA%D0%B8%D1%80%D0%B8%D0%BB%D0%BB%D0%B8%D1%86%D0%B0";
 
-		[Fact, Trait ("Category", "Mime")]
+		[Fact]
+		[Trait ("Category", "Mime")]
 		public void EstimateEncode ()
 		{
 			var encoding = Encoding.UTF8;

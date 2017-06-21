@@ -1,15 +1,15 @@
 ﻿using System;
 using System.Text;
-using Xunit;
-using Novartment.Base.Net.Smtp;
 using Novartment.Base.BinaryStreaming;
+using Novartment.Base.Net.Smtp;
+using Xunit;
 
 namespace Novartment.Base.Smtp.Test
 {
-
 	public class SmtpReplyTests
 	{
-		[Fact, Trait ("Category", "Net.Smtp")]
+		[Fact]
+		[Trait ("Category", "Net.Smtp")]
 		public void SmtpReply_Parse ()
 		{
 			var replyText1 = "junk551\r\n";
@@ -60,7 +60,8 @@ namespace Novartment.Base.Smtp.Test
 			Assert.Equal (replyText1.Length + replyText2.Length + replyText3.Length + replyText4.Length + replyText5.Length, src.Offset);
 		}
 
-		[Fact, Trait ("Category", "Net.Smtp")]
+		[Fact]
+		[Trait ("Category", "Net.Smtp")]
 		public void SmtpReply_Parse_Exception ()
 		{
 			// нет CRLF
@@ -81,7 +82,11 @@ namespace Novartment.Base.Smtp.Test
 			buf[i++] = 0x32;
 			buf[i++] = 0x32;
 			buf[i++] = 0x32;
-			for (; i < buf.Length - 2; i++) buf[i] = 0x20;
+			for (; i < buf.Length - 2; i++)
+			{
+				buf[i] = 0x20;
+			}
+
 			buf[i++] = 0x0d;
 			buf[i] = 0x0a;
 			Assert.Throws<FormatException> (() => SmtpReply.Parse (new ArrayBufferedSource (buf), null));

@@ -16,7 +16,7 @@ namespace Novartment.Base.Net.Mime
 		/// </summary>
 		/// <returns>Декодированное тело сущности в виде источника данных.</returns>
 		[SuppressMessage (
-		"Microsoft.Design",
+			"Microsoft.Design",
 			"CA1024:UsePropertiesWhereAppropriate",
 			Justification = "Every time method creates new mutable result.")]
 		IBufferedSource GetDataSource ();

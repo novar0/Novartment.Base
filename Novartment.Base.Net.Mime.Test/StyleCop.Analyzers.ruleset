@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<RuleSet Name="Rules for StyleCop.Analyzers" Description="Code analysis rules for StyleCop.Analyzers.csproj." ToolsVersion="15.0">
+	<Rules AnalyzerId="StyleCop.CSharp.SpacingRules" RuleNamespace="StyleCop.CSharp.SpacingRules">
+		<Rule Id="SA1000" Action="None" />
+		<Rule Id="SA1008" Action="None" />
+		<Rule Id="SA1015" Action="None" />
+		<Rule Id="SA1027" Action="None" />
+		<Rule Id="SA1101" Action="None" />
+		<Rule Id="SA1309" Action="None" />
+		<Rule Id="SA1600" Action="None" />
+		<Rule Id="SA1623" Action="None" />
+		<Rule Id="SA1633" Action="None" />
+		<Rule Id="SA1642" Action="None" />
+	</Rules>
+</RuleSet>

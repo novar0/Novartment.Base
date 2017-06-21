@@ -1,17 +1,13 @@
-﻿using Enumerable = System.Linq.Enumerable;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Xunit;
+using Enumerable = System.Linq.Enumerable;
 
 namespace Novartment.Base.Collections.Linq.Test
 {
 	public class ReadOnlyFiniteSetTests
 	{
-		private static IReadOnlyList<T> ToArray<T> (IEnumerable<T> enumerable)
-		{
-			return Enumerable.ToArray (enumerable);
-		}
-
-		[Fact, Trait ("Category", "Collections.Linq")]
+		[Fact]
+		[Trait ("Category", "Collections.Linq")]
 		public void Empty ()
 		{
 			var set = ReadOnlyFiniteSet.Empty<int> ();
@@ -20,7 +16,8 @@ namespace Novartment.Base.Collections.Linq.Test
 			Assert.False (set.Contains (1));
 		}
 
-		[Fact, Trait ("Category", "Collections.Linq")]
+		[Fact]
+		[Trait ("Category", "Collections.Linq")]
 		public void Range ()
 		{
 			var set = ReadOnlyFiniteSet.Range (0, 0);
@@ -49,19 +46,8 @@ namespace Novartment.Base.Collections.Linq.Test
 			Assert.False (set.Contains (3));
 		}
 
-		internal class TestSet<T> : HashSet<T>, IReadOnlyFiniteSet<T>
-		{
-			internal TestSet ()
-				: base ()
-			{
-			}
-
-			internal TestSet (IEnumerable<T> collection)
-				: base (collection)
-			{
-			}
-		}
-		[Fact, Trait ("Category", "Collections.Linq")]
+		[Fact]
+		[Trait ("Category", "Collections.Linq")]
 		public void DefaultIfEmpty ()
 		{
 			var set = ReadOnlyFiniteSet.DefaultIfEmpty (new TestSet<int> (), 999);
@@ -79,18 +65,19 @@ namespace Novartment.Base.Collections.Linq.Test
 			var set2 = ReadOnlyFiniteSet.DefaultIfEmpty (new TestSet<string> (), "999");
 			Assert.Equal (1, set2.Count);
 			Assert.True (set2.Contains ("999"));
-			Assert.False (set2.Contains (""));
+			Assert.False (set2.Contains (string.Empty));
 			Assert.False (set2.Contains (null));
 			set2 = ReadOnlyFiniteSet.DefaultIfEmpty (new TestSet<string> () { "three", "two", "one" }, "999");
 			Assert.Equal (3, set2.Count);
 			Assert.True (set2.Contains ("three"));
 			Assert.True (set2.Contains ("two"));
 			Assert.True (set2.Contains ("one"));
-			Assert.False (set2.Contains (""));
+			Assert.False (set2.Contains (string.Empty));
 			Assert.False (set2.Contains (null));
 		}
 
-		[Fact, Trait ("Category", "Collections.Linq")]
+		[Fact]
+		[Trait ("Category", "Collections.Linq")]
 		public void Contains ()
 		{
 			var set = new TestSet<int> ();
@@ -106,11 +93,12 @@ namespace Novartment.Base.Collections.Linq.Test
 			Assert.True (ReadOnlyFiniteSet.Contains (set2, "three"));
 			Assert.True (ReadOnlyFiniteSet.Contains (set2, "two"));
 			Assert.True (ReadOnlyFiniteSet.Contains (set2, "one"));
-			Assert.False (ReadOnlyFiniteSet.Contains (set2, ""));
+			Assert.False (ReadOnlyFiniteSet.Contains (set2, string.Empty));
 			Assert.False (ReadOnlyFiniteSet.Contains (set2, null));
 		}
 
-		[Fact, Trait ("Category", "Collections.Linq")]
+		[Fact]
+		[Trait ("Category", "Collections.Linq")]
 		public void Reverse ()
 		{
 			var set = ReadOnlyFiniteSet.Reverse (new TestSet<int> ());
@@ -137,7 +125,7 @@ namespace Novartment.Base.Collections.Linq.Test
 			set2 = ReadOnlyFiniteSet.Reverse (new TestSet<string> () { "two" });
 			Assert.Equal (1, set2.Count);
 			Assert.True (set2.Contains ("two"));
-			Assert.False (set2.Contains (""));
+			Assert.False (set2.Contains (string.Empty));
 			Assert.False (set2.Contains (null));
 			set2 = ReadOnlyFiniteSet.Reverse (new TestSet<string> () { "three", "two", "one" });
 			var list2 = ToArray (set2);
@@ -148,11 +136,12 @@ namespace Novartment.Base.Collections.Linq.Test
 			Assert.True (set2.Contains ("three"));
 			Assert.True (set2.Contains ("two"));
 			Assert.True (set2.Contains ("one"));
-			Assert.False (set2.Contains (""));
+			Assert.False (set2.Contains (string.Empty));
 			Assert.False (set2.Contains (null));
 		}
 
-		[Fact, Trait ("Category", "Collections.Linq")]
+		[Fact]
+		[Trait ("Category", "Collections.Linq")]
 		public void Distinct ()
 		{
 			var set = ReadOnlyFiniteSet.Distinct (new TestSet<int> ());
@@ -179,7 +168,7 @@ namespace Novartment.Base.Collections.Linq.Test
 			set2 = ReadOnlyFiniteSet.Distinct (new TestSet<string> () { "two" });
 			Assert.Equal (1, set2.Count);
 			Assert.True (set2.Contains ("two"));
-			Assert.False (set2.Contains (""));
+			Assert.False (set2.Contains (string.Empty));
 			Assert.False (set2.Contains (null));
 			set2 = ReadOnlyFiniteSet.Distinct (new TestSet<string> () { "three", "two", "one" });
 			var list2 = ToArray (set2);
@@ -190,11 +179,12 @@ namespace Novartment.Base.Collections.Linq.Test
 			Assert.True (set2.Contains ("three"));
 			Assert.True (set2.Contains ("two"));
 			Assert.True (set2.Contains ("one"));
-			Assert.False (set2.Contains (""));
+			Assert.False (set2.Contains (string.Empty));
 			Assert.False (set2.Contains (null));
 		}
 
-		[Fact, Trait ("Category", "Collections.Linq")]
+		[Fact]
+		[Trait ("Category", "Collections.Linq")]
 		public void Except ()
 		{
 			var set = ReadOnlyFiniteSet.Except (new TestSet<int> (), new TestSet<int> () { 9, 3, 1 });
@@ -221,7 +211,8 @@ namespace Novartment.Base.Collections.Linq.Test
 			Assert.False (set.Contains (9));
 		}
 
-		[Fact, Trait ("Category", "Collections.Linq")]
+		[Fact]
+		[Trait ("Category", "Collections.Linq")]
 		public void SymmetricExcept ()
 		{
 			var set = ReadOnlyFiniteSet.SymmetricExcept (new TestSet<int> (), new TestSet<int> () { 9, 3, 1 });
@@ -253,7 +244,8 @@ namespace Novartment.Base.Collections.Linq.Test
 			Assert.False (set.Contains (9));
 		}
 
-		[Fact, Trait ("Category", "Collections.Linq")]
+		[Fact]
+		[Trait ("Category", "Collections.Linq")]
 		public void Intersect ()
 		{
 			var set = ReadOnlyFiniteSet.Intersect (new TestSet<int> (), new TestSet<int> () { 9, 3, 1 });
@@ -283,7 +275,8 @@ namespace Novartment.Base.Collections.Linq.Test
 			Assert.False (set.Contains (0));
 		}
 
-		[Fact, Trait ("Category", "Collections.Linq")]
+		[Fact]
+		[Trait ("Category", "Collections.Linq")]
 		public void Union ()
 		{
 			var set = ReadOnlyFiniteSet.Union (new TestSet<int> (), new TestSet<int> () { 9, 3, 1 });
@@ -316,6 +309,24 @@ namespace Novartment.Base.Collections.Linq.Test
 			Assert.True (set.Contains (1));
 			Assert.False (set.Contains (-1));
 			Assert.False (set.Contains (0));
+		}
+
+		private static IReadOnlyList<T> ToArray<T> (IEnumerable<T> enumerable)
+		{
+			return Enumerable.ToArray (enumerable);
+		}
+
+		internal class TestSet<T> : HashSet<T>, IReadOnlyFiniteSet<T>
+		{
+			internal TestSet ()
+				: base ()
+			{
+			}
+
+			internal TestSet (IEnumerable<T> collection)
+				: base (collection)
+			{
+			}
 		}
 	}
 }
