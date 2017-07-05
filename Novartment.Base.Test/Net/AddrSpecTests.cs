@@ -25,6 +25,10 @@ namespace Novartment.Base.Net.Test
 			addr = AddrSpec.Parse ("\"real(addr)\"@\t(comment here)\t[ some literal domain  ]");
 			Assert.Equal ("real(addr)", addr.LocalPart);
 			Assert.Equal (" some literal domain  ", addr.Domain);
+
+			addr = AddrSpec.Parse ("<some>");
+			Assert.Equal ("some", addr.LocalPart);
+			Assert.Equal ("localhost", addr.Domain);
 		}
 
 		[Fact]

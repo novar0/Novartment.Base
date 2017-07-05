@@ -26,7 +26,7 @@ namespace Novartment.Base.Net.Smtp
 		/// Асинхронно начинает почтовую транзакцию используя указанный адрес возврата.
 		/// </summary>
 		/// <param name="returnPath">Mailbox, which can be used to report errors. Specify null if return-reporting not allowed.</param>
-		/// <param name="cancellationToken">Cancellation token.</param>
+		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
 		/// <returns>Task, representing operation.</returns>
 		/// <exception cref="Novartment.Base.Net.Smtp.UnacceptableSmtpMailboxException">
 		/// Происходит если указанный returnPath не подходит для транзакции.

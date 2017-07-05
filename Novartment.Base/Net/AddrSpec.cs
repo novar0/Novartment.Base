@@ -154,16 +154,28 @@ namespace Novartment.Base.Net
 			domain-literal  =  [CFWS] "[" *([FWS] dtext) [FWS] "]" [CFWS]
 			*/
 
-			if ((elements.Count != 3) ||
-				((elements[0].ElementType != StructuredValueElementType.Value) && (elements[0].ElementType != StructuredValueElementType.QuotedValue)) ||
-				!elements[1].EqualsSeparator ('@') ||
-				((elements[2].ElementType != StructuredValueElementType.Value) && (elements[2].ElementType != StructuredValueElementType.SquareBracketedValue)))
-			{
-				throw new FormatException ("Value does not conform to format 'addr-spec'.");
-			}
+			string localPart;
+			string domain;
 
-			var localPart = elements[0].Decode ();
-			var domain = elements[2].Decode ();
+			if (elements.Count == 1)
+			{
+				// особый случай для совместимости со старыми реализациями
+				localPart = elements[0].Value;
+				domain = "localhost";
+			}
+			else
+			{
+				if ((elements.Count != 3) ||
+					((elements[0].ElementType != StructuredValueElementType.Value) && (elements[0].ElementType != StructuredValueElementType.QuotedValue)) ||
+					!elements[1].EqualsSeparator ('@') ||
+					((elements[2].ElementType != StructuredValueElementType.Value) && (elements[2].ElementType != StructuredValueElementType.SquareBracketedValue)))
+				{
+					throw new FormatException ("Value does not conform to format 'addr-spec'.");
+				}
+
+				localPart = elements[0].Decode ();
+				domain = elements[2].Decode ();
+			}
 
 			return new AddrSpec (localPart, domain);
 		}

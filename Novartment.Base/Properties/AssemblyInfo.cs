@@ -10,5 +10,5 @@ using System.Runtime.InteropServices;
 [assembly: CLSCompliant (false)]
 [assembly: ComVisible (false)]
 [assembly: AssemblyVersion ("3.27")]
-[assembly: AssemblyFileVersion ("3.27.0.0")]
-[assembly: AssemblyInformationalVersion ("3.27.0-beta")]
+[assembly: AssemblyFileVersion ("3.27.1.0")]
+[assembly: AssemblyInformationalVersion ("3.27.1-beta")]
