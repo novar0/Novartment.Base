@@ -9,6 +9,11 @@ namespace Novartment.Base
 		ILoggerProvider
 	{
 		/// <summary>
+		/// Получает экземпляр SimpleEventLog, в который записываются все события.
+		/// </summary>
+		public static readonly SimpleEventLog Logger = new SimpleEventLog ();
+
+		/// <summary>
 		/// Инициализирует новый экземпляр SimpleEventLogProvider.
 		/// </summary>
 		public SimpleEventLogProvider ()
@@ -22,7 +27,7 @@ namespace Novartment.Base
 		/// <returns>Созданный экземпляр журнала.</returns>
 		public ILogger CreateLogger (string categoryName)
 		{
-			return new SimpleEventLog ();
+			return Logger;
 		}
 
 		/// <summary>
