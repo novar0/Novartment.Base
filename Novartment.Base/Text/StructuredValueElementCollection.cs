@@ -41,15 +41,12 @@ namespace Novartment.Base.Text
 			for (var i = 0; i < count; i++)
 			{
 				var token = elements[i];
-				switch (token.ElementType)
+				if ((token.ElementType != StructuredValueElementType.Separator) &&
+					(token.ElementType != StructuredValueElementType.Value) &&
+					(token.ElementType != StructuredValueElementType.QuotedValue))
 				{
-					case StructuredValueElementType.Separator:
-					case StructuredValueElementType.Value:
-					case StructuredValueElementType.QuotedValue:
-						break;
-					default:
-						throw new FormatException (FormattableString.Invariant (
-							$"Element of type '{token.ElementType}' is complex and can not be decoded to discrete value."));
+					throw new FormatException (FormattableString.Invariant (
+						$"Element of type '{token.ElementType}' is complex and can not be decoded into discrete value."));
 				}
 
 				var decodedValue = token.Decode ();

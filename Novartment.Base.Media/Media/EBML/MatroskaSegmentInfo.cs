@@ -152,28 +152,28 @@ namespace Novartment.Base.Media
 							clusterFound = true; // начались данные, просмотр заголовка оканчиваем
 							break;
 						case 0x1549a966L: // Info
-							var reader1 = source.Current.ReadSubElements ();
+							var reader = source.Current.ReadSubElements ();
 							while (true)
 							{
-								var isMovedToNext2 = await reader1.MoveNextAsync (cancellationToken).ConfigureAwait (false);
+								var isMovedToNext2 = await reader.MoveNextAsync (cancellationToken).ConfigureAwait (false);
 								if (!isMovedToNext2)
 								{
 									break;
 								}
 
-								switch (reader1.Current.Id)
+								switch (reader.Current.Id)
 								{
 									case 0x2ad7b1UL: // TimeCodeScale
-										timeCodeScale = reader1.Current.ReadUInt ();
+										timeCodeScale = reader.Current.ReadUInt ();
 										break;
 									case 0x4489UL: // Duration
-										duration = reader1.Current.ReadFloat ();
+										duration = reader.Current.ReadFloat ();
 										break;
 									case 0x4461UL: // DateUTC
-										date = reader1.Current.ReadDate ();
+										date = reader.Current.ReadDate ();
 										break;
 									case 0x7ba9UL: // Title
-										title = reader1.Current.ReadUtf ();
+										title = reader.Current.ReadUtf ();
 										break;
 								}
 							}
@@ -183,44 +183,7 @@ namespace Novartment.Base.Media
 							await ProcessTracksEntryAsync (source.Current.ReadSubElements (), tracks, cancellationToken).ConfigureAwait (false);
 							break;
 						case 0x1941a469UL: // Attachments
-							var reader6 = source.Current.ReadSubElements ();
-							while (true)
-							{
-								var isMovedToNext2 = await reader6.MoveNextAsync (cancellationToken).ConfigureAwait (false);
-								if (!isMovedToNext2)
-								{
-									break;
-								}
-
-								if (reader6.Current.Id == 0x61a7UL)
-								{
-									// AttachedFile
-									var reader7 = reader6.Current.ReadSubElements ();
-									string fileName = null;
-									string fileMimeType = null;
-									while (true)
-									{
-										var isMovedToNext3 = await reader7.MoveNextAsync (cancellationToken).ConfigureAwait (false);
-										if (!isMovedToNext3)
-										{
-											break;
-										}
-
-										switch (reader7.Current.Id)
-										{
-											case 0x466eUL: // FileName
-												fileName = reader7.Current.ReadUtf ();
-												break;
-											case 0x4660UL: // FileMimeType
-												fileMimeType = reader7.Current.ReadAscii ();
-												break;
-										}
-									}
-
-									attachments.Add (new MatroskaAttachedFileInfo (fileName, fileMimeType));
-								}
-							}
-
+							await ProcessAttachmentsEntryAsync (source.Current.ReadSubElements (), attachments, cancellationToken).ConfigureAwait (false);
 							break;
 					}
 				}
@@ -233,6 +196,49 @@ namespace Novartment.Base.Media
 					timeCodeScale,
 					tracks,
 					attachments);
+			}
+		}
+
+		private static async Task ProcessAttachmentsEntryAsync (
+			EbmlElementCollectionEnumerator reader,
+			ArrayList<MatroskaAttachedFileInfo> attachments,
+			CancellationToken cancellationToken)
+		{
+			while (true)
+			{
+				var isMovedToNext = await reader.MoveNextAsync (cancellationToken).ConfigureAwait (false);
+				if (!isMovedToNext)
+				{
+					break;
+				}
+
+				if (reader.Current.Id == 0x61a7UL)
+				{
+					// AttachedFile
+					var reader7 = reader.Current.ReadSubElements ();
+					string fileName = null;
+					string fileMimeType = null;
+					while (true)
+					{
+						var isMovedToNext3 = await reader7.MoveNextAsync (cancellationToken).ConfigureAwait (false);
+						if (!isMovedToNext3)
+						{
+							break;
+						}
+
+						switch (reader7.Current.Id)
+						{
+							case 0x466eUL: // FileName
+								fileName = reader7.Current.ReadUtf ();
+								break;
+							case 0x4660UL: // FileMimeType
+								fileMimeType = reader7.Current.ReadAscii ();
+								break;
+						}
+					}
+
+					attachments.Add (new MatroskaAttachedFileInfo (fileName, fileMimeType));
+				}
 			}
 		}
 
