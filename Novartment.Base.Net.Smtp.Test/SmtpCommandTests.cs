@@ -233,7 +233,7 @@ namespace Novartment.Base.Smtp.Test
 			Assert.Equal (ContentTransferEncoding.Binary, cmdMailFrom.RequestedContentTransferEncoding);
 
 			// RcptTo
-			cmdStr = "RCPT TO:<support>\r\n";
+			cmdStr = "RCPT TO:<@support>\r\n";
 			source = new ArrayBufferedSource (Encoding.ASCII.GetBytes (cmdStr + _quitCommand));
 			cmd = SmtpCommand.Parse (source, SmtpCommand.ExpectedInputType.Command, null);
 			Assert.IsType<SmtpInvalidSyntaxCommand> (cmd);

@@ -32,15 +32,15 @@ namespace Novartment.Base.Test
 			var buf = new byte[100];
 			buf[0] = 123;
 			AsciiCharSet.GetBytes (" !09Az}~", 0, " !09Az}~".Length, buf, 1);
-			Assert.Equal (buf[0], 123);
-			Assert.Equal (buf[1], 32);
-			Assert.Equal (buf[2], 33);
-			Assert.Equal (buf[3], 48);
-			Assert.Equal (buf[4], 57);
-			Assert.Equal (buf[5], 65);
-			Assert.Equal (buf[6], 122);
-			Assert.Equal (buf[7], 125);
-			Assert.Equal (buf[8], 126);
+			Assert.Equal (123, buf[0]);
+			Assert.Equal (32, buf[1]);
+			Assert.Equal (33, buf[2]);
+			Assert.Equal (48, buf[3]);
+			Assert.Equal (57, buf[4]);
+			Assert.Equal (65, buf[5]);
+			Assert.Equal (122, buf[6]);
+			Assert.Equal (125, buf[7]);
+			Assert.Equal (126, buf[8]);
 		}
 
 		[Fact]

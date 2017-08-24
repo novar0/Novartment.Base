@@ -322,7 +322,7 @@ namespace Novartment.Base.Collections.Linq.Test
 			var src = new string[] { "333", "222", "111", "11", "1111", null, "aaa", "a", string.Empty };
 			var list2 = ReadOnlyList.ThenBy (ReadOnlyList.OrderBy (src, item => item, sizeComparer), item => item, null);
 			Assert.Equal (9, list2.Count);
-			Assert.Equal (null, list2[0]);
+			Assert.Null (list2[0]);
 			Assert.Equal (string.Empty, list2[1]);
 			Assert.Equal ("a", list2[2]);
 			Assert.Equal ("11", list2[3]);
@@ -342,11 +342,11 @@ namespace Novartment.Base.Collections.Linq.Test
 			Assert.Equal ("11", list2[5]);
 			Assert.Equal ("a", list2[6]);
 			Assert.Equal (string.Empty, list2[7]);
-			Assert.Equal (null, list2[8]);
+			Assert.Null (list2[8]);
 
 			list2 = ReadOnlyList.ThenByDescending (ReadOnlyList.OrderBy (src, item => item, sizeComparer), item => item, null);
 			Assert.Equal (9, list2.Count);
-			Assert.Equal (null, list2[0]);
+			Assert.Null (list2[0]);
 			Assert.Equal (string.Empty, list2[1]);
 			Assert.Equal ("a", list2[2]);
 			Assert.Equal ("11", list2[3]);

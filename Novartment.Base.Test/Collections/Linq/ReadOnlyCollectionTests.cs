@@ -213,7 +213,7 @@ namespace Novartment.Base.Collections.Linq.Test
 			var col = new string[] { "333", "222", "111", "11", "1111", null, "aaa", "a", string.Empty };
 			var collection2 = ToArray (ReadOnlyCollection.ThenBy (ReadOnlyCollection.OrderBy (col, item => item, sizeComparer), item => item, null));
 			Assert.Equal (9, collection2.Count);
-			Assert.Equal (null, collection2[0]);
+			Assert.Null (collection2[0]);
 			Assert.Equal (string.Empty, collection2[1]);
 			Assert.Equal ("a", collection2[2]);
 			Assert.Equal ("11", collection2[3]);
@@ -233,11 +233,11 @@ namespace Novartment.Base.Collections.Linq.Test
 			Assert.Equal ("11", collection2[5]);
 			Assert.Equal ("a", collection2[6]);
 			Assert.Equal (string.Empty, collection2[7]);
-			Assert.Equal (null, collection2[8]);
+			Assert.Null (collection2[8]);
 
 			collection2 = ToArray (ReadOnlyCollection.ThenByDescending (ReadOnlyCollection.OrderBy (col, item => item, sizeComparer), item => item, null));
 			Assert.Equal (9, collection2.Count);
-			Assert.Equal (null, collection2[0]);
+			Assert.Null (collection2[0]);
 			Assert.Equal (string.Empty, collection2[1]);
 			Assert.Equal ("a", collection2[2]);
 			Assert.Equal ("11", collection2[3]);

@@ -261,48 +261,48 @@ namespace Novartment.Base.Media.Test
 			{
 				var stream = fs.AsBufferedSource (new byte[1024]);
 				var segment = MatroskaFile.ParseSegmentInformationAsync (stream, CancellationToken.None).Result;
-				Assert.Equal (segment.Title, "тестовый файл");
-				Assert.Equal (segment.Date, new DateTime (629383704700000000L));
-				Assert.Equal (segment.Duration, 544.0F);
-				Assert.Equal (segment.TimeCodeScale, 1000000UL);
-				Assert.Equal (segment.Tracks.Count, 3);
-				Assert.Equal (segment.Attachments.Count, 1);
-				Assert.Equal (segment.Attachments[0].Name, "пальмовая ветвь");
-				Assert.Equal (segment.Attachments[0].ContentType, "image/png");
+				Assert.Equal ("тестовый файл", segment.Title);
+				Assert.Equal (new DateTime (629383704700000000L), segment.Date);
+				Assert.Equal (544.0F, segment.Duration);
+				Assert.Equal (1000000UL, segment.TimeCodeScale);
+				Assert.Equal (3, segment.Tracks.Count);
+				Assert.Equal (1, segment.Attachments.Count);
+				Assert.Equal ("пальмовая ветвь", segment.Attachments[0].Name);
+				Assert.Equal ("image/png", segment.Attachments[0].ContentType);
 
 				// track1
-				Assert.Equal (segment.Tracks[0].TrackType, MatroskaTrackType.Video);
-				Assert.Equal (segment.Tracks[0].Forced, false);
-				Assert.Equal (segment.Tracks[0].Codec, "V_MS/VFW/FOURCC");
-				Assert.Equal (segment.Tracks[0].DefaultDuration, 40000000UL);
+				Assert.Equal (MatroskaTrackType.Video, segment.Tracks[0].TrackType);
+				Assert.False (segment.Tracks[0].Forced);
+				Assert.Equal ("V_MS/VFW/FOURCC", segment.Tracks[0].Codec);
+				Assert.Equal (40000000UL, segment.Tracks[0].DefaultDuration);
 				Assert.Null (segment.Tracks[0].Language);
-				Assert.Equal (segment.Tracks[0].Name, "видео трэк");
+				Assert.Equal ("видео трэк", segment.Tracks[0].Name);
 				Assert.Null (segment.Tracks[0].AudioFormat);
 				Assert.NotNull (segment.Tracks[0].VideoFormat);
-				Assert.Equal (segment.Tracks[0].VideoFormat.PixelWidth, 8UL);
-				Assert.Equal (segment.Tracks[0].VideoFormat.PixelHeight, 4UL);
-				Assert.Equal (segment.Tracks[0].VideoFormat.DisplayWidth, 8UL);
-				Assert.Equal (segment.Tracks[0].VideoFormat.DisplayHeight, 4UL);
+				Assert.Equal (8UL, segment.Tracks[0].VideoFormat.PixelWidth);
+				Assert.Equal (4UL, segment.Tracks[0].VideoFormat.PixelHeight);
+				Assert.Equal (8UL, segment.Tracks[0].VideoFormat.DisplayWidth);
+				Assert.Equal (4UL, segment.Tracks[0].VideoFormat.DisplayHeight);
 
 				// track2
-				Assert.Equal (segment.Tracks[1].TrackType, MatroskaTrackType.Audio);
-				Assert.Equal (segment.Tracks[1].Forced, false);
-				Assert.Equal (segment.Tracks[1].Codec, "A_AC3");
-				Assert.Equal (segment.Tracks[1].DefaultDuration, 32000000UL);
-				Assert.Equal (segment.Tracks[1].Language, "rus");
-				Assert.Equal (segment.Tracks[1].Name, "аудио трэк");
+				Assert.Equal (MatroskaTrackType.Audio, segment.Tracks[1].TrackType);
+				Assert.False (segment.Tracks[1].Forced);
+				Assert.Equal ("A_AC3", segment.Tracks[1].Codec);
+				Assert.Equal (32000000UL, segment.Tracks[1].DefaultDuration);
+				Assert.Equal ("rus", segment.Tracks[1].Language);
+				Assert.Equal ("аудио трэк", segment.Tracks[1].Name);
 				Assert.Null (segment.Tracks[1].VideoFormat);
 				Assert.NotNull (segment.Tracks[1].AudioFormat);
-				Assert.Equal (segment.Tracks[1].AudioFormat.SamplingFrequency, 48000.0F);
-				Assert.Equal (segment.Tracks[1].AudioFormat.Channels, 2UL);
+				Assert.Equal (48000.0F, segment.Tracks[1].AudioFormat.SamplingFrequency);
+				Assert.Equal (2UL, segment.Tracks[1].AudioFormat.Channels);
 
 				// track2
-				Assert.Equal (segment.Tracks[2].TrackType, MatroskaTrackType.Subtitle);
-				Assert.Equal (segment.Tracks[2].Forced, true);
-				Assert.Equal (segment.Tracks[2].Codec, "S_TEXT/UTF8");
+				Assert.Equal (MatroskaTrackType.Subtitle, segment.Tracks[2].TrackType);
+				Assert.True (segment.Tracks[2].Forced);
+				Assert.Equal ("S_TEXT/UTF8", segment.Tracks[2].Codec);
 				Assert.Null (segment.Tracks[2].DefaultDuration);
-				Assert.Equal (segment.Tracks[2].Language, "rus");
-				Assert.Equal (segment.Tracks[2].Name, "субтитры форсированные");
+				Assert.Equal ("rus", segment.Tracks[2].Language);
+				Assert.Equal ("субтитры форсированные", segment.Tracks[2].Name);
 				Assert.Null (segment.Tracks[2].VideoFormat);
 				Assert.Null (segment.Tracks[2].AudioFormat);
 			}

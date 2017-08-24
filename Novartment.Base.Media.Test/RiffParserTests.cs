@@ -16,45 +16,45 @@ namespace Novartment.Base.Media.Test
 				IBufferedSource stream = fs.AsBufferedSource (new byte[1024]);
 				var aviInfo = AviInfo.ParseAsync (stream, CancellationToken.None).Result;
 				Assert.NotNull (aviInfo);
-				Assert.Equal (aviInfo.Width, 8U);
-				Assert.Equal (aviInfo.Height, 4U);
-				Assert.Equal (aviInfo.MicroSecPerFrame, 41708U);
-				Assert.Equal (aviInfo.TotalFrames, 30U);
-				Assert.Equal (aviInfo.Streams.Count, 2);
+				Assert.Equal (8U, aviInfo.Width);
+				Assert.Equal (4U, aviInfo.Height);
+				Assert.Equal (41708U, aviInfo.MicroSecPerFrame);
+				Assert.Equal (30U, aviInfo.TotalFrames);
+				Assert.Equal (2, aviInfo.Streams.Count);
 
 				// video
-				Assert.Equal (aviInfo.Streams[0].Kind, "vids");
-				Assert.Equal (aviInfo.Streams[0].Handler, "DIB ");
-				Assert.Equal (aviInfo.Streams[0].Length, 30U);
-				Assert.Equal (aviInfo.Streams[0].Rate, 2997U);
-				Assert.Equal (aviInfo.Streams[0].Scale, 125U);
-				Assert.Equal (aviInfo.Streams[0].Start, 0U);
-				Assert.Equal (aviInfo.Streams[0].Left, 0U);
-				Assert.Equal (aviInfo.Streams[0].Top, 0U);
-				Assert.Equal (aviInfo.Streams[0].Right, 8U);
-				Assert.Equal (aviInfo.Streams[0].Bottom, 4U);
+				Assert.Equal ("vids", aviInfo.Streams[0].Kind);
+				Assert.Equal ("DIB ", aviInfo.Streams[0].Handler);
+				Assert.Equal (30U, aviInfo.Streams[0].Length);
+				Assert.Equal (2997U, aviInfo.Streams[0].Rate);
+				Assert.Equal (125U, aviInfo.Streams[0].Scale);
+				Assert.Equal (0U, aviInfo.Streams[0].Start);
+				Assert.Equal (0U, aviInfo.Streams[0].Left);
+				Assert.Equal (0U, aviInfo.Streams[0].Top);
+				Assert.Equal (8U, aviInfo.Streams[0].Right);
+				Assert.Equal (4U, aviInfo.Streams[0].Bottom);
 				Assert.NotNull (aviInfo.Streams[0].VideoFormat);
 				Assert.Null (aviInfo.Streams[0].AudioFormat);
 				var videoFormat = aviInfo.Streams[0].VideoFormat;
-				Assert.Equal (videoFormat.BitCount, 24U);
-				Assert.Equal (videoFormat.Compression, "0");
-				Assert.Equal (videoFormat.Width, 8U);
-				Assert.Equal (videoFormat.Height, 4U);
-				Assert.Equal (videoFormat.SizeImage, 96U);
+				Assert.Equal (24U, videoFormat.BitCount);
+				Assert.Equal ("0", videoFormat.Compression);
+				Assert.Equal (8U, videoFormat.Width);
+				Assert.Equal (4U, videoFormat.Height);
+				Assert.Equal (96U, videoFormat.SizeImage);
 
 				// audio
-				Assert.Equal (aviInfo.Streams[1].Kind, "auds");
+				Assert.Equal ("auds", aviInfo.Streams[1].Kind);
 				Assert.Null (aviInfo.Streams[1].Handler);
-				Assert.Equal (aviInfo.Streams[1].Length, 48U);
-				Assert.Equal (aviInfo.Streams[1].Rate, 44100U);
-				Assert.Equal (aviInfo.Streams[1].Scale, 1152U);
-				Assert.Equal (aviInfo.Streams[1].Start, 0U);
+				Assert.Equal (48U, aviInfo.Streams[1].Length);
+				Assert.Equal (44100U, aviInfo.Streams[1].Rate);
+				Assert.Equal (1152U, aviInfo.Streams[1].Scale);
+				Assert.Equal (0U, aviInfo.Streams[1].Start);
 				Assert.Null (aviInfo.Streams[1].VideoFormat);
 				Assert.NotNull (aviInfo.Streams[1].AudioFormat);
 				var audioFormat = aviInfo.Streams[1].AudioFormat;
-				Assert.Equal (audioFormat.BitsPerSample, 0U);
-				Assert.Equal (audioFormat.SamplesPerSec, 44100U);
-				Assert.Equal (audioFormat.Channels, 2U);
+				Assert.Equal (0U, audioFormat.BitsPerSample);
+				Assert.Equal (44100U, audioFormat.SamplesPerSec);
+				Assert.Equal (2U, audioFormat.Channels);
 			}
 		}
 	}
