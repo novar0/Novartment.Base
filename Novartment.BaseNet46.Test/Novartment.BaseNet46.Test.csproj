@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <VersionPrefix>1.0.0-beta</VersionPrefix>
-    <TargetFramework>net46</TargetFramework>
+    <TargetFramework>net461</TargetFramework>
     <AssemblyName>Novartment.BaseNet46.Test</AssemblyName>
     <PackageId>Novartment.BaseNet46.Test</PackageId>
     <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
@@ -19,9 +19,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.0.0" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="2.2.0" />
-    <PackageReference Include="xunit" Version="2.2.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.3.0" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.3.0-beta4-build3742" />
+    <PackageReference Include="xunit" Version="2.3.0-beta4-build3742" />
   </ItemGroup>
 
 	<ItemGroup>
@@ -29,8 +29,7 @@
 		<AdditionalFiles Include="stylecop.json" />
 	</ItemGroup>
 
-	<ItemGroup Condition=" '$(TargetFramework)' == 'net46' ">
-    <PackageReference Include="Microsoft.NETCore.Platforms" Version="1.1.0" />
+	<ItemGroup Condition=" '$(TargetFramework)' == 'net461' ">
     <Reference Include="System" />
 		<Reference Include="WindowsBase" />
 		<Reference Include="Microsoft.CSharp" />

@@ -12,5 +12,5 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible (false)]
 [assembly: InternalsVisibleTo ("Novartment.Base.Net46.Test")]
 [assembly: AssemblyVersion ("2.1")]
-[assembly: AssemblyFileVersion ("2.1.3.0")]
-[assembly: AssemblyInformationalVersion ("2.1.3-beta")]
+[assembly: AssemblyFileVersion ("2.1.4.0")]
+[assembly: AssemblyInformationalVersion ("2.1.4-beta")]

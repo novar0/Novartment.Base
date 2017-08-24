@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <Authors>Novar</Authors>
-    <TargetFramework>net46</TargetFramework>
+    <TargetFramework>net461</TargetFramework>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <AssemblyName>Novartment.BaseNet46</AssemblyName>
     <PackageId>Novartment.BaseNet46</PackageId>
@@ -17,26 +17,26 @@
 		<CodeAnalysisRuleSet>StyleCop.Analyzers.ruleset</CodeAnalysisRuleSet>
 	</PropertyGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\Novartment.Base\Novartment.Base.csproj" />
-  </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\Novartment.Base\Novartment.Base.csproj" />
+	</ItemGroup>
 
 	<ItemGroup>
 		<AdditionalFiles Include="StyleCop.Analyzers.ruleset" />
 		<AdditionalFiles Include="stylecop.json" />
 	</ItemGroup>
 
-	<ItemGroup Condition=" '$(TargetFramework)' == 'net46' ">
-    <Reference Include="PresentationCore" />
-    <Reference Include="PresentationFramework" />
-    <Reference Include="System.Configuration" />
-    <Reference Include="System.ServiceModel" />
-    <Reference Include="System.Xaml" />
-    <Reference Include="WindowsBase" />
-  </ItemGroup>
+	<ItemGroup>
+		<Reference Include="PresentationCore" />
+		<Reference Include="PresentationFramework" />
+		<Reference Include="System.Configuration" />
+		<Reference Include="System.ServiceModel" />
+		<Reference Include="System.Xaml" />
+		<Reference Include="WindowsBase" />
+	</ItemGroup>
 
 	<ItemGroup>
-	  <PackageReference Include="StyleCop.Analyzers" Version="1.1.0-beta003" />
+	  <PackageReference Include="StyleCop.Analyzers" Version="1.1.0-beta004" />
 	</ItemGroup>
 
 </Project>

@@ -2,11 +2,10 @@
 
   <PropertyGroup>
     <VersionPrefix>1.0.0-beta</VersionPrefix>
-    <TargetFramework>netcoreapp1.0</TargetFramework>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
     <AssemblyName>Novartment.Base.Sample</AssemblyName>
     <OutputType>Exe</OutputType>
     <PackageId>Novartment.Base.Sample</PackageId>
-    <RuntimeFrameworkVersion>1.1.1</RuntimeFrameworkVersion>
 		<CodeAnalysisRuleSet>StyleCop.Analyzers.ruleset</CodeAnalysisRuleSet>
 	</PropertyGroup>
 
@@ -16,10 +15,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Novartment.Base\Novartment.Base.csproj" />
     <ProjectReference Include="..\Novartment.Base.Media\Novartment.Base.Media.csproj" />
     <ProjectReference Include="..\Novartment.Base.Net.Mime\Novartment.Base.Net.Mime.csproj" />
     <ProjectReference Include="..\Novartment.Base.Net.Smtp\Novartment.Base.Net.Smtp.csproj" />
+    <ProjectReference Include="..\Novartment.Base\Novartment.Base.csproj" />
   </ItemGroup>
 
 	<ItemGroup>
@@ -28,8 +27,8 @@
 	</ItemGroup>
 
 	<ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="1.1.2" />
-    <PackageReference Include="System.Text.Encoding.CodePages" Version="4.3.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="2.0.0" />
+    <PackageReference Include="System.Text.Encoding.CodePages" Version="4.4.0" />
   </ItemGroup>
 
 </Project>
