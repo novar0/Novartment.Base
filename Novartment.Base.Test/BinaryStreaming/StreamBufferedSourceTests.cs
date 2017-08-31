@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Threading;
 using Novartment.Base.BinaryStreaming;
 using Xunit;
@@ -15,7 +16,7 @@ namespace Novartment.Base.Test
 		[InlineData (65536)]
 		public static void RequestSkipEmptySource (int bufSize)
 		{
-			var data = new byte[0];
+			var data = Array.Empty<byte> ();
 			var strm = new MemoryStream (data);
 			var src = strm.AsBufferedSource (new byte[bufSize]);
 			src.FillBufferAsync (CancellationToken.None).Wait ();
@@ -32,7 +33,7 @@ namespace Novartment.Base.Test
 		[InlineData (2)]
 		[InlineData (3)]
 		[InlineData (65536)]
-		public static void RequestSkipOneByteSource (int bufSize)
+		public void RequestSkipOneByteSource (int bufSize)
 		{
 			byte nnn = 123;
 			var data = new byte[] { nnn };
@@ -67,7 +68,7 @@ namespace Novartment.Base.Test
 		[InlineData (10000, false, 65536, 10, 1000, 1, 2000, 10000)]
 		[InlineData (0x1000000000000, true, 10000, 1, 3, 0x20000000000, 65536, 0x4000000000000000)] // большой источник
 		[InlineData (long.MaxValue, true, 10000, 1, 3, 0x2000000000000, 65536, long.MaxValue)]
-		public static void RequestSkipTest3SkipTest3Skip (
+		public void RequestSkipTest3SkipTest3Skip (
 			long dataSize,
 			bool canSeek,
 			int bufSize,

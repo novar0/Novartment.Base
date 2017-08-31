@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Novartment.Base.Net.Test
 {
-	internal class TcpListenerMock : ITcpListener
+	internal class TcpListenerMock : ITcpListener, IDisposable
 	{
 		private readonly AutoResetEvent _stopedEvent = new AutoResetEvent (false);
 		private readonly IPEndPoint _endpoint;
@@ -48,6 +48,11 @@ namespace Novartment.Base.Net.Test
 					new IPHostEndPoint (remoteEndpoint),
 					new byte[1000],
 					0);
+		}
+
+		public void Dispose ()
+		{
+			_stopedEvent.Dispose ();
 		}
 
 		internal void SimulateIncomingConnection (IPEndPoint remoteEndpoint)

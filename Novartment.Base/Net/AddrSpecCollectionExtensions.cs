@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using Novartment.Base.Collections;
 
@@ -8,11 +7,6 @@ namespace Novartment.Base.Net
 	/// <summary>
 	/// Методы расширения для коллекции AddrSpec.
 	/// </summary>
-	[SuppressMessage (
-		"Microsoft.Naming",
-		"CA1704:IdentifiersShouldBeSpelledCorrectly",
-		MessageId = "Addr",
-		Justification = "'add-spec' represents standard term.")]
 	public static class AddrSpecCollectionExtensions
 	{
 		/// <summary>

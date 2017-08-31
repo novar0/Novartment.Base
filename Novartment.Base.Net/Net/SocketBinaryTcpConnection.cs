@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Net;
 using System.Net.NetworkInformation;
@@ -17,11 +16,6 @@ namespace Novartment.Base.Net
 	/// Установленное TCP-подключение, отслеживающее полное время и время простоя
 	/// с возможностью запуска TLS-подключения.
 	/// </summary>
-	[SuppressMessage (
-		"Microsoft.Naming",
-		"CA1704:IdentifiersShouldBeSpelledCorrectly",
-		MessageId = "Tls",
-		Justification = "'TLS' represents standard term (Transport Layer Security).")]
 	public class SocketBinaryTcpConnection : BinaryTcpConnection,
 		ITlsCapableConnection
 	{
@@ -30,10 +24,6 @@ namespace Novartment.Base.Net
 
 		// Инициализирует новый экземпляр TlsCapableConnection на основе указанного подключенного сокета.
 		// Created TlsCapableConnection will take ownership of the specified connectedSocket.
-		[SuppressMessage (
-			"Microsoft.Reliability",
-			"CA2000:Dispose objects before losing scope",
-			Justification = "new NetworkStream will be stored in property 'Reader' and disposed later.")]
 		internal SocketBinaryTcpConnection (Socket connectedSocket, string localHostName, string remoteHostName)
 			: base (
 			new IPHostEndPoint ((IPEndPoint)connectedSocket.LocalEndPoint) { HostName = localHostName },
@@ -51,7 +41,12 @@ namespace Novartment.Base.Net
 		/// <param name="addressFamily">Схема адресации для подключения.</param>
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
 		/// <returns>Задача, результатом которой будет установленное TCP-подключение</returns>
-		public static Task<ITcpConnection> CreateAsync (Uri remoteUri, AddressFamily addressFamily, CancellationToken cancellationToken)
+		public static Task<ITcpConnection> CreateAsync (
+			Uri remoteUri,
+#pragma warning disable CA1801 // Review unused parameters
+			AddressFamily addressFamily,
+			CancellationToken cancellationToken)
+#pragma warning restore CA1801 // Review unused parameters
 		{
 			if (remoteUri == null)
 			{
@@ -108,10 +103,6 @@ namespace Novartment.Base.Net
 		/// <param name="remoteEndpoint">Конечная точка, к которой будет создано подключение.</param>
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
 		/// <returns>Задача, результатом которой будет установленное TCP-подключение</returns>
-		[SuppressMessage (
-			"Microsoft.Reliability",
-			"CA2000:Dispose objects before losing scope",
-			Justification = "new TcpConnection will be returned and disposed outside.")]
 		public static Task<ITcpConnection> CreateAsync (IPHostEndPoint remoteEndpoint, CancellationToken cancellationToken)
 		{
 			if (remoteEndpoint == null)

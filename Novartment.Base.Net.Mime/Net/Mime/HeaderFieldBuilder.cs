@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Text;
 using Novartment.Base.Collections;
@@ -77,16 +76,6 @@ namespace Novartment.Base.Net.Mime
 		/// <param name="name">Имя поля заголовка.</param>
 		/// <param name="addrSpecs">Коллекция языков в формате интернет-идентификаторов.</param>
 		/// <returns>Поле заголовка.</returns>
-		[SuppressMessage (
-			"Microsoft.Naming",
-			"CA1704:IdentifiersShouldBeSpelledCorrectly",
-			MessageId = "addr",
-			Justification = "'add-spec' represents standard term.")]
-		[SuppressMessage (
-			"Microsoft.Naming",
-			"CA1704:IdentifiersShouldBeSpelledCorrectly",
-			MessageId = "Addr",
-			Justification = "'add-spec' represents standard term.")]
 		public static HeaderFieldBuilder CreateAddrSpecList (HeaderFieldName name, IReadOnlyCollection<AddrSpec> addrSpecs)
 		{
 			if (name == HeaderFieldName.Unspecified)
@@ -256,10 +245,6 @@ namespace Novartment.Base.Net.Mime
 		/// <param name="id">Идентификатор (значение типа 'dot-atom-text').</param>
 		/// <param name="phrase">Произвольная 'phrase'.</param>
 		/// <returns>Поле заголовка.</returns>
-		[SuppressMessage (
-			"Microsoft.Design",
-			"CA1026:DefaultParametersShouldNotBeUsed",
-			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
 		public static HeaderFieldBuilder CreatePhraseAndId (HeaderFieldName name, string id, string phrase = null)
 		{
 			if (name == HeaderFieldName.Unspecified)

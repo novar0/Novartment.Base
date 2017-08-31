@@ -33,34 +33,34 @@ namespace Novartment.Base.Net.Mime.Test
 
 			var entities = rootEntity.GetChildContentParts (false, false);
 			Assert.Equal (2, entities.Count);
-			Assert.Equal (ContentMediaType.Application, entities[0].Type);
-			Assert.Equal ("octet-stream", entities[0].Subtype);
-			Assert.Equal (ContentMediaType.Image, entities[1].Type);
-			Assert.Equal ("png", entities[1].Subtype);
+			Assert.Equal (ContentMediaType.Application, entities[0].MediaType);
+			Assert.Equal ("octet-stream", entities[0].MediaSubtype);
+			Assert.Equal (ContentMediaType.Image, entities[1].MediaType);
+			Assert.Equal ("png", entities[1].MediaSubtype);
 
 			entities = rootEntity.GetChildContentParts (true, false);
 			Assert.Equal (4, entities.Count);
-			Assert.Equal (ContentMediaType.Application, entities[0].Type);
-			Assert.Equal ("octet-stream", entities[0].Subtype);
-			Assert.Equal (ContentMediaType.Text, entities[1].Type);
-			Assert.Equal ("plain", entities[1].Subtype);
-			Assert.Equal (ContentMediaType.Text, entities[2].Type);
-			Assert.Equal ("html", entities[2].Subtype);
-			Assert.Equal (ContentMediaType.Image, entities[3].Type);
-			Assert.Equal ("png", entities[3].Subtype);
+			Assert.Equal (ContentMediaType.Application, entities[0].MediaType);
+			Assert.Equal ("octet-stream", entities[0].MediaSubtype);
+			Assert.Equal (ContentMediaType.Text, entities[1].MediaType);
+			Assert.Equal ("plain", entities[1].MediaSubtype);
+			Assert.Equal (ContentMediaType.Text, entities[2].MediaType);
+			Assert.Equal ("html", entities[2].MediaSubtype);
+			Assert.Equal (ContentMediaType.Image, entities[3].MediaType);
+			Assert.Equal ("png", entities[3].MediaSubtype);
 
 			entities = rootEntity.GetChildContentParts (true, true);
 			Assert.Equal (5, entities.Count);
-			Assert.Equal (ContentMediaType.Application, entities[0].Type);
-			Assert.Equal ("octet-stream", entities[0].Subtype);
-			Assert.Equal (ContentMediaType.Text, entities[1].Type);
-			Assert.Equal ("plain", entities[1].Subtype);
-			Assert.Equal (ContentMediaType.Text, entities[2].Type);
-			Assert.Equal ("html", entities[2].Subtype);
-			Assert.Equal (ContentMediaType.Text, entities[3].Type);
-			Assert.Equal ("zip", entities[3].Subtype);
-			Assert.Equal (ContentMediaType.Image, entities[4].Type);
-			Assert.Equal ("png", entities[4].Subtype);
+			Assert.Equal (ContentMediaType.Application, entities[0].MediaType);
+			Assert.Equal ("octet-stream", entities[0].MediaSubtype);
+			Assert.Equal (ContentMediaType.Text, entities[1].MediaType);
+			Assert.Equal ("plain", entities[1].MediaSubtype);
+			Assert.Equal (ContentMediaType.Text, entities[2].MediaType);
+			Assert.Equal ("html", entities[2].MediaSubtype);
+			Assert.Equal (ContentMediaType.Text, entities[3].MediaType);
+			Assert.Equal ("zip", entities[3].MediaSubtype);
+			Assert.Equal (ContentMediaType.Image, entities[4].MediaType);
+			Assert.Equal ("png", entities[4].MediaSubtype);
 		}
 	}
 }

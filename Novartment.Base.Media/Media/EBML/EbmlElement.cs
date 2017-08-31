@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Text;
 using System.Threading;
@@ -13,11 +12,6 @@ namespace Novartment.Base.Media
 	/// <summary>
 	/// Элемент EBML.
 	/// </summary>
-	[SuppressMessage (
-		"Microsoft.Naming",
-		"CA1704:IdentifiersShouldBeSpelledCorrectly",
-		MessageId = "Ebml",
-		Justification = "'EBML' represents standard term.")]
 	[DebuggerDisplay ("{DebuggerDisplay,nq}")]
 	[CLSCompliant (false)]
 	public class EbmlElement
@@ -72,10 +66,6 @@ namespace Novartment.Base.Media
 		public ulong Id { get; }
 
 		[DebuggerBrowsable (DebuggerBrowsableState.Never)]
-		[SuppressMessage (
-			"Microsoft.Performance",
-			"CA1811:AvoidUncalledPrivateCode",
-			Justification = "Used in DebuggerDisplay attribute.")]
 		private string DebuggerDisplay => FormattableString.Invariant ($"ID = {this.Id}, Size = {_size}");
 
 		/// <summary>
@@ -84,7 +74,11 @@ namespace Novartment.Base.Media
 		/// <param name="source">Источник, содержащий EBML-элемент.</param>
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
 		/// <returns>EBML-элемент, считанный из указанного источника.</returns>
-		public static Task<EbmlElement> ParseAsync (IBufferedSource source, CancellationToken cancellationToken)
+		public static Task<EbmlElement> ParseAsync (
+			IBufferedSource source,
+#pragma warning disable CA1801 // Review unused parameters
+			CancellationToken cancellationToken)
+#pragma warning restore CA1801 // Review unused parameters
 		{
 			if (source == null)
 			{
@@ -126,11 +120,6 @@ namespace Novartment.Base.Media
 		/// Reads the element data as a signed integer.
 		/// </summary>
 		/// <returns>the element data as a signed integer</returns>
-		[SuppressMessage (
-			"Microsoft.Naming",
-			"CA1720:IdentifiersShouldNotContainTypeNames",
-			MessageId = "int",
-			Justification = "The term 'Int' in method name refers to EBML specification, not C#.")]
 		public long ReadInt ()
 		{
 			if (_readed >= _size)
@@ -206,11 +195,6 @@ namespace Novartment.Base.Media
 		/// Reads the element data as an unsigned integer.
 		/// </summary>
 		/// <returns>the element data as an unsigned integer</returns>
-		[SuppressMessage (
-			"Microsoft.Naming",
-			"CA1720:IdentifiersShouldNotContainTypeNames",
-			MessageId = "uint",
-			Justification = "The term 'UInt' in method name refers to EBML specification, not C#.")]
 		public ulong ReadUInt ()
 		{
 			if (_readed >= _size)
@@ -288,11 +272,6 @@ namespace Novartment.Base.Media
 		/// the element data size is equal to <code>8</code>, then an instance of the <code>Double</code> is returned.
 		/// </summary>
 		/// <returns>the element data as a floating-point number</returns>
-		[SuppressMessage (
-			"Microsoft.Naming",
-			"CA1720:IdentifiersShouldNotContainTypeNames",
-			MessageId = "float",
-			Justification = "The term 'Float' in method name refers to EBML specification, not C#.")]
 		public double ReadFloat ()
 		{
 			if (_readed >= _size)
@@ -333,11 +312,6 @@ namespace Novartment.Base.Media
 		/// Reads the element data as an ASCII string.
 		/// </summary>
 		/// <returns>the element data as an ASCII string</returns>
-		[SuppressMessage (
-			"Microsoft.Naming",
-			"CA1704:IdentifiersShouldBeSpelledCorrectly",
-			MessageId = "Ascii",
-			Justification = "'ASCII' represents standard term.")]
 		public string ReadAscii ()
 		{
 			if (_readed >= _size)

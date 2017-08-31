@@ -50,7 +50,7 @@ namespace Novartment.Base.Test
 		[InlineData (1, 1, 1, 1925178341944135524L, 17580, true, 256, 12050L, 1)]
 		[InlineData (1, 1, 0, 1925178341944135524L, 17580, false, 256, 12050L, 1)]
 		[InlineData (1, 1, 1, 1925178341944135524L, 17580, false, 256, 12050L, 1)]
-		public static void CryptoTransformingBufferedSource_SkipTransformChunk (
+		public void CryptoTransformingBufferedSource_SkipTransformChunk (
 			int inBlockSize,
 			int outBlockSize,
 			int inputCacheBlocks,
@@ -120,7 +120,7 @@ namespace Novartment.Base.Test
 		[InlineData (1, 1, 3, 71, 10486, true, 127)]
 		[InlineData (1, 1, 0, 71, 10486, false, 127)]
 		[InlineData (1, 1, 3, 71, 10486, false, 127)]
-		public static void CryptoTransformingBufferedSource_TransformAll (
+		public void CryptoTransformingBufferedSource_TransformAll (
 			int inBlockSize,
 			int outBlockSize,
 			int inputCacheBlocks,

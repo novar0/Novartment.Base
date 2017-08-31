@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System;
+using System.Text;
 using Novartment.Base.Text;
 using Xunit;
 
@@ -94,7 +95,7 @@ namespace Novartment.Base.Net.Mime.Test
 			Assert.Equal (0, tuple.BytesConsumed);
 
 			// полная строка, неподходящие начинаются с середины
-			var tmpl = "\"" + (Template1 + Template2 + Template3).Replace (@"\", @"\\").Replace ("\"", "\\\"") + "\"";
+			var tmpl = "\"" + (Template1 + Template2 + Template3).Replace (@"\", @"\\", StringComparison.Ordinal).Replace ("\"", "\\\"", StringComparison.Ordinal) + "\"";
 			tuple = encoder.Estimate (buf, 0, buf.Length, 99999, 0, false);
 			Assert.Equal (tmpl.Length, tuple.BytesProduced);
 			Assert.Equal (Template1.Length + Template2.Length + Template3.Length, tuple.BytesConsumed);

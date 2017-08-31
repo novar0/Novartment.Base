@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Text;
 using Novartment.Base.Collections.Immutable;
@@ -10,11 +9,6 @@ namespace Novartment.Base.Text
 	/// <summary>
 	/// Набор символов ASCII.
 	/// </summary>
-	[SuppressMessage (
-		"Microsoft.Naming",
-		"CA1704:IdentifiersShouldBeSpelledCorrectly",
-		MessageId = "Ascii",
-		Justification = "'ASCII' represents standard term.")]
 	public static class AsciiCharSet
 	{
 		/// <summary>
@@ -25,10 +19,6 @@ namespace Novartment.Base.Text
 		/// <summary>
 		/// Таблица принадлежности символов различным типам.
 		/// </summary>
-		[SuppressMessage (
-			"Microsoft.Security",
-			"CA2104:DoNotDeclareReadOnlyMutableReferenceTypes",
-			Justification = "IReadOnlyList is immutable.")]
 		public static readonly IReadOnlyList<short> Classes = new ReadOnlyArray<short> (new short[]
 		{
 /*   0x00 000 */ 0,
@@ -293,10 +283,6 @@ namespace Novartment.Base.Text
 		/// <exception cref="System.ArgumentOutOfRangeException">Происходит если valueOffset/valueCount выходят за пределы value или bufferOffset выходит за пределы buffer.</exception>
 		/// <exception cref="System.FormatException">Происходит когда во входных данных встречается символ, не входящий в набор ASCII.</exception>
 		/// <remarks>Семантический аналог ASCIIEncoding.GetBytes (), но более быстрый.</remarks>
-		[SuppressMessage (
-			"Microsoft.Design",
-			"CA1026:DefaultParametersShouldNotBeUsed",
-			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
 		public static void GetBytes (string value, int valueOffset, int valueCount, byte[] buffer, int bufferOffset = 0)
 		{
 			if (value == null)
@@ -354,10 +340,6 @@ namespace Novartment.Base.Text
 		/// <exception cref="System.ArgumentOutOfRangeException">Происходит если charIndex/charCount выходят за пределы value или bufferOffset выходит за пределы bytes.</exception>
 		/// <exception cref="System.FormatException">Происходит когда во входных данных встречается символ, не входящий в набор ASCII.</exception>
 		/// <remarks>Семантический аналог ASCIIEncoding.GetBytes (), но более быстрый.</remarks>
-		[SuppressMessage (
-			"Microsoft.Design",
-			"CA1026:DefaultParametersShouldNotBeUsed",
-			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
 		public static void GetBytes (char[] value, int valueOffset, int valueCount, byte[] buffer, int bufferOffset = 0)
 		{
 			if (value == null)

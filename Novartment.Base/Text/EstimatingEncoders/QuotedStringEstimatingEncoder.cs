@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 
 namespace Novartment.Base.Text
@@ -32,19 +31,11 @@ namespace Novartment.Base.Text
 		/// <summary>
 		/// Получает количество байтов, которые кодировщик записывает в качестве пролога перед данными.
 		/// </summary>
-		[SuppressMessage(
-			"Microsoft.Performance",
-			"CA1822:MarkMembersAsStatic",
-			Justification = "Cant be static because implements interface memeber.")]
 		public int PrologSize => 1;
 
 		/// <summary>
 		/// Получает количество байтов, которые кодировщик записывает в качестве эпилога после данных.
 		/// </summary>
-		[SuppressMessage(
-			"Microsoft.Performance",
-			"CA1822:MarkMembersAsStatic",
-			Justification = "Cant be static because implements interface memeber.")]
 		public int EpilogSize => 1;
 
 		/// <summary>

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.IO;
 using System.Threading;
@@ -35,10 +34,6 @@ namespace Novartment.Base.Net.Smtp
 		/// <param name="securityParameters">Параметры безопасности,
 		/// устнавливающие использование шифрования и аутентификации при выполнении транзакций.</param>
 		/// <param name="logger">Журнал для записи событий. Укажите null если запись не нужна.</param>
-		[SuppressMessage (
-			"Microsoft.Design",
-			"CA1026:DefaultParametersShouldNotBeUsed",
-			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
 		public SmtpOriginatorProtocol (
 			Func<TransactionFactory, CancellationToken, Task> transactionOriginator,
 			SmtpClientSecurityParameters securityParameters,

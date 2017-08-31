@@ -30,16 +30,16 @@ namespace Novartment.Base.Net.Test
 			var protocol2remoteEndPoint = new IPEndPoint (new IPAddress (3124777L), 8008);
 
 			// на каждую добавленную точку прослушивания должен быть создан запущенный прослушиватель на указанный адрес/порт
-			Assert.Equal (0, listeners.Count);
+			Assert.Empty (listeners);
 			srv.AddListenEndpoint (protocol1localEndPoint, protocol1);
-			Assert.Equal (1, listeners.Count);
+			Assert.Single (listeners);
 			var protocol1listener = listeners.Pop ();
 			Assert.Equal (protocol1localEndPoint.Address, protocol1listener.LocalEndpoint.Address);
 			Assert.Equal (protocol1localEndPoint.Port, protocol1listener.LocalEndpoint.Port);
 			Assert.True (protocol1listener.IsStarted);
 
 			srv.AddListenEndpoint (protocol2localEndPoint, protocol2);
-			Assert.Equal (1, listeners.Count);
+			Assert.Single (listeners);
 			var protocol2listener = listeners.Pop ();
 			Assert.Equal (protocol2localEndPoint.Address, protocol2listener.LocalEndpoint.Address);
 			Assert.Equal (protocol2localEndPoint.Port, protocol2listener.LocalEndpoint.Port);

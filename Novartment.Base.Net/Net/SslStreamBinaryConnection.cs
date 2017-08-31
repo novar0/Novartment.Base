@@ -6,10 +6,12 @@ using Novartment.Base.BinaryStreaming;
 
 namespace Novartment.Base.Net
 {
+#pragma warning disable CA1812 // Avoid uninstantiated internal classes
 	/// <summary>
 	/// Установленное защищённое TCP-подключение на основе сокетов с отслеживанием полного времени и времени простоя.
 	/// </summary>
 	internal sealed class SslStreamBinaryConnection : BinaryTcpConnection,
+#pragma warning restore CA1812 // Avoid uninstantiated internal classes
 		ITlsConnection
 	{
 		private readonly SslStream _secureStream;

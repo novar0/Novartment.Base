@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Net;
 using System.Threading;
@@ -13,10 +12,6 @@ namespace Novartment.Base.Net
 	/// <summary>
 	/// Сервер, асинхронно принимающий и обрабатывающий множество TCP-подключений на множестве конечных точек.
 	/// </summary>
-	[SuppressMessage (
-		"Microsoft.Design",
-		"CA1063:ImplementIDisposableCorrectly",
-		Justification = "Implemented correctly.")]
 	public class TcpServer :
 		IDisposable
 	{
@@ -36,10 +31,6 @@ namespace Novartment.Base.Net
 		/// </summary>
 		/// <param name="listenerFactory">Фабрика для создания объектов-прослушивателей на указанной конечной точке.</param>
 		/// <param name="logger">Журнал для записи событий. Укажите null если запись не нужна.</param>
-		[SuppressMessage (
-			"Microsoft.Design",
-			"CA1026:DefaultParametersShouldNotBeUsed",
-			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
 		public TcpServer (Func<IPEndPoint, ITcpListener> listenerFactory, ILogger<TcpServer> logger = null)
 		{
 			if (listenerFactory == null)
@@ -220,14 +211,6 @@ namespace Novartment.Base.Net
 		/// <summary>
 		/// Освобождает все используемые ресурсы.
 		/// </summary>
-		[SuppressMessage (
-			"Microsoft.Usage",
-			"CA1816:CallGCSuppressFinalizeCorrectly",
-			Justification = "There is no meaning to introduce a finalizer in derived type.")]
-		[SuppressMessage (
-			"Microsoft.Design",
-			"CA1063:ImplementIDisposableCorrectly",
-			Justification = "Implemented correctly.")]
 		public void Dispose ()
 		{
 			_watchdogTimer.Dispose ();
@@ -272,7 +255,9 @@ namespace Novartment.Base.Net
 			return Math.Min (1000, Math.Max (1, (int)inverval));
 		}
 
+#pragma warning disable CA1801 // Review unused parameters
 		private void WatchdogTimerCallback (object state)
+#pragma warning restore CA1801 // Review unused parameters
 		{
 			// защищаемся от реитерации
 			var oldValue = Interlocked.CompareExchange (ref _timerCallbackRunnig, 1, 0);

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using Novartment.Base.Collections.Immutable;
 
@@ -8,10 +7,6 @@ namespace Novartment.Base.UI
 	/// <summary>
 	/// Цепь связанных команд.
 	/// </summary>
-	[SuppressMessage (
-		"Microsoft.Naming",
-		"CA1710:IdentifiersShouldHaveCorrectSuffix",
-		Justification = "This collection is more chain than collection.")]
 	public class CommandChain
 	{
 		private SingleLinkedListNode<ChainedCommandBase> _firstCommand = null;

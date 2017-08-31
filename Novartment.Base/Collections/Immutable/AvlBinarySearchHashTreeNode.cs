@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 
 namespace Novartment.Base.Collections.Immutable
 {
@@ -10,11 +9,6 @@ namespace Novartment.Base.Collections.Immutable
 	/// <typeparam name="T">Тип значения узла.</typeparam>
 	/// <remarks>Значение null является корректным и означает пустое дерево.</remarks>
 	[DebuggerDisplay ("Value = {Value}, Height = {Height}")]
-	[SuppressMessage (
-		"Microsoft.Naming",
-		"CA1704:IdentifiersShouldBeSpelledCorrectly",
-		MessageId = "Avl",
-		Justification = "'AVL-tree' represents standard term.")]
 	public class AvlBinarySearchHashTreeNode<T> :
 		IValueHolder<T>
 	{
@@ -79,7 +73,9 @@ namespace Novartment.Base.Collections.Immutable
 			internal override int Height => _height;
 		}
 
+#pragma warning disable CA1812 // Avoid uninstantiated internal classes
 		internal sealed class DebugView
+#pragma warning restore CA1812 // Avoid uninstantiated internal classes
 		{
 			private readonly IntermediateNode _node;
 

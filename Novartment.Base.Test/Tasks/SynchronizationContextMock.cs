@@ -4,7 +4,7 @@ using System.Threading;
 
 namespace Novartment.Base.Test
 {
-	internal class SynchronizationContextMock : SynchronizationContext
+	internal class SynchronizationContextMock : SynchronizationContext, IDisposable
 	{
 		private readonly Thread _thread;
 		private BlockingCollection<Tuple<SendOrPostCallback, object>> _tasks = new BlockingCollection<Tuple<SendOrPostCallback, object>> ();
@@ -25,6 +25,11 @@ namespace Novartment.Base.Test
 		public override void Send (SendOrPostCallback d, object state)
 		{
 			_tasks.Add (Tuple.Create (d, state));
+		}
+
+		public void Dispose ()
+		{
+			_tasks.Dispose ();
 		}
 
 		private void ExecuteTaskFromQueue ()

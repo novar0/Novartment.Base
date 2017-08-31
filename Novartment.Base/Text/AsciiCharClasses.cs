@@ -1,22 +1,14 @@
 ﻿using System;
-using System.Diagnostics.CodeAnalysis;
 
 namespace Novartment.Base.Text
 {
 	/// <summary>
 	/// Тип ASCII символа, такой как цифра, буква алфавита, токен.
 	/// </summary>
-	[SuppressMessage (
-		"Microsoft.Design",
-		"CA1028:EnumStorageShouldBeInt32",
-		Justification = "Size matters for large arrays of this enum.")]
-	[SuppressMessage (
-		"Microsoft.Naming",
-		"CA1704:IdentifiersShouldBeSpelledCorrectly",
-		MessageId = "Ascii",
-		Justification = "'ASCII' represents standard term.")]
 	[Flags]
+#pragma warning disable CA1028 // Enum Storage should be Int32
 	public enum AsciiCharClasses : short
+#pragma warning restore CA1028 // Enum Storage should be Int32
 	{
 		/// <summary>
 		/// None.

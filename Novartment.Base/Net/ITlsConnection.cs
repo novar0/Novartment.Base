@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Security.Authentication;
+﻿using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 
 namespace Novartment.Base.Net
@@ -8,11 +7,6 @@ namespace Novartment.Base.Net
 	/// Установленное TLS-подключение,
 	/// с отслеживанием полного времени и времени простоя.
 	/// </summary>
-	[SuppressMessage (
-		"Microsoft.Naming",
-		"CA1704:IdentifiersShouldBeSpelledCorrectly",
-		MessageId = "Tls",
-		Justification = "'TLS' represents standard term (Transport Layer Security).")]
 	public interface ITlsConnection :
 		ITcpConnection
 	{
@@ -29,11 +23,6 @@ namespace Novartment.Base.Net
 		/// <summary>
 		/// Gets a value that indicates the security protocol used to authenticate this connection.
 		/// </summary>
-		[SuppressMessage (
-			"Microsoft.Naming",
-			"CA1704:IdentifiersShouldBeSpelledCorrectly",
-			MessageId = "Tls",
-			Justification = "'TLS' represents standard term (Transport Layer Security).")]
 		SslProtocols TlsProtocol { get; }
 
 		/// <summary>

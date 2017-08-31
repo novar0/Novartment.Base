@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Windows.Input;
 
 namespace Novartment.Base.UI
@@ -33,14 +32,12 @@ namespace Novartment.Base.UI
 		/// </summary>
 		public CommandChain Chain { get; }
 
+#pragma warning disable CA1030 // Use events where appropriate
 		/// <summary>
 		/// Вызывает событие CanExecuteChanged для всех команд в цепи.
 		/// </summary>
-		[SuppressMessage (
-			"Microsoft.Design",
-			"CA1030:UseEventsWhereAppropriate",
-			Justification = "Already event")]
 		public void RaiseCanExecuteChanged ()
+#pragma warning restore CA1030 // Use events where appropriate
 		{
 			if (this.Chain == null)
 			{
@@ -135,7 +132,9 @@ namespace Novartment.Base.UI
 		/// <param name="parameter">Параметр команды.</param>
 		protected abstract void ExecuteThis (object parameter);
 
+#pragma warning disable CA1030 // Use events where appropriate
 		private void RaiseCanExecuteChangedThis ()
+#pragma warning restore CA1030 // Use events where appropriate
 		{
 			this.CanExecuteChanged?.Invoke (this, EventArgs.Empty);
 		}

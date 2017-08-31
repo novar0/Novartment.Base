@@ -175,7 +175,9 @@ namespace Novartment.Base.BinaryStreaming
 			byte[] buffer,
 			int offset,
 			int count,
+#pragma warning disable CA1801 // Review unused parameters
 			CancellationToken cancellationToken)
+#pragma warning restore CA1801 // Review unused parameters
 		{
 			if (source == null)
 			{
@@ -236,6 +238,7 @@ namespace Novartment.Base.BinaryStreaming
 			}
 		}
 
+#pragma warning disable CA1801 // Review unused parameters
 		/// <summary>
 		/// Асинхронно ищет первое нахождение указанного байта в буфере указанного источника данных,
 		/// запрашивая заполнение буфера по необходимости.
@@ -246,6 +249,7 @@ namespace Novartment.Base.BinaryStreaming
 		/// <returns>Позиция первого нахождения указанного байта в буфере указанного источника данных,
 		/// либо -1 если указанный байт в буфере не найден.</returns>
 		public static Task<int> IndexOfAsync (this IBufferedSource source, byte value, CancellationToken cancellationToken)
+#pragma warning restore CA1801 // Review unused parameters
 		{
 			if (source == null)
 			{
@@ -311,6 +315,7 @@ namespace Novartment.Base.BinaryStreaming
 			}
 		}
 
+#pragma warning disable CA1801 // Review unused parameters
 		/// <summary>
 		/// Считывает все данные, оставшиеся в источнике и возвращает их в виде массива байтов.
 		/// </summary>
@@ -319,6 +324,7 @@ namespace Novartment.Base.BinaryStreaming
 		/// <returns>Задача, результатом которой является массив байтов, считанный из источника.</returns>
 		/// <remarks>Возвращаемый массив является копией и не связан массивом-буфером источника.</remarks>
 		public static Task<byte[]> ReadAllBytesAsync (this IBufferedSource source, CancellationToken cancellationToken)
+#pragma warning restore CA1801 // Review unused parameters
 		{
 			if (source == null)
 			{
@@ -410,7 +416,9 @@ namespace Novartment.Base.BinaryStreaming
 		public static Task<long> WriteToAsync (
 			this IBufferedSource source,
 			IBinaryDestination destination,
+#pragma warning disable CA1801 // Review unused parameters
 			CancellationToken cancellationToken)
+#pragma warning restore CA1801 // Review unused parameters
 		{
 			if (source == null)
 			{

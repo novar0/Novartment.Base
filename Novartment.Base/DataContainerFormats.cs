@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using Novartment.Base.Collections.Immutable;
 using Novartment.Base.Collections.Linq;
 
@@ -20,11 +19,6 @@ namespace Novartment.Base
 		public static readonly string Dib = "DeviceIndependentBitmap";
 
 		/// <summary>Windows Data Interchange Format (DIF) data format.</summary>
-		[SuppressMessage (
-			"Microsoft.Naming",
-			"CA1704:IdentifiersShouldBeSpelledCorrectly",
-			MessageId = "Dif",
-			Justification = "'DIF' represents standard term.")]
 		public static readonly string Dif = "DataInterchangeFormat";
 
 		/// <summary>Windows enhanced metafile format.</summary>
@@ -43,11 +37,6 @@ namespace Novartment.Base
 		public static readonly string MetafilePicture = "MetaFilePict";
 
 		/// <summary>Standard Windows OEM text data format.</summary>
-		[SuppressMessage (
-			"Microsoft.Naming",
-			"CA1704:IdentifiersShouldBeSpelledCorrectly",
-			MessageId = "Oem",
-			Justification = "'OEM' represents standard term.")]
 		public static readonly string OemText = "OEMText";
 
 		/// <summary>Windows palette data format.</summary>
@@ -89,39 +78,11 @@ namespace Novartment.Base
 		/// <summary>Locations of one or more existing shell namespace objects.</summary>
 		public static readonly string ShellIdList = "Shell IDList Array";
 
-		[SuppressMessage (
-			"Microsoft.Performance",
-			"CA1802:UseLiteralsWhereAppropriate",
-			Justification = "No performance gain could be achieved.")]
 		private static readonly string _FileName = "FileName";
-		[SuppressMessage (
-			"Microsoft.Performance",
-			"CA1802:UseLiteralsWhereAppropriate",
-			Justification = "No performance gain could be achieved.")]
 		private static readonly string _FileNameW = "FileNameW";
-
-		[SuppressMessage (
-			"Microsoft.Performance",
-			"CA1802:UseLiteralsWhereAppropriate",
-			Justification = "No performance gain could be achieved.")]
 		private static readonly string _StringFormat = "System.String";
-
-		[SuppressMessage (
-			"Microsoft.Performance",
-			"CA1802:UseLiteralsWhereAppropriate",
-			Justification = "No performance gain could be achieved.")]
 		private static readonly string _DrawingBitmapFormat = "System.Drawing.Bitmap";
-
-		[SuppressMessage (
-			"Microsoft.Performance",
-			"CA1802:UseLiteralsWhereAppropriate",
-			Justification = "No performance gain could be achieved.")]
 		private static readonly string _DrawingImagingMetafileFormat = "System.Drawing.Imaging.Metafile";
-
-		[SuppressMessage (
-			"Microsoft.Performance",
-			"CA1802:UseLiteralsWhereAppropriate",
-			Justification = "No performance gain could be achieved.")]
 		private static readonly string _WindowsMediaImagingBitmapSource = "System.Windows.Media.Imaging.BitmapSource";
 
 		/// <summary>

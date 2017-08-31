@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
@@ -22,19 +21,10 @@ namespace Novartment.Base
 		IClipboard
 	{
 		/// <summary>Количество попыток выполнения запрошенных операций.</summary>
-		[SuppressMessage (
-			"Microsoft.Performance",
-			"CA1802:UseLiteralsWhereAppropriate",
-			Justification = "No performance gain could be achieved.")]
 		private static readonly int _RetryCount = 10;
 
 		/// <summary>Пауза между попытками выполнения запрошенных операций (миллисекунды).</summary>
-		[SuppressMessage (
-			"Microsoft.Performance",
-			"CA1802:UseLiteralsWhereAppropriate",
-			Justification = "No performance gain could be achieved.")]
 		private static readonly int _RetryPeriodMs = 100;
-
 		private readonly Func<IDataContainer, IDataObject> _toComDataObjectConverter;
 		private readonly Func<IDataObject, IDataContainer> _fromComDataObjectConverter;
 

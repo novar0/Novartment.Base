@@ -1,19 +1,16 @@
 ﻿using System.Collections.Specialized;
-using System.Diagnostics.CodeAnalysis;
 using System.Windows;
 using System.Windows.Controls;
 using Novartment.Base.Collections;
 
 namespace Novartment.Base.UI.Wpf
 {
+#pragma warning disable CA1010 // Collections should implement generic interface
 	/// <summary>
 	/// Коллекция из UIElement, поддерживающая уведомления об изменениях.
 	/// </summary>
-	[SuppressMessage (
-		"Microsoft.Design",
-		"CA1010:CollectionsShouldImplementGenericInterface",
-		Justification = "This class is not general purpose collection and strongly follows its base class pattern.")]
 	public class ObservableUIElementCollection : UIElementCollection,
+#pragma warning restore CA1010 // Collections should implement generic interface
 		INotifyCollectionChanged
 	{
 		/// <summary>

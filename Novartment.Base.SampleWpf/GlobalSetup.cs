@@ -24,12 +24,12 @@ namespace Novartment.Base.SampleWpf
 		private static readonly int _InstanceSearchTimeout = 1000;
 
 		[STAThread]
-		public static int Main (string[] args)
+		public static int Main ()
 		{
-			return MainEx (args);
+			return MainEx ();
 		}
 
-		public static int MainEx (string[] args, [CallerFilePath]string sourceFileName = "")
+		public static int MainEx ([CallerFilePath]string sourceFileName = "")
 		{
 			foreach (var listener in Debug.Listeners.OfType<DefaultTraceListener> ())
 			{
@@ -88,7 +88,7 @@ namespace Novartment.Base.SampleWpf
 			{
 				try
 				{
-					await listener.WaitForSignalAsync (cancellationToken);
+					await listener.WaitForSignalAsync (cancellationToken).ConfigureAwait (false);
 				}
 				catch (OperationCanceledException)
 				{

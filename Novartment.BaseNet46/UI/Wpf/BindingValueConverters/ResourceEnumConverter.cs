@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Globalization;
 using System.Resources;
@@ -86,24 +85,27 @@ namespace Novartment.Base.UI.Wpf
 			return converter.ConvertToString (value);
 		}
 
-		/// <summary>
-		/// Return a list of the enum values and their associated display text for the given enum type in the current UI Culture.
-		/// </summary>
-		/// <param name="enumType">The enum type to get the values for.</param>
-		/// <returns>
-		/// A list of KeyValuePairs where the key is the enum value and the value is the text to display.
-		/// </returns>
-		/// <remarks>
-		/// This method can be used to provide localized binding to enums in ASP.NET applications.
-		/// Unlike windows forms the standard ASP.NET controls do not use TypeConverters to convert from enum values to the displayed text.
-		/// You can bind an ASP.NET control to the list returned by this method
-		/// by setting the DataValueField to "Key" and theDataTextField to "Value".
-		/// </remarks>
+#pragma warning disable CA1721 // Property names should not match get methods
+							  /// <summary>
+							  /// Return a list of the enum values and their associated display text for the given enum type in the current UI Culture.
+							  /// </summary>
+							  /// <param name="enumType">The enum type to get the values for.</param>
+							  /// <returns>
+							  /// A list of KeyValuePairs where the key is the enum value and the value is the text to display.
+							  /// </returns>
+							  /// <remarks>
+							  /// This method can be used to provide localized binding to enums in ASP.NET applications.
+							  /// Unlike windows forms the standard ASP.NET controls do not use TypeConverters to convert from enum values to the displayed text.
+							  /// You can bind an ASP.NET control to the list returned by this method
+							  /// by setting the DataValueField to "Key" and theDataTextField to "Value".
+							  /// </remarks>
 		public static IReadOnlyList<EnumeratedKeyAndValue> GetValues (Type enumType)
+#pragma warning restore CA1721 // Property names should not match get methods
 		{
 			return GetValues (enumType, CultureInfo.CurrentUICulture);
 		}
 
+#pragma warning disable CA1721 // Property names should not match get methods
 		/// <summary>
 		/// Return a list of the enum values and their associated display text for the given enum type.
 		/// </summary>
@@ -119,6 +121,7 @@ namespace Novartment.Base.UI.Wpf
 		/// by setting the DataValueField to "Key" and theDataTextField to "Value".
 		/// </remarks>
 		public static IReadOnlyList<EnumeratedKeyAndValue> GetValues (Type enumType, CultureInfo culture)
+#pragma warning restore CA1721 // Property names should not match get methods
 		{
 			var result = new ArrayList<EnumeratedKeyAndValue> ();
 			var converter = TypeDescriptor.GetConverter (enumType);
@@ -191,10 +194,6 @@ namespace Novartment.Base.UI.Wpf
 		/// <param name="notUsed">not used.</param>
 		/// <param name="culture">The culture to convert.</param>
 		/// <returns>The converted value</returns>
-		[SuppressMessage (
-			"Microsoft.Design",
-			"CA1033:InterfaceMethodsShouldBeCallableByChildTypes",
-			Justification = "an externally visible method is provided that has the same functionality but a different name.")]
 		object IValueConverter.Convert (object value, Type targetType, object notUsed, CultureInfo culture)
 		{
 			return ConvertTo (null, culture, value, targetType);
@@ -208,10 +207,6 @@ namespace Novartment.Base.UI.Wpf
 		/// <param name="notUsed">not used.</param>
 		/// <param name="culture">The culture to convert.</param>
 		/// <returns>The converted value.</returns>
-		[SuppressMessage (
-			"Microsoft.Design",
-			"CA1033:InterfaceMethodsShouldBeCallableByChildTypes",
-			Justification = "an externally visible method is provided that has the same functionality but a different name.")]
 		object IValueConverter.ConvertBack (object value, Type targetType, object notUsed, CultureInfo culture)
 		{
 			return ConvertFrom (null, culture, value);

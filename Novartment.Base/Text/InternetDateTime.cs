@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Globalization;
 
@@ -165,14 +164,10 @@ namespace Novartment.Base.Text
 			return str1 + str2 + str3;
 		}
 
-		[SuppressMessage (
-			"Microsoft.Maintainability",
-			"CA1502:AvoidExcessiveComplexity",
-			Justification = "Method not too complex.")]
 		private static int GetMonth (string monthStr)
 		{
 			int month;
-			switch (monthStr.ToUpper ())
+			switch (monthStr.ToUpperInvariant ())
 			{
 				case "JAN": month = 1; break;
 				case "FEB": month = 2; break;
@@ -192,14 +187,6 @@ namespace Novartment.Base.Text
 			return month;
 		}
 
-		[SuppressMessage (
-			"Microsoft.Maintainability",
-			"CA1505:AvoidUnmaintainableCode",
-			Justification = "Method not too complex.")]
-		[SuppressMessage (
-			"Microsoft.Maintainability",
-			"CA1502:AvoidExcessiveComplexity",
-			Justification = "Method not too complex.")]
 		private static int GetTimeZone (string timeZoneStr)
 		{
 			int timeZoneMinutes;
@@ -216,7 +203,7 @@ namespace Novartment.Base.Text
 			// We have RFC 822 date with abbrevated time zone name. For example: GMT.
 			else
 			{
-				switch (timeZoneStr.ToUpper ())
+				switch (timeZoneStr.ToUpperInvariant ())
 				{
 #pragma warning disable SA1119 // Statement must not use unnecessary parenthesis
 					case "A": timeZoneMinutes = ((01 * 60) + 00); break; // Alpha Time Zone (military).

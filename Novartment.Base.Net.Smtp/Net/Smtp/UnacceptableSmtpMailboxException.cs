@@ -1,32 +1,58 @@
 ﻿using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 
 namespace Novartment.Base.Net.Smtp
 {
+#pragma warning disable CA1032 // Implement standard exception constructors
 	/// <summary>
 	/// Недопустимый почтовый ящик.
 	/// </summary>
-	[SuppressMessage (
-		"Microsoft.Usage",
-		"CA2237:MarkISerializableTypesWithSerializable",
-		Justification = "In portable projects this class would not be ISerializable")]
-	[SuppressMessage (
-		"Microsoft.Design",
-		"CA1032:ImplementStandardExceptionConstructors",
-		Justification = "Constructor with custom message not allowed.")]
 	public class UnacceptableSmtpMailboxException : InvalidOperationException
+#pragma warning restore CA1032 // Implement standard exception constructors
 	{
-		/// <summary>Инициализирует новый экземпляр класса UnacceptableSmtpMailboxException.</summary>
-		public UnacceptableSmtpMailboxException ()
-			: base ("Mailbox not allowed.")
-		{
-		}
-
-		/// <summary>Инициализирует новый экземпляр класса UnacceptableSmtpMailboxException с указанным почтовым ящиком.</summary>
+		/// <summary>
+		/// Инициализирует новый экземпляр класса UnacceptableSmtpMailboxException с указанным почтовым ящиком.
+		/// </summary>
 		/// <param name="mailbox">Почтовый ящик.</param>
 		public UnacceptableSmtpMailboxException (AddrSpec mailbox)
-			: base ("Mailbox " + MailboxToAngleString (mailbox) + " not allowed.")
+			: base ("Mailbox not allowed.")
+		{
+			if (mailbox == null)
+			{
+				throw new ArgumentNullException (nameof (mailbox));
+			}
+
+			Contract.EndContractBlock ();
+
+			this.Mailbox = mailbox;
+		}
+
+		/// <summary>
+		/// Инициализирует новый экземпляр класса UnacceptableSmtpMailboxException с указанным сообщением и почтовым ящиком.
+		/// </summary>
+		/// <param name="message">Сообщение ошибки.</param>
+		/// <param name="mailbox">Почтовый ящик.</param>
+		public UnacceptableSmtpMailboxException (string message, AddrSpec mailbox)
+			: base (message)
+		{
+			if (mailbox == null)
+			{
+				throw new ArgumentNullException (nameof (mailbox));
+			}
+
+			Contract.EndContractBlock ();
+
+			this.Mailbox = mailbox;
+		}
+
+		/// <summary>
+		/// Инициализирует новый экземпляр класса UnacceptableSmtpMailboxException с указанным сообщением, почтовым ящиком
+		/// и предшествующим исключением.</summary>
+		/// <param name="message">Сообщение ошибки.</param>
+		/// <param name="mailbox">Почтовый ящик.</param>
+		/// <param name="innerException">Исключение, приведшее к создаваемому исключению, или null-ссылка если не указано.</param>
+		public UnacceptableSmtpMailboxException (string message, AddrSpec mailbox, Exception innerException)
+			: base (message, innerException)
 		{
 			if (mailbox == null)
 			{

@@ -1,11 +1,12 @@
-﻿using System.Collections.Concurrent;
+﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace Novartment.Base.Test
 {
-	internal class TaskSchedulerMock : TaskScheduler
+	internal class TaskSchedulerMock : TaskScheduler, IDisposable
 	{
 		private readonly Thread _thread;
 		private BlockingCollection<Task> _tasks = new BlockingCollection<Task> ();
@@ -17,6 +18,11 @@ namespace Novartment.Base.Test
 		}
 
 		internal int ThreadId => _thread.ManagedThreadId;
+
+		public void Dispose ()
+		{
+			_tasks.Dispose ();
+		}
 
 		protected override IEnumerable<Task> GetScheduledTasks ()
 		{

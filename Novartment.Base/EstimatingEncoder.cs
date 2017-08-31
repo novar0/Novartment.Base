@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using Novartment.Base.Collections.Immutable;
 
@@ -28,11 +27,7 @@ namespace Novartment.Base
 		/// Массив кортежей с параметрами порций.
 		/// Каждый кортеж содержит выбранный кодировщик, начальную позицию в исходных данных и размер порции.
 		/// </returns>
-		[SuppressMessage (
-			"Microsoft.Design",
-			"CA1006:DoNotNestGenericTypesInMemberSignatures",
-			Justification = "The caller doesn't have to cope with nested generics, he is just passing a lambda expression.")]
-		public static ChunkEncoderSelection[] CutBySize (
+		public static EstimatingEncoderChunk[] CutBySize (
 			Func<int, IReadOnlyCollection<IEstimatingEncoder>> funcEncoders,
 			byte[] source,
 			int maxOutCount,
@@ -63,7 +58,7 @@ namespace Novartment.Base
 
 			if (source.Length < 1)
 			{
-				return Array.Empty<ChunkEncoderSelection> ();
+				return Array.Empty<EstimatingEncoderChunk> ();
 			}
 
 			EncodeResult bestResultOverall = null;
@@ -130,12 +125,12 @@ namespace Novartment.Base
 				throw new InvalidOperationException ("Data not acceptable for specified encoders.");
 			}
 
-			var resultValues = new ChunkEncoderSelection[bestResultOverall.Index + 1];
+			var resultValues = new EstimatingEncoderChunk[bestResultOverall.Index + 1];
 			var part = bestResultOverall;
 			while ((part != null) && (part.EncodedSource > 0))
 			{
 				var idx = part.Index;
-				resultValues[idx] = new ChunkEncoderSelection (part.Encoder, part.SourceOffset, part.EncodedSource);
+				resultValues[idx] = new EstimatingEncoderChunk (part.Encoder, part.SourceOffset, part.EncodedSource);
 				part = part.Parent;
 			}
 
@@ -193,54 +188,6 @@ namespace Novartment.Base
 			}
 
 			return variants;
-		}
-
-		/// <summary>
-		/// Позиция/размер порции данных и выбранный для неё кодировщик.
-		/// </summary>
-		public struct ChunkEncoderSelection
-		{
-			/// <summary>
-			/// Инициализирует новый экземпляр класса ChunkEncoderSelection с указанным
-			/// кодировщиком, начальной позицией и размером порции.
-			/// </summary>
-			/// <param name="encoder">Получает кодировщик, который выбран для порции.</param>
-			/// <param name="offset">Получает начальная позиция порции в исходных данных.</param>
-			/// <param name="count">Получает размер порции.</param>
-			public ChunkEncoderSelection(IEstimatingEncoder encoder, int offset, int count)
-			{
-				this.Encoder = encoder;
-				this.Offset = offset;
-				this.Count = count;
-			}
-
-			/// <summary>
-			/// Кодировщик, который выбран для порции.
-			/// </summary>
-			public IEstimatingEncoder Encoder { get; }
-
-			/// <summary>
-			/// Начальная позиция порции в исходных данных.
-			/// </summary>
-			public int Offset { get; }
-
-			/// <summary>
-			/// Размер порции.
-			/// </summary>
-			public int Count { get; }
-
-			/// <summary>
-			/// Деконструирует данные.
-			/// </summary>
-			/// <param name="encoder">Получает кодировщик, который выбран для порции.</param>
-			/// <param name="offset">Получает начальную позицию порции в исходных данных.</param>
-			/// <param name="count">Получает размер порции.</param>
-			public void Deconstruct(out IEstimatingEncoder encoder, out int offset, out int count)
-			{
-				encoder = this.Encoder;
-				offset = this.Offset;
-				count = this.Count;
-			}
 		}
 
 		internal class EncodeResult

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Text;
 
@@ -44,10 +43,6 @@ namespace Novartment.Base.Text
 		/// <summary>
 		/// Получает количество байтов, которые будут вставлены после данных.
 		/// </summary>
-		[SuppressMessage (
-			"Microsoft.Performance",
-			"CA1822:MarkMembersAsStatic",
-			Justification = "Cant be static because implements interface memeber.")]
 		public int EpilogSize => 2;
 
 		/// <summary>

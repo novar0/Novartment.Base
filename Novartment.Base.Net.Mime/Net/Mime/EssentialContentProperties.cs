@@ -17,12 +17,12 @@ namespace Novartment.Base.Net.Mime
 		/// <summary>
 		/// Медиатип содержимого.
 		/// </summary>
-		public ContentMediaType Type { get; set; } = ContentMediaType.Unspecified;
+		public ContentMediaType MediaType { get; set; } = ContentMediaType.Unspecified;
 
 		/// <summary>
 		/// Медиа подтип содержимого.
 		/// </summary>
-		public string Subtype { get; set; } = null;
+		public string MediaSubtype { get; set; } = null;
 
 		/// <summary>
 		/// Кодировка передачи содержимого.

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Globalization;
 using System.IO;
@@ -13,11 +12,6 @@ namespace Novartment.Base.UI.Wpf
 	/// <summary>
 	/// Конвертирует части строки пути к изображению по формату в параметре -> BitmapImage.
 	/// </summary>
-	[SuppressMessage (
-		"Microsoft.Naming",
-		"CA1704:IdentifiersShouldBeSpelledCorrectly",
-		MessageId = "Multi",
-		Justification = "Name 'MultiValue*' inherited from library inerface.")]
 	[ValueConversion (typeof (string), typeof (BitmapImage))]
 	public class MultiValuePathToBitmapImageConverter :
 		IMultiValueConverter

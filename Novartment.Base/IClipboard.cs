@@ -1,6 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
-namespace Novartment.Base
+﻿namespace Novartment.Base
 {
 	/// <summary>
 	/// Буфер обмена данными между приложениями.
@@ -26,10 +24,6 @@ namespace Novartment.Base
 		/// Объект дающий доступ к содержимому буфера обмена,
 		/// или null если в буфере обмена нет данных.
 		/// </returns>
-		[SuppressMessage (
-			"Microsoft.Design",
-			"CA1024:UsePropertiesWhereAppropriate",
-			Justification = "Too expensive to be property.")]
 		IDataContainer GetData ();
 
 		/// <summary>

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Linq;
 
@@ -10,10 +9,6 @@ namespace Novartment.Base.Collections.Linq
 	/// <summary>
 	/// Методы расширения к спискам.
 	/// </summary>
-	[SuppressMessage (
-		"Microsoft.Naming",
-		"CA1711:IdentifiersShouldNotHaveIncorrectSuffix",
-		Justification = "Analogous to Enumerable.")]
 	public static class ReadOnlyList
 	{
 		/// <summary>
@@ -208,10 +203,6 @@ namespace Novartment.Base.Collections.Linq
 		/// <param name="defaultValue">Значение, возвращаемое в случае пустого списка.</param>
 		/// <returns>Список, содержащий значение defaultValue, если список source пуст;
 		/// в противном случае возвращается source.</returns>
-		[SuppressMessage (
-			"Microsoft.Design",
-			"CA1026:DefaultParametersShouldNotBeUsed",
-			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
 		public static IReadOnlyList<TSource> DefaultIfEmpty<TSource> (this IReadOnlyList<TSource> source, TSource defaultValue = default (TSource))
 		{
 			if (source == null)
@@ -382,10 +373,6 @@ namespace Novartment.Base.Collections.Linq
 		/// <param name="keySelector">Функция, извлекающая ключ из элемента.</param>
 		/// <param name="comparer">Компаратор, используемый для сравнения ключей.</param>
 		/// <returns>Список, элементы которого отсортированы по ключу.</returns>
-		[SuppressMessage (
-			"Microsoft.Design",
-			"CA1026:DefaultParametersShouldNotBeUsed",
-			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
 		public static IOrderedReadOnlyList<TSource> OrderBy<TSource, TKey> (
 			this IReadOnlyList<TSource> source,
 			Func<TSource, TKey> keySelector,
@@ -415,10 +402,6 @@ namespace Novartment.Base.Collections.Linq
 		/// <param name="keySelector">Функция, извлекающая ключ из элемента.</param>
 		/// <param name="comparer">Компаратор, используемый для сравнения ключей.</param>
 		/// <returns>Список, элементы которого отсортированы по ключу в порядке убывания.</returns>
-		[SuppressMessage (
-			"Microsoft.Design",
-			"CA1026:DefaultParametersShouldNotBeUsed",
-			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
 		public static IOrderedReadOnlyList<TSource> OrderByDescending<TSource, TKey> (
 			this IReadOnlyList<TSource> source,
 			Func<TSource, TKey> keySelector,
@@ -448,10 +431,6 @@ namespace Novartment.Base.Collections.Linq
 		/// <param name="keySelector">Функция, извлекающая ключ из каждого элемента.</param>
 		/// <param name="comparer">Компаратор, используемый для сравнения ключей.</param>
 		/// <returns>Список, элементы которого отсортированы по ключу.</returns>
-		[SuppressMessage (
-			"Microsoft.Design",
-			"CA1026:DefaultParametersShouldNotBeUsed",
-			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
 		public static IOrderedReadOnlyList<TSource> ThenBy<TSource, TKey> (
 			this IOrderedReadOnlyList<TSource> source,
 			Func<TSource, TKey> keySelector,
@@ -481,10 +460,6 @@ namespace Novartment.Base.Collections.Linq
 		/// <param name="keySelector">Функция, извлекающая ключ из каждого элемента.</param>
 		/// <param name="comparer">Компаратор, используемый для сравнения ключей.</param>
 		/// <returns>Список, элементы которого отсортированы по ключу в порядке убывания.</returns>
-		[SuppressMessage (
-			"Microsoft.Design",
-			"CA1026:DefaultParametersShouldNotBeUsed",
-			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
 		public static IOrderedReadOnlyList<TSource> ThenByDescending<TSource, TKey> (
 			this IOrderedReadOnlyList<TSource> source,
 			Func<TSource, TKey> keySelector,
@@ -624,7 +599,8 @@ namespace Novartment.Base.Collections.Linq
 			{
 				get
 				{
-					if ((index < 0) || (index >= this.Count))
+					// Following trick can reduce the range check by one
+					if ((uint)index >= (uint)this.Count)
 					{
 						throw new ArgumentOutOfRangeException (nameof (index));
 					}
@@ -669,7 +645,8 @@ namespace Novartment.Base.Collections.Linq
 			{
 				get
 				{
-					if ((index < 0) || (index >= this.Count))
+					// Following trick can reduce the range check by one
+					if ((uint)index >= (uint)this.Count)
 					{
 						throw new ArgumentOutOfRangeException (nameof (index));
 					}
@@ -709,7 +686,8 @@ namespace Novartment.Base.Collections.Linq
 			{
 				get
 				{
-					if ((index < 0) || (index >= this.Count))
+					// Following trick can reduce the range check by one
+					if ((uint)index >= (uint)this.Count)
 					{
 						throw new ArgumentOutOfRangeException (nameof (index));
 					}
@@ -746,7 +724,8 @@ namespace Novartment.Base.Collections.Linq
 			{
 				get
 				{
-					if ((index < 0) || (index >= this.Count))
+					// Following trick can reduce the range check by one
+					if ((uint)index >= (uint)this.Count)
 					{
 						throw new ArgumentOutOfRangeException (nameof (index));
 					}
@@ -783,9 +762,10 @@ namespace Novartment.Base.Collections.Linq
 			{
 				get
 				{
-					if ((index < 0) || (index >= this.Count))
+					// Following trick can reduce the range check by one
+					if ((uint)index >= (uint)this.Count)
 					{
-						throw new ArgumentOutOfRangeException(nameof(index));
+						throw new ArgumentOutOfRangeException (nameof (index));
 					}
 
 					return _selector.Invoke(_source[index]);
@@ -823,7 +803,8 @@ namespace Novartment.Base.Collections.Linq
 			{
 				get
 				{
-					if ((index < 0) || (index >= this.Count))
+					// Following trick can reduce the range check by one
+					if ((uint)index >= (uint)this.Count)
 					{
 						throw new ArgumentOutOfRangeException (nameof (index));
 					}
@@ -862,7 +843,8 @@ namespace Novartment.Base.Collections.Linq
 			{
 				get
 				{
-					if ((index < 0) || (index >= this.Count))
+					// Following trick can reduce the range check by one
+					if ((uint)index >= (uint)this.Count)
 					{
 						throw new ArgumentOutOfRangeException (nameof (index));
 					}
@@ -899,7 +881,8 @@ namespace Novartment.Base.Collections.Linq
 			{
 				get
 				{
-					if ((index < 0) || (index >= this.Count))
+					// Following trick can reduce the range check by one
+					if ((uint)index >= (uint)this.Count)
 					{
 						throw new ArgumentOutOfRangeException (nameof (index));
 					}
@@ -938,7 +921,8 @@ namespace Novartment.Base.Collections.Linq
 			{
 				get
 				{
-					if ((index < 0) || (index >= this.Count))
+					// Following trick can reduce the range check by one
+					if ((uint)index >= (uint)this.Count)
 					{
 						throw new ArgumentOutOfRangeException (nameof (index));
 					}

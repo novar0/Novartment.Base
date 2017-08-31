@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Threading;
 using System.Threading.Tasks;
@@ -46,10 +45,6 @@ namespace Novartment.Base.Media
 		public bool IsSubChunkList => (this.Id == "RIFF") || (this.Id == "LIST");
 
 		[DebuggerBrowsable (DebuggerBrowsableState.Never)]
-		[SuppressMessage (
-			"Microsoft.Performance",
-			"CA1811:AvoidUncalledPrivateCode",
-			Justification = "Used in DebuggerDisplay attribute.")]
 		private string DebuggerDisplay => FormattableString.Invariant ($"ID = {this.Id}");
 
 		/// <summary>

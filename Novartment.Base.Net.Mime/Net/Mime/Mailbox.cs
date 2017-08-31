@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using Novartment.Base.Text;
 
@@ -23,10 +22,6 @@ namespace Novartment.Base.Net.Mime
 		/// </summary>
 		/// <param name="address">Строковое представление адреса почтового ящика.</param>
 		/// <param name="displayName">Имя почтового ящика. Может быть не указано (значение null).</param>
-		[SuppressMessage (
-			"Microsoft.Design",
-			"CA1026:DefaultParametersShouldNotBeUsed",
-			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
 		public Mailbox (AddrSpec address, string displayName = null)
 		{
 			if (address == null)
@@ -45,10 +40,6 @@ namespace Novartment.Base.Net.Mime
 		/// </summary>
 		/// <param name="address">Адрес почтового ящика.</param>
 		/// <param name="displayName">Имя почтового ящика. Может быть не указано (значение null).</param>
-		[SuppressMessage (
-			"Microsoft.Design",
-			"CA1026:DefaultParametersShouldNotBeUsed",
-			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
 		public Mailbox (string address, string displayName = null)
 		{
 			if (address == null)
@@ -219,7 +210,7 @@ namespace Novartment.Base.Net.Mime
 				return false;
 			}
 
-			return string.Equals (this.Name, other.Name) && this.Address.Equals (other.Address);
+			return string.Equals (this.Name, other.Name, StringComparison.Ordinal) && this.Address.Equals (other.Address);
 		}
 	}
 }

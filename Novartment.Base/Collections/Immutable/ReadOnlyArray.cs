@@ -2,7 +2,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 
 namespace Novartment.Base.Collections.Immutable
@@ -12,10 +11,6 @@ namespace Novartment.Base.Collections.Immutable
 	/// </summary>
 	/// <typeparam name="T">Тип элементов массива.</typeparam>
 	/// <remarks>Никакой дополнительной функциональности, только делегирование к указанному массиву.</remarks>
-	[SuppressMessage (
-		"Microsoft.Naming",
-		"CA1710:IdentifiersShouldHaveCorrectSuffix",
-		Justification = "Implemented interfaces has no association with class name.")]
 	[DebuggerDisplay ("{DebuggerDisplay,nq}")]
 	public class ReadOnlyArray<T> :
 		IReadOnlyList<T>,
@@ -86,16 +81,6 @@ namespace Novartment.Base.Collections.Immutable
 		public int Count => _count;
 
 		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
-		[SuppressMessage(
-			"Microsoft.Globalization",
-			"CA1305:SpecifyIFormatProvider",
-			MessageId = "System.String.Format(System.String,System.Object,System.Object)",
-			Justification = "String is not exposed to the end user and will not be localized.")]
-		[SuppressMessage(
-			"Microsoft.Globalization",
-			"CA1305:SpecifyIFormatProvider",
-			MessageId = "System.String.Format(System.String,System.Object)",
-			Justification = "String is not exposed to the end user and will not be localized.")]
 		private string DebuggerDisplay => $"<{typeof(T).Name}> ({_count})";
 
 		/// <summary>
@@ -106,9 +91,12 @@ namespace Novartment.Base.Collections.Immutable
 		{
 			get
 			{
-				if ((index < 0) || (index >= this.Count))
+				// Following trick can reduce the range check by one
+				if ((uint)index >= (uint)this.Count)
 				{
-					throw new ArgumentOutOfRangeException(nameof(index));
+#pragma warning disable CA1065 // Do not raise exceptions in unexpected locations
+					throw new ArgumentOutOfRangeException (nameof (index));
+#pragma warning restore CA1065 // Do not raise exceptions in unexpected locations
 				}
 
 				Contract.EndContractBlock();

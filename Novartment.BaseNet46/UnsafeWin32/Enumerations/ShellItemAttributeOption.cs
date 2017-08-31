@@ -4,7 +4,7 @@
 	/// Defines how final attribute set is determined.
 	/// </summary>
 	/// <remarks>Соответствует перечислению SIATTRIBFLAGS.</remarks>
-	internal enum ShellItemAttributeOptions
+	internal enum ShellItemAttributeOption
 	{
 		/// <summary>
 		/// Use a bitwise AND to combine the attributes across items.

@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
-using System.Diagnostics.CodeAnalysis;
 
 namespace Novartment.Base.Data
 {
@@ -59,10 +58,6 @@ namespace Novartment.Base.Data
 		/// Получает уникальный идентификатор, сгенерированный последней выполнявшейся командой.
 		/// </summary>
 		/// <returns>Уникальный идентификатор, сгенерированный последней выполнявшейся командой.</returns>
-		[SuppressMessage (
-			"Microsoft.Design",
-			"CA1024:UsePropertiesWhereAppropriate",
-			Justification = "The method performs a time-consuming operation and performs a conversion.")]
 		object GetLastIdentityValue ();
 
 		/// <summary>
@@ -71,10 +66,6 @@ namespace Novartment.Base.Data
 		/// <param name="objectName">Имя объекта.</param>
 		/// <param name="schemaName">Имя схемы. Укажите null если схему указывать не нужно.</param>
 		/// <returns>Сформатированное имя объекта.</returns>
-		[SuppressMessage (
-			"Microsoft.Design",
-			"CA1026:DefaultParametersShouldNotBeUsed",
-			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
 		string FormatObjectName (string objectName, string schemaName = null);
 	}
 }

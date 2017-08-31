@@ -1,7 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using Novartment.Base.Collections.Immutable;
 
 namespace Novartment.Base.Collections
@@ -18,15 +17,6 @@ namespace Novartment.Base.Collections
 	/// так как хэш-функция может порождать совпадающие хэши для разных значений.
 	/// </remarks>
 	[DebuggerDisplay ("{DebuggerDisplay,nq}")]
-	[SuppressMessage (
-		"Microsoft.Naming",
-		"CA1710:IdentifiersShouldHaveCorrectSuffix",
-		Justification = "Implemented interfaces has no association with class name.")]
-	[SuppressMessage (
-		"Microsoft.Naming",
-		"CA1704:IdentifiersShouldBeSpelledCorrectly",
-		MessageId = "Avl",
-		Justification = "'AVL-tree' represents standard term.")]
 	public class AvlHashTreeSet<T> :
 		IAdjustableFiniteSet<T>
 	{
@@ -42,10 +32,6 @@ namespace Novartment.Base.Collections
 		/// Компаратор значений множества,
 		/// или null чтобы использовать компаратор по умолчанию.
 		/// </param>
-		[SuppressMessage (
-			"Microsoft.Design",
-			"CA1026:DefaultParametersShouldNotBeUsed",
-			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
 		public AvlHashTreeSet (IEqualityComparer<T> comparer = null)
 		{
 			_comparer = comparer ?? EqualityComparer<T>.Default;
@@ -60,10 +46,6 @@ namespace Novartment.Base.Collections
 		/// Компаратор значений множества,
 		/// или null чтобы использовать компаратор по умолчанию.
 		/// </param>
-		[SuppressMessage (
-			"Microsoft.Design",
-			"CA1026:DefaultParametersShouldNotBeUsed",
-			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
 		public AvlHashTreeSet (AvlBinarySearchHashTreeNode<T> startNode, IEqualityComparer<T> comparer = null)
 		{
 			_startNode = startNode;
@@ -82,16 +64,6 @@ namespace Novartment.Base.Collections
 		public int Count => _count;
 
 		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
-		[SuppressMessage(
-			"Microsoft.Globalization",
-			"CA1305:SpecifyIFormatProvider",
-			MessageId = "System.String.Format(System.String,System.Object,System.Object,System.Object)",
-			Justification = "String is not exposed to the end user and will not be localized.")]
-		[SuppressMessage(
-			"Microsoft.Globalization",
-			"CA1305:SpecifyIFormatProvider",
-			MessageId = "System.String.Format(System.String,System.Object)",
-			Justification = "String is not exposed to the end user and will not be localized.")]
 		private string DebuggerDisplay => (_startNode != null) ?
 			$"<{typeof(T).Name}> Count={_count} StartNode={_startNode.Value}" :
 			$"<{typeof(T).Name}> empty";

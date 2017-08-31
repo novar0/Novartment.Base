@@ -1,19 +1,10 @@
 ﻿using System;
-using System.Diagnostics.CodeAnalysis;
 
 namespace Novartment.Base.Shell
 {
 	/// <summary>
 	/// Исключение при работе оболочки.
 	/// </summary>
-	[SuppressMessage (
-		"Microsoft.Usage",
-		"CA2237:MarkISerializableTypesWithSerializable",
-		Justification = "In PCL Exception is not ISerializable.")]
-	[SuppressMessage (
-		"Microsoft.Design",
-		"CA1032:ImplementStandardExceptionConstructors",
-		Justification = "Constructors with SerializationInfo are not PCL-compatible.")]
 	public class ShellException : Exception
 	{
 		/// <summary>

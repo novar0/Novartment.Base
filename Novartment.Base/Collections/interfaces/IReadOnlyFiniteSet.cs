@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 
 namespace Novartment.Base.Collections
 {
@@ -7,10 +6,6 @@ namespace Novartment.Base.Collections
 	/// Конечное множество уникальных значений c возможностью перечисления и проверкой принадлежности.
 	/// </summary>
 	/// <typeparam name="T">Тип элементов множества.</typeparam>
-	[SuppressMessage (
-		"Microsoft.Naming",
-		"CA1710:IdentifiersShouldHaveCorrectSuffix",
-		Justification = "Implemented interfaces has no association with class name.")]
 	public interface IReadOnlyFiniteSet<T> :
 		IReadOnlyCollection<T>
 	{

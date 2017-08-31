@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using Novartment.Base.Collections.Immutable;
 using Novartment.Base.Reflection;
@@ -21,10 +20,6 @@ namespace Novartment.Base.Collections
 	/// если компаратора нет - используйте ConcurrentHashTreeSet.
 	/// Не реализует интерфейс ICollection ввиду несовместимости его контракта с конкурентным доступом.
 	/// </remarks>
-	[SuppressMessage (
-		"Microsoft.Naming",
-		"CA1710:IdentifiersShouldHaveCorrectSuffix",
-		Justification = "Implemented interfaces has no association with class name.")]
 	public class ConcurrentTreeSet<T> :
 		IAdjustableFiniteSet<T>
 	{
@@ -39,10 +34,6 @@ namespace Novartment.Base.Collections
 		/// Компаратор значений множества,
 		/// или null чтобы использовать компаратор по умолчанию.
 		/// </param>
-		[SuppressMessage (
-			"Microsoft.Design",
-			"CA1026:DefaultParametersShouldNotBeUsed",
-			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
 		public ConcurrentTreeSet (IComparer<T> comparer = null)
 		{
 			var isAtomicallyAssignable = typeof (T).IsAtomicallyAssignable ();

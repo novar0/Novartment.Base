@@ -33,7 +33,6 @@ namespace Novartment.Base.Smtp.Test
 		private bool _disposed = false;
 
 		internal SmtDataTransferTransactionMock (
-			MailDeliverySourceData sourceData,
 			AddrSpec forbiddenReversePath,
 			AddrSpec forbiddenRecipient,
 			TransactionBehavior transactionBehavior)

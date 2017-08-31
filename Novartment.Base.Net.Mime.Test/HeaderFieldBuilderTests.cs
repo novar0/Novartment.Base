@@ -134,7 +134,7 @@ namespace Novartment.Base.Net.Mime.Test
 		[Trait ("Category", "Mime.HeaderEncoder")]
 		public void CreatePhraseList ()
 		{
-			var values = HeaderFieldBuilder.CreatePhraseList (HeaderFieldName.Supersedes, new string[0]).ToHeaderField (int.MaxValue);
+			var values = HeaderFieldBuilder.CreatePhraseList (HeaderFieldName.Supersedes, Array.Empty<string> ()).ToHeaderField (int.MaxValue);
 			Assert.Equal (string.Empty, values.Value);
 
 			values = HeaderFieldBuilder.CreatePhraseList (HeaderFieldName.Supersedes, new string[] { "keyword" }).ToHeaderField (int.MaxValue);
@@ -174,7 +174,7 @@ namespace Novartment.Base.Net.Mime.Test
 		[Trait ("Category", "Mime.HeaderEncoder")]
 		public void CreateAngleBracketedList ()
 		{
-			var values = HeaderFieldBuilder.CreateAngleBracketedList (HeaderFieldName.Supersedes, new string[0]).ToHeaderField (int.MaxValue);
+			var values = HeaderFieldBuilder.CreateAngleBracketedList (HeaderFieldName.Supersedes, Array.Empty<string> ()).ToHeaderField (int.MaxValue);
 			Assert.Equal (string.Empty, values.Value);
 
 			values = HeaderFieldBuilder.CreateAngleBracketedList (HeaderFieldName.Supersedes, new string[] { "mailto:list@host.com?subject=help" }).ToHeaderField (int.MaxValue);
@@ -217,7 +217,7 @@ namespace Novartment.Base.Net.Mime.Test
 		[Trait ("Category", "Mime.HeaderEncoder")]
 		public void CreateDisposition ()
 		{
-			var bulder = HeaderFieldBuilder.CreateDisposition (HeaderFieldName.Supersedes, "value1", "value2", "value3", new string[0]).ToHeaderField (int.MaxValue);
+			var bulder = HeaderFieldBuilder.CreateDisposition (HeaderFieldName.Supersedes, "value1", "value2", "value3", Array.Empty<string> ()).ToHeaderField (int.MaxValue);
 			Assert.Equal ("value1/value2; value3", bulder.Value);
 
 			bulder = HeaderFieldBuilder.CreateDisposition (HeaderFieldName.Supersedes, "manual-action", "MDN-sent-manually", "displayed", new string[] { "value1", "value2", "value3" }).ToHeaderField (int.MaxValue);

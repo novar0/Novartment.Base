@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Serialization;
 using System.Text;
 using Novartment.Base.Collections;
@@ -72,10 +71,6 @@ namespace Novartment.Base
 		/// или false чтобы получить однострочное краткое представление.</param>
 		/// <param name="tracePatternToHide">Строка-образец, который в трассировке стэка будет заменён на многоточие.</param>
 		/// <returns>Строка подробностей об исключении.</returns>
-		[SuppressMessage (
-			"Microsoft.Design",
-			"CA1026:DefaultParametersShouldNotBeUsed",
-			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
 		public virtual string ToString (bool detailed, string tracePatternToHide = null)
 		{
 			string result;

@@ -50,7 +50,7 @@ namespace Novartment.Base.Smtp.Test
 				"QUIT\r\n";
 
 			var transactionFactory = new Func<MailDeliverySourceData, IMailDataTransferTransaction> (srcAttribs =>
-				new SmtDataTransferTransactionMock (srcAttribs, null, disallowedRecipient, TransactionBehavior.Normal));
+				new SmtDataTransferTransactionMock (null, disallowedRecipient, TransactionBehavior.Normal));
 			var connection = new TcpConnectionMock (
 				new IPEndPoint (IPAddress.Loopback, 25),
 				new IPEndPoint (new IPAddress (1144955L), 32701),

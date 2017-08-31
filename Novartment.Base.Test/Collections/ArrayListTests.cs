@@ -44,13 +44,13 @@ namespace Novartment.Base.Test
 			Assert.Equal (0, list.Count);
 			list.Add (1);
 			list.TrimExcess ();
-			Assert.Equal (1, list.Array.Length);
+			Assert.Single (list.Array);
 			list.EnsureCapacity (50);
 			Assert.Equal (50, list.Array.Length);
 			list.Clear ();
 			Assert.Equal (50, list.Array.Length);
 			list.TrimExcess ();
-			Assert.Equal (0, list.Array.Length);
+			Assert.Empty (list.Array);
 		}
 
 		[Fact]
@@ -332,7 +332,7 @@ namespace Novartment.Base.Test
 		}
 
 		[DebuggerDisplay ("#{Number} Prop1 = {Prop1} Prop2 = {Prop2}")]
-		public class Mock4
+		internal class Mock4
 		{
 			public int Number { get; set; }
 

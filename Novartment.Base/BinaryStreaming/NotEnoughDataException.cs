@@ -1,14 +1,11 @@
 ﻿using System;
-using System.Diagnostics.CodeAnalysis;
 
 namespace Novartment.Base.BinaryStreaming
 {
+#pragma warning disable CA1032 // Implement standard exception constructors
 	/// <summary>Ошибка нехватки данных.</summary>
-	[SuppressMessage (
-		"Microsoft.Design",
-		"CA1032:ImplementStandardExceptionConstructors",
-		Justification = "Constructor with inner exception not allowed.")]
 	public class NotEnoughDataException : Exception
+#pragma warning restore CA1032 // Implement standard exception constructors
 	{
 		/// <summary>Инициализирует новый экземпляр NotEnoughDataException с указанным количеством недостающих данных.</summary>
 		/// <param name="shortage">Количество недостающих данных, приведшее к ошибке.</param>
@@ -22,6 +19,16 @@ namespace Novartment.Base.BinaryStreaming
 		/// <param name="shortage">Количество недостающих данных, приведшее к ошибке.</param>
 		public NotEnoughDataException (string message, long shortage)
 			: base (message)
+		{
+			this.Shortage = shortage;
+		}
+
+		/// <summary>Инициализирует новый экземпляр NotEnoughDataException с указанным сообщением и количеством недостающих данных.</summary>
+		/// <param name="message">Сообщение ошибки.</param>
+		/// <param name="shortage">Количество недостающих данных, приведшее к ошибке.</param>
+		/// <param name="innerException">Исключение, приведшее к создаваемому исключению, или null-ссылка если не указано.</param>
+		public NotEnoughDataException (string message, long shortage, Exception innerException)
+			: base (message, innerException)
 		{
 			this.Shortage = shortage;
 		}

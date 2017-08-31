@@ -353,7 +353,7 @@ namespace Novartment.Base.Smtp.Test
 			source = new ArrayBufferedSource (Encoding.ASCII.GetBytes (cmdStr + _quitCommand));
 			cmd = SmtpCommand.Parse (source, SmtpCommand.ExpectedInputType.Command, null);
 			cmdAuth = (SmtpAuthCommand)cmd;
-			Assert.Equal (0, cmdAuth.InitialResponse.Length);
+			Assert.Empty (cmdAuth.InitialResponse);
 			Assert.Equal ("NEW", cmdAuth.Mechanism);
 			Assert.Equal (cmdStr.Length, source.Offset);
 
@@ -456,7 +456,7 @@ namespace Novartment.Base.Smtp.Test
 			Assert.Equal (1, cmd.Source.Count);
 			cmd.Source.FillBufferAsync (CancellationToken.None).Wait ();
 			cmd.Source.SkipBuffer (cmd.Source.Count);
-			Assert.ThrowsAsync<NotEnoughDataException> (async () => await cmd.Source.FillBufferAsync (CancellationToken.None));
+			Assert.ThrowsAsync<NotEnoughDataException> (() => cmd.Source.FillBufferAsync (CancellationToken.None));
 
 			// размер источника больше указанного
 			src = new ArrayBufferedSource (buf, 15, 19);

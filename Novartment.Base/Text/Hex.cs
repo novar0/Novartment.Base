@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using Novartment.Base.Collections.Immutable;
 
@@ -15,10 +14,6 @@ namespace Novartment.Base.Text
 		/// Таблица шестнадцатеричных строковых передставлений (один символ) 4-битного числа.
 		/// Содержит -1 если символ не представляет собой шестнадцатеричное строковое представление числа.
 		/// </summary>
-		[SuppressMessage(
-			"Microsoft.Security",
-			"CA2104:DoNotDeclareReadOnlyMutableReferenceTypes",
-			Justification = "IReadOnlyList is immutable.")]
 		public static readonly IReadOnlyList<int> Chars = new ReadOnlyArray<int>(new int[]
 		{
 #pragma warning disable SA1001 // Commas must be spaced correctly
@@ -36,10 +31,6 @@ namespace Novartment.Base.Text
 		/// <summary>
 		/// Таблица шестнадцатеричных строковых передставлений 8-битных чисел.
 		/// </summary>
-		[SuppressMessage(
-			"Microsoft.Security",
-			"CA2104:DoNotDeclareReadOnlyMutableReferenceTypes",
-			Justification = "IReadOnlyList is immutable.")]
 		public static readonly IReadOnlyList<string> OctetsUpper = new ReadOnlyArray<string>(new string[]
 		{
 			"00", "01", "02", "03", "04", "05", "06", "07", "08", "09", "0A", "0B", "0C", "0D", "0E", "0F",

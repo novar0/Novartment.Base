@@ -47,7 +47,7 @@ namespace Novartment.Base
 		/// <returns>Задача, представляющая выполнение задания-маркера.</returns>
 		public Task PutMarker ()
 		{
-			var completionSource = JobCompletionSource<TItem, TResult>.Marker;
+			var completionSource = JobCompletionSourceMarker.Create<TItem, TResult> ();
 			OfferJobCompletionSource (completionSource);
 			return completionSource.Task;
 		}

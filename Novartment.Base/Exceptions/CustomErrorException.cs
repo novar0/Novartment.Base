@@ -1,19 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using Novartment.Base.Collections.Linq;
 
 namespace Novartment.Base
 {
+#pragma warning disable CA1032 // Implement standard exception constructors
 	/// <summary>
 	/// Класс-обёртка для передачи информации об исключениях различного рода
 	/// (не представленных типом System.Exception) туда, где ожидается тип System.Exception.
 	/// </summary>
-	[SuppressMessage (
-		"Microsoft.Design",
-		"CA1032:ImplementStandardExceptionConstructors",
-		Justification = "Standard exception constructors not possible.")]
 	public class CustomErrorException : Exception
+#pragma warning restore CA1032 // Implement standard exception constructors
 	{
 		/// <summary>
 		/// Инициализирует новый экземпляр CustomErrorException на основе предоставленных данных.

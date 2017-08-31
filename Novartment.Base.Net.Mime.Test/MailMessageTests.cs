@@ -227,8 +227,8 @@ namespace Novartment.Base.Net.Mime.Test
 
 			// body
 			Assert.IsType<TextEntityBody> (msg.Body);
-			Assert.Equal (ContentMediaType.Text, msg.Type);
-			Assert.Equal ("plain", msg.Subtype);
+			Assert.Equal (ContentMediaType.Text, msg.MediaType);
+			Assert.Equal ("plain", msg.MediaSubtype);
 			Assert.Equal (ContentTransferEncoding.EightBit, msg.TransferEncoding);
 			Assert.Equal ("текст сообщения \r\n", ((TextEntityBody)msg.Body).GetText ());
 			Assert.Equal ("koi8-r", ((TextEntityBody)msg.Body).Encoding.WebName);
@@ -278,8 +278,8 @@ namespace Novartment.Base.Net.Mime.Test
 			Assert.Equal ("15 May 2012 01:49:27.0976 (UTC) FILETIME=[F6915A80:01CD323C]", msg.ExtraFields[4].Value);
 
 			// body
-			Assert.Equal (ContentMediaType.Multipart, msg.Type);
-			Assert.Equal ("mixed", msg.Subtype);
+			Assert.Equal (ContentMediaType.Multipart, msg.MediaType);
+			Assert.Equal ("mixed", msg.MediaSubtype);
 			Assert.IsType<CompositeEntityBody> (msg.Body);
 			Assert.Equal ("sp-1234", ((CompositeEntityBody)msg.Body).Boundary);
 			var rootBody = (ICompositeEntityBody)msg.Body;
@@ -288,15 +288,17 @@ namespace Novartment.Base.Net.Mime.Test
 			// attachment
 			var att = rootBody.Parts[0];
 			Assert.IsAssignableFrom<IDiscreteEntityBody> (att.Body);
-			Assert.Equal (ContentMediaType.Application, att.Type);
-			Assert.Equal ("text", att.Subtype);
+			Assert.Equal (ContentMediaType.Application, att.MediaType);
+			Assert.Equal ("text", att.MediaSubtype);
 			Assert.Equal (ContentDispositionType.Attachment, att.DispositionType);
 			Assert.Equal ("This document specifies an Internet standards track protocol for the функции and requests discussion and suggestions.txt", att.FileName);
 			Assert.Equal ("base64", att.TransferEncoding.GetName ());
 			byte[] hash;
 			var data = ((IDiscreteEntityBody)att.Body).GetDataSource ().ReadAllBytesAsync (CancellationToken.None).Result;
 			Assert.Equal (70289, data.Length);
+#pragma warning disable CA5351 // Do not use insecure cryptographic algorithm MD5.
 			using (var prov = MD5.Create ())
+#pragma warning restore CA5351 // Do not use insecure cryptographic algorithm MD5.
 			{
 				hash = prov.ComputeHash (data);
 			}
@@ -336,15 +338,15 @@ namespace Novartment.Base.Net.Mime.Test
 			Assert.Equal (3, rootBody.Parts.Count);
 
 			// root body
-			Assert.Equal (ContentMediaType.Multipart, msg.Type);
-			Assert.Equal ("report", msg.Subtype);
+			Assert.Equal (ContentMediaType.Multipart, msg.MediaType);
+			Assert.Equal ("report", msg.MediaSubtype);
 			Assert.Equal ("9B095B5ADSN=_01CD2A60C2F9F3000000298Ditc?serv01.chmk.", ((CompositeEntityBody)msg.Body).Boundary);
 
 			// text body
 			var part1 = rootBody.Parts[0];
 			Assert.IsType<TextEntityBody> (part1.Body);
-			Assert.Equal (ContentMediaType.Text, part1.Type);
-			Assert.Equal ("plain", part1.Subtype);
+			Assert.Equal (ContentMediaType.Text, part1.MediaType);
+			Assert.Equal ("plain", part1.MediaSubtype);
 
 			// Assert.Equal ("unicode - 1 - 1-utf-7", part1.Charset);
 			Assert.Equal (
@@ -354,16 +356,16 @@ namespace Novartment.Base.Net.Mime.Test
 			// delivery status body
 			var part2 = rootBody.Parts[1];
 			Assert.IsType<DeliveryStatusEntityBody> (part2.Body);
-			Assert.Equal (ContentMediaType.Message, part2.Type);
-			Assert.Equal ("delivery-status", part2.Subtype);
+			Assert.Equal (ContentMediaType.Message, part2.MediaType);
+			Assert.Equal ("delivery-status", part2.MediaSubtype);
 
 			// message body
 			var part3 = rootBody.Parts[2];
 			Assert.IsType<MessageEntityBody> (part3.Body);
 			var nestedMsg = ((MessageEntityBody)part3.Body).Message;
 			Assert.IsType<TextEntityBody> (nestedMsg.Body);
-			Assert.Equal (ContentMediaType.Unspecified, nestedMsg.Type);
-			Assert.Null (nestedMsg.Subtype);
+			Assert.Equal (ContentMediaType.Unspecified, nestedMsg.MediaType);
+			Assert.Null (nestedMsg.MediaSubtype);
 			Assert.Equal ("201205131247.NAA05952", nestedMsg.MessageId.LocalPart);
 			Assert.Equal ("asu15.espc6.mechel.com", nestedMsg.MessageId.Domain);
 			Assert.Null (nestedMsg.Sender);
@@ -626,7 +628,7 @@ namespace Novartment.Base.Net.Mime.Test
 			int pos = 0;
 			do
 			{
-				int idx = source.IndexOf (delimiter, pos);
+				int idx = source.IndexOf (delimiter, pos, StringComparison.Ordinal);
 				if (idx < 0)
 				{
 					break;

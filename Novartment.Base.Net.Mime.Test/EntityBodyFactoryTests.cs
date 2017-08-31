@@ -10,40 +10,40 @@ namespace Novartment.Base.Net.Mime.Test
 		{
 			var props = new EssentialContentProperties ()
 			{
-				Type = ContentMediaType.Application,
-				Subtype = "octet-stream",
+				MediaType = ContentMediaType.Application,
+				MediaSubtype = "octet-stream",
 				TransferEncoding = ContentTransferEncoding.EightBit,
 			};
 			Assert.IsAssignableFrom<IDiscreteEntityBody> (EntityBodyFactory.Create (props));
 
 			props = new EssentialContentProperties ()
 			{
-				Type = ContentMediaType.Audio,
-				Subtype = "aaa",
+				MediaType = ContentMediaType.Audio,
+				MediaSubtype = "aaa",
 				TransferEncoding = ContentTransferEncoding.EightBit,
 			};
 			Assert.IsAssignableFrom<IDiscreteEntityBody> (EntityBodyFactory.Create (props));
 
 			props = new EssentialContentProperties ()
 			{
-				Type = ContentMediaType.Image,
-				Subtype = "aaa",
+				MediaType = ContentMediaType.Image,
+				MediaSubtype = "aaa",
 				TransferEncoding = ContentTransferEncoding.EightBit,
 			};
 			Assert.IsAssignableFrom<IDiscreteEntityBody> (EntityBodyFactory.Create (props));
 
 			props = new EssentialContentProperties ()
 			{
-				Type = ContentMediaType.Video,
-				Subtype = "aaa",
+				MediaType = ContentMediaType.Video,
+				MediaSubtype = "aaa",
 				TransferEncoding = ContentTransferEncoding.EightBit,
 			};
 			Assert.IsAssignableFrom<IDiscreteEntityBody> (EntityBodyFactory.Create (props));
 
 			props = new EssentialContentProperties ()
 			{
-				Type = ContentMediaType.Text,
-				Subtype = "html",
+				MediaType = ContentMediaType.Text,
+				MediaSubtype = "html",
 				TransferEncoding = ContentTransferEncoding.EightBit,
 			};
 			props.Parameters.Add (new HeaderFieldParameter ("charset", "utf-8"));
@@ -51,8 +51,8 @@ namespace Novartment.Base.Net.Mime.Test
 
 			props = new EssentialContentProperties ()
 			{
-				Type = ContentMediaType.Multipart,
-				Subtype = "mixed",
+				MediaType = ContentMediaType.Multipart,
+				MediaSubtype = "mixed",
 				TransferEncoding = ContentTransferEncoding.EightBit,
 			};
 			props.Parameters.Add (new HeaderFieldParameter ("boundary", "--xxxx"));
@@ -60,8 +60,8 @@ namespace Novartment.Base.Net.Mime.Test
 
 			props = new EssentialContentProperties ()
 			{
-				Type = ContentMediaType.Multipart,
-				Subtype = "digest",
+				MediaType = ContentMediaType.Multipart,
+				MediaSubtype = "digest",
 				TransferEncoding = ContentTransferEncoding.EightBit,
 			};
 			props.Parameters.Add (new HeaderFieldParameter ("boundary", "--xxxx"));
@@ -69,8 +69,8 @@ namespace Novartment.Base.Net.Mime.Test
 
 			props = new EssentialContentProperties ()
 			{
-				Type = ContentMediaType.Multipart,
-				Subtype = "report",
+				MediaType = ContentMediaType.Multipart,
+				MediaSubtype = "report",
 				TransferEncoding = ContentTransferEncoding.EightBit,
 			};
 			props.Parameters.Add (new HeaderFieldParameter ("boundary", "--xxxx"));
@@ -79,24 +79,24 @@ namespace Novartment.Base.Net.Mime.Test
 
 			props = new EssentialContentProperties ()
 			{
-				Type = ContentMediaType.Message,
-				Subtype = "rfc822",
+				MediaType = ContentMediaType.Message,
+				MediaSubtype = "rfc822",
 				TransferEncoding = ContentTransferEncoding.EightBit,
 			};
 			Assert.IsType<MessageEntityBody> (EntityBodyFactory.Create (props));
 
 			props = new EssentialContentProperties ()
 			{
-				Type = ContentMediaType.Message,
-				Subtype = "delivery-status",
+				MediaType = ContentMediaType.Message,
+				MediaSubtype = "delivery-status",
 				TransferEncoding = ContentTransferEncoding.EightBit,
 			};
 			Assert.IsType<DeliveryStatusEntityBody> (EntityBodyFactory.Create (props));
 
 			props = new EssentialContentProperties ()
 			{
-				Type = ContentMediaType.Message,
-				Subtype = "disposition-notification",
+				MediaType = ContentMediaType.Message,
+				MediaSubtype = "disposition-notification",
 				TransferEncoding = ContentTransferEncoding.EightBit,
 			};
 			Assert.IsType<DispositionNotificationEntityBody> (EntityBodyFactory.Create (props));

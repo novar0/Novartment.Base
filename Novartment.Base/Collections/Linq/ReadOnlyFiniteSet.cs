@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 
 namespace Novartment.Base.Collections.Linq
@@ -9,10 +8,6 @@ namespace Novartment.Base.Collections.Linq
 	/// <summary>
 	/// Методы расширения к конечным множествам.
 	/// </summary>
-	[SuppressMessage (
-		"Microsoft.Naming",
-		"CA1711:IdentifiersShouldNotHaveIncorrectSuffix",
-		Justification = "Analogous to System.Linq.Enumerable.")]
 	public static class ReadOnlyFiniteSet
 	{
 		/// <summary>
@@ -57,10 +52,6 @@ namespace Novartment.Base.Collections.Linq
 		/// <param name="defaultValue">Значение, возвращаемое в случае пустого множества.</param>
 		/// <returns>Множество, содержащее значение defaultValue, если множество source пустое;
 		/// в противном случае возвращается source.</returns>
-		[SuppressMessage (
-			"Microsoft.Design",
-			"CA1026:DefaultParametersShouldNotBeUsed",
-			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
 		public static IReadOnlyFiniteSet<TSource> DefaultIfEmpty<TSource> (this IReadOnlyFiniteSet<TSource> source, TSource defaultValue = default (TSource))
 		{
 			if (source == null)
@@ -81,18 +72,10 @@ namespace Novartment.Base.Collections.Linq
 		/// <param name="value">Значение, которое требуется найти в множестве.</param>
 		/// <param name="notUsed">Не используется.</param>
 		/// <returns>True, если множество содержит элемент с указанным значением, в противном случае — False.</returns>
-		[SuppressMessage (
-			"Microsoft.Usage",
-			"CA1801:ReviewUnusedParameters",
-			MessageId = "notUsed",
-			Justification = "Parameters must be compatible with System.Linq.Enumerable.Contains().")]
-		[SuppressMessage (
-			"Microsoft.Design",
-			"CA1026:DefaultParametersShouldNotBeUsed",
-			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
 		public static bool Contains<TSource> (
 			this IReadOnlyFiniteSet<TSource> source,
 			TSource value,
+#pragma warning disable CA1801 // Review unused parameters
 			IEqualityComparer<TSource> notUsed = null)
 		{
 			if (source == null)
@@ -135,15 +118,6 @@ namespace Novartment.Base.Collections.Linq
 		/// <param name="source">Конечное множество</param>
 		/// <param name="notUsed">Не используется.</param>
 		/// <returns>Указанное множество.</returns>
-		[SuppressMessage (
-			"Microsoft.Usage",
-			"CA1801:ReviewUnusedParameters",
-			MessageId = "notUsed",
-			Justification = "Parameters must be compatible with System.Linq.Enumerable.Distinct().")]
-		[SuppressMessage (
-			"Microsoft.Design",
-			"CA1026:DefaultParametersShouldNotBeUsed",
-			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
 		public static IReadOnlyFiniteSet<TSource> Distinct<TSource> (
 			this IReadOnlyFiniteSet<TSource> source,
 			IEqualityComparer<TSource> notUsed = null)
@@ -166,15 +140,6 @@ namespace Novartment.Base.Collections.Linq
 		/// <param name="second">Множество, которое будет использовано для получения разности с множеством first.</param>
 		/// <param name="notUsed">Не используется.</param>
 		/// <returns>Множество, представляющее собой разность двух множеств.</returns>
-		[SuppressMessage (
-			"Microsoft.Design",
-			"CA1026:DefaultParametersShouldNotBeUsed",
-			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
-		[SuppressMessage (
-			"Microsoft.Usage",
-			"CA1801:ReviewUnusedParameters",
-			MessageId = "notUsed",
-			Justification = "Parameters must be compatible with System.Linq.Enumerable.Except().")]
 		public static IReadOnlyFiniteSet<TSource> Except<TSource> (
 			this IReadOnlyFiniteSet<TSource> first,
 			IReadOnlyFiniteSet<TSource> second,
@@ -238,15 +203,6 @@ namespace Novartment.Base.Collections.Linq
 		/// <param name="second">Второе множество для вычисления симметрической разности.</param>
 		/// <param name="notUsed">Не используется.</param>
 		/// <returns>Множество, представляющее собой симметрическую разность двух множеств.</returns>
-		[SuppressMessage (
-			"Microsoft.Design",
-			"CA1026:DefaultParametersShouldNotBeUsed",
-			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
-		[SuppressMessage (
-			"Microsoft.Usage",
-			"CA1801:ReviewUnusedParameters",
-			MessageId = "notUsed",
-			Justification = "Parameters must be compatible with System.Linq.Enumerable.Except().")]
 		public static IReadOnlyFiniteSet<TSource> SymmetricExcept<TSource> (
 			this IReadOnlyFiniteSet<TSource> first,
 			IReadOnlyFiniteSet<TSource> second,
@@ -310,15 +266,6 @@ namespace Novartment.Base.Collections.Linq
 		/// <param name="second">Второе множество для вычисления пересечения.</param>
 		/// <param name="notUsed">Не используется.</param>
 		/// <returns>Множество, представляющее собой пересечение двух множеств.</returns>
-		[SuppressMessage (
-			"Microsoft.Design",
-			"CA1026:DefaultParametersShouldNotBeUsed",
-			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
-		[SuppressMessage (
-			"Microsoft.Usage",
-			"CA1801:ReviewUnusedParameters",
-			MessageId = "notUsed",
-			Justification = "Parameters must be compatible with System.Linq.Enumerable.Intersect().")]
 		public static IReadOnlyFiniteSet<TSource> Intersect<TSource> (
 			this IReadOnlyFiniteSet<TSource> first,
 			IReadOnlyFiniteSet<TSource> second,
@@ -376,19 +323,11 @@ namespace Novartment.Base.Collections.Linq
 		/// <param name="second">Второе множество для вычисления объединения.</param>
 		/// <param name="notUsed">Не используется.</param>
 		/// <returns>Множество, представляющее собой объединение двух множеств.</returns>
-		[SuppressMessage (
-			"Microsoft.Design",
-			"CA1026:DefaultParametersShouldNotBeUsed",
-			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
-		[SuppressMessage (
-			"Microsoft.Usage",
-			"CA1801:ReviewUnusedParameters",
-			MessageId = "notUsed",
-			Justification = "Parameters must be compatible with System.Linq.Enumerable.Union().")]
 		public static IReadOnlyFiniteSet<TSource> Union<TSource> (
 			this IReadOnlyFiniteSet<TSource> first,
 			IReadOnlyFiniteSet<TSource> second,
 			IEqualityComparer<TSource> notUsed = null)
+#pragma warning restore CA1801 // Review unused parameters
 		{
 			if (first == null)
 			{

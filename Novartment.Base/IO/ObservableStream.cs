@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.IO;
 using System.Threading;
@@ -11,10 +10,6 @@ namespace Novartment.Base.IO
 	/// <summary>
 	/// Поток-обёртка с уведомлением о текущей позиции.
 	/// </summary>
-	[SuppressMessage (
-		"Microsoft.Naming",
-		"CA1711:IdentifiersShouldNotHaveIncorrectSuffix",
-		Justification = "'Stream' suffix intended because of base type is System.IO.Stream.")]
 	public class ObservableStream : Stream,
 		IObservable<FileStreamStatus>
 	{
@@ -31,10 +26,6 @@ namespace Novartment.Base.IO
 		/// </summary>
 		/// <param name="stream">Исходный поток, на основе которого будет создана обёртка.</param>
 		/// <param name="state">Объект-состояние, который будет передаваться вместе с данными уведомления.</param>
-		[SuppressMessage (
-			"Microsoft.Design",
-			"CA1026:DefaultParametersShouldNotBeUsed",
-			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
 		public ObservableStream (Stream stream, object state = null)
 		{
 			if (stream == null)
@@ -306,12 +297,14 @@ namespace Novartment.Base.IO
 			}
 		}
 
+#pragma warning disable CA1801 // Review unused parameters
 		private void ReportProgressInternal1 (Task task)
 		{
 			ReportProgressInternal ();
 		}
 
 		private void ReportProgressInternal2 (Task task)
+#pragma warning restore CA1801 // Review unused parameters
 		{
 			_length = _stream.Length;
 			ReportProgressInternal ();

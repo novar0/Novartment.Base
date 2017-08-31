@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using Novartment.Base.Text;
 
@@ -10,11 +9,6 @@ namespace Novartment.Base.Net
 	/// Интернет-идентификатор типа 'локальная_часть@домен'
 	/// согласно формату "addr-spec", описанному в RFC 5322 часть 3.4.1.
 	/// </summary>
-	[SuppressMessage (
-		"Microsoft.Naming",
-		"CA1704:IdentifiersShouldBeSpelledCorrectly",
-		MessageId = "Addr",
-		Justification = "'add-spec' represents standard term.")]
 	public class AddrSpec :
 		IEquatable<AddrSpec>
 	{

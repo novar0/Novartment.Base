@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Threading;
 using Novartment.Base.Collections.Immutable;
@@ -24,10 +23,6 @@ namespace Novartment.Base.Collections
 	/// Для конкурентного доступа синхронизация не требуется.
 	/// Не реализует интерфейсы ICollection и IList ввиду несовместимости их контрактов с конкурентным доступом.
 	/// </remarks>
-	[SuppressMessage (
-		"Microsoft.Naming",
-		"CA1710:IdentifiersShouldHaveCorrectSuffix",
-		Justification = "Implemented interfaces has no association with class name.")]
 	[DebuggerDisplay ("{DebuggerDisplay,nq}")]
 	[DebuggerTypeProxy (typeof (ConcurrentList<>.DebugView))]
 	public class ConcurrentList<T> :
@@ -112,21 +107,6 @@ namespace Novartment.Base.Collections
 		public int Count => _state.Count;
 
 		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
-		[SuppressMessage(
-			"Microsoft.Globalization",
-			"CA1305:SpecifyIFormatProvider",
-			MessageId = "System.String.Format(System.String,System.Object,System.Object,System.Object)",
-			Justification = "String is not exposed to the end user and will not be localized.")]
-		[SuppressMessage(
-			"Microsoft.Globalization",
-			"CA1305:SpecifyIFormatProvider",
-			MessageId = "System.String.Format(System.String,System.Object,System.Object)",
-			Justification = "String is not exposed to the end user and will not be localized.")]
-		[SuppressMessage(
-			"Microsoft.Globalization",
-			"CA1305:SpecifyIFormatProvider",
-			MessageId = "System.String.Format(System.String,System.Object)",
-			Justification = "String is not exposed to the end user and will not be localized.")]
 		private string DebuggerDisplay
 		{
 			get
@@ -150,7 +130,9 @@ namespace Novartment.Base.Collections
 			{
 				if (index < 0)
 				{
+#pragma warning disable CA1065 // Do not raise exceptions in unexpected locations
 					throw new ArgumentOutOfRangeException (nameof (index));
+#pragma warning restore CA1065 // Do not raise exceptions in unexpected locations
 				}
 
 				Contract.EndContractBlock ();
@@ -870,10 +852,6 @@ namespace Novartment.Base.Collections
 		/// <param name="accessMethod">Делегат-функция.</param>
 		/// <param name="state">Объект-параметр, который будет передан в делегат-функцию.</param>
 		/// <returns>Значение, которое вернула делегат-функция.</returns>
-		[SuppressMessage (
-			"Microsoft.Design",
-			"CA1006:DoNotNestGenericTypesInMemberSignatures",
-			Justification = "The caller doesn't have to cope with nested generics, he is just passing a lambda expression.")]
 		public TOutput AccessCollectionRetryIfConcurrentlyChanged<TInput, TOutput> (Func<ConcurrentList<T>, TInput, TOutput> accessMethod, TInput state)
 		{
 			if (accessMethod == null)
@@ -922,7 +900,9 @@ namespace Novartment.Base.Collections
 			return arraySegment;
 		}
 
+#pragma warning disable CA1812 // Avoid uninstantiated internal classes
 		internal sealed class DebugView
+#pragma warning restore CA1812 // Avoid uninstantiated internal classes
 		{
 			private readonly ConcurrentList<T> _list;
 

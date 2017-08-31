@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Text;
 using Novartment.Base.Collections;
@@ -198,127 +197,81 @@ namespace Novartment.Base.Net.Mime
 			}
 		}
 
-		[SuppressMessage (
-			"Microsoft.Performance",
-			"CA1811:AvoidUncalledPrivateCode",
-			Justification = "Used in DebuggerDisplay attribute.")]
 		[DebuggerBrowsable (DebuggerBrowsableState.Never)]
 		private string TraceDebuggerDisplay => (this.Trace.Count < 1) ? "<empty>" :
 			(this.Trace.Count == 1) ?
 				FormattableString.Invariant ($"{this.Trace[0].ReceivedTime.Value.LocalDateTime} {this.Trace[0].ReceivedParameters}") :
 				FormattableString.Invariant ($"Count={this.Trace.Count}: {this.Trace[0].ReceivedTime.Value.LocalDateTime} {this.Trace[0].ReceivedParameters} ...");
 
-		[SuppressMessage (
-			"Microsoft.Performance",
-			"CA1811:AvoidUncalledPrivateCode",
-			Justification = "Used in DebuggerDisplay attribute.")]
 		[DebuggerBrowsable (DebuggerBrowsableState.Never)]
 		private string FromDebuggerDisplay => (this.From.Count < 1) ? "<empty>" :
 			(this.From.Count == 1) ?
 				this.From[0].ToString () :
 				FormattableString.Invariant ($"Count={this.From.Count}: {this.From[0]} ...");
 
-		[SuppressMessage (
-			"Microsoft.Performance",
-			"CA1811:AvoidUncalledPrivateCode",
-			Justification = "Used in DebuggerDisplay attribute.")]
 		[DebuggerBrowsable (DebuggerBrowsableState.Never)]
 		private string ReplyToDebuggerDisplay => (this.ReplyTo.Count < 1) ? "<empty>" :
 			(this.ReplyTo.Count == 1) ?
 				this.ReplyTo[0].ToString () :
 				FormattableString.Invariant ($"Count={this.ReplyTo.Count}: {this.ReplyTo[0]} ...");
 
-		[SuppressMessage (
-			"Microsoft.Performance",
-			"CA1811:AvoidUncalledPrivateCode",
-			Justification = "Used in DebuggerDisplay attribute.")]
 		[DebuggerBrowsable (DebuggerBrowsableState.Never)]
 		private string ToDebuggerDisplay => (this.RecipientTo.Count < 1) ? "<empty>" :
 			(this.RecipientTo.Count == 1) ?
 				this.RecipientTo[0].ToString () :
 				FormattableString.Invariant ($"Count={this.RecipientTo.Count}: {this.RecipientTo[0]} ...");
 
-		[SuppressMessage (
-			"Microsoft.Performance",
-			"CA1811:AvoidUncalledPrivateCode",
-			Justification = "Used in DebuggerDisplay attribute.")]
 		[DebuggerBrowsable (DebuggerBrowsableState.Never)]
 		private string CcDebuggerDisplay => (this.RecipientCC.Count < 1) ? "<empty>" :
 			(this.RecipientCC.Count == 1) ?
 				this.RecipientCC[0].ToString () :
 				FormattableString.Invariant ($"Count={this.RecipientCC.Count}: {this.RecipientCC[0]} ...");
 
-		[SuppressMessage (
-			"Microsoft.Performance",
-			"CA1811:AvoidUncalledPrivateCode",
-			Justification = "Used in DebuggerDisplay attribute.")]
 		[DebuggerBrowsable (DebuggerBrowsableState.Never)]
 		private string BccDebuggerDisplay => (this.RecipientBcc.Count < 1) ? "<empty>" :
 			(this.RecipientBcc.Count == 1) ?
 				this.RecipientBcc[0].ToString () :
 				FormattableString.Invariant ($"Count={this.RecipientBcc.Count}: {this.RecipientBcc[0]} ...");
 
-		[SuppressMessage (
-			"Microsoft.Performance",
-			"CA1811:AvoidUncalledPrivateCode",
-			Justification = "Used in DebuggerDisplay attribute.")]
 		[DebuggerBrowsable (DebuggerBrowsableState.Never)]
 		private string InReplyToDebuggerDisplay => (this.InReplyTo.Count < 1) ? "<empty>" :
 			(this.InReplyTo.Count == 1) ?
 				this.InReplyTo[0].ToString () :
 				FormattableString.Invariant ($"Count={this.InReplyTo.Count}: {this.InReplyTo[0]} ...");
 
-		[SuppressMessage (
-			"Microsoft.Performance",
-			"CA1811:AvoidUncalledPrivateCode",
-			Justification = "Used in DebuggerDisplay attribute.")]
 		[DebuggerBrowsable (DebuggerBrowsableState.Never)]
 		private string ReferencesDebuggerDisplay => (this.References.Count < 1) ? "<empty>" :
 			(this.References.Count == 1) ?
 				this.References[0].ToString () :
 				FormattableString.Invariant ($"Count={this.References.Count}: {this.References[0]} ...");
 
-		[SuppressMessage (
-			"Microsoft.Performance",
-			"CA1811:AvoidUncalledPrivateCode",
-			Justification = "Used in DebuggerDisplay attribute.")]
 		[DebuggerBrowsable (DebuggerBrowsableState.Never)]
 		private string KeywordsDebuggerDisplay => (this.Keywords.Count < 1) ? "<empty>" :
 			(this.Keywords.Count == 1) ?
 				this.Keywords[0] :
 				FormattableString.Invariant ($"Count={this.Keywords.Count}: {this.Keywords[0]} ...");
 
-		[SuppressMessage (
-			"Microsoft.Performance",
-			"CA1811:AvoidUncalledPrivateCode",
-			Justification = "Used in DebuggerDisplay attribute.")]
 		[DebuggerBrowsable (DebuggerBrowsableState.Never)]
 		private string DispositionNotificationToDebuggerDisplay => (this.DispositionNotificationTo.Count < 1) ? "<empty>" :
 			(this.DispositionNotificationTo.Count == 1) ?
 				this.DispositionNotificationTo[0].ToString () :
 				FormattableString.Invariant ($"Count={this.DispositionNotificationTo.Count}: {this.DispositionNotificationTo[0]} ...");
 
-		[SuppressMessage (
-			"Microsoft.Performance",
-			"CA1811:AvoidUncalledPrivateCode",
-			Justification = "Used in DebuggerDisplay attribute.")]
 		[DebuggerBrowsable (DebuggerBrowsableState.Never)]
 		private string AcceptLanguagesDebuggerDisplay => (this.AcceptLanguages.Count < 1) ? "<empty>" :
 			(this.AcceptLanguages.Count == 1) ?
 				this.AcceptLanguages[0].ToString () :
 				FormattableString.Invariant ($"Count={this.AcceptLanguages.Count}: {this.AcceptLanguages[0]} ...");
 
-		[SuppressMessage (
-			"Microsoft.Performance",
-			"CA1811:AvoidUncalledPrivateCode",
-			Justification = "Used in DebuggerDisplay attribute.")]
 		[DebuggerBrowsable (DebuggerBrowsableState.Never)]
 		private string DebuggerDisplay
 		{
 			get
 			{
 				var date = this.OriginationDate.HasValue ?
+#pragma warning disable CA1305 // Specify IFormatProvider
 					this.OriginationDate.Value.LocalDateTime.ToString () :
+#pragma warning restore CA1305 // Specify IFormatProvider
 					string.Empty;
 				return FormattableString.Invariant ($"{date} From: {string.Join (", ", this.From)}, To: {string.Join (", ", this.RecipientTo)}, Subject: {this.Subject}");
 			}
@@ -335,10 +288,6 @@ namespace Novartment.Base.Net.Mime
 		/// <param name="transferEncoding">Кодировка передачи создаваемой сущности.
 		/// Укажите ContentTransferEncoding.Unspecified чтобы использовать универсальную (возможно неоптимальную) кодировку.</param>
 		/// <returns>Созданное сообщение.</returns>
-		[SuppressMessage (
-			"Microsoft.Design",
-			"CA1026:DefaultParametersShouldNotBeUsed",
-			Justification = "Parameters have clear right 'default' values and there is no plausible reason why the default might need to change.")]
 		public static MailMessage CreateSimpleText (
 			string subtype = null,
 			Encoding encoding = null,
@@ -358,10 +307,6 @@ namespace Novartment.Base.Net.Mime
 		/// например "mixed", "alternative", "parallel".
 		/// Укажите null чтобы использовать тип по умолчанию ("mixed").</param>
 		/// <returns>Созданное сообщение.</returns>
-		[SuppressMessage (
-			"Microsoft.Design",
-			"CA1026:DefaultParametersShouldNotBeUsed",
-			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
 		public static MailMessage CreateComposite (string subtype = null)
 		{
 			var body = new CompositeEntityBody ();
@@ -390,7 +335,9 @@ namespace Novartment.Base.Net.Mime
 			// The "Message-ID:" field provides a unique message identifier that refers to a particular version of a particular message.
 			// The uniqueness of the message identifier is guaranteed by the host that generates it (see below).
 			// This message identifier is intended to be machine readable and not necessarily meaningful to humans.
+#pragma warning disable CA1305 // Specify IFormatProvider
 			this.MessageId = new AddrSpec (Guid.NewGuid ().ToString ("N"), "global");
+#pragma warning restore CA1305 // Specify IFormatProvider
 		}
 
 		/// <summary>

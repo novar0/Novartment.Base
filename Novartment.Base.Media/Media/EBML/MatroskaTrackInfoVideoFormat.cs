@@ -1,17 +1,11 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 
 namespace Novartment.Base.Media
 {
 	/// <summary>
 	/// Информация об видео-трэке матрёшка-файла.
 	/// </summary>
-	[SuppressMessage (
-		"Microsoft.Naming",
-		"CA1704:IdentifiersShouldBeSpelledCorrectly",
-		MessageId = "Matroska",
-		Justification = "'Matroska' represents standard term.")]
 	[DebuggerDisplay ("{DebuggerDisplay,nq}")]
 	[CLSCompliant (false)]
 	public class MatroskaTrackInfoVideoFormat
@@ -52,10 +46,6 @@ namespace Novartment.Base.Media
 		public ulong? DisplayHeight { get; }
 
 		[DebuggerBrowsable (DebuggerBrowsableState.Never)]
-		[SuppressMessage (
-			"Microsoft.Performance",
-			"CA1811:AvoidUncalledPrivateCode",
-			Justification = "Used in DebuggerDisplay attribute.")]
 		private string DebuggerDisplay => FormattableString.Invariant ($"Width = {this.PixelWidth}, Height = {this.PixelHeight}");
 	}
 }

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections;
-using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Globalization;
 using System.IO;
@@ -42,10 +41,6 @@ namespace Novartment.Base.UI.Wpf
 		/// </summary>
 		/// <param name="mainWindowFactory">Фабрика, которая производит главное окно приложения.</param>
 		/// <param name="exceptionDialogFactory">Фабрика, которая производит окно диалога об исключительной ситуации.</param>
-		[SuppressMessage (
-			"Microsoft.Design",
-			"CA1006:DoNotNestGenericTypesInMemberSignatures",
-			Justification = "The caller doesn't have to cope with nested generics, he is just passing a lambda expression.")]
 		public ComponentApplication (Func<Window> mainWindowFactory, Func<UserLevelExceptionData, IDialogView<bool?>> exceptionDialogFactory)
 			: base ()
 		{
@@ -209,10 +204,6 @@ namespace Novartment.Base.UI.Wpf
 		/// устанавливается глобальный обработчик неперехваченных исключений,
 		/// устанавливается режим приёма сообщений об обновлении буфера обмена, транслируемый в события ClipboardUpdated.
 		/// </remarks>
-		[SuppressMessage (
-			"Microsoft.Design",
-			"CA1031:DoNotCatchGeneralExceptionTypes",
-			Justification = "The exception is top-level and will be presented to user.")]
 		public new ProcessExitCode Run ()
 		{
 			// ставим язык по-умолчанию для XAML-объектов
@@ -258,10 +249,6 @@ namespace Novartment.Base.UI.Wpf
 		/// <param name="failedAssembly">Сборка, в которой произошло исключение.</param>
 		/// <param name="failedAction">Выполняемое программой действие, при выполнении которого произошло исключение.</param>
 		/// <param name="recommendedSolution">Рекомендуемое пользователю действие.</param>
-		[SuppressMessage (
-			"Microsoft.Design",
-			"CA1026:DefaultParametersShouldNotBeUsed",
-			Justification = "Parameters have clear right 'default' values and there is no plausible reason why the default might need to change.")]
 		[MethodImpl (MethodImplOptions.NoInlining)]
 		public void ReportException (
 			Exception exception,

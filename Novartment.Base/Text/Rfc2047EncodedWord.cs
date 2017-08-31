@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Buffers;
-using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Text;
 
@@ -9,11 +8,6 @@ namespace Novartment.Base.Text
 	/// <summary>
 	/// Операции для конвертирования строк в форму "encoded-word" и обратно согласно RFC 2047.
 	/// </summary>
-	[SuppressMessage (
-		"Microsoft.Naming",
-		"CA1704:IdentifiersShouldBeSpelledCorrectly",
-		MessageId = "Rfc",
-		Justification = "'RFC' represents standard term.")]
 	public static class Rfc2047EncodedWord
 	{
 		/// <summary>

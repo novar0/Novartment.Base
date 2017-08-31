@@ -50,27 +50,27 @@ namespace Novartment.Base.Net.Mime
 			}
 
 			IEntityBody body = null;
-			switch (contentProperties.Type)
+			switch (contentProperties.MediaType)
 			{
 				case ContentMediaType.Text:
 					body = new TextEntityBody (charset, contentProperties.TransferEncoding);
 					break;
 				case ContentMediaType.Message:
-					var isRfc822 = MessageMediaSubtypeNames.Rfc822.Equals (contentProperties.Subtype, StringComparison.OrdinalIgnoreCase);
+					var isRfc822 = MessageMediaSubtypeNames.Rfc822.Equals (contentProperties.MediaSubtype, StringComparison.OrdinalIgnoreCase);
 					if (isRfc822)
 					{
 						body = new MessageEntityBody ();
 					}
 					else
 					{
-						var isDeliveryStatus = MessageMediaSubtypeNames.DeliveryStatus.Equals (contentProperties.Subtype, StringComparison.OrdinalIgnoreCase);
+						var isDeliveryStatus = MessageMediaSubtypeNames.DeliveryStatus.Equals (contentProperties.MediaSubtype, StringComparison.OrdinalIgnoreCase);
 						if (isDeliveryStatus)
 						{
 							body = new DeliveryStatusEntityBody ();
 						}
 						else
 						{
-							var isDispositionNotification = MessageMediaSubtypeNames.DispositionNotification.Equals (contentProperties.Subtype, StringComparison.OrdinalIgnoreCase);
+							var isDispositionNotification = MessageMediaSubtypeNames.DispositionNotification.Equals (contentProperties.MediaSubtype, StringComparison.OrdinalIgnoreCase);
 							if (isDispositionNotification)
 							{
 								body = new DispositionNotificationEntityBody ();
@@ -80,14 +80,14 @@ namespace Novartment.Base.Net.Mime
 
 					break;
 				case ContentMediaType.Multipart:
-					var isDigest = MultipartMediaSubtypeNames.Digest.Equals (contentProperties.Subtype, StringComparison.OrdinalIgnoreCase);
+					var isDigest = MultipartMediaSubtypeNames.Digest.Equals (contentProperties.MediaSubtype, StringComparison.OrdinalIgnoreCase);
 					if (isDigest)
 					{
 						body = new DigestEntityBody (boundary);
 					}
 					else
 					{
-						body = MultipartMediaSubtypeNames.Report.Equals (contentProperties.Subtype, StringComparison.OrdinalIgnoreCase) ?
+						body = MultipartMediaSubtypeNames.Report.Equals (contentProperties.MediaSubtype, StringComparison.OrdinalIgnoreCase) ?
 							new ReportEntityBody (reportType, boundary) :
 							new CompositeEntityBody (boundary);
 					}

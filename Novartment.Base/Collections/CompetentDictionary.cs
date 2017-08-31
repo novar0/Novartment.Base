@@ -2,7 +2,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -24,18 +23,6 @@ namespace Novartment.Base.Collections
 	/// * единственный метод, который возвращает реальную информацию о наличии записи - ContainsKey().
 	/// Порождает событие CollectionChanged только вида NotifyCollectionChangedAction.Add.
 	/// </remarks>
-	[SuppressMessage (
-		"Microsoft.Naming",
-		"CA1711:IdentifiersShouldNotHaveIncorrectSuffix",
-		Justification = "Implemented interfaces has no association with class name.")]
-	[SuppressMessage (
-		"Microsoft.Naming",
-		"CA1710:IdentifiersShouldHaveCorrectSuffix",
-		Justification = "Implemented interfaces has no association with class name.")]
-	[SuppressMessage (
-		"Microsoft.Design",
-		"CA1063:ImplementIDisposableCorrectly",
-		Justification = "Implemented correctly.")]
 	public class CompetentDictionary<TKey, TValue> :
 		IReadOnlyDictionary<TKey, TValue>,
 		INotifyCollectionChanged,
@@ -76,10 +63,6 @@ namespace Novartment.Base.Collections
 		/// Компаратор, который будет использоваться при сравнении ключей,
 		/// или null, чтобы использовать реализацию компаратора по умолчанию.
 		/// </param>
-		[SuppressMessage (
-			"Microsoft.Design",
-			"CA1026:DefaultParametersShouldNotBeUsed",
-			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
 		public CompetentDictionary (Func<TKey, TValue> valueFactory, IEqualityComparer<TKey> comparer = null)
 		{
 			if (valueFactory == null)
@@ -125,12 +108,14 @@ namespace Novartment.Base.Collections
 			{
 				if (key == null)
 				{
-					throw new ArgumentNullException(nameof(key));
+#pragma warning disable CA1065 // Do not raise exceptions in unexpected locations
+					throw new ArgumentNullException (nameof (key));
+#pragma warning restore CA1065 // Do not raise exceptions in unexpected locations
 				}
 
-				Contract.EndContractBlock();
+				Contract.EndContractBlock ();
 
-				return FindOrCreateValue(key);
+				return FindOrCreateValue (key);
 			}
 		}
 
@@ -221,14 +206,6 @@ namespace Novartment.Base.Collections
 		}
 
 		/// <summary>Освобождает все внутренние ресурсы и отключает подписчиков на события.</summary>
-		[SuppressMessage (
-			"Microsoft.Usage",
-			"CA1816:CallGCSuppressFinalizeCorrectly",
-			Justification = "There is no meaning to introduce a finalizer in derived type.")]
-		[SuppressMessage (
-			"Microsoft.Design",
-			"CA1063:ImplementIDisposableCorrectly",
-			Justification = "Implemented correctly.")]
 		public void Dispose ()
 		{
 			CollectionChanged = null;
@@ -410,7 +387,7 @@ namespace Novartment.Base.Collections
 				{
 					if ((_index == 0) || (_index == (_count + 1)))
 					{
-						throw new InvalidOperationException("Can not get current element of enumeration because it not started or already eneded.");
+						throw new InvalidOperationException ("Can not get current element of enumeration because it not started or already eneded.");
 					}
 
 					return _current;
@@ -462,11 +439,11 @@ namespace Novartment.Base.Collections
 			private int _index;
 			private TKey _currentKey;
 
-			internal KeyEnumerator(CompetentDictionary<TKey, TValue> dictionary)
+			internal KeyEnumerator (CompetentDictionary<TKey, TValue> dictionary)
 			{
 				_dictionary = dictionary;
 				_count = dictionary._count;
-				_currentKey = default(TKey);
+				_currentKey = default (TKey);
 			}
 
 			/// <summary>
@@ -480,7 +457,7 @@ namespace Novartment.Base.Collections
 				{
 					if ((_index == 0) || (_index == (_count + 1)))
 					{
-						throw new InvalidOperationException("Can not get current element of enumeration because it not started or already ended");
+						throw new InvalidOperationException ("Can not get current element of enumeration because it not started or already ended");
 					}
 
 					return _currentKey;
@@ -546,7 +523,7 @@ namespace Novartment.Base.Collections
 				{
 					if ((_index == 0) || (_index == (_count + 1)))
 					{
-						throw new InvalidOperationException("Can not get current element of enumeration because it not started or already ended");
+						throw new InvalidOperationException ("Can not get current element of enumeration because it not started or already ended");
 					}
 
 					return _currentValue;

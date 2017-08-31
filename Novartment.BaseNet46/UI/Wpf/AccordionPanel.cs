@@ -118,38 +118,38 @@ namespace Novartment.Base.UI.Wpf
 		/// <summary>
 		/// Получает признак того, что экспандер открыт.
 		/// </summary>
-		/// <param name="obj">Экспандер.</param>
+		/// <param name="expander">Экспандер.</param>
 		/// <returns>True если экспандер открыт, иначе False.</returns>
-		public static bool GetIsExpanded (DependencyObject obj)
+		public static bool GetIsExpanded (DependencyObject expander)
 		{
-			if (obj == null)
+			if (expander == null)
 			{
-				throw new ArgumentNullException (nameof (obj));
+				throw new ArgumentNullException (nameof (expander));
 			}
 
 			Contract.EndContractBlock ();
 
-			return (bool)obj.GetValue (IsExpandedProperty);
+			return (bool)expander.GetValue (IsExpandedProperty);
 		}
 
 		/// <summary>
 		/// Устанавливает признак того, что экспандер открыт.
 		/// </summary>
-		/// <param name="obj">Экспандер.</param>
+		/// <param name="expander">Экспандер.</param>
 		/// <param name="value">Признак того, что экспандер открыт.</param>
-		public static void SetIsExpanded (DependencyObject obj, bool value)
+		public static void SetIsExpanded (DependencyObject expander, bool value)
 		{
-			if (obj == null)
+			if (expander == null)
 			{
-				throw new ArgumentNullException (nameof (obj));
+				throw new ArgumentNullException (nameof (expander));
 			}
 
 			Contract.EndContractBlock ();
 
-			obj.SetValue (IsExpandedProperty, value);
+			expander.SetValue (IsExpandedProperty, value);
 		}
 
-		/// <summary>Создает новый объект <see cref="T:System.Windows.Controls.UIElementCollection" />.</summary>
+		/// <summary>Создает новый объект <see cref="UIElementCollection" />.</summary>
 		/// <param name="logicalParent">Логический родительский элемент создаваемой коллекции.</param>
 		/// <returns>Упорядоченная коллекция элементов, которые имеют указанный логический родительский элемент.</returns>
 		protected override UIElementCollection CreateUIElementCollection (FrameworkElement logicalParent)
@@ -298,9 +298,9 @@ namespace Novartment.Base.UI.Wpf
 			return finalSize;
 		}
 
-		private static object CoerceExpandedIndex (DependencyObject obj, object value)
+		private static object CoerceExpandedIndex (DependencyObject panel, object value)
 		{
-			var accordeon = (AccordionPanel)obj;
+			var accordeon = (AccordionPanel)panel;
 			var index = (int)value;
 			accordeon._lastWantedIndex = index;
 			if (index < 0 || index >= accordeon.InternalChildren.Count)
@@ -311,9 +311,9 @@ namespace Novartment.Base.UI.Wpf
 			return index;
 		}
 
-		private static void ExpandedIndexPropertyChangedCallback (DependencyObject obj, DependencyPropertyChangedEventArgs e)
+		private static void ExpandedIndexPropertyChangedCallback (DependencyObject panel, DependencyPropertyChangedEventArgs e)
 		{
-			var accordeon = (AccordionPanel)obj;
+			var accordeon = (AccordionPanel)panel;
 			var index = (int)e.NewValue;
 			var item = accordeon.InternalChildren[index];
 			if (accordeon.ExpandedItem != item)
@@ -322,18 +322,18 @@ namespace Novartment.Base.UI.Wpf
 			}
 		}
 
-		private static object CoerceExpandedItem (DependencyObject obj, object value)
+		private static object CoerceExpandedItem (DependencyObject panel, object value)
 		{
-			var accordeon = (AccordionPanel)obj;
+			var accordeon = (AccordionPanel)panel;
 			var item = value as UIElement;
 			accordeon._lastWantedItem = item;
 			return ((accordeon.InternalChildren.Count < 1) || !accordeon.InternalChildren.Contains (item)) ?
 				null : item;
 		}
 
-		private static void ExpandedItemPropertyChangedCallback (DependencyObject obj, DependencyPropertyChangedEventArgs e)
+		private static void ExpandedItemPropertyChangedCallback (DependencyObject panel, DependencyPropertyChangedEventArgs e)
 		{
-			var accordeon = (AccordionPanel)obj;
+			var accordeon = (AccordionPanel)panel;
 			var item = (UIElement)e.NewValue;
 			var idx = accordeon.InternalChildren.IndexOf (item);
 			if (accordeon.ExpandedIndex != idx)
@@ -344,13 +344,15 @@ namespace Novartment.Base.UI.Wpf
 			accordeon.UpdateChildrenExpandedProperty (idx);
 		}
 
-		private static object CoerceIsExpanded (DependencyObject obj, object value)
+#pragma warning disable CA1801 // Review unused parameters
+		private static object CoerceIsExpanded (DependencyObject notUsed, object value)
+#pragma warning restore CA1801 // Review unused parameters
 		{
 			// var accordeon = (AccordionPanel)obj;
 			return value;
 		}
 
-		private static void IsExpandedPropertyChangedCallback (DependencyObject obj, DependencyPropertyChangedEventArgs e)
+		private static void IsExpandedPropertyChangedCallback (DependencyObject expander, DependencyPropertyChangedEventArgs e)
 		{
 			var newValue = (bool)e.NewValue;
 			if (!newValue)
@@ -358,7 +360,7 @@ namespace Novartment.Base.UI.Wpf
 				return;
 			}
 
-			if (obj is FrameworkElement elem)
+			if (expander is FrameworkElement elem)
 			{
 				if (elem.Parent is AccordionPanel accordeon)
 				{

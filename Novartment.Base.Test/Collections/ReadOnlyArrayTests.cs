@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using Novartment.Base.Collections.Immutable;
 using Xunit;
@@ -15,7 +16,7 @@ namespace Novartment.Base.Test
 			var t2 = new int[] { 100, -200, 0, 1 }; // same as t1
 
 			// свойства
-			var list = new ReadOnlyArray<int> (new int[0]);
+			var list = new ReadOnlyArray<int> (Array.Empty<int> ());
 			Assert.Equal (0, list.Count);
 			list = new ReadOnlyArray<int> (t1, 2);
 			Assert.Equal (2, list.Count);

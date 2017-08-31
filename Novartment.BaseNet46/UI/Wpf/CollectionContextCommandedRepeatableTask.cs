@@ -2,7 +2,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -28,10 +27,6 @@ namespace Novartment.Base.UI.Wpf
 		/// В функцию будут переданы контекст элемента, для которого вызвана команда,
 		/// а также список, частью которого является этот элемент и список выбранных в списке элементов.
 		/// Возвращённая функцией задача должна быть уже запущена.</param>
-		[SuppressMessage (
-			"Microsoft.Design",
-			"CA1006:DoNotNestGenericTypesInMemberSignatures",
-			Justification = "The caller doesn't have to cope with nested generics, he is just passing a lambda expression.")]
 		public CollectionContextCommandedRepeatableTask (Func<ContextCollectionData<T>, CancellationToken, Task> taskFactory)
 			: base (taskFactory.ParameterAsObject)
 		{
@@ -46,10 +41,6 @@ namespace Novartment.Base.UI.Wpf
 		/// а также список, частью которого является этот элемент и список выбранных в списке элементов.
 		/// </param>
 		/// <param name="taskScheduler">Планировщик, в котором будут выполняться запускаемые задачи.</param>
-		[SuppressMessage (
-			"Microsoft.Design",
-			"CA1006:DoNotNestGenericTypesInMemberSignatures",
-			Justification = "The caller doesn't have to cope with nested generics, he is just passing a lambda expression.")]
 		public CollectionContextCommandedRepeatableTask (
 			Action<ContextCollectionData<T>, CancellationToken> taskAction,
 			TaskScheduler taskScheduler)
@@ -65,10 +56,6 @@ namespace Novartment.Base.UI.Wpf
 		/// а также список, частью которого является этот элемент и список выбранных в списке элементов.
 		/// Возвращённая функцией задача должна быть уже запущена.</param>
 		/// <param name="previousTask">Предыдущая задача, в цепь команд которой будут добавлены команды создаваемой задачи.</param>
-		[SuppressMessage (
-			"Microsoft.Design",
-			"CA1006:DoNotNestGenericTypesInMemberSignatures",
-			Justification = "The caller doesn't have to cope with nested generics, he is just passing a lambda expression.")]
 		protected CollectionContextCommandedRepeatableTask (
 			Func<ContextCollectionData<T>, CancellationToken, Task> taskFactory,
 			CommandedRepeatableTask previousTask)
@@ -86,10 +73,6 @@ namespace Novartment.Base.UI.Wpf
 		/// </param>
 		/// <param name="taskScheduler">Планировщик, в котором будут выполняться запускаемые задачи.</param>
 		/// <param name="previousTask">Предыдущая задача, в цепь команд которой будут добавлены команды создаваемой задачи.</param>
-		[SuppressMessage (
-			"Microsoft.Design",
-			"CA1006:DoNotNestGenericTypesInMemberSignatures",
-			Justification = "The caller doesn't have to cope with nested generics, he is just passing a lambda expression.")]
 		protected CollectionContextCommandedRepeatableTask (
 			Action<ContextCollectionData<T>, CancellationToken> taskAction,
 			TaskScheduler taskScheduler,

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.IO;
 using Novartment.Base.Collections;
@@ -11,10 +10,6 @@ namespace Novartment.Base.IO
 	/// <summary>
 	/// Перечислитель объектов директории, включая содержимое вложенных директорий.
 	/// </summary>
-	[SuppressMessage (
-		"Microsoft.Naming",
-		"CA1710:IdentifiersShouldHaveCorrectSuffix",
-		Justification = "Implemented interfaces has no association with class name.")]
 	public class FolderIterator :
 		IEnumerable<FileData>
 	{
@@ -38,11 +33,6 @@ namespace Novartment.Base.IO
 		/// Имя объекта, которое считается пригодным.
 		/// Проверяется полное совпадение без учёта регистра.
 		/// </param>
-		[SuppressMessage (
-			"Microsoft.Design",
-			"CA1062:Validate arguments of public methods",
-			MessageId = "1",
-			Justification = "'fileNameFilter' validated indirectly.")]
 		public FolderIterator (string baseFolder, string fileNameFilter)
 		{
 			if (baseFolder == null)

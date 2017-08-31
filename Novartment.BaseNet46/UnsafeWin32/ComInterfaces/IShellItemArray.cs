@@ -36,7 +36,7 @@ namespace Novartment.Base.UnsafeWin32
 		[PreserveSig]
 		[MethodImpl (MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
 		int GetAttributes (
-			[In] ShellItemAttributeOptions dwAttribFlags,
+			[In] ShellItemAttributeOption dwAttribFlags,
 			[In] ShellItemAttributes sfgaoMask,
 			out ShellItemAttributes psfgaoAttribs);
 

@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
-using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Windows.Data;
 using System.Windows.Input;
@@ -64,11 +63,12 @@ namespace Novartment.Base.UI.Wpf
 	*/
 
 	// TODO: обеспечить конкурентный доступ. lock _source2view ?
+	/* Согласно логике работы WPF, наследование CollectionView обязательно,
+	иначе при использовании наше представление будет обёрнуто в CollectionViewProxy с потерей всех преимуществ.
+	Помечен как sealed потому что содержит обращение к virtual-членам в конструкторе.
+	*/
 
-	// Согласно логике работы WPF, наследование CollectionView обязательно,
-	// иначе при использовании наше представление будет обёрнуто в CollectionViewProxy с потерей всех преимуществ.
-	// Помечен как sealed потому что содержит обращение к virtual-членам в конструкторе.
-
+#pragma warning disable CA1710 // Identifiers should have correct suffix
 	/// <summary>
 	/// Представление только для чтения с поддержкой фильтрации и сортировки,
 	/// оптимизированное для списка с произвольным доступом по номеру позиции.
@@ -83,12 +83,9 @@ namespace Novartment.Base.UI.Wpf
 	/// * кэширует результат последнего поиска элемента.
 	/// Ограничение: уведомление типа NotifyCollectionChangedAction.Move не поддерживается.
 	/// </remarks>
-	[SuppressMessage (
-		"Microsoft.Naming",
-		"CA1710:IdentifiersShouldHaveCorrectSuffix",
-		Justification = "Implemented interfaces has no association with class name.")]
 	public sealed class LiteListCollectionView<TItem> : CollectionView,
 		IReadOnlyList<TItem>
+#pragma warning restore CA1710 // Identifiers should have correct suffix
 	{
 		// таблица соответствия индексов исходной коллекции индексам представления
 		private readonly ArrayList<int> _source2view;
@@ -195,7 +192,9 @@ namespace Novartment.Base.UI.Wpf
 			{
 				if (index < 0)
 				{
+#pragma warning disable CA1065 // Do not raise exceptions in unexpected locations
 					throw new ArgumentOutOfRangeException (nameof (index));
+#pragma warning restore CA1065 // Do not raise exceptions in unexpected locations
 				}
 
 				Contract.EndContractBlock ();

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Threading;
 using System.Threading.Tasks;
@@ -10,11 +9,6 @@ namespace Novartment.Base.Media
 	/// <summary>
 	/// Методы обработки файлов в формате "матрёшка".
 	/// </summary>
-	[SuppressMessage (
-		"Microsoft.Naming",
-		"CA1704:IdentifiersShouldBeSpelledCorrectly",
-		MessageId = "Matroska",
-		Justification = "'Matroska' represents standard term.")]
 	[CLSCompliant (false)]
 	public static class MatroskaFile
 	{
@@ -26,7 +20,9 @@ namespace Novartment.Base.Media
 		/// <returns>Коллекция сегментов matroska-файла, представленном указанным источником данных.</returns>
 		public static Task<MatroskaSegmentInfo> ParseSegmentInformationAsync (
 			IBufferedSource source,
+#pragma warning disable CA1801 // Review unused parameters
 			CancellationToken cancellationToken)
+#pragma warning restore CA1801 // Review unused parameters
 		{
 			if (source == null)
 			{

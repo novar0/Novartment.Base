@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.IO;
 using System.Text;
@@ -132,10 +131,6 @@ namespace Novartment.Base.Net.Mime
 		/// <param name="transferEncoding">Кодировка передачи создаваемой сущности.
 		/// Укажите ContentTransferEncoding.Unspecified чтобы использовать универсальную (возможно неоптимальную) кодировку.</param>
 		/// <returns>Созданная сущность.</returns>
-		[SuppressMessage (
-			"Microsoft.Design",
-			"CA1026:DefaultParametersShouldNotBeUsed",
-			Justification = "Parameters have clear right 'default' values and there is no plausible reason why the default might need to change.")]
 		public static Entity AddTextPart (
 			this Entity entity,
 			string text,

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 
 namespace Novartment.Base.Text
@@ -7,11 +6,6 @@ namespace Novartment.Base.Text
 	/// <summary>
 	/// Кодирует последовательность ASCII-символов указанного класса.
 	/// </summary>
-	[SuppressMessage (
-		"Microsoft.Naming",
-		"CA1704:IdentifiersShouldBeSpelledCorrectly",
-		MessageId = "Ascii",
-		Justification = "'ASCII' represents standard term.")]
 	public class AsciiCharClassEstimatingEncoder :
 		IEstimatingEncoder
 	{

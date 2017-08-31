@@ -48,14 +48,14 @@ namespace Novartment.Base.Net.Mime.Test
 				Entity.DefaultSubtype,
 				CancellationToken.None).Wait ();
 
-			Assert.Equal (ContentMediaType.Multipart, entity.Type);
+			Assert.Equal (ContentMediaType.Multipart, entity.MediaType);
 			Assert.IsAssignableFrom<ICompositeEntityBody> (entity.Body);
 			var rootBody = (ICompositeEntityBody)entity.Body;
 			Assert.Equal (2, rootBody.Parts.Count);
 
 			var part1 = rootBody.Parts[0];
-			Assert.Equal (ContentMediaType.Unspecified, part1.Type);
-			Assert.Null (part1.Subtype);
+			Assert.Equal (ContentMediaType.Unspecified, part1.MediaType);
+			Assert.Null (part1.MediaSubtype);
 			Assert.Equal (ContentTransferEncoding.SevenBit, part1.TransferEncoding);
 			Assert.IsType<TextEntityBody> (part1.Body);
 			var body1 = (TextEntityBody)part1.Body;
@@ -63,8 +63,8 @@ namespace Novartment.Base.Net.Mime.Test
 			Assert.Equal (textTemplate1, text1);
 
 			var part2 = rootBody.Parts[1];
-			Assert.Equal (ContentMediaType.Unspecified, part2.Type);
-			Assert.Null (part2.Subtype);
+			Assert.Equal (ContentMediaType.Unspecified, part2.MediaType);
+			Assert.Null (part2.MediaSubtype);
 			Assert.Equal (ContentTransferEncoding.SevenBit, part2.TransferEncoding);
 			Assert.IsType<TextEntityBody> (part2.Body);
 			var body2 = (TextEntityBody)part2.Body;
@@ -97,22 +97,22 @@ namespace Novartment.Base.Net.Mime.Test
 				Entity.DefaultSubtype,
 				CancellationToken.None).Wait ();
 
-			Assert.Equal (ContentMediaType.Multipart, entity.Type);
+			Assert.Equal (ContentMediaType.Multipart, entity.MediaType);
 			Assert.IsAssignableFrom<ICompositeEntityBody> (entity.Body);
 			rootBody = (ICompositeEntityBody)entity.Body;
 			Assert.Equal (2, rootBody.Parts.Count);
 
 			part1 = rootBody.Parts[0];
-			Assert.Equal (ContentMediaType.Unspecified, part1.Type);
-			Assert.Null (part1.Subtype);
+			Assert.Equal (ContentMediaType.Unspecified, part1.MediaType);
+			Assert.Null (part1.MediaSubtype);
 			Assert.Equal (ContentTransferEncoding.SevenBit, part1.TransferEncoding);
 			Assert.IsType<MessageEntityBody> (part1.Body);
 			var msgBody1 = (MessageEntityBody)part1.Body;
 			Assert.Equal ("testing1", msgBody1.Message.Subject);
 
 			part2 = rootBody.Parts[1];
-			Assert.Equal (ContentMediaType.Unspecified, part2.Type);
-			Assert.Null (part2.Subtype);
+			Assert.Equal (ContentMediaType.Unspecified, part2.MediaType);
+			Assert.Null (part2.MediaSubtype);
 			Assert.Equal (ContentTransferEncoding.SevenBit, part2.TransferEncoding);
 			Assert.IsType<MessageEntityBody> (part2.Body);
 			var msgBody2 = (MessageEntityBody)part2.Body;
@@ -151,8 +151,8 @@ namespace Novartment.Base.Net.Mime.Test
 				Entity.DefaultSubtype,
 				CancellationToken.None).Wait ();
 
-			Assert.Equal (ContentMediaType.Text, entity.Type);
-			Assert.Equal ("plain", entity.Subtype);
+			Assert.Equal (ContentMediaType.Text, entity.MediaType);
+			Assert.Equal ("plain", entity.MediaSubtype);
 			Assert.Equal (ContentDispositionType.Attachment, entity.DispositionType);
 			Assert.Equal ("This document specifies an Internet standards track protocol for the функции and requests discussion and suggestions.txt", entity.FileName);
 			Assert.Equal (318, entity.Size);

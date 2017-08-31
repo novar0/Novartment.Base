@@ -2,7 +2,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using SystemArray = System.Array;
 
@@ -17,10 +16,6 @@ namespace Novartment.Base.Collections.Immutable
 	/// но является ссылочным типом чтобы гарантировать атомарность присвоений.
 	/// </remarks>
 	[DebuggerDisplay ("{DebuggerDisplay,nq}")]
-	[SuppressMessage (
-		"Microsoft.Naming",
-		"CA1710:IdentifiersShouldHaveCorrectSuffix",
-		Justification = "Implemented interfaces has no association with class name.")]
 	public sealed class LoopedArraySegment<T> :
 		IEquatable<LoopedArraySegment<T>>,
 		IReadOnlyList<T>,
@@ -79,10 +74,6 @@ namespace Novartment.Base.Collections.Immutable
 		/// <summary>
 		/// Получает исходный массив сегмента.
 		/// </summary>
-		[SuppressMessage (
-			"Microsoft.Performance",
-			"CA1819:PropertiesShouldNotReturnArrays",
-			Justification = "This is clearly a property and write access to array is intended.")]
 		public T[] Array => _items;
 
 		/// <summary>
@@ -96,21 +87,6 @@ namespace Novartment.Base.Collections.Immutable
 		public int Count => _count;
 
 		[DebuggerBrowsable (DebuggerBrowsableState.Never)]
-		[SuppressMessage (
-			"Microsoft.Globalization",
-			"CA1305:SpecifyIFormatProvider",
-			MessageId = "System.String.Format(System.String,System.Object,System.Object,System.Object)",
-			Justification = "String is not exposed to the end user and will not be localized.")]
-		[SuppressMessage (
-			"Microsoft.Globalization",
-			"CA1305:SpecifyIFormatProvider",
-			MessageId = "System.String.Format(System.String,System.Object,System.Object)",
-			Justification = "String is not exposed to the end user and will not be localized.")]
-		[SuppressMessage (
-			"Microsoft.Globalization",
-			"CA1305:SpecifyIFormatProvider",
-			MessageId = "System.String.Format(System.String,System.Object)",
-			Justification = "String is not exposed to the end user and will not be localized.")]
 		private string DebuggerDisplay
 		{
 			get
@@ -134,7 +110,9 @@ namespace Novartment.Base.Collections.Immutable
 			{
 				if (index < 0)
 				{
+#pragma warning disable CA1065 // Do not raise exceptions in unexpected locations
 					throw new ArgumentOutOfRangeException (nameof (index));
+#pragma warning restore CA1065 // Do not raise exceptions in unexpected locations
 				}
 
 				Contract.EndContractBlock ();

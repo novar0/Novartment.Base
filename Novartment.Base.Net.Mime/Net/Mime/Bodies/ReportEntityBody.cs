@@ -1,6 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
-namespace Novartment.Base.Net.Mime
+﻿namespace Novartment.Base.Net.Mime
 {
 	/// <summary>
 	/// Тело MIME-сущности, содержащей отчет о событиях, связанных с сообщением согласно RFC 6522.
@@ -43,10 +41,6 @@ namespace Novartment.Base.Net.Mime
 		/// <param name="reportType">Тип отчёта, определяющий медиа подтип статусной части (второй вложенной сущности).</param>
 		/// <param name="boundary">Разграничитель частей сущности согласно требованиям RFC 1341 часть 7.2.1,
 		/// либо null для автоматического генерирования разграничителя.</param>
-		[SuppressMessage (
-			"Microsoft.Design",
-			"CA1026:DefaultParametersShouldNotBeUsed",
-			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
 		public ReportEntityBody (string reportType, string boundary = null)
 			: base (boundary)
 		{

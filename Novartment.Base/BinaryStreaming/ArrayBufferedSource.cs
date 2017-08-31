@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Threading;
 using System.Threading.Tasks;
@@ -18,10 +17,6 @@ namespace Novartment.Base.BinaryStreaming
 		/// <summary>
 		/// Получает пустой источник данных, представленный байтовым буфером.
 		/// </summary>
-		[SuppressMessage (
-			"Microsoft.Security",
-			"CA2104:DoNotDeclareReadOnlyMutableReferenceTypes",
-			Justification = "new ArrayBufferedSource (Array.Empty<byte> ()) is immutable.")]
 		public static readonly IBufferedSource Empty = new ArrayBufferedSource (Array.Empty<byte> ());
 
 		private readonly byte[] _buffer;

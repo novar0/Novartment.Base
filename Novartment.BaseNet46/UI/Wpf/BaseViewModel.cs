@@ -1,7 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Windows;
 
 namespace Novartment.Base.UI.Wpf
@@ -10,10 +9,6 @@ namespace Novartment.Base.UI.Wpf
 	/// A base class for the ViewModel classes in the MVVM pattern.
 	/// </summary>
 	//// [ClassInfo(typeof(BaseViewModel))]
-	[SuppressMessage (
-		"Microsoft.Design",
-		"CA1012",
-		Justification = "Constructors should remain public to allow serialization.")]
 	public abstract class BaseViewModel : ModelBase
 	{
 		private static bool? _isInDesignMode;
@@ -29,10 +24,6 @@ namespace Novartment.Base.UI.Wpf
 		/// Gets a value indicating whether the control is in design mode
 		/// (running in Blend or Visual Studio).
 		/// </summary>
-		[SuppressMessage (
-			"Microsoft.Security",
-			"CA2122:DoNotIndirectlyExposeMethodsWithLinkDemands",
-			Justification = "The security risk here is neglectible.")]
 		public static bool IsInDesignMode
 		{
 			get

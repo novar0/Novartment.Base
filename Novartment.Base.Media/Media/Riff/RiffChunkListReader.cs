@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,10 +12,6 @@ namespace Novartment.Base.Media
 	/// Коллекция RIFF-порций.
 	/// </summary>
 	[DebuggerDisplay ("{DebuggerDisplay,nq}")]
-	[SuppressMessage (
-		"Microsoft.Design",
-		"CA1063:ImplementIDisposableCorrectly",
-		Justification = "Implemented correctly.")]
 	public class RiffChunkListReader
 	{
 		private readonly IBufferedSource _source;
@@ -71,10 +66,6 @@ namespace Novartment.Base.Media
 		}
 
 		[DebuggerBrowsable (DebuggerBrowsableState.Never)]
-		[SuppressMessage (
-			"Microsoft.Performance",
-			"CA1811:AvoidUncalledPrivateCode",
-			Justification = "Used in DebuggerDisplay attribute.")]
 		private string DebuggerDisplay => "Id = " + this.ListId;
 
 		/// <summary>

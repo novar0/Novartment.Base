@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Text;
 using System.Threading;
@@ -18,10 +17,6 @@ namespace Novartment.Base.Net.Mime
 		/// Набор символов содержимого по умолчанию.
 		/// RFC 2046 4.1.2. The default character set, US-ASCII.
 		/// </summary>
-		[SuppressMessage (
-			"Microsoft.Security",
-			"CA2104:DoNotDeclareReadOnlyMutableReferenceTypes",
-			Justification = "Encoding is immutable.")]
 		public static readonly Encoding DefaultEncoding = Encoding.GetEncoding ("us-ascii");
 
 		/// <summary>
@@ -42,10 +37,6 @@ namespace Novartment.Base.Net.Mime
 		/// </summary>
 		/// <param name="charset">Набор символов, используемая в содержимом.</param>
 		/// <param name="transferEncoding">Кодировка передачи содержимого.</param>
-		[SuppressMessage (
-			"Microsoft.Maintainability",
-			"CA1502:AvoidExcessiveComplexity",
-			Justification = "Method not too complex.")]
 		public TextEntityBody (string charset, ContentTransferEncoding transferEncoding)
 			: base (transferEncoding)
 		{

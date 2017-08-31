@@ -116,7 +116,9 @@ namespace Novartment.Base.UnsafeWin32
 		/// <returns>String representing the property key</returns>
 		public override string ToString ()
 		{
+#pragma warning disable CA1305 // Specify IFormatProvider
 			return FormattableString.Invariant ($"{_formatId.ToString ("B")}, {_propertyId}");
+#pragma warning restore CA1305 // Specify IFormatProvider
 		}
 	}
 }

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Reflection;
 using Novartment.Base.Collections;
@@ -70,10 +69,6 @@ namespace Novartment.Base.Reflection
 		/// <typeparam name="T">Тип атрибута.</typeparam>
 		/// <param name="member">Член класса.</param>
 		/// <returns>Коллекция аргументов конструктора атрибута.</returns>
-		[SuppressMessage (
-			"Microsoft.Design",
-			"CA1004:GenericMethodsShouldProvideTypeParameter",
-			Justification = "Type parameter can not be provided.")]
 		public static IReadOnlyList<AttributeArgument> GetAttributeArguments<T> (MemberInfo member)
 			where T : Attribute
 		{
@@ -103,14 +98,6 @@ namespace Novartment.Base.Reflection
 		/// <typeparam name="T">Тип атрибута.</typeparam>
 		/// <param name="value">Значение перечисления, для которого надо получить аргумент конструктора атрибута.</param>
 		/// <returns>Коллекция аргументов конструктора атрибута.</returns>
-		[SuppressMessage (
-			"Microsoft.Design",
-			"CA1062:Validate arguments of public methods",
-			Justification = "Method correctly works with ANY value.")]
-		[SuppressMessage (
-			"Microsoft.Design",
-			"CA1004:GenericMethodsShouldProvideTypeParameter",
-			Justification = "Type parameter can not be provided.")]
 		public static IReadOnlyList<AttributeArgument> GetAttributeArguments<T> (Enum value)
 			where T : Attribute
 		{

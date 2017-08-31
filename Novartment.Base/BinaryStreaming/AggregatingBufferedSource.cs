@@ -372,7 +372,7 @@ namespace Novartment.Base.BinaryStreaming
 				}
 
 				var job = _enumerationEnded ?
-					JobCompletionSource<IBufferedSource, int>.Marker :
+					JobCompletionSourceMarker.Create<IBufferedSource, int> () :
 					new JobCompletionSource<IBufferedSource, int>(_enumerator.Current);
 				return Task.FromResult(job);
 			}

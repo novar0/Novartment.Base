@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Security.Cryptography;
 using Novartment.Base.Text;
@@ -12,15 +11,7 @@ namespace Novartment.Base
 	public class ToQuotedPrintableWithLineBreaksConverter :
 		ICryptoTransform
 	{
-		[SuppressMessage (
-			"Microsoft.Performance",
-			"CA1802:UseLiteralsWhereAppropriate",
-			Justification = "No performance gain could be achieved.")]
 		private static readonly int _maxLineLen = 75; // по стандарту предел 76 печатных символов, но чтобы начать новую строку надо добавлять символ '='
-		[SuppressMessage (
-			"Microsoft.Performance",
-			"CA1802:UseLiteralsWhereAppropriate",
-			Justification = "No performance gain could be achieved.")]
 		private static readonly int _inputBlockSize = 25;
 		private readonly bool _isText;
 
@@ -39,10 +30,6 @@ namespace Novartment.Base
 		/// <param name="isText">
 		/// Укажите True чтобы сохранять без трансформации встречающиеся в исходных данных символы перевода строки.
 		/// </param>
-		[SuppressMessage (
-			"Microsoft.Design",
-			"CA1026:DefaultParametersShouldNotBeUsed",
-			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
 		public ToQuotedPrintableWithLineBreaksConverter (bool isText = false)
 		{
 			_isText = isText;

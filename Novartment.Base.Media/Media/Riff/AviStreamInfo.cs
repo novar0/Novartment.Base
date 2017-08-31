@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Globalization;
 using System.Threading;
@@ -12,11 +11,6 @@ namespace Novartment.Base.Media
 	/// <summary>
 	/// Параметры потока AVI-файла.
 	/// </summary>
-	[SuppressMessage (
-		"Microsoft.Naming",
-		"CA1704:IdentifiersShouldBeSpelledCorrectly",
-		MessageId = "Avi",
-		Justification = "'AVI' represents standard term.")]
 	[DebuggerDisplay ("{DebuggerDisplay,nq}")]
 	[CLSCompliant (false)]
 	public class AviStreamInfo
@@ -128,10 +122,6 @@ namespace Novartment.Base.Media
 		public AviStreamInfoAudioFormat AudioFormat { get; }
 
 		[DebuggerBrowsable (DebuggerBrowsableState.Never)]
-		[SuppressMessage (
-			"Microsoft.Performance",
-			"CA1811:AvoidUncalledPrivateCode",
-			Justification = "Used in DebuggerDisplay attribute.")]
 		private string DebuggerDisplay => FormattableString.Invariant ($"Type = {this.Kind}, Handler = {this.Handler}, Length = {this.Length}");
 
 		/// <summary>
@@ -140,7 +130,11 @@ namespace Novartment.Base.Media
 		/// <param name="chunkListReader">Коллеции RIFF-порций, содержащая параметры потока AVI-файла.</param>
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
 		/// <returns>Параметры потока AVI-файла.</returns>
-		public static Task<AviStreamInfo> ParseAsync (RiffChunkListReader chunkListReader, CancellationToken cancellationToken)
+		public static Task<AviStreamInfo> ParseAsync (
+			RiffChunkListReader chunkListReader,
+#pragma warning disable CA1801 // Review unused parameters
+			CancellationToken cancellationToken)
+#pragma warning restore CA1801 // Review unused parameters
 		{
 			if (chunkListReader == null)
 			{

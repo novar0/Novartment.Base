@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 
 namespace Novartment.Base.Collections.Immutable
 {
@@ -10,11 +9,6 @@ namespace Novartment.Base.Collections.Immutable
 	/// <typeparam name="TKey">Тип ключа элементов словаря.</typeparam>
 	/// <typeparam name="TValue">Тип значений элементов словаря.</typeparam>
 	/// <remarks>Значение null является корректным и означает пустой словарь.</remarks>
-	[SuppressMessage (
-		"Microsoft.Naming",
-		"CA1704:IdentifiersShouldBeSpelledCorrectly",
-		MessageId = "Avl",
-		Justification = "'AVL-tree' represents standard term.")]
 	public class AvlBinarySearchTreeDictionaryNode<TKey, TValue>
 		: IValueHolder<TValue>
 	{
@@ -81,7 +75,9 @@ namespace Novartment.Base.Collections.Immutable
 			}
 		}
 
+#pragma warning disable CA1812 // Avoid uninstantiated internal classes
 		internal sealed class DebugView
+#pragma warning restore CA1812 // Avoid uninstantiated internal classes
 		{
 			private readonly IntermediateNode _node;
 

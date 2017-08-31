@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Globalization;
 using System.Reflection;
@@ -60,11 +59,6 @@ namespace Novartment.Base.UI.Wpf
 	/// A markup extension to allow resources for WPF Windows and controls to be retrieved
 	/// from an embedded resource (resx) file associated with the window or control.
 	/// </summary>
-	[SuppressMessage (
-		"Microsoft.Naming",
-		"CA1704:IdentifiersShouldBeSpelledCorrectly",
-		MessageId = "Resx",
-		Justification = "'RESX' is the standard term for resource files.")]
 	[MarkupExtensionReturnType (typeof (object))]
 	[ContentProperty ("Children")]
 	public class ResxExtension : TargetsTrackingExtensionBase
@@ -72,11 +66,6 @@ namespace Novartment.Base.UI.Wpf
 		/// <summary>
 		/// The ResxName attached property.
 		/// </summary>
-		[SuppressMessage (
-			"Microsoft.Naming",
-			"CA1704:IdentifiersShouldBeSpelledCorrectly",
-			MessageId = "Resx",
-			Justification = "'RESX' is the standard term for resource files.")]
 		public static readonly DependencyProperty DefaultResxNameProperty =
 			DependencyProperty.RegisterAttached (
 			"DefaultResxName",
@@ -140,11 +129,6 @@ namespace Novartment.Base.UI.Wpf
 		/// <summary>
 		/// The fully qualified name of the embedded resx (without .resources) to get the resource from.
 		/// </summary>
-		[SuppressMessage (
-			"Microsoft.Naming",
-			"CA1704:IdentifiersShouldBeSpelledCorrectly",
-			MessageId = "Resx",
-			Justification = "'RESX' is the standard term for resource files.")]
 		public string ResxName
 		{
 			get
@@ -565,11 +549,6 @@ namespace Novartment.Base.UI.Wpf
 		/// </summary>
 		/// <param name="target">The Target object.</param>
 		/// <returns>The name of the Resx.</returns>
-		[SuppressMessage (
-			"Microsoft.Naming",
-			"CA1704:IdentifiersShouldBeSpelledCorrectly",
-			MessageId = "Resx",
-			Justification = "'RESX' is the standard term for resource files.")]
 		[AttachedPropertyBrowsableForChildren (IncludeDescendants = true)]
 		public static string GetDefaultResxName (DependencyObject target)
 		{
@@ -588,11 +567,6 @@ namespace Novartment.Base.UI.Wpf
 		/// </summary>
 		/// <param name="target">The Target object.</param>
 		/// <param name="value">The name of the Resx.</param>
-		[SuppressMessage (
-			"Microsoft.Naming",
-			"CA1704:IdentifiersShouldBeSpelledCorrectly",
-			MessageId = "Resx",
-			Justification = "'RESX' is the standard term for resource files.")]
 		public static void SetDefaultResxName (DependencyObject target, string value)
 		{
 			if (target == null)
@@ -681,7 +655,9 @@ namespace Novartment.Base.UI.Wpf
 
 				if (_resourceManager != null)
 				{
+#pragma warning disable CA1304 // Specify CultureInfo
 					result = _resourceManager.GetObject (_key/*, CultureManager.UICulture*/);
+#pragma warning restore CA1304 // Specify CultureInfo
 				}
 
 				if (!this.IsMultiBindingChild)

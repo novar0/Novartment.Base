@@ -5,7 +5,8 @@ namespace Novartment.Base.Reflection
 	/// <summary>
 	/// Данные об аргументе конструктора атрибута.
 	/// </summary>
-	public struct AttributeArgument
+	public struct AttributeArgument :
+		IEquatable<AttributeArgument>
 	{
 		/// <summary>
 		/// Инициализирует новый экземпляр класса AttributeArgument с указанными именем и значением.

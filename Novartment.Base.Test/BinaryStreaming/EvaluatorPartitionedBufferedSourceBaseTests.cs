@@ -54,7 +54,7 @@ namespace Novartment.Base.Test
 		}
 
 		// считает содержимым одной части байты >=100, при этом идущие следом байты <100 являются разделителем частей
-		public class OneHundredEvaluatorBufferedSource : EvaluatorPartitionedBufferedSourceBase
+		internal class OneHundredEvaluatorBufferedSource : EvaluatorPartitionedBufferedSourceBase
 		{
 			private readonly IBufferedSource _source;
 			private int _epilogueSize = -1;

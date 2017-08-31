@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Data;
-using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 
 namespace Novartment.Base.Data
@@ -47,10 +46,6 @@ namespace Novartment.Base.Data
 		/// Получает значение и тип параметра в ограничениях БД.
 		/// </summary>
 		/// <returns>Значение и тип пригодные для БД.</returns>
-		[SuppressMessage (
-			"Microsoft.Design",
-			"CA1024:UsePropertiesWhereAppropriate",
-			Justification = "The method performs a time-consuming operation and performs a conversion.")]
 		public DbValue GetDbValue ()
 		{
 			if ((this.Value == null) || (this.Value == DBNull.Value))
@@ -73,10 +68,6 @@ namespace Novartment.Base.Data
 			return GetDbValueByTypeName (type.FullName);
 		}
 
-		[SuppressMessage (
-			"Microsoft.Maintainability",
-			"CA1502:AvoidExcessiveComplexity",
-			Justification = "Method not too complex.")]
 		private DbValue GetDbValueByTypeName (string typeName)
 		{
 			object dbValue;

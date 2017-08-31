@@ -17,6 +17,7 @@ namespace Novartment.Base.Net
 			Func<string, string, Task<object>> clientAuthenticator)
 		{
 			this.ServerCertificate = serverCertificate;
+			this.ClientCertificateRequired = clientCertificateRequired;
 			this.ClientAuthenticator = clientAuthenticator;
 		}
 

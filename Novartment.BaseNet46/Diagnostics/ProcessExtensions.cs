@@ -1,7 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Threading;
 using System.Threading.Tasks;
@@ -93,10 +92,6 @@ namespace Novartment.Base
 		/// <param name="process">Созданный, но не запущенный процесс.</param>
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
 		/// <returns>Задача, состояние которой отражает состояние запущенного процесса.</returns>
-		[SuppressMessage (
-			"Microsoft.Reliability",
-			"CA2000:Dispose objects before losing scope",
-			Justification = "'procData' can not be disposed here, it monitors running process and will be disposed when process exited.")]
 		public static Task StartAsync (this Process process, CancellationToken cancellationToken)
 		{
 			if (process == null)
@@ -124,10 +119,6 @@ namespace Novartment.Base
 		/// <param name="completionMutexName">Имя мьютекса, создание которого запущенным процессом будет означать успешное завершение задачи.</param>
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
 		/// <returns>Задача, состояние которой отражает состояние запущенного процесса.</returns>
-		[SuppressMessage (
-			"Microsoft.Reliability",
-			"CA2000:Dispose objects before losing scope",
-			Justification = "'procData' can not be disposed here, it monitors running process and will be disposed when process exited.")]
 		public static Task StartAsync (this Process process, string completionMutexName, CancellationToken cancellationToken)
 		{
 			if (process == null)
@@ -187,10 +178,6 @@ namespace Novartment.Base
 				_process.Exited -= ProcessExited;
 			}
 
-			[SuppressMessage (
-				"Microsoft.Reliability",
-				"CA2000:Dispose objects before losing scope",
-				Justification = "'timer' will be disposed by ReusableDisposable object holding it.")]
 			internal void Start ()
 			{
 				if (_cancellationToken.IsCancellationRequested)
@@ -233,7 +220,9 @@ namespace Novartment.Base
 				}
 			}
 
+#pragma warning disable CA1801 // Review unused parameters
 			private void TimerTick (bool notUsed)
+#pragma warning restore CA1801 // Review unused parameters
 			{
 				if (this.Task.IsCompleted)
 				{

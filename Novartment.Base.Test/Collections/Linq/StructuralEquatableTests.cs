@@ -1,4 +1,5 @@
-﻿using Xunit;
+﻿using System;
+using Xunit;
 
 namespace Novartment.Base.Collections.Linq.Test
 {
@@ -8,8 +9,8 @@ namespace Novartment.Base.Collections.Linq.Test
 		[Trait ("Category", "Collections.Linq")]
 		public void SequenceEqual ()
 		{
-			var a0 = new byte[0];
-			var a1 = new byte[0];
+			var a0 = Array.Empty<byte> ();
+			var a1 = Array.Empty<byte> ();
 			var a2 = new byte[] { 1, 2, 3 };
 			var a3 = new byte[] { 1, 3, 3 };
 			var a4 = new byte[] { 1, 2, 3, 4 };

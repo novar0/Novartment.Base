@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 
 namespace Novartment.Base.Collections.Immutable
@@ -14,11 +13,6 @@ namespace Novartment.Base.Collections.Immutable
 	/// <remarks>
 	/// В отличии от BinarySearchTree допускаются повторы (коллизии хэш-функции).
 	/// </remarks>
-	[SuppressMessage (
-		"Microsoft.Naming",
-		"CA1704:IdentifiersShouldBeSpelledCorrectly",
-		MessageId = "Avl",
-		Justification = "'AVL-tree' represents standard term.")]
 	public static class AvlBinarySearchHashTree
 	{
 		/// <summary>

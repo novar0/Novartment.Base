@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.CodeAnalysis;
 
 namespace Novartment.Base
 {
@@ -24,14 +23,11 @@ namespace Novartment.Base
 		/// </summary>
 		void Start ();
 
+#pragma warning disable CA1716 // Identifiers should not match keywords
 		/// <summary>
 		/// Останавливает таймер.
 		/// </summary>
-		[SuppressMessage (
-			"Microsoft.Naming",
-			"CA1716:IdentifiersShouldNotMatchKeywords",
-			MessageId = "Stop",
-			Justification = "No other name could be applied. All library timers have method 'Stop()'.")]
 		void Stop ();
+#pragma warning restore CA1716 // Identifiers should not match keywords
 	}
 }

@@ -2,9 +2,9 @@
 
 namespace Novartment.Base.Sample
 {
-	public class Program
+	public static class Program
 	{
-		public static void Main (string[] args)
+		public static void Main ()
 		{
 			SmtpSamples.SendOneMessageAsync (CancellationToken.None).Wait ();
 			SmtpSamples.StartSmtpServer ().Wait ();

@@ -25,7 +25,7 @@ namespace Novartment.Base.Test
 		[Trait ("Category", "Text.StringExtensions")]
 		public void AppendSeparator ()
 		{
-			var src = new string[0];
+			var src = Array.Empty<string> ();
 			var result = src.AppendSeparator (' ');
 			Assert.Equal (0, result.Count);
 

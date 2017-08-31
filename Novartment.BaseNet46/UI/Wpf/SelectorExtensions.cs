@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Specialized;
 using System.ComponentModel;
-using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Windows.Controls.Primitives;
 using System.Windows.Data;
@@ -18,10 +17,6 @@ namespace Novartment.Base.UI.Wpf
 		/// "всегда что нибудь выбрано".
 		/// </summary>
 		/// <param name="selector">Элемент управления типа селектор, для которого будет установлен режим.</param>
-		[SuppressMessage (
-			"Microsoft.Design",
-			"CA1011:ConsiderPassingBaseTypesAsParameters",
-			Justification = "Base type has no meaning here.")]
 		public static void TrySetModeAlwaysSelected (this Selector selector)
 		{
 			if (selector == null)
@@ -43,10 +38,6 @@ namespace Novartment.Base.UI.Wpf
 		/// "всегда что нибудь выбрано".
 		/// </summary>
 		/// <param name="selector">Элемент управления типа селектор, для которого будет снят режим.</param>
-		[SuppressMessage (
-			"Microsoft.Design",
-			"CA1011:ConsiderPassingBaseTypesAsParameters",
-			Justification = "Base type has no meaning here.")]
 		public static void TryResetModeAlwaysSelected (this Selector selector)
 		{
 			if (selector == null)

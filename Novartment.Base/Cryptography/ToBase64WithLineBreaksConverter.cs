@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Security.Cryptography;
 using Novartment.Base.Text;
@@ -18,10 +17,6 @@ namespace Novartment.Base
 	public class ToBase64WithLineBreaksConverter :
 		ICryptoTransform
 	{
-		[SuppressMessage (
-			"Microsoft.Performance",
-			"CA1802:UseLiteralsWhereAppropriate",
-			Justification = "No performance gain could be achieved.")]
 		private static readonly int _maxLineLen = 76;
 		private readonly char[] _outArray = new char[_maxLineLen + 2];
 

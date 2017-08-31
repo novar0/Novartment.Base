@@ -7,6 +7,7 @@
     <PackageId>Novartment.BaseNet46.Test</PackageId>
     <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
 		<CodeAnalysisRuleSet>StyleCop.Analyzers.ruleset</CodeAnalysisRuleSet>
+		<Features>IOperation</Features>
 	</PropertyGroup>
 
   <ItemGroup>

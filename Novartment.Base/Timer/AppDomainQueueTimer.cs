@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Threading;
 
@@ -109,14 +108,6 @@ namespace Novartment.Base
 		/// <summary>
 		/// Освобождает занимаемые объектом ресурсы.
 		/// </summary>
-		[SuppressMessage (
-			"Microsoft.Usage",
-			"CA1816:CallGCSuppressFinalizeCorrectly",
-			Justification = "There is no meaning to introduce a finalizer in derived type.")]
-		[SuppressMessage (
-			"Microsoft.Design",
-			"CA1063:ImplementIDisposableCorrectly",
-			Justification = "Implemented correctly.")]
 		public override void Dispose ()
 		{
 			lock (_integrityLocker)

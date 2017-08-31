@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Threading;
 using Novartment.Base.BinaryStreaming;
@@ -10,10 +9,6 @@ namespace Novartment.Base.Net
 	/// <summary>
 	/// Установленное TCP-подключение, отслеживающее полное время и время простоя.
 	/// </summary>
-	[SuppressMessage (
-		"Microsoft.Design",
-		"CA1063:ImplementIDisposableCorrectly",
-		Justification = "Implemented correctly.")]
 	public class BinaryTcpConnection :
 		ITcpConnection,
 		IDisposable
@@ -99,14 +94,6 @@ namespace Novartment.Base.Net
 		/// <summary>
 		/// Освобождает все используемые ресурсы.
 		/// </summary>
-		[SuppressMessage (
-			"Microsoft.Usage",
-			"CA1816:CallGCSuppressFinalizeCorrectly",
-			Justification = "There is no meaning to introduce a finalizer in derived type.")]
-		[SuppressMessage (
-			"Microsoft.Design",
-			"CA1063:ImplementIDisposableCorrectly",
-			Justification = "Implemented correctly.")]
 		public void Dispose ()
 		{
 			OnDisposing ();

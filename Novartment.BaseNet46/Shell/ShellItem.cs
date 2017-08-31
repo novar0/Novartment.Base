@@ -2,7 +2,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.IO;
 using System.Runtime.InteropServices;
@@ -508,15 +507,7 @@ namespace Novartment.Base.Shell
 		internal class ShellItemsEnumerable :
 			IEnumerable<IShellItem>
 		{
-			[SuppressMessage (
-				"Microsoft.Performance",
-				"CA1802:UseLiteralsWhereAppropriate",
-				Justification = "No performance gain could be achieved.")]
 			private static readonly string _GuidIEnumShellItems = "70629033-e363-4a28-a567-0db78006e6d7";
-			[SuppressMessage (
-				"Microsoft.Performance",
-				"CA1802:UseLiteralsWhereAppropriate",
-				Justification = "No performance gain could be achieved.")]
 			private static readonly string _GuidEnumItemsHandler = "94f60519-2850-4924-aa5a-d15e84868039"; // BHID_EnumItems
 			private readonly IShellItem _nativeShellItem;
 

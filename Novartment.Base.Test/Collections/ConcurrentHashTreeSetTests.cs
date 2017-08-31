@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using Novartment.Base.Collections;
 using Xunit;
 using static System.Linq.Enumerable;
@@ -158,7 +159,7 @@ namespace Novartment.Base.Test
 		}
 
 		// Обёртка для int имеющая высокую вероятность коллизии хэша.
-		public class MockStr : IEquatable<MockStr>
+		internal class MockStr : IEquatable<MockStr>
 		{
 			private double _hashMod;
 
@@ -172,7 +173,7 @@ namespace Novartment.Base.Test
 
 			public override int GetHashCode () => (int)((double)Value * _hashMod); // высокая вероятность коллизии
 
-			public override string ToString () => string.Format ("{0}, {1}", Value, GetHashCode ());
+			public override string ToString () => string.Format (CultureInfo.InvariantCulture, "{0}, {1}", Value, GetHashCode ());
 
 			public bool Equals (MockStr other)
 			{
@@ -181,6 +182,11 @@ namespace Novartment.Base.Test
 					object.ReferenceEquals (other, null) ?
 						false :
 						(this.Value == other.Value);
+			}
+
+			public override bool Equals (object obj)
+			{
+				return Equals (obj as MockStr);
 			}
 		}
 	}

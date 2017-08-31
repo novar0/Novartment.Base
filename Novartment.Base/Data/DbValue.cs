@@ -2,20 +2,22 @@
 
 namespace Novartment.Base.Data
 {
+#pragma warning disable CA1815 // Override equals and operator equals on value types
 	/// <summary>
 	/// Значение и его тип для обмена с БД.
 	/// </summary>
 	public struct DbValue
+#pragma warning restore CA1815 // Override equals and operator equals on value types
 	{
 		/// <summary>
 		/// Инициализирует новый экземпляр класса DbValue с указанным значением и типом.
 		/// </summary>
 		/// <param name="value">Значение.</param>
-		/// <param name="type">Тип значения.</param>
-		public DbValue (object value, DbType type)
+		/// <param name="dbType">Тип значения.</param>
+		public DbValue (object value, DbType dbType)
 		{
 			this.Value = value;
-			this.Type = type;
+			this.DbType = dbType;
 		}
 
 		/// <summary>
@@ -26,17 +28,17 @@ namespace Novartment.Base.Data
 		/// <summary>
 		/// Тип значения.
 		/// </summary>
-		public DbType Type { get; }
+		public DbType DbType { get; }
 
 		/// <summary>
 		/// Деконструирует данные.
 		/// </summary>
 		/// <param name="value">Получает значение.</param>
-		/// <param name="type">Получает тип значения.</param>
-		public void Deconstruct (out object value, out DbType type)
+		/// <param name="dbType">Получает тип значения.</param>
+		public void Deconstruct (out object value, out DbType dbType)
 		{
 			value = this.Value;
-			type = this.Type;
+			dbType = this.DbType;
 		}
 	}
 }

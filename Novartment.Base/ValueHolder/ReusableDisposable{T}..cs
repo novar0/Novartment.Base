@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 
 namespace Novartment.Base
@@ -10,10 +9,6 @@ namespace Novartment.Base
 	/// При смене значения, старое значение освобождается.
 	/// </summary>
 	/// <typeparam name="T">Тип значения-начинки, должен быть ссылочным и реализовать System.IDisposable.</typeparam>
-	[SuppressMessage (
-		"Microsoft.Design",
-		"CA1063:ImplementIDisposableCorrectly",
-		Justification = "Implemented correctly.")]
 	public class ReusableDisposable<T> :
 		IDisposable,
 		IValueHolder<T>
@@ -47,14 +42,6 @@ namespace Novartment.Base
 		}
 
 		/// <summary>Производит освобождение (вызов Dispose()) хранимого объекта.</summary>
-		[SuppressMessage (
-			"Microsoft.Usage",
-			"CA1816:CallGCSuppressFinalizeCorrectly",
-			Justification = "There is no meaning to introduce a finalizer in derived type.")]
-		[SuppressMessage (
-			"Microsoft.Design",
-			"CA1063:ImplementIDisposableCorrectly",
-			Justification = "Implemented correctly.")]
 		public void Dispose ()
 		{
 			Value = null;

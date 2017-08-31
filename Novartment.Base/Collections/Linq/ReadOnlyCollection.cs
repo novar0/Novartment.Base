@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Linq;
 
@@ -10,10 +9,6 @@ namespace Novartment.Base.Collections.Linq
 	/// <summary>
 	/// Методы расширения к коллекциям.
 	/// </summary>
-	[SuppressMessage (
-		"Microsoft.Naming",
-		"CA1711:IdentifiersShouldNotHaveIncorrectSuffix",
-		Justification = "Analogous to Enumerable.")]
 	public static class ReadOnlyCollection
 	{
 		/// <summary>
@@ -58,11 +53,6 @@ namespace Novartment.Base.Collections.Linq
 		/// <typeparam name="TSource">Тип элементов коллекции.</typeparam>
 		/// <param name="source">Коллекция, элементы которой требуется подсчитать.</param>
 		/// <returns>Число элементов в коллекции.</returns>
-		[SuppressMessage (
-			"Microsoft.Naming",
-			"CA1720:IdentifiersShouldNotContainTypeNames",
-			MessageId = "long",
-			Justification = "Analogous to Enumerable.LongCount().")]
 		public static long LongCount<TSource> (this IReadOnlyCollection<TSource> source)
 		{
 			if (source == null)
@@ -84,10 +74,6 @@ namespace Novartment.Base.Collections.Linq
 		/// <param name="defaultValue">Значение, возвращаемое в случае пустой коллекции.</param>
 		/// <returns>Коллекция, содержащая значение defaultValue, если коллекция source пуста;
 		/// в противном случае возвращается source.</returns>
-		[SuppressMessage (
-			"Microsoft.Design",
-			"CA1026:DefaultParametersShouldNotBeUsed",
-			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
 		public static IReadOnlyCollection<TSource> DefaultIfEmpty<TSource> (this IReadOnlyCollection<TSource> source, TSource defaultValue = default (TSource))
 		{
 			if (source == null)
@@ -258,10 +244,6 @@ namespace Novartment.Base.Collections.Linq
 		/// <param name="keySelector">Функция, извлекающая ключ из элемента.</param>
 		/// <param name="comparer">Компаратор, используемый для сравнения ключей.</param>
 		/// <returns>Коллекция, элементы которого отсортированы по ключу.</returns>
-		[SuppressMessage (
-			"Microsoft.Design",
-			"CA1026:DefaultParametersShouldNotBeUsed",
-			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
 		public static IOrderedReadOnlyCollection<TSource> OrderBy<TSource, TKey> (
 			this IReadOnlyCollection<TSource> source,
 			Func<TSource, TKey> keySelector,
@@ -291,10 +273,6 @@ namespace Novartment.Base.Collections.Linq
 		/// <param name="keySelector">Функция, извлекающая ключ из элемента.</param>
 		/// <param name="comparer">Компаратор, используемый для сравнения ключей.</param>
 		/// <returns>Коллекция, элементы которого отсортированы по ключу в порядке убывания.</returns>
-		[SuppressMessage (
-			"Microsoft.Design",
-			"CA1026:DefaultParametersShouldNotBeUsed",
-			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
 		public static IOrderedReadOnlyCollection<TSource> OrderByDescending<TSource, TKey> (
 			this IReadOnlyCollection<TSource> source,
 			Func<TSource, TKey> keySelector,
@@ -324,10 +302,6 @@ namespace Novartment.Base.Collections.Linq
 		/// <param name="keySelector">Функция, извлекающая ключ из каждого элемента.</param>
 		/// <param name="comparer">Компаратор, используемый для сравнения ключей.</param>
 		/// <returns>Коллекция, элементы которой отсортированы по ключу.</returns>
-		[SuppressMessage (
-			"Microsoft.Design",
-			"CA1026:DefaultParametersShouldNotBeUsed",
-			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
 		public static IOrderedReadOnlyCollection<TSource> ThenBy<TSource, TKey> (
 			this IOrderedReadOnlyCollection<TSource> source,
 			Func<TSource, TKey> keySelector,
@@ -357,10 +331,6 @@ namespace Novartment.Base.Collections.Linq
 		/// <param name="keySelector">Функция, извлекающая ключ из каждого элемента.</param>
 		/// <param name="comparer">Компаратор, используемый для сравнения ключей.</param>
 		/// <returns>Коллекция, элементы которой отсортированы по ключу в порядке убывания.</returns>
-		[SuppressMessage (
-			"Microsoft.Design",
-			"CA1026:DefaultParametersShouldNotBeUsed",
-			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
 		public static IOrderedReadOnlyCollection<TSource> ThenByDescending<TSource, TKey> (
 			this IOrderedReadOnlyCollection<TSource> source,
 			Func<TSource, TKey> keySelector,

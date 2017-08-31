@@ -1,7 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Configuration;
-using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.IO;
 using System.Threading;
@@ -15,10 +14,6 @@ namespace Novartment.Base
 	/// </summary>
 	public class FailsafeApplicationSettingsBase : ApplicationSettingsBase
 	{
-		[SuppressMessage (
-			"Microsoft.Performance",
-			"CA1802:UseLiteralsWhereAppropriate",
-			Justification = "No performance gain could be achieved.")]
 		private static readonly string _SettingsAreDefaultString = "SettingsAreDefault5F2D9E7B15D04090BFFBC4396EE7ED7D";
 		private bool _saveOnAnyChange = true;
 		private int _integrityChecked = 0;
@@ -55,10 +50,6 @@ namespace Novartment.Base
 		/// <remarks>
 		/// Не предназначено для внешнего использования.
 		/// </remarks>
-		[SuppressMessage (
-			"Microsoft.Naming",
-			"CA1709:IdentifiersShouldBeCasedCorrectly",
-			Justification = "This property is not intended to be public and marked as 'public' for technically reasons.")]
 		[UserScopedSetting]
 		[DefaultSettingValue ("True")]
 		public bool SettingsAreDefault5F2D9E7B15D04090BFFBC4396EE7ED7D
@@ -92,7 +83,9 @@ namespace Novartment.Base
 			{
 				if (propertyName == null)
 				{
+#pragma warning disable CA1065 // Do not raise exceptions in unexpected locations
 					throw new ArgumentNullException (nameof (propertyName));
+#pragma warning restore CA1065 // Do not raise exceptions in unexpected locations
 				}
 
 				Contract.EndContractBlock ();

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Threading;
 using System.Threading.Tasks;
@@ -9,39 +8,34 @@ using Novartment.Base.Collections;
 
 namespace Novartment.Base.Media
 {
-/*
-типичная структура mkv-сегмента
+	/*
+	типичная структура mkv-сегмента
 
-[11][4D][9B][74]	SeekHead
-[EC]				Void
-[15][49][A9][66]	Info
-[16][54][AE][6B]	Tracks
-[EC]				Void
-[10][43][A7][70]	Chapters
-[EC]				Void
-[1F][43][B6][75]	Cluster
-...
-[1F][43][B6][75]	Cluster
-[1C][53][BB][6B]	Cues
-[11][4D][9B][74]	SeekHead
-[EC]				Void
-[15][49][A9][66]	Info
-[16][54][AE][6B]	Tracks
-[EC]				Void
-[1F][43][B6][75]	Cluster
-...
-[1F][43][B6][75]	Cluster-
-[1C][53][BB][6B]	Cues
- */
+	[11][4D][9B][74]	SeekHead
+	[EC]				Void
+	[15][49][A9][66]	Info
+	[16][54][AE][6B]	Tracks
+	[EC]				Void
+	[10][43][A7][70]	Chapters
+	[EC]				Void
+	[1F][43][B6][75]	Cluster
+	...
+	[1F][43][B6][75]	Cluster
+	[1C][53][BB][6B]	Cues
+	[11][4D][9B][74]	SeekHead
+	[EC]				Void
+	[15][49][A9][66]	Info
+	[16][54][AE][6B]	Tracks
+	[EC]				Void
+	[1F][43][B6][75]	Cluster
+	...
+	[1F][43][B6][75]	Cluster-
+	[1C][53][BB][6B]	Cues
+	 */
 
 	/// <summary>
 	/// Суммарная информация о сегменте matroska-файла.
 	/// </summary>
-	[SuppressMessage (
-		"Microsoft.Naming",
-		"CA1704:IdentifiersShouldBeSpelledCorrectly",
-		MessageId = "Matroska",
-		Justification = "'Matroska' represents standard term.")]
 	[DebuggerDisplay ("{DebuggerDisplay,nq}")]
 	[CLSCompliant (false)]
 	public class MatroskaSegmentInfo
@@ -102,10 +96,6 @@ namespace Novartment.Base.Media
 		public IReadOnlyList<MatroskaAttachedFileInfo> Attachments { get; }
 
 		[DebuggerBrowsable (DebuggerBrowsableState.Never)]
-		[SuppressMessage (
-			"Microsoft.Performance",
-			"CA1811:AvoidUncalledPrivateCode",
-			Justification = "Used in DebuggerDisplay attribute.")]
 		private string DebuggerDisplay => FormattableString.Invariant ($"Date = {this.Date}, Duration = {this.Duration}, Tracks = {this.Tracks.Count}, Attachments = {this.Attachments.Count}");
 
 		/// <summary>
@@ -118,7 +108,9 @@ namespace Novartment.Base.Media
 		/// суммарная информация о сегменте matroska-файла на основе указанной коллекции EBML-элементов.</returns>
 		public static Task<MatroskaSegmentInfo> ParseAsync (
 			EbmlElementCollectionEnumerator source,
+#pragma warning disable CA1801 // Review unused parameters
 			CancellationToken cancellationToken)
+#pragma warning restore CA1801 // Review unused parameters
 		{
 			if (source == null)
 			{

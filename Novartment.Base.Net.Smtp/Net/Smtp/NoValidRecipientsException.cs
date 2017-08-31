@@ -1,24 +1,34 @@
 ﻿using System;
-using System.Diagnostics.CodeAnalysis;
 
 namespace Novartment.Base.Net.Smtp
 {
 	/// <summary>
 	/// Отсутствуют подтверждённые получатели.
 	/// </summary>
-	[SuppressMessage (
-		"Microsoft.Usage",
-		"CA2237:MarkISerializableTypesWithSerializable",
-		Justification = "In portable projects this class would not be ISerializable")]
-	[SuppressMessage (
-		"Microsoft.Design",
-		"CA1032:ImplementStandardExceptionConstructors",
-		Justification = "Constructor with custom message not allowed.")]
 	public class NoValidRecipientsException : InvalidOperationException
 	{
 		/// <summary>Инициализирует новый экземпляр класса NoValidRecipientsException.</summary>
 		public NoValidRecipientsException ()
 			: base ("No valid recipients.")
+		{
+		}
+
+		/// <summary>
+		/// Инициализирует новый экземпляр класса NoValidRecipientsException.
+		/// </summary>
+		/// <param name="message">Сообщение ошибки.</param>
+		public NoValidRecipientsException (string message)
+			: base (message)
+		{
+		}
+
+		/// <summary>
+		/// Инициализирует новый экземпляр класса NoValidRecipientsException.
+		/// </summary>
+		/// <param name="message">Сообщение ошибки.</param>
+		/// <param name="innerException">Исключение, приведшее к создаваемому исключению, или null-ссылка если не указано.</param>
+		public NoValidRecipientsException (string message, Exception innerException)
+			: base (message, innerException)
 		{
 		}
 	}

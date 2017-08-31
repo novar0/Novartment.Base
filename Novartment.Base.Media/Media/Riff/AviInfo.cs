@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,16 +12,6 @@ namespace Novartment.Base.Media
 	/// <summary>
 	/// Суммарная информация об AVI-файле.
 	/// </summary>
-	[SuppressMessage (
-		"Microsoft.Naming",
-		"CA1704:IdentifiersShouldBeSpelledCorrectly",
-		MessageId = "Avi",
-		Justification = "'AVI' represents standard term.")]
-	[SuppressMessage (
-		"Microsoft.Naming",
-		"CA1704:IdentifiersShouldBeSpelledCorrectly",
-		MessageId = "Avi",
-		Justification = "'AVI' represents standard term.")]
 	[CLSCompliant (false)]
 	[DebuggerDisplay ("{DebuggerDisplay,nq}")]
 	public class AviInfo
@@ -76,10 +65,6 @@ namespace Novartment.Base.Media
 		public IReadOnlyList<AviStreamInfo> Streams { get; }
 
 		[DebuggerBrowsable (DebuggerBrowsableState.Never)]
-		[SuppressMessage (
-			"Microsoft.Performance",
-			"CA1811:AvoidUncalledPrivateCode",
-			Justification = "Used in DebuggerDisplay attribute.")]
 		private string DebuggerDisplay => FormattableString.Invariant ($"Frames = {this.TotalFrames}, Width = {this.Width}, Height = {this.Height}, Streams = {this.Streams.Count}");
 
 		/// <summary>
@@ -88,7 +73,11 @@ namespace Novartment.Base.Media
 		/// <param name="source">Буфер данных содержащий суммарные данные об AVI-файле.</param>
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
 		/// <returns>Суммарные данные об AVI-файле, считанные из указанного буфера.</returns>
-		public static Task<AviInfo> ParseAsync (IBufferedSource source, CancellationToken cancellationToken)
+		public static Task<AviInfo> ParseAsync (
+			IBufferedSource source,
+#pragma warning disable CA1801 // Review unused parameters
+			CancellationToken cancellationToken)
+#pragma warning restore CA1801 // Review unused parameters
 		{
 			if (source == null)
 			{

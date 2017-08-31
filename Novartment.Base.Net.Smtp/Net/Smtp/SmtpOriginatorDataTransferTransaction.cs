@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Threading;
 using System.Threading.Tasks;
@@ -36,7 +35,9 @@ namespace Novartment.Base.Net.Smtp
 			_logger = logger;
 		}
 
+#pragma warning disable CA1717 // Only FlagsAttribute enums should have plural names
 		private enum TransactionStatus
+#pragma warning restore CA1717 // Only FlagsAttribute enums should have plural names
 		{
 			NotStarted = 0,
 			Started = 1,

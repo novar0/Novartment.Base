@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 
 namespace Novartment.Base.UI
@@ -21,10 +20,6 @@ namespace Novartment.Base.UI
 		/// <param name="execute">Делегат, который будет выполнен при выполнении команды.</param>
 		/// <param name="canExecute">Делегат, который возвращает готовность команды.
 		/// Значение по умолчанию null означает что команда всегда готова к выполнению.</param>
-		[SuppressMessage (
-			"Microsoft.Design",
-			"CA1026:DefaultParametersShouldNotBeUsed",
-			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
 		public ChainedRelayCommand (Action execute, Func<bool> canExecute = null)
 			: base (null)
 		{
@@ -48,10 +43,6 @@ namespace Novartment.Base.UI
 		/// <param name="execute">Делегат, который будет выполнен при выполнении команды.</param>
 		/// <param name="canExecute">Делегат, который возвращает готовность команды.
 		/// Значение по умолчанию null означает что команда всегда готова к выполнению.</param>
-		[SuppressMessage (
-			"Microsoft.Design",
-			"CA1026:DefaultParametersShouldNotBeUsed",
-			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
 		public ChainedRelayCommand (CommandChain commandChain, Action execute, Func<bool> canExecute = null)
 			: base (commandChain)
 		{

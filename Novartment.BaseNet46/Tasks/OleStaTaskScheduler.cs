@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -18,10 +17,6 @@ namespace Novartment.Base.Tasks
 	/// <remarks>
 	/// Такая среда выполнения требуется для всех Win32 Ole*-функций и многих COM-объектах.
 	/// </remarks>
-	[SuppressMessage (
-		"Microsoft.Design",
-		"CA1063:ImplementIDisposableCorrectly",
-		Justification = "Implemented correctly.")]
 	public class OleStaTaskScheduler : TaskScheduler,
 		IDisposable
 	{
@@ -65,14 +60,6 @@ namespace Novartment.Base.Tasks
 		/// Освобождает планировщик и останавливает приём новых задач на выполение.
 		/// Метод блокиуется до тех пор, пока все потоки не закончат выполнение.
 		/// </summary>
-		[SuppressMessage (
-			"Microsoft.Usage",
-			"CA1816:CallGCSuppressFinalizeCorrectly",
-			Justification = "There is no meaning to introduce a finalizer in derived type.")]
-		[SuppressMessage (
-			"Microsoft.Design",
-			"CA1063:ImplementIDisposableCorrectly",
-			Justification = "Implemented correctly.")]
 		public void Dispose ()
 		{
 			var oldValue = Interlocked.Exchange (ref _tasks, null);

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 
 namespace Novartment.Base
 {
@@ -60,10 +59,6 @@ namespace Novartment.Base
 		/// <param name="detailed">Укажите true чтобы получить детальное многостроковое представлени, или false чтобы получить однострочное краткое представление.</param>
 		/// <param name="tracePatternToHide">Строка-образец, который в трассировке стэка будет заменён на многоточие.</param>
 		/// <returns>Строка подробностей об исключении.</returns>
-		[SuppressMessage (
-			"Microsoft.Design",
-			"CA1026:DefaultParametersShouldNotBeUsed",
-			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
 		public override string ToString (bool detailed, string tracePatternToHide = null)
 		{
 			var nestingInfo = ((this.NestingLevel > 0) || ((InnerExceptions != null) && (InnerExceptions.Count > 0))) ?

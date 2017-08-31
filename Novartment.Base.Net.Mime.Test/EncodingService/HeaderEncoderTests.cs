@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System;
+using System.Text;
 using System.Threading;
 using Xunit;
 
@@ -226,7 +227,7 @@ namespace Novartment.Base.Net.Mime.Test
 		[Trait ("Category", "Mime.HeaderEncoder")]
 		public void SaveHeader ()
 		{
-			var src = new HeaderFieldBuilder[0];
+			var src = Array.Empty<HeaderFieldBuilder> ();
 			var bytes = new BinaryDestinationMock (8192);
 			HeaderEncoder.SaveHeaderAsync (src, bytes, CancellationToken.None).Wait ();
 			Assert.Equal (0, bytes.Count);

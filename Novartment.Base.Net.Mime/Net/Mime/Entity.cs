@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Globalization;
 using System.Threading;
@@ -57,10 +56,6 @@ namespace Novartment.Base.Net.Mime
 		/// Инициализирует новый экземпляр класса Entity в виде пустой заглушки,
 		/// пригодной только для последующей загрузки из внешних источников.
 		/// </summary>
-		[SuppressMessage (
-			"Microsoft.Design",
-			"CA1026:DefaultParametersShouldNotBeUsed",
-			Justification = "Parameters have clear right 'default' values and there is no plausible reason why the default might need to change.")]
 		public Entity ()
 		{
 			_type = ContentMediaType.Unspecified;
@@ -103,11 +98,11 @@ namespace Novartment.Base.Net.Mime
 
 		/// <summary>Получает или устанавливает медиатип содержимого. Возвращает null если тело сущности ещ­­­ё не создано.
 		/// Соответствует значению поля заголовка "Content-Type" определённому в RFC 2045 часть 5.</summary>
-		public ContentMediaType Type => _type;
+		public ContentMediaType MediaType => _type;
 
 		/// <summary>Получает или устанавливает медиа подтип содержимого. Возвращает null если тело сущности ещ­­­ё не создано.
 		/// Соответствует значению поля заголовка "Content-Type" определённому в RFC 2045 часть 5.</summary>
-		public string Subtype => _subtype;
+		public string MediaSubtype => _subtype;
 
 		/// <summary>Получает или устанавливает расположение в котором предназначено находится содержимое.
 		/// Соответствует значению поля заголовка "Content-Disposition" определённому в RFC 2183.</summary>
@@ -217,40 +212,24 @@ namespace Novartment.Base.Net.Mime
 		[DebuggerDisplay ("{ExtraFieldsDebuggerDisplay,nq}")]
 		public IAdjustableList<HeaderField> ExtraFields { get; } = new ArrayList<HeaderField> ();
 
-		[SuppressMessage (
-			"Microsoft.Performance",
-			"CA1811:AvoidUncalledPrivateCode",
-			Justification = "Used in DebuggerDisplay attribute.")]
 		[DebuggerBrowsable (DebuggerBrowsableState.Never)]
 		private string LanguagesDebuggerDisplay => (this.Languages.Count < 1) ? "<empty>" :
 			(this.Languages.Count == 1) ?
 				this.Languages[0] :
 				FormattableString.Invariant ($"Count={this.Languages.Count}: {this.Languages[0]} ...");
 
-		[SuppressMessage (
-			"Microsoft.Performance",
-			"CA1811:AvoidUncalledPrivateCode",
-			Justification = "Used in DebuggerDisplay attribute.")]
 		[DebuggerBrowsable (DebuggerBrowsableState.Never)]
 		private string AlternativesDebuggerDisplay => (this.Alternatives.Count < 1) ? "<empty>" :
 			(this.Alternatives.Count == 1) ?
 				this.Alternatives[0] :
 				FormattableString.Invariant ($"Count={this.Alternatives.Count}: {this.Alternatives[0]} ...");
 
-		[SuppressMessage (
-			"Microsoft.Performance",
-			"CA1811:AvoidUncalledPrivateCode",
-			Justification = "Used in DebuggerDisplay attribute.")]
 		[DebuggerBrowsable (DebuggerBrowsableState.Never)]
 		private string ExtraFieldsDebuggerDisplay => (this.ExtraFields.Count < 1) ? "<empty>" :
 			(this.ExtraFields.Count == 1) ?
 				this.ExtraFields[0].ToString () :
 				FormattableString.Invariant ($"Count={this.ExtraFields.Count}: {this.ExtraFields[0]} ...");
 
-		[SuppressMessage (
-			"Microsoft.Performance",
-			"CA1811:AvoidUncalledPrivateCode",
-			Justification = "Used in DebuggerDisplay attribute.")]
 		[DebuggerBrowsable (DebuggerBrowsableState.Never)]
 		private string DebuggerDisplay => FormattableString.Invariant ($"Type: {_type}/{_subtype}, Encoding: {this.TransferEncoding}");
 
@@ -266,9 +245,11 @@ namespace Novartment.Base.Net.Mime
 		public Task LoadAsync (
 			IBufferedSource source,
 			Func<EssentialContentProperties, IEntityBody> bodyFactory,
+#pragma warning disable CA1801 // Review unused parameters
 			ContentMediaType defaultMediaType,
 			string defaultMediaSubtype,
 			CancellationToken cancellationToken)
+#pragma warning restore CA1801 // Review unused parameters
 		{
 			if (source == null)
 			{
@@ -477,8 +458,8 @@ namespace Novartment.Base.Net.Mime
 				// According to RFC 2045 part 6.4:
 				// Any entity with an unrecognized Content-Transfer-Encoding must be treated as if it has a Content-Type of "application/octet-stream",
 				// regardless of what the Content-Type header field actually says.
-				contentProperties.Type = ContentMediaType.Application;
-				contentProperties.Subtype = ApplicationMediaSubtypeNames.OctetStream;
+				contentProperties.MediaType = ContentMediaType.Application;
+				contentProperties.MediaSubtype = ApplicationMediaSubtypeNames.OctetStream;
 				contentProperties.TransferEncoding = ContentTransferEncoding.Binary;
 				contentProperties.Parameters.Clear ();
 			}
@@ -561,10 +542,10 @@ namespace Novartment.Base.Net.Mime
 			// default 'Content-type: text/plain; charset=us-ascii' is assumed if no Content-Type header field is specified.
 			// RFC 2046 часть 5.1.5:
 			// in a digest, the default Content-Type value for a body part is changed from "text/plain" to "message/rfc822".
-			if (contentProperties.Type == ContentMediaType.Unspecified)
+			if (contentProperties.MediaType == ContentMediaType.Unspecified)
 			{
-				contentProperties.Type = defaultMediaType;
-				contentProperties.Subtype = defaultMediaSubtype;
+				contentProperties.MediaType = defaultMediaType;
+				contentProperties.MediaSubtype = defaultMediaSubtype;
 			}
 
 			// RFC 2045 part 6.1:
@@ -628,11 +609,11 @@ namespace Novartment.Base.Net.Mime
 					}
 				}
 
-				if (contentProperties.Type == ContentMediaType.Unspecified)
+				if (contentProperties.MediaType == ContentMediaType.Unspecified)
 				{
 					// значения могут быть уже установлены в другом месте
-					contentProperties.Type = _type;
-					contentProperties.Subtype = _subtype;
+					contentProperties.MediaType = _type;
+					contentProperties.MediaSubtype = _subtype;
 				}
 
 				fieldEntry.IsMarked = true;
@@ -642,11 +623,11 @@ namespace Novartment.Base.Net.Mime
 				// According to RFC 2045 part 5.2:
 				// default 'Content-type: text/plain; charset=us-ascii' is assumed if no Content-Type header field is specified.
 				// It is also recommend that this default be assumed when a syntactically invalid Content-Type header field is encountered.
-				if (contentProperties.Type == ContentMediaType.Unspecified)
+				if (contentProperties.MediaType == ContentMediaType.Unspecified)
 				{
 					// значения могут быть уже установлены в другом месте
-					contentProperties.Type = DefaultType;
-					contentProperties.Subtype = DefaultSubtype;
+					contentProperties.MediaType = DefaultType;
+					contentProperties.MediaSubtype = DefaultSubtype;
 					contentProperties.Parameters.Clear ();
 				}
 			}

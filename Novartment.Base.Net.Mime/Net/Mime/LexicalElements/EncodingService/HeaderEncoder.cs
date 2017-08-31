@@ -468,7 +468,9 @@ namespace Novartment.Base.Net.Mime
 		internal static Task<int> SaveHeaderAsync (
 			IReadOnlyCollection<HeaderFieldBuilder> fields,
 			IBinaryDestination destination,
+#pragma warning disable CA1801 // Review unused parameters
 			CancellationToken cancellationToken)
+#pragma warning restore CA1801 // Review unused parameters
 		{
 			if (fields == null)
 			{

@@ -58,8 +58,8 @@ namespace Novartment.Base
 
 			Contract.EndContractBlock ();
 
-			var hash = HashCore (source, 0, source.Length, 144);
-			return HashFinal (hash, (uint)source.Length);
+			var hash = HashCoreCourse (source, 0, source.Length, 144);
+			return HashFinalCourse (hash, (uint)source.Length);
 		}
 
 		/// <summary>
@@ -75,8 +75,8 @@ namespace Novartment.Base
 				Array.Reverse (bytes);
 			}
 
-			var hash = HashCore (bytes, 0, bytes.Length, 144);
-			return HashFinal (hash, (uint)bytes.Length);
+			var hash = HashCoreCourse (bytes, 0, bytes.Length, 144);
+			return HashFinalCourse (hash, (uint)bytes.Length);
 		}
 
 		/// <summary>
@@ -95,8 +95,8 @@ namespace Novartment.Base
 
 			var bytes = Encoding.UTF8.GetBytes (source);
 
-			var hash = HashCore (bytes, 0, bytes.Length, 144);
-			return HashFinal (hash, (uint)bytes.Length);
+			var hash = HashCoreCourse (bytes, 0, bytes.Length, 144);
+			return HashFinalCourse (hash, (uint)bytes.Length);
 		}
 
 		/// <summary>
@@ -112,8 +112,8 @@ namespace Novartment.Base
 				Array.Reverse (bytes);
 			}
 
-			var hash = HashCore (bytes, 0, bytes.Length, 144);
-			return HashFinal (hash, (uint)bytes.Length);
+			var hash = HashCoreCourse (bytes, 0, bytes.Length, 144);
+			return HashFinalCourse (hash, (uint)bytes.Length);
 		}
 
 		/// <summary>
@@ -129,8 +129,8 @@ namespace Novartment.Base
 				Array.Reverse (bytes);
 			}
 
-			var hash = HashCore (bytes, 0, bytes.Length, 144);
-			return HashFinal (hash, (uint)bytes.Length);
+			var hash = HashCoreCourse (bytes, 0, bytes.Length, 144);
+			return HashFinalCourse (hash, (uint)bytes.Length);
 		}
 
 		/// <summary>
@@ -146,8 +146,8 @@ namespace Novartment.Base
 				Array.Reverse (bytes);
 			}
 
-			var hash = HashCore (bytes, 0, bytes.Length, 144);
-			return HashFinal (hash, (uint)bytes.Length);
+			var hash = HashCoreCourse (bytes, 0, bytes.Length, 144);
+			return HashFinalCourse (hash, (uint)bytes.Length);
 		}
 
 		/// <summary>
@@ -163,8 +163,8 @@ namespace Novartment.Base
 				Array.Reverse (bytes);
 			}
 
-			var hash = HashCore (bytes, 0, bytes.Length, 144);
-			return HashFinal (hash, (uint)bytes.Length);
+			var hash = HashCoreCourse (bytes, 0, bytes.Length, 144);
+			return HashFinalCourse (hash, (uint)bytes.Length);
 		}
 
 		/// <summary>
@@ -180,8 +180,8 @@ namespace Novartment.Base
 				Array.Reverse (bytes);
 			}
 
-			var hash = HashCore (bytes, 0, bytes.Length, 144);
-			return HashFinal (hash, (uint)bytes.Length);
+			var hash = HashCoreCourse (bytes, 0, bytes.Length, 144);
+			return HashFinalCourse (hash, (uint)bytes.Length);
 		}
 
 		/// <summary>
@@ -197,8 +197,8 @@ namespace Novartment.Base
 				Array.Reverse (bytes);
 			}
 
-			var hash = HashCore (bytes, 0, bytes.Length, 144);
-			return HashFinal (hash, (uint)bytes.Length);
+			var hash = HashCoreCourse (bytes, 0, bytes.Length, 144);
+			return HashFinalCourse (hash, (uint)bytes.Length);
 		}
 
 		/// <summary>
@@ -214,8 +214,8 @@ namespace Novartment.Base
 				Array.Reverse (bytes);
 			}
 
-			var hash = HashCore (bytes, 0, bytes.Length, 144);
-			return HashFinal (hash, (uint)bytes.Length);
+			var hash = HashCoreCourse (bytes, 0, bytes.Length, 144);
+			return HashFinalCourse (hash, (uint)bytes.Length);
 		}
 
 		/// <summary>
@@ -231,8 +231,8 @@ namespace Novartment.Base
 				Array.Reverse (bytes);
 			}
 
-			var hash = HashCore (bytes, 0, bytes.Length, 144);
-			return HashFinal (hash, (uint)bytes.Length);
+			var hash = HashCoreCourse (bytes, 0, bytes.Length, 144);
+			return HashFinalCourse (hash, (uint)bytes.Length);
 		}
 
 		/// <summary>
@@ -250,9 +250,9 @@ namespace Novartment.Base
 				Array.Reverse (bytes2);
 			}
 
-			var hash = HashCore (bytes1, 0, bytes1.Length, 144);
-			hash = HashCore (bytes2, 0, bytes2.Length, hash);
-			return HashFinal (hash, (uint)bytes1.Length + (uint)bytes2.Length);
+			var hash = HashCoreCourse (bytes1, 0, bytes1.Length, 144);
+			hash = HashCoreCourse (bytes2, 0, bytes2.Length, hash);
+			return HashFinalCourse (hash, (uint)bytes1.Length + (uint)bytes2.Length);
 		}
 
 		/// <summary>
@@ -273,11 +273,11 @@ namespace Novartment.Base
 					Array.Reverse (bytes);
 				}
 
-				hash = HashCore (bytes, 0, bytes.Length, hash);
+				hash = HashCoreCourse (bytes, 0, bytes.Length, hash);
 				length += (uint)bytes.Length;
 			}
 
-			return HashFinal (hash, length);
+			return HashFinalCourse (hash, length);
 		}
 
 		/// <summary>
@@ -314,7 +314,7 @@ namespace Novartment.Base
 
 			Contract.EndContractBlock ();
 
-			_hash = HashCore (array, index, count, _hash);
+			_hash = HashCoreCourse (array, index, count, _hash);
 			_length += (uint)count;
 		}
 
@@ -324,7 +324,7 @@ namespace Novartment.Base
 		/// <returns>Вычисляемый хэш-код.</returns>
 		protected override byte[] HashFinal ()
 		{
-			var bytes = BitConverter.GetBytes (HashFinal (_hash, _length));
+			var bytes = BitConverter.GetBytes (HashFinalCourse (_hash, _length));
 			if (!BitConverter.IsLittleEndian)
 			{
 				Array.Reverse (bytes);
@@ -333,7 +333,7 @@ namespace Novartment.Base
 			return bytes;
 		}
 
-		private static uint HashCore (byte[] array, int ibStart, int cbSize, uint hash)
+		private static uint HashCoreCourse (byte[] array, int ibStart, int cbSize, uint hash)
 		{
 			const uint c1 = 0xcc9e2d51;
 			const uint c2 = 0x1b873593;
@@ -381,7 +381,7 @@ namespace Novartment.Base
 			return hash;
 		}
 
-		private static uint HashFinal (uint hash, uint length)
+		private static uint HashFinalCourse (uint hash, uint length)
 		{
 			hash ^= length;
 			hash ^= hash >> 16;

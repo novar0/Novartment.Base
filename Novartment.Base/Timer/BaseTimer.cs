@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 
 namespace Novartment.Base
@@ -47,26 +46,26 @@ namespace Novartment.Base
 		/// </summary>
 		public abstract void Start ();
 
+#pragma warning disable CA1716 // Identifiers should not match keywords
 		/// <summary>
 		/// Останавливает таймер.
 		/// </summary>
 		public abstract void Stop ();
+#pragma warning restore CA1716 // Identifiers should not match keywords
 
 		/// <summary>
 		/// Освобождает занимаемые объектом ресурсы.
 		/// </summary>
-		[SuppressMessage (
-			"Microsoft.Design",
-			"CA1063:ImplementIDisposableCorrectly",
-			Justification = "Implemented correctly.")]
 		public abstract void Dispose ();
 
+#pragma warning disable CA1801 // Review unused parameters
 		/// <summary>
 		/// Вызывает делегат срабатывания таймера.
 		/// Можно использовать для делегата типа TimerCallback.
 		/// </summary>
 		/// <param name="notUsed">Не используется.</param>
 		protected void DoCallback (object notUsed)
+#pragma warning restore CA1801 // Review unused parameters
 		{
 			_callback.Invoke (_state);
 		}

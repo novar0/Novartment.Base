@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Data;
 using System.Data.Common;
-using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Globalization;
 using Microsoft.Extensions.Logging;
@@ -27,10 +26,6 @@ namespace Novartment.Base.Data
 		/// </summary>
 		/// <param name="connectionManager">IDbConnectionManager.</param>
 		/// <param name="logger">Опциональный объект-журнал для записей о событиях. Укажите null если не требуется.</param>
-		[SuppressMessage (
-			"Microsoft.Design",
-			"CA1026:DefaultParametersShouldNotBeUsed",
-			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
 		public InvariantDbAction (IDbConnectionManager connectionManager, ILogger logger = null)
 		{
 			if (connectionManager == null)
@@ -115,14 +110,6 @@ namespace Novartment.Base.Data
 		/// <param name="tableName">Имя таблицы.</param>
 		/// <param name="schemaName">Имя схемы. Укажите null если схему указывать не нужно.</param>
 		/// <returns>Считыватель данных, связанный с командой, которая должна быть освобождена вмесе с ним.</returns>
-		[SuppressMessage (
-			"Microsoft.Security",
-			"CA2100:Review SQL queries for security vulnerabilities",
-			Justification = "User-input variables only in parameters.")]
-		[SuppressMessage (
-			"Microsoft.Design",
-			"CA1026:DefaultParametersShouldNotBeUsed",
-			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
 		public DisposableValueLinkedWithDbCommand<DbDataReader> SelectData (string tableName, string schemaName = null)
 		{
 			if (tableName == null)
@@ -157,14 +144,6 @@ namespace Novartment.Base.Data
 		/// <param name="tableName">Имя таблицы.</param>
 		/// <param name="schemaName">Имя схемы. Укажите null если схему указывать не нужно.</param>
 		/// <returns>Уникальный идентификатор, присвоенный вставленной записи.</returns>
-		[SuppressMessage (
-			"Microsoft.Security",
-			"CA2100:Review SQL queries for security vulnerabilities",
-			Justification = "User-input variables only in parameters.")]
-		[SuppressMessage (
-			"Microsoft.Design",
-			"CA1026:DefaultParametersShouldNotBeUsed",
-			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
 		public object Insert (string tableName, string schemaName = null)
 		{
 			if (tableName == null)
@@ -207,14 +186,6 @@ namespace Novartment.Base.Data
 		/// </summary>
 		/// <param name="tableName">Имя таблицы.</param>
 		/// <param name="schemaName">Имя схемы. Укажите null если схему указывать не нужно.</param>
-		[SuppressMessage (
-			"Microsoft.Security",
-			"CA2100:Review SQL queries for security vulnerabilities",
-			Justification = "User-input variables only in parameters.")]
-		[SuppressMessage (
-			"Microsoft.Design",
-			"CA1026:DefaultParametersShouldNotBeUsed",
-			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
 		public void Update (string tableName, string schemaName = null)
 		{
 			if (tableName == null)
@@ -254,10 +225,6 @@ namespace Novartment.Base.Data
 		/// <param name="tableName">Имя таблицы.</param>
 		/// <param name="schemaName">Имя схемы. Укажите null если схему указывать не нужно.</param>
 		/// <returns>Уникальный идентификатор, присвоенный вставленной записи.</returns>
-		[SuppressMessage (
-			"Microsoft.Design",
-			"CA1026:DefaultParametersShouldNotBeUsed",
-			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
 		public object UpdateInsert (string tableName, string schemaName = null)
 		{
 			if (tableName == null)
@@ -292,14 +259,6 @@ namespace Novartment.Base.Data
 		/// <param name="tableName">Имя таблицы.</param>
 		/// <param name="schemaName">Имя схемы. Укажите null если схему указывать не нужно.</param>
 		/// <returns>Количества записей, выбранных из таблицы.</returns>
-		[SuppressMessage (
-			"Microsoft.Security",
-			"CA2100:Review SQL queries for security vulnerabilities",
-			Justification = "User-input variables only in parameters.")]
-		[SuppressMessage (
-			"Microsoft.Design",
-			"CA1026:DefaultParametersShouldNotBeUsed",
-			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
 		public object SelectCount (string tableName, string schemaName = null)
 		{
 			if (tableName == null)
@@ -328,14 +287,6 @@ namespace Novartment.Base.Data
 		/// </summary>
 		/// <param name="tableName">Имя таблицы.</param>
 		/// <param name="schemaName">Имя схемы. Укажите null если схему указывать не нужно.</param>
-		[SuppressMessage (
-			"Microsoft.Security",
-			"CA2100:Review SQL queries for security vulnerabilities",
-			Justification = "User-input variables only in parameters.")]
-		[SuppressMessage (
-			"Microsoft.Design",
-			"CA1026:DefaultParametersShouldNotBeUsed",
-			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
 		public void Delete (string tableName, string schemaName = null)
 		{
 			if (tableName == null)
@@ -369,14 +320,6 @@ namespace Novartment.Base.Data
 		/// </summary>
 		/// <param name="procedureName">Имя процедуры.</param>
 		/// <param name="schemaName">Имя схемы. Укажите null если схему указывать не нужно.</param>
-		[SuppressMessage (
-			"Microsoft.Security",
-			"CA2100:Review SQL queries for security vulnerabilities",
-			Justification = "User-input variables only in parameters.")]
-		[SuppressMessage (
-			"Microsoft.Design",
-			"CA1026:DefaultParametersShouldNotBeUsed",
-			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
 		public void ExecuteProcedure (string procedureName, string schemaName = null)
 		{
 			if (procedureName == null)
@@ -402,14 +345,6 @@ namespace Novartment.Base.Data
 		/// <param name="procedureName">Имя процедуры.</param>
 		/// <param name="schemaName">Имя схемы. Укажите null если схему указывать не нужно.</param>
 		/// <returns>Считыватель данных, связанный с командой, которая должна быть освобождена вмесе с ним.</returns>
-		[SuppressMessage (
-			"Microsoft.Security",
-			"CA2100:Review SQL queries for security vulnerabilities",
-			Justification = "User-input variables only in parameters.")]
-		[SuppressMessage (
-			"Microsoft.Design",
-			"CA1026:DefaultParametersShouldNotBeUsed",
-			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
 		public DisposableValueLinkedWithDbCommand<DbDataReader> ExecuteSelectProcedure (string procedureName, string schemaName = null)
 		{
 			if (procedureName == null)
@@ -434,10 +369,6 @@ namespace Novartment.Base.Data
 		/// <param name="functionName">Имя функции.</param>
 		/// <param name="schemaName">Имя схемы. Укажите null если схему указывать не нужно.</param>
 		/// <returns>Результат, возвращённый функцией.</returns>
-		[SuppressMessage (
-			"Microsoft.Security",
-			"CA2100:Review SQL queries for security vulnerabilities",
-			Justification = "User-input variables only in parameters.")]
 		public object ExecuteFunction (string functionName, string schemaName) // schemaName является обязательным для вызова функции
 		{
 			if (functionName == null)

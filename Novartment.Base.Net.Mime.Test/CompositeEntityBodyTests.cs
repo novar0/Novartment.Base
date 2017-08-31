@@ -108,18 +108,18 @@ namespace Novartment.Base.Net.Mime.Test
 				CancellationToken.None).Wait ();
 			Assert.Equal (4, body.Parts.Count);
 
-			Assert.Equal (ContentMediaType.Text, body.Parts[0].Type);
-			Assert.Equal ("plain", body.Parts[0].Subtype);
+			Assert.Equal (ContentMediaType.Text, body.Parts[0].MediaType);
+			Assert.Equal ("plain", body.Parts[0].MediaSubtype);
 
-			Assert.Equal (ContentMediaType.Message, body.Parts[1].Type);
-			Assert.Equal ("delivery-status", body.Parts[1].Subtype);
+			Assert.Equal (ContentMediaType.Message, body.Parts[1].MediaType);
+			Assert.Equal ("delivery-status", body.Parts[1].MediaSubtype);
 
-			Assert.Equal (ContentMediaType.Message, body.Parts[2].Type);
-			Assert.Equal ("rfc822", body.Parts[2].Subtype);
+			Assert.Equal (ContentMediaType.Message, body.Parts[2].MediaType);
+			Assert.Equal ("rfc822", body.Parts[2].MediaSubtype);
 
 			// часть для которой не указан медиатип, должна быть типом по-умолчанию
-			Assert.Equal (ContentMediaType.Unspecified, body.Parts[3].Type);
-			Assert.Null (body.Parts[3].Subtype);
+			Assert.Equal (ContentMediaType.Unspecified, body.Parts[3].MediaType);
+			Assert.Null (body.Parts[3].MediaSubtype);
 		}
 
 		[Fact]
@@ -170,7 +170,7 @@ namespace Novartment.Base.Net.Mime.Test
 
 			for (var idx = 0; idx < _bodySample2.Length; idx++)
 			{
-				if (!lines[idx].StartsWith ("Date: "))
+				if (!lines[idx].StartsWith ("Date: ", StringComparison.Ordinal))
 				{
 					// дату проверить не можем, она генерируется автоматически
 					Assert.Equal (_bodySample2[idx], lines[idx]);

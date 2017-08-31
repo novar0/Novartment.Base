@@ -2,7 +2,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using SystemArray = System.Array;
 
@@ -24,10 +23,6 @@ namespace Novartment.Base.Collections
 	/// Не производит уведомлений об изменениях.
 	/// Не содержит методов с неявным потреблением ресурсов.
 	/// </remarks>
-	[SuppressMessage (
-		"Microsoft.Naming",
-		"CA1710:IdentifiersShouldHaveCorrectSuffix",
-		Justification = "Implemented interfaces has no association with class name.")]
 	[DebuggerDisplay ("{DebuggerDisplay,nq}")]
 	public class ArrayList<T> :
 		IAdjustableList<T>,
@@ -122,10 +117,6 @@ namespace Novartment.Base.Collections
 		/// <summary>
 		/// Получает внутренний массив, в котором хранятся элементы списка.
 		/// </summary>
-		[SuppressMessage(
-			"Microsoft.Performance",
-			"CA1819:PropertiesShouldNotReturnArrays",
-			Justification = "This is clearly a property and write access to array is intended.")]
 		public T[] Array => _items;
 
 		/// <summary>
@@ -138,22 +129,7 @@ namespace Novartment.Base.Collections
 		/// </summary>
 		public int Count => _count;
 
-		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
-		[SuppressMessage(
-			"Microsoft.Globalization",
-			"CA1305:SpecifyIFormatProvider",
-			MessageId = "System.String.Format(System.String,System.Object,System.Object,System.Object)",
-			Justification = "String is not exposed to the end user and will not be localized.")]
-		[SuppressMessage(
-			"Microsoft.Globalization",
-			"CA1305:SpecifyIFormatProvider",
-			MessageId = "System.String.Format(System.String,System.Object,System.Object)",
-			Justification = "String is not exposed to the end user and will not be localized.")]
-		[SuppressMessage(
-			"Microsoft.Globalization",
-			"CA1305:SpecifyIFormatProvider",
-			MessageId = "System.String.Format(System.String,System.Object)",
-			Justification = "String is not exposed to the end user and will not be localized.")]
+		[DebuggerBrowsable (DebuggerBrowsableState.Never)]
 		private string DebuggerDisplay
 		{
 			get
@@ -163,7 +139,7 @@ namespace Novartment.Base.Collections
 					(_count == 1) ?
 						$"{_head}" :
 						$"{_head}...{(_head + _count - 1) % _items.Length}";
-				return $"<{typeof(T).Name}>[{info}] (capacity={_items.Length})";
+				return $"<{typeof (T).Name}>[{info}] (capacity={_items.Length})";
 			}
 		}
 
@@ -175,12 +151,15 @@ namespace Novartment.Base.Collections
 		{
 			get
 			{
-				if ((index < 0) || (index >= this.Count))
+				// Following trick can reduce the range check by one
+				if ((uint)index >= (uint)this.Count)
 				{
-					throw new ArgumentOutOfRangeException(nameof(index));
+#pragma warning disable CA1065 // Do not raise exceptions in unexpected locations
+					throw new ArgumentOutOfRangeException (nameof (index));
+#pragma warning restore CA1065 // Do not raise exceptions in unexpected locations
 				}
 
-				Contract.EndContractBlock();
+				Contract.EndContractBlock ();
 
 				index += _head;
 				if (index >= _items.Length)
@@ -193,12 +172,13 @@ namespace Novartment.Base.Collections
 
 			set
 			{
-				if ((index < 0) || (index >= this.Count))
+				// Following trick can reduce the range check by one
+				if ((uint)index >= (uint)this.Count)
 				{
-					throw new ArgumentOutOfRangeException(nameof(index));
+					throw new ArgumentOutOfRangeException (nameof (index));
 				}
 
-				Contract.EndContractBlock();
+				Contract.EndContractBlock ();
 
 				index += _head;
 				if (index >= _items.Length)
@@ -715,10 +695,6 @@ namespace Novartment.Base.Collections
 		/// <remarks>
 		/// Если массив зациклен через край, то перед сортировкой будет произведено копирование меньшей части.
 		/// </remarks>
-		[SuppressMessage (
-			"Microsoft.Design",
-			"CA1026:DefaultParametersShouldNotBeUsed",
-			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
 		public void Sort (IComparer<T> comparer = null)
 		{
 			if (_count < 1)
@@ -993,12 +969,12 @@ namespace Novartment.Base.Collections
 				{
 					if (_index == -1)
 					{
-						throw new InvalidOperationException("Can not get current element of enumeration because it not started.");
+						throw new InvalidOperationException ("Can not get current element of enumeration because it not started.");
 					}
 
 					if (_index == -2)
 					{
-						throw new InvalidOperationException("Can not get current element of enumeration because it already ended.");
+						throw new InvalidOperationException ("Can not get current element of enumeration because it already ended.");
 					}
 
 					return _currentElement;

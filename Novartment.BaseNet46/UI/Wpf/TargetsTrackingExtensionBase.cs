@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Reflection;
 using System.Threading;
@@ -186,10 +185,6 @@ namespace Novartment.Base.UI.Wpf
 		/// Return the value associated with the key from the resource manager.
 		/// </summary>
 		/// <returns>The value from the resources if possible otherwise the default value.</returns>
-		[SuppressMessage (
-			"Microsoft.Design",
-			"CA1024:UsePropertiesWhereAppropriate",
-			Justification = "This method supposed to do some work in derived classes and can not be property.")]
 		protected abstract object GetValue ();
 
 		/// <summary>

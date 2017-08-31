@@ -1,4 +1,5 @@
-﻿using Xunit;
+﻿using System;
+using Xunit;
 
 namespace Novartment.Base.Test
 {
@@ -8,7 +9,7 @@ namespace Novartment.Base.Test
 		[Trait ("Category", "ByteArrayExtensions")]
 		public void IndexOf ()
 		{
-			Assert.Equal (-1, ByteArrayExtensions.IndexOf (new byte[] { }, new byte[] { 0, 1, 2 }));
+			Assert.Equal (-1, ByteArrayExtensions.IndexOf (Array.Empty<byte> (), new byte[] { 0, 1, 2 }));
 			Assert.Equal (-1, ByteArrayExtensions.IndexOf (new byte[] { 0, 1 }, new byte[] { 0, 1, 2 }));
 			Assert.Equal (-1, ByteArrayExtensions.IndexOf (new byte[] { 0, 1, 3 }, new byte[] { 0, 1, 2 }));
 

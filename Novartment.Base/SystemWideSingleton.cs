@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Threading;
 
@@ -10,10 +9,6 @@ namespace Novartment.Base
 	/// Только экземпляр созданный в отсутствии других экземпляров с тем же именем,
 	/// будет иметь свойство оригинальности.
 	/// </summary>
-	[SuppressMessage (
-		"Microsoft.Design",
-		"CA1063:ImplementIDisposableCorrectly",
-		Justification = "Implemented correctly.")]
 	public class SystemWideSingleton :
 		IDisposable
 	{
@@ -50,14 +45,6 @@ namespace Novartment.Base
 		/// <summary>
 		/// Освобождает объект, давая возможность вновь создаваемым объектам становиться уникальными.
 		/// </summary>
-		[SuppressMessage (
-			"Microsoft.Usage",
-			"CA1816:CallGCSuppressFinalizeCorrectly",
-			Justification = "There is no meaning to introduce a finalizer in derived type.")]
-		[SuppressMessage (
-			"Microsoft.Design",
-			"CA1063:ImplementIDisposableCorrectly",
-			Justification = "Implemented correctly.")]
 		public void Dispose ()
 		{
 			if (IsOriginal)

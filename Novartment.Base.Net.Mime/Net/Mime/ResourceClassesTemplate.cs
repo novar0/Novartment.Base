@@ -24,7 +24,6 @@ namespace Novartment.Base.Net.Mime
 	{
 		private static Lazy<System.Resources.ResourceManager> _resourceMan = new Lazy<System.Resources.ResourceManager> (CreateResourceManager);
 
-		[System.Diagnostics.CodeAnalysis.SuppressMessageAttribute ("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
 		internal Resources ()
 		{
 		}

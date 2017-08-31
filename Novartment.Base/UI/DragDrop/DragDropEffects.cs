@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.CodeAnalysis;
 
 namespace Novartment.Base.UI
 {
@@ -13,10 +12,6 @@ namespace Novartment.Base.UI
 	/// Создано чтобы не привязываться к конкретным технологиям,
 	/// в которых есть аналоги (System.Windows.DragDropEffects и System.Windows.Forms.DragDropEffects).
 	/// </remarks>
-	[SuppressMessage (
-		"Microsoft.Usage",
-		"CA2217:DoNotMarkEnumsWithFlags",
-		Justification = "Implemented externally.")]
 	[Flags]
 	public enum DragDropEffects : int
 	{

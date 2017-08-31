@@ -1,15 +1,8 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
-namespace Novartment.Base.Media
+﻿namespace Novartment.Base.Media
 {
 	/// <summary>
 	/// Информация о присоединённом файле.
 	/// </summary>
-	[SuppressMessage (
-		"Microsoft.Naming",
-		"CA1704:IdentifiersShouldBeSpelledCorrectly",
-		MessageId = "Matroska",
-		Justification = "'Matroska' represents standard term.")]
 	public class MatroskaAttachedFileInfo
 	{
 		/// <summary>

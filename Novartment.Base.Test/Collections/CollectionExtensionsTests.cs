@@ -74,11 +74,11 @@ namespace Novartment.Base.Test
 
 			// любой элемент является разделителем. результат должен быть пустой
 			var t2 = CollectionExtensions.Split (t1, item => true).ToArray ();
-			Assert.Equal (0, t2.Length);
+			Assert.Empty (t2);
 
 			// ни один элемент не является разделителем. результат должен повторять исходник
 			t2 = CollectionExtensions.Split (t1, item => false).ToArray ();
-			Assert.Equal (1, t2.Length);
+			Assert.Single (t2);
 			Assert.Equal<int> (t1, t2[0]);
 
 			// разделитель - нечётные числа
@@ -112,7 +112,7 @@ namespace Novartment.Base.Test
 
 			c1 = new AdjustableList_<int> (t1);
 			CollectionExtensions.RemoveWhere (c1, item => true);
-			Assert.Equal<int> (new int[0], c1);
+			Assert.Equal<int> (Array.Empty<int> (), c1);
 
 			c1 = new AdjustableList_<int> (t1);
 			CollectionExtensions.RemoveWhere (c1, item => false);
@@ -126,7 +126,7 @@ namespace Novartment.Base.Test
 			var t1 = new int[] { 8, 3, 2, 10, -11, 11, 4, 4, 20, 7 };
 
 			var c1 = new AdjustableList_<int> (t1);
-			CollectionExtensions.RemoveItems (c1, new int[0].ToSet ());
+			CollectionExtensions.RemoveItems (c1, Array.Empty<int> ().ToSet ());
 			Assert.Equal<int> (new int[] { 8, 3, 2, 10, -11, 11, 4, 4, 20, 7 }, c1);
 
 			c1 = new AdjustableList_<int> (t1);
@@ -139,7 +139,7 @@ namespace Novartment.Base.Test
 
 			c1 = new AdjustableList_<int> (t1);
 			CollectionExtensions.RemoveItems (c1, new int[] { -11, 11, 4, 20, 7, 8, 3, 2, 10 }.ToSet ());
-			Assert.Equal<int> (new int[0], c1);
+			Assert.Equal<int> (Array.Empty<int> (), c1);
 		}
 
 		[Fact]
@@ -149,7 +149,7 @@ namespace Novartment.Base.Test
 			var t1 = new int[] { 8, 3, 2, 10, -11, 11, 4, 4, 20, 7 };
 
 			var c1 = new AdjustableList_<int> (t1);
-			CollectionExtensions.RemoveAtMany (c1, new int[0]);
+			CollectionExtensions.RemoveAtMany (c1, Array.Empty<int> ());
 			Assert.Equal<int> (new int[] { 8, 3, 2, 10, -11, 11, 4, 4, 20, 7 }, c1);
 
 			c1 = new AdjustableList_<int> (t1);
@@ -174,7 +174,7 @@ namespace Novartment.Base.Test
 
 			c1 = new AdjustableList_<int> (t1);
 			CollectionExtensions.RemoveAtMany (c1, new int[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 });
-			Assert.Equal<int> (new int[0], c1);
+			Assert.Equal<int> (Array.Empty<int> (), c1);
 
 			c1 = new AdjustableList_<int> (t1);
 			CollectionExtensions.RemoveAtMany (c1, new int[] { 0, 1, 2, 3, 5, 6, 7, 8, 9 });

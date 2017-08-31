@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 
 namespace Novartment.Base.Collections.Linq
 {
@@ -8,10 +7,6 @@ namespace Novartment.Base.Collections.Linq
 	/// Представляет отсортированный список.
 	/// </summary>
 	/// <typeparam name="TElement">Тип элементов списка.</typeparam>
-	[SuppressMessage (
-		"Microsoft.Naming",
-		"CA1710:IdentifiersShouldHaveCorrectSuffix",
-		Justification = "Implemented interfaces has no association with class name.")]
 	public interface IOrderedReadOnlyList<TElement> :
 		IOrderedReadOnlyCollection<TElement>,
 		IReadOnlyList<TElement>

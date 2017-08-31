@@ -65,11 +65,7 @@ namespace Novartment.Base.SampleWpf
 			_refreshDataTask = new CommandedRepeatableTask (ProcessData, TaskScheduler.Default);
 			_refreshDataTask.TaskStarting += (sender, e) =>
 			{
-				using (var dialog = _messageBoxFactory.Invoke (new MessageBoxFormData ()
-				{
-					Title = Properties.Resources.TaskStartingPromptTitle,
-					Message = Properties.Resources.TaskStartingPromptText,
-				}))
+				using (var dialog = _messageBoxFactory.Invoke (new MessageBoxFormData (Properties.Resources.TaskStartingPromptTitle, Properties.Resources.TaskStartingPromptText)))
 				{
 					if (dialog.Value.ShowDialog () != true)
 					{
@@ -110,11 +106,9 @@ namespace Novartment.Base.SampleWpf
 		DragStartData IDragDropSource.DragStart (double x, double y, DragControl mouseButton)
 		{
 			System.Diagnostics.Trace.WriteLine (string.Format ("Источник: подцеплено в {0}/{1} кнопкой {2}", x, y, mouseButton));
-			return new DragStartData ()
-				{
-					Object = new WpfDataContainer (DataContainerFormats.Text, "hello from another app!"),
-					AllowedEffects = DragDropEffects.All,
-				};
+			return new DragStartData (
+				new WpfDataContainer (DataContainerFormats.Text, "hello from another app!"),
+				DragDropEffects.All);
 		}
 
 		bool IDragDropSource.GiveFeedback (DragDropEffects effects)
@@ -228,16 +222,20 @@ namespace Novartment.Base.SampleWpf
 			return DragDropEffects.None;
 		}
 
-		private void CopyItem (ContextCollectionData<SimpleEventRecord> data, CancellationToken cancellationToken)
+#pragma warning disable CA1801 // Review unused parameters
+		private void CopyItem (ContextCollectionData<SimpleEventRecord> data, CancellationToken notUsed)
+#pragma warning restore CA1801 // Review unused parameters
 		{
-			var items = data.ContextCollectionSelectedItems.Cast<SimpleEventRecord> ().OrderBy (item => item.Time);
+			var items = data.ContextCollectionSelectedItems.OrderBy (item => item.Time);
 			string report = string.Join (Environment.NewLine, items);
 			var clipboardObject = _clipboardObjectFactory.Invoke ();
 			clipboardObject.SetData (DataContainerFormats.Text, report, true);
 			_clipBoardService.SetData (clipboardObject);
 		}
 
-		private void ClearItems (ContextCollectionData<SimpleEventRecord> data, CancellationToken cancellationToken)
+#pragma warning disable CA1801 // Review unused parameters
+		private void ClearItems (ContextCollectionData<SimpleEventRecord> notUsed1, CancellationToken notUsed2)
+#pragma warning restore CA1801 // Review unused parameters
 		{
 			_eventLog.Clear ();
 		}
@@ -245,8 +243,8 @@ namespace Novartment.Base.SampleWpf
 		private void ProcessData (object state, CancellationToken cancellationToken)
 		{
 			// выполнение фоновых работ, в том числе вызов сервисов типа _dataSerivce.DoSomeWork ();
-			_eventLog.LogInformation ("Запуск задачи");
-			Thread.Sleep (1000);
+			_eventLog.LogInformation ($"Запуск задачи с параметром {state}");
+			Task.Delay (1000, cancellationToken).Wait ();
 			throw new ArgumentException ("Имитация исключительной ситуации", "state");
 		}
 

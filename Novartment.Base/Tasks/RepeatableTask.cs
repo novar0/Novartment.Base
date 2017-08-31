@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Threading;
 using System.Threading.Tasks;
@@ -22,10 +21,6 @@ namespace Novartment.Base.Tasks
 	// http://blogs.msdn.com/b/pfxteam/archive/2012/03/25/10287435.aspx
 	// для объектов типа Task и CancellationTokenSource не производится освобождение (вызов IDisposable.Dispose()),
 	// которое бы значительно усложнило класс.
-	[SuppressMessage (
-		"Microsoft.Design",
-		"CA1063:ImplementIDisposableCorrectly",
-		Justification = "Implemented correctly.")]
 	public class RepeatableTask :
 		IDisposable
 	{
@@ -58,10 +53,6 @@ namespace Novartment.Base.Tasks
 		/// <param name="taskAction">Делегат, который будут вызывать запускаемые задачи.</param>
 		/// <param name="taskScheduler">Планировщик, в котором будут выполняться запускаемые задачи.
 		/// Укажите null чтобы использовать планировщик по умолчанию.</param>
-		[SuppressMessage (
-			"Microsoft.Design",
-			"CA1026:DefaultParametersShouldNotBeUsed",
-			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
 		public RepeatableTask (Action<object, CancellationToken> taskAction, TaskScheduler taskScheduler = null)
 		{
 			if (taskAction == null)
@@ -94,10 +85,6 @@ namespace Novartment.Base.Tasks
 		/// Ранее запущенная задача отменяется.
 		/// </summary>
 		/// <param name="state">Объект-состояние, передаваемый в запускаемую задачу.</param>
-		[SuppressMessage (
-			"Microsoft.Reliability",
-			"CA2000:Dispose objects before losing scope",
-			Justification = "newCts can not be disposed here. It is unclear when it must be disposed. According to recommendations http://blogs.msdn.com/b/pfxteam/archive/2012/03/25/10287435.aspx, disposing may be skipped in this case.")]
 		public void Start (object state)
 		{
 			// уведомляем о запуске задачи. обработчик может установить флаг отмены запуска и поменять объект-состояние
@@ -163,14 +150,6 @@ namespace Novartment.Base.Tasks
 		/// <summary>
 		/// Освобождает все занятые ресурсы.
 		/// </summary>
-		[SuppressMessage (
-			"Microsoft.Usage",
-			"CA1816:CallGCSuppressFinalizeCorrectly",
-			Justification = "There is no meaning to introduce a finalizer in derived type.")]
-		[SuppressMessage (
-			"Microsoft.Design",
-			"CA1063:ImplementIDisposableCorrectly",
-			Justification = "Implemented correctly.")]
 		public void Dispose ()
 		{
 			TaskStarting = null;

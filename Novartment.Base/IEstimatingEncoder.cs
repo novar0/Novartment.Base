@@ -60,10 +60,12 @@ namespace Novartment.Base
 			bool isLastSegment);
 	}
 
+#pragma warning disable CA1815 // Override equals and operator equals on value types
 	/// <summary>
 	/// Баланс операции кодирования в виде количества использованных и произведённых байтов.
 	/// </summary>
 	public struct EncodingBalance
+#pragma warning restore CA1815 // Override equals and operator equals on value types
 	{
 		/// <summary>
 		/// Инициализирует новый экземпляр EncodingBalance с указанным

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using Microsoft.Extensions.Logging;
 using Novartment.Base.BinaryStreaming;
@@ -159,10 +158,6 @@ namespace Novartment.Base.Net.Smtp
 			return result;
 		}
 
-		[SuppressMessage (
-			"Microsoft.Maintainability",
-			"CA1502:AvoidExcessiveComplexity",
-			Justification = "Method not too complex.")]
 		private static SmtpCommandType GetCommandType (BytesChunkEnumerator chunkEnumerator)
 		{
 			var commandTypeStr = chunkEnumerator.GetString ().ToUpperInvariant ();

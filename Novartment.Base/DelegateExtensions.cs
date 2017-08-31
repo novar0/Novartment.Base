@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.CodeAnalysis;
 
 namespace Novartment.Base
 {
@@ -21,10 +20,6 @@ namespace Novartment.Base
 		/// позволяя передать метод, требующий параметр наследованного типа туда,
 		/// где требуется метод с параметром базового типа.
 		/// </summary>
-		[SuppressMessage (
-			"Microsoft.Design",
-			"CA1062:Validate arguments of public methods",
-			Justification = "NullReferenceException is the intended behaviour")]
 		public static void ParameterAsBaseType<TBase, TInherited> (this Action<TInherited> action, TBase parameter)
 			where TInherited : TBase
 		{
@@ -37,10 +32,6 @@ namespace Novartment.Base
 		/// позволяя передать метод, требующий параметр наследованного типа туда,
 		/// где требуется метод с параметром базового типа.
 		/// </summary>
-		[SuppressMessage (
-			"Microsoft.Design",
-			"CA1062:Validate arguments of public methods",
-			Justification = "NullReferenceException is the intended behaviour")]
 		public static TResult ParameterAsBaseType<TBase, TInherited, TResult> (this Func<TInherited, TResult> action, TBase parameter)
 			where TInherited : TBase
 		{
@@ -53,10 +44,6 @@ namespace Novartment.Base
 		/// позволяя передать метод, требующий параметр конкретного типа туда,
 		/// где требуется метод с параметром общего типа Object.
 		/// </summary>
-		[SuppressMessage (
-			"Microsoft.Design",
-			"CA1062:Validate arguments of public methods",
-			Justification = "NullReferenceException is the intended behaviour")]
 		public static void ParameterAsObject<T> (this Action<T> action, object parameter)
 		{
 			action.Invoke ((T)parameter);
@@ -68,10 +55,6 @@ namespace Novartment.Base
 		/// позволяя передать метод, требующий параметр конкретного типа туда,
 		/// где требуется метод с параметром общего типа Object.
 		/// </summary>
-		[SuppressMessage (
-			"Microsoft.Design",
-			"CA1062:Validate arguments of public methods",
-			Justification = "NullReferenceException is the intended behaviour")]
 		public static void ParameterAsObject<T1, T2> (this Action<T1, T2> action, object parameter1, T2 parameter2)
 		{
 			action.Invoke ((T1)parameter1, parameter2);
@@ -83,10 +66,6 @@ namespace Novartment.Base
 		/// позволяя передать метод, требующий параметр конкретного типа туда,
 		/// где требуется метод с параметром общего типа Object.
 		/// </summary>
-		[SuppressMessage (
-			"Microsoft.Design",
-			"CA1062:Validate arguments of public methods",
-			Justification = "NullReferenceException is the intended behaviour")]
 		public static void ParameterAsObject<T1, T2, T3> (this Action<T1, T2, T3> action, object parameter1, T2 parameter2, T3 parameter3)
 		{
 			action.Invoke ((T1)parameter1, parameter2, parameter3);
@@ -98,10 +77,6 @@ namespace Novartment.Base
 		/// позволяя передать метод, требующий параметр конкретного типа туда,
 		/// где требуется метод с параметром общего типа Object.
 		/// </summary>
-		[SuppressMessage (
-			"Microsoft.Design",
-			"CA1062:Validate arguments of public methods",
-			Justification = "NullReferenceException is the intended behaviour")]
 		public static TResult ParameterAsObject<T, TResult> (this Func<T, TResult> function, object parameter)
 		{
 			return function.Invoke ((T)parameter);
@@ -113,10 +88,6 @@ namespace Novartment.Base
 		/// позволяя передать метод, требующий параметр конкретного типа туда,
 		/// где требуется метод с параметром общего типа Object.
 		/// </summary>
-		[SuppressMessage (
-			"Microsoft.Design",
-			"CA1062:Validate arguments of public methods",
-			Justification = "NullReferenceException is the intended behaviour")]
 		public static TResult ParameterAsObject<T1, T2, TResult> (this Func<T1, T2, TResult> function, object parameter1, T2 parameter2)
 		{
 			return function.Invoke ((T1)parameter1, parameter2);
@@ -128,29 +99,17 @@ namespace Novartment.Base
 		/// позволяя передать метод, требующий параметр конкретного типа туда,
 		/// где требуется метод с параметром общего типа Object.
 		/// </summary>
-		[SuppressMessage (
-		"Microsoft.Design",
-		"CA1062:Validate arguments of public methods",
-		Justification = "NullReferenceException is the intended behaviour")]
 		public static TResult ParameterAsObject<T1, T2, T3, TResult> (this Func<T1, T2, T3, TResult> function, object parameter1, T2 parameter2, T3 parameter3)
 		{
 			return function.Invoke ((T1)parameter1, parameter2, parameter3);
 		}
 
+#pragma warning disable CA1801 // Review unused parameters
 		/// <summary>
 		/// Декаррирует указанный делегат, снабжая его дополнительным параметром указанного типа.
 		/// Создает Action&lt;T&gt; из Action,
 		/// позволяя передать метод, не требующий параметров туда, где требуется метод с параметром.
 		/// </summary>
-		[SuppressMessage (
-			"Microsoft.Usage",
-			"CA1801:ReviewUnusedParameters",
-			MessageId = "parameter",
-			Justification = "Not used parameter is intended.")]
-		[SuppressMessage (
-			"Microsoft.Design",
-			"CA1062:Validate arguments of public methods",
-			Justification = "NullReferenceException is the intended behaviour")]
 		public static void AddParameter<T> (this Action action, T parameter)
 		{
 			action.Invoke ();
@@ -161,19 +120,11 @@ namespace Novartment.Base
 		/// Создает Func&lt;T, TResult&gt; из Func&lt;TResult&gt;,
 		/// позволяя передать метод, не требующий параметров туда, где требуется метод с параметром.
 		/// </summary>
-		[SuppressMessage (
-			"Microsoft.Usage",
-			"CA1801:ReviewUnusedParameters",
-			MessageId = "parameter",
-			Justification = "Not used parameter is intended.")]
-		[SuppressMessage (
-			"Microsoft.Design",
-			"CA1062:Validate arguments of public methods",
-			Justification = "NullReferenceException is the intended behaviour")]
 		public static TResult AddParameter<T, TResult> (this Func<TResult> function, T parameter)
 		{
 			return function.Invoke ();
 		}
+#pragma warning restore CA1801 // Review unused parameters
 #pragma warning restore SA1611 // Element parameters must be documented
 #pragma warning restore SA1615 // Element return value must be documented
 #pragma warning restore SA1618 // Generic type parameters must be documented

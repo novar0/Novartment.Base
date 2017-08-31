@@ -1,6 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
-namespace Novartment.Base.Collections
+﻿namespace Novartment.Base.Collections
 {
 	/// <summary>
 	/// Коллекция, поддерживающая добавление элементов, перечисление элементов в порядке добавления
@@ -8,11 +6,6 @@ namespace Novartment.Base.Collections
 	/// </summary>
 	/// <typeparam name="T">Тип элементов коллекции.</typeparam>
 	/// <remarks>Характерный представитель - System.Collections.Generic.Stack.</remarks>
-	[SuppressMessage (
-		"Microsoft.Naming",
-		"CA1704:IdentifiersShouldBeSpelledCorrectly",
-		MessageId = "Lifo",
-		Justification = "'LIFO' represents standard term.")]
 	public interface ILifoCollection<T> :
 		IAdjustableCollection<T>
 	{

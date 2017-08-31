@@ -66,13 +66,13 @@ namespace Novartment.Base.Collections.Linq.Test
 		[Trait ("Category", "Collections.Linq")]
 		public void FirstOrDefault ()
 		{
-			var list = new int[] { };
+			var list = Array.Empty<int> ();
 			Assert.Equal (0, ReadOnlyList.FirstOrDefault (list));
 			list = new int[] { 3 };
 			Assert.Equal (3, ReadOnlyList.FirstOrDefault (list));
 			list = new int[] { 9, 3, 1 };
 			Assert.Equal (9, ReadOnlyList.FirstOrDefault (list));
-			var list2 = new string[] { };
+			var list2 = Array.Empty<string> ();
 			Assert.Equal ((string)null, ReadOnlyList.FirstOrDefault (list2));
 			list2 = new string[] { "one" };
 			Assert.Equal ("one", ReadOnlyList.FirstOrDefault (list2));
@@ -94,13 +94,13 @@ namespace Novartment.Base.Collections.Linq.Test
 		[Trait ("Category", "Collections.Linq")]
 		public void LastOrDefault ()
 		{
-			var list = new int[] { };
+			var list = Array.Empty<int> ();
 			Assert.Equal (0, ReadOnlyList.LastOrDefault (list));
 			list = new int[] { 3 };
 			Assert.Equal (3, ReadOnlyList.LastOrDefault (list));
 			list = new int[] { 9, 3, 1 };
 			Assert.Equal (1, ReadOnlyList.LastOrDefault (list));
-			var list2 = new string[] { };
+			var list2 = Array.Empty<string> ();
 			Assert.Equal ((string)null, ReadOnlyList.LastOrDefault (list2));
 			list2 = new string[] { "one" };
 			Assert.Equal ("one", ReadOnlyList.LastOrDefault (list2));
@@ -122,14 +122,14 @@ namespace Novartment.Base.Collections.Linq.Test
 		[Trait ("Category", "Collections.Linq")]
 		public void ElementAtOrDefault ()
 		{
-			var list = new int[0];
+			var list = Array.Empty<int> ();
 			Assert.Equal (0, ReadOnlyList.ElementAtOrDefault (list, 3));
 			list = new int[] { 3 };
 			Assert.Equal (3, ReadOnlyList.ElementAtOrDefault (list, 0));
 			Assert.Equal (0, ReadOnlyList.ElementAtOrDefault (list, 1));
 			list = new int[] { 9, 3, 1 };
 			Assert.Equal (1, ReadOnlyList.ElementAtOrDefault (list, 2));
-			var list2 = new string[] { };
+			var list2 = Array.Empty<string> ();
 			Assert.Equal ((string)null, ReadOnlyList.ElementAtOrDefault (list2, 0));
 			list2 = new string[] { "one" };
 			Assert.Equal ("one", ReadOnlyList.ElementAtOrDefault (list2, 0));
@@ -142,7 +142,7 @@ namespace Novartment.Base.Collections.Linq.Test
 		[Trait ("Category", "Collections.Linq")]
 		public void DefaultIfEmpty ()
 		{
-			var list = ReadOnlyList.DefaultIfEmpty (new int[0], 999);
+			var list = ReadOnlyList.DefaultIfEmpty (Array.Empty<int> (), 999);
 			Assert.Equal (1, list.Count);
 			Assert.Equal (999, list[0]);
 			list = ReadOnlyList.DefaultIfEmpty (new int[] { 9, 3, 1 }, 999);
@@ -150,7 +150,7 @@ namespace Novartment.Base.Collections.Linq.Test
 			Assert.Equal (9, list[0]);
 			Assert.Equal (3, list[1]);
 			Assert.Equal (1, list[2]);
-			var list2 = ReadOnlyList.DefaultIfEmpty (new string[0], "999");
+			var list2 = ReadOnlyList.DefaultIfEmpty (Array.Empty<string> (), "999");
 			Assert.Equal (1, list2.Count);
 			Assert.Equal ("999", list2[0]);
 			list2 = ReadOnlyList.DefaultIfEmpty (new string[] { "three", "two", "one" }, "999");
@@ -164,7 +164,7 @@ namespace Novartment.Base.Collections.Linq.Test
 		[Trait ("Category", "Collections.Linq")]
 		public void Skip ()
 		{
-			var list = ReadOnlyList.Skip (new int[0], 3);
+			var list = ReadOnlyList.Skip (Array.Empty<int> (), 3);
 			Assert.Equal (0, list.Count);
 			list = ReadOnlyList.Skip (new int[] { 9, 3, 1 }, 0);
 			Assert.Equal (3, list.Count);
@@ -175,7 +175,7 @@ namespace Novartment.Base.Collections.Linq.Test
 			Assert.Equal (1, list.Count);
 			Assert.Equal (1, list[0]);
 
-			var list2 = ReadOnlyList.Skip (new string[0], 3);
+			var list2 = ReadOnlyList.Skip (Array.Empty<string> (), 3);
 			Assert.Equal (0, list2.Count);
 			list2 = ReadOnlyList.Skip (new string[] { "three", "two", "one" }, 0);
 			Assert.Equal (3, list2.Count);
@@ -191,7 +191,7 @@ namespace Novartment.Base.Collections.Linq.Test
 		[Trait ("Category", "Collections.Linq")]
 		public void Take ()
 		{
-			var list = ReadOnlyList.Take (new int[0], 3);
+			var list = ReadOnlyList.Take (Array.Empty<int> (), 3);
 			Assert.Equal (0, list.Count);
 			list = ReadOnlyList.Take (new int[] { 9, 3, 1 }, 0);
 			Assert.Equal (0, list.Count);
@@ -204,7 +204,7 @@ namespace Novartment.Base.Collections.Linq.Test
 			Assert.Equal (1, list.Count);
 			Assert.Equal (9, list[0]);
 
-			var list2 = ReadOnlyList.Take (new string[0], 3);
+			var list2 = ReadOnlyList.Take (Array.Empty<string> (), 3);
 			Assert.Equal (0, list2.Count);
 			list2 = ReadOnlyList.Take (new string[] { "three", "two", "one" }, 0);
 			Assert.Equal (0, list2.Count);
@@ -222,7 +222,7 @@ namespace Novartment.Base.Collections.Linq.Test
 		[Trait ("Category", "Collections.Linq")]
 		public void Select ()
 		{
-			var list = ReadOnlyList.Select (new int[0], item => item * 2);
+			var list = ReadOnlyList.Select (Array.Empty<int> (), item => item * 2);
 			Assert.Equal (0, list.Count);
 			list = ReadOnlyList.Select (new int[] { 9, 3, 1 }, item => item + 3);
 			Assert.Equal (3, list.Count);
@@ -230,7 +230,7 @@ namespace Novartment.Base.Collections.Linq.Test
 			Assert.Equal (6, list[1]);
 			Assert.Equal (4, list[2]);
 
-			var list2 = ReadOnlyList.Select (new string[0], item => item + "_");
+			var list2 = ReadOnlyList.Select (Array.Empty<string> (), item => item + "_");
 			Assert.Equal (0, list2.Count);
 			list2 = ReadOnlyList.Select (new string[] { "three", "two", "one" }, item => item + "_");
 			Assert.Equal (3, list2.Count);
@@ -243,7 +243,7 @@ namespace Novartment.Base.Collections.Linq.Test
 		[Trait ("Category", "Collections.Linq")]
 		public void SelectIdx ()
 		{
-			var list = ReadOnlyList.Select (new int[0], (item, idx) => item * idx);
+			var list = ReadOnlyList.Select (Array.Empty<int> (), (item, idx) => item * idx);
 			Assert.Equal (0, list.Count);
 			list = ReadOnlyList.Select (new int[] { 9, 3, 1 }, (item, idx) => item * idx);
 			Assert.Equal (3, list.Count);
@@ -251,7 +251,7 @@ namespace Novartment.Base.Collections.Linq.Test
 			Assert.Equal (3, list[1]);
 			Assert.Equal (2, list[2]);
 
-			var list2 = ReadOnlyList.Select (new string[0], (item, idx) => item + idx.ToString (CultureInfo.InvariantCulture));
+			var list2 = ReadOnlyList.Select (Array.Empty<string> (), (item, idx) => item + idx.ToString (CultureInfo.InvariantCulture));
 			Assert.Equal (0, list2.Count);
 			list2 = ReadOnlyList.Select (new string[] { "three", "two", "one" }, (item, idx) => item + idx.ToString (CultureInfo.InvariantCulture));
 			Assert.Equal (3, list2.Count);
@@ -264,7 +264,7 @@ namespace Novartment.Base.Collections.Linq.Test
 		[Trait ("Category", "Collections.Linq")]
 		public void Reverse ()
 		{
-			var list = ReadOnlyList.Reverse (new int[0]);
+			var list = ReadOnlyList.Reverse (Array.Empty<int> ());
 			Assert.Equal (0, list.Count);
 			list = ReadOnlyList.Reverse (new int[] { 3 });
 			Assert.Equal (1, list.Count);
@@ -275,7 +275,7 @@ namespace Novartment.Base.Collections.Linq.Test
 			Assert.Equal (3, list[1]);
 			Assert.Equal (9, list[2]);
 
-			var list2 = ReadOnlyList.Reverse (new string[0]);
+			var list2 = ReadOnlyList.Reverse (Array.Empty<string> ());
 			Assert.Equal (0, list2.Count);
 			list2 = ReadOnlyList.Reverse (new string[] { "two" });
 			Assert.Equal (1, list2.Count);
@@ -291,7 +291,7 @@ namespace Novartment.Base.Collections.Linq.Test
 		[Trait ("Category", "Collections.Linq")]
 		public void Ordering ()
 		{
-			var list = ReadOnlyList.OrderBy (new int[0], item => item * 3);
+			var list = ReadOnlyList.OrderBy (Array.Empty<int> (), item => item * 3);
 			Assert.Equal (0, list.Count);
 			var source = new int[] { 9, 1, -3 };
 			list = ReadOnlyList.OrderBy (source, item => item);
@@ -305,7 +305,7 @@ namespace Novartment.Base.Collections.Linq.Test
 			Assert.Equal (-3, list[1]);
 			Assert.Equal (9, list[2]);
 
-			list = ReadOnlyList.OrderByDescending (new int[0], item => item * 3);
+			list = ReadOnlyList.OrderByDescending (Array.Empty<int> (), item => item * 3);
 			Assert.Equal (0, list.Count);
 			list = ReadOnlyList.OrderByDescending (source, item => item);
 			Assert.Equal (3, list.Count);
@@ -361,14 +361,14 @@ namespace Novartment.Base.Collections.Linq.Test
 		[Trait ("Category", "Collections.Linq")]
 		public void Concat ()
 		{
-			var list = ReadOnlyList.Concat (new int[0], new int[0]);
+			var list = ReadOnlyList.Concat (Array.Empty<int> (), Array.Empty<int> ());
 			Assert.Equal (0, list.Count);
-			list = ReadOnlyList.Concat (new int[0], new int[] { 9, 3, 1 });
+			list = ReadOnlyList.Concat (Array.Empty<int> (), new int[] { 9, 3, 1 });
 			Assert.Equal (3, list.Count);
 			Assert.Equal (9, list[0]);
 			Assert.Equal (3, list[1]);
 			Assert.Equal (1, list[2]);
-			list = ReadOnlyList.Concat (new int[] { 9, 3, 1 }, new int[0]);
+			list = ReadOnlyList.Concat (new int[] { 9, 3, 1 }, Array.Empty<int> ());
 			Assert.Equal (3, list.Count);
 			Assert.Equal (9, list[0]);
 			Assert.Equal (3, list[1]);
@@ -386,11 +386,11 @@ namespace Novartment.Base.Collections.Linq.Test
 		[Trait ("Category", "Collections.Linq")]
 		public void Zip ()
 		{
-			var list = ReadOnlyList.Zip (new int[0], new decimal[0], (i1, i2) => i1.ToString (CultureInfo.InvariantCulture) + i2.ToString (CultureInfo.InvariantCulture));
+			var list = ReadOnlyList.Zip (Array.Empty<int> (), Array.Empty<decimal> (), (i1, i2) => i1.ToString (CultureInfo.InvariantCulture) + i2.ToString (CultureInfo.InvariantCulture));
 			Assert.Equal (0, list.Count);
-			list = ReadOnlyList.Zip (new int[] { 9, 3, 1 }, new decimal[0], (i1, i2) => i1.ToString (CultureInfo.InvariantCulture) + i2.ToString (CultureInfo.InvariantCulture));
+			list = ReadOnlyList.Zip (new int[] { 9, 3, 1 }, Array.Empty<decimal> (), (i1, i2) => i1.ToString (CultureInfo.InvariantCulture) + i2.ToString (CultureInfo.InvariantCulture));
 			Assert.Equal (0, list.Count);
-			list = ReadOnlyList.Zip (new int[0], new decimal[] { 555.1m, 10m, 2.2m }, (i1, i2) => i1.ToString (CultureInfo.InvariantCulture) + i2.ToString (CultureInfo.InvariantCulture));
+			list = ReadOnlyList.Zip (Array.Empty<int> (), new decimal[] { 555.1m, 10m, 2.2m }, (i1, i2) => i1.ToString (CultureInfo.InvariantCulture) + i2.ToString (CultureInfo.InvariantCulture));
 			Assert.Equal (0, list.Count);
 			list = ReadOnlyList.Zip (new int[] { 9, 3, 1, -2 }, new decimal[] { 555.1m, 10m, 2.2m }, (i1, i2) => i1.ToString (CultureInfo.InvariantCulture) + i2.ToString (CultureInfo.InvariantCulture));
 			Assert.Equal (3, list.Count);

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 
 namespace Novartment.Base.Collections.Immutable
@@ -11,15 +10,6 @@ namespace Novartment.Base.Collections.Immutable
 	/// автоматически балансирующегося по алгоритму <a href="http://en.wikipedia.org/wiki/AVL_tree">АВЛ</a>.
 	/// </summary>
 	/// <remarks>Синонимы: ассоциативный массив, словарь, map, associative array, symbol table, dictionary.</remarks>
-	[SuppressMessage (
-		"Microsoft.Naming",
-		"CA1704:IdentifiersShouldBeSpelledCorrectly",
-		MessageId = "Avl",
-		Justification = "'AVL-tree' represents standard term.")]
-	[SuppressMessage (
-		"Microsoft.Naming",
-		"CA1711:IdentifiersShouldNotHaveIncorrectSuffix",
-		Justification = "Only 'dictionary' name explicitly and unambiguously describes behaviour of this class.")]
 	public static class AvlBinarySearchTreeDictionary
 	{
 		/// <summary>
@@ -206,10 +196,6 @@ namespace Novartment.Base.Collections.Immutable
 		/// <typeparam name="TValue">Тип значений элементов словаря.</typeparam>
 		/// <param name="treeNode">Начальный узел дерева словаря, в котором производится перечисление.</param>
 		/// <returns>Перечислитель элементов словаря.</returns>
-		[SuppressMessage (
-			"Microsoft.Design",
-			"CA1006:DoNotNestGenericTypesInMemberSignatures",
-			Justification = "The caller expects exactly this behavior.")]
 		public static IEnumerator<AvlBinarySearchTreeDictionaryNode<TKey, TValue>> GetEnumerator<TKey, TValue> (
 			this AvlBinarySearchTreeDictionaryNode<TKey, TValue> treeNode)
 		{

@@ -1,6 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
-namespace Novartment.Base.Collections
+﻿namespace Novartment.Base.Collections
 {
 	// Библиотечный ISet не подходит для использования потому, что является избыточным.
 	// Все его методы (кроме Add):
@@ -15,10 +13,6 @@ namespace Novartment.Base.Collections
 	/// <remarks>
 	/// Характерные представители - System.Collections.Generic.SortedSet и System.Collections.Generic.HashSet.
 	/// </remarks>
-	[SuppressMessage (
-		"Microsoft.Naming",
-		"CA1710:IdentifiersShouldHaveCorrectSuffix",
-		Justification = "Implemented interfaces has no association with class name.")]
 	public interface IAdjustableFiniteSet<T> :
 		IReadOnlyFiniteSet<T>,
 		IAdjustableCollection<T>

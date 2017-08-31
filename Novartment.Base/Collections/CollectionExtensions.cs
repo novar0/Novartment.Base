@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using Novartment.Base.Collections.Immutable;
 using static System.Linq.Enumerable;
@@ -326,10 +325,6 @@ namespace Novartment.Base.Collections
 		/// <param name="splitHereFunc">Функция, которая будет вызвана для каждого элемента исходной последовательности.
 		/// Возвращает True для тех элементов, которые разделяют отдельные под-последовательности.</param>
 		/// <returns>Последовательность под-последовательностей.</returns>
-		[SuppressMessage (
-			"Microsoft.Design",
-			"CA1006:DoNotNestGenericTypesInMemberSignatures",
-			Justification = "The caller expects exactly this behavior.")]
 		public static IEnumerable<IReadOnlyList<T>> Split<T> (this IEnumerable<T> collection, Func<T, bool> splitHereFunc)
 		{
 			if (collection == null)
@@ -524,10 +519,6 @@ namespace Novartment.Base.Collections
 		/// Конечное множество уникальных элементов, содержащихся в указанной последовательности,
 		/// выбранных с использованием указанный компаратора.
 		/// </returns>
-		[SuppressMessage (
-			"Microsoft.Design",
-			"CA1026:DefaultParametersShouldNotBeUsed",
-			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
 		public static IAdjustableFiniteSet<T> ToSet<T> (this IEnumerable<T> source, IComparer<T> comparer = null)
 		{
 			if (source == null)
@@ -557,10 +548,6 @@ namespace Novartment.Base.Collections
 		/// Конечное множество уникальных элементов, содержащихся в указанной последовательности,
 		/// выбранных с использованием указанный компаратора.
 		/// </returns>
-		[SuppressMessage (
-			"Microsoft.Design",
-			"CA1026:DefaultParametersShouldNotBeUsed",
-			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
 		public static IAdjustableFiniteSet<T> ToHashSet<T> (this IEnumerable<T> source, IEqualityComparer<T> comparer = null)
 		{
 			if (source == null)

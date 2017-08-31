@@ -1,11 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace Novartment.Base.Net.Test
 {
-	internal class TcpConnectionProtocolMock : ITcpConnectionProtocol
+	internal class TcpConnectionProtocolMock : ITcpConnectionProtocol, IDisposable
 	{
 		private readonly AutoResetEvent _startedEvent = new AutoResetEvent (false);
 		private List<ITcpConnection> _connections = new List<ITcpConnection> ();
@@ -27,6 +28,11 @@ namespace Novartment.Base.Net.Test
 			cancellationToken.Register (Cancel, connection.RemoteEndPoint, false);
 			_startedEvent.Set ();
 			return stopSignaler.Task;
+		}
+
+		public void Dispose ()
+		{
+			_startedEvent.Dispose ();
 		}
 
 		internal void FinishHandlingConnection (IPEndPoint remoteEndPoint)

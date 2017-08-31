@@ -8,7 +8,7 @@ using Novartment.Base.Net.Mime;
 
 namespace Novartment.Base.Sample
 {
-	public class MimeSamples
+	public static class MimeSamples
 	{
 		public static async Task MessageSaveAttachmentsAsync (CancellationToken cancellationToken)
 		{

@@ -22,7 +22,7 @@ namespace Novartment.Base.Test
 				new JobCompletionSource<IBufferedSource, int> (src1),
 				new JobCompletionSource<IBufferedSource, int> (src2),
 				new JobCompletionSource<IBufferedSource, int> (src3),
-				JobCompletionSource<IBufferedSource, int>.Marker,
+				JobCompletionSourceMarker.Create<IBufferedSource, int> (),
 			};
 			var processingSrc = new ProcessingTaskProviderMock (sources);
 

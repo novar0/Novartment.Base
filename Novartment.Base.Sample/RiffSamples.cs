@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.IO;
 using System.Text;
 using System.Threading;
@@ -10,7 +11,7 @@ using static System.Linq.Enumerable;
 
 namespace Novartment.Base.Sample
 {
-	public class RiffSamples
+	public static class RiffSamples
 	{
 		private static readonly string _folder = @"C:\Temp";
 		private static readonly string _mask = @"*.avi";
@@ -42,6 +43,7 @@ namespace Novartment.Base.Sample
 					}
 
 					chapsText.AppendFormat (
+						CultureInfo.InvariantCulture,
 						"CHAPTER{1:00}={0:hh\\:mm\\:ss\\.fff}\r\nCHAPTER{1:00}NAME={6} ({2}x{3}px {4}ch {5}Hz)\r\n",
 						duration,
 						idx,

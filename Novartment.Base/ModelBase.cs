@@ -1,6 +1,5 @@
 ﻿using System;
 using System.ComponentModel;
-using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Reflection;
 
@@ -21,27 +20,16 @@ namespace Novartment.Base
 		/// <summary>
 		/// Освобождает ресурсы, занимаемые моделью.
 		/// </summary>
-		[SuppressMessage (
-			"Microsoft.Usage",
-			"CA1816:CallGCSuppressFinalizeCorrectly",
-			Justification = "There is no meaning to introduce a finalizer in derived type.")]
-		[SuppressMessage (
-			"Microsoft.Design",
-			"CA1063:ImplementIDisposableCorrectly",
-			Justification = "Implemented correctly.")]
 		public virtual void Dispose ()
 		{
 			PropertyChanged = null;
 		}
 
+#pragma warning disable CA1030 // Use events where appropriate
 		/// <summary>
 		/// Инициирует событие PropertyChanged с указанными аргументами.
 		/// </summary>
 		/// <param name="propertyChangedEventArgs">Аргументы события PropertyChanged.</param>
-		[SuppressMessage (
-			"Microsoft.Design",
-			"CA1030:UseEventsWhereAppropriate",
-			Justification = "Already event")]
 		protected virtual void RaisePropertyChanged (PropertyChangedEventArgs propertyChangedEventArgs)
 		{
 			if (propertyChangedEventArgs == null)
@@ -61,11 +49,8 @@ namespace Novartment.Base
 		/// Инициирует событие PropertyChanged с указанным именем свойства.
 		/// </summary>
 		/// <param name="propertyName">Имя свойства для события PropertyChanged.</param>
-		[SuppressMessage (
-			"Microsoft.Design",
-			"CA1030:UseEventsWhereAppropriate",
-			Justification = "This cannot be an event")]
 		protected void RaisePropertyChanged (string propertyName)
+#pragma warning restore CA1030 // Use events where appropriate
 		{
 			if (propertyName == null)
 			{

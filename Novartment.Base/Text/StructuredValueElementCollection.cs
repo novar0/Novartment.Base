@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Text;
 using Novartment.Base.Collections;
@@ -10,10 +9,6 @@ namespace Novartment.Base.Text
 	/// <summary>
 	/// Методы для создания и обработки коллекций StructuredValueElement.
 	/// </summary>
-	[SuppressMessage (
-		"Microsoft.Naming",
-		"CA1711:IdentifiersShouldNotHaveIncorrectSuffix",
-		Justification = "Implemented interfaces has no association with class name.")]
 	public static class StructuredValueElementCollection
 	{
 		private static readonly DelimitedElement _CommentDelimitingData = new DelimitedElement ('(', ')', new DelimitedElement ('\\', 2), true);
@@ -77,10 +72,6 @@ namespace Novartment.Base.Text
 		/// <param name="allowDotInsideValue">Признак допустимости символа 'точка' внутри элементов значения.</param>
 		/// <param name="typeToSkip">Тип элементов значения, которые будут пропущены и не попадут в создаваемую коллекцию.</param>
 		/// <returns>Коллекция элементов структурированного значения.</returns>
-		[SuppressMessage (
-			"Microsoft.Design",
-			"CA1026:DefaultParametersShouldNotBeUsed",
-			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
 		public static IReadOnlyList<StructuredValueElement> Parse (
 			string source,
 			AsciiCharClasses valueCharClass,

@@ -26,7 +26,7 @@ namespace Novartment.Base.Smtp.Test
 				srcAttribs =>
 				{
 					createdTransactionsCount++;
-					return new SmtDataTransferTransactionMock (srcAttribs, null, null, TransactionBehavior.Normal);
+					return new SmtDataTransferTransactionMock (null, null, TransactionBehavior.Normal);
 				},
 				"test.localhost",
 				SmtpServerSecurityParameters.NoSecurity,
@@ -37,54 +37,54 @@ namespace Novartment.Base.Smtp.Test
 			Assert.Equal (0, createdTransactionsCount);
 			var reply = sender.SendedReplies.Dequeue ();
 			Assert.Equal (503, reply.Code);
-			Assert.Equal (0, sender.SendedReplies.Count);
+			Assert.Empty (sender.SendedReplies);
 
 			sender.ReceivedCommands.Enqueue (new SmtpRcptToCommand (new AddrSpec ("source", "client.com")));
 			Assert.True (session.ReceiveCommandSendReplyAsync (CancellationToken.None).Result);
 			Assert.Equal (0, createdTransactionsCount);
 			reply = sender.SendedReplies.Dequeue ();
 			Assert.Equal (503, reply.Code);
-			Assert.Equal (0, sender.SendedReplies.Count);
+			Assert.Empty (sender.SendedReplies);
 
 			sender.ReceivedCommands.Enqueue (SmtpCommand.Data);
 			Assert.True (session.ReceiveCommandSendReplyAsync (CancellationToken.None).Result);
 			Assert.Equal (0, createdTransactionsCount);
 			reply = sender.SendedReplies.Dequeue ();
 			Assert.Equal (503, reply.Code);
-			Assert.Equal (0, sender.SendedReplies.Count);
+			Assert.Empty (sender.SendedReplies);
 
 			sender.ReceivedCommands.Enqueue (new SmtpHeloCommand ("my-client-ID-007"));
 			Assert.True (session.ReceiveCommandSendReplyAsync (CancellationToken.None).Result);
 			Assert.Equal (0, createdTransactionsCount);
 			reply = sender.SendedReplies.Dequeue ();
 			Assert.Equal (250, reply.Code);
-			Assert.Equal (0, sender.SendedReplies.Count);
+			Assert.Empty (sender.SendedReplies);
 			sender.ReceivedCommands.Enqueue (new SmtpRcptToCommand (new AddrSpec ("source", "client.com")));
 			Assert.True (session.ReceiveCommandSendReplyAsync (CancellationToken.None).Result);
 			Assert.Equal (0, createdTransactionsCount);
 			reply = sender.SendedReplies.Dequeue ();
 			Assert.Equal (503, reply.Code);
-			Assert.Equal (0, sender.SendedReplies.Count);
+			Assert.Empty (sender.SendedReplies);
 
 			sender.ReceivedCommands.Enqueue (SmtpCommand.Data);
 			Assert.True (session.ReceiveCommandSendReplyAsync (CancellationToken.None).Result);
 			Assert.Equal (0, createdTransactionsCount);
 			reply = sender.SendedReplies.Dequeue ();
 			Assert.Equal (503, reply.Code);
-			Assert.Equal (0, sender.SendedReplies.Count);
+			Assert.Empty (sender.SendedReplies);
 
 			sender.ReceivedCommands.Enqueue (new SmtpMailFromCommand (new AddrSpec ("source", "client.com"), ContentTransferEncoding.SevenBit, null));
 			Assert.True (session.ReceiveCommandSendReplyAsync (CancellationToken.None).Result);
 			Assert.Equal (1, createdTransactionsCount);
 			reply = sender.SendedReplies.Dequeue ();
 			Assert.Equal (250, reply.Code);
-			Assert.Equal (0, sender.SendedReplies.Count);
+			Assert.Empty (sender.SendedReplies);
 			sender.ReceivedCommands.Enqueue (SmtpCommand.Data);
 			Assert.True (session.ReceiveCommandSendReplyAsync (CancellationToken.None).Result);
 			Assert.Equal (1, createdTransactionsCount);
 			reply = sender.SendedReplies.Dequeue ();
 			Assert.Equal (554, reply.Code);
-			Assert.Equal (0, sender.SendedReplies.Count);
+			Assert.Empty (sender.SendedReplies);
 		}
 
 		[Fact]
@@ -103,7 +103,7 @@ namespace Novartment.Base.Smtp.Test
 				srcAttribs =>
 				{
 					createdTransactionsCount++;
-					return new SmtDataTransferTransactionMock (srcAttribs, invalidReversePath, invalidRecipient, TransactionBehavior.Normal);
+					return new SmtDataTransferTransactionMock (invalidReversePath, invalidRecipient, TransactionBehavior.Normal);
 				},
 				"test.localhost",
 				SmtpServerSecurityParameters.NoSecurity,
@@ -114,7 +114,7 @@ namespace Novartment.Base.Smtp.Test
 			Assert.Equal (0, createdTransactionsCount);
 			var reply = sender.SendedReplies.Dequeue ();
 			Assert.Equal (250, reply.Code);
-			Assert.Equal (0, sender.SendedReplies.Count);
+			Assert.Empty (sender.SendedReplies);
 
 			// неподходящий адрес возврата
 			sender.ReceivedCommands.Enqueue (new SmtpMailFromCommand (invalidReversePath, ContentTransferEncoding.SevenBit, null));
@@ -123,7 +123,7 @@ namespace Novartment.Base.Smtp.Test
 			Assert.Null (session.CurrentTransaction);
 			reply = sender.SendedReplies.Dequeue ();
 			Assert.Equal (553, reply.Code);
-			Assert.Equal (0, sender.SendedReplies.Count);
+			Assert.Empty (sender.SendedReplies);
 
 			// неподходящий получатель
 			sender.ReceivedCommands.Enqueue (new SmtpMailFromCommand (validReversePath, ContentTransferEncoding.SevenBit, null));
@@ -133,16 +133,16 @@ namespace Novartment.Base.Smtp.Test
 			Assert.Equal (validReversePath, trctn.ReversePath);
 			reply = sender.SendedReplies.Dequeue ();
 			Assert.Equal (250, reply.Code);
-			Assert.Equal (0, sender.SendedReplies.Count);
+			Assert.Empty (sender.SendedReplies);
 
 			sender.ReceivedCommands.Enqueue (new SmtpRcptToCommand (invalidRecipient));
 			Assert.True (session.ReceiveCommandSendReplyAsync (CancellationToken.None).Result);
 			Assert.Equal (2, createdTransactionsCount);
 			Assert.Equal (trctn, session.CurrentTransaction);
-			Assert.Equal (0, trctn.Recipients.Count);
+			Assert.Empty (trctn.Recipients);
 			reply = sender.SendedReplies.Dequeue ();
 			Assert.Equal (550, reply.Code);
-			Assert.Equal (0, sender.SendedReplies.Count);
+			Assert.Empty (sender.SendedReplies);
 
 			sender.ReceivedCommands.Enqueue (SmtpCommand.Data);
 			Assert.True (session.ReceiveCommandSendReplyAsync (CancellationToken.None).Result);
@@ -150,7 +150,7 @@ namespace Novartment.Base.Smtp.Test
 			Assert.Null (session.CurrentTransaction);
 			reply = sender.SendedReplies.Dequeue ();
 			Assert.Equal (554, reply.Code);
-			Assert.Equal (0, sender.SendedReplies.Count);
+			Assert.Empty (sender.SendedReplies);
 		}
 
 		[Fact]
@@ -165,7 +165,7 @@ namespace Novartment.Base.Smtp.Test
 				srcAttribs =>
 				{
 					createdTransactionsCount++;
-					return new SmtDataTransferTransactionMock (srcAttribs, null, null, TransactionBehavior.Normal);
+					return new SmtDataTransferTransactionMock (null, null, TransactionBehavior.Normal);
 				},
 				"test.localhost",
 				SmtpServerSecurityParameters.NoSecurity,
@@ -175,7 +175,7 @@ namespace Novartment.Base.Smtp.Test
 			Assert.True (session.ReceiveCommandSendReplyAsync (CancellationToken.None).Result);
 			Assert.Equal (0, createdTransactionsCount);
 			var reply = sender.SendedReplies.Dequeue ();
-			Assert.Equal (0, sender.SendedReplies.Count);
+			Assert.Empty (sender.SendedReplies);
 			Assert.Equal (250, reply.Code);
 
 			// first
@@ -186,7 +186,7 @@ namespace Novartment.Base.Smtp.Test
 			var trctn = (SmtDataTransferTransactionMock)session.CurrentTransaction;
 			Assert.Equal (mailbox, trctn.ReversePath);
 			reply = sender.SendedReplies.Dequeue ();
-			Assert.Equal (0, sender.SendedReplies.Count);
+			Assert.Empty (sender.SendedReplies);
 			Assert.Equal (250, reply.Code);
 			Assert.False (trctn.Completed);
 			Assert.False (trctn.Disposed);
@@ -196,7 +196,7 @@ namespace Novartment.Base.Smtp.Test
 			Assert.Equal (1, createdTransactionsCount);
 			Assert.Equal (trctn, session.CurrentTransaction);
 			reply = sender.SendedReplies.Dequeue ();
-			Assert.Equal (0, sender.SendedReplies.Count);
+			Assert.Empty (sender.SendedReplies);
 			Assert.Equal (250, reply.Code);
 
 			sender.ReceivedCommands.Enqueue (new SmtpRcptToCommand (mailbox));
@@ -205,7 +205,7 @@ namespace Novartment.Base.Smtp.Test
 			Assert.Equal (trctn, session.CurrentTransaction);
 			Assert.Equal (mailbox, trctn.Recipients[0]);
 			reply = sender.SendedReplies.Dequeue ();
-			Assert.Equal (0, sender.SendedReplies.Count);
+			Assert.Empty (sender.SendedReplies);
 			Assert.Equal (250, reply.Code);
 
 			sender.ReceivedCommands.Enqueue (SmtpCommand.Data);
@@ -213,7 +213,7 @@ namespace Novartment.Base.Smtp.Test
 			Assert.Equal (1, createdTransactionsCount);
 			Assert.Equal (trctn, session.CurrentTransaction);
 			reply = sender.SendedReplies.Dequeue ();
-			Assert.Equal (0, sender.SendedReplies.Count);
+			Assert.Empty (sender.SendedReplies);
 			Assert.Equal (354, reply.Code);
 
 			var mailBody = "Hello dear!\r\nTell me please how you feel about last meeting.";
@@ -221,7 +221,7 @@ namespace Novartment.Base.Smtp.Test
 			sender.ReceivedCommands.Enqueue (new SmtpActualDataCommand (src, true));
 			Assert.True (session.ReceiveCommandSendReplyAsync (CancellationToken.None).Result);
 			reply = sender.SendedReplies.Dequeue ();
-			Assert.Equal (0, sender.SendedReplies.Count);
+			Assert.Empty (sender.SendedReplies);
 			Assert.Equal (250, reply.Code);
 			Assert.Equal (1, createdTransactionsCount);
 			Assert.Null (session.CurrentTransaction);
@@ -235,7 +235,7 @@ namespace Novartment.Base.Smtp.Test
 			sender.ReceivedCommands.Enqueue (new SmtpMailFromCommand (mailbox, ContentTransferEncoding.SevenBit, null));
 			Assert.True (session.ReceiveCommandSendReplyAsync (CancellationToken.None).Result);
 			reply = sender.SendedReplies.Dequeue ();
-			Assert.Equal (0, sender.SendedReplies.Count);
+			Assert.Empty (sender.SendedReplies);
 			Assert.Equal (250, reply.Code);
 			Assert.Equal (2, createdTransactionsCount);
 			Assert.NotNull (session.CurrentTransaction);
@@ -246,23 +246,23 @@ namespace Novartment.Base.Smtp.Test
 			sender.ReceivedCommands.Enqueue (new SmtpRcptToCommand (mailbox));
 			Assert.True (session.ReceiveCommandSendReplyAsync (CancellationToken.None).Result);
 			reply = sender.SendedReplies.Dequeue ();
-			Assert.Equal (0, sender.SendedReplies.Count);
+			Assert.Empty (sender.SendedReplies);
 			Assert.Equal (250, reply.Code);
 			Assert.Equal (2, createdTransactionsCount);
-			Assert.Equal (1, trctn.Recipients.Count);
+			Assert.Single (trctn.Recipients);
 			Assert.Equal (mailbox, trctn.Recipients[0]);
 
 			sender.ReceivedCommands.Enqueue (SmtpCommand.Noop);
 			Assert.True (session.ReceiveCommandSendReplyAsync (CancellationToken.None).Result);
 			reply = sender.SendedReplies.Dequeue ();
-			Assert.Equal (0, sender.SendedReplies.Count);
+			Assert.Empty (sender.SendedReplies);
 			Assert.Equal (250, reply.Code);
 			Assert.Equal (2, createdTransactionsCount);
 
 			sender.ReceivedCommands.Enqueue (SmtpCommand.Noop);
 			Assert.True (session.ReceiveCommandSendReplyAsync (CancellationToken.None).Result);
 			reply = sender.SendedReplies.Dequeue ();
-			Assert.Equal (0, sender.SendedReplies.Count);
+			Assert.Empty (sender.SendedReplies);
 			Assert.Equal (250, reply.Code);
 			Assert.Equal (2, createdTransactionsCount);
 
@@ -270,7 +270,7 @@ namespace Novartment.Base.Smtp.Test
 			sender.ReceivedCommands.Enqueue (new SmtpRcptToCommand (mailbox));
 			Assert.True (session.ReceiveCommandSendReplyAsync (CancellationToken.None).Result);
 			reply = sender.SendedReplies.Dequeue ();
-			Assert.Equal (0, sender.SendedReplies.Count);
+			Assert.Empty (sender.SendedReplies);
 			Assert.Equal (250, reply.Code);
 			Assert.Equal (2, createdTransactionsCount);
 			Assert.Equal (2, trctn.Recipients.Count);
@@ -280,7 +280,7 @@ namespace Novartment.Base.Smtp.Test
 			sender.ReceivedCommands.Enqueue (new SmtpRcptToCommand (mailbox));
 			Assert.True (session.ReceiveCommandSendReplyAsync (CancellationToken.None).Result);
 			reply = sender.SendedReplies.Dequeue ();
-			Assert.Equal (0, sender.SendedReplies.Count);
+			Assert.Empty (sender.SendedReplies);
 			Assert.Equal (250, reply.Code);
 			Assert.Equal (3, trctn.Recipients.Count);
 			Assert.Equal (mailbox, trctn.Recipients[2]);
@@ -292,7 +292,7 @@ namespace Novartment.Base.Smtp.Test
 			sender.ReceivedCommands.Enqueue (new SmtpActualDataCommand (src, true));
 			Assert.True (session.ReceiveCommandSendReplyAsync (CancellationToken.None).Result);
 			reply = sender.SendedReplies.Dequeue ();
-			Assert.Equal (0, sender.SendedReplies.Count);
+			Assert.Empty (sender.SendedReplies);
 			Assert.Equal (250, reply.Code);
 			Assert.Equal (2, createdTransactionsCount);
 			Assert.Null (session.CurrentTransaction);
@@ -305,7 +305,7 @@ namespace Novartment.Base.Smtp.Test
 			sender.ReceivedCommands.Enqueue (new SmtpHeloCommand ("anonymouse"));
 			Assert.True (session.ReceiveCommandSendReplyAsync (CancellationToken.None).Result);
 			reply = sender.SendedReplies.Dequeue ();
-			Assert.Equal (0, sender.SendedReplies.Count);
+			Assert.Empty (sender.SendedReplies);
 			Assert.Equal (250, reply.Code);
 			Assert.Equal (2, createdTransactionsCount);
 			Assert.Null (session.CurrentTransaction);
@@ -314,7 +314,7 @@ namespace Novartment.Base.Smtp.Test
 			sender.ReceivedCommands.Enqueue (new SmtpMailFromCommand (mailbox, ContentTransferEncoding.SevenBit, null));
 			Assert.True (session.ReceiveCommandSendReplyAsync (CancellationToken.None).Result);
 			reply = sender.SendedReplies.Dequeue ();
-			Assert.Equal (0, sender.SendedReplies.Count);
+			Assert.Empty (sender.SendedReplies);
 			Assert.Equal (250, reply.Code);
 			Assert.Equal (3, createdTransactionsCount);
 			Assert.NotNull (session.CurrentTransaction);
@@ -325,10 +325,10 @@ namespace Novartment.Base.Smtp.Test
 			sender.ReceivedCommands.Enqueue (new SmtpRcptToCommand (mailbox));
 			Assert.True (session.ReceiveCommandSendReplyAsync (CancellationToken.None).Result);
 			reply = sender.SendedReplies.Dequeue ();
-			Assert.Equal (0, sender.SendedReplies.Count);
+			Assert.Empty (sender.SendedReplies);
 			Assert.Equal (250, reply.Code);
 			Assert.Equal (3, createdTransactionsCount);
-			Assert.Equal (1, trctn.Recipients.Count);
+			Assert.Single (trctn.Recipients);
 			Assert.Equal (mailbox, trctn.Recipients[0]);
 			Assert.False (trctn.Completed);
 			Assert.False (trctn.Disposed);
@@ -346,7 +346,7 @@ namespace Novartment.Base.Smtp.Test
 				srcAttribs =>
 				{
 					createdTransactionsCount++;
-					return new SmtDataTransferTransactionMock (srcAttribs, null, null, TransactionBehavior.Normal);
+					return new SmtDataTransferTransactionMock (null, null, TransactionBehavior.Normal);
 				},
 				"test.localhost",
 				SmtpServerSecurityParameters.NoSecurity,
@@ -355,13 +355,13 @@ namespace Novartment.Base.Smtp.Test
 			sender.ReceivedCommands.Enqueue (new SmtpHeloCommand ("my-client-ID-007"));
 			Assert.True (session.ReceiveCommandSendReplyAsync (CancellationToken.None).Result);
 			var reply = sender.SendedReplies.Dequeue ();
-			Assert.Equal (0, sender.SendedReplies.Count);
+			Assert.Empty (sender.SendedReplies);
 			Assert.Equal (250, reply.Code);
 
 			sender.ReceivedCommands.Enqueue (SmtpCommand.Rset);
 			Assert.True (session.ReceiveCommandSendReplyAsync (CancellationToken.None).Result);
 			reply = sender.SendedReplies.Dequeue ();
-			Assert.Equal (0, sender.SendedReplies.Count);
+			Assert.Empty (sender.SendedReplies);
 			Assert.Equal (250, reply.Code);
 			Assert.Equal (0, createdTransactionsCount);
 			Assert.Null (session.CurrentTransaction);
@@ -371,7 +371,7 @@ namespace Novartment.Base.Smtp.Test
 			sender.ReceivedCommands.Enqueue (new SmtpMailFromCommand (mailbox, ContentTransferEncoding.SevenBit, null));
 			Assert.True (session.ReceiveCommandSendReplyAsync (CancellationToken.None).Result);
 			reply = sender.SendedReplies.Dequeue ();
-			Assert.Equal (0, sender.SendedReplies.Count);
+			Assert.Empty (sender.SendedReplies);
 			Assert.Equal (250, reply.Code);
 			Assert.Equal (1, createdTransactionsCount);
 			Assert.NotNull (session.CurrentTransaction);
@@ -383,7 +383,7 @@ namespace Novartment.Base.Smtp.Test
 			sender.ReceivedCommands.Enqueue (SmtpCommand.Rset);
 			Assert.True (session.ReceiveCommandSendReplyAsync (CancellationToken.None).Result);
 			reply = sender.SendedReplies.Dequeue ();
-			Assert.Equal (0, sender.SendedReplies.Count);
+			Assert.Empty (sender.SendedReplies);
 			Assert.Equal (250, reply.Code);
 			Assert.Equal (1, createdTransactionsCount);
 			Assert.Null (session.CurrentTransaction);
@@ -395,7 +395,7 @@ namespace Novartment.Base.Smtp.Test
 			sender.ReceivedCommands.Enqueue (new SmtpMailFromCommand (mailbox, ContentTransferEncoding.SevenBit, null));
 			Assert.True (session.ReceiveCommandSendReplyAsync (CancellationToken.None).Result);
 			reply = sender.SendedReplies.Dequeue ();
-			Assert.Equal (0, sender.SendedReplies.Count);
+			Assert.Empty (sender.SendedReplies);
 			Assert.Equal (250, reply.Code);
 			Assert.Equal (2, createdTransactionsCount);
 			Assert.NotNull (session.CurrentTransaction);
@@ -406,17 +406,17 @@ namespace Novartment.Base.Smtp.Test
 			sender.ReceivedCommands.Enqueue (new SmtpRcptToCommand (mailbox));
 			Assert.True (session.ReceiveCommandSendReplyAsync (CancellationToken.None).Result);
 			reply = sender.SendedReplies.Dequeue ();
-			Assert.Equal (0, sender.SendedReplies.Count);
+			Assert.Empty (sender.SendedReplies);
 			Assert.Equal (250, reply.Code);
 			Assert.Equal (2, createdTransactionsCount);
-			Assert.Equal (1, trctn.Recipients.Count);
+			Assert.Single (trctn.Recipients);
 			Assert.Equal (mailbox, trctn.Recipients[0]);
 
 			mailbox = new AddrSpec ("abuse", "mail.ru");
 			sender.ReceivedCommands.Enqueue (new SmtpRcptToCommand (mailbox));
 			Assert.True (session.ReceiveCommandSendReplyAsync (CancellationToken.None).Result);
 			reply = sender.SendedReplies.Dequeue ();
-			Assert.Equal (0, sender.SendedReplies.Count);
+			Assert.Empty (sender.SendedReplies);
 			Assert.Equal (250, reply.Code);
 			Assert.Equal (2, createdTransactionsCount);
 			Assert.Equal (2, trctn.Recipients.Count);
@@ -425,7 +425,7 @@ namespace Novartment.Base.Smtp.Test
 			sender.ReceivedCommands.Enqueue (SmtpCommand.Rset);
 			Assert.True (session.ReceiveCommandSendReplyAsync (CancellationToken.None).Result);
 			reply = sender.SendedReplies.Dequeue ();
-			Assert.Equal (0, sender.SendedReplies.Count);
+			Assert.Empty (sender.SendedReplies);
 			Assert.Equal (250, reply.Code);
 			Assert.Equal (2, createdTransactionsCount);
 			Assert.Null (session.CurrentTransaction);
@@ -435,7 +435,7 @@ namespace Novartment.Base.Smtp.Test
 			sender.ReceivedCommands.Enqueue (SmtpCommand.Rset);
 			Assert.True (session.ReceiveCommandSendReplyAsync (CancellationToken.None).Result);
 			reply = sender.SendedReplies.Dequeue ();
-			Assert.Equal (0, sender.SendedReplies.Count);
+			Assert.Empty (sender.SendedReplies);
 			Assert.Equal (250, reply.Code);
 			Assert.Equal (2, createdTransactionsCount);
 			Assert.Null (session.CurrentTransaction);
@@ -454,7 +454,7 @@ namespace Novartment.Base.Smtp.Test
 				srcAttribs =>
 				{
 					createdTransactionsCount++;
-					lastTransaction = new SmtDataTransferTransactionMock (srcAttribs, null, null, _transactionBehavior);
+					lastTransaction = new SmtDataTransferTransactionMock (null, null, _transactionBehavior);
 					return lastTransaction;
 				},
 				"test.localhost",
@@ -464,7 +464,7 @@ namespace Novartment.Base.Smtp.Test
 			sender.ReceivedCommands.Enqueue (new SmtpHeloCommand ("my-client-ID-007"));
 			Assert.True (session.ReceiveCommandSendReplyAsync (CancellationToken.None).Result);
 			var reply = sender.SendedReplies.Dequeue ();
-			Assert.Equal (0, sender.SendedReplies.Count);
+			Assert.Empty (sender.SendedReplies);
 			Assert.Equal (250, reply.Code);
 
 			// исключение в IMailDataTransferTransaction.TryStartAsync()
@@ -474,7 +474,7 @@ namespace Novartment.Base.Smtp.Test
 			sender.ReceivedCommands.Enqueue (new SmtpMailFromCommand (null, ContentTransferEncoding.SevenBit, null));
 			Assert.True (session.ReceiveCommandSendReplyAsync (CancellationToken.None).Result);
 			reply = sender.SendedReplies.Dequeue ();
-			Assert.Equal (0, sender.SendedReplies.Count);
+			Assert.Empty (sender.SendedReplies);
 			Assert.Equal (451, reply.Code);
 			Assert.Equal (1, createdTransactionsCount);
 			Assert.Null (session.CurrentTransaction);
@@ -489,7 +489,7 @@ namespace Novartment.Base.Smtp.Test
 			sender.ReceivedCommands.Enqueue (new SmtpMailFromCommand (mailbox, ContentTransferEncoding.SevenBit, null));
 			Assert.True (session.ReceiveCommandSendReplyAsync (CancellationToken.None).Result);
 			reply = sender.SendedReplies.Dequeue ();
-			Assert.Equal (0, sender.SendedReplies.Count);
+			Assert.Empty (sender.SendedReplies);
 			Assert.Equal (250, reply.Code);
 			Assert.Equal (2, createdTransactionsCount);
 			Assert.NotNull (session.CurrentTransaction);
@@ -500,7 +500,7 @@ namespace Novartment.Base.Smtp.Test
 			sender.ReceivedCommands.Enqueue (new SmtpRcptToCommand (null));
 			Assert.True (session.ReceiveCommandSendReplyAsync (CancellationToken.None).Result);
 			reply = sender.SendedReplies.Dequeue ();
-			Assert.Equal (0, sender.SendedReplies.Count);
+			Assert.Empty (sender.SendedReplies);
 			Assert.Equal (451, reply.Code);
 			Assert.Equal (2, createdTransactionsCount);
 			Assert.NotNull (session.CurrentTransaction);
@@ -510,7 +510,7 @@ namespace Novartment.Base.Smtp.Test
 			sender.ReceivedCommands.Enqueue (SmtpCommand.Rset);
 			Assert.True (session.ReceiveCommandSendReplyAsync (CancellationToken.None).Result);
 			reply = sender.SendedReplies.Dequeue ();
-			Assert.Equal (0, sender.SendedReplies.Count);
+			Assert.Empty (sender.SendedReplies);
 			Assert.Equal (250, reply.Code);
 			Assert.Equal (2, createdTransactionsCount);
 			Assert.Null (session.CurrentTransaction);
@@ -524,7 +524,7 @@ namespace Novartment.Base.Smtp.Test
 			sender.ReceivedCommands.Enqueue (new SmtpMailFromCommand (mailbox, ContentTransferEncoding.SevenBit, null));
 			Assert.True (session.ReceiveCommandSendReplyAsync (CancellationToken.None).Result);
 			reply = sender.SendedReplies.Dequeue ();
-			Assert.Equal (0, sender.SendedReplies.Count);
+			Assert.Empty (sender.SendedReplies);
 			Assert.Equal (250, reply.Code);
 			Assert.Equal (3, createdTransactionsCount);
 			Assert.NotNull (session.CurrentTransaction);
@@ -537,16 +537,16 @@ namespace Novartment.Base.Smtp.Test
 			sender.ReceivedCommands.Enqueue (new SmtpRcptToCommand (mailbox));
 			Assert.True (session.ReceiveCommandSendReplyAsync (CancellationToken.None).Result);
 			reply = sender.SendedReplies.Dequeue ();
-			Assert.Equal (0, sender.SendedReplies.Count);
+			Assert.Empty (sender.SendedReplies);
 			Assert.Equal (250, reply.Code);
 			Assert.Equal (3, createdTransactionsCount);
-			Assert.Equal (1, trctn.Recipients.Count);
+			Assert.Single (trctn.Recipients);
 			Assert.Equal (mailbox, trctn.Recipients[0]);
 
 			sender.ReceivedCommands.Enqueue (SmtpCommand.Data);
 			Assert.True (session.ReceiveCommandSendReplyAsync (CancellationToken.None).Result);
 			reply = sender.SendedReplies.Dequeue ();
-			Assert.Equal (0, sender.SendedReplies.Count);
+			Assert.Empty (sender.SendedReplies);
 			Assert.Equal (354, reply.Code);
 			Assert.Equal (3, createdTransactionsCount);
 
@@ -555,7 +555,7 @@ namespace Novartment.Base.Smtp.Test
 			sender.ReceivedCommands.Enqueue (new SmtpActualDataCommand (src, true));
 			Assert.True (session.ReceiveCommandSendReplyAsync (CancellationToken.None).Result);
 			reply = sender.SendedReplies.Dequeue ();
-			Assert.Equal (0, sender.SendedReplies.Count);
+			Assert.Empty (sender.SendedReplies);
 			Assert.Equal (451, reply.Code);
 			Assert.Equal (3, createdTransactionsCount);
 			Assert.Null (session.CurrentTransaction);
@@ -575,7 +575,7 @@ namespace Novartment.Base.Smtp.Test
 				srcAttribs =>
 				{
 					createdTransactionsCount++;
-					return new SmtDataTransferTransactionMock (srcAttribs, null, null, TransactionBehavior.Normal);
+					return new SmtDataTransferTransactionMock (null, null, TransactionBehavior.Normal);
 				},
 				"test.localhost",
 				SmtpServerSecurityParameters.NoSecurity,
@@ -592,7 +592,7 @@ namespace Novartment.Base.Smtp.Test
 			sender.ReceivedCommands.Enqueue (new SmtpBdatCommand (src1, mailBodyChunk1.Length, false));
 			Assert.True (session.ReceiveCommandSendReplyAsync (CancellationToken.None).Result);
 			var reply = sender.SendedReplies.Dequeue ();
-			Assert.Equal (0, sender.SendedReplies.Count);
+			Assert.Empty (sender.SendedReplies);
 			Assert.Equal (250, reply.Code);
 			Assert.Equal (1, createdTransactionsCount);
 			Assert.False (trctn.Completed);
@@ -602,7 +602,7 @@ namespace Novartment.Base.Smtp.Test
 			sender.ReceivedCommands.Enqueue (new SmtpBdatCommand (src2, mailBodyChunk2.Length, true));
 			Assert.True (session.ReceiveCommandSendReplyAsync (CancellationToken.None).Result);
 			reply = sender.SendedReplies.Dequeue ();
-			Assert.Equal (0, sender.SendedReplies.Count);
+			Assert.Empty (sender.SendedReplies);
 			Assert.Equal (250, reply.Code);
 			Assert.Equal (1, createdTransactionsCount);
 			Assert.True (trctn.Completed);
@@ -623,7 +623,7 @@ namespace Novartment.Base.Smtp.Test
 				srcAttribs =>
 				{
 					createdTransactionsCount++;
-					return new SmtDataTransferTransactionMock (srcAttribs, null, null, TransactionBehavior.Normal);
+					return new SmtDataTransferTransactionMock (null, null, TransactionBehavior.Normal);
 				},
 				"test.localhost",
 				SmtpServerSecurityParameters.NoSecurity,
@@ -635,7 +635,7 @@ namespace Novartment.Base.Smtp.Test
 			sender.ReceivedCommands.Enqueue (SmtpCommand.Data);
 			Assert.True (session.ReceiveCommandSendReplyAsync (CancellationToken.None).Result);
 			var reply = sender.SendedReplies.Dequeue ();
-			Assert.Equal (0, sender.SendedReplies.Count);
+			Assert.Empty (sender.SendedReplies);
 			Assert.Equal (354, reply.Code);
 			Assert.Equal (1, createdTransactionsCount);
 			var mailBody = "Hello";
@@ -646,7 +646,7 @@ namespace Novartment.Base.Smtp.Test
 			sender.ReceivedCommands.Enqueue (new SmtpActualDataCommand (src, true));
 			Assert.True (session.ReceiveCommandSendReplyAsync (CancellationToken.None).Result);
 			reply = sender.SendedReplies.Dequeue ();
-			Assert.Equal (0, sender.SendedReplies.Count);
+			Assert.Empty (sender.SendedReplies);
 			Assert.Equal (451, reply.Code);
 			Assert.Equal (1, createdTransactionsCount);
 			Assert.Null (session.CurrentTransaction);
@@ -661,7 +661,7 @@ namespace Novartment.Base.Smtp.Test
 			sender.ReceivedCommands.Enqueue (new SmtpBdatCommand (src2, mailBodyBytes.Length + 555, false));
 			Assert.True (session.ReceiveCommandSendReplyAsync (CancellationToken.None).Result);
 			reply = sender.SendedReplies.Dequeue ();
-			Assert.Equal (0, sender.SendedReplies.Count);
+			Assert.Empty (sender.SendedReplies);
 			Assert.Equal (451, reply.Code);
 			Assert.Null (session.CurrentTransaction);
 			Assert.Equal (2, createdTransactionsCount);
@@ -681,7 +681,7 @@ namespace Novartment.Base.Smtp.Test
 				srcAttribs =>
 				{
 					createdTransactionsCount++;
-					return new SmtDataTransferTransactionMock (srcAttribs, null, null, TransactionBehavior.Normal);
+					return new SmtDataTransferTransactionMock (null, null, TransactionBehavior.Normal);
 				},
 				"test.localhost",
 				SmtpServerSecurityParameters.NoSecurity,
@@ -693,8 +693,8 @@ namespace Novartment.Base.Smtp.Test
 			var mailBody = "Hello";
 			var src = new ArrayBufferedSource (Encoding.ASCII.GetBytes (mailBody));
 			sender.ReceivedCommands.Enqueue (new SmtpInvalidSyntaxCommand (SmtpCommandType.Bdat, "some unrecoverable error"));
-			Assert.ThrowsAsync<UnrecoverableProtocolException> (async () => await session.ReceiveCommandSendReplyAsync (CancellationToken.None));
-			Assert.Equal (0, sender.SendedReplies.Count);
+			Assert.ThrowsAsync<UnrecoverableProtocolException> (() => session.ReceiveCommandSendReplyAsync (CancellationToken.None));
+			Assert.Empty (sender.SendedReplies);
 			Assert.True (trctn.Disposed);
 		}
 
@@ -711,7 +711,7 @@ namespace Novartment.Base.Smtp.Test
 				srcAttribs =>
 				{
 					createdTransactionsCount++;
-					currentTransaction = new SmtDataTransferTransactionMock (srcAttribs, null, null, TransactionBehavior.SlowStarting);
+					currentTransaction = new SmtDataTransferTransactionMock (null, null, TransactionBehavior.SlowStarting);
 					return currentTransaction;
 				},
 				"test.localhost",
@@ -721,7 +721,7 @@ namespace Novartment.Base.Smtp.Test
 			sender.ReceivedCommands.Enqueue (new SmtpHeloCommand ("my-client-ID-007"));
 			Assert.True (session.ReceiveCommandSendReplyAsync (CancellationToken.None).Result);
 			var reply = sender.SendedReplies.Dequeue ();
-			Assert.Equal (0, sender.SendedReplies.Count);
+			Assert.Empty (sender.SendedReplies);
 			Assert.Equal (250, reply.Code);
 
 			var mailbox = new AddrSpec ("error", "hacker.net");
@@ -731,9 +731,9 @@ namespace Novartment.Base.Smtp.Test
 			Assert.NotNull (currentTransaction);
 			Assert.True (currentTransaction.SlowOperationInProgressEvent.WaitOne ());
 			cts.Cancel ();
-			Assert.ThrowsAsync<OperationCanceledException> (async () => await task).Wait ();
+			Assert.ThrowsAsync<OperationCanceledException> (() => task).Wait ();
 			Assert.Equal (1, createdTransactionsCount);
-			Assert.Equal (0, sender.SendedReplies.Count);
+			Assert.Empty (sender.SendedReplies);
 			Assert.False (currentTransaction.Completed);
 			Assert.True (currentTransaction.Disposed);
 			Assert.Null (session.CurrentTransaction);
@@ -752,7 +752,7 @@ namespace Novartment.Base.Smtp.Test
 				srcAttribs =>
 				{
 					createdTransactionsCount++;
-					currentTransaction = new SmtDataTransferTransactionMock (srcAttribs, null, null, TransactionBehavior.SlowAddingRecipient);
+					currentTransaction = new SmtDataTransferTransactionMock (null, null, TransactionBehavior.SlowAddingRecipient);
 					return currentTransaction;
 				},
 				"test.localhost",
@@ -762,14 +762,14 @@ namespace Novartment.Base.Smtp.Test
 			sender.ReceivedCommands.Enqueue (new SmtpHeloCommand ("my-client-ID-007"));
 			Assert.True (session.ReceiveCommandSendReplyAsync (CancellationToken.None).Result);
 			var reply = sender.SendedReplies.Dequeue ();
-			Assert.Equal (0, sender.SendedReplies.Count);
+			Assert.Empty (sender.SendedReplies);
 			Assert.Equal (250, reply.Code);
 
 			var mailbox = new AddrSpec ("error", "hacker.net");
 			sender.ReceivedCommands.Enqueue (new SmtpMailFromCommand (mailbox, ContentTransferEncoding.SevenBit, null));
 			Assert.True (session.ReceiveCommandSendReplyAsync (CancellationToken.None).Result);
 			reply = sender.SendedReplies.Dequeue ();
-			Assert.Equal (0, sender.SendedReplies.Count);
+			Assert.Empty (sender.SendedReplies);
 			Assert.Equal (250, reply.Code);
 			Assert.NotNull (session.CurrentTransaction);
 			var trctn = (SmtDataTransferTransactionMock)session.CurrentTransaction;
@@ -784,7 +784,7 @@ namespace Novartment.Base.Smtp.Test
 			Assert.NotNull (session.CurrentTransaction);
 			Assert.True (trctn.SlowOperationInProgressEvent.WaitOne ());
 			cts.Cancel ();
-			Assert.ThrowsAsync<TaskCanceledException> (async () => await task);
+			Assert.ThrowsAsync<TaskCanceledException> (() => task);
 			Assert.Equal (1, createdTransactionsCount);
 			Assert.False (trctn.Completed);
 			Assert.False (trctn.Disposed);
@@ -804,7 +804,7 @@ namespace Novartment.Base.Smtp.Test
 				srcAttribs =>
 				{
 					createdTransactionsCount++;
-					currentTransaction = new SmtDataTransferTransactionMock (srcAttribs, null, null, TransactionBehavior.SlowProcessData);
+					currentTransaction = new SmtDataTransferTransactionMock (null, null, TransactionBehavior.SlowProcessData);
 					return currentTransaction;
 				},
 				"test.localhost",
@@ -820,12 +820,12 @@ namespace Novartment.Base.Smtp.Test
 			var task = session.ReceiveCommandSendReplyAsync (cts.Token);
 			Assert.True (trctn.SlowOperationInProgressEvent.WaitOne ());
 			cts.Cancel ();
-			Assert.ThrowsAsync<OperationCanceledException> (async () => await task).Wait ();
+			Assert.ThrowsAsync<OperationCanceledException> (() => task).Wait ();
 			Assert.Equal (1, createdTransactionsCount);
 			Assert.False (trctn.Completed);
 			Assert.True (trctn.Disposed);
 			Assert.Null (session.CurrentTransaction);
-			Assert.Equal (0, sender.SendedReplies.Count);
+			Assert.Empty (sender.SendedReplies);
 		}
 
 		[Fact]
@@ -841,7 +841,7 @@ namespace Novartment.Base.Smtp.Test
 				srcAttribs =>
 				{
 					createdTransactionsCount++;
-					currentTransaction = new SmtDataTransferTransactionMock (srcAttribs, null, null, TransactionBehavior.SlowProcessData);
+					currentTransaction = new SmtDataTransferTransactionMock (null, null, TransactionBehavior.SlowProcessData);
 					return currentTransaction;
 				},
 				"test.localhost",
@@ -858,12 +858,12 @@ namespace Novartment.Base.Smtp.Test
 			var task = session.ReceiveCommandSendReplyAsync (cts.Token);
 			Assert.True (trctn.SlowOperationInProgressEvent.WaitOne ());
 			cts.Cancel ();
-			Assert.ThrowsAsync<TaskCanceledException> (async () => await task).Wait ();
+			Assert.ThrowsAsync<TaskCanceledException> (() => task).Wait ();
 			Assert.Equal (1, createdTransactionsCount);
 			Assert.False (trctn.Completed);
 			Assert.True (trctn.Disposed);
 			Assert.Null (session.CurrentTransaction);
-			Assert.Equal (0, sender.SendedReplies.Count);
+			Assert.Empty (sender.SendedReplies);
 		}
 
 		private SmtDataTransferTransactionMock SetUpTransaction (
@@ -875,14 +875,14 @@ namespace Novartment.Base.Smtp.Test
 			sender.ReceivedCommands.Enqueue (new SmtpHeloCommand ("my-client-ID-007"));
 			Assert.True (session.ReceiveCommandSendReplyAsync (CancellationToken.None).Result);
 			var reply = sender.SendedReplies.Dequeue ();
-			Assert.Equal (0, sender.SendedReplies.Count);
+			Assert.Empty (sender.SendedReplies);
 			Assert.Equal (250, reply.Code);
 
 			var mailbox = new AddrSpec ("error", "hacker.net");
 			sender.ReceivedCommands.Enqueue (new SmtpMailFromCommand (mailbox, ContentTransferEncoding.SevenBit, null));
 			Assert.True (session.ReceiveCommandSendReplyAsync (CancellationToken.None).Result);
 			reply = sender.SendedReplies.Dequeue ();
-			Assert.Equal (0, sender.SendedReplies.Count);
+			Assert.Empty (sender.SendedReplies);
 			Assert.Equal (250, reply.Code);
 			Assert.NotNull (session.CurrentTransaction);
 			var trctn = (SmtDataTransferTransactionMock)session.CurrentTransaction;
@@ -894,10 +894,10 @@ namespace Novartment.Base.Smtp.Test
 			sender.ReceivedCommands.Enqueue (new SmtpRcptToCommand (mailbox));
 			Assert.True (session.ReceiveCommandSendReplyAsync (CancellationToken.None).Result);
 			reply = sender.SendedReplies.Dequeue ();
-			Assert.Equal (0, sender.SendedReplies.Count);
+			Assert.Empty (sender.SendedReplies);
 			Assert.Equal (250, reply.Code);
 			Assert.Equal (trctn, session.CurrentTransaction);
-			Assert.Equal (1, trctn.Recipients.Count);
+			Assert.Single (trctn.Recipients);
 			Assert.Equal (mailbox, trctn.Recipients[0]);
 
 			return trctn;

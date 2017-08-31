@@ -15,7 +15,7 @@ namespace Novartment.Base.Test
 			var providerAlt = new MurmurHash3 (321);
 
 			// differend seeds produce different hashes
-			Assert.NotEqual (provider.ComputeHash (new byte[0]), providerAlt.ComputeHash (new byte[0]));
+			Assert.NotEqual (provider.ComputeHash (Array.Empty<byte> ()), providerAlt.ComputeHash (Array.Empty<byte> ()));
 
 			// common cases
 			Assert.NotEqual (

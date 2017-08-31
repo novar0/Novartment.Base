@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
-using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Globalization;
 using Microsoft.Extensions.Logging;
@@ -12,10 +11,6 @@ namespace Novartment.Base.Data
 	/// <summary>
 	/// Подключение к базе данных.
 	/// </summary>
-	[SuppressMessage (
-		"Microsoft.Design",
-		"CA1063:ImplementIDisposableCorrectly",
-		Justification = "Implemented correctly.")]
 	public class InvariantDbConnectionManager :
 		IDbConnectionManager,
 		IDisposable
@@ -42,10 +37,6 @@ namespace Novartment.Base.Data
 		/// <param name="connectionString">Строка подключения.</param>
 		/// <param name="commandTimeout">Время (в секундах) ожидания выполнения команды перед тем как она будет прервана с ошибкой.</param>
 		/// <param name="logger">Опциональный объект-журнал для записей о событиях. Укажите null если не требуется.</param>
-		[SuppressMessage (
-			"Microsoft.Design",
-			"CA1026:DefaultParametersShouldNotBeUsed",
-			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
 		public InvariantDbConnectionManager (
 			DbProviderFactory factory,
 			string connectionString,
@@ -119,10 +110,6 @@ namespace Novartment.Base.Data
 		/// Получает уникальный идентификатор, сгенерированный последней выполнявшейся командой.
 		/// </summary>
 		/// <returns>Уникальный идентификатор, сгенерированный последней выполнявшейся командой.</returns>
-		[SuppressMessage (
-			"Microsoft.Security",
-			"CA2100:Review SQL queries for security vulnerabilities",
-			Justification = "No user-input variables.")]
 		public object GetLastIdentityValue ()
 		{
 			if (_lastIdentityStatement == null)
@@ -142,10 +129,6 @@ namespace Novartment.Base.Data
 		/// <param name="objectName">Имя объекта.</param>
 		/// <param name="schemaName">Имя схемы. Укажите null если схему указывать не нужно.</param>
 		/// <returns>Сформатированное имя объекта.</returns>
-		[SuppressMessage (
-			"Microsoft.Design",
-			"CA1026:DefaultParametersShouldNotBeUsed",
-			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
 		public string FormatObjectName (string objectName, string schemaName = null)
 		{
 			if (objectName == null)
@@ -348,10 +331,6 @@ namespace Novartment.Base.Data
 		/// <summary>
 		/// Освобождает занятые объектом ресурсы.
 		/// </summary>
-		[SuppressMessage (
-			"Microsoft.Design",
-			"CA1063:ImplementIDisposableCorrectly",
-			Justification = "Implemented correctly.")]
 		public void Dispose ()
 		{
 			lock (_connectionLocker)

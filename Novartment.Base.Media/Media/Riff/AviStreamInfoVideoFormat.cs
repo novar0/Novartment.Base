@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Globalization;
 using System.Threading;
@@ -13,11 +12,6 @@ namespace Novartment.Base.Media
 	/// <summary>
 	/// Подробности видео-формата потока AVI-файла.
 	/// </summary>
-	[SuppressMessage (
-		"Microsoft.Naming",
-		"CA1704:IdentifiersShouldBeSpelledCorrectly",
-		MessageId = "Avi",
-		Justification = "'AVI' represents standard term.")]
 	[DebuggerDisplay ("{DebuggerDisplay,nq}")]
 	[CLSCompliant (false)]
 	public class AviStreamInfoVideoFormat
@@ -66,10 +60,6 @@ namespace Novartment.Base.Media
 		public uint SizeImage { get; }
 
 		[DebuggerBrowsable (DebuggerBrowsableState.Never)]
-		[SuppressMessage (
-			"Microsoft.Performance",
-			"CA1811:AvoidUncalledPrivateCode",
-			Justification = "Used in DebuggerDisplay attribute.")]
 		private string DebuggerDisplay => FormattableString.Invariant ($"Width = {this.Width}, Height = {this.Height}, Compression = {this.Compression}");
 
 		/// <summary>

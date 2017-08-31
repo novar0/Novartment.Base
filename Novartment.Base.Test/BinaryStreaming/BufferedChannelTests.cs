@@ -109,7 +109,9 @@ namespace Novartment.Base.Test
 					channel.SkipBuffer (channel.Count);
 				}
 				dstData.Seek (0L, SeekOrigin.Begin);
+#pragma warning disable CA5350 // Do not use insecure cryptographic algorithm SHA1.
 				var dstHasher = SHA1.Create ();
+#pragma warning restore CA5350 // Do not use insecure cryptographic algorithm SHA1.
 				Assert.True (dstData.TryGetBuffer (out ArraySegment<byte> buf2));
 				return dstHasher.ComputeHash (buf2.Array, buf2.Offset, buf2.Count);
 			});
@@ -125,7 +127,9 @@ namespace Novartment.Base.Test
 			readTask.Wait ();
 
 			srcData.Seek (0L, SeekOrigin.Begin);
+#pragma warning disable CA5350 // Do not use insecure cryptographic algorithm SHA1.
 			var srcHasher = SHA1.Create ();
+#pragma warning restore CA5350 // Do not use insecure cryptographic algorithm SHA1.
 			Assert.True (srcData.TryGetBuffer (out ArraySegment<byte> buf));
 			var srcHash = srcHasher.ComputeHash (buf.Array, buf.Offset, buf.Count);
 			var dstHash = readTask.Result;
@@ -224,7 +228,7 @@ namespace Novartment.Base.Test
 			readTask = channel.FillBufferAsync (CancellationToken.None);
 			Assert.True (readTask.IsCompleted);
 			channel.SkipBuffer (channel.Count);
-			Assert.ThrowsAsync<NotEnoughDataException> (async () => await channel.EnsureBufferAsync (1, CancellationToken.None));
+			Assert.ThrowsAsync<NotEnoughDataException> (() => channel.EnsureBufferAsync (1, CancellationToken.None));
 		}
 
 		[Fact]
@@ -307,8 +311,8 @@ namespace Novartment.Base.Test
 
 			// завершение, после которого не должны приниматься новые данные
 			channel.SetComplete ();
-			Assert.ThrowsAsync<InvalidOperationException> (async () => await channel.WriteAsync (srcData, 0, 3, CancellationToken.None));
-			Assert.ThrowsAsync<InvalidOperationException> (async () => await channel.WriteAsync (srcData, 1, 1, CancellationToken.None));
+			Assert.ThrowsAsync<InvalidOperationException> (() => channel.WriteAsync (srcData, 0, 3, CancellationToken.None));
+			Assert.ThrowsAsync<InvalidOperationException> (() => channel.WriteAsync (srcData, 1, 1, CancellationToken.None));
 		}
 	}
 }

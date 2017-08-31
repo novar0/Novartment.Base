@@ -81,7 +81,7 @@ namespace Novartment.Base.UnsafeWin32
 		void Close ([MarshalAs (UnmanagedType.Error)] int hr);
 
 		[MethodImpl (MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
-		void SetClientGuid ([In] ref Guid guid);
+		void SetClientGuid ([In] ref Guid clientGuid);
 
 		[MethodImpl (MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
 		void ClearClientData ();

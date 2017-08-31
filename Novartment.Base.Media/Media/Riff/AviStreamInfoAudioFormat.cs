@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,11 +10,6 @@ namespace Novartment.Base.Media
 	/// <summary>
 	/// Подробности аудио-формата потока AVI-файла.
 	/// </summary>
-	[SuppressMessage (
-		"Microsoft.Naming",
-		"CA1704:IdentifiersShouldBeSpelledCorrectly",
-		MessageId = "Avi",
-		Justification = "'AVI' represents standard term.")]
 	[DebuggerDisplay ("{DebuggerDisplay,nq}")]
 	[CLSCompliant (false)]
 	public class AviStreamInfoAudioFormat
@@ -64,10 +58,6 @@ namespace Novartment.Base.Media
 		public ushort BitsPerSample { get; }
 
 		[DebuggerBrowsable (DebuggerBrowsableState.Never)]
-		[SuppressMessage (
-			"Microsoft.Performance",
-			"CA1811:AvoidUncalledPrivateCode",
-			Justification = "Used in DebuggerDisplay attribute.")]
 		private string DebuggerDisplay => FormattableString.Invariant ($"FormatTag = {this.FormatTag}, Channels = {this.Channels}, SamplesPerSec = {this.SamplesPerSec}");
 
 		/// <summary>

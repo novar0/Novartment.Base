@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Net;
 using System.Net.NetworkInformation;
@@ -17,7 +18,7 @@ using Novartment.Base.Text;
 
 namespace Novartment.Base.Sample
 {
-	public class SmtpSamples
+	public static class SmtpSamples
 	{
 		public static async Task SendOneMessageAsync (CancellationToken cancellationToken)
 		{
@@ -249,6 +250,7 @@ namespace Novartment.Base.Sample
 						ipProps.HostName :
 						ipProps.HostName + "." + ipProps.DomainName;
 					var received = string.Format (
+						CultureInfo.InvariantCulture,
 						"Received: FROM {0} ({1}) BY {2};\r\n {3}\r\n",
 						_deliverySourceAttributes.EndPoint.HostName,
 						_deliverySourceAttributes.EndPoint.Address,
@@ -262,8 +264,14 @@ namespace Novartment.Base.Sample
 
 			private string CreateUniqueFileName ()
 			{
-				return string.Format ("{0:yyyy-MM-ddTHH:mm:ss.fff} from {1}.eml", DateTime.Now, _returnPath)
-					.Replace (":", "-").Replace ("<", "{").Replace (">", "}");
+				return string.Format (
+					CultureInfo.InvariantCulture,
+					"{0:yyyy-MM-ddTHH:mm:ss.fff} from {1}.eml",
+					DateTime.Now,
+					_returnPath)
+					.Replace (":", "-", StringComparison.Ordinal)
+					.Replace ("<", "{", StringComparison.Ordinal)
+					.Replace (">", "}", StringComparison.Ordinal);
 			}
 		}
 	}

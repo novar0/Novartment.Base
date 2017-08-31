@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
-using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -17,10 +16,6 @@ namespace Novartment.Base
 	/// <summary>
 	/// Журнал событий, пригодный для многопоточного асинхронного использования.
 	/// </summary>
-	[SuppressMessage (
-		"Microsoft.Naming",
-		"CA1710:IdentifiersShouldHaveCorrectSuffix",
-		Justification = "Implemented interfaces has no association with class name.")]
 	public class SimpleEventLog :
 		ILogger,
 		IReadOnlyList<SimpleEventRecord>,

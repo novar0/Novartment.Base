@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Threading;
 using System.Threading.Tasks;
@@ -26,10 +25,6 @@ namespace Novartment.Base.Net.Mime
 		/// </summary>
 		/// <param name="boundary">Разграничитель частей сущности согласно требованиям RFC 1341 часть 7.2.1,
 		/// либо null для автоматического генерирования разграничителя.</param>
-		[SuppressMessage (
-			"Microsoft.Design",
-			"CA1026:DefaultParametersShouldNotBeUsed",
-			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
 		public CompositeEntityBody (string boundary = null)
 			: this (Entity.DefaultType, Entity.DefaultSubtype, boundary)
 		{

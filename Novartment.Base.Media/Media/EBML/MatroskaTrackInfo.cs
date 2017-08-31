@@ -1,17 +1,11 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 
 namespace Novartment.Base.Media
 {
 	/// <summary>
 	/// Информация о трэке матрёшка-файла.
 	/// </summary>
-	[SuppressMessage (
-		"Microsoft.Naming",
-		"CA1704:IdentifiersShouldBeSpelledCorrectly",
-		MessageId = "Matroska",
-		Justification = "'Matroska' represents standard term.")]
 	[DebuggerDisplay ("{DebuggerDisplay,nq}")]
 	[CLSCompliant (false)]
 	public class MatroskaTrackInfo
@@ -88,10 +82,6 @@ namespace Novartment.Base.Media
 		public MatroskaTrackInfoAudioFormat AudioFormat { get; }
 
 		[DebuggerBrowsable (DebuggerBrowsableState.Never)]
-		[SuppressMessage (
-			"Microsoft.Performance",
-			"CA1811:AvoidUncalledPrivateCode",
-			Justification = "Used in DebuggerDisplay attribute.")]
 		private string DebuggerDisplay => FormattableString.Invariant ($"Type = {this.TrackType}, Codec = {this.Codec}");
 	}
 }

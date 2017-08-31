@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
 
 namespace Novartment.Base
@@ -19,10 +18,6 @@ namespace Novartment.Base
 		/// Задача, представляющая получение задания.
 		/// Результатом задачи будет производитель выполнения полученного задания.
 		/// </returns>
-		[SuppressMessage (
-			"Microsoft.Design",
-			"CA1006:DoNotNestGenericTypesInMemberSignatures",
-			Justification = "The caller expects exactly this behavior.")]
 		Task<JobCompletionSource<TItem, TResult>> TakeJobAsync (CancellationToken cancellationToken);
 	}
 }

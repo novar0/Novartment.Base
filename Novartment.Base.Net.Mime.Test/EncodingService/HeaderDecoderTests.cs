@@ -457,7 +457,7 @@ namespace Novartment.Base.Net.Mime.Test
 			Assert.Equal ("text/plain;\t\t\t\tformat=flowed;\t\tcharset=\"koi8-r\";\treply-type=original", field.Value);
 
 			src = new ArrayBufferedSource (Encoding.ASCII.GetBytes ("Subject=about"));
-			Assert.ThrowsAsync<FormatException> (async () => await HeaderDecoder.ParseFoldedFieldAsync (src, CancellationToken.None));
+			Assert.ThrowsAsync<FormatException> (() => HeaderDecoder.ParseFoldedFieldAsync (src, CancellationToken.None));
 		}
 	}
 }

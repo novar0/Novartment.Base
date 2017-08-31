@@ -208,8 +208,8 @@ namespace Novartment.Base.UI.Wpf
 						var dragData = handler.DragStart (currentPoint.X, currentPoint.Y, button);
 						if (dragData.AllowedEffects != BclDragDropEffect.None)
 						{
-							var dataContainerWpf = dragData.Object as WpfDataContainer;
-							var dataObject = dataContainerWpf?.InternalDataObject ?? new DataObject (dragData.Object);
+							var dataContainerWpf = dragData.DragObject as WpfDataContainer;
+							var dataObject = dataContainerWpf?.InternalDataObject ?? new DataObject (dragData.DragObject);
 							var result = DragDrop.DoDragDrop (
 								_element,
 								dataObject,

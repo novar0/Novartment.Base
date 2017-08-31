@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Reflection;
 using static System.Linq.Enumerable;
@@ -24,10 +23,6 @@ namespace Novartment.Base
 		/// <returns>Объект реализующий IComparer&lt;TItem&gt; и ISortDirection
 		/// на основе указанной функции получения ключа объекта,
 		/// который можно использовать для их сравнения.</returns>
-		[SuppressMessage (
-			"Microsoft.Design",
-			"CA1026:DefaultParametersShouldNotBeUsed",
-			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
 		public static IComparer<TItem> CreateFromPropertySelector<TItem, TKey> (
 			Func<TItem, TKey> propertySelector,
 			bool descendingOrder = false)
@@ -53,13 +48,7 @@ namespace Novartment.Base
 		/// <returns>Объект реализующий IComparer&lt;TItem&gt; и ISortDirection
 		/// на основе указанного имени свойства и направления сортировки,
 		/// который можно использовать для их сравнения.</returns>
-		[SuppressMessage (
-			"Microsoft.Design",
-			"CA1026:DefaultParametersShouldNotBeUsed",
-			Justification = "Parameter have clear right 'default' value and there is no plausible reason why the default might need to change.")]
-		public static IComparer<TItem> CreateFromPropertyName<TItem> (
-			string propertyName,
-			bool descendingOrder = false)
+		public static IComparer<TItem> CreateFromPropertyName<TItem> (string propertyName, bool descendingOrder = false)
 		{
 			if (propertyName == null)
 			{

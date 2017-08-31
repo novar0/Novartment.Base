@@ -67,7 +67,7 @@ namespace Novartment.Base.Smtp.Test
 				src);
 			var originator = new SmtpTransactionOriginatorMock ();
 			var protocol = new SmtpOriginatorProtocol (originator.OriginateTransactionsAsync, SmtpClientSecurityParameters.AllowNoSecurity, null);
-			Assert.ThrowsAsync<InvalidOperationException> (async () => await protocol.StartAsync (connection, CancellationToken.None));
+			Assert.ThrowsAsync<InvalidOperationException> (() => protocol.StartAsync (connection, CancellationToken.None));
 			Assert.Equal (0, src.Count);
 
 			// сервер приветствует, но на EHLO отвечает что недоступен
@@ -79,10 +79,10 @@ namespace Novartment.Base.Smtp.Test
 				new IPEndPoint (IPAddress.Loopback, 2555),
 				new IPEndPoint (IPAddress.Loopback, 25),
 				src);
-			Assert.ThrowsAsync<InvalidOperationException> (async () => await protocol.StartAsync (connection, CancellationToken.None));
+			Assert.ThrowsAsync<InvalidOperationException> (() => protocol.StartAsync (connection, CancellationToken.None));
 			Assert.Equal (0, src.Count);
 			var sended = connection.OutData.Queue.ToArray ();
-			Assert.Equal (1, sended.Length);
+			Assert.Single (sended);
 			Assert.StartsWith ("EHLO ", sended[0], StringComparison.OrdinalIgnoreCase);
 
 			// сервер приветствует и обрывает соединение
@@ -93,7 +93,7 @@ namespace Novartment.Base.Smtp.Test
 				new IPEndPoint (IPAddress.Loopback, 2555),
 				new IPEndPoint (IPAddress.Loopback, 25),
 				src);
-			Assert.ThrowsAsync<InvalidOperationException> (async () => await protocol.StartAsync (connection, CancellationToken.None));
+			Assert.ThrowsAsync<InvalidOperationException> (() => protocol.StartAsync (connection, CancellationToken.None));
 			Assert.Equal (0, src.Count);
 			sended = connection.OutData.Queue.ToArray ();
 			Assert.Equal (2, sended.Length);
@@ -105,7 +105,9 @@ namespace Novartment.Base.Smtp.Test
 		{
 			internal int CallCount { get; private set; } = 0;
 
+#pragma warning disable CA1801 // Review unused parameters
 			public Task OriginateTransactionsAsync (TransactionFactory transactionFactory, CancellationToken cancellationToken)
+#pragma warning restore CA1801 // Review unused parameters
 			{
 				if (transactionFactory == null)
 				{

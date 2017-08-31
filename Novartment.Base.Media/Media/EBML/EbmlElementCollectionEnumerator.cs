@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Threading;
 using System.Threading.Tasks;
@@ -10,15 +9,6 @@ namespace Novartment.Base.Media
 	/// <summary>
 	/// Перечислитель дочерних элементов EBML-элемента.
 	/// </summary>
-	[SuppressMessage (
-		"Microsoft.Naming",
-		"CA1704:IdentifiersShouldBeSpelledCorrectly",
-		MessageId = "Ebml",
-		Justification = "'EBML' represents standard term.")]
-	[SuppressMessage (
-		"Microsoft.Design",
-		"CA1063:ImplementIDisposableCorrectly",
-		Justification = "Implemented correctly.")]
 	[CLSCompliant (false)]
 	public class EbmlElementCollectionEnumerator
 	{

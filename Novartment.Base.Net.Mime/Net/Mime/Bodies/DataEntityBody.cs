@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Security.Cryptography;
 using System.Threading;
@@ -15,10 +14,6 @@ namespace Novartment.Base.Net.Mime
 	public class DataEntityBody :
 		IDiscreteEntityBody
 	{
-		[SuppressMessage (
-			"Microsoft.Performance",
-			"CA1802:UseLiteralsWhereAppropriate",
-			Justification = "No performance gain could be achieved.")]
 		private static readonly int _DefaultEncodeBufferSize = 32000;
 		private byte[] _encodedData;
 		private int _encodedDataSize;
