@@ -33,9 +33,9 @@
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>false</BootstrapperEnabled>
-		<AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-		<Features>IOperation</Features>
-	</PropertyGroup>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <Features>IOperation</Features>
+  </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
@@ -242,7 +242,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Autofac">
-      <Version>4.6.1</Version>
+      <Version>4.6.2</Version>
     </PackageReference>
     <PackageReference Include="Autofac.Wcf">
       <Version>4.0.0</Version>
