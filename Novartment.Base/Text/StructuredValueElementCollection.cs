@@ -11,10 +11,33 @@ namespace Novartment.Base.Text
 	/// </summary>
 	public static class StructuredValueElementCollection
 	{
-		private static readonly DelimitedElement _CommentDelimitingData = new DelimitedElement ('(', ')', new DelimitedElement ('\\', 2), true);
-		private static readonly DelimitedElement _QuotedStringDelimitingData = new DelimitedElement ('\"', '\"', new DelimitedElement ('\\', 2), false);
-		private static readonly DelimitedElement _AngleAddrDelimitingData = new DelimitedElement ('<', '>', new DelimitedElement ('\"', '\"', new DelimitedElement ('\\', 2), false), false);
-		private static readonly DelimitedElement _DomainLiteralDelimitingData = new DelimitedElement ('[', ']', new DelimitedElement ('\\', 2), false);
+		private static readonly DelimitedElement _CommentDelimitingData = DelimitedElement.CreateBracketed (
+			'(',
+			')',
+			DelimitedElement.OneEscapedChar,
+			true);
+
+		private static readonly DelimitedElement _QuotedStringDelimitingData = DelimitedElement.CreateBracketed (
+			'\"',
+			'\"',
+			DelimitedElement.OneEscapedChar,
+			false);
+
+		private static readonly DelimitedElement _AngleAddrDelimitingData = DelimitedElement.CreateBracketed (
+			'<',
+			'>',
+			DelimitedElement.CreateBracketed (
+				'\"',
+				'\"',
+				DelimitedElement.OneEscapedChar,
+				false),
+			false);
+
+		private static readonly DelimitedElement _DomainLiteralDelimitingData = DelimitedElement.CreateBracketed (
+			'[',
+			']',
+			DelimitedElement.OneEscapedChar,
+			false);
 
 		/// <summary>
 		/// Декодирует последовательность элементов как единую строку.
@@ -102,7 +125,7 @@ namespace Novartment.Base.Text
 						parser.SkipClassChars (AsciiCharSet.Classes, (short)AsciiCharClasses.WhiteSpace);
 						break;
 					case '"':
-						end = parser.SkipDelimited (_QuotedStringDelimitingData);
+						end = parser.EnsureDelimitedElement (_QuotedStringDelimitingData);
 						if (typeToSkip != StructuredValueElementType.QuotedValue)
 						{
 							elements.Add (new StructuredValueElement (StructuredValueElementType.QuotedValue, parser.Source.Substring (start + 1, end - start - 2)));
@@ -110,7 +133,7 @@ namespace Novartment.Base.Text
 
 						break;
 					case '(':
-						end = parser.SkipDelimited (_CommentDelimitingData);
+						end = parser.EnsureDelimitedElement (_CommentDelimitingData);
 						if (typeToSkip != StructuredValueElementType.RoundBracketedValue)
 						{
 							elements.Add (new StructuredValueElement (StructuredValueElementType.RoundBracketedValue, parser.Source.Substring (start + 1, end - start - 2)));
@@ -118,7 +141,7 @@ namespace Novartment.Base.Text
 
 						break;
 					case '<':
-						end = parser.SkipDelimited (_AngleAddrDelimitingData);
+						end = parser.EnsureDelimitedElement (_AngleAddrDelimitingData);
 						if (typeToSkip != StructuredValueElementType.AngleBracketedValue)
 						{
 							elements.Add (new StructuredValueElement (StructuredValueElementType.AngleBracketedValue, parser.Source.Substring (start + 1, end - start - 2)));
@@ -126,7 +149,7 @@ namespace Novartment.Base.Text
 
 						break;
 					case '[':
-						end = parser.SkipDelimited (_DomainLiteralDelimitingData);
+						end = parser.EnsureDelimitedElement (_DomainLiteralDelimitingData);
 						if (typeToSkip != StructuredValueElementType.SquareBracketedValue)
 						{
 							elements.Add (new StructuredValueElement (StructuredValueElementType.SquareBracketedValue, parser.Source.Substring (start + 1, end - start - 2)));

@@ -159,7 +159,7 @@ namespace Novartment.Base.Text
 			}
 
 			throw new FormatException (FormattableString.Invariant (
-				$"Expected char code '{utf32Char}' not found at position {_currentPos} in string '{_source}'."));
+				$"Expected char code '{utf32Char}' not found at position {_currentPos} in string '{(_source.Length > 100 ? _source.Substring (0, 100) + "..." : _source)}'."));
 		}
 
 		/// <summary>
@@ -168,7 +168,7 @@ namespace Novartment.Base.Text
 		/// </summary>
 		/// <param name="delimitedElement">Параметры пропускаемого элемента.</param>
 		/// <returns>Текущая позиция в разбираемой строке после пропуска.</returns>
-		public int SkipDelimited (DelimitedElement delimitedElement)
+		public int EnsureDelimitedElement (DelimitedElement delimitedElement)
 		{
 			if (delimitedElement == null)
 			{
@@ -187,14 +187,14 @@ namespace Novartment.Base.Text
 				if (this.NextChar != delimitedElement.StartChar)
 				{
 					throw new FormatException (FormattableString.Invariant (
-						$"Expected char code '{delimitedElement.StartChar}' not found at position {_currentPos} in string '{_source}'."));
+						$"Expected char code '{delimitedElement.StartChar}' not found at position {_currentPos} in string '{(_source.Length > 100 ? _source.Substring (0, 100) + "..." : _source)}'."));
 				}
 
 				var newOffset = _currentPos + delimitedElement.FixedLength;
 				if (newOffset >= _endPos)
 				{
 					throw new FormatException (FormattableString.Invariant (
-						$"Unexpected end of fixed-length element {delimitedElement.FixedLength} at position {_currentPos} in string '{_source}'."));
+						$"Unexpected end of fixed-length element {delimitedElement.FixedLength} at position {_currentPos} in string '{(_source.Length > 100 ? _source.Substring (0, 100) + "..." : _source)}'."));
 				}
 
 				_currentPos = newOffset;
@@ -210,12 +210,12 @@ namespace Novartment.Base.Text
 					if (_currentPos >= _endPos)
 					{
 						throw new FormatException (FormattableString.Invariant (
-							$"Ending char '{delimitedElement.EndChar}' not found in element, started at position {start} in string '{_source}'."));
+							$"Ending char '{delimitedElement.EndChar}' not found in element, started at position {start} in string '{(_source.Length > 100 ? _source.Substring (0, 100) + "..." : _source)}'."));
 					}
 
 					if ((ignoreElement != null) && (this.NextChar == ignoreElement.StartChar))
 					{
-						SkipDelimited (ignoreElement);
+						EnsureDelimitedElement (ignoreElement);
 					}
 					else
 					{

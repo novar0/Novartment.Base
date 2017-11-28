@@ -31,15 +31,15 @@ namespace Novartment.Base.Test
 			Assert.Equal (0x1F44E, parser.SkipChar ()); // 👎
 			Assert.Equal (0x1F527, parser.SkipChar ()); // 🔧
 
-			var delimiter = new DelimitedElement ((int)'(', (int)'}', false);
-			Assert.Throws<FormatException> (() => parser.SkipDelimited (delimiter));
-			delimiter = new DelimitedElement ((int)'=', 20);
-			Assert.Throws<FormatException> (() => parser.SkipDelimited (delimiter));
-			delimiter = new DelimitedElement ((int)'{', 20);
-			Assert.Throws<FormatException> (() => parser.SkipDelimited (delimiter));
+			var delimiter = DelimitedElement.CreateBracketed ((int)'(', (int)'}', false);
+			Assert.Throws<FormatException> (() => parser.EnsureDelimitedElement (delimiter));
+			delimiter = DelimitedElement.CreatePrefixedFixedLength ((int)'=', 20);
+			Assert.Throws<FormatException> (() => parser.EnsureDelimitedElement (delimiter));
+			delimiter = DelimitedElement.CreatePrefixedFixedLength ((int)'{', 20);
+			Assert.Throws<FormatException> (() => parser.EnsureDelimitedElement (delimiter));
 
-			delimiter = new DelimitedElement ((int)'{', (int)'}', false);
-			Assert.Equal (18, parser.SkipDelimited (delimiter));
+			delimiter = DelimitedElement.CreateBracketed ((int)'{', (int)'}', false);
+			Assert.Equal (18, parser.EnsureDelimitedElement (delimiter));
 			Assert.Equal ((int)'-', parser.NextChar);
 			Assert.Equal (-1, parser.NextNextChar);
 			Assert.False (parser.IsExhausted);

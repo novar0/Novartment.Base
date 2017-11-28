@@ -302,12 +302,12 @@ namespace Novartment.Base.Net.Mime
 			// received       = "Received:" *received-token ";" date-time CRLF
 			// received-token = word / angle-addr / addr-spec / domain
 			var parser = new StructuredStringReader (source);
-			var delimData = new DelimitedElement (
+			var delimData = DelimitedElement.CreateBracketed (
 				parser.NextChar,
 				';',
-				new DelimitedElement ('\"', '\"', new DelimitedElement ('\\', 2), false),
+				DelimitedElement.CreateBracketed ('\"', '\"', DelimitedElement.OneEscapedChar, false),
 				false);
-			var idx = parser.SkipDelimited (delimData);
+			var idx = parser.EnsureDelimitedElement (delimData);
 			if (idx >= (source.Length - 1))
 			{
 				throw new FormatException ("Value does not conform to format '*received-token;date-time'.");
