@@ -44,7 +44,7 @@ namespace Novartment.Base
 		{
 			if (disposables == null)
 			{
-				throw new ArgumentNullException ("disposables");
+				throw new ArgumentNullException (nameof (disposables));
 			}
 
 			Contract.EndContractBlock ();

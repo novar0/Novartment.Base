@@ -6,10 +6,12 @@ using Novartment.Base.BinaryStreaming;
 
 namespace Novartment.Base.Net
 {
+#pragma warning disable CA1063 // Implement IDisposable Correctly
 	/// <summary>
 	/// Установленное TCP-подключение, отслеживающее полное время и время простоя.
 	/// </summary>
 	public class BinaryTcpConnection :
+#pragma warning restore CA1063 // Implement IDisposable Correctly
 		ITcpConnection,
 		IDisposable
 	{
@@ -91,10 +93,12 @@ namespace Novartment.Base.Net
 		public TimeSpan IdleDuration => TimeSpan.FromSeconds (
 			(_stopwatch.ElapsedTicks - Interlocked.Read (ref _lastActivity)) / (double)Stopwatch.Frequency);
 
+#pragma warning disable CA1063 // Implement IDisposable Correctly
 		/// <summary>
 		/// Освобождает все используемые ресурсы.
 		/// </summary>
 		public void Dispose ()
+#pragma warning restore CA1063 // Implement IDisposable Correctly
 		{
 			OnDisposing ();
 			_reporter.Dispose ();

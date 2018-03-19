@@ -86,7 +86,7 @@ namespace Novartment.Base.SampleWpf
 
 		public ICollectionView EventsList => _eventsListView;
 
-		public string Version => ComponentApplication.Current.Version;
+		public static string Version => ComponentApplication.Current.Version;
 
 		public string DataFormats => _dataFormats;
 
@@ -203,7 +203,7 @@ namespace Novartment.Base.SampleWpf
 				_dataFormats = (string)data.GetData (DataContainerFormats.UnicodeText, true);
 			}
 
-			RaisePropertyChanged ("DataFormats");
+			RaisePropertyChanged (nameof (DataFormats));
 			if (((keyStates & DragDropKeyStates.AltKey) == DragDropKeyStates.AltKey) && ((allowedEffects & DragDropEffects.Link) == DragDropEffects.Link))
 			{
 				return DragDropEffects.Link;
@@ -245,7 +245,7 @@ namespace Novartment.Base.SampleWpf
 			// выполнение фоновых работ, в том числе вызов сервисов типа _dataSerivce.DoSomeWork ();
 			_eventLog.LogInformation ($"Запуск задачи с параметром {state}");
 			Task.Delay (1000, cancellationToken).Wait ();
-			throw new ArgumentException ("Имитация исключительной ситуации", "state");
+			throw new ArgumentException ("Имитация исключительной ситуации", nameof (state));
 		}
 
 		private void LogTaskEnded (DataEventArgs<CompletedTaskData> args, string title)

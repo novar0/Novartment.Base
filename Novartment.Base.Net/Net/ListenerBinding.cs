@@ -31,7 +31,9 @@ namespace Novartment.Base.Net
 
 		internal Task AcceptingConnectionsTask => _acceptingConnectionsTask;
 
+#pragma warning disable CA1063 // Implement IDisposable Correctly
 		public void Dispose ()
+#pragma warning restore CA1063 // Implement IDisposable Correctly
 		{
 			foreach (var client in _connections.Values)
 			{

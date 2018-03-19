@@ -8,7 +8,7 @@ namespace Novartment.Base
 	/// <summary>
 	/// Трансформация для кодировки в RFC 2045 6.7 Quoted-Printable с учётом ограничения на длину строки.
 	/// </summary>
-	public class ToQuotedPrintableWithLineBreaksConverter :
+	public sealed class ToQuotedPrintableWithLineBreaksConverter :
 		ICryptoTransform
 	{
 		private static readonly int _maxLineLen = 75; // по стандарту предел 76 печатных символов, но чтобы начать новую строку надо добавлять символ '='

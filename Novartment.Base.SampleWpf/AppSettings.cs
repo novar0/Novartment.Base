@@ -12,11 +12,11 @@ namespace Novartment.Base.SampleWpf
 		[DefaultSettingValue ("0")]
 		public int IntParameter
 		{
-			get => (int)this["IntParameter"];
+			get => (int)this[nameof (IntParameter)];
 
 			set
 			{
-				this["IntParameter"] = value;
+				this[nameof (IntParameter)] = value;
 			}
 		}
 
@@ -24,11 +24,11 @@ namespace Novartment.Base.SampleWpf
 		[DefaultSettingValue ("Строковое значение")]
 		public string StringParameter
 		{
-			get => (string)this["StringParameter"];
+			get => (string)this[nameof (StringParameter)];
 
 			set
 			{
-				this["StringParameter"] = value;
+				this[nameof (StringParameter)] = value;
 			}
 		}
 	}

@@ -8,7 +8,7 @@ namespace Novartment.Base
 	/// <summary>
 	/// Трансформация для раскодирования из "Quoted-Printable" согласно RFC 2045 часть 6.7.
 	/// </summary>
-	public class FromQuotedPrintableConverter :
+	public sealed class FromQuotedPrintableConverter :
 		ICryptoTransform
 	{
 		private readonly byte[] _buffer = new byte[3];

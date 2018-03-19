@@ -11,7 +11,7 @@ namespace Novartment.Base.Data
 	/// <summary>
 	/// Подключение к базе данных.
 	/// </summary>
-	public class InvariantDbConnectionManager :
+	public sealed class InvariantDbConnectionManager :
 		IDbConnectionManager,
 		IDisposable
 	{

@@ -5,7 +5,7 @@ namespace Novartment.Base
 	/// <summary>
 	/// Провайдер для создания журнала событий, пригодного для многопоточного асинхронного использования.
 	/// </summary>
-	public class SimpleEventLogProvider :
+	public sealed class SimpleEventLogProvider :
 		ILoggerProvider
 	{
 		/// <summary>

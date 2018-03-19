@@ -8,7 +8,7 @@ namespace Novartment.Base
 	/// <summary>
 	/// Трансформация для раскодирования из "Base64" согласно RFC 2045 часть 6.8.
 	/// </summary>
-	public class FromBase64Converter :
+	public sealed class FromBase64Converter :
 		ICryptoTransform
 	{
 		private char[] _cache = new char[4];
@@ -39,7 +39,7 @@ namespace Novartment.Base
 		/// <summary>
 		/// Получает значение, указывающее на возможность повторного использования текущего преобразования.
 		/// </summary>
-		public virtual bool CanReuseTransform => true;
+		public bool CanReuseTransform => true;
 
 		/// <summary>
 		/// Преобразует заданную область входного массива байтов и копирует результат в заданную область выходного массива байтов.

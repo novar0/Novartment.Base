@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26403.0
+VisualStudioVersion = 15.0.27130.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{D3FA3D4C-72D6-4DA4-9D65-F6609A3D725D}"
 EndProject
@@ -34,6 +34,11 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Novartment.Base.Net.Test", "Novartment.Base.Net.Test\Novartment.Base.Net.Test.csproj", "{957193A1-16B7-4DEA-B4C4-93C088E9B821}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Novartment.Base.SampleWpf", "Novartment.Base.SampleWpf\Novartment.Base.SampleWpf.csproj", "{9B6E6713-F1C9-4FBA-8A92-21370396AA41}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{17AD5A17-9B7B-4180-8358-E32B10B16211}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -110,5 +115,8 @@ Global
 		{5AA8C329-697C-47F7-A8B8-FAE5C8B89018} = {8D94124A-521F-42AC-B83C-D68321306257}
 		{957193A1-16B7-4DEA-B4C4-93C088E9B821} = {D3FA3D4C-72D6-4DA4-9D65-F6609A3D725D}
 		{9B6E6713-F1C9-4FBA-8A92-21370396AA41} = {8D94124A-521F-42AC-B83C-D68321306257}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {4BAF17ED-E67D-433C-A71C-D350642F2FEF}
 	EndGlobalSection
 EndGlobal

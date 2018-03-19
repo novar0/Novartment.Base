@@ -12,7 +12,7 @@ namespace Novartment.Base.Net
 	/// <summary>
 	/// Сервер, асинхронно принимающий и обрабатывающий множество TCP-подключений на множестве конечных точек.
 	/// </summary>
-	public class TcpServer :
+	public sealed class TcpServer :
 		IDisposable
 	{
 		private readonly Func<IPEndPoint, ITcpListener> _listenerFactory;

@@ -57,7 +57,9 @@ namespace Novartment.Base.Net.Smtp
 
 		internal IMailDataTransferTransaction CurrentTransaction => _currentTransaction;
 
+#pragma warning disable CA1063 // Implement IDisposable Correctly
 		public void Dispose ()
+#pragma warning restore CA1063 // Implement IDisposable Correctly
 		{
 			Interlocked.Exchange (ref _currentTransaction, null)?.Dispose ();
 			var oldValue = Interlocked.Exchange (ref _completed, 1);
@@ -250,6 +252,7 @@ namespace Novartment.Base.Net.Smtp
 			return SmtpReply.OK.AllowGrouping ();
 		}
 
+#pragma warning disable CA1822 // Mark members as static
 		private SmtpReplyWithGroupingMark ProcessCommandVrfy ()
 		{
 			return SmtpReply.CannotVerifyUser.DisallowGrouping ();
@@ -264,6 +267,7 @@ namespace Novartment.Base.Net.Smtp
 		{
 			return SmtpReply.Disconnect.DisallowGrouping ();
 		}
+#pragma warning restore CA1822 // Mark members as static
 
 		private SmtpReplyWithGroupingMark ProcessCommandHelo (SmtpHeloCommand command)
 		{

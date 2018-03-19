@@ -17,7 +17,7 @@ namespace Novartment.Base.Tasks
 	/// <remarks>
 	/// Такая среда выполнения требуется для всех Win32 Ole*-функций и многих COM-объектах.
 	/// </remarks>
-	public class OleStaTaskScheduler : TaskScheduler,
+	public sealed class OleStaTaskScheduler : TaskScheduler,
 		IDisposable
 	{
 		private readonly Thread[] _threads;

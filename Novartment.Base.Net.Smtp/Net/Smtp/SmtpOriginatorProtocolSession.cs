@@ -28,7 +28,9 @@ namespace Novartment.Base.Net.Smtp
 
 		internal IReadOnlyFiniteSet<string> ServerSupportedExtensions => _serverSupportedExtensions;
 
+#pragma warning disable CA1063 // Implement IDisposable Correctly
 		public void Dispose ()
+#pragma warning restore CA1063 // Implement IDisposable Correctly
 		{
 			var oldValue = Interlocked.Exchange (ref _completed, 1);
 			if (oldValue == 0)

@@ -11,7 +11,7 @@ namespace Novartment.Base.Net
 	/// <summary>
 	/// Прослушиватель TCP-подключений на основе сокетов.
 	/// </summary>
-	public class SocketTcpListener :
+	public sealed class SocketTcpListener :
 		ITcpListener,
 		IDisposable
 	{

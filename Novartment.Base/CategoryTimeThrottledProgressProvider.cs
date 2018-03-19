@@ -21,7 +21,7 @@ namespace Novartment.Base
 	/// Можно быть уверенным только в передаче последнего уведомления,
 	/// что является приемлемым для отображения изменений в пользовательском интерфейсе.
 	/// </remarks>
-	public class CategoryTimeThrottledProgressProvider<T> :
+	public sealed class CategoryTimeThrottledProgressProvider<T> :
 		IProgress<T>,
 		IDisposable
 	{

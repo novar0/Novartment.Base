@@ -21,7 +21,9 @@ namespace Novartment.Base.Tasks
 	// http://blogs.msdn.com/b/pfxteam/archive/2012/03/25/10287435.aspx
 	// для объектов типа Task и CancellationTokenSource не производится освобождение (вызов IDisposable.Dispose()),
 	// которое бы значительно усложнило класс.
+#pragma warning disable CA1063 // Implement IDisposable Correctly
 	public class RepeatableTask :
+#pragma warning restore CA1063 // Implement IDisposable Correctly
 		IDisposable
 	{
 		private readonly Func<object, CancellationToken, Task> _createTaskFunc;
@@ -147,10 +149,12 @@ namespace Novartment.Base.Tasks
 			Interlocked.Exchange (ref _cancellationTokenSource, null)?.Cancel ();
 		}
 
+#pragma warning disable CA1063 // Implement IDisposable Correctly
 		/// <summary>
 		/// Освобождает все занятые ресурсы.
 		/// </summary>
 		public void Dispose ()
+#pragma warning restore CA1063 // Implement IDisposable Correctly
 		{
 			TaskStarting = null;
 			TaskStarted = null;

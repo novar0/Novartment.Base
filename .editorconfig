@@ -1,0 +1,6 @@
+[*]
+end_of_line = crlf
+indent_style = tab
+
+[*.cs]
+dotnet_style_qualification_for_property = true:suggestion

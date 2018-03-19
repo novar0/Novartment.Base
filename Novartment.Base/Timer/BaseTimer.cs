@@ -3,11 +3,13 @@ using System.Diagnostics.Contracts;
 
 namespace Novartment.Base
 {
+#pragma warning disable CA1063 // Implement IDisposable Correctly
 	/// <summary>
 	/// Базовый класс для реализации таймера.
 	/// </summary>
 	/// <typeparam name="TState">Тип объекта, передаваемый в делегат срабатывания таймера.</typeparam>
 	public abstract class BaseTimer<TState> :
+#pragma warning restore CA1063 // Implement IDisposable Correctly
 		ITimer
 	{
 		private readonly Action<TState> _callback;
@@ -53,10 +55,12 @@ namespace Novartment.Base
 		public abstract void Stop ();
 #pragma warning restore CA1716 // Identifiers should not match keywords
 
+#pragma warning disable CA1063 // Implement IDisposable Correctly
 		/// <summary>
 		/// Освобождает занимаемые объектом ресурсы.
 		/// </summary>
 		public abstract void Dispose ();
+#pragma warning restore CA1063 // Implement IDisposable Correctly
 
 #pragma warning disable CA1801 // Review unused parameters
 		/// <summary>

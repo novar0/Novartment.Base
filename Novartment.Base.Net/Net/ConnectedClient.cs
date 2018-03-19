@@ -29,7 +29,9 @@ namespace Novartment.Base.Net
 
 		internal TimeSpan CancelDurationStart => _cancelDurationStart;
 
+#pragma warning disable CA1063 // Implement IDisposable Correctly
 		public void Dispose ()
+#pragma warning restore CA1063 // Implement IDisposable Correctly
 		{
 			this.State = ProcessState.Disposed;
 			_connection.Dispose ();

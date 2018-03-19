@@ -23,7 +23,7 @@ namespace Novartment.Base.Collections
 	/// * единственный метод, который возвращает реальную информацию о наличии записи - ContainsKey().
 	/// Порождает событие CollectionChanged только вида NotifyCollectionChangedAction.Add.
 	/// </remarks>
-	public class CompetentDictionary<TKey, TValue> :
+	public sealed class CompetentDictionary<TKey, TValue> :
 		IReadOnlyDictionary<TKey, TValue>,
 		INotifyCollectionChanged,
 		IDisposable
@@ -423,10 +423,12 @@ namespace Novartment.Base.Collections
 				return false;
 			}
 
+#pragma warning disable CA1063 // Implement IDisposable Correctly
 			/// <summary>
 			/// Ничего не делает.
 			/// </summary>
 			public void Dispose ()
+#pragma warning restore CA1063 // Implement IDisposable Correctly
 			{
 			}
 		}
@@ -464,10 +466,12 @@ namespace Novartment.Base.Collections
 				}
 			}
 
+#pragma warning disable CA1063 // Implement IDisposable Correctly
 			/// <summary>
 			/// Ничего не делает.
 			/// </summary>
 			public void Dispose ()
+#pragma warning restore CA1063 // Implement IDisposable Correctly
 			{
 			}
 
@@ -530,10 +534,12 @@ namespace Novartment.Base.Collections
 				}
 			}
 
+#pragma warning disable CA1063 // Implement IDisposable Correctly
 			/// <summary>
 			/// Ничего не делает.
 			/// </summary>
 			public void Dispose ()
+#pragma warning restore CA1063 // Implement IDisposable Correctly
 			{
 			}
 

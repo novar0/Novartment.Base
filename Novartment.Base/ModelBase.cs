@@ -5,6 +5,7 @@ using System.Reflection;
 
 namespace Novartment.Base
 {
+#pragma warning disable CA1063 // Implement IDisposable Correctly
 	/// <summary>
 	/// Базовый класс для моделей при использовании шаблона Model-View-*.
 	/// </summary>
@@ -21,6 +22,7 @@ namespace Novartment.Base
 		/// Освобождает ресурсы, занимаемые моделью.
 		/// </summary>
 		public virtual void Dispose ()
+#pragma warning restore CA1063 // Implement IDisposable Correctly
 		{
 			PropertyChanged = null;
 		}

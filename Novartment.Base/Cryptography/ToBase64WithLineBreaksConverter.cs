@@ -14,7 +14,7 @@ namespace Novartment.Base
 	/// б) блоком считается полная строка (требует на входе 48 байтов);
 	/// в) вставляет перевод строки в конце каждого выходного блока.
 	/// </remarks>
-	public class ToBase64WithLineBreaksConverter :
+	public sealed class ToBase64WithLineBreaksConverter :
 		ICryptoTransform
 	{
 		private static readonly int _maxLineLen = 76;

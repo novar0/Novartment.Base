@@ -9,7 +9,7 @@ namespace Novartment.Base
 	/// Только экземпляр созданный в отсутствии других экземпляров с тем же именем,
 	/// будет иметь свойство оригинальности.
 	/// </summary>
-	public class SystemWideSingleton :
+	public sealed class SystemWideSingleton :
 		IDisposable
 	{
 		private readonly Mutex _mutex;

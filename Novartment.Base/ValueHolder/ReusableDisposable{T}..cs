@@ -9,7 +9,7 @@ namespace Novartment.Base
 	/// При смене значения, старое значение освобождается.
 	/// </summary>
 	/// <typeparam name="T">Тип значения-начинки, должен быть ссылочным и реализовать System.IDisposable.</typeparam>
-	public class ReusableDisposable<T> :
+	public sealed class ReusableDisposable<T> :
 		IDisposable,
 		IValueHolder<T>
 		where T : class, IDisposable

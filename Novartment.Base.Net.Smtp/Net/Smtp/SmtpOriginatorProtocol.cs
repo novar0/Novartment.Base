@@ -124,9 +124,7 @@ namespace Novartment.Base.Net.Smtp
 					}
 					catch (OperationCanceledException)
 					{
-						_logger?.LogWarning (string.Format (
-							"Canceling protocol with {0}.",
-							connection.RemoteEndPoint));
+						_logger?.LogWarning ($"Canceling protocol with {connection.RemoteEndPoint}.");
 						throw;
 					}
 					catch (Exception excpt)
@@ -137,16 +135,11 @@ namespace Novartment.Base.Net.Smtp
 							((excpt is ObjectDisposedException) ||
 							((excpt is IOException) && (excpt.InnerException is ObjectDisposedException))))
 						{
-							_logger?.LogWarning (string.Format (
-								"Canceling protocol with {0}.",
-								connection.RemoteEndPoint));
-							cancellationToken.ThrowIfCancellationRequested ();
+							_logger?.LogWarning ($"Canceling protocol with {connection.RemoteEndPoint}.");
 						}
 
-						_logger?.LogWarning (string.Format (
-							"Aborting protocol with {0}. {1}",
-							connection.RemoteEndPoint,
-							ExceptionDescriptionProvider.GetDescription (excpt)));
+						_logger?.LogWarning (
+							$"Aborting protocol with {connection.RemoteEndPoint}. {ExceptionDescriptionProvider.GetDescription (excpt)}");
 						throw;
 					}
 				}
