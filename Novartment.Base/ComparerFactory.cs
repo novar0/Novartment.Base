@@ -65,11 +65,12 @@ namespace Novartment.Base
 			}
 
 			var sorterType = typeof (InternalSorter<,>).MakeGenericType (itemType, sortingPropertyInfo.PropertyType);
-			var sorterConstructor = sorterType.GetTypeInfo ().DeclaredConstructors.Single (item =>
-			{
-				var pars = item.GetParameters ();
-				return (pars.Length == 1) && (pars[0].ParameterType == typeof (PropertyInfo));
-			});
+			var sorterConstructor = sorterType.GetConstructors (BindingFlags.NonPublic | BindingFlags.Instance)
+				.Single (item =>
+				{
+					var pars = item.GetParameters ();
+					return (pars.Length == 1) && (pars[0].ParameterType == typeof (PropertyInfo));
+				});
 			var sorter = (IComparer<TItem>)sorterConstructor.Invoke (new object[] { sortingPropertyInfo });
 			((ISortDirectionVariable)sorter).DescendingOrder = descendingOrder;
 			return sorter;

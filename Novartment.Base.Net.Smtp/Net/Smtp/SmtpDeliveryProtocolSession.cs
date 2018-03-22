@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO;
 using System.Net.Sockets;
-using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -92,7 +91,7 @@ namespace Novartment.Base.Net.Smtp
 		{
 			// посылаем приветствие в виде названия и версии сервера
 			// TODO: сделать конфигурируемым имя, используемое в качестве приветствия
-			var assembly = this.GetType ().GetTypeInfo ().Assembly.GetName ();
+			var assembly = this.GetType ().Assembly.GetName ();
 			var reply = SmtpReply.CreateServiceReady (assembly.Name, assembly.Version);
 			return _transport.SendReplyAsync (reply, false, cancellationToken);
 		}

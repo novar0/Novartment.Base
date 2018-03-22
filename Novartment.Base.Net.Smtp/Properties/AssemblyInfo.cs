@@ -12,5 +12,5 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible (false)]
 [assembly: InternalsVisibleTo ("Novartment.Base.Net.Smtp.Test")]
 [assembly: AssemblyVersion ("4.1")]
-[assembly: AssemblyFileVersion ("4.1.0.0")]
-[assembly: AssemblyInformationalVersion ("4.1.0-beta")]
+[assembly: AssemblyFileVersion ("4.1.1.0")]
+[assembly: AssemblyInformationalVersion ("4.1.1-beta")]

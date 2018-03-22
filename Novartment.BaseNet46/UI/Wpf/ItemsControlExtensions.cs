@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics.Contracts;
-using System.Reflection;
 using System.Windows.Controls;
 using static System.Linq.Enumerable;
 
@@ -39,7 +38,7 @@ namespace Novartment.Base.UI.Wpf
 				throw new InvalidOperationException ("Required property control.ItemsSource not specified.");
 			}
 
-			var interfaces = src.GetType ().GetTypeInfo ().ImplementedInterfaces;
+			var interfaces = src.GetType ().GetInterfaces ();
 			var enumerable = interfaces.FirstOrDefault (item => item.IsConstructedGenericType && (item.GetGenericTypeDefinition () == typeof (IEnumerable<>)));
 			if (enumerable == null)
 			{

@@ -14,7 +14,7 @@ namespace Novartment.Base.Test
 		[Trait ("Category", "ReflectionService")]
 		public void GetAssemblyVersion ()
 		{
-			Assert.Equal ("1.1.15037.9256", ReflectionService.GetAssemblyVersion (this.GetType ().GetTypeInfo ().Assembly));
+			Assert.Equal ("1.1.15037.9256", ReflectionService.GetAssemblyVersion (this.GetType ().Assembly));
 		}
 
 		[Fact]
@@ -46,7 +46,7 @@ namespace Novartment.Base.Test
 			Assert.Null (args[0].Name);
 			Assert.Equal ("test", (string)args[0].Value);
 
-			args = ReflectionService.GetAttributeArguments<DefaultValueAttribute> (this.GetType ().GetTypeInfo ());
+			args = ReflectionService.GetAttributeArguments<DefaultValueAttribute> (this.GetType ());
 			Assert.Equal (2, args.Count);
 
 			Assert.IsAssignableFrom<Type> (args[0].Value);

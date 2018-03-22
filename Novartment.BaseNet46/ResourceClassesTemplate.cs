@@ -6,7 +6,6 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 using System;
-using System.Reflection;
 
 namespace Novartment.Base.UI.Wpf
 {
@@ -35,7 +34,7 @@ namespace Novartment.Base.UI.Wpf
 		private static System.Resources.ResourceManager CreateResourceManager ()
 		{
 			var template = "Novartment.Base.UI.Wpf.Resources.resources";
-			var assembly = typeof (Resources).GetTypeInfo ().Assembly;
+			var assembly = typeof (Resources).Assembly;
 			var names = assembly.GetManifestResourceNames ();
 			string foundName = null;
 			foreach (var name in names)

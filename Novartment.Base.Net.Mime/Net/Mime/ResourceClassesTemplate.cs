@@ -6,7 +6,6 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 using System;
-using System.Reflection;
 
 namespace Novartment.Base.Net.Mime
 {
@@ -35,7 +34,7 @@ namespace Novartment.Base.Net.Mime
 		private static System.Resources.ResourceManager CreateResourceManager ()
 		{
 			var template = "Novartment.Base.Net.Mime.Resources.resources";
-			var assembly = typeof (Resources).GetTypeInfo ().Assembly;
+			var assembly = typeof (Resources).Assembly;
 			var names = assembly.GetManifestResourceNames ();
 			string foundName = null;
 			foreach (var name in names)

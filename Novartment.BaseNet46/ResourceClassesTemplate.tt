@@ -47,7 +47,6 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 using System;
-using System.Reflection;
 
 <#
 try
@@ -134,7 +133,7 @@ try
 			string.Format ("{0}.{1}{2}.resources", RootNamespace, entry.File, entry.Type) :
 			string.Format ("{0}.{1}.{2}{3}.resources", RootNamespace, entry.Path, entry.File, entry.Type)
 			#>";
-			var assembly = typeof (<#=entry.File#>).GetTypeInfo ().Assembly;
+			var assembly = typeof (<#=entry.File#>).Assembly;
 			var names = assembly.GetManifestResourceNames ();
 			string foundName = null;
 			foreach (var name in names)

@@ -102,7 +102,7 @@ namespace Novartment.Base.Reflection
 			where T : Attribute
 		{
 			var name = value.ToString ();
-			var fieldInfo = value.GetType ().GetTypeInfo ().GetDeclaredField (name);
+			var fieldInfo = value.GetType ().GetField (name);
 			return (fieldInfo == null) ?
 				ReadOnlyList.Empty<AttributeArgument> () :
 				GetAttributeArguments<T> (fieldInfo);

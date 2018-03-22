@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Diagnostics.Contracts;
-using System.Reflection;
 
 namespace Novartment.Base.Reflection
 {
@@ -23,13 +22,12 @@ namespace Novartment.Base.Reflection
 
 			Contract.EndContractBlock ();
 
-			var typeInfo = type.GetTypeInfo ();
-			if (!typeInfo.IsValueType)
+			if (!type.IsValueType)
 			{
 				return true;
 			}
 
-			if (typeInfo.IsEnum)
+			if (type.IsEnum)
 			{
 				return IsAtomicallyAssignable (Enum.GetUnderlyingType (type));
 			}
