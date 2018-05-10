@@ -4,11 +4,7 @@
     <AssemblyName>Novartment.BaseNet46</AssemblyName>
 		<TargetFramework>net461</TargetFramework>
 		<Version>2.2.2-beta</Version>
-		<Product>Novartment.Base</Product>
-		<Authors>Novar</Authors>
-		<Copyright>Copyright © 2014-2017</Copyright>
 		<Description>Base classes for .Net 4.6</Description>
-		<NeutralLanguage>en</NeutralLanguage>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 		<CodeAnalysisRuleSet>StyleCop.Analyzers.ruleset</CodeAnalysisRuleSet>

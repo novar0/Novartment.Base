@@ -1,0 +1,8 @@
+﻿<Project>
+	<PropertyGroup>
+		<Product>Novartment.Base</Product>
+		<Authors>Novar</Authors>
+		<Copyright>Copyright © 2014-2018</Copyright>
+		<NeutralLanguage>en</NeutralLanguage>
+	</PropertyGroup>
+</Project>
