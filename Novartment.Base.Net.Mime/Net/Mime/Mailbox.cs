@@ -71,8 +71,8 @@ namespace Novartment.Base.Net.Mime
 		/// <returns>True если значение параметра first равно second; в противном случае — False.</returns>
 		public static bool operator == (Mailbox first, Mailbox second)
 		{
-			return ReferenceEquals (first, null) ?
-				ReferenceEquals (second, null) :
+			return first is null ?
+				second is null :
 				first.Equals (second);
 		}
 
@@ -84,8 +84,8 @@ namespace Novartment.Base.Net.Mime
 		/// <returns>True если значение параметра first не равно second; в противном случае — False.</returns>
 		public static bool operator != (Mailbox first, Mailbox second)
 		{
-			return !(ReferenceEquals (first, null) ?
-				ReferenceEquals (second, null) :
+			return !(first is null ?
+				second is null :
 				first.Equals (second));
 		}
 

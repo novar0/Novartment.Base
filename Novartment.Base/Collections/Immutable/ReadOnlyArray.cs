@@ -113,8 +113,8 @@ namespace Novartment.Base.Collections.Immutable
 		/// <returns>true, если значения параметров first и second равны; в противном случае — false.</returns>
 		public static bool operator ==(ReadOnlyArray<T> first, ReadOnlyArray<T> second)
 		{
-			return ReferenceEquals(first, null) ?
-				ReferenceEquals(second, null) :
+			return first is null ?
+				second is null :
 				first.Equals(second);
 		}
 
@@ -126,8 +126,8 @@ namespace Novartment.Base.Collections.Immutable
 		/// <returns>true, если значения параметров first и second не равны; в противном случае — false.</returns>
 		public static bool operator !=(ReadOnlyArray<T> first, ReadOnlyArray<T> second)
 		{
-			return !(ReferenceEquals(first, null) ?
-				ReferenceEquals(second, null) :
+			return !(first is null ?
+				second is null :
 				first.Equals(second));
 		}
 
@@ -187,7 +187,7 @@ namespace Novartment.Base.Collections.Immutable
 		/// <returns>true, если указанная коллекция равна текущей коллекции; в противном случае — false.</returns>
 		public bool Equals (ReadOnlyArray<T> other)
 		{
-			return !ReferenceEquals (other, null) &&
+			return !(other is null) &&
 			(other._items == _items) &&
 			(other._count == _count);
 		}

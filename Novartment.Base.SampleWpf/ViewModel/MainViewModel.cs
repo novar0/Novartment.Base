@@ -84,9 +84,9 @@ namespace Novartment.Base.SampleWpf
 			_eventLog.LogInformation (string.Format ("Запущена программа версии {0}", Version));
 		}
 
-		public ICollectionView EventsList => _eventsListView;
-
 		public static string Version => ComponentApplication.Current.Version;
+
+		public ICollectionView EventsList => _eventsListView;
 
 		public string DataFormats => _dataFormats;
 
@@ -203,7 +203,7 @@ namespace Novartment.Base.SampleWpf
 				_dataFormats = (string)data.GetData (DataContainerFormats.UnicodeText, true);
 			}
 
-			RaisePropertyChanged (nameof (DataFormats));
+			RaisePropertyChanged (nameof (this.DataFormats));
 			if (((keyStates & DragDropKeyStates.AltKey) == DragDropKeyStates.AltKey) && ((allowedEffects & DragDropEffects.Link) == DragDropEffects.Link))
 			{
 				return DragDropEffects.Link;

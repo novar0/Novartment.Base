@@ -186,7 +186,7 @@ namespace Novartment.Base.Test
 			{
 				return object.ReferenceEquals (this, other) ?
 					true :
-					object.ReferenceEquals (other, null) ?
+					other is null ?
 						false :
 						(this.Value == other.Value);
 			}

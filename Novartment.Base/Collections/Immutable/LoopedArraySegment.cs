@@ -153,8 +153,8 @@ namespace Novartment.Base.Collections.Immutable
 		/// <returns>true, если значения параметров first и second равны; в противном случае — false.</returns>
 		public static bool operator == (LoopedArraySegment<T> first, LoopedArraySegment<T> second)
 		{
-			return ReferenceEquals (first, null) ?
-				ReferenceEquals (second, null) :
+			return first is null ?
+				second is null :
 				first.Equals (second);
 		}
 
@@ -166,8 +166,8 @@ namespace Novartment.Base.Collections.Immutable
 		/// <returns>true, если значения параметров first и second не равны; в противном случае — false.</returns>
 		public static bool operator != (LoopedArraySegment<T> first, LoopedArraySegment<T> second)
 		{
-			return !(ReferenceEquals (first, null) ?
-				ReferenceEquals (second, null) :
+			return !(first is null ?
+				second is null :
 				first.Equals (second));
 		}
 
@@ -262,7 +262,7 @@ namespace Novartment.Base.Collections.Immutable
 		public bool Equals (LoopedArraySegment<T> other)
 		{
 			return ReferenceEquals (this, other) ||
-				(!ReferenceEquals (other, null) &&
+				(!(other is null) &&
 				(other._items == _items) &&
 				(other._offset == _offset) &&
 				(other._count == _count));

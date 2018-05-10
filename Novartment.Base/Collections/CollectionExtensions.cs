@@ -580,7 +580,7 @@ namespace Novartment.Base.Collections
 
 			Contract.EndContractBlock ();
 
-			return source.Where (item => !ReferenceEquals (item, null));
+			return source.Where (item => !(item is null));
 		}
 
 		/// <summary>

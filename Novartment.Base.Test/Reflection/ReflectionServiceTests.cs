@@ -14,7 +14,8 @@ namespace Novartment.Base.Test
 		[Trait ("Category", "ReflectionService")]
 		public void GetAssemblyVersion ()
 		{
-			Assert.Equal ("1.1.15037.9256", ReflectionService.GetAssemblyVersion (this.GetType ().Assembly));
+			var actualVer = ReflectionService.GetAssemblyVersion (this.GetType ().Assembly);
+			Assert.Equal ("1.1.15037.9256", actualVer);
 		}
 
 		[Fact]

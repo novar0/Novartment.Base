@@ -70,15 +70,13 @@ namespace Novartment.Base.UI.Wpf
 		private static void OnCommandChanged (DependencyObject d, DependencyPropertyChangedEventArgs e)
 		{
 			var commandReference = d as CommandReference;
-			var oldCommand = e.OldValue as ICommand;
-			var newCommand = e.NewValue as ICommand;
 
-			if (oldCommand != null)
+			if (e.OldValue is ICommand oldCommand)
 			{
 				oldCommand.CanExecuteChanged -= commandReference._commandCanExecuteChangedHandler;
 			}
 
-			if (newCommand != null)
+			if (e.NewValue is ICommand newCommand)
 			{
 				commandReference._commandCanExecuteChangedHandler = commandReference.CommandCanExecuteChanged;
 				newCommand.CanExecuteChanged += commandReference._commandCanExecuteChangedHandler;

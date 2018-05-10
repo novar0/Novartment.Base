@@ -59,8 +59,8 @@ namespace Novartment.Base.Net
 		/// <returns>True если значение параметра first равно second; в противном случае — False.</returns>
 		public static bool operator ==(HeaderFieldParameter first, HeaderFieldParameter second)
 		{
-			return ReferenceEquals(first, null) ?
-				ReferenceEquals(second, null) :
+			return first is null ?
+				second is null :
 				first.Equals(second);
 		}
 
@@ -72,8 +72,8 @@ namespace Novartment.Base.Net
 		/// <returns>True если значение параметра first не равно second; в противном случае — False.</returns>
 		public static bool operator !=(HeaderFieldParameter first, HeaderFieldParameter second)
 		{
-			return !(ReferenceEquals(first, null) ?
-				ReferenceEquals(second, null) :
+			return !(first is null ?
+				second is null :
 				first.Equals(second));
 		}
 

@@ -13,7 +13,7 @@ namespace Novartment.Base.Reflection
 		/// </summary>
 		/// <param name="name">Имя аргумента.</param>
 		/// <param name="value">Значение аргумента.</param>
-		public AttributeArgument(string name, object value)
+		public AttributeArgument (string name, object value)
 		{
 			this.Name = name;
 			this.Value = value;
@@ -35,11 +35,9 @@ namespace Novartment.Base.Reflection
 		/// <param name="first">Первый объект для сравнения.</param>
 		/// <param name="second">Второй объект для сравнения.</param>
 		/// <returns>True если значение параметра first равно second; в противном случае — False.</returns>
-		public static bool operator ==(AttributeArgument first, AttributeArgument second)
+		public static bool operator == (AttributeArgument first, AttributeArgument second)
 		{
-			return ReferenceEquals(first, null) ?
-				ReferenceEquals(second, null) :
-				first.Equals(second);
+			return first.Equals (second);
 		}
 
 		/// <summary>
@@ -48,11 +46,9 @@ namespace Novartment.Base.Reflection
 		/// <param name="first">Первый объект для сравнения.</param>
 		/// <param name="second">Второй объект для сравнения.</param>
 		/// <returns>True если значение параметра first не равно second; в противном случае — False.</returns>
-		public static bool operator !=(AttributeArgument first, AttributeArgument second)
+		public static bool operator != (AttributeArgument first, AttributeArgument second)
 		{
-			return !(ReferenceEquals(first, null) ?
-				ReferenceEquals(second, null) :
-				first.Equals(second));
+			return !first.Equals (second);
 		}
 
 		/// <summary>

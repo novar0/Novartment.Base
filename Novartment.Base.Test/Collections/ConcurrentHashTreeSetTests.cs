@@ -171,15 +171,15 @@ namespace Novartment.Base.Test
 
 			public int Value { get; }
 
-			public override int GetHashCode () => (int)((double)Value * _hashMod); // высокая вероятность коллизии
+			public override int GetHashCode () => (int)((double)this.Value * _hashMod); // высокая вероятность коллизии
 
-			public override string ToString () => string.Format (CultureInfo.InvariantCulture, "{0}, {1}", Value, GetHashCode ());
+			public override string ToString () => string.Format (CultureInfo.InvariantCulture, "{0}, {1}", this.Value, GetHashCode ());
 
 			public bool Equals (MockStr other)
 			{
 				return object.ReferenceEquals (this, other) ?
 					true :
-					object.ReferenceEquals (other, null) ?
+					other is null ?
 						false :
 						(this.Value == other.Value);
 			}
