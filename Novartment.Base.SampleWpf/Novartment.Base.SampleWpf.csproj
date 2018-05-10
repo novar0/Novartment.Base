@@ -242,7 +242,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Autofac">
-      <Version>4.6.2</Version>
+      <Version>4.8.1</Version>
     </PackageReference>
     <PackageReference Include="Autofac.Wcf">
       <Version>4.0.0</Version>

@@ -3,8 +3,6 @@
   <PropertyGroup>
     <VersionPrefix>1.0.0-beta</VersionPrefix>
     <TargetFramework>net461</TargetFramework>
-    <AssemblyName>Novartment.BaseNet46.Test</AssemblyName>
-    <PackageId>Novartment.BaseNet46.Test</PackageId>
     <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
 		<CodeAnalysisRuleSet>StyleCop.Analyzers.ruleset</CodeAnalysisRuleSet>
 		<Features>IOperation</Features>
@@ -20,7 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.6.1" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.7.0" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.3.1" />
     <PackageReference Include="xunit" Version="2.3.1" />
   </ItemGroup>

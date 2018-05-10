@@ -1,20 +1,16 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Authors>Novar</Authors>
-    <TargetFramework>net461</TargetFramework>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <AssemblyName>Novartment.BaseNet46</AssemblyName>
-    <PackageId>Novartment.BaseNet46</PackageId>
-		<PackageVersion>2.2.0.0</PackageVersion>
-		<GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
-    <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
-    <GenerateAssemblyCopyrightAttribute>false</GenerateAssemblyCopyrightAttribute>
-    <GenerateNeutralResourcesLanguageAttribute>false</GenerateNeutralResourcesLanguageAttribute>
-    <GenerateAssemblyVersionAttribute>false</GenerateAssemblyVersionAttribute>
-    <GenerateAssemblyFileVersionAttribute>false</GenerateAssemblyFileVersionAttribute>
-    <GenerateAssemblyInformationalVersionAttribute>false</GenerateAssemblyInformationalVersionAttribute>
-    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+		<TargetFramework>net461</TargetFramework>
+		<Version>2.2.1-beta</Version>
+		<Product>Novartment.Base</Product>
+		<Authors>Novar</Authors>
+		<Copyright>Copyright © 2014-2017</Copyright>
+		<Description>Base classes for .Net 4.6</Description>
+		<NeutralLanguage>en</NeutralLanguage>
+		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 		<CodeAnalysisRuleSet>StyleCop.Analyzers.ruleset</CodeAnalysisRuleSet>
 		<Features>IOperation</Features>
 	</PropertyGroup>
