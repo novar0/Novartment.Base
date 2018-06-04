@@ -125,7 +125,7 @@ namespace Novartment.Base.Net.Mime
 				{
 					start = parser.Position;
 					end = parser.SkipClassChars (AsciiCharSet.Classes, (short)AsciiCharClasses.WhiteSpace);
-					lastWhiteSpace = parser.Source.Substring (start, end - start);
+					lastWhiteSpace = source.Substring (start, end - start);
 				}
 				else
 				{
@@ -141,7 +141,7 @@ namespace Novartment.Base.Net.Mime
 						}
 					}
 
-					var value = parser.Source.Substring (start, end - start);
+					var value = source.Substring (start, end - start);
 					var isWordEncoded = Rfc2047EncodedWord.IsValid (value);
 
 					// RFC 2047 часть 6.2:
@@ -239,7 +239,12 @@ namespace Novartment.Base.Net.Mime
 				throw new FormatException ("Value does not conform to format 'type;value'.");
 			}
 
-			var idx = source.IndexOf (';'); // в 'atom' не может быть ';'. допускаем что в коментах тоже нет ';'
+			// в 'atom' не может быть ';'. допускаем что в коментах тоже нет ';'
+#if NETCOREAPP2_1
+			var idx = source.IndexOf (';', StringComparison.Ordinal);
+#else
+			var idx = source.IndexOf (';');
+#endif
 			if ((idx < 1) || ((idx + 1) >= source.Length))
 			{
 				throw new FormatException ("Value does not conform to format 'type;value'.");
@@ -277,7 +282,12 @@ namespace Novartment.Base.Net.Mime
 
 			Contract.EndContractBlock ();
 
-			var idx = source.IndexOf (';'); // коменты не распознаются. допускаем что в кодированных словах нет ';'
+			// коменты не распознаются. допускаем что в кодированных словах нет ';'
+#if NETCOREAPP2_1
+			var idx = source.IndexOf (';', StringComparison.Ordinal);
+#else
+			var idx = source.IndexOf (';');
+#endif
 			var text1 = (idx >= 0) ? DecodeUnstructured (source.Substring (0, idx)) : DecodeUnstructured (source);
 			var text2 = (idx >= 0) ? DecodeUnstructured (source.Substring (idx + 1)) : null;
 
@@ -485,7 +495,11 @@ namespace Novartment.Base.Net.Mime
 			Contract.EndContractBlock ();
 
 			var parameters = new ArrayList<HeaderFieldParameter> ();
+#if NETCOREAPP2_1
+			var idx = source.IndexOf (';', StringComparison.Ordinal);
+#else
 			var idx = source.IndexOf (';');
+#endif
 			if (idx >= 0)
 			{
 				var elements = StructuredValueElementCollection.Parse (source.Substring (idx + 1), AsciiCharClasses.Token, false, StructuredValueElementType.RoundBracketedValue);

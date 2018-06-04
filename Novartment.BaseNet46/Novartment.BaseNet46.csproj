@@ -3,7 +3,7 @@
   <PropertyGroup>
     <AssemblyName>Novartment.BaseNet46</AssemblyName>
 		<TargetFramework>net461</TargetFramework>
-		<Version>2.2.2-beta</Version>
+		<Version>2.2.3-beta</Version>
 		<Description>Base classes for .Net 4.6</Description>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>

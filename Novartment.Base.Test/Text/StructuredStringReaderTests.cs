@@ -11,7 +11,6 @@ namespace Novartment.Base.Test
 		public void Parse ()
 		{
 			var parser = new StructuredStringReader (string.Empty);
-			Assert.Equal (0, parser.Source.Length);
 			Assert.Equal (0, parser.Position);
 			Assert.Equal (-1, parser.NextChar);
 			Assert.Equal (-1, parser.NextNextChar);
@@ -19,7 +18,6 @@ namespace Novartment.Base.Test
 
 			var template = " 👍a👎🔧{0🔨жби🔑}-\t";
 			parser = new StructuredStringReader (template, 1, template.Length - 2);
-			Assert.Equal (template.Length, parser.Source.Length);
 			Assert.Equal (1, parser.Position);
 			Assert.Equal (0x1F44D, parser.NextChar); // 👍
 			Assert.Equal ((int)'a', parser.NextNextChar);

@@ -89,9 +89,11 @@ namespace Novartment.Base
 
 				if (_trace != null)
 				{
-					var trace = (tracePatternToHide == null) ?
-						_trace :
-						_trace.Replace (tracePatternToHide, "...", StringComparison.OrdinalIgnoreCase);
+#if NETCOREAPP2_1
+					var trace = (tracePatternToHide == null) ? _trace : _trace.Replace (tracePatternToHide, "...", StringComparison.Ordinal);
+#else
+					var trace = (tracePatternToHide == null) ? _trace : _trace.Replace (tracePatternToHide, "...");
+#endif
 					var isNewLinePresent = trace.StartsWith (Environment.NewLine, StringComparison.OrdinalIgnoreCase);
 					if (isNewLinePresent)
 					{

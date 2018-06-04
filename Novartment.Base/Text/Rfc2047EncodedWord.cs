@@ -39,7 +39,11 @@ namespace Novartment.Base.Text
 			var start = parser.Position;
 			var end = parser.SkipClassChars (AsciiCharSet.Classes, (short)AsciiCharClasses.ExtendedToken);
 			var charsetStr = value.Substring (start, end - start);
+#if NETCOREAPP2_1
+			var idx = charsetStr.IndexOf ('*', StringComparison.Ordinal);
+#else
 			var idx = charsetStr.IndexOf ('*');
+#endif
 			if (idx > 0)
 			{
 				charsetStr = charsetStr.Substring (0, idx);

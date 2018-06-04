@@ -128,7 +128,7 @@ namespace Novartment.Base.Text
 						end = parser.EnsureDelimitedElement (_QuotedStringDelimitingData);
 						if (typeToSkip != StructuredValueElementType.QuotedValue)
 						{
-							elements.Add (new StructuredValueElement (StructuredValueElementType.QuotedValue, parser.Source.Substring (start + 1, end - start - 2)));
+							elements.Add (new StructuredValueElement (StructuredValueElementType.QuotedValue, source.Substring (start + 1, end - start - 2)));
 						}
 
 						break;
@@ -136,7 +136,7 @@ namespace Novartment.Base.Text
 						end = parser.EnsureDelimitedElement (_CommentDelimitingData);
 						if (typeToSkip != StructuredValueElementType.RoundBracketedValue)
 						{
-							elements.Add (new StructuredValueElement (StructuredValueElementType.RoundBracketedValue, parser.Source.Substring (start + 1, end - start - 2)));
+							elements.Add (new StructuredValueElement (StructuredValueElementType.RoundBracketedValue, source.Substring (start + 1, end - start - 2)));
 						}
 
 						break;
@@ -144,7 +144,7 @@ namespace Novartment.Base.Text
 						end = parser.EnsureDelimitedElement (_AngleAddrDelimitingData);
 						if (typeToSkip != StructuredValueElementType.AngleBracketedValue)
 						{
-							elements.Add (new StructuredValueElement (StructuredValueElementType.AngleBracketedValue, parser.Source.Substring (start + 1, end - start - 2)));
+							elements.Add (new StructuredValueElement (StructuredValueElementType.AngleBracketedValue, source.Substring (start + 1, end - start - 2)));
 						}
 
 						break;
@@ -152,7 +152,7 @@ namespace Novartment.Base.Text
 						end = parser.EnsureDelimitedElement (_DomainLiteralDelimitingData);
 						if (typeToSkip != StructuredValueElementType.SquareBracketedValue)
 						{
-							elements.Add (new StructuredValueElement (StructuredValueElementType.SquareBracketedValue, parser.Source.Substring (start + 1, end - start - 2)));
+							elements.Add (new StructuredValueElement (StructuredValueElementType.SquareBracketedValue, source.Substring (start + 1, end - start - 2)));
 						}
 
 						break;
@@ -181,7 +181,7 @@ namespace Novartment.Base.Text
 
 							if (typeToSkip != StructuredValueElementType.Value)
 							{
-								elements.Add (new StructuredValueElement (StructuredValueElementType.Value, parser.Source.Substring (start, end - start)));
+								elements.Add (new StructuredValueElement (StructuredValueElementType.Value, source.Substring (start, end - start)));
 							}
 						}
 

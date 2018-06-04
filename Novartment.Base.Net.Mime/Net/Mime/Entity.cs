@@ -580,7 +580,11 @@ namespace Novartment.Base.Net.Mime
 			try
 			{
 				var data = HeaderDecoder.DecodeAtomAndParameterList (fieldEntry.Field.Value);
+#if NETCOREAPP2_1
+				var idx = data.Text.IndexOf ('/', StringComparison.Ordinal);
+#else
 				var idx = data.Text.IndexOf ('/');
+#endif
 				if ((idx < 1) || (idx > (data.Text.Length - 2)))
 				{
 					throw new FormatException ("Invalid format of '" + HeaderFieldNameHelper.GetName (HeaderFieldName.ContentType) + "' field.");

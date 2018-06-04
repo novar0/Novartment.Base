@@ -2,8 +2,8 @@
 
   <PropertyGroup>
 		<AssemblyName>Novartment.Base</AssemblyName>
-		<TargetFramework>netstandard2.0</TargetFramework>
-		<Version>4.2.2-beta</Version>
+		<TargetFrameworks>netstandard2.0;netcoreapp2.1</TargetFrameworks>
+		<Version>4.2.3-beta</Version>
 		<Description>Base classes</Description>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>

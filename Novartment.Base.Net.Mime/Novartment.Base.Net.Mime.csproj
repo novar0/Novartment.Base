@@ -2,8 +2,8 @@
 
   <PropertyGroup>
     <AssemblyName>Novartment.Base.Net.Mime</AssemblyName>
-		<TargetFramework>netstandard2.0</TargetFramework>
-		<Version>4.1.3-beta</Version>
+		<TargetFrameworks>netstandard2.0;netcoreapp2.1</TargetFrameworks>
+		<Version>4.1.4-beta</Version>
 		<Description>Base classes for MIME</Description>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
@@ -24,5 +24,11 @@
 	<ItemGroup>
     <ProjectReference Include="..\Novartment.Base\Novartment.Base.csproj" />
   </ItemGroup>
+
+	<ItemGroup>
+	  <None Update="Net\Mime\ResourceClassesTemplate.tt">
+	    <Generator>TextTemplatingFileGenerator</Generator>
+	  </None>
+	</ItemGroup>
 
 </Project>

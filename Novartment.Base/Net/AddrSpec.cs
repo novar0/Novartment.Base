@@ -206,7 +206,11 @@ namespace Novartment.Base.Net
 		{
 			// RFC 3798 part 2.1:
 			// The comparison MUST be case-sensitive for the local-part and case-insensitive for the domain part.
+#if NETCOREAPP2_1
+			return this.LocalPart.GetHashCode (StringComparison.Ordinal) ^ StringComparer.OrdinalIgnoreCase.GetHashCode (this.Domain);
+#else
 			return this.LocalPart.GetHashCode () ^ StringComparer.OrdinalIgnoreCase.GetHashCode (this.Domain);
+#endif
 		}
 
 		/// <summary>

@@ -259,8 +259,7 @@ namespace Novartment.Base
 
 			var innerExceptions = ExceptionDescriptionProvider.GetInnerExceptions (exception);
 			var innerDescriptions = (innerExceptions != null) ?
-				CollectionExtensions.DuplicateToArray (
-					innerExceptions.Select (item => CreateDescription (item))) :
+					innerExceptions.Select (item => CreateDescription (item)).DuplicateToArray () :
 				Array.Empty<ExceptionDescription> ();
 			return new ExceptionDescription (
 				ExceptionDescriptionProvider.GetName (exception),

@@ -92,7 +92,11 @@ namespace Novartment.Base.Net
 		/// <returns>Хэш-код для текущего объекта.</returns>
 		public override int GetHashCode ()
 		{
+#if NETCOREAPP2_1
+			return StringComparer.OrdinalIgnoreCase.GetHashCode (this.Name) ^ (_value?.GetHashCode (StringComparison.Ordinal) ?? 0);
+#else
 			return StringComparer.OrdinalIgnoreCase.GetHashCode (this.Name) ^ (_value?.GetHashCode () ?? 0);
+#endif
 		}
 
 		/// <summary>
