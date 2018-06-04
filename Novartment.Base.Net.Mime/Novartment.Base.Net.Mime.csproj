@@ -13,7 +13,7 @@
 
   <ItemGroup>
 		<PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.6.0" />
-		<PackageReference Include="StyleCop.Analyzers" Version="1.1.0-beta006" />
+		<PackageReference Include="StyleCop.Analyzers" Version="1.1.0-beta007" />
 	</ItemGroup>
 
 	<ItemGroup>

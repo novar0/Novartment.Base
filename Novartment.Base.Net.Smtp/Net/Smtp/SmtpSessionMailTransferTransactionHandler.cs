@@ -8,8 +8,12 @@ using Novartment.Base.Collections;
 
 namespace Novartment.Base.Net.Smtp
 {
-	internal class SmtpOriginatorDataTransferTransaction :
-		IMailDataTransferTransaction
+	/// <summary>
+	/// Обработчик транзакции по передаче почтового сообщения.
+	/// Все вызовы транзакции преобразуются в SmtpCommand для указанной при создании SmtpOriginatorProtocolSession.
+	/// </summary>
+	internal class SmtpSessionMailTransferTransactionHandler :
+		IMailTransferTransactionHandler
 	{
 		private readonly SmtpOriginatorProtocolSession _session;
 		private readonly ContentTransferEncoding _requiredEncodingSupport;
@@ -18,10 +22,7 @@ namespace Novartment.Base.Net.Smtp
 		private string _startingReturnPath = null;
 		private TransactionStatus _status = TransactionStatus.NotStarted;
 
-		internal SmtpOriginatorDataTransferTransaction (
-			SmtpOriginatorProtocolSession session,
-			ContentTransferEncoding requiredEncodingSupport,
-			ILogger logger = null)
+		internal SmtpSessionMailTransferTransactionHandler (SmtpOriginatorProtocolSession session, ContentTransferEncoding requiredEncodingSupport, ILogger logger = null)
 		{
 			if (session == null)
 			{

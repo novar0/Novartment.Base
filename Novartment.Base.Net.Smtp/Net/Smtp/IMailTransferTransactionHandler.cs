@@ -12,14 +12,14 @@ using Novartment.Base.BinaryStreaming;
 namespace Novartment.Base.Net.Smtp
 {
 	/// <summary>
-	/// Транзакция, представляющая собой передачу почтового сообщения.
+	/// Обработчик транзакции, представляющей собой передачу почтового сообщения.
 	/// </summary>
 	/// <remarks>
 	/// Порядок вызова методов: один StartAsync(), потом несколько TryAddRecipientAsync() и в конце TransferDataAndFinishAsync().
 	/// Транзакция будет отменена если любой метод вызовет исключение.
 	/// При отмене транзакции никакая часть сообщения не будет доставлена ни одному из получателей.
 	/// </remarks>
-	public interface IMailDataTransferTransaction :
+	public interface IMailTransferTransactionHandler :
 		IDisposable
 	{
 		/// <summary>

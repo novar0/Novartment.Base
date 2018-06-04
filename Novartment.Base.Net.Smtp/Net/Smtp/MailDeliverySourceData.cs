@@ -3,7 +3,7 @@
 namespace Novartment.Base.Net.Smtp
 {
 	/// <summary>
-	/// Данные об источнике отправляющем почту.
+	/// Данные об источнике, отправившем почту.
 	/// </summary>
 	public class MailDeliverySourceData
 	{

@@ -23,7 +23,7 @@ namespace Novartment.Base.Smtp.Test
 		public void StartAsync ()
 		{
 			var sender = new SmtpCommandReplyConnectionSenderReceiverMock ();
-			var transaction = new SmtpOriginatorDataTransferTransaction (
+			var transaction = new SmtpSessionMailTransferTransactionHandler (
 				new SmtpOriginatorProtocolSession (sender, "test.localhost"),
 				ContentTransferEncoding.SevenBit,
 				null);
@@ -59,7 +59,7 @@ namespace Novartment.Base.Smtp.Test
 		public void TryAddRecipientAsync ()
 		{
 			var sender = new SmtpCommandReplyConnectionSenderReceiverMock ();
-			var transaction = new SmtpOriginatorDataTransferTransaction (
+			var transaction = new SmtpSessionMailTransferTransactionHandler (
 				new SmtpOriginatorProtocolSession (sender, "test.localhost"),
 				ContentTransferEncoding.SevenBit,
 				null);
@@ -101,7 +101,7 @@ namespace Novartment.Base.Smtp.Test
 			var extensionsSupported = new HashSet<string> ();
 
 			var sender = new SmtpCommandReplyConnectionSenderReceiverMock ();
-			var transaction = new SmtpOriginatorDataTransferTransaction (
+			var transaction = new SmtpSessionMailTransferTransactionHandler (
 				new SmtpOriginatorProtocolSession (sender, "test.localhost"),
 				ContentTransferEncoding.SevenBit,
 				null);
@@ -113,7 +113,7 @@ namespace Novartment.Base.Smtp.Test
 
 			// передаём данные не указав получателей
 			transaction = PrepareSessionForDataTransfer (sender, extensionsSupported);
-			transaction = new SmtpOriginatorDataTransferTransaction (
+			transaction = new SmtpSessionMailTransferTransactionHandler (
 				new SmtpOriginatorProtocolSession (sender, "test.localhost"),
 				ContentTransferEncoding.SevenBit,
 				null);
@@ -177,7 +177,7 @@ namespace Novartment.Base.Smtp.Test
 			Assert.Equal (MailBody, block1);
 		}
 
-		private SmtpOriginatorDataTransferTransaction PrepareSessionForDataTransfer (
+		private SmtpSessionMailTransferTransactionHandler PrepareSessionForDataTransfer (
 			SmtpCommandReplyConnectionSenderReceiverMock sender,
 			HashSet<string> serverSupportedExtensions)
 		{
@@ -187,7 +187,7 @@ namespace Novartment.Base.Smtp.Test
 			session.ReceiveGreetingAndStartAsync (CancellationToken.None).Wait ();
 
 			// создаём начатую для дальнейших тестов
-			var transaction = new SmtpOriginatorDataTransferTransaction (
+			var transaction = new SmtpSessionMailTransferTransactionHandler (
 				session,
 				ContentTransferEncoding.SevenBit,
 				null);

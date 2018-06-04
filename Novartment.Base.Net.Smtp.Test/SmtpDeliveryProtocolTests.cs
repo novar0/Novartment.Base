@@ -49,7 +49,7 @@ namespace Novartment.Base.Smtp.Test
 				"QUIT\r\n.\r\n" + // тут слово QUIT является данными, а не командой
 				"QUIT\r\n";
 
-			var transactionFactory = new Func<MailDeliverySourceData, IMailDataTransferTransaction> (srcAttribs =>
+			var transactionFactory = new Func<MailDeliverySourceData, IMailTransferTransactionHandler> (srcAttribs =>
 				new SmtDataTransferTransactionMock (null, disallowedRecipient, TransactionBehavior.Normal));
 			var connection = new TcpConnectionMock (
 				new IPEndPoint (IPAddress.Loopback, 25),

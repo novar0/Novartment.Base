@@ -14,27 +14,27 @@ namespace Novartment.Base.Net.Smtp
 	public class SmtpDeliveryProtocol :
 		ITcpConnectionProtocol
 	{
-		private readonly Func<MailDeliverySourceData, IMailDataTransferTransaction> _transactionFactory;
+		private readonly Func<MailDeliverySourceData, IMailTransferTransactionHandler> _mailHandlerFactory;
 		private readonly SmtpServerSecurityParameters _securityParameters;
 		private readonly ILogger _logger;
 
 		/// <summary>
-		/// Инициализирует новый экземпляр SmtpDeliveryProtocol
-		/// создающий транзакции по передачи почты с помощью указанной фабрики и
+		/// Инициализирует новый экземпляр SmtpDeliveryProtocol с указанными параметрами безопасности,
+		/// вызывающий указанный обработчик принимаемой почты и
 		/// записывающий происходящие события в указанный журнал.
 		/// </summary>
-		/// <param name="transactionFactory">Функция, создающая транзакции по передаче почты для указанного источника доставки.</param>
+		/// <param name="mailHandlerFactory">Функция, создающая обработчик приёма почты для указанного источника.</param>
 		/// <param name="securityParameters">Параметры безопасности,
 		/// устнавливающие использование шифрования и аутентификации при выполнении транзакций.</param>
 		/// <param name="logger">Журнал для записи событий. Укажите null если запись не нужна.</param>
 		public SmtpDeliveryProtocol (
-			Func<MailDeliverySourceData, IMailDataTransferTransaction> transactionFactory,
+			Func<MailDeliverySourceData, IMailTransferTransactionHandler> mailHandlerFactory,
 			SmtpServerSecurityParameters securityParameters,
 			ILogger<SmtpDeliveryProtocol> logger = null)
 		{
-			if (transactionFactory == null)
+			if (mailHandlerFactory == null)
 			{
-				throw new ArgumentNullException (nameof (transactionFactory));
+				throw new ArgumentNullException (nameof (mailHandlerFactory));
 			}
 
 			if (securityParameters == null)
@@ -50,7 +50,7 @@ namespace Novartment.Base.Net.Smtp
 
 			Contract.EndContractBlock ();
 
-			_transactionFactory = transactionFactory;
+			_mailHandlerFactory = mailHandlerFactory;
 			_securityParameters = securityParameters;
 			_logger = logger;
 		}
@@ -96,7 +96,7 @@ namespace Novartment.Base.Net.Smtp
 				using (var session = new SmtpDeliveryProtocolSession (
 					transport,
 					connection.RemoteEndPoint,
-					_transactionFactory,
+					_mailHandlerFactory,
 					connection.LocalEndPoint.HostName,
 					_securityParameters,
 					_logger))

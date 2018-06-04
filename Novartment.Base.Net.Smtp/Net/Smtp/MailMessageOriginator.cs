@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Threading;
 using System.Threading.Tasks;
@@ -18,12 +17,12 @@ namespace Novartment.Base.Net.Smtp
 		/// Может использоваться как исполнитель транзакций при создании экземпляра <see cref="Novartment.Base.Net.Smtp.SmtpOriginatorProtocol"/>.
 		/// </summary>
 		/// <param name="message">Сообщение для передачи.</param>
-		/// <param name="transactionFactory">Фабрика для создания транзакций.</param>
+		/// <param name="transactionHandlerFactory">Фабрика для создания обработчиков транзакций.</param>
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
 		/// <returns>Задача, представляющая процесс выполнения транзакций.</returns>
-		public static Task OriginateTransaction (
+		public static Task PerformTransferTransaction (
 			this IMailMessage<AddrSpec> message,
-			TransactionFactory transactionFactory,
+			TransactionHandlerFactory transactionHandlerFactory,
 #pragma warning disable CA1801 // Review unused parameters
 			CancellationToken cancellationToken)
 #pragma warning restore CA1801 // Review unused parameters
@@ -34,9 +33,9 @@ namespace Novartment.Base.Net.Smtp
 				throw new ArgumentNullException (nameof (message));
 			}
 
-			if (transactionFactory == null)
+			if (transactionHandlerFactory == null)
 			{
-				throw new ArgumentNullException (nameof (transactionFactory));
+				throw new ArgumentNullException (nameof (transactionHandlerFactory));
 			}
 
 			Contract.EndContractBlock ();
@@ -57,18 +56,18 @@ namespace Novartment.Base.Net.Smtp
 			// Посредником/медиатором служит канал BufferedChannel.
 			async Task OriginateTransactionStateMachine ()
 			{
-				using (var transaction = transactionFactory.Invoke (message.TransferEncoding))
+				using (var transactionHandler = transactionHandlerFactory.Invoke (message.TransferEncoding))
 				{
 					var returnPath = (message.Originators.Count > 0) ? message.Originators[0] : null;
-					await transaction.StartAsync (returnPath, cancellationToken).ConfigureAwait (false);
+					await transactionHandler.StartAsync (returnPath, cancellationToken).ConfigureAwait (false);
 					foreach (var recipient in recipients)
 					{
-						await transaction.TryAddRecipientAsync (recipient, cancellationToken).ConfigureAwait (false);
+						await transactionHandler.TryAddRecipientAsync (recipient, cancellationToken).ConfigureAwait (false);
 					}
 
 					var channel = new BufferedChannel (new byte[8192]); // TcpClient.SendBufferSize default value is 8192 bytes
 					var writeTask = WriteToChannelAsync (message, channel, cancellationToken);
-					var readTask = ReadFromChannelAsync (transaction, channel, cancellationToken);
+					var readTask = ReadFromChannelAsync (transactionHandler, channel, cancellationToken);
 					await Task.WhenAll (writeTask, readTask).ConfigureAwait (false);
 				}
 			}
@@ -82,12 +81,12 @@ namespace Novartment.Base.Net.Smtp
 			}
 			finally
 			{
-				// завершаем запись даже если чтение отменено или прервалось с исключением, иначе чтение может оcтаться навечно заблокированным
+				// завершаем запись даже если чтение отменено или прервалось с исключением, иначе запись может оcтаться навечно заблокированной
 				channel.SetComplete ();
 			}
 		}
 
-		private static async Task ReadFromChannelAsync (IMailDataTransferTransaction destination, BufferedChannel channel, CancellationToken cancellationToken)
+		private static async Task ReadFromChannelAsync (IMailTransferTransactionHandler destination, BufferedChannel channel, CancellationToken cancellationToken)
 		{
 			try
 			{

@@ -22,13 +22,13 @@ namespace Novartment.Base.Net.Smtp
 
 		private readonly ISmtpCommandTransport _transport;
 		private readonly IPHostEndPoint _remoteEndPoint;
-		private readonly Func<MailDeliverySourceData, IMailDataTransferTransaction> _currentTransactionFactory;
+		private readonly Func<MailDeliverySourceData, IMailTransferTransactionHandler> _mailHandlerFactory;
 		private readonly string _hostFqdn;
 		private readonly SmtpServerSecurityParameters _securityParameters;
 		private readonly ILogger _logger;
 
 		private bool _clientIdentified = false;
-		private IMailDataTransferTransaction _currentTransaction = null;
+		private IMailTransferTransactionHandler _currentTransaction = null;
 		private int _currentTransactionAcceptedRecipients = 0;
 		private ContentTransferEncoding _currentTransactionRequestedEncoding = ContentTransferEncoding.SevenBit;
 		private SmtpCommand.ExpectedInputType _expectedInput = SmtpCommand.ExpectedInputType.Command;
@@ -41,20 +41,20 @@ namespace Novartment.Base.Net.Smtp
 		internal SmtpDeliveryProtocolSession (
 			ISmtpCommandTransport transport,
 			IPHostEndPoint remoteEndPoint,
-			Func<MailDeliverySourceData, IMailDataTransferTransaction> transactionFactory,
+			Func<MailDeliverySourceData, IMailTransferTransactionHandler> mailHandlerFactory,
 			string hostFqdn,
 			SmtpServerSecurityParameters securityParameters,
 			ILogger logger)
 		{
 			_transport = transport;
 			_remoteEndPoint = remoteEndPoint;
-			_currentTransactionFactory = transactionFactory;
+			_mailHandlerFactory = mailHandlerFactory;
 			_hostFqdn = hostFqdn;
 			_securityParameters = securityParameters;
 			_logger = logger;
 		}
 
-		internal IMailDataTransferTransaction CurrentTransaction => _currentTransaction;
+		internal IMailTransferTransactionHandler CurrentTransaction => _currentTransaction;
 
 #pragma warning disable CA1063 // Implement IDisposable Correctly
 		public void Dispose ()
@@ -402,7 +402,7 @@ namespace Novartment.Base.Net.Smtp
 			}
 
 			ResetTransaction ();
-			var newTransaction = _currentTransactionFactory.Invoke (new MailDeliverySourceData (
+			var mailHandler = _mailHandlerFactory.Invoke (new MailDeliverySourceData (
 				_remoteEndPoint,
 				_transport.RemoteCertificate,
 				_authenticatedUser));
@@ -410,13 +410,13 @@ namespace Novartment.Base.Net.Smtp
 			try
 			{
 				// тут может возникнуть UnacceptableSmtpMailboxException или другое исключение
-				task = newTransaction.StartAsync (mailFromCommand.ReturnPath, cancellationToken);
+				task = mailHandler.StartAsync (mailFromCommand.ReturnPath, cancellationToken);
 
 				return ProcessCommandMailFromFinalizer ();
 			}
 			catch
 			{
-				newTransaction.Dispose ();
+				mailHandler.Dispose ();
 				throw;
 			}
 
@@ -428,11 +428,11 @@ namespace Novartment.Base.Net.Smtp
 				}
 				catch
 				{
-					newTransaction.Dispose ();
+					mailHandler.Dispose ();
 					throw;
 				}
 
-				_currentTransaction = newTransaction;
+				_currentTransaction = mailHandler;
 				_currentTransactionRequestedEncoding = mailFromCommand.RequestedContentTransferEncoding;
 
 				// RFC 2920:

@@ -8,11 +8,11 @@ using Microsoft.Extensions.Logging;
 namespace Novartment.Base.Net.Smtp
 {
 	/// <summary>
-	/// Фабрика для создания транзакций, поддерживающих указанную кодировку передачи содержимого.
+	/// Фабрика для создания обработчиков транзакций, поддерживающих указанную кодировку передачи содержимого.
 	/// </summary>
 	/// <param name="contentTransferEncoding">Кодировка передачи содержимого, которую должна использовать создаваемая транзакция.</param>
 	/// <returns>Вновь созданная транзакция для передачи содержимого в указанной кодировке.</returns>
-	public delegate IMailDataTransferTransaction TransactionFactory (ContentTransferEncoding contentTransferEncoding);
+	public delegate IMailTransferTransactionHandler TransactionHandlerFactory (ContentTransferEncoding contentTransferEncoding);
 
 	/// <summary>
 	/// Протокол внесения/отправки почты по стандарту SMTP.
@@ -21,21 +21,25 @@ namespace Novartment.Base.Net.Smtp
 	public class SmtpOriginatorProtocol :
 		ITcpConnectionProtocol
 	{
-		private readonly Func<TransactionFactory, CancellationToken, Task> _transactionOriginator;
+		private readonly Func<TransactionHandlerFactory, CancellationToken, Task> _transactionOriginator;
 		private readonly SmtpClientSecurityParameters _securityParameters;
 		private readonly ILogger _logger;
 
 		/// <summary>
-		/// Инициализирует новый экземпляр SmtpOriginatorProtocol
-		/// при старте вызывающий указанный исполнитель транзакций и
+		/// Инициализирует новый экземпляр SmtpOriginatorProtocol с указанными параметрами безопасности
+		/// при старте вызывающий указанный инициатор транзакций и
 		/// записывающий происходящие события в указанный журнал.
 		/// </summary>
-		/// <param name="transactionOriginator">Исполнитель транзакций, который будет запущен после установки SMTP-подключения.</param>
+		/// <param name="transactionOriginator">
+		/// Инициатор транзакций, который будет запущен после установки SMTP-подключения.
+		/// Инициатору будут переданы фабрика обработчиков транзакций и токен отмены.
+		/// При запуске инициатор должен создать обработчик и вызывать его методы для каждого передаваемого сообщения.
+		/// </param>
 		/// <param name="securityParameters">Параметры безопасности,
 		/// устнавливающие использование шифрования и аутентификации при выполнении транзакций.</param>
 		/// <param name="logger">Журнал для записи событий. Укажите null если запись не нужна.</param>
 		public SmtpOriginatorProtocol (
-			Func<TransactionFactory, CancellationToken, Task> transactionOriginator,
+			Func<TransactionHandlerFactory, CancellationToken, Task> transactionOriginator,
 			SmtpClientSecurityParameters securityParameters,
 			ILogger<SmtpOriginatorProtocol> logger = null)
 		{
@@ -114,7 +118,7 @@ namespace Novartment.Base.Net.Smtp
 
 						// отрабатывает инициатор транзакций
 						await _transactionOriginator.Invoke (
-							requiredEncoding => new SmtpOriginatorDataTransferTransaction (
+							requiredEncoding => new SmtpSessionMailTransferTransactionHandler (
 								session,
 								requiredEncoding,
 								_logger),

@@ -37,7 +37,7 @@ namespace Novartment.Base.Sample
 				.ConfigureAwait (false))
 			{
 				var protocol = new SmtpOriginatorProtocol (
-					msg.OriginateTransaction,
+					msg.PerformTransferTransaction,
 					SmtpClientSecurityParameters.AllowNoSecurity);
 					/* SmtpClientSecurityParameters.RequireEncryptionUseCredentials (new NetworkCredential ("user", "password"))); */
 				await protocol.StartAsync (connection, cancellationToken).ConfigureAwait (false);
@@ -148,7 +148,7 @@ namespace Novartment.Base.Sample
 
 		private static async Task OriginateTransactionsAsync (
 			CompetentDictionary<string, MailMessageData> messagesToSend,
-			TransactionFactory transactionFactory,
+			TransactionHandlerFactory transactionFactory,
 			CancellationToken cancellationToken)
 		{
 			foreach (var messageFileData in messagesToSend)
@@ -177,7 +177,7 @@ namespace Novartment.Base.Sample
 			internal ArrayList<AddrSpec> Recipients { get; } = new ArrayList<AddrSpec> (1);
 		}
 
-		internal class DeliveryToFileDataTransferTransaction : IMailDataTransferTransaction
+		internal class DeliveryToFileDataTransferTransaction : IMailTransferTransactionHandler
 		{
 			private readonly string _mailDropDirectory;
 			private readonly string _mailPickupDirectory;
