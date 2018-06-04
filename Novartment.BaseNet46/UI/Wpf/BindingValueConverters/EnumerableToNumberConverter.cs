@@ -19,10 +19,9 @@ namespace Novartment.Base.UI.Wpf
 		/// <returns>Преобразованное значение.</returns>
 		public object Convert (object value, Type targetType, object parameter, CultureInfo culture)
 		{
-			var conv = value as IConvertible;
-			if (conv == null)
+			if (!(value is IConvertible conv))
 			{
-				throw new ArgumentOutOfRangeException (nameof (value));
+				throw new ArgumentOutOfRangeException(nameof(value));
 			}
 
 			return conv.ToType (targetType, (culture ?? CultureInfo.InvariantCulture).NumberFormat);
@@ -36,10 +35,9 @@ namespace Novartment.Base.UI.Wpf
 		/// <returns>Преобразованное значение.</returns>
 		public object ConvertBack (object value, Type targetType, object parameter, CultureInfo culture)
 		{
-			var conv = value as IConvertible;
-			if (conv == null)
+			if (!(value is IConvertible conv))
 			{
-				throw new ArgumentOutOfRangeException (nameof (value));
+				throw new ArgumentOutOfRangeException(nameof(value));
 			}
 
 			var enumType = Enum.GetUnderlyingType (targetType);

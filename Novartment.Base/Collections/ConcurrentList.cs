@@ -831,8 +831,7 @@ namespace Novartment.Base.Collections
 				return true;
 			}
 
-			var list = other as ConcurrentList<T>;
-			if (list == null)
+			if (!(other is ConcurrentList<T> list))
 			{
 				return false;
 			}

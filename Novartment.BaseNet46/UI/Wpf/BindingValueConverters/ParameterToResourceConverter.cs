@@ -31,9 +31,8 @@ namespace Novartment.Base.UI.Wpf
 				return DependencyProperty.UnsetValue;
 			}
 
-			var element = values[0] as FrameworkElement;
-			return (element != null) ?
-				element.TryFindResource (string.Format (CultureInfo.InvariantCulture, (string)parameter, values)) :
+			return (values[0] is FrameworkElement element) ?
+				element.TryFindResource(string.Format(CultureInfo.InvariantCulture, (string)parameter, values)) :
 				DependencyProperty.UnsetValue;
 		}
 

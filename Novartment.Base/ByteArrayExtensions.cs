@@ -35,12 +35,7 @@ namespace Novartment.Base
 
 			Contract.EndContractBlock ();
 
-			if (source.Length < pattern.Length)
-			{
-				return -1;
-			}
-
-			return IndexOf (source, pattern, 0, source.Length);
+			return source.Length < pattern.Length ? -1 : IndexOf (source, pattern, 0, source.Length);
 		}
 
 		/// <summary>

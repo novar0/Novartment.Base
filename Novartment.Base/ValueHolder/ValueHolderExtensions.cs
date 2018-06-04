@@ -26,10 +26,9 @@ namespace Novartment.Base
 
 			Contract.EndContractBlock ();
 
-			var lazy = holder as ILazyValueHolder<T>;
-			if ((lazy == null) || lazy.IsValueCreated)
+			if ((!(holder is ILazyValueHolder<T> lazy)) || lazy.IsValueCreated)
 			{
-				holder.Value?.Dispose ();
+				holder.Value?.Dispose();
 			}
 
 			(holder as IDisposable)?.Dispose ();

@@ -25,12 +25,7 @@ namespace Novartment.Base.UI.Wpf
 				return false;
 			}
 
-			if (values[0] == null)
-			{
-				return values[1] == null;
-			}
-
-			return values[0].Equals (values[1]);
+			return values[0] == null ? values[1] == null : (object)values[0].Equals (values[1]);
 		}
 
 		/// <summary>Преобразует значение цели связывания в исходные значения привязки.</summary>

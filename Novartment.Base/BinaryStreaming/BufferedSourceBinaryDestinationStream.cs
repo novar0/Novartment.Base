@@ -124,10 +124,9 @@ namespace Novartment.Base.BinaryStreaming
 
 			Contract.EndContractBlock ();
 
-			var streamBinaryDestination = _destination as StreamExtensions.StreamBinaryDestination;
-			return (streamBinaryDestination != null) ?
-				streamBinaryDestination.BaseStream.WriteAsync (buffer, offset, count, cancellationToken) :
-				_destination.WriteAsync (buffer, offset, count, cancellationToken);
+			return (_destination is StreamExtensions.StreamBinaryDestination streamBinaryDestination) ?
+				streamBinaryDestination.BaseStream.WriteAsync(buffer, offset, count, cancellationToken) :
+				_destination.WriteAsync(buffer, offset, count, cancellationToken);
 		}
 
 		/// <summary>
@@ -148,9 +147,8 @@ namespace Novartment.Base.BinaryStreaming
 		/// <returns>Задача, представляющая асинхронную операцию очистки.</returns>
 		public override Task FlushAsync (CancellationToken cancellationToken)
 		{
-			var streamBinaryDestination = _destination as StreamExtensions.StreamBinaryDestination;
-			return (streamBinaryDestination != null) ?
-				streamBinaryDestination.BaseStream.FlushAsync () :
+			return (_destination is StreamExtensions.StreamBinaryDestination streamBinaryDestination) ?
+				streamBinaryDestination.BaseStream.FlushAsync() :
 				Task.CompletedTask;
 		}
 

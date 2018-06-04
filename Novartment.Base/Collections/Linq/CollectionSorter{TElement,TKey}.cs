@@ -14,7 +14,7 @@ namespace Novartment.Base.Collections.Linq
 		private readonly IComparer<TKey> _comparer;
 		private readonly bool _reverseOrder;
 		private readonly CollectionSorter<TElement> _childSorter;
-		private TKey[] _keys;
+		private readonly TKey[] _keys;
 
 		internal CollectionSorter (
 			IReadOnlyCollection<TElement> items,

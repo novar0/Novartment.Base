@@ -487,7 +487,7 @@ namespace Novartment.Base.Net.Smtp
 	{
 		internal static readonly AddrSpec _emptyAddrSpec = new AddrSpec (Guid.NewGuid ().ToString (), "local");
 
-		private ContentTransferEncoding _requestedContentTransferEncoding;
+		private readonly ContentTransferEncoding _requestedContentTransferEncoding;
 
 		internal SmtpMailFromCommand (
 			AddrSpec returnPath,

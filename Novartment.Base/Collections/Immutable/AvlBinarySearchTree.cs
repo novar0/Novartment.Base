@@ -55,8 +55,7 @@ namespace Novartment.Base.Collections.Immutable
 					return true;
 				}
 
-				var intermediateNode = treeNode as AvlBinarySearchTreeNode<T>.IntermediateNode;
-				if (intermediateNode == null)
+				if (!(treeNode is AvlBinarySearchTreeNode<T>.IntermediateNode intermediateNode))
 				{
 					return false;
 				}
@@ -179,8 +178,7 @@ namespace Novartment.Base.Collections.Immutable
 			}
 
 			var num = comparer.Compare (value, treeNode.Value);
-			var node = treeNode as AvlBinarySearchTreeNode<T>.IntermediateNode;
-			if (node == null)
+			if (!(treeNode is AvlBinarySearchTreeNode<T>.IntermediateNode node))
 			{
 				if (num != 0)
 				{
@@ -321,8 +319,7 @@ namespace Novartment.Base.Collections.Immutable
 					return accumulator;
 				}
 
-				var node = treeNode as AvlBinarySearchTreeNode<T>.IntermediateNode;
-				if (node == null)
+				if (!(treeNode is AvlBinarySearchTreeNode<T>.IntermediateNode node))
 				{
 					return accumulator + 1;
 				}
@@ -425,8 +422,7 @@ namespace Novartment.Base.Collections.Immutable
 					}
 					else
 					{
-						var intermediateTreeNode = treeNode as AvlBinarySearchTreeNode<T>.IntermediateNode;
-						if (intermediateTreeNode == null)
+						if (!(treeNode is AvlBinarySearchTreeNode<T>.IntermediateNode intermediateTreeNode))
 						{
 							return listNode;
 						}

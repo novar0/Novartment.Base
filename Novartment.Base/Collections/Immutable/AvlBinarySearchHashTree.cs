@@ -54,8 +54,7 @@ namespace Novartment.Base.Collections.Immutable
 			var hash = comparer.GetHashCode (value);
 			while ((hash != treeNode.Hash) || !comparer.Equals (value, treeNode.Value))
 			{
-				var intermediateNode = treeNode as AvlBinarySearchHashTreeNode<T>.IntermediateNode;
-				if (intermediateNode == null)
+				if (!(treeNode is AvlBinarySearchHashTreeNode<T>.IntermediateNode intermediateNode))
 				{
 					return false; // end node
 				}
@@ -293,8 +292,7 @@ namespace Novartment.Base.Collections.Immutable
 
 		private static AvlBinarySearchHashTreeNode<T> CutNode<T> (this AvlBinarySearchHashTreeNode<T> treeNode)
 		{
-			var intermediateNode = treeNode as AvlBinarySearchHashTreeNode<T>.IntermediateNode;
-			if (intermediateNode == null)
+			if (!(treeNode is AvlBinarySearchHashTreeNode<T>.IntermediateNode intermediateNode))
 			{
 				return null;
 			}
@@ -315,8 +313,7 @@ namespace Novartment.Base.Collections.Immutable
 					return accumulator;
 				}
 
-				var node = treeNode as AvlBinarySearchHashTreeNode<T>.IntermediateNode;
-				if (node == null)
+				if (!(treeNode is AvlBinarySearchHashTreeNode<T>.IntermediateNode node))
 				{
 					return accumulator + 1;
 				}
@@ -413,8 +410,7 @@ namespace Novartment.Base.Collections.Immutable
 					}
 					else
 					{
-						var intermediateTreeNode = treeNode as AvlBinarySearchHashTreeNode<T>.IntermediateNode;
-						if (intermediateTreeNode == null)
+						if (!(treeNode is AvlBinarySearchHashTreeNode<T>.IntermediateNode intermediateTreeNode))
 						{
 							return listNode;
 						}

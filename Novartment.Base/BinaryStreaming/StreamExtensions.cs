@@ -66,10 +66,9 @@ namespace Novartment.Base.BinaryStreaming
 
 			Contract.EndContractBlock ();
 
-			var destinaton = writableStream as BinaryDestinationStream;
-			return (destinaton != null) ?
+			return (writableStream is BinaryDestinationStream destinaton) ?
 				destinaton.BaseBinaryDestination :
-				new StreamBinaryDestination (writableStream);
+				new StreamBinaryDestination(writableStream);
 		}
 
 		/// <summary>
@@ -105,10 +104,9 @@ namespace Novartment.Base.BinaryStreaming
 
 			Contract.EndContractBlock ();
 
-			var strm = destination as StreamBinaryDestination;
-			return (strm != null) ?
+			return (destination is StreamBinaryDestination strm) ?
 				strm.BaseStream :
-				new BinaryDestinationStream (destination);
+				new BinaryDestinationStream(destination);
 		}
 	}
 }

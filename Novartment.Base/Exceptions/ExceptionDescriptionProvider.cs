@@ -82,10 +82,9 @@ namespace Novartment.Base
 
 			Contract.EndContractBlock ();
 
-			var customErrorException = exception as CustomErrorException;
-			return (customErrorException != null) ?
+			return (exception is CustomErrorException customErrorException) ?
 				customErrorException.Name :
-				ReflectionService.GetFormattedFullName (exception.GetType ());
+				ReflectionService.GetFormattedFullName(exception.GetType());
 		}
 
 		/// <summary>
@@ -102,8 +101,7 @@ namespace Novartment.Base
 
 			Contract.EndContractBlock ();
 
-			var customErrorException = exception as CustomErrorException;
-			return (customErrorException != null) ?
+			return (exception is CustomErrorException customErrorException) ?
 				customErrorException.Trace :
 				exception.StackTrace;
 		}

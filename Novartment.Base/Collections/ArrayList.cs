@@ -847,8 +847,7 @@ namespace Novartment.Base.Collections
 			var isOtherEqualsThis = ReferenceEquals (this, other);
 			if (!isOtherEqualsThis)
 			{
-				var list = other as ArrayList<T>;
-				if (list == null)
+				if (!(other is ArrayList<T> list))
 				{
 					return false;
 				}

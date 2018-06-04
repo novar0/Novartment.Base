@@ -33,8 +33,7 @@ namespace Novartment.Base
 		/// <returns>True если обработчик был добавлен к объекту.</returns>
 		public static bool TryAddCollectionChangedHandler (object collection, NotifyCollectionChangedEventHandler handler)
 		{
-			var ncc = collection as INotifyCollectionChanged;
-			if (ncc == null)
+			if (!(collection is INotifyCollectionChanged ncc))
 			{
 				return false;
 			}
@@ -51,8 +50,7 @@ namespace Novartment.Base
 		/// <returns>True если обработчик был удалён от объекта.</returns>
 		public static bool TryRemoveCollectionChangedHandler (object collection, NotifyCollectionChangedEventHandler handler)
 		{
-			var ncc = collection as INotifyCollectionChanged;
-			if (ncc == null)
+			if (!(collection is INotifyCollectionChanged ncc))
 			{
 				return false;
 			}
@@ -69,8 +67,7 @@ namespace Novartment.Base
 		/// <returns>True если обработчик был добавлен к объекту.</returns>
 		public static bool TryAddPropertyChangedHandler (object observable, PropertyChangedEventHandler handler)
 		{
-			var npc = observable as INotifyPropertyChanged;
-			if (npc == null)
+			if (!(observable is INotifyPropertyChanged npc))
 			{
 				return false;
 			}
@@ -87,8 +84,7 @@ namespace Novartment.Base
 		/// <returns>True если обработчик был удалён от объекта.</returns>
 		public static bool TryRemovePropertyChangedHandler (object observable, PropertyChangedEventHandler handler)
 		{
-			var npc = observable as INotifyPropertyChanged;
-			if (npc == null)
+			if (!(observable is INotifyPropertyChanged npc))
 			{
 				return false;
 			}

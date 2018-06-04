@@ -244,12 +244,7 @@ namespace Novartment.Base.BinaryStreaming
 
 			Contract.EndContractBlock ();
 
-			if (size <= _count)
-			{
-				return Task.CompletedTask;
-			}
-
-			return EnsureBufferAsyncStateMachine ();
+			return size <= _count ? Task.CompletedTask : EnsureBufferAsyncStateMachine ();
 
 			async Task EnsureBufferAsyncStateMachine ()
 			{

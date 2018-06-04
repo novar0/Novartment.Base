@@ -165,10 +165,9 @@ namespace Novartment.Base.Shell
 		{
 			get
 			{
-				var shellItem = _nativeShellItem as IShellItem2;
-				if (shellItem == null)
+				if (!(_nativeShellItem is IShellItem2 shellItem))
 				{
-					throw new NotSupportedException ("Failed to get properties of shell item because it does not implements required IShellItem2 interface.");
+					throw new NotSupportedException("Failed to get properties of shell item because it does not implements required IShellItem2 interface.");
 				}
 
 				var hr = shellItem.GetUInt64 (_ShellPropertyKeySize, out ulong size);
@@ -186,10 +185,9 @@ namespace Novartment.Base.Shell
 		{
 			get
 			{
-				var shellItem = _nativeShellItem as IShellItem2;
-				if (shellItem == null)
+				if (!(_nativeShellItem is IShellItem2 shellItem))
 				{
-					throw new NotSupportedException ("Failed to get properties of shell item because it does not implements required IShellItem2 interface.");
+					throw new NotSupportedException("Failed to get properties of shell item because it does not implements required IShellItem2 interface.");
 				}
 
 				var hr = shellItem.GetInt32 (_ShellPropertyKeyFileAttributes, out int attributes);
@@ -207,10 +205,9 @@ namespace Novartment.Base.Shell
 		{
 			get
 			{
-				var shellItem = _nativeShellItem as IShellItem2;
-				if (shellItem == null)
+				if (!(_nativeShellItem is IShellItem2 shellItem))
 				{
-					throw new NotSupportedException ("Failed to get properties of shell item because it does not implements required IShellItem2 interface.");
+					throw new NotSupportedException("Failed to get properties of shell item because it does not implements required IShellItem2 interface.");
 				}
 
 				var hr = shellItem.GetFileTime (_ShellPropertyKeyDateModified, out long time);
@@ -228,10 +225,9 @@ namespace Novartment.Base.Shell
 		{
 			get
 			{
-				var shellItem = _nativeShellItem as IShellItem2;
-				if (shellItem == null)
+				if (!(_nativeShellItem is IShellItem2 shellItem))
 				{
-					throw new NotSupportedException ("Failed to get properties of shell item because it does not implements required IShellItem2 interface.");
+					throw new NotSupportedException("Failed to get properties of shell item because it does not implements required IShellItem2 interface.");
 				}
 
 				var hr = shellItem.GetFileTime (_ShellPropertyKeyDateCreated, out long time);
@@ -249,10 +245,9 @@ namespace Novartment.Base.Shell
 		{
 			get
 			{
-				var shellItem = _nativeShellItem as IShellItem2;
-				if (shellItem == null)
+				if (!(_nativeShellItem is IShellItem2 shellItem))
 				{
-					throw new NotSupportedException ("Failed to get properties of shell item because it does not implements required IShellItem2 interface.");
+					throw new NotSupportedException("Failed to get properties of shell item because it does not implements required IShellItem2 interface.");
 				}
 
 				var hr = shellItem.GetFileTime (_ShellPropertyKeyDateAccessed, out long time);
@@ -368,8 +363,8 @@ namespace Novartment.Base.Shell
 				throw new ThreadStateException ("For shell functions thread must be STA.");
 			}
 
-			var memStream = dataContainer.GetData (DataContainerFormats.ShellIdList, true) as MemoryStream;
-			if (memStream == null)
+			var data = dataContainer.GetData(DataContainerFormats.ShellIdList, true);
+			if (!(data is MemoryStream memStream))
 			{
 				return null;
 			}

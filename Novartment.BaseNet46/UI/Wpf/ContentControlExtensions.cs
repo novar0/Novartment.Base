@@ -28,10 +28,9 @@ namespace Novartment.Base.UI.Wpf
 				throw new InvalidOperationException ("Specified control does not have visual ancestor of type ItemsPresenter.");
 			}
 
-			var itemsControl = itemsPresenter.TemplatedParent as ItemsControl;
-			if (itemsControl == null)
+			if (!(itemsPresenter.TemplatedParent is ItemsControl itemsControl))
 			{
-				throw new InvalidOperationException ("Control's ItemsPresenter is not ItemsControl.");
+				throw new InvalidOperationException("Control's ItemsPresenter is not ItemsControl.");
 			}
 
 			itemsControl.RemoveAndMoveViewSelectionToNext (control.Content);

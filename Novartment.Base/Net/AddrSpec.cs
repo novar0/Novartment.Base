@@ -229,13 +229,9 @@ namespace Novartment.Base.Net
 		{
 			// RFC 3798 part 2.1:
 			// The comparison MUST be case-sensitive for the local-part and case-insensitive for the domain part.
-			if (other == null)
-			{
-				return false;
-			}
-
-			return
-				string.Equals (this.LocalPart, other.LocalPart, StringComparison.Ordinal) &&
+			return other == null
+				? false
+				: string.Equals (this.LocalPart, other.LocalPart, StringComparison.Ordinal) &&
 				string.Equals (this.Domain, other.Domain, StringComparison.OrdinalIgnoreCase);
 		}
 	}

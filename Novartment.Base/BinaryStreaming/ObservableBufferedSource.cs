@@ -120,12 +120,7 @@ namespace Novartment.Base.BinaryStreaming
 
 			Contract.EndContractBlock ();
 
-			if (size == 0)
-			{
-				return Task.FromResult (0);
-			}
-
-			return _source.EnsureBufferAsync (size, cancellationToken);
+			return size == 0 ? Task.FromResult (0) : _source.EnsureBufferAsync (size, cancellationToken);
 		}
 
 		/// <summary>

@@ -75,10 +75,9 @@ namespace Novartment.Base.UI.Wpf
 				throw new InvalidOperationException ("Required property control.ItemsSource not specified.");
 			}
 
-			var list = src as IList;
-			if (list == null)
+			if (!(src is IList list))
 			{
-				throw new InvalidOperationException ("control.ItemsSource does not implements IList.");
+				throw new InvalidOperationException("control.ItemsSource does not implements IList.");
 			}
 
 			list.Add (item);
@@ -101,18 +100,17 @@ namespace Novartment.Base.UI.Wpf
 
 			var collection = control.ItemsSource;
 			var view = collection as ICollectionView;
-			var list = collection as IList;
-			if (list == null)
+			if (!(collection is IList list))
 			{
 				if (view == null)
 				{
-					throw new InvalidOperationException ("Control.ItemsSource does not implements either ICollectionView nor IList.");
+					throw new InvalidOperationException("Control.ItemsSource does not implements either ICollectionView nor IList.");
 				}
 
 				list = view.SourceCollection as IList;
 				if (list == null)
 				{
-					throw new InvalidOperationException ("(control.ItemsSource as ICollectionView).SourceCollection does not implements IList.");
+					throw new InvalidOperationException("(control.ItemsSource as ICollectionView).SourceCollection does not implements IList.");
 				}
 			}
 
@@ -130,16 +128,15 @@ namespace Novartment.Base.UI.Wpf
 				}
 			}
 
-			var col = view?.SourceCollection as ICollection;
-			if (col == null)
+			if (!(view?.SourceCollection is ICollection col))
 			{
-				list.Remove (item);
+				list.Remove(item);
 			}
 			else
 			{
 				lock (col.SyncRoot)
 				{
-					list.Remove (item);
+					list.Remove(item);
 				}
 			}
 

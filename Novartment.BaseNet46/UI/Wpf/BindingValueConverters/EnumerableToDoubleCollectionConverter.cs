@@ -23,9 +23,8 @@ namespace Novartment.Base.UI.Wpf
 		/// <returns>Преобразованное значение.</returns>
 		public object Convert (object value, Type targetType, object parameter, CultureInfo culture)
 		{
-			var list = value as IEnumerable;
-			return (list != null) ?
-				new DoubleCollection (list.Cast<object> ().Select (System.Convert.ToDouble)) :
+			return (value is IEnumerable list) ?
+				new DoubleCollection(list.Cast<object>().Select(System.Convert.ToDouble)) :
 				DependencyProperty.UnsetValue;
 		}
 
