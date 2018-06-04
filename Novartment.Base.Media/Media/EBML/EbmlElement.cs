@@ -119,7 +119,7 @@ namespace Novartment.Base.Media
 		/// <summary>
 		/// Reads the element data as a signed integer.
 		/// </summary>
-		/// <returns>the element data as a signed integer</returns>
+		/// <returns>the element data as a signed integer.</returns>
 		public long ReadInt ()
 		{
 			if (_readed >= _size)
@@ -194,7 +194,7 @@ namespace Novartment.Base.Media
 		/// <summary>
 		/// Reads the element data as an unsigned integer.
 		/// </summary>
-		/// <returns>the element data as an unsigned integer</returns>
+		/// <returns>the element data as an unsigned integer.</returns>
 		public ulong ReadUInt ()
 		{
 			if (_readed >= _size)
@@ -271,7 +271,7 @@ namespace Novartment.Base.Media
 		/// If the element data size is equal to <code>4</code>, then an instance of the <code>Float</code> is returned. If
 		/// the element data size is equal to <code>8</code>, then an instance of the <code>Double</code> is returned.
 		/// </summary>
-		/// <returns>the element data as a floating-point number</returns>
+		/// <returns>the element data as a floating-point number.</returns>
 		public double ReadFloat ()
 		{
 			if (_readed >= _size)
@@ -302,7 +302,7 @@ namespace Novartment.Base.Media
 		/// <summary>
 		/// Reads the element data as a date.
 		/// </summary>
-		/// <returns>the element data as a date</returns>
+		/// <returns>the element data as a date.</returns>
 		public DateTime ReadDate ()
 		{
 			return _MilleniumStart.AddTicks (ReadInt () / 100L);
@@ -311,7 +311,7 @@ namespace Novartment.Base.Media
 		/// <summary>
 		/// Reads the element data as an ASCII string.
 		/// </summary>
-		/// <returns>the element data as an ASCII string</returns>
+		/// <returns>the element data as an ASCII string.</returns>
 		public string ReadAscii ()
 		{
 			if (_readed >= _size)
@@ -333,7 +333,7 @@ namespace Novartment.Base.Media
 		/// <summary>
 		/// Reads the element data as an UTF8 string.
 		/// </summary>
-		/// <returns>the element data as an UTF8 string</returns>
+		/// <returns>the element data as an UTF8 string.</returns>
 		public string ReadUtf ()
 		{
 			if (_readed >= _size)

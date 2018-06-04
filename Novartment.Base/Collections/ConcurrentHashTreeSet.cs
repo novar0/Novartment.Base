@@ -49,7 +49,7 @@ namespace Novartment.Base.Collections
 		}
 
 		/// <summary>
-		/// Получает компаратор, используемый при сравнении значений множества,
+		/// Получает компаратор, используемый при сравнении значений множества.
 		/// </summary>
 		public IEqualityComparer<T> Comparer => _comparer;
 

@@ -22,7 +22,7 @@ namespace Novartment.Base.Media
 		/// <param name="microSecPerFrame">Number of microseconds between frames. This value indicates the overall timing for the file.</param>
 		/// <param name="options">
 		/// Contains a bitwise combination of zero or more of the following flags:
-		/// AVIF_COPYRIGHTED, AVIF_HASINDEX, AVIF_ISINTERLEAVED, AVIF_MUSTUSEINDEX, AVIF_WASCAPTUREFILE
+		/// AVIF_COPYRIGHTED, AVIF_HASINDEX, AVIF_ISINTERLEAVED, AVIF_MUSTUSEINDEX, AVIF_WASCAPTUREFILE.
 		/// </param>
 		/// <param name="totalFrames">Total number of frames of data in the file.</param>
 		/// <param name="width">Width of the AVI file in pixels.</param>
@@ -48,7 +48,7 @@ namespace Novartment.Base.Media
 		public uint MicroSecPerFrame { get; }
 
 		/// <summary>Gets a bitwise combination of zero or more of the flags:
-		/// HasIndex=0x10, MustUseIndex=0x20, IsInterleaved=0x100, TrustCKType=0x800, WasCaptureFile=0x10000, Copyrighted=0x20000
+		/// HasIndex=0x10, MustUseIndex=0x20, IsInterleaved=0x100, TrustCKType=0x800, WasCaptureFile=0x10000, Copyrighted=0x20000.
 		/// </summary>
 		public uint Options { get; }
 

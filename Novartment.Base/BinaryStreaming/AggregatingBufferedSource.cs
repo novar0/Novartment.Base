@@ -311,7 +311,7 @@ namespace Novartment.Base.BinaryStreaming
 		/// <summary>
 		/// Устанавливает новое задание-источник.
 		/// </summary>
-		/// <param name="newJob">Новое задание-источник</param>
+		/// <param name="newJob">Новое задание-источник.</param>
 		/// <returns>Признак успешной установки нового задания-источника.</returns>
 		private bool SetNewJob (JobCompletionSource<IBufferedSource, int> newJob)
 		{

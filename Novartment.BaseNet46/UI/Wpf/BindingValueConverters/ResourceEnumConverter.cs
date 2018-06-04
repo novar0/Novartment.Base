@@ -193,7 +193,7 @@ namespace Novartment.Base.UI.Wpf
 		/// <param name="targetType">The target type.</param>
 		/// <param name="notUsed">not used.</param>
 		/// <param name="culture">The culture to convert.</param>
-		/// <returns>The converted value</returns>
+		/// <returns>The converted value.</returns>
 		object IValueConverter.Convert (object value, Type targetType, object notUsed, CultureInfo culture)
 		{
 			return ConvertTo (null, culture, value, targetType);

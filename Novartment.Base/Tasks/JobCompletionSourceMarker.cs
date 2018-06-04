@@ -10,7 +10,7 @@
 		/// </summary>
 		/// <typeparam name="TItem">Тип входного параметра заданий.</typeparam>
 		/// <typeparam name="TResult">Тип, возвращаемый заданиями.</typeparam>
-		/// <returns>Созданный экземпляр производителя выполнения особого задания-маркера</returns>
+		/// <returns>Созданный экземпляр производителя выполнения особого задания-маркера.</returns>
 		public static JobCompletionSource<TItem, TResult> Create<TItem, TResult> ()
 		{
 			return new JobCompletionMarker<TItem, TResult> ();

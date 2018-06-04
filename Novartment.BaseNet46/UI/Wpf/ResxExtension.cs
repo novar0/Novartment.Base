@@ -204,7 +204,7 @@ namespace Novartment.Base.UI.Wpf
 		public Collection<ResxExtension> Children => _children;
 
 		/// <summary>
-		/// Return the associated binding for the extension
+		/// Return the associated binding for the extension.
 		/// </summary>
 		public Binding Binding => _binding.Value;
 

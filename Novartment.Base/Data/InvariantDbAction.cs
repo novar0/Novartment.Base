@@ -49,7 +49,7 @@ namespace Novartment.Base.Data
 		/// Добавляет параметр с указанным именем и значением.
 		/// </summary>
 		/// <param name="name">Имя параметра.</param>
-		/// <param name="value">Значение параметра</param>
+		/// <param name="value">Значение параметра.</param>
 		public void AddParameter (string name, object value)
 		{
 			if (name == null)
@@ -66,7 +66,7 @@ namespace Novartment.Base.Data
 		/// Добавляет аккумулирующий с указанным именем и значением.
 		/// </summary>
 		/// <param name="name">Имя параметра.</param>
-		/// <param name="value">Значение параметра</param>
+		/// <param name="value">Значение параметра.</param>
 		public void AddAccumulationParameter (string name, object value)
 		{
 			if (name == null)
@@ -86,7 +86,7 @@ namespace Novartment.Base.Data
 		/// Добавляет ключевой параметр с указанным именем и значением.
 		/// </summary>
 		/// <param name="name">Имя параметра.</param>
-		/// <param name="value">Значение параметра</param>
+		/// <param name="value">Значение параметра.</param>
 		public void AddKeyParameter (string name, object value)
 		{
 			if (name == null)

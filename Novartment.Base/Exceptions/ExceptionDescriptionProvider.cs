@@ -25,7 +25,7 @@ namespace Novartment.Base
 	/// System.BadImageFormatException,
 	/// System.TypeInitializationException,
 	/// System.TypeLoadException.
-	/// Novartment.Base.CustomErrorException
+	/// Novartment.Base.CustomErrorException.
 	/// </remarks>
 	public static class ExceptionDescriptionProvider
 	{
@@ -33,7 +33,7 @@ namespace Novartment.Base
 		/// Предоставляет список дочерних (вложенных) исключений.
 		/// </summary>
 		/// <param name="exception">Исключение, для которого нужно получить список дочерних (вложенных) исключений.</param>
-		/// <returns>Список дочерних (вложенных) исключений</returns>
+		/// <returns>Список дочерних (вложенных) исключений.</returns>
 		public static IReadOnlyList<Exception> GetInnerExceptions (Exception exception)
 		{
 			if (exception == null)

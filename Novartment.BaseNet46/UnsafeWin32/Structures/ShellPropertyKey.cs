@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 namespace Novartment.Base.UnsafeWin32
 {
 	/// <summary>
-	/// Defines a unique key for a Shell Property
+	/// Defines a unique key for a Shell Property.
 	/// </summary>
 	[StructLayout (LayoutKind.Sequential, Pack = 4)]
 	internal struct ShellPropertyKey :
@@ -38,10 +38,10 @@ namespace Novartment.Base.UnsafeWin32
 		*/
 
 		/// <summary>
-		/// ShellPropertyKey Constructor
+		/// ShellPropertyKey Constructor.
 		/// </summary>
-		/// <param name="formatId">A unique GUID for the property</param>
-		/// <param name="propertyId">Property identifier (PID)</param>
+		/// <param name="formatId">A unique GUID for the property.</param>
+		/// <param name="propertyId">Property identifier (PID).</param>
 		internal ShellPropertyKey (Guid formatId, int propertyId)
 		{
 			_formatId = formatId;
@@ -62,7 +62,7 @@ namespace Novartment.Base.UnsafeWin32
 		/// <summary>
 		/// Implements the != (inequality) operator.
 		/// </summary>
-		/// <param name="propKey1">First property key to compare</param>
+		/// <param name="propKey1">First property key to compare.</param>
 		/// <param name="propKey2">Second property key to compare.</param>
 		/// <returns>true if object a does not equal object b. false otherwise.</returns>
 		public static bool operator != (ShellPropertyKey propKey1, ShellPropertyKey propKey2)
@@ -111,9 +111,9 @@ namespace Novartment.Base.UnsafeWin32
 		}
 
 		/// <summary>
-		/// Override ToString() to provide a user friendly string representation
+		/// Override ToString() to provide a user friendly string representation.
 		/// </summary>
-		/// <returns>String representing the property key</returns>
+		/// <returns>String representing the property key.</returns>
 		public override string ToString ()
 		{
 #pragma warning disable CA1305 // Specify IFormatProvider

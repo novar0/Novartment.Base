@@ -16,21 +16,21 @@ namespace Novartment.Base.Data
 		/// Добавляет параметр с указанным именем и значением.
 		/// </summary>
 		/// <param name="name">Имя параметра.</param>
-		/// <param name="value">Значение параметра</param>
+		/// <param name="value">Значение параметра.</param>
 		void AddParameter (string name, object value);
 
 		/// <summary>
 		/// Добавляет ключевой параметр с указанным именем и значением.
 		/// </summary>
 		/// <param name="name">Имя параметра.</param>
-		/// <param name="value">Значение параметра</param>
+		/// <param name="value">Значение параметра.</param>
 		void AddKeyParameter (string name, object value);
 
 		/// <summary>
 		/// Добавляет аккумулирующий с указанным именем и значением.
 		/// </summary>
 		/// <param name="name">Имя параметра.</param>
-		/// <param name="value">Значение параметра</param>
+		/// <param name="value">Значение параметра.</param>
 		void AddAccumulationParameter (string name, object value);
 
 		/// <summary>

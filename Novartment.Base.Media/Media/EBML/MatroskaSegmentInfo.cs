@@ -43,12 +43,12 @@ namespace Novartment.Base.Media
 		/// <summary>
 		/// Инициализирует новый экземпляр класса MatroskaSegmentInfo на основе указанных данных.
 		/// </summary>
-		/// <param name="title">Название сегмента</param>
-		/// <param name="date">Дата/время сегмента</param>
-		/// <param name="duration">Продолжительность сегмента</param>
-		/// <param name="timeCodeScale">Масштаб времени сегмента</param>
-		/// <param name="tracks">Список трэков сегмента</param>
-		/// <param name="attachments">Присоединённые элементы сегмента</param>
+		/// <param name="title">Название сегмента.</param>
+		/// <param name="date">Дата/время сегмента.</param>
+		/// <param name="duration">Продолжительность сегмента.</param>
+		/// <param name="timeCodeScale">Масштаб времени сегмента.</param>
+		/// <param name="tracks">Список трэков сегмента.</param>
+		/// <param name="attachments">Присоединённые элементы сегмента.</param>
 		public MatroskaSegmentInfo (
 			string title,
 			DateTime? date,

@@ -115,7 +115,7 @@ namespace Novartment.Base.Collections.Linq
 		/// Возвращает указанное множество.
 		/// </summary>
 		/// <typeparam name="TSource">Тип элементов множества.</typeparam>
-		/// <param name="source">Конечное множество</param>
+		/// <param name="source">Конечное множество.</param>
 		/// <param name="notUsed">Не используется.</param>
 		/// <returns>Указанное множество.</returns>
 		public static IReadOnlyFiniteSet<TSource> Distinct<TSource> (

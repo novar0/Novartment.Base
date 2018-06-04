@@ -40,7 +40,7 @@ namespace Novartment.Base.Net
 		/// <param name="remoteUri">URI куда будет произведено подключение.</param>
 		/// <param name="addressFamily">Схема адресации для подключения.</param>
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
-		/// <returns>Задача, результатом которой будет установленное TCP-подключение</returns>
+		/// <returns>Задача, результатом которой будет установленное TCP-подключение.</returns>
 		public static Task<ITcpConnection> CreateAsync (
 			Uri remoteUri,
 #pragma warning disable CA1801 // Review unused parameters
@@ -102,7 +102,7 @@ namespace Novartment.Base.Net
 		/// </summary>
 		/// <param name="remoteEndpoint">Конечная точка, к которой будет создано подключение.</param>
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
-		/// <returns>Задача, результатом которой будет установленное TCP-подключение</returns>
+		/// <returns>Задача, результатом которой будет установленное TCP-подключение.</returns>
 		public static Task<ITcpConnection> CreateAsync (IPHostEndPoint remoteEndpoint, CancellationToken cancellationToken)
 		{
 			if (remoteEndpoint == null)

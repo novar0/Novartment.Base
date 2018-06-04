@@ -88,7 +88,7 @@
 		public static readonly string Calendar = "calendar";
 
 		/// <summary>
-		/// "text/css". Определено в RFC 2854
+		/// "text/css". Определено в RFC 2854.
 		/// </summary>
 		public static readonly string Css = "css";
 

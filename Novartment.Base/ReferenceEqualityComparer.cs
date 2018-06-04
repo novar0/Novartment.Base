@@ -36,7 +36,7 @@ namespace Novartment.Base
 		/// (не зависящий от переопределения метода GetHashCode()).
 		/// </summary>
 		/// <param name="obj">Объект, для которого будет посчитан хэш-код.</param>
-		/// <returns>Хэш-код указанного объекта</returns>
+		/// <returns>Хэш-код указанного объекта.</returns>
 		int IEqualityComparer<object>.GetHashCode (object obj)
 		{
 			return RuntimeHelpers.GetHashCode (obj);

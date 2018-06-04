@@ -82,7 +82,7 @@ namespace Novartment.Base.UI.Wpf
 		/// Register a new extension and remove extensions which reference target objects
 		/// that have been garbage collected.
 		/// </summary>
-		/// <param name="extension">The extension to register</param>
+		/// <param name="extension">The extension to register.</param>
 		internal void RegisterExtension (TargetsTrackingExtensionBase extension)
 		{
 			// Cleanup extensions for target objects which have been garbage collected for performance only do this periodically

@@ -5,7 +5,7 @@ using System.Windows.Data;
 namespace Novartment.Base.UI.Wpf
 {
 	/// <summary>
-	/// Инвертирует в обе стороны булевые значение
+	/// Инвертирует в обе стороны булевые значение.
 	/// </summary>
 	[ValueConversion (typeof (bool), typeof (bool))]
 	public class BoolInvertedConverter :

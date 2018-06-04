@@ -6,7 +6,7 @@ using System.Windows.Data;
 namespace Novartment.Base.UI.Wpf
 {
 	/// <summary>
-	/// объединяет несколько булевых значений по закону OR
+	/// объединяет несколько булевых значений по закону OR.
 	/// </summary>
 	public class BoolOrConverter :
 		IMultiValueConverter

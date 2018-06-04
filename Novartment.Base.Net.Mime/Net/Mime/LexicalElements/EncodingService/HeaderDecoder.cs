@@ -471,7 +471,7 @@ namespace Novartment.Base.Net.Mime
 		}
 
 		/// <summary>
-		/// Creates atom value and collection of HeaderFieldParameter from specified string representation
+		/// Creates atom value and collection of HeaderFieldParameter from specified string representation.
 		/// </summary>
 		/// <param name="source">Source encoded atom value and collection of field parameters.</param>
 		/// <returns>Decoded atom value and collection of HeaderFieldParameter.</returns>
@@ -593,7 +593,7 @@ namespace Novartment.Base.Net.Mime
 		}
 
 		/// <summary>
-		/// Creates collection of DispositionNotificationParameter from specified string representation
+		/// Creates collection of DispositionNotificationParameter from specified string representation.
 		/// </summary>
 		/// <param name="source">Source encoded collection of parameters.</param>
 		/// <returns>Decoded collection of DispositionNotificationParameter.</returns>

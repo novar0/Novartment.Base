@@ -19,10 +19,10 @@ namespace Novartment.Base.UI.Wpf
 	/// </remarks>
 	public abstract class TargetsTrackingExtensionBase : MarkupExtension
 	{
-		/// <summary>List of weak reference to the target DependencyObjects to allow them to be garbage collected</summary>
+		/// <summary>List of weak reference to the target DependencyObjects to allow them to be garbage collected.</summary>
 		private SingleLinkedListNode<WeakReference> _targetObjects = null;
 
-		/// <summary>The target property</summary>
+		/// <summary>The target property.</summary>
 		private object _targetProperty;
 
 		/// <summary>
