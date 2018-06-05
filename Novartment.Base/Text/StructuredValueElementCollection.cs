@@ -115,7 +115,7 @@ namespace Novartment.Base.Text
 			{
 				var start = parser.Position;
 				int end;
-				switch (parser.NextChar)
+				switch (parser.NextCodePoint)
 				{
 					case ' ':
 					case '\t':
@@ -160,7 +160,7 @@ namespace Novartment.Base.Text
 						end = parser.SkipClassChars (AsciiCharSet.Classes, (short)valueCharClass);
 						if (end <= start)
 						{
-							var nextChar = parser.SkipChar ();
+							var nextChar = parser.SkipCodePoint ();
 							if (typeToSkip != StructuredValueElementType.Separator)
 							{
 								elements.Add (new StructuredValueElement ((char)nextChar));
@@ -171,11 +171,11 @@ namespace Novartment.Base.Text
 							// continue if dot followed by atom
 							while (!parser.IsExhausted &&
 								allowDotInsideValue &&
-								(parser.NextChar == '.') &&
-								(parser.NextNextChar >= 0) && (parser.NextNextChar < AsciiCharSet.MaxCharValue) &&
-								AsciiCharSet.IsCharOfClass ((char)parser.NextNextChar, valueCharClass))
+								(parser.NextCodePoint == '.') &&
+								(parser.NextNextCodePoint >= 0) && (parser.NextNextCodePoint < AsciiCharSet.MaxCharValue) &&
+								AsciiCharSet.IsCharOfClass ((char)parser.NextNextCodePoint, valueCharClass))
 							{
-								parser.SkipChar (); // '.'
+								parser.SkipCodePoint (); // '.'
 								end = parser.SkipClassChars (AsciiCharSet.Classes, (short)valueCharClass);
 							}
 

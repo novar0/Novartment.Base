@@ -34,8 +34,8 @@ namespace Novartment.Base.Text
 			}
 
 			var parser = new StructuredStringReader (value);
-			parser.EnsureChar ('=');
-			parser.EnsureChar ('?');
+			parser.EnsureCodePoint ('=');
+			parser.EnsureCodePoint ('?');
 			var start = parser.Position;
 			var end = parser.SkipClassChars (AsciiCharSet.Classes, (short)AsciiCharClasses.ExtendedToken);
 			var charsetStr = value.Substring (start, end - start);
@@ -64,8 +64,8 @@ namespace Novartment.Base.Text
 					e);
 			}
 
-			parser.EnsureChar ('?');
-			var wordEncodingChar = parser.SkipChar ();
+			parser.EnsureCodePoint ('?');
+			var wordEncodingChar = parser.SkipCodePoint ();
 			var binaryEncoding = false;
 			switch (wordEncodingChar)
 			{
@@ -81,7 +81,7 @@ namespace Novartment.Base.Text
 						$"Unsupported value of 'encoding' ('{wordEncodingChar}') in 'encoded-word' value '{value}'. Expected 'Q' or 'B'."));
 			}
 
-			parser.EnsureChar ('?');
+			parser.EnsureCodePoint ('?');
 			start = parser.Position;
 			end = value.Length - 2;
 			if ((value[end] != '?') || (value[end + 1] != '='))

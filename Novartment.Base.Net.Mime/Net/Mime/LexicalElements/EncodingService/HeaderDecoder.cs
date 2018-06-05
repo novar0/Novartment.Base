@@ -121,7 +121,7 @@ namespace Novartment.Base.Net.Mime
 			while (!parser.IsExhausted)
 			{
 				// выделяем отдельно группы пробельных символов, потому что их надо пропускать если они между 'encoded-word'
-				if ((parser.NextChar == ' ') || (parser.NextChar == '\t'))
+				if ((parser.NextCodePoint == ' ') || (parser.NextCodePoint == '\t'))
 				{
 					start = parser.Position;
 					end = parser.SkipClassChars (AsciiCharSet.Classes, (short)AsciiCharClasses.WhiteSpace);
@@ -133,10 +133,10 @@ namespace Novartment.Base.Net.Mime
 					end = parser.SkipClassChars (AsciiCharSet.Classes, (short)AsciiCharClasses.Visible);
 					if (end <= start)
 					{
-						if (parser.NextChar > AsciiCharSet.MaxCharValue)
+						if (parser.NextCodePoint > AsciiCharSet.MaxCharValue)
 						{
 							throw new FormatException ("Value contains invalid for 'unstructured' character U+" +
-								Hex.OctetsUpper[parser.NextChar >> 8] + Hex.OctetsUpper[parser.NextChar & 0xff] +
+								Hex.OctetsUpper[parser.NextCodePoint >> 8] + Hex.OctetsUpper[parser.NextCodePoint & 0xff] +
 								". Expected characters are U+0009 and U+0020...U+007E.");
 						}
 					}
@@ -313,7 +313,7 @@ namespace Novartment.Base.Net.Mime
 			// received-token = word / angle-addr / addr-spec / domain
 			var parser = new StructuredStringReader (source);
 			var delimData = DelimitedElement.CreateBracketed (
-				parser.NextChar,
+				parser.NextCodePoint,
 				';',
 				DelimitedElement.CreateBracketed ('\"', '\"', DelimitedElement.OneEscapedChar, false),
 				false);

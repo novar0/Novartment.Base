@@ -1,17 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
+using System.Runtime.CompilerServices;
 
 namespace Novartment.Base.Text
 {
 	/// <summary>
-	/// Последовательный считыватель элементов строки, позволяющий читать одиночные символы,
-	/// последовательности символов определённого класса,
-	/// либо последовательности ограниченные определёнными символами.
+	/// Последовательный считыватель элементов строки, позволяющий читать одиночные знаки,
+	/// последовательности знаков определённого класса,
+	/// либо последовательности ограниченные определёнными знаками.
 	/// </summary>
 	/// <remarks>
-	/// Все члены, принимающие или возвращающие отдельные символы, используют кодировку UTF-32.
-	/// Суррогатная пара (char, char) считается одним символом.
+	/// Все члены, принимающие или возвращающие отдельные знаки, используют кодировку UTF-32.
+	/// Суррогатная пара (char, char) считается одним знаком.
 	/// </remarks>
 	public class StructuredStringReader
 	{
@@ -76,90 +77,57 @@ namespace Novartment.Base.Text
 		/// <summary>True если достигнут конец разбираемой строки, иначе False.</summary>
 		public bool IsExhausted => _currentPos >= _endPos;
 
-		/// <summary>Получает код символа (в UTF-32) в текущей позиции в разбираемой строке.
+		/// <summary>Получает код знака (в UTF-32) в текущей позиции в разбираемой строке.
 		/// Получает -1 если достигнут конец разбираемой строки.</summary>
-		public int NextChar => (_currentPos >= _endPos) ?
-			-1 :
-			IsSurrogatePair (_currentPos) ?
-				char.ConvertToUtf32 (_source, _currentPos) :
-				_source[_currentPos];
-
-		/// <summary>Получает код символа (в UTF-32) в следующей за текущей позицией в разбираемой строке.
-		/// Получает -1 если достигнут конец разбираемой строки.</summary>
-		public int NextNextChar
+		public int NextCodePoint
 		{
 			get
 			{
-				if (_currentPos >= _endPos)
-				{
-					return -1;
-				}
-
-				var nextCharSize = IsSurrogatePair (_currentPos) ? 2 : 1;
-				return ((_currentPos + nextCharSize) >= _endPos) ?
-					-1 :
-					IsSurrogatePair (_currentPos + nextCharSize) ?
-						char.ConvertToUtf32 (_source, _currentPos + nextCharSize) :
-						_source[_currentPos + nextCharSize];
+				var pos = _currentPos;
+				return GetCodePoint (ref pos);
 			}
 		}
 
-		/// <summary>
-		/// Пропустить символ.
-		/// </summary>
-		/// <returns>Код символа (в UTF-32) если он пропущен, иначе -1 если достигнут конец строки.</returns>
-		public int SkipChar ()
+		/// <summary>Получает код знака (в UTF-32) в следующей за текущей позицией в разбираемой строке.
+		/// Получает -1 если достигнут конец разбираемой строки.</summary>
+		public int NextNextCodePoint
 		{
-			if (_currentPos >= _endPos)
+			get
 			{
-				return -1;
-			}
-
-			var isSurrogatePair = IsSurrogatePair (_currentPos);
-			if (isSurrogatePair)
-			{
-				var nextChar = char.ConvertToUtf32 (_source, _currentPos);
-				_currentPos += 2;
-				return nextChar;
-			}
-			else
-			{
-				return _source[_currentPos++];
+				var pos = _currentPos;
+				GetCodePoint (ref pos);
+				return GetCodePoint (ref pos);
 			}
 		}
 
 		/// <summary>
-		/// Проверяет что символ в текущей позиции совпадает с указанным и пропускает его.
+		/// Пропустить знак.
+		/// </summary>
+		/// <returns>Код знака (в UTF-32) если он пропущен, иначе -1 если достигнут конец строки.</returns>
+		public int SkipCodePoint ()
+		{
+			return GetCodePoint (ref _currentPos);
+		}
+
+		/// <summary>
+		/// Проверяет что знак в текущей позиции совпадает с указанным и пропускает его.
 		/// Если символ не совпадает, то генерируется исключение.
 		/// </summary>
-		/// <param name="utf32Char">Код символа (в UTF-32) для проверки.</param>
-		/// <returns>Текущая позиция в разбираемой строке после пропуска.</returns>
-		public int EnsureChar (int utf32Char)
+		/// <param name="utf32CodePoint">Код знака (в UTF-32) для проверки.</param>
+		public void EnsureCodePoint (int utf32CodePoint)
 		{
 			if (_currentPos < _endPos)
 			{
-				var isSurrogatePair = IsSurrogatePair (_currentPos);
-				if (isSurrogatePair)
+				var pos = _currentPos;
+				var currentCodePoint = GetCodePoint (ref pos);
+				if (currentCodePoint == utf32CodePoint)
 				{
-					var nextChar = char.ConvertToUtf32 (_source, _currentPos);
-					if (nextChar == utf32Char)
-					{
-						_currentPos += 2;
-						return _currentPos;
-					}
-				}
-				else
-				{
-					if (_source[_currentPos] == utf32Char)
-					{
-						_currentPos++;
-						return _currentPos;
-					}
+					_currentPos = pos;
 				}
 			}
 
 			throw new FormatException (FormattableString.Invariant (
-				$"Expected char code '{utf32Char}' not found at position {_currentPos} in string '{(_source.Length > 100 ? _source.Substring (0, 100) + "..." : _source)}'."));
+				$"Expected char code '{utf32CodePoint}' not found at position {_currentPos} in string '{(_source.Length > 100 ? _source.Substring (0, 100) + "..." : _source)}'."));
 		}
 
 		/// <summary>
@@ -184,7 +152,7 @@ namespace Novartment.Base.Text
 
 			if (delimitedElement.FixedLength > 0)
 			{
-				if (this.NextChar != delimitedElement.StartChar)
+				if (this.NextCodePoint != delimitedElement.StartChar)
 				{
 					throw new FormatException (FormattableString.Invariant (
 						$"Expected char code '{delimitedElement.StartChar}' not found at position {_currentPos} in string '{(_source.Length > 100 ? _source.Substring (0, 100) + "..." : _source)}'."));
@@ -201,7 +169,7 @@ namespace Novartment.Base.Text
 			}
 			else
 			{
-				EnsureChar (delimitedElement.StartChar);
+				EnsureCodePoint (delimitedElement.StartChar);
 				var start = _currentPos;
 				int nestingLevel = 0;
 				var ignoreElement = delimitedElement.IgnoreElement;
@@ -213,21 +181,21 @@ namespace Novartment.Base.Text
 							$"Ending char '{delimitedElement.EndChar}' not found in element, started at position {start} in string '{(_source.Length > 100 ? _source.Substring (0, 100) + "..." : _source)}'."));
 					}
 
-					if ((ignoreElement != null) && (this.NextChar == ignoreElement.StartChar))
+					if ((ignoreElement != null) && (this.NextCodePoint == ignoreElement.StartChar))
 					{
 						EnsureDelimitedElement (ignoreElement);
 					}
 					else
 					{
-						var isStartNested = delimitedElement.AllowNesting && (this.NextChar == delimitedElement.StartChar);
+						var isStartNested = delimitedElement.AllowNesting && (this.NextCodePoint == delimitedElement.StartChar);
 						if (isStartNested)
 						{
-							SkipChar ();
+							SkipCodePoint ();
 							nestingLevel++;
 						}
 						else
 						{
-							var nextChar = this.SkipChar ();
+							var nextChar = this.SkipCodePoint ();
 							if (nextChar == delimitedElement.EndChar)
 							{
 								nestingLevel--;
@@ -261,26 +229,15 @@ namespace Novartment.Base.Text
 
 			while (_currentPos < _endPos)
 			{
-				int character;
-				int size;
-				var isSurrogatePair = IsSurrogatePair (_currentPos);
-				if (isSurrogatePair)
-				{
-					character = char.ConvertToUtf32 (_source, _currentPos);
-					size = 2;
-				}
-				else
-				{
-					character = _source[_currentPos];
-					size = 1;
-				}
+				var pos = _currentPos;
+				var character = GetCodePoint (ref pos);
 
 				if ((character >= charClassTable.Count) || !charClassTable[character])
 				{
 					break;
 				}
 
-				_currentPos += size;
+				_currentPos = pos;
 			}
 
 			return _currentPos;
@@ -308,26 +265,15 @@ namespace Novartment.Base.Text
 
 			while (_currentPos < _endPos)
 			{
-				int character;
-				int size;
-				var isSurrogatePair = IsSurrogatePair (_currentPos);
-				if (isSurrogatePair)
-				{
-					character = char.ConvertToUtf32 (_source, _currentPos);
-					size = 2;
-				}
-				else
-				{
-					character = _source[_currentPos];
-					size = 1;
-				}
+				var pos = _currentPos;
+				var character = GetCodePoint (ref pos);
 
 				if ((character >= charClassTable.Count) || ((charClassTable[character] & suitableClassMask) == 0))
 				{
 					break;
 				}
 
-				_currentPos += size;
+				_currentPos = pos;
 			}
 
 			return _currentPos;
@@ -355,26 +301,15 @@ namespace Novartment.Base.Text
 
 			while (_currentPos < _endPos)
 			{
-				int character;
-				int size;
-				var isSurrogatePair = IsSurrogatePair (_currentPos);
-				if (isSurrogatePair)
-				{
-					character = char.ConvertToUtf32 (_source, _currentPos);
-					size = 2;
-				}
-				else
-				{
-					character = _source[_currentPos];
-					size = 1;
-				}
+				var pos = _currentPos;
+				var character = GetCodePoint (ref pos);
 
 				if ((character >= charClassTable.Count) || ((charClassTable[character] & suitableClassMask) == 0))
 				{
 					break;
 				}
 
-				_currentPos += size;
+				_currentPos = pos;
 			}
 
 			return _currentPos;
@@ -402,26 +337,15 @@ namespace Novartment.Base.Text
 
 			while (_currentPos < _endPos)
 			{
-				int character;
-				int size;
-				var isSurrogatePair = IsSurrogatePair (_currentPos);
-				if (isSurrogatePair)
-				{
-					character = char.ConvertToUtf32 (_source, _currentPos);
-					size = 2;
-				}
-				else
-				{
-					character = _source[_currentPos];
-					size = 1;
-				}
+				var pos = _currentPos;
+				var character = GetCodePoint (ref pos);
 
 				if ((character >= charClassTable.Count) || ((charClassTable[character] & suitableClassMask) == 0))
 				{
 					break;
 				}
 
-				_currentPos += size;
+				_currentPos = pos;
 			}
 
 			return _currentPos;
@@ -449,26 +373,15 @@ namespace Novartment.Base.Text
 
 			while (_currentPos < _endPos)
 			{
-				int character;
-				int size;
-				var isSurrogatePair = IsSurrogatePair (_currentPos);
-				if (isSurrogatePair)
-				{
-					character = char.ConvertToUtf32 (_source, _currentPos);
-					size = 2;
-				}
-				else
-				{
-					character = _source[_currentPos];
-					size = 1;
-				}
+				var pos = _currentPos;
+				var character = GetCodePoint (ref pos);
 
 				if ((character >= charClassTable.Count) || ((charClassTable[character] & suitableClassMask) == 0))
 				{
 					break;
 				}
 
-				_currentPos += size;
+				_currentPos = pos;
 			}
 
 			return _currentPos;
@@ -490,26 +403,15 @@ namespace Novartment.Base.Text
 
 			while (_currentPos < _endPos)
 			{
-				int character;
-				int size;
-				var isSurrogatePair = IsSurrogatePair (_currentPos);
-				if (isSurrogatePair)
-				{
-					character = char.ConvertToUtf32 (_source, _currentPos);
-					size = 2;
-				}
-				else
-				{
-					character = _source[_currentPos];
-					size = 1;
-				}
+				var pos = _currentPos;
+				var character = GetCodePoint (ref pos);
 
 				if ((character < charClassTable.Count) && charClassTable[character])
 				{
 					break;
 				}
 
-				_currentPos += size;
+				_currentPos = pos;
 			}
 
 			return _currentPos;
@@ -532,26 +434,15 @@ namespace Novartment.Base.Text
 
 			while (_currentPos < _endPos)
 			{
-				int character;
-				int size;
-				var isSurrogatePair = IsSurrogatePair (_currentPos);
-				if (isSurrogatePair)
-				{
-					character = char.ConvertToUtf32 (_source, _currentPos);
-					size = 2;
-				}
-				else
-				{
-					character = _source[_currentPos];
-					size = 1;
-				}
+				var pos = _currentPos;
+				var character = GetCodePoint (ref pos);
 
 				if ((character < charClassTable.Count) && ((charClassTable[character] & suitableClassMask) != 0))
 				{
 					break;
 				}
 
-				_currentPos += size;
+				_currentPos = pos;
 			}
 
 			return _currentPos;
@@ -574,26 +465,15 @@ namespace Novartment.Base.Text
 
 			while (_currentPos < _endPos)
 			{
-				int character;
-				int size;
-				var isSurrogatePair = IsSurrogatePair (_currentPos);
-				if (isSurrogatePair)
-				{
-					character = char.ConvertToUtf32 (_source, _currentPos);
-					size = 2;
-				}
-				else
-				{
-					character = _source[_currentPos];
-					size = 1;
-				}
+				var pos = _currentPos;
+				var character = GetCodePoint (ref pos);
 
 				if ((character < charClassTable.Count) && ((charClassTable[character] & suitableClassMask) != 0))
 				{
 					break;
 				}
 
-				_currentPos += size;
+				_currentPos = pos;
 			}
 
 			return _currentPos;
@@ -616,26 +496,15 @@ namespace Novartment.Base.Text
 
 			while (_currentPos < _endPos)
 			{
-				int character;
-				int size;
-				var isSurrogatePair = IsSurrogatePair (_currentPos);
-				if (isSurrogatePair)
-				{
-					character = char.ConvertToUtf32 (_source, _currentPos);
-					size = 2;
-				}
-				else
-				{
-					character = _source[_currentPos];
-					size = 1;
-				}
+				var pos = _currentPos;
+				var character = GetCodePoint (ref pos);
 
 				if ((character < charClassTable.Count) && ((charClassTable[character] & suitableClassMask) != 0))
 				{
 					break;
 				}
 
-				_currentPos += size;
+				_currentPos = pos;
 			}
 
 			return _currentPos;
@@ -658,46 +527,42 @@ namespace Novartment.Base.Text
 
 			while (_currentPos < _endPos)
 			{
-				int character;
-				int size;
-				var isSurrogatePair = IsSurrogatePair (_currentPos);
-				if (isSurrogatePair)
-				{
-					character = char.ConvertToUtf32 (_source, _currentPos);
-					size = 2;
-				}
-				else
-				{
-					character = _source[_currentPos];
-					size = 1;
-				}
+				var pos = _currentPos;
+				var character = GetCodePoint (ref pos);
 
 				if ((character < charClassTable.Count) && ((charClassTable[character] & suitableClassMask) != 0))
 				{
 					break;
 				}
 
-				_currentPos += size;
+				_currentPos = pos;
 			}
 
 			return _currentPos;
 		}
 
-		private bool IsSurrogatePair (int index)
+		[MethodImpl (MethodImplOptions.AggressiveInlining)]
+		private int GetCodePoint (ref int index)
 		{
-			if ((index + 1) >= _endPos)
+			if (index >= _endPos)
 			{
-				return false;
+				return -1;
 			}
 
-			var highSurrogate = _source[index];
-			if ((highSurrogate < 0xd800) || (highSurrogate > 0xdbff))
+			var highSurrogate = _source[index++];
+			if ((index >= _endPos) || (highSurrogate < 0xd800) || (highSurrogate > 0xdbff))
 			{
-				return false;
+				return highSurrogate;
 			}
 
-			var lowSurrogate = _source[index + 1];
-			return (lowSurrogate >= 0xdc00) && (lowSurrogate <= 0xdfff);
+			var lowSurrogate = _source[index];
+			if ((lowSurrogate < 0xdc00) || (lowSurrogate > 0xdfff))
+			{
+				return highSurrogate;
+			}
+
+			index++;
+			return ((highSurrogate - '\ud800') * 0x400) + (lowSurrogate - '\udc00') + 0x10000;
 		}
 	}
 }
