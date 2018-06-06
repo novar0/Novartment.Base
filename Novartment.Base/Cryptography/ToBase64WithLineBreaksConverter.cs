@@ -96,7 +96,7 @@ namespace Novartment.Base
 						$"Wrong size of chunk of base64-encoded data. Specified {size}, expected {_maxLineLen}."));
 				}
 
-				AsciiCharSet.GetBytes (_outArray, 0, size, outputBuffer, outputOffset);
+				AsciiCharSet.GetBytes (_outArray.AsSpan (0, size), outputBuffer.AsSpan (outputOffset));
 				outputBuffer[outputOffset + size++] = 0x0d;
 				outputBuffer[outputOffset + size++] = 0x0a;
 				outputSize += size;
@@ -140,7 +140,7 @@ namespace Novartment.Base
 
 			var size = Convert.ToBase64CharArray (inputBuffer, inputOffset, inputCount, _outArray, 0);
 			var result = new byte[size];
-			AsciiCharSet.GetBytes (_outArray, 0, size, result, 0);
+			AsciiCharSet.GetBytes (_outArray.AsSpan (0, size), result);
 			return result;
 		}
 

@@ -42,7 +42,7 @@ namespace Novartment.Base.Media
 				throw new InvalidOperationException ("Specified source is too small to be list of Riff-chunk. Expected minimum 4 bytes");
 			}
 
-			this.ListId = AsciiCharSet.GetString (_source.Buffer, _source.Offset, 4);
+			this.ListId = AsciiCharSet.GetString (_source.Buffer.AsSpan (_source.Offset, 4));
 			_source.SkipBuffer (4);
 		}
 

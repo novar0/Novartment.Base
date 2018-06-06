@@ -1,4 +1,5 @@
-﻿using Novartment.Base.BinaryStreaming;
+﻿using System;
+using Novartment.Base.BinaryStreaming;
 using Novartment.Base.Text;
 
 namespace Novartment.Base.Net.Mime
@@ -16,7 +17,7 @@ namespace Novartment.Base.Net.Mime
 			_dashBoundary = new byte[boundary.Length + 2];
 			_dashBoundary[0] = (byte)'-';
 			_dashBoundary[1] = (byte)'-';
-			AsciiCharSet.GetBytes (boundary, 0, boundary.Length, _dashBoundary, 2);
+			AsciiCharSet.GetBytes (boundary.AsSpan (), _dashBoundary.AsSpan (2));
 			_source = source;
 		}
 

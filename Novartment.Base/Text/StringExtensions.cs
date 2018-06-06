@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
-using System.Text;
 using Novartment.Base.Collections;
 
 namespace Novartment.Base.Text

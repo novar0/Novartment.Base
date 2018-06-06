@@ -12,6 +12,11 @@ namespace Novartment.Base.Net.Mime.Test
 {
 	public class MailMessageTests
 	{
+		public MailMessageTests ()
+		{
+			Encoding.RegisterProvider (CodePagesEncodingProvider.Instance);
+		}
+
 		[Fact]
 		[Trait ("Category", "Mime")]
 		public void Load_AllHeaderFields ()

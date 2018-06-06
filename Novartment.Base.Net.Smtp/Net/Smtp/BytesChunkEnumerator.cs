@@ -1,4 +1,5 @@
-﻿using Novartment.Base.Text;
+﻿using System;
+using Novartment.Base.Text;
 
 namespace Novartment.Base.Net.Smtp
 {
@@ -61,27 +62,17 @@ namespace Novartment.Base.Net.Smtp
 
 		internal string GetString ()
 		{
-			return AsciiCharSet.GetString (
-				_value,
-				_currentOffset,
-				_nextOffset - _currentOffset);
+			return AsciiCharSet.GetString (_value.AsSpan (_currentOffset, _nextOffset - _currentOffset));
 		}
 
 		internal string GetStringMaskingInvalidChars ()
 		{
-			return AsciiCharSet.GetStringMaskingInvalidChars (
-				_value,
-				_currentOffset,
-				_nextOffset - _currentOffset,
-				'?');
+			return AsciiCharSet.GetStringMaskingInvalidChars (_value.AsSpan (_currentOffset, _nextOffset - _currentOffset), '?');
 		}
 
 		internal string GetStringInBrackets ()
 		{
-			return AsciiCharSet.GetString (
-				_value,
-				_currentOffset + 1,
-				_nextOffset - _currentOffset - 2);
+			return AsciiCharSet.GetString (_value.AsSpan (_currentOffset + 1, _nextOffset - _currentOffset - 2));
 		}
 	}
 }

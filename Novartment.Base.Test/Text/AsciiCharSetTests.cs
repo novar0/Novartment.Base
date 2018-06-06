@@ -31,7 +31,7 @@ namespace Novartment.Base.Test
 		{
 			var buf = new byte[100];
 			buf[0] = 123;
-			AsciiCharSet.GetBytes (" !09Az}~", 0, " !09Az}~".Length, buf, 1);
+			AsciiCharSet.GetBytes (" !09Az}~".AsSpan (), buf.AsSpan (1));
 			Assert.Equal (123, buf[0]);
 			Assert.Equal (32, buf[1]);
 			Assert.Equal (33, buf[2]);
@@ -48,7 +48,7 @@ namespace Novartment.Base.Test
 		public void GetBytes_Exception ()
 		{
 			var buf = new byte[100];
-			Assert.Throws<FormatException> (() => AsciiCharSet.GetBytes (" Ж ", 0, " Ж ".Length, buf, 0));
+			Assert.Throws<FormatException> (() => AsciiCharSet.GetBytes (" Ж ".AsSpan (), buf));
 		}
 
 		[Fact]
@@ -56,9 +56,9 @@ namespace Novartment.Base.Test
 		public void GetString ()
 		{
 			var buf = new byte[] { 123, 32, 33, 48, 57, 65, 122, 125, 126 };
-			Assert.Equal (string.Empty, AsciiCharSet.GetString (buf, 0, 0));
-			Assert.Equal ("{ !09Az}~", AsciiCharSet.GetString (buf, 0, buf.Length));
-			Assert.Equal ("z}~", AsciiCharSet.GetString (buf, 6, 3));
+			Assert.Equal (string.Empty, AsciiCharSet.GetString (default (ReadOnlySpan<byte>)));
+			Assert.Equal ("{ !09Az}~", AsciiCharSet.GetString (buf.AsSpan ()));
+			Assert.Equal ("z}~", AsciiCharSet.GetString (buf.AsSpan (6, 3)));
 		}
 
 		[Fact]
@@ -66,7 +66,7 @@ namespace Novartment.Base.Test
 		public void GetString_Exception ()
 		{
 			var buf = new byte[] { 33, 133, 32 };
-			Assert.Throws<FormatException> (() => AsciiCharSet.GetString (buf, 0, buf.Length));
+			Assert.Throws<FormatException> (() => AsciiCharSet.GetString (buf.AsSpan (0, buf.Length)));
 		}
 
 		[Fact]

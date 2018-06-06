@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Text;
 using Novartment.Base.Collections;
+using Novartment.Base.Text.CharSpanExtensions;
 
 namespace Novartment.Base.Text
 {
@@ -40,11 +41,15 @@ namespace Novartment.Base.Text
 			false);
 
 		/// <summary>
-		/// Декодирует последовательность элементов как единую строку.
+		/// Воссоздаёт строку, закодированную в виде последовательности элементов.
 		/// </summary>
 		/// <param name="elements">Список элементов составляющих строку.</param>
 		/// <param name="count">Количество элементов списка, которые составляют строку.</param>
 		/// <returns>Строка, декодированная из последовательности элементов.</returns>
+		/// <remarks>
+		/// Все элементы будут декодированы, а не просто склеены в единую строку.
+		/// Результирующая строка может содержать произвольные знаки, а не только ASCII-набор.
+		/// </remarks>
 		public static string Decode (this IReadOnlyList<StructuredValueElement> elements, int count)
 		{
 			if (elements == null)
@@ -88,13 +93,17 @@ namespace Novartment.Base.Text
 		}
 
 		/// <summary>
-		/// Создаёт коллекцию элементов структурированного значения из его исходного строкового представления.
+		/// Создаёт коллекцию элементов структурированного значения из его исходного ASCII-строкового представления.
 		/// </summary>
-		/// <param name="source">Исходное строковое значение, представляющее из себя отдельные элементы.</param>
+		/// <param name="source">Исходное ASCII-строковое значение, представляющее из себя отдельные элементы.</param>
 		/// <param name="valueCharClass">Класс символов, допустимых для отдельных элементов значения.</param>
 		/// <param name="allowDotInsideValue">Признак допустимости символа 'точка' внутри элементов значения.</param>
 		/// <param name="typeToSkip">Тип элементов значения, которые будут пропущены и не попадут в создаваемую коллекцию.</param>
 		/// <returns>Коллекция элементов структурированного значения.</returns>
+		/// <remarks>
+		/// Все элементы в строковом представлении должны быть соответственно закодированы чтобы все знаки строки были из ASCII-набора.
+		/// В создаваемую коллекцию элементы будут помещены в исходном виде, без декодирования.
+		/// </remarks>
 		public static IReadOnlyList<StructuredValueElement> Parse (
 			string source,
 			AsciiCharClasses valueCharClass,
@@ -108,81 +117,136 @@ namespace Novartment.Base.Text
 
 			Contract.EndContractBlock ();
 
+			return Parse (source.AsSpan (), valueCharClass, allowDotInsideValue, typeToSkip);
+		}
+
+		/// <summary>
+		/// Создаёт коллекцию элементов структурированного значения из его исходного ASCII-строкового представления.
+		/// </summary>
+		/// <param name="source">Исходное ASCII-строковое значение, представляющее из себя отдельные элементы.</param>
+		/// <param name="valueCharClass">Класс символов, допустимых для отдельных элементов значения.</param>
+		/// <param name="allowDotInsideValue">Признак допустимости символа 'точка' внутри элементов значения.</param>
+		/// <param name="typeToSkip">Тип элементов значения, которые будут пропущены и не попадут в создаваемую коллекцию.</param>
+		/// <returns>Коллекция элементов структурированного значения.</returns>
+		/// <remarks>
+		/// Все элементы в строковом представлении должны быть соответственно закодированы чтобы все знаки строки были из ASCII-набора.
+		/// В создаваемую коллекцию элементы будут помещены в исходном виде, без декодирования.
+		/// </remarks>
+		public static IReadOnlyList<StructuredValueElement> Parse (
+			ReadOnlySpan<char> source,
+			AsciiCharClasses valueCharClass,
+			bool allowDotInsideValue,
+			StructuredValueElementType typeToSkip = StructuredValueElementType.Unspecified)
+		{
+			// TODO: заменить вызовы CodePointReader на более простые, учитывая что исходная строка состоит только из ASCII
 			// TODO: добавить пропуск кодированных слов (внутри них могут быть символы "(<[ если оно в кодировке Q)
-			var parser = new StructuredStringReader (source);
 			var elements = new ArrayList<StructuredValueElement> ();
-			while (!parser.IsExhausted)
+			while (source.Length > 0)
 			{
-				var start = parser.Position;
-				int end;
-				switch (parser.NextCodePoint)
+				switch (source[0])
 				{
 					case ' ':
 					case '\t':
 						// RFC 5322 часть 3.2.2:
 						// Runs of FWS, comment, or CFWS that occur between lexical elements in a structured header field
 						// are semantically interpreted as a single space character.
-						parser.SkipClassChars (AsciiCharSet.Classes, (short)AsciiCharClasses.WhiteSpace);
+						var whiteSpace = source.GetSubstringOfClassChars (AsciiCharSet.Classes, (short)AsciiCharClasses.WhiteSpace);
+						source = source.Slice (whiteSpace.Length);
 						break;
 					case '"':
-						end = parser.EnsureDelimitedElement (_QuotedStringDelimitingData);
+						var quotedValue = source.EnsureDelimitedElement (_QuotedStringDelimitingData);
+						source = source.Slice (quotedValue.Length);
 						if (typeToSkip != StructuredValueElementType.QuotedValue)
 						{
-							elements.Add (new StructuredValueElement (StructuredValueElementType.QuotedValue, source.Substring (start + 1, end - start - 2)));
+#if NETCOREAPP2_1
+							var str = new string (quotedValue.Slice (1, quotedValue.Length - 2));
+#else
+							var str = new string (quotedValue.Slice (1, quotedValue.Length - 2).ToArray ());
+#endif
+							elements.Add (new StructuredValueElement (StructuredValueElementType.QuotedValue, str));
 						}
 
 						break;
 					case '(':
-						end = parser.EnsureDelimitedElement (_CommentDelimitingData);
+						var roundBracketedValue = source.EnsureDelimitedElement (_CommentDelimitingData);
+						source = source.Slice (roundBracketedValue.Length);
 						if (typeToSkip != StructuredValueElementType.RoundBracketedValue)
 						{
-							elements.Add (new StructuredValueElement (StructuredValueElementType.RoundBracketedValue, source.Substring (start + 1, end - start - 2)));
+#if NETCOREAPP2_1
+							var str = new string (roundBracketedValue.Slice (1, roundBracketedValue.Length - 2));
+#else
+							var str = new string (roundBracketedValue.Slice (1, roundBracketedValue.Length - 2).ToArray ());
+#endif
+							elements.Add (new StructuredValueElement (StructuredValueElementType.RoundBracketedValue, str));
 						}
 
 						break;
 					case '<':
-						end = parser.EnsureDelimitedElement (_AngleAddrDelimitingData);
+						var angleBracketedValue = source.EnsureDelimitedElement (_AngleAddrDelimitingData);
+						source = source.Slice (angleBracketedValue.Length);
 						if (typeToSkip != StructuredValueElementType.AngleBracketedValue)
 						{
-							elements.Add (new StructuredValueElement (StructuredValueElementType.AngleBracketedValue, source.Substring (start + 1, end - start - 2)));
+#if NETCOREAPP2_1
+							var str = new string (angleBracketedValue.Slice (1, angleBracketedValue.Length - 2));
+#else
+							var str = new string (angleBracketedValue.Slice (1, angleBracketedValue.Length - 2).ToArray ());
+#endif
+							elements.Add (new StructuredValueElement (StructuredValueElementType.AngleBracketedValue, str));
 						}
 
 						break;
 					case '[':
-						end = parser.EnsureDelimitedElement (_DomainLiteralDelimitingData);
+						var squareBracketedValue = source.EnsureDelimitedElement (_DomainLiteralDelimitingData);
+						source = source.Slice (squareBracketedValue.Length);
 						if (typeToSkip != StructuredValueElementType.SquareBracketedValue)
 						{
-							elements.Add (new StructuredValueElement (StructuredValueElementType.SquareBracketedValue, source.Substring (start + 1, end - start - 2)));
+#if NETCOREAPP2_1
+							var str = new string (squareBracketedValue.Slice (1, squareBracketedValue.Length - 2));
+#else
+							var str = new string (squareBracketedValue.Slice (1, squareBracketedValue.Length - 2).ToArray ());
+#endif
+							elements.Add (new StructuredValueElement (StructuredValueElementType.SquareBracketedValue, str));
 						}
 
 						break;
 					default:
-						end = parser.SkipClassChars (AsciiCharSet.Classes, (short)valueCharClass);
-						if (end <= start)
+						var value = source.GetSubstringOfClassChars (AsciiCharSet.Classes, (short)valueCharClass);
+						if (value.Length < 1)
 						{
-							var nextChar = parser.SkipCodePoint ();
 							if (typeToSkip != StructuredValueElementType.Separator)
 							{
-								elements.Add (new StructuredValueElement ((char)nextChar));
+								elements.Add (new StructuredValueElement (source[0]));
 							}
+
+							source = source.Slice (1);
 						}
 						else
 						{
+							var valueSize = value.Length;
+							var subParser = source.Slice (valueSize);
+
 							// continue if dot followed by atom
-							while (!parser.IsExhausted &&
+							while ((subParser.Length > 1) &&
 								allowDotInsideValue &&
-								(parser.NextCodePoint == '.') &&
-								(parser.NextNextCodePoint >= 0) && (parser.NextNextCodePoint < AsciiCharSet.MaxCharValue) &&
-								AsciiCharSet.IsCharOfClass ((char)parser.NextNextCodePoint, valueCharClass))
+								(subParser[0] == '.') &&
+								AsciiCharSet.IsCharOfClass ((char)subParser[1], valueCharClass))
 							{
-								parser.SkipCodePoint (); // '.'
-								end = parser.SkipClassChars (AsciiCharSet.Classes, (short)valueCharClass);
+								value = subParser.Slice (1).GetSubstringOfClassChars (AsciiCharSet.Classes, (short)valueCharClass);
+								valueSize += 1 + value.Length;
+								subParser = subParser.Slice (1 + value.Length);
 							}
 
 							if (typeToSkip != StructuredValueElementType.Value)
 							{
-								elements.Add (new StructuredValueElement (StructuredValueElementType.Value, source.Substring (start, end - start)));
+#if NETCOREAPP2_1
+								var str = new string (source.Slice (0, valueSize));
+#else
+								var str = new string (source.Slice (0, valueSize).ToArray ());
+#endif
+								elements.Add (new StructuredValueElement (StructuredValueElementType.Value, str));
 							}
+
+							source = source.Slice (valueSize);
 						}
 
 						break;

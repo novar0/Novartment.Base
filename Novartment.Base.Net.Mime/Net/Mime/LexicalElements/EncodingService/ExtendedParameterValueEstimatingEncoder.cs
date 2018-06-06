@@ -185,7 +185,7 @@ namespace Novartment.Base.Net.Mime
 
 			if (segmentNumber == 0)
 			{
-				AsciiCharSet.GetBytes (encodingName, 0, encodingName.Length, destination, outOffset);
+				AsciiCharSet.GetBytes (encodingName.AsSpan (), destination.AsSpan (outOffset));
 				outOffset += encodingName.Length;
 				destination[outOffset++] = (byte)'\'';
 				destination[outOffset++] = (byte)'\'';

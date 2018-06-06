@@ -324,7 +324,7 @@ namespace Novartment.Base.Media
 				throw new NotSupportedException (FormattableString.Invariant ($"Text data size {_size} is too big. Supported maximum is {_source.Buffer.Length}."));
 			}
 
-			var result = AsciiCharSet.GetString (_source.Buffer, _source.Offset, (int)_size);
+			var result = AsciiCharSet.GetString (_source.Buffer.AsSpan (_source.Offset, (int)_size));
 			_source.SkipBuffer ((int)_size);
 			_readed += _size;
 			return result;

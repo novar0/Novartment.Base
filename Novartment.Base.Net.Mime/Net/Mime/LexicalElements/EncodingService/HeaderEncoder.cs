@@ -403,7 +403,7 @@ namespace Novartment.Base.Net.Mime
 			if ((valueParts.Length < 2) && !(valueParts[0].Encoder is ExtendedParameterValueEstimatingEncoder))
 			{
 				// значение из одной части не требующей кодирования
-				AsciiCharSet.GetBytes (name, 0, name.Length, outBytes, 0);
+				AsciiCharSet.GetBytes (name.AsSpan (), outBytes);
 				var pos = name.Length;
 				outBytes[pos++] = (byte)'=';
 				var (bytesProduced, bytesConsumed) = valueParts[0].Encoder.Encode (
@@ -416,18 +416,18 @@ namespace Novartment.Base.Net.Mime
 					0,
 					false);
 				pos += bytesProduced;
-				result.Add (AsciiCharSet.GetString (outBytes, 0, pos));
+				result.Add (AsciiCharSet.GetString (outBytes.AsSpan (0, pos)));
 			}
 			else
 			{
 				// значение из многих частей либо требует кодирования
 				for (var idx = 0; idx < valueParts.Length; idx++)
 				{
-					AsciiCharSet.GetBytes (name, 0, name.Length, outBytes, 0);
+					AsciiCharSet.GetBytes (name.AsSpan (), outBytes);
 					var pos = name.Length;
 					outBytes[pos++] = (byte)'*';
 					var idxStr = idx.ToString (CultureInfo.InvariantCulture);
-					AsciiCharSet.GetBytes (idxStr, 0, idxStr.Length, outBytes, pos);
+					AsciiCharSet.GetBytes (idxStr.AsSpan (), outBytes.AsSpan (pos));
 					pos += idxStr.Length;
 					if (valueParts[idx].Encoder == extendedParameterEncoder)
 					{
@@ -450,7 +450,7 @@ namespace Novartment.Base.Net.Mime
 						outBytes[pos++] = (byte)';';
 					}
 
-					result.Add (AsciiCharSet.GetString (outBytes, 0, pos));
+					result.Add (AsciiCharSet.GetString (outBytes.AsSpan (0, pos)));
 				}
 			}
 
@@ -496,7 +496,7 @@ namespace Novartment.Base.Net.Mime
 					var field = fieldBuilder.ToHeaderField (HeaderEncoder.MaxLineLengthRecommended);
 					var name = HeaderFieldNameHelper.GetName (field.Name);
 					var size = name.Length;
-					AsciiCharSet.GetBytes (name, 0, size, bytes, 0);
+					AsciiCharSet.GetBytes (name.AsSpan (), bytes);
 					bytes[size++] = (byte)':';
 					var isEmpty = string.IsNullOrEmpty (field.Value);
 					if (!isEmpty)
@@ -506,7 +506,7 @@ namespace Novartment.Base.Net.Mime
 							bytes[size++] = (byte)' ';
 						}
 
-						AsciiCharSet.GetBytes (field.Value, 0, field.Value.Length, bytes, size);
+						AsciiCharSet.GetBytes (field.Value.AsSpan (), bytes.AsSpan (size));
 						size += field.Value.Length;
 					}
 

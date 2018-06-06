@@ -195,7 +195,7 @@ namespace Novartment.Base.Net.Smtp
 		{
 			var size = text.Length;
 			var buf = new byte[size];
-			AsciiCharSet.GetBytes (text, 0, size, buf, 0);
+			AsciiCharSet.GetBytes (text.AsSpan (), buf);
 
 			var isCRLF = (size > 1) && (buf[size - 2] == 0x0d) && (buf[size - 1] == 0x0a);
 			_logger?.LogTrace (">>> " + (isCRLF ? text.Substring (0, size - 2) : text));

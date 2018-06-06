@@ -90,7 +90,7 @@ namespace Novartment.Base.Media
 					throw new FormatException ("Specified source is too small for Riff-chunk. Expected minimum 8 bytes.", exception);
 				}
 
-				var id = AsciiCharSet.GetString (source.Buffer, source.Offset, 4);
+				var id = AsciiCharSet.GetString (source.Buffer.AsSpan (source.Offset, 4));
 				var size = (long)BitConverter.ToUInt32 (source.Buffer, source.Offset + 4);
 				source.SkipBuffer (8);
 

@@ -138,45 +138,21 @@ namespace Novartment.Base.Text
 
 			Contract.EndContractBlock ();
 
-			return ParseArray (source, 0, source.Length);
+			return ParseArray (source.AsSpan ());
 		}
 
 		/// <summary>
 		/// Преобразовывает шестнадцатеричное строковое представление в массив байт.
 		/// </summary>
 		/// <param name="source">Шестнадцатеричное строковое представление байт.</param>
-		/// <param name="offset">Начальная позиция в строке.</param>
-		/// <param name="count">Количество знаков строки, начиная от начальной позиции.</param>
 		/// <returns>Массив байт, полученный из шестнадцатеричного строкового представления.</returns>
-		public static byte[] ParseArray (string source, int offset, int count)
+		public static byte[] ParseArray (ReadOnlySpan<char> source)
 		{
-			if (source == null)
-			{
-				throw new ArgumentNullException (nameof (source));
-			}
-
-			if ((source.Length & 1) != 0)
-			{
-				throw new ArgumentOutOfRangeException (nameof (source));
-			}
-
-			if ((offset < 0) || (offset > source.Length) || ((offset == source.Length) && (count > 0)))
-			{
-				throw new ArgumentOutOfRangeException (nameof (offset));
-			}
-
-			if ((count < 0) || ((offset + count) > source.Length))
-			{
-				throw new ArgumentOutOfRangeException (nameof (count));
-			}
-
-			Contract.EndContractBlock ();
-
-			var size = count >> 1;
+			var size = source.Length / 2;
 			var result = new byte[size];
 			for (var index = 0; index < size; index++)
 			{
-				result[index] = ParseByte (source[(index << 1) + offset], source[(index << 1) + offset + 1]);
+				result[index] = ParseByte (source[index * 2], source[(index * 2) + 1]);
 			}
 
 			return result;
@@ -185,27 +161,22 @@ namespace Novartment.Base.Text
 		/// <summary>
 		/// Преобразовывает массив байт в строковое шестнадцатеричное представление прописными буквами.
 		/// </summary>
-		/// <param name="data">Массив байт для преобразования в строковое шестнадцатеричное представление.</param>
+		/// <param name="source">Массив байт для преобразования в строковое шестнадцатеричное представление.</param>
 		/// <returns>Строковое шестнадцатеричное представление прописными буквами указанного массива байтов.</returns>
-		public static string ToHexStringUpper (this byte[] data)
+		public static string ToHexStringUpper (Span<byte> source)
 		{
-			if (data == null)
+			if (source.Length < 1)
 			{
-				throw new ArgumentNullException (nameof (data));
-			}
-
-			if (data.Length < 1)
-			{
-				throw new ArgumentOutOfRangeException (nameof (data));
+				throw new ArgumentOutOfRangeException (nameof (source));
 			}
 
 			Contract.EndContractBlock ();
 
-			var buf = new char[data.Length << 1];
-			for (var index = 0; index < data.Length; index++)
+			var buf = new char[source.Length << 1];
+			for (var index = 0; index < source.Length; index++)
 			{
-				buf[index << 1] = OctetsUpper[data[index]][0];
-				buf[(index << 1) + 1] = OctetsUpper[data[index]][1];
+				buf[index << 1] = OctetsUpper[source[index]][0];
+				buf[(index << 1) + 1] = OctetsUpper[source[index]][1];
 			}
 
 			return new string (buf);

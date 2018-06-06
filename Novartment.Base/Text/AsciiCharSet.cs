@@ -177,34 +177,17 @@ namespace Novartment.Base.Text
 
 			Contract.EndContractBlock ();
 
-			return IsAllOfClass (value, 0, value.Length, characterClass);
+			return IsAllOfClass (value.AsSpan (), characterClass);
 		}
 
 		/// <summary>
 		/// Проверяет принадлежат ли все символы указанной части строки указанному типу.
 		/// </summary>
 		/// <param name="value">Строка для проверки.</param>
-		/// <param name="index">Позиция первого символа для проверки.</param>
-		/// <param name="count">Количество символов для проверки.</param>
 		/// <param name="characterClass">Тип символов, приндлеждность которому проверяется.</param>
 		/// <returns>True если все символы строки принадлежат указанному типу, иначе False.</returns>
-		public static bool IsAllOfClass (string value, int index, int count, AsciiCharClasses characterClass)
+		public static bool IsAllOfClass (ReadOnlySpan<char> value, AsciiCharClasses characterClass)
 		{
-			if (value == null)
-			{
-				throw new ArgumentNullException (nameof (value));
-			}
-
-			if ((index < 0) || (index > value.Length) || ((index == value.Length) && (count > 0)))
-			{
-				throw new ArgumentOutOfRangeException (nameof (index));
-			}
-
-			if ((count < 0) || ((index + count) > value.Length))
-			{
-				throw new ArgumentOutOfRangeException (nameof (count));
-			}
-
 			if (characterClass == AsciiCharClasses.None)
 			{
 				throw new ArgumentOutOfRangeException (nameof (characterClass));
@@ -212,8 +195,8 @@ namespace Novartment.Base.Text
 
 			Contract.EndContractBlock ();
 
-			var currentPos = index;
-			while (currentPos < (index + count))
+			var currentPos = 0;
+			while (currentPos < value.Length)
 			{
 				var character = value[currentPos];
 				if ((character >= Classes.Count) || ((Classes[character] & (short)characterClass) == 0))
@@ -247,10 +230,28 @@ namespace Novartment.Base.Text
 
 			Contract.EndContractBlock ();
 
+			return IsAnyOfClass (value.AsSpan (), characterClass);
+		}
+
+		/// <summary>
+		/// Проверяет встречается ли среди символов указанной строки символы указанного типа.
+		/// </summary>
+		/// <param name="value">Строка для проверки.</param>
+		/// <param name="characterClass">Тип символов, приндлеждность которому проверяется.</param>
+		/// <returns>True если среди символов строки встречаются символы указанного типа, иначе False.</returns>
+		public static bool IsAnyOfClass (ReadOnlySpan<char> value, AsciiCharClasses characterClass)
+		{
+			if (characterClass == AsciiCharClasses.None)
+			{
+				throw new ArgumentOutOfRangeException (nameof (characterClass));
+			}
+
+			Contract.EndContractBlock ();
+
 			int currentPos = 0;
 			while (currentPos < value.Length)
 			{
-				var isSurrogatePair = char.IsSurrogatePair (value, currentPos);
+				var isSurrogatePair = char.IsSurrogatePair (value[currentPos], value[currentPos + 1]);
 				if (isSurrogatePair)
 				{
 					currentPos += 2;
@@ -271,117 +272,32 @@ namespace Novartment.Base.Text
 		}
 
 		/// <summary>
-		/// Создаёт в указанном массиве байт представление указанной подстроки,
-		/// состоящей из ASCII-символов.
-		/// </summary>
-		/// <param name="value">Строка из ASCII-символов, для которой требуется получить байтовое представление.</param>
-		/// <param name="valueOffset">Позиция, с которой начинается подстрока.</param>
-		/// <param name="valueCount">Количество символов в подстроке.</param>
-		/// <param name="buffer">Массив байтов, в который будет помещена результирующая последовательность байтов.</param>
-		/// <param name="bufferOffset">Индекс, с которого начинается запись результирующей последовательности байтов.</param>
-		/// <exception cref="System.ArgumentNullException">Происходит если value или buffer равен null.</exception>
-		/// <exception cref="System.ArgumentOutOfRangeException">Происходит если valueOffset/valueCount выходят за пределы value или bufferOffset выходит за пределы buffer.</exception>
-		/// <exception cref="System.FormatException">Происходит когда во входных данных встречается символ, не входящий в набор ASCII.</exception>
-		/// <remarks>Семантический аналог ASCIIEncoding.GetBytes (), но более быстрый.</remarks>
-		public static void GetBytes (string value, int valueOffset, int valueCount, byte[] buffer, int bufferOffset = 0)
-		{
-			if (value == null)
-			{
-				throw new ArgumentNullException (nameof (value));
-			}
-
-			if ((valueOffset < 0) || (valueOffset > value.Length) || ((valueOffset == value.Length) && (valueCount > 0)))
-			{
-				throw new ArgumentOutOfRangeException (nameof (valueOffset));
-			}
-
-			if ((valueOffset < 0) || ((valueOffset + valueCount) > value.Length))
-			{
-				throw new ArgumentOutOfRangeException (nameof (valueCount));
-			}
-
-			if (buffer == null)
-			{
-				throw new ArgumentNullException (nameof (buffer));
-			}
-
-			if ((bufferOffset < 0) || (bufferOffset > buffer.Length) || ((bufferOffset == buffer.Length) && (valueCount > 0)))
-			{
-				throw new ArgumentOutOfRangeException (nameof (bufferOffset));
-			}
-
-			Contract.EndContractBlock ();
-
-			while (valueCount > 0)
-			{
-				var ch = value[valueOffset];
-				if (ch > MaxCharValue)
-				{
-					throw new FormatException ("Invalid ASCII char U+" +
-						Hex.OctetsUpper[ch >> 8] + Hex.OctetsUpper[ch & 0xff] +
-						". Acceptable range is from U+0000 to U+007F.");
-				}
-
-				buffer[bufferOffset + valueOffset] = (byte)ch;
-				valueOffset++;
-				valueCount--;
-			}
-		}
-
-		/// <summary>
 		/// Создаёт в указанном массиве байт представление указанного сегмента массива ASCII-символов.
 		/// </summary>
 		/// <param name="value">Массив ASCII-символов, для которого требуется получить байтовое представление.</param>
-		/// <param name="valueOffset">Позиция, с которой начинается сегмент массива ASCII-символов.</param>
-		/// <param name="valueCount">Количество символов в сегменте массива ASCII-символов.</param>
 		/// <param name="buffer">Массив байтов, в который будет помещена результирующая последовательность байтов.</param>
-		/// <param name="bufferOffset">Позиция, с которого начинается запись результирующей последовательности байтов.</param>
-		/// <exception cref="System.ArgumentNullException">Происходит если value или bytes равен null.</exception>
-		/// <exception cref="System.ArgumentOutOfRangeException">Происходит если charIndex/charCount выходят за пределы value или bufferOffset выходит за пределы bytes.</exception>
+		/// <exception cref="System.ArgumentOutOfRangeException">Происходит если размер value больше, чем buffer.</exception>
 		/// <exception cref="System.FormatException">Происходит когда во входных данных встречается символ, не входящий в набор ASCII.</exception>
 		/// <remarks>Семантический аналог ASCIIEncoding.GetBytes (), но более быстрый.</remarks>
-		public static void GetBytes (char[] value, int valueOffset, int valueCount, byte[] buffer, int bufferOffset = 0)
+		public static void GetBytes (ReadOnlySpan<char> value, Span<byte> buffer)
 		{
-			if (value == null)
+			if (value.Length > buffer.Length)
 			{
-				throw new ArgumentNullException (nameof (value));
-			}
-
-			if ((valueOffset < 0) || (valueOffset > value.Length) || ((valueOffset == value.Length) && (valueCount > 0)))
-			{
-				throw new ArgumentOutOfRangeException (nameof (valueOffset));
-			}
-
-			if ((valueOffset < 0) || ((valueOffset + valueCount) > value.Length))
-			{
-				throw new ArgumentOutOfRangeException (nameof (valueCount));
-			}
-
-			if (buffer == null)
-			{
-				throw new ArgumentNullException (nameof (buffer));
-			}
-
-			if ((bufferOffset < 0) || (bufferOffset > buffer.Length) || ((bufferOffset == buffer.Length) && (valueCount > 0)))
-			{
-				throw new ArgumentOutOfRangeException (nameof (bufferOffset));
+				throw new ArgumentOutOfRangeException (nameof (buffer));
 			}
 
 			Contract.EndContractBlock ();
 
-			while (valueCount > 0)
+			for (var idx = 0; idx < value.Length; idx++)
 			{
-				var ch = value[valueOffset];
+				var ch = value[idx];
 				if (ch > MaxCharValue)
 				{
-					throw new FormatException ("Invalid ASCII char U+" +
-						Hex.OctetsUpper[ch >> 8] + Hex.OctetsUpper[ch & 0xff] +
-						". Acceptable range is from U+0000 to U+007F.");
+					throw new FormatException (FormattableString.Invariant (
+						$"Invalid ASCII char U+{ch:x}. Acceptable range is from U+0000 to U+007F."));
 				}
 
-				buffer[bufferOffset + valueOffset] = (byte)ch;
-				valueOffset++;
-				valueCount--;
+				buffer[idx] = (byte)ch;
 			}
 		}
 
@@ -389,41 +305,19 @@ namespace Novartment.Base.Text
 		/// Создаёт ASCII-строковое представление указанного сегмента массива байтов.
 		/// </summary>
 		/// <param name="value">Массив байт, указанный сегмент которого будет преобразован в ASCII-строку.</param>
-		/// <param name="offset">Индекс первого элемента в массиве байт, которые будут преобразованы в строку.</param>
-		/// <param name="count">Количество байтов, которые будут преобразованы в строку.</param>
 		/// <returns>Массив ASCII-символов, созданный из указанного сегмента массива байтов.</returns>
-		/// <exception cref="System.ArgumentNullException">Происходит если bytes равен null.</exception>
-		/// <exception cref="System.ArgumentOutOfRangeException">Происходит если index/count выходят за пределы bytes.</exception>
 		/// <exception cref="System.FormatException">Происходит когда во входных данных встречается символ, не входящий в набор ASCII.</exception>
 		/// <remarks>Семантический аналог ASCIIEncoding.GetChars (), но более быстрый.</remarks>
-		public static char[] GetChars (byte[] value, int offset, int count)
+		public static char[] GetChars (ReadOnlySpan<byte> value)
 		{
-			if (value == null)
+			var result = new char[value.Length];
+			for (var i = 0; i < value.Length; i++)
 			{
-				throw new ArgumentNullException (nameof (value));
-			}
-
-			if ((offset < 0) || (offset > value.Length) || ((offset == value.Length) && (count > 0)))
-			{
-				throw new ArgumentOutOfRangeException (nameof (offset));
-			}
-
-			if ((count < 0) || ((offset + count) > value.Length))
-			{
-				throw new ArgumentOutOfRangeException (nameof (count));
-			}
-
-			Contract.EndContractBlock ();
-
-			var result = new char[count];
-			for (var i = 0; i < count; i++)
-			{
-				var b = value[offset + i];
+				var b = value[i];
 				if (b > MaxCharValue)
 				{
-					throw new FormatException ("Invalid ASCII char U+" +
-						Hex.OctetsUpper[b >> 8] + Hex.OctetsUpper[b & 0xff] +
-						". Acceptable range is from U+0000 to U+007F.");
+					throw new FormatException (FormattableString.Invariant (
+						$"Invalid ASCII char U+{b:x}. Acceptable range is from U+0000 to U+007F."));
 				}
 
 				result[i] = (char)b;
@@ -436,16 +330,12 @@ namespace Novartment.Base.Text
 		/// Создаёт ASCII-строковое представление указанного сегмента массива байтов.
 		/// </summary>
 		/// <param name="value">Массив байт, указанный сегмент которого будет преобразован в ASCII-строку.</param>
-		/// <param name="offset">Индекс первого элемента в массиве байт, которые будут преобразованы в строку.</param>
-		/// <param name="count">Количество байтов, которые будут преобразованы в строку.</param>
 		/// <returns>ASCII-строка, созданная из указанного сегмента массива байтов.</returns>
-		/// <exception cref="System.ArgumentNullException">Происходит если value равен null.</exception>
-		/// <exception cref="System.ArgumentOutOfRangeException">Происходит если offset/count выходят за пределы value.</exception>
 		/// <exception cref="System.FormatException">Происходит когда во входных данных встречается символ, не входящий в набор ASCII.</exception>
 		/// <remarks>Семантический аналог ASCIIEncoding.GetString (), но более быстрый.</remarks>
-		public static string GetString (byte[] value, int offset, int count)
+		public static string GetString (ReadOnlySpan<byte> value)
 		{
-			return GetStringInternal (value, offset, count, char.MaxValue);
+			return GetStringInternal (value, char.MaxValue);
 		}
 
 		/// <summary>
@@ -453,16 +343,12 @@ namespace Novartment.Base.Text
 		/// заменяя не-ASCII символы указанным символом-заменителем.
 		/// </summary>
 		/// <param name="value">Массив байт, указанный сегмент которого будет преобразован в ASCII-строку.</param>
-		/// <param name="offset">Индекс первого элемента в массиве байт, которые будут преобразованы в строку.</param>
-		/// <param name="count">Количество байтов, которые будут преобразованы в строку.</param>
 		/// <param name="substituteCharacter">Символ-заменитель, который будет вставлен вместо не-ASCII символов.</param>
 		/// <returns>ASCII-строка, созданная из указанного сегмента массива байтов.</returns>
-		/// <exception cref="System.ArgumentNullException">Происходит если value равен null.</exception>
-		/// <exception cref="System.ArgumentOutOfRangeException">Происходит если offset/count выходят за пределы value.</exception>
 		/// <remarks>Семантический аналог ASCIIEncoding.GetString (), но более быстрый.</remarks>
-		public static string GetStringMaskingInvalidChars (byte[] value, int offset, int count, char substituteCharacter)
+		public static string GetStringMaskingInvalidChars (ReadOnlySpan<byte> value, char substituteCharacter)
 		{
-			return GetStringInternal (value, offset, count, substituteCharacter);
+			return GetStringInternal (value, substituteCharacter);
 		}
 
 		/// <summary>
@@ -495,9 +381,8 @@ namespace Novartment.Base.Text
 				var isVisibleOrWS = AsciiCharSet.IsCharOfClass (character, AsciiCharClasses.Visible | AsciiCharClasses.WhiteSpace);
 				if (!isVisibleOrWS)
 				{
-					throw new FormatException ("Value contains invalid for 'quoted-sting' character U+" +
-						Hex.OctetsUpper[character >> 8] + Hex.OctetsUpper[character & 0xff] +
-						". Expected characters are U+0009 and U+0020...U+007E.");
+					throw new FormatException (FormattableString.Invariant (
+						$"Value contains invalid for 'quoted-sting' character U+{character:x}. Expected characters are U+0009 and U+0020...U+007E."));
 				}
 
 				if ((character == '\"') || (character == '\\'))
@@ -566,41 +451,23 @@ namespace Novartment.Base.Text
 			return true;
 		}
 
-		private static string GetStringInternal (byte[] value, int offset, int count, char substituteChar)
+		private static string GetStringInternal (ReadOnlySpan<byte> value, char substituteChar)
 		{
-			if (value == null)
-			{
-				throw new ArgumentNullException (nameof (value));
-			}
-
-			if ((offset < 0) || (offset > value.Length) || ((offset == value.Length) && (count > 0)))
-			{
-				throw new ArgumentOutOfRangeException (nameof (offset));
-			}
-
-			if ((count < 0) || ((offset + count) > value.Length))
-			{
-				throw new ArgumentOutOfRangeException (nameof (count));
-			}
-
-			Contract.EndContractBlock ();
-
-			if (count == 0)
+			if (value.Length < 1)
 			{
 				return string.Empty;
 			}
 
-			var result = new char[count];
-			for (var i = 0; i < count; i++)
+			var result = new char[value.Length];
+			for (var i = 0; i < value.Length; i++)
 			{
-				var b = value[offset + i];
+				var b = value[i];
 				if (b > MaxCharValue)
 				{
 					if (substituteChar == char.MaxValue)
 					{
-						throw new FormatException ("Invalid ASCII char U+" +
-							Hex.OctetsUpper[b >> 8] + Hex.OctetsUpper[b & 0xff] +
-							". Acceptable range is from U+0000 to U+007F.");
+						throw new FormatException (FormattableString.Invariant (
+							$"Invalid ASCII char U+{b:x}. Acceptable range is from U+0000 to U+007F."));
 					}
 
 					result[i] = substituteChar;

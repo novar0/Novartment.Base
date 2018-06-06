@@ -68,7 +68,7 @@ namespace Novartment.Base.Net.Smtp
 				return new SmtpInvalidSyntaxCommand (SmtpCommandType.Unknown, "Ending CRLF not found in command.");
 			}
 
-			logger?.LogTrace ("<<< " + AsciiCharSet.GetStringMaskingInvalidChars (buffer, offset, countToCRLF, '?'));
+			logger?.LogTrace ("<<< " + AsciiCharSet.GetStringMaskingInvalidChars (buffer.AsSpan (offset, countToCRLF), '?'));
 
 			// RFC 5321 part 4.5.3.1.4:
 			// The maximum total length of a command line including the command word and the <CRLF> is 512 octets.
@@ -222,7 +222,7 @@ namespace Novartment.Base.Net.Smtp
 			byte[] response;
 			try
 			{
-				var responseBase64 = AsciiCharSet.GetString (source.Buffer, source.Offset, countToCRLF);
+				var responseBase64 = AsciiCharSet.GetString (source.Buffer.AsSpan (source.Offset, countToCRLF));
 				response = Convert.FromBase64String (responseBase64);
 			}
 			catch (FormatException excpt)

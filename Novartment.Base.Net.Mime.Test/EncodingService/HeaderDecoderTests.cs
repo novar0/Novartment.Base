@@ -141,7 +141,7 @@ namespace Novartment.Base.Net.Mime.Test
 		[Trait ("Category", "Mime.HeaderDecoder")]
 		public void DecodeUnstructuredAndDate ()
 		{
-			var data = HeaderDecoder.DecodeUnstructuredAndDate ("\t Simple  < not addr >  Text ; Tue, 15 May 2012 02:49:22 +0100 (comment 2 here) ");
+			var data = HeaderDecoder.DecodeUnstructuredAndDate ("\t Simple  < not addr >  Text ; Tue, 15 May 2012 02:49:22 +0100  ");
 			Assert.Equal ("\t Simple  < not addr >  Text ", data.Text);
 			Assert.Equal (new DateTimeOffset (2012, 5, 15, 2, 49, 22, new TimeSpan (1, 0, 0)), data.Time);
 

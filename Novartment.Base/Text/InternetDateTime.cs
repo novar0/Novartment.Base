@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics.Contracts;
 using System.Globalization;
+using Novartment.Base.Text.CharSpanExtensions;
 
 namespace Novartment.Base.Text
 {
@@ -25,8 +26,18 @@ namespace Novartment.Base.Text
 
 			Contract.EndContractBlock ();
 
-			var tokens = value.Split (null as char[], StringSplitOptions.RemoveEmptyEntries);
+			return Parse (value.AsSpan ());
+		}
 
+		/// <summary>
+		/// Конвертирует RFC 2822 строковое представление времени в объект типа DateTimeOffset.
+		/// </summary>
+		/// <param name="value">
+		/// Строковое представление времени согласно RFC 2822.
+		/// Комментарии (текст в круглых скобках) не допускаются.</param>
+		/// <returns>Объект типа DateTimeOffset соответствующий указанному строковому представлению.</returns>
+		public static DateTimeOffset Parse (ReadOnlySpan<char> value)
+		{
 			/*
 			date-time   = [ day-of-week "," ] date time [CFWS]
 			day-of-week = ([FWS] day-name)
@@ -43,44 +54,52 @@ namespace Novartment.Base.Text
 			zone        = (FWS ( "+" / "-" ) 4DIGIT)
 			*/
 
-			if (tokens.Length < 1)
+			var wsSize = value.GetSubstringOfClassChars (AsciiCharSet.Classes, (short)AsciiCharClasses.WhiteSpace).Length;
+			var token = value.Slice (wsSize).GetSubstringOfNotClassChars (AsciiCharSet.Classes, (short)AsciiCharClasses.WhiteSpace);
+			value = value.Slice (wsSize + token.Length);
+
+			if (token.Length < 1)
 			{
-				throw new FormatException ("Invalid string representation of data/time. Too little parts.");
+				throw new FormatException ("Invalid string representation of data/time. Non-whitespace characters not found.");
 			}
 
-			var idx = 0;
-
 			// Skip optional [ day-of-week "," ]
-			if (tokens[idx][tokens[idx].Length - 1] == ',')
+			if (token[token.Length - 1] == ',')
 			{
-				idx++;
+				wsSize = value.GetSubstringOfClassChars (AsciiCharSet.Classes, (short)AsciiCharClasses.WhiteSpace).Length;
+				token = value.Slice (wsSize).GetSubstringOfNotClassChars (AsciiCharSet.Classes, (short)AsciiCharClasses.WhiteSpace);
+				value = value.Slice (wsSize + token.Length);
 			}
 
 			// day
-			int day = 0;
-			var isValidDay = (idx < tokens.Length) && int.TryParse (tokens[idx], out day);
+#if NETCOREAPP2_1
+			var isValidDay = int.TryParse (token, out int day);
+#else
+			var isValidDay = int.TryParse (new string (token.ToArray ()), out int day);
+#endif
 			if (!isValidDay)
 			{
-				throw new FormatException ("Invalid string representation of data/time. Invalid day '" + tokens[idx] + "'.");
+				throw new FormatException ("Invalid string representation of data/time. Invalid day value.");
 			}
-
-			idx++;
 
 			// month
-			if (idx >= tokens.Length)
-			{
-				throw new FormatException ("Invalid string representation of data/time. Too little parts.");
-			}
-
-			var month = GetMonth (tokens[idx]);
-			idx++;
+			wsSize = value.GetSubstringOfClassChars (AsciiCharSet.Classes, (short)AsciiCharClasses.WhiteSpace).Length;
+			token = value.Slice (wsSize).GetSubstringOfNotClassChars (AsciiCharSet.Classes, (short)AsciiCharClasses.WhiteSpace);
+			value = value.Slice (wsSize + token.Length);
+			var month = GetMonth (token);
 
 			// year
-			int year = 0;
-			var isValidYear = (idx < tokens.Length) && int.TryParse (tokens[idx], out year);
+			wsSize = value.GetSubstringOfClassChars (AsciiCharSet.Classes, (short)AsciiCharClasses.WhiteSpace).Length;
+			token = value.Slice (wsSize).GetSubstringOfNotClassChars (AsciiCharSet.Classes, (short)AsciiCharClasses.WhiteSpace);
+			value = value.Slice (wsSize + token.Length);
+#if NETCOREAPP2_1
+			var isValidYear = int.TryParse (token, out int year);
+#else
+			var isValidYear = int.TryParse (new string (token.ToArray ()), out int year);
+#endif
 			if (!isValidYear)
 			{
-				throw new FormatException ("Invalid string representation of data/time. Invalid year '" + tokens[idx] + "'.");
+				throw new FormatException ("Invalid string representation of data/time. Invalid year.");
 			}
 
 			// RFC 2822 part 4.3:
@@ -88,7 +107,7 @@ namespace Novartment.Base.Text
 			// ending up with a value between 2000 and 2049.
 			// If a two digit year is encountered with a value between 50 and 99, or any three digit year is encountered,
 			// the year is interpreted by adding 1900.
-			if (tokens[idx].Length < 4)
+			if (year < 100)
 			{
 				if (year < 50)
 				{
@@ -100,46 +119,71 @@ namespace Novartment.Base.Text
 				}
 			}
 
-			idx++;
-
-			if (idx >= tokens.Length)
-			{
-				throw new FormatException ("Invalid string representation of data/time. Too little parts.");
-			}
-
-			var tkns = tokens[idx].Split (':');
-
 			// hour:minute[:seconds]
-			int hour = 0;
-			int minute = 0;
-			int second = 0;
-			var isValidHourMinute = (tkns.Length >= 2) &&
-				(tkns.Length <= 3) &&
-				int.TryParse (tkns[0], out hour) &&
-				int.TryParse (tkns[1], out minute);
-			if (!isValidHourMinute)
+			wsSize = value.GetSubstringOfClassChars (AsciiCharSet.Classes, (short)AsciiCharClasses.WhiteSpace).Length;
+			token = value.Slice (wsSize).GetSubstringOfNotClassChars (AsciiCharSet.Classes, (short)AsciiCharClasses.WhiteSpace);
+			value = value.Slice (wsSize + token.Length);
+			if ((token.Length < 5) || (token[2] != ':'))
 			{
-				throw new FormatException ("Invalid string representation of data/time. Invalid hour '" + tkns[0] + "' or minute '" + tkns[1] + "'.");
+				throw new FormatException ("Invalid string representation of data/time, semicolon not found in time value.");
 			}
 
-			if (tkns.Length == 3)
+#if NETCOREAPP2_1
+			var isValidHour = int.TryParse (token.Slice (0, 2), out int hour);
+#else
+			var isValidHour = int.TryParse (new string (token.ToArray(), 0, 2), out int hour);
+#endif
+			if (!isValidHour)
 			{
-				var isValidSecond = int.TryParse (tkns[2], out second);
+				throw new FormatException ("Invalid string representation of data/time. Invalid hours value.");
+			}
+
+#if NETCOREAPP2_1
+			var isValidMinute = int.TryParse (token.Slice (3, 2), out int minute);
+#else
+			var isValidMinute = int.TryParse (new string (token.ToArray (), 3, 2), out int minute);
+#endif
+			if (!isValidMinute)
+			{
+				throw new FormatException ("Invalid string representation of data/time. Invalid minutes value.");
+			}
+
+			int second = 0;
+			if (token.Length > 5)
+			{
+				if ((token.Length < 7) || (token[5] != ':'))
+				{
+					throw new FormatException ("Invalid string representation of data/time, semicolon not found after minute value.");
+				}
+
+#if NETCOREAPP2_1
+				var isValidSecond = int.TryParse (token.Slice (6), out second);
+#else
+				var isValidSecond = int.TryParse (new string (token.ToArray (), 6, token.Length - 6), out second);
+#endif
 				if (!isValidSecond)
 				{
-					throw new FormatException ("Invalid string representation of data/time. Invalid second '" + tkns[2] + "'.");
+					throw new FormatException ("Invalid string representation of data/time. Invalid seconds value.");
 				}
 			}
 
-			idx++;
-
 			// timezone
-			if (idx >= tokens.Length)
+			wsSize = value.GetSubstringOfClassChars (AsciiCharSet.Classes, (short)AsciiCharClasses.WhiteSpace).Length;
+			token = value.Slice (wsSize).GetSubstringOfNotClassChars (AsciiCharSet.Classes, (short)AsciiCharClasses.WhiteSpace);
+			if (token.Length < 1)
 			{
-				throw new FormatException ("Invalid string representation of data/time. Too little parts.");
+				throw new FormatException ("Invalid string representation of data/time. Missed time zone.");
 			}
 
-			var timeZoneMinutes = GetTimeZone (tokens[idx]);
+			value = value.Slice (wsSize + token.Length);
+			var timeZoneMinutes = GetTimeZone (token);
+
+			// проверяем чтобы не было лишних символов
+			wsSize = value.GetSubstringOfClassChars (AsciiCharSet.Classes, (short)AsciiCharClasses.WhiteSpace).Length;
+			if ((value.Length - wsSize) > 0)
+			{
+				throw new FormatException ("Invalid string representation of data/time. Unrecognized tail characters.");
+			}
 
 			return new DateTimeOffset (year, month, day, hour, minute, second, new TimeSpan (0, timeZoneMinutes, 0));
 		}
@@ -164,9 +208,14 @@ namespace Novartment.Base.Text
 			return str1 + str2 + str3;
 		}
 
-		private static int GetMonth (string monthStr)
+		private static int GetMonth (ReadOnlySpan<char> monthSpan)
 		{
 			int month;
+#if NETCOREAPP2_1
+			var monthStr = new string (monthSpan);
+#else
+			var monthStr = new string (monthSpan.ToArray ());
+#endif
 			switch (monthStr.ToUpperInvariant ())
 			{
 				case "JAN": month = 1; break;
@@ -187,89 +236,102 @@ namespace Novartment.Base.Text
 			return month;
 		}
 
-		private static int GetTimeZone (string timeZoneStr)
+		private static int GetTimeZone (ReadOnlySpan<char> timeZoneSpan)
 		{
 			int timeZoneMinutes;
-			if ((timeZoneStr[0] == '+') || (timeZoneStr[0] == '-'))
+
+			if ((timeZoneSpan[0] == '+') || (timeZoneSpan[0] == '-'))
 			{
-				timeZoneMinutes = (int.Parse (timeZoneStr.Substring (1, 2), CultureInfo.InvariantCulture) * 60) +
-					int.Parse (timeZoneStr.Substring (3, 2), CultureInfo.InvariantCulture);
-				if (timeZoneStr[0] == '-')
+#if NETCOREAPP2_1
+				var n1str = timeZoneSpan.Slice (1, 2);
+				var n2str = timeZoneSpan.Slice (3, 2);
+#else
+				var arr = timeZoneSpan.ToArray ();
+				var n1str = new string (arr, 1, 2);
+				var n2str = new string (arr, 3, 2);
+#endif
+				timeZoneMinutes = (int.Parse (n1str, NumberStyles.None, CultureInfo.InvariantCulture) * 60) +
+					int.Parse (n2str, NumberStyles.None, CultureInfo.InvariantCulture);
+				if (timeZoneSpan[0] == '-')
 				{
 					timeZoneMinutes = -timeZoneMinutes;
 				}
+
+				return timeZoneMinutes;
 			}
 
 			// We have RFC 822 date with abbrevated time zone name. For example: GMT.
-			else
+#if NETCOREAPP2_1
+			var timeZoneStr = new string (timeZoneSpan).ToUpperInvariant ();
+#else
+			var timeZoneStr = new string (timeZoneSpan.ToArray ()).ToUpperInvariant ();
+#endif
+			switch (timeZoneStr)
 			{
-				switch (timeZoneStr.ToUpperInvariant ())
-				{
 #pragma warning disable SA1119 // Statement must not use unnecessary parenthesis
-					case "A": timeZoneMinutes = ((01 * 60) + 00); break; // Alpha Time Zone (military).
-					case "ACDT": timeZoneMinutes = ((10 * 60) + 30); break; // Australian Central Daylight Time.
-					case "ACST": timeZoneMinutes = ((09 * 60) + 30); break; // Australian Central Standard Time.
-					case "ADT": timeZoneMinutes = -((03 * 60) + 00); break; // Atlantic Daylight Time.
-					case "AEDT": timeZoneMinutes = ((11 * 60) + 00); break; // Australian Eastern Daylight Time.
-					case "AEST": timeZoneMinutes = ((10 * 60) + 00); break; // Australian Eastern Standard Time.
-					case "AKDT": timeZoneMinutes = -((08 * 60) + 00); break; // Alaska Daylight Time.
-					case "AKST": timeZoneMinutes = -((09 * 60) + 00); break; // Alaska Standard Time.
-					case "AST": timeZoneMinutes = -((04 * 60) + 00); break; // Atlantic Standard Time.
-					case "AWDT": timeZoneMinutes = ((09 * 60) + 00); break; // Australian Western Daylight Time.
-					case "AWST": timeZoneMinutes = ((08 * 60) + 00); break; // Australian Western Standard Time.
-					case "B": timeZoneMinutes = ((02 * 60) + 00); break; // Bravo Time Zone (millitary).
-					case "BST": timeZoneMinutes = ((01 * 60) + 00); break; // British Summer Time.
-					case "C": timeZoneMinutes = ((03 * 60) + 00); break; // Charlie Time Zone (millitary).
-					case "CDT": timeZoneMinutes = -((05 * 60) + 00); break; // Central Daylight Time.
-					case "CEDT": timeZoneMinutes = ((02 * 60) + 00); break; // Central European Daylight Time.
-					case "CEST": timeZoneMinutes = ((02 * 60) + 00); break; // Central European Summer Time.
-					case "CET": timeZoneMinutes = ((01 * 60) + 00); break; // Central European Time.
-					case "CST": timeZoneMinutes = -((06 * 60) + 00); break; // Central Standard Time.
-					case "CXT": timeZoneMinutes = ((01 * 60) + 00); break; // Christmas Island Time.
-					case "D": timeZoneMinutes = ((04 * 60) + 00); break; // Delta Time Zone (military).
-					case "E": timeZoneMinutes = ((05 * 60) + 00); break; // Echo Time Zone (military).
-					case "EDT": timeZoneMinutes = -((04 * 60) + 00); break; // Eastern Daylight Time.
-					case "EEDT": timeZoneMinutes = ((03 * 60) + 00); break; // Eastern European Daylight Time.
-					case "EEST": timeZoneMinutes = ((03 * 60) + 00); break; // Eastern European Summer Time.
-					case "EET": timeZoneMinutes = ((02 * 60) + 00); break; // Eastern European Time.
-					case "EST": timeZoneMinutes = -((05 * 60) + 00); break; // Eastern Standard Time.
-					case "F": timeZoneMinutes = ((06 * 60) + 00); break; // Foxtrot Time Zone (military).
-					case "G": timeZoneMinutes = ((07 * 60) + 00); break; // Golf Time Zone (military).
-					case "GMT": timeZoneMinutes = 0000; break; // Greenwich Mean Time.
-					case "H": timeZoneMinutes = ((08 * 60) + 00); break; // Hotel Time Zone (military).
-					case "I": timeZoneMinutes = ((09 * 60) + 00); break; // India Time Zone (military).
-					case "IST": timeZoneMinutes = ((01 * 60) + 00); break; // Irish Summer Time.
-					case "K": timeZoneMinutes = ((10 * 60) + 00); break; // Kilo Time Zone (millitary).
-					case "L": timeZoneMinutes = ((11 * 60) + 00); break; // Lima Time Zone (millitary).
-					case "M": timeZoneMinutes = ((12 * 60) + 00); break; // Mike Time Zone (millitary).
-					case "MDT": timeZoneMinutes = -((06 * 60) + 00); break; // Mountain Daylight Time.
-					case "MST": timeZoneMinutes = -((07 * 60) + 00); break; // Mountain Standard Time.
-					case "N": timeZoneMinutes = -((01 * 60) + 00); break; // November Time Zone (military).
-					case "NDT": timeZoneMinutes = -((02 * 60) + 30); break; // Newfoundland Daylight Time.
-					case "NFT": timeZoneMinutes = ((11 * 60) + 30); break; // Norfolk (Island) Time.
-					case "NST": timeZoneMinutes = -((03 * 60) + 30); break; // Newfoundland Standard Time.
-					case "O": timeZoneMinutes = -((02 * 60) + 00); break; // Oscar Time Zone (military).
-					case "P": timeZoneMinutes = -((03 * 60) + 00); break; // Papa Time Zone (military).
-					case "PDT": timeZoneMinutes = -((07 * 60) + 00); break; // Pacific Daylight Time.
-					case "PST": timeZoneMinutes = -((08 * 60) + 00); break; // Pacific Standard Time.
-					case "Q": timeZoneMinutes = -((04 * 60) + 00); break; // Quebec Time Zone (military).
-					case "R": timeZoneMinutes = -((05 * 60) + 00); break; // Romeo Time Zone (military).
-					case "S": timeZoneMinutes = -((06 * 60) + 00); break; // Sierra Time Zone (military).
-					case "T": timeZoneMinutes = -((07 * 60) + 00); break; // Tango Time Zone (military).
-					case "U": timeZoneMinutes = -((08 * 60) + 00); break; // Uniform Time Zone (military).
-					case "UTC": timeZoneMinutes = 0000; break; // Coordinated Universal Time.
-					case "V": timeZoneMinutes = -((09 * 60) + 00); break; // Victor Time Zone (militray).
-					case "W": timeZoneMinutes = -((10 * 60) + 00); break; // Whiskey Time Zone (military).
-					case "WEDT": timeZoneMinutes = ((01 * 60) + 00); break; // Western European Daylight Time.
-					case "WEST": timeZoneMinutes = ((01 * 60) + 00); break; // Western European Summer Time.
-					case "WET": timeZoneMinutes = 0000; break; // Western European Time.
-					case "WST": timeZoneMinutes = ((08 * 60) + 00); break; // Western Standard Time.
-					case "X": timeZoneMinutes = -((11 * 60) + 00); break; // X-ray Time Zone (military).
-					case "Y": timeZoneMinutes = -((12 * 60) + 00); break; // Yankee Time Zone (military).
-					case "Z": timeZoneMinutes = 0000; break; // Zulu Time Zone (military).
+				case "A": timeZoneMinutes = ((01 * 60) + 00); break; // Alpha Time Zone (military).
+				case "ACDT": timeZoneMinutes = ((10 * 60) + 30); break; // Australian Central Daylight Time.
+				case "ACST": timeZoneMinutes = ((09 * 60) + 30); break; // Australian Central Standard Time.
+				case "ADT": timeZoneMinutes = -((03 * 60) + 00); break; // Atlantic Daylight Time.
+				case "AEDT": timeZoneMinutes = ((11 * 60) + 00); break; // Australian Eastern Daylight Time.
+				case "AEST": timeZoneMinutes = ((10 * 60) + 00); break; // Australian Eastern Standard Time.
+				case "AKDT": timeZoneMinutes = -((08 * 60) + 00); break; // Alaska Daylight Time.
+				case "AKST": timeZoneMinutes = -((09 * 60) + 00); break; // Alaska Standard Time.
+				case "AST": timeZoneMinutes = -((04 * 60) + 00); break; // Atlantic Standard Time.
+				case "AWDT": timeZoneMinutes = ((09 * 60) + 00); break; // Australian Western Daylight Time.
+				case "AWST": timeZoneMinutes = ((08 * 60) + 00); break; // Australian Western Standard Time.
+				case "B": timeZoneMinutes = ((02 * 60) + 00); break; // Bravo Time Zone (millitary).
+				case "BST": timeZoneMinutes = ((01 * 60) + 00); break; // British Summer Time.
+				case "C": timeZoneMinutes = ((03 * 60) + 00); break; // Charlie Time Zone (millitary).
+				case "CDT": timeZoneMinutes = -((05 * 60) + 00); break; // Central Daylight Time.
+				case "CEDT": timeZoneMinutes = ((02 * 60) + 00); break; // Central European Daylight Time.
+				case "CEST": timeZoneMinutes = ((02 * 60) + 00); break; // Central European Summer Time.
+				case "CET": timeZoneMinutes = ((01 * 60) + 00); break; // Central European Time.
+				case "CST": timeZoneMinutes = -((06 * 60) + 00); break; // Central Standard Time.
+				case "CXT": timeZoneMinutes = ((01 * 60) + 00); break; // Christmas Island Time.
+				case "D": timeZoneMinutes = ((04 * 60) + 00); break; // Delta Time Zone (military).
+				case "E": timeZoneMinutes = ((05 * 60) + 00); break; // Echo Time Zone (military).
+				case "EDT": timeZoneMinutes = -((04 * 60) + 00); break; // Eastern Daylight Time.
+				case "EEDT": timeZoneMinutes = ((03 * 60) + 00); break; // Eastern European Daylight Time.
+				case "EEST": timeZoneMinutes = ((03 * 60) + 00); break; // Eastern European Summer Time.
+				case "EET": timeZoneMinutes = ((02 * 60) + 00); break; // Eastern European Time.
+				case "EST": timeZoneMinutes = -((05 * 60) + 00); break; // Eastern Standard Time.
+				case "F": timeZoneMinutes = ((06 * 60) + 00); break; // Foxtrot Time Zone (military).
+				case "G": timeZoneMinutes = ((07 * 60) + 00); break; // Golf Time Zone (military).
+				case "GMT": timeZoneMinutes = 0000; break; // Greenwich Mean Time.
+				case "H": timeZoneMinutes = ((08 * 60) + 00); break; // Hotel Time Zone (military).
+				case "I": timeZoneMinutes = ((09 * 60) + 00); break; // India Time Zone (military).
+				case "IST": timeZoneMinutes = ((01 * 60) + 00); break; // Irish Summer Time.
+				case "K": timeZoneMinutes = ((10 * 60) + 00); break; // Kilo Time Zone (millitary).
+				case "L": timeZoneMinutes = ((11 * 60) + 00); break; // Lima Time Zone (millitary).
+				case "M": timeZoneMinutes = ((12 * 60) + 00); break; // Mike Time Zone (millitary).
+				case "MDT": timeZoneMinutes = -((06 * 60) + 00); break; // Mountain Daylight Time.
+				case "MST": timeZoneMinutes = -((07 * 60) + 00); break; // Mountain Standard Time.
+				case "N": timeZoneMinutes = -((01 * 60) + 00); break; // November Time Zone (military).
+				case "NDT": timeZoneMinutes = -((02 * 60) + 30); break; // Newfoundland Daylight Time.
+				case "NFT": timeZoneMinutes = ((11 * 60) + 30); break; // Norfolk (Island) Time.
+				case "NST": timeZoneMinutes = -((03 * 60) + 30); break; // Newfoundland Standard Time.
+				case "O": timeZoneMinutes = -((02 * 60) + 00); break; // Oscar Time Zone (military).
+				case "P": timeZoneMinutes = -((03 * 60) + 00); break; // Papa Time Zone (military).
+				case "PDT": timeZoneMinutes = -((07 * 60) + 00); break; // Pacific Daylight Time.
+				case "PST": timeZoneMinutes = -((08 * 60) + 00); break; // Pacific Standard Time.
+				case "Q": timeZoneMinutes = -((04 * 60) + 00); break; // Quebec Time Zone (military).
+				case "R": timeZoneMinutes = -((05 * 60) + 00); break; // Romeo Time Zone (military).
+				case "S": timeZoneMinutes = -((06 * 60) + 00); break; // Sierra Time Zone (military).
+				case "T": timeZoneMinutes = -((07 * 60) + 00); break; // Tango Time Zone (military).
+				case "U": timeZoneMinutes = -((08 * 60) + 00); break; // Uniform Time Zone (military).
+				case "UTC": timeZoneMinutes = 0000; break; // Coordinated Universal Time.
+				case "V": timeZoneMinutes = -((09 * 60) + 00); break; // Victor Time Zone (militray).
+				case "W": timeZoneMinutes = -((10 * 60) + 00); break; // Whiskey Time Zone (military).
+				case "WEDT": timeZoneMinutes = ((01 * 60) + 00); break; // Western European Daylight Time.
+				case "WEST": timeZoneMinutes = ((01 * 60) + 00); break; // Western European Summer Time.
+				case "WET": timeZoneMinutes = 0000; break; // Western European Time.
+				case "WST": timeZoneMinutes = ((08 * 60) + 00); break; // Western Standard Time.
+				case "X": timeZoneMinutes = -((11 * 60) + 00); break; // X-ray Time Zone (military).
+				case "Y": timeZoneMinutes = -((12 * 60) + 00); break; // Yankee Time Zone (military).
+				case "Z": timeZoneMinutes = 0000; break; // Zulu Time Zone (military).
 #pragma warning restore SA1119 // Statement must not use unnecessary parenthesis
-					default: throw new FormatException ("Invalid string representation of data/time. Invalid time zone '" + timeZoneStr + "'.");
-				}
+				default: throw new FormatException ("Invalid string representation of data/time. Invalid time zone '" + timeZoneStr + "'.");
 			}
 
 			return timeZoneMinutes;

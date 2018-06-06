@@ -194,7 +194,7 @@ namespace Novartment.Base.Net.Mime
 							throw new FormatException ("More than one '" + HeaderFieldNameHelper.GetName (HeaderFieldName.OriginalRecipient) + "' field.");
 						}
 
-						originalRecipient = HeaderDecoder.DecodeNotificationFieldValue (field.Value);
+						originalRecipient = HeaderDecoder.DecodeNotificationFieldValue (field.Value.AsSpan ());
 						break;
 					case HeaderFieldName.FinalRecipient:
 						if (finalRecipient != null)
@@ -202,7 +202,7 @@ namespace Novartment.Base.Net.Mime
 							throw new FormatException ("More than one '" + HeaderFieldNameHelper.GetName (HeaderFieldName.FinalRecipient) + "' field.");
 						}
 
-						finalRecipient = HeaderDecoder.DecodeNotificationFieldValue (field.Value);
+						finalRecipient = HeaderDecoder.DecodeNotificationFieldValue (field.Value.AsSpan ());
 						break;
 					case HeaderFieldName.Action:
 						if (action != DeliveryAttemptResult.Unspecified)
@@ -232,7 +232,7 @@ namespace Novartment.Base.Net.Mime
 							throw new FormatException ("More than one '" + HeaderFieldNameHelper.GetName (HeaderFieldName.RemoteMailTransferAgent) + "' field.");
 						}
 
-						remoteMta = HeaderDecoder.DecodeNotificationFieldValue (field.Value);
+						remoteMta = HeaderDecoder.DecodeNotificationFieldValue (field.Value.AsSpan ());
 						break;
 					case HeaderFieldName.DiagnosticCode:
 						if (diagnosticCode != null)
@@ -240,7 +240,7 @@ namespace Novartment.Base.Net.Mime
 							throw new FormatException ("More than one '" + HeaderFieldNameHelper.GetName (HeaderFieldName.DiagnosticCode) + "' field.");
 						}
 
-						diagnosticCode = HeaderDecoder.DecodeNotificationFieldValue (field.Value);
+						diagnosticCode = HeaderDecoder.DecodeNotificationFieldValue (field.Value.AsSpan ());
 						break;
 					case HeaderFieldName.LastAttemptDate:
 						if (lastAttemptDate.HasValue)
@@ -256,7 +256,7 @@ namespace Novartment.Base.Net.Mime
 							throw new FormatException ("More than one '" + HeaderFieldNameHelper.GetName (HeaderFieldName.FinalLogId) + "' field.");
 						}
 
-						finalLogId = HeaderDecoder.DecodeUnstructured (field.Value).Trim ();
+						finalLogId = HeaderDecoder.DecodeUnstructured (field.Value.AsSpan ()).Trim ();
 						break;
 					case HeaderFieldName.WillRetryUntil:
 						if (willRetryUntil.HasValue)
@@ -411,7 +411,7 @@ namespace Novartment.Base.Net.Mime
 							throw new FormatException ("More than one '" + HeaderFieldNameHelper.GetName (HeaderFieldName.OriginalEnvelopeId) + "' field.");
 						}
 
-						originalEnvelopeId = HeaderDecoder.DecodeUnstructured (field.Value).Trim ();
+						originalEnvelopeId = HeaderDecoder.DecodeUnstructured (field.Value.AsSpan ()).Trim ();
 						break;
 					case HeaderFieldName.MailTransferAgent:
 						if (reportingMailTransferAgent != null)
@@ -421,7 +421,7 @@ namespace Novartment.Base.Net.Mime
 
 						// reporting-mta-field = "Reporting-MTA" ":" mta-name-type ";" mta-name
 						// mta-name = *text
-						reportingMailTransferAgent = HeaderDecoder.DecodeNotificationFieldValue (field.Value);
+						reportingMailTransferAgent = HeaderDecoder.DecodeNotificationFieldValue (field.Value.AsSpan ());
 						break;
 					case HeaderFieldName.DsnGateway:
 						if (gateway != null)
@@ -429,7 +429,7 @@ namespace Novartment.Base.Net.Mime
 							throw new FormatException ("More than one '" + HeaderFieldNameHelper.GetName (HeaderFieldName.DsnGateway) + "' field.");
 						}
 
-						gateway = HeaderDecoder.DecodeNotificationFieldValue (field.Value);
+						gateway = HeaderDecoder.DecodeNotificationFieldValue (field.Value.AsSpan ());
 						break;
 					case HeaderFieldName.ReceivedFromMailTransferAgent:
 						if (receivedFromMailTransferAgent != null)
@@ -437,7 +437,7 @@ namespace Novartment.Base.Net.Mime
 							throw new FormatException ("More than one '" + HeaderFieldNameHelper.GetName (HeaderFieldName.ReceivedFromMailTransferAgent) + "' field.");
 						}
 
-						receivedFromMailTransferAgent = HeaderDecoder.DecodeNotificationFieldValue (field.Value);
+						receivedFromMailTransferAgent = HeaderDecoder.DecodeNotificationFieldValue (field.Value.AsSpan ());
 						break;
 					case HeaderFieldName.ArrivalDate:
 						if (arrivalDate.HasValue)

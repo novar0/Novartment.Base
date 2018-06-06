@@ -123,7 +123,7 @@ namespace Novartment.Base.Media
 				*/
 				var compressionNumber = BitConverter.ToUInt32 (source.Buffer, source.Offset + 16);
 				var codecId = (compressionNumber >= 0x20202020) ?
-					AsciiCharSet.GetString (source.Buffer, source.Offset + 16, 4) :
+					AsciiCharSet.GetString (source.Buffer.AsSpan (source.Offset + 16, 4)) :
 					compressionNumber.ToString (CultureInfo.InvariantCulture);
 				var videoInfo = new AviStreamInfoVideoFormat (
 					BitConverter.ToUInt32 (source.Buffer, source.Offset + 4),

@@ -181,7 +181,7 @@ namespace Novartment.Base.Net.Mime
 			nextBoundary[size++] = HeaderDecoder.CarriageReturnLinefeed[1];
 			nextBoundary[size++] = (byte)'-';
 			nextBoundary[size++] = (byte)'-';
-			AsciiCharSet.GetBytes (this.Boundary, 0, this.Boundary.Length, nextBoundary, size);
+			AsciiCharSet.GetBytes (this.Boundary.AsSpan (), nextBoundary.AsSpan (size));
 			size += this.Boundary.Length;
 			nextBoundary[size++] = HeaderDecoder.CarriageReturnLinefeed[0];
 			nextBoundary[size] = HeaderDecoder.CarriageReturnLinefeed[1];

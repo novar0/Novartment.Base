@@ -165,7 +165,7 @@ namespace Novartment.Base.Text
 			var outStartOffset = outOffset;
 			destination[outOffset++] = (byte)'=';
 			destination[outOffset++] = (byte)'?';
-			AsciiCharSet.GetBytes (_encoding.WebName, 0, _encoding.WebName.Length, destination, outOffset);
+			AsciiCharSet.GetBytes (_encoding.WebName.AsSpan (), destination.AsSpan (outOffset));
 			outOffset += _encoding.WebName.Length;
 			destination[outOffset++] = (byte)'?';
 			destination[outOffset++] = (byte)'B';

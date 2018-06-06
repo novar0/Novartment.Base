@@ -204,10 +204,10 @@ namespace Novartment.Base.Media
 								short int bottom;
 							 */
 							await chunk.Source.EnsureBufferAsync (56, cancellationToken).ConfigureAwait (false); // "Insuficient size of RIFF-chunk 'strh'. Expected minimum 56 bytes.");
-							type = AsciiCharSet.GetString (chunk.Source.Buffer, chunk.Source.Offset, 4);
+							type = AsciiCharSet.GetString (chunk.Source.Buffer.AsSpan (chunk.Source.Offset, 4));
 							var handlerNumber = BitConverter.ToUInt32 (chunk.Source.Buffer, chunk.Source.Offset + 4);
 							handler = (handlerNumber == 0) ? null : (handlerNumber >= 0x20202020) ?
-									AsciiCharSet.GetString (chunk.Source.Buffer, chunk.Source.Offset + 4, 4) :
+									AsciiCharSet.GetString (chunk.Source.Buffer.AsSpan (chunk.Source.Offset + 4, 4)) :
 									handlerNumber.ToString (CultureInfo.InvariantCulture);
 							options = BitConverter.ToUInt32 (chunk.Source.Buffer, chunk.Source.Offset + 8);
 							priority = BitConverter.ToUInt16 (chunk.Source.Buffer, chunk.Source.Offset + 12);
