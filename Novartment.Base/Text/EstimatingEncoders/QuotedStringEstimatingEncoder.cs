@@ -28,7 +28,6 @@ namespace Novartment.Base.Text
 			_enabledClasses = enabledClasses;
 		}
 
-#pragma warning disable CA1822 // Mark members as static
 		/// <summary>
 		/// Получает количество байтов, которые кодировщик записывает в качестве пролога перед данными.
 		/// </summary>
@@ -38,7 +37,6 @@ namespace Novartment.Base.Text
 		/// Получает количество байтов, которые кодировщик записывает в качестве эпилога после данных.
 		/// </summary>
 		public int EpilogSize => 1;
-#pragma warning restore CA1822 // Mark members as static
 
 		/// <summary>
 		/// В указанном массиве байтов ищет ближайшую позицию данных,

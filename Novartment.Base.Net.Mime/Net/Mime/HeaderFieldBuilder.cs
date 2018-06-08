@@ -113,7 +113,9 @@ namespace Novartment.Base.Net.Mime
 
 			Contract.EndContractBlock ();
 
-			return new HeaderFieldBuilder (name, HeaderEncoder.EncodeUnstructured (text));
+			var result = new ArrayList<string> ();
+			HeaderEncoder.EncodeUnstructured (result, text);
+			return new HeaderFieldBuilder (name, result);
 		}
 
 		/// <summary>
@@ -136,7 +138,9 @@ namespace Novartment.Base.Net.Mime
 
 			Contract.EndContractBlock ();
 
-			return new HeaderFieldBuilder (name, HeaderEncoder.EncodePhrase (text));
+			var result = new ArrayList<string> ();
+			HeaderEncoder.EncodePhrase (result, text);
+			return new HeaderFieldBuilder (name, result);
 		}
 
 		/// <summary>
@@ -166,11 +170,16 @@ namespace Novartment.Base.Net.Mime
 
 			Contract.EndContractBlock ();
 
-			var parts = ReadOnlyList.Repeat (type + ";", 1);
+			var result = new ArrayList<string>
+			{
+				type + ";",
+			};
+			if (value != null)
+			{
+				HeaderEncoder.EncodeUnstructured (result, value);
+			}
 
-			return new HeaderFieldBuilder (
-				name,
-				(value == null) ? parts : parts.Concat (HeaderEncoder.EncodeUnstructured (value)));
+			return new HeaderFieldBuilder (name, result);
 		}
 
 		/// <summary>
@@ -194,16 +203,17 @@ namespace Novartment.Base.Net.Mime
 
 			Contract.EndContractBlock ();
 
-			var elements1 = HeaderEncoder.EncodeUnstructured (value1);
+			var result = new ArrayList<string> ();
+			HeaderEncoder.EncodeUnstructured (result, value1);
 			var isValue2Empty = string.IsNullOrEmpty (value2);
 			if (isValue2Empty)
 			{
-				return new HeaderFieldBuilder (name, elements1);
+				return new HeaderFieldBuilder (name, result);
 			}
 
-			var elements2 = HeaderEncoder.EncodeUnstructured (value2);
-			var result = elements1.Select ((item, idx) => (idx != (elements1.Count - 1)) ? item : (item + ";"))
-				.Concat (elements2);
+			result[result.Count - 1] += ';';
+
+			HeaderEncoder.EncodeUnstructured (result, value2);
 
 			return new HeaderFieldBuilder (name, result);
 		}
@@ -224,10 +234,11 @@ namespace Novartment.Base.Net.Mime
 
 			Contract.EndContractBlock ();
 
-			var tokens = HeaderEncoder.EncodeTokens (value);
+			var tokens = new ArrayList<string> ();
+			HeaderEncoder.EncodeTokens (tokens, value);
 			if (tokens.Count > 0)
 			{
-				tokens[tokens.Count - 1] = tokens[tokens.Count - 1] + ';';
+				tokens[tokens.Count - 1] += ';';
 			}
 			else
 			{
@@ -265,10 +276,15 @@ namespace Novartment.Base.Net.Mime
 				throw new ArgumentOutOfRangeException (nameof (id), FormattableString.Invariant ($"Invalid value for type 'atom': \"{id}\"."));
 			}
 
-			var valueParts = ReadOnlyList.Repeat ("<" + id + ">", 1);
-			return new HeaderFieldBuilder (
-				name,
-				(phrase == null) ? valueParts : HeaderEncoder.EncodePhrase (phrase).Concat (valueParts));
+			var valueParts = new ArrayList<string> ();
+			if (phrase != null)
+			{
+				HeaderEncoder.EncodePhrase (valueParts, phrase);
+			}
+
+			valueParts.Add ("<" + id + ">");
+
+			return new HeaderFieldBuilder (name, valueParts);
 		}
 
 		/// <summary>
@@ -277,7 +293,7 @@ namespace Novartment.Base.Net.Mime
 		/// <param name="name">Имя поля заголовка.</param>
 		/// <param name="values">Коллекция 'phrase'.</param>
 		/// <returns>Поле заголовка.</returns>
-		public static HeaderFieldBuilder CreatePhraseList (HeaderFieldName name, IReadOnlyCollection<string> values)
+		public static HeaderFieldBuilder CreatePhraseList (HeaderFieldName name, IReadOnlyList<string> values)
 		{
 			if (name == HeaderFieldName.Unspecified)
 			{
@@ -292,30 +308,13 @@ namespace Novartment.Base.Net.Mime
 			Contract.EndContractBlock ();
 
 			var result = new ArrayList<string> ();
-			string last = null;
-			foreach (var value in values)
+			for (var idx = 0; idx < values.Count; idx++)
 			{
-				if (last != null)
+				HeaderEncoder.EncodePhrase (result, values[idx]);
+				if (idx < (values.Count - 1))
 				{
-					result.Add (last + ",");
+					result[result.Count - 1] += ',';
 				}
-
-				var parts = HeaderEncoder.EncodePhrase (value);
-				last = null;
-				foreach (var part in parts)
-				{
-					if (last != null)
-					{
-						result.Add (last);
-					}
-
-					last = part;
-				}
-			}
-
-			if (last != null)
-			{
-				result.Add (last);
 			}
 
 			return new HeaderFieldBuilder (name, result);
@@ -341,7 +340,9 @@ namespace Novartment.Base.Net.Mime
 
 			Contract.EndContractBlock ();
 
-			return new HeaderFieldBuilder (name, HeaderEncoder.EncodeMailbox (mailbox));
+			var result = new ArrayList<string> ();
+			HeaderEncoder.EncodeMailbox (result, mailbox);
+			return new HeaderFieldBuilder (name, result);
 		}
 
 		/// <summary>
@@ -350,7 +351,7 @@ namespace Novartment.Base.Net.Mime
 		/// <param name="name">Имя поля заголовка.</param>
 		/// <param name="mailboxes">Коллекция Mailbox.</param>
 		/// <returns>Поле заголовка.</returns>
-		public static HeaderFieldBuilder CreateMailboxList (HeaderFieldName name, IReadOnlyCollection<Mailbox> mailboxes)
+		public static HeaderFieldBuilder CreateMailboxList (HeaderFieldName name, IReadOnlyList<Mailbox> mailboxes)
 		{
 			if (name == HeaderFieldName.Unspecified)
 			{
@@ -365,30 +366,13 @@ namespace Novartment.Base.Net.Mime
 			Contract.EndContractBlock ();
 
 			var result = new ArrayList<string> ();
-			string last = null;
-			foreach (var mailbox in mailboxes)
+			for (var idx = 0; idx < mailboxes.Count; idx++)
 			{
-				if (last != null)
+				HeaderEncoder.EncodeMailbox (result, mailboxes[idx]);
+				if (idx < (mailboxes.Count - 1))
 				{
-					result.Add (last + ",");
+					result[result.Count - 1] += ',';
 				}
-
-				var parts = HeaderEncoder.EncodeMailbox (mailbox);
-				last = null;
-				foreach (var part in parts)
-				{
-					if (last != null)
-					{
-						result.Add (last);
-					}
-
-					last = part;
-				}
-			}
-
-			if (last != null)
-			{
-				result.Add (last);
 			}
 
 			return new HeaderFieldBuilder (name, result);
@@ -400,7 +384,7 @@ namespace Novartment.Base.Net.Mime
 		/// <param name="name">Имя поля заголовка.</param>
 		/// <param name="urls">Коллекция url-значений.</param>
 		/// <returns>Поле заголовка.</returns>
-		public static HeaderFieldBuilder CreateAngleBracketedList (HeaderFieldName name, IReadOnlyCollection<string> urls)
+		public static HeaderFieldBuilder CreateAngleBracketedList (HeaderFieldName name, IReadOnlyList<string> urls)
 		{
 			if (name == HeaderFieldName.Unspecified)
 			{
@@ -415,7 +399,20 @@ namespace Novartment.Base.Net.Mime
 			Contract.EndContractBlock ();
 
 			// TODO: добавить валидацию каждого значения в urls
-			return new HeaderFieldBuilder (name, urls.Select (item => "<" + item + ">").AppendSeparator (','));
+			var result = new ArrayList<string> ();
+			for (var idx = 0; idx < urls.Count; idx++)
+			{
+				if (idx < (urls.Count - 1))
+				{
+					result.Add ("<" + urls[idx] + ">,");
+				}
+				else
+				{
+					result.Add ("<" + urls[idx] + ">");
+				}
+			}
+
+			return new HeaderFieldBuilder (name, result);
 		}
 
 		/// <summary>
@@ -517,9 +514,20 @@ namespace Novartment.Base.Net.Mime
 			Contract.EndContractBlock ();
 
 			// TODO: добавить валидацию каждого значения в parameters
-			return new HeaderFieldBuilder (
-				name,
-				parameters.Select (item => item.ToString ()).AppendSeparator (';'));
+			var result = new ArrayList<string> ();
+			for (var idx = 0; idx < parameters.Count; idx++)
+			{
+				if (idx < (parameters.Count - 1))
+				{
+					result.Add (parameters[idx].ToString () + ";");
+				}
+				else
+				{
+					result.Add (parameters[idx].ToString ());
+				}
+			}
+
+			return new HeaderFieldBuilder (name, result);
 		}
 
 		/// <summary>

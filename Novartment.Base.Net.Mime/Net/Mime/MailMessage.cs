@@ -500,7 +500,7 @@ namespace Novartment.Base.Net.Mime
 
 			// If the from field contains more than one mailbox specification in the mailbox-list, then the sender field,
 			// containing the field name "Sender" and a single mailbox specification, MUST appear in the message.
-			if ((this.From.Count > 1) && (Sender == null))
+			if ((this.From.Count > 1) && (this.Sender == null))
 			{
 				throw new InvalidOperationException ("Required property 'Sender' not specified. It is required when multiple authors specified in 'From' property.");
 			}
@@ -713,7 +713,7 @@ namespace Novartment.Base.Net.Mime
 			IAdjustableCollection<HeaderFieldBuilder> header,
 			string subject,
 			string comments,
-			IReadOnlyCollection<string> keywords)
+			IReadOnlyList<string> keywords)
 		{
 			// Subject
 			if (subject != null)
@@ -778,9 +778,9 @@ namespace Novartment.Base.Net.Mime
 			IAdjustableCollection<HeaderFieldBuilder> header,
 			IReadOnlyList<Mailbox> from,
 			Mailbox sender,
-			IReadOnlyCollection<Mailbox> replyTo,
-			IReadOnlyCollection<Mailbox> to,
-			IReadOnlyCollection<Mailbox> cc)
+			IReadOnlyList<Mailbox> replyTo,
+			IReadOnlyList<Mailbox> to,
+			IReadOnlyList<Mailbox> cc)
 		{
 			// From
 			header.Add (HeaderFieldBuilder.CreateMailboxList (HeaderFieldName.From, from));
@@ -815,7 +815,7 @@ namespace Novartment.Base.Net.Mime
 
 		private static void CreateDispositionNotificationFields (
 			IAdjustableCollection<HeaderFieldBuilder> header,
-			IReadOnlyCollection<Mailbox> dispositionNotificationTo,
+			IReadOnlyList<Mailbox> dispositionNotificationTo,
 			IReadOnlyList<DispositionNotificationParameter> dispositionNotificationOptions)
 		{
 			// Disposition-Notification-To

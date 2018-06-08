@@ -9,6 +9,16 @@ namespace Novartment.Base
 	public interface IEstimatingEncoder
 	{
 		/// <summary>
+		/// Получает количество байтов, которые будут вставлены перед данными.
+		/// </summary>
+		int PrologSize { get; }
+
+		/// <summary>
+		/// Получает количество байтов, которые будут вставлены после данных.
+		/// </summary>
+		int EpilogSize { get; }
+
+		/// <summary>
 		/// В указанном массиве байтов ищет ближайшую позицию данных,
 		/// подходящих для кодировщика.
 		/// </summary>

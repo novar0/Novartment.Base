@@ -68,13 +68,13 @@ namespace Novartment.Base.Net.Mime
 			this.FailureInfo.Clear ();
 			this.ErrorInfo.Clear ();
 			this.WarningInfo.Clear ();
-			ReportingUserAgentName = null;
-			ReportingUserAgentProduct = null;
-			Gateway = null;
-			OriginalRecipient = null;
-			FinalRecipient = null;
-			OriginalMessageId = null;
-			Disposition = MessageDispositionChangedAction.Unspecified;
+			this.ReportingUserAgentName = null;
+			this.ReportingUserAgentProduct = null;
+			this.Gateway = null;
+			this.OriginalRecipient = null;
+			this.FinalRecipient = null;
+			this.OriginalMessageId = null;
+			this.Disposition = MessageDispositionChangedAction.Unspecified;
 		}
 
 		/// <summary>

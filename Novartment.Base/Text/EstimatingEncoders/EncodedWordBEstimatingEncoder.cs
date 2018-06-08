@@ -40,12 +40,10 @@ namespace Novartment.Base.Text
 		/// </summary>
 		public int PrologSize => _encoding.WebName.Length + 5;
 
-#pragma warning disable CA1822 // Mark members as static
 		/// <summary>
 		/// Получает количество байтов, которые будут вставлены после данных.
 		/// </summary>
 		public int EpilogSize => 2;
-#pragma warning restore CA1822 // Mark members as static
 
 		/// <summary>
 		/// В указанном массиве байтов ищет ближайшую позицию данных,

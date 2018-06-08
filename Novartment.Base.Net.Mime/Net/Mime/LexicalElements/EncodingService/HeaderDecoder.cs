@@ -229,7 +229,6 @@ namespace Novartment.Base.Net.Mime
 		/// <returns>New NotificationFieldValue, created from specified string representation.</returns>
 		internal static NotificationFieldValue DecodeNotificationFieldValue (ReadOnlySpan<char> source)
 		{
-
 			if (source.Length < 3)
 			{
 				throw new FormatException ("Value does not conform to format 'type;value'.");

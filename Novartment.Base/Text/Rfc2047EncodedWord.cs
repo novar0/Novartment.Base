@@ -56,7 +56,6 @@ namespace Novartment.Base.Text
 			if (idx > 0)
 			{
 				charsetStr = charsetStr.Slice (0, idx);
-				// var lang = charsetStr.Slice (idx + 1);
 			}
 
 			Encoding encoding;
