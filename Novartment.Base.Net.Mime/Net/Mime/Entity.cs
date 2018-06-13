@@ -311,7 +311,7 @@ namespace Novartment.Base.Net.Mime
 			SavePropertiesToHeader (header);
 			foreach (var field in this.ExtraFields)
 			{
-				header.Add (HeaderFieldBuilder.CreateExactValue (field.Name, field.Value));
+				header.Add (HeaderFieldBuilder.CreateExactValue (field.Name, AsciiCharSet.GetString (field.Body.Span)));
 			}
 
 			return SaveAsyncStateMachine ();
@@ -447,7 +447,7 @@ namespace Novartment.Base.Net.Mime
 				throw new FormatException ("More than one '" + HeaderFieldNameHelper.GetName (HeaderFieldName.ContentTransferEncoding) + "' field.");
 			}
 
-			var isValidTransferEncoding = TransferEncodingHelper.TryParse (HeaderDecoder.DecodeAtom (fieldEntry.Field.Value.AsSpan ()), out transferEncoding);
+			var isValidTransferEncoding = TransferEncodingHelper.TryParse (HeaderDecoder.DecodeAtom (fieldEntry.Field.Body.Span), out transferEncoding);
 			if (isValidTransferEncoding)
 			{
 				contentProperties.TransferEncoding = transferEncoding;
@@ -579,7 +579,7 @@ namespace Novartment.Base.Net.Mime
 			*/
 			try
 			{
-				var data = HeaderDecoder.DecodeAtomAndParameterList (fieldEntry.Field.Value.AsSpan ());
+				var data = HeaderDecoder.DecodeAtomAndParameterList (fieldEntry.Field.Body.Span);
 #if NETCOREAPP2_1
 				var idx = data.Text.IndexOf ('/', StringComparison.Ordinal);
 #else
@@ -647,7 +647,7 @@ namespace Novartment.Base.Net.Mime
 			// disposition := "Content-Disposition" ":" disposition-type *(";" disposition-parm)
 			// disposition-type := "inline" / "attachment" / extension-token
 			// disposition-parm := filename-parm / creation-date-parm / modification-date-parm / read-date-parm / size-parm / parameter
-			var data = HeaderDecoder.DecodeAtomAndParameterList (fieldEntry.Field.Value.AsSpan ());
+			var data = HeaderDecoder.DecodeAtomAndParameterList (fieldEntry.Field.Body.Span);
 			var isValidDispositionType = DispositionTypeHelper.TryParse (data.Text, out ContentDispositionType dtype);
 			if (isValidDispositionType)
 			{
@@ -708,7 +708,7 @@ namespace Novartment.Base.Net.Mime
 				throw new FormatException ("More than one '" + HeaderFieldNameHelper.GetName (HeaderFieldName.ContentId) + "' field.");
 			}
 
-			var adrs = HeaderDecoder.DecodeAddrSpecList (fieldEntry.Field.Value.AsSpan ());
+			var adrs = HeaderDecoder.DecodeAddrSpecList (fieldEntry.Field.Body.Span);
 			this.Id = adrs.Single ();
 			fieldEntry.IsMarked = true;
 		}
@@ -720,7 +720,7 @@ namespace Novartment.Base.Net.Mime
 				throw new FormatException ("More than one '" + HeaderFieldNameHelper.GetName (HeaderFieldName.ContentDescription) + "' field.");
 			}
 
-			this.Description = HeaderDecoder.DecodeUnstructured (fieldEntry.Field.Value.AsSpan ()).Trim ();
+			this.Description = HeaderDecoder.DecodeUnstructured (fieldEntry.Field.Body.Span).Trim ();
 			fieldEntry.IsMarked = true;
 		}
 
@@ -731,7 +731,7 @@ namespace Novartment.Base.Net.Mime
 				throw new FormatException ("More than one '" + HeaderFieldNameHelper.GetName (HeaderFieldName.ContentBase) + "' field.");
 			}
 
-			this.Base = fieldEntry.Field.Value.Trim ();
+			this.Base = AsciiCharSet.GetString (fieldEntry.Field.Body.Span).Trim ();
 			fieldEntry.IsMarked = true;
 		}
 
@@ -742,7 +742,7 @@ namespace Novartment.Base.Net.Mime
 				throw new FormatException ("More than one '" + HeaderFieldNameHelper.GetName (HeaderFieldName.ContentLocation) + "' field.");
 			}
 
-			this.Location = fieldEntry.Field.Value.Trim ();
+			this.Location = AsciiCharSet.GetString (fieldEntry.Field.Body.Span).Trim ();
 			fieldEntry.IsMarked = true;
 		}
 
@@ -753,7 +753,7 @@ namespace Novartment.Base.Net.Mime
 				throw new FormatException ("More than one '" + HeaderFieldNameHelper.GetName (HeaderFieldName.ContentFeatures) + "' field.");
 			}
 
-			this.Features = HeaderDecoder.DecodeUnstructured (fieldEntry.Field.Value.AsSpan ()).Trim ();
+			this.Features = HeaderDecoder.DecodeUnstructured (fieldEntry.Field.Body.Span).Trim ();
 			fieldEntry.IsMarked = true;
 		}
 
@@ -765,13 +765,13 @@ namespace Novartment.Base.Net.Mime
 			}
 
 			// Language-List = Language-Tag [CFWS] *("," [CFWS] Language-Tag [CFWS])
-			this.Languages.AddRange (HeaderDecoder.DecodeAtomList (fieldEntry.Field.Value.AsSpan ()));
+			this.Languages.AddRange (HeaderDecoder.DecodeAtomList (fieldEntry.Field.Body.Span));
 			fieldEntry.IsMarked = true;
 		}
 
 		private void ParseContentAlternativeField (HeaderFieldWithMark fieldEntry)
 		{
-			this.Alternatives.Add (HeaderDecoder.DecodeUnstructured (fieldEntry.Field.Value.AsSpan ()).Trim ());
+			this.Alternatives.Add (HeaderDecoder.DecodeUnstructured (fieldEntry.Field.Body.Span).Trim ());
 			fieldEntry.IsMarked = true;
 		}
 
@@ -782,7 +782,7 @@ namespace Novartment.Base.Net.Mime
 				throw new FormatException ("More than one '" + HeaderFieldNameHelper.GetName (HeaderFieldName.ContentMD5) + "' field.");
 			}
 
-			var md5 = Convert.FromBase64String (fieldEntry.Field.Value);
+			var md5 = Convert.FromBase64String (AsciiCharSet.GetString (fieldEntry.Field.Body.Span));
 			if (md5.Length != 16)
 			{
 				throw new FormatException ("Invalid format of '" + HeaderFieldNameHelper.GetName (HeaderFieldName.ContentMD5) + "' field.");
@@ -800,7 +800,7 @@ namespace Novartment.Base.Net.Mime
 			}
 
 			var seconds = int.Parse (
-				fieldEntry.Field.Value.Trim (),
+				AsciiCharSet.GetString (fieldEntry.Field.Body.Span),
 				NumberStyles.AllowLeadingWhite | NumberStyles.AllowTrailingWhite,
 				CultureInfo.InvariantCulture);
 			_duration = new TimeSpan (0, 0, seconds);

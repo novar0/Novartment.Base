@@ -49,7 +49,11 @@ namespace Novartment.Base.Net.Mime
 
 			Contract.EndContractBlock ();
 
+#if NETCOREAPP2_1
 			this.Address = AddrSpec.Parse (address);
+#else
+			this.Address = AddrSpec.Parse (address.AsSpan ());
+#endif
 			this.Name = displayName;
 		}
 
@@ -94,7 +98,18 @@ namespace Novartment.Base.Net.Mime
 		/// </summary>
 		/// <param name="source">Строковое представление почтового ящика.</param>
 		/// <returns>Почтовый ящик, созданный из строкового представления.</returns>
-		public static Mailbox Parse (string source)
+		public static Mailbox Parse (ReadOnlySpan<byte> source)
+		{
+			var elements = StructuredValueElementCollection.Parse (source, AsciiCharClasses.Atom, true, StructuredValueElementType.RoundBracketedValue);
+			return Parse (elements);
+		}
+
+		/// <summary>
+		/// Создаёт почтовый ящик из строкового представления.
+		/// </summary>
+		/// <param name="source">Строковое представление почтового ящика.</param>
+		/// <returns>Почтовый ящик, созданный из строкового представления.</returns>
+		public static Mailbox Parse (ReadOnlySpan<char> source)
 		{
 			if (source == null)
 			{
@@ -103,7 +118,9 @@ namespace Novartment.Base.Net.Mime
 
 			Contract.EndContractBlock ();
 
-			var elements = StructuredValueElementCollection.Parse (source, AsciiCharClasses.Atom, true, StructuredValueElementType.RoundBracketedValue);
+			var buf = new byte[source.Length];
+			AsciiCharSet.GetBytes (source, buf);
+			var elements = StructuredValueElementCollection.Parse (buf, AsciiCharClasses.Atom, true, StructuredValueElementType.RoundBracketedValue);
 			return Parse (elements);
 		}
 
@@ -138,7 +155,7 @@ namespace Novartment.Base.Net.Mime
 					(elements[0].ElementType == StructuredValueElementType.QuotedValue))
 				{
 					// non-standard form of addr-spec: "addrs@server.com"
-					return new Mailbox (AddrSpec.Parse (elements[0].Value), null);
+					return new Mailbox (AddrSpec.Parse (elements[0].Value.Span), null);
 				}
 
 				throw new FormatException ("Value does not conform to format 'mailbox'.");
@@ -146,7 +163,7 @@ namespace Novartment.Base.Net.Mime
 
 			if ((cnt == 3) &&
 				((elements[0].ElementType == StructuredValueElementType.Value) || (elements[0].ElementType == StructuredValueElementType.QuotedValue)) &&
-				elements[1].EqualsSeparator ('@') &&
+				elements[1].EqualsSeparator ((byte)'@') &&
 				((elements[2].ElementType == StructuredValueElementType.Value) || (elements[2].ElementType == StructuredValueElementType.SquareBracketedValue)))
 			{
 				// addr-spec
@@ -163,7 +180,7 @@ namespace Novartment.Base.Net.Mime
 
 			// [display-name] angle-addr
 			var displayName = elements.Decode (elements.Count - 1);
-			var addr2 = AddrSpec.Parse (elements[cnt - 1].Value);
+			var addr2 = AddrSpec.Parse (elements[cnt - 1].Value.Span);
 			return new Mailbox (addr2, displayName);
 		}
 

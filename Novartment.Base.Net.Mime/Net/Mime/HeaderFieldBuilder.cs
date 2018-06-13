@@ -577,7 +577,8 @@ namespace Novartment.Base.Net.Mime
 
 			// формируем склеенную из частей строку вставляя где надо переводы строки и пробелы
 			var lineLen = HeaderFieldNameHelper.GetName (_name).Length + 1; // имя плюс двоеточие
-			var result = new StringBuilder ();
+			var result = new byte[HeaderDecoder.MaximumHeaderFieldBodySize];
+			var outPos = 0;
 			foreach (var part in parts)
 			{
 				var partLength = part?.Length ?? 0;
@@ -593,14 +594,15 @@ namespace Novartment.Base.Net.Mime
 					if (lineLen > maxLineLength)
 					{
 						lineLen = partLength + 1; // плюс пробел
-						result.Append ("\r\n");
+						result[outPos++] = (byte)'\r';
+						result[outPos++] = (byte)'\n';
 					}
 
 					if (needWhiteSpace)
 					{
-						if (result.Length > 0)
+						if (outPos > 0)
 						{
-							result.Append (' ');
+							result[outPos++] = (byte)' ';
 						}
 						else
 						{
@@ -608,16 +610,21 @@ namespace Novartment.Base.Net.Mime
 						}
 					}
 
-					result.Append (part);
+#if NETCOREAPP2_1
+					AsciiCharSet.GetBytes (part, result.AsSpan (outPos));
+#else
+					AsciiCharSet.GetBytes (part.AsSpan (), result.AsSpan (outPos));
+#endif
+					outPos += part.Length;
 				}
 			}
 
-			if (result.Length > HeaderEncoder.MaxOneFieldSize)
+			if (outPos > HeaderEncoder.MaxOneFieldSize)
 			{
-				throw new NotSupportedException (FormattableString.Invariant ($"Header field value too big ({result.Length} bytes). Supported maximum is {HeaderEncoder.MaxOneFieldSize}."));
+				throw new NotSupportedException (FormattableString.Invariant ($"Header field value too big ({outPos} bytes). Supported maximum is {HeaderEncoder.MaxOneFieldSize}."));
 			}
 
-			return new HeaderField (_name, result.ToString ());
+			return new HeaderField (_name, result.AsSpan (0, outPos));
 		}
 	}
 }

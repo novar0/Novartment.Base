@@ -73,13 +73,13 @@ namespace Novartment.Base.Net.Mime
 				throw new FormatException ("Invalid format of header field parameter.");
 			}
 
-			var parameterName = tokens[0].Value;
+			var parameterName = AsciiCharSet.GetString (tokens[0].Value.Span);
 			var section = 0;
 			string encoding = null;
 			var isExtendedValue = false;
 
 			int idx = 1;
-			var isSeparator = tokens[idx].EqualsSeparator ('*');
+			var isSeparator = tokens[idx].EqualsSeparator ((byte)'*');
 			if (isSeparator)
 			{
 				idx++;
@@ -89,7 +89,7 @@ namespace Novartment.Base.Net.Mime
 				}
 
 				section = int.Parse (
-					tokens[idx].Value,
+					AsciiCharSet.GetString (tokens[idx].Value.Span),
 					NumberStyles.AllowLeadingWhite | NumberStyles.AllowTrailingWhite,
 					CultureInfo.InvariantCulture);
 				idx++;
@@ -99,7 +99,7 @@ namespace Novartment.Base.Net.Mime
 				}
 			}
 
-			isSeparator = tokens[idx].EqualsSeparator ('*');
+			isSeparator = tokens[idx].EqualsSeparator ((byte)'*');
 			if (isSeparator)
 			{
 				isExtendedValue = true;
@@ -107,7 +107,7 @@ namespace Novartment.Base.Net.Mime
 			}
 			else
 			{
-				var isEqualitySign = tokens[idx].EqualsSeparator ('=');
+				var isEqualitySign = tokens[idx].EqualsSeparator ((byte)'=');
 				if (!isEqualitySign)
 				{
 					throw new FormatException ("Invalid format of header field parameter.");
@@ -121,11 +121,11 @@ namespace Novartment.Base.Net.Mime
 				string language = null;
 				if (tokens[idx].ElementType == StructuredValueElementType.Value)
 				{ // charset
-					encoding = tokens[idx].Value;
+					encoding = AsciiCharSet.GetString (tokens[idx].Value.Span);
 					idx++;
 				}
 
-				if (!tokens[idx].EqualsSeparator ('\''))
+				if (!tokens[idx].EqualsSeparator ((byte)'\''))
 				{
 					throw new FormatException ("Invalid format of header field parameter.");
 				}
@@ -133,11 +133,11 @@ namespace Novartment.Base.Net.Mime
 				idx++;
 				if (tokens[idx].ElementType == StructuredValueElementType.Value)
 				{ // language
-					language = tokens[idx].Value;
+					language = AsciiCharSet.GetString (tokens[idx].Value.Span);
 					idx++;
 				}
 
-				if (!tokens[idx].EqualsSeparator ('\''))
+				if (!tokens[idx].EqualsSeparator ((byte)'\''))
 				{
 					throw new FormatException ("Invalid format of header field parameter.");
 				}
@@ -148,7 +148,7 @@ namespace Novartment.Base.Net.Mime
 					throw new FormatException ("Invalid format of header field parameter.");
 				}
 
-				return new HeaderFieldParameterPart (parameterName, tokens[idx].Value, encoding, language);
+				return new HeaderFieldParameterPart (parameterName, AsciiCharSet.GetString (tokens[idx].Value.Span), encoding, language);
 			}
 
 			if (isExtendedValue)
@@ -158,7 +158,7 @@ namespace Novartment.Base.Net.Mime
 					throw new FormatException ("Invalid format of header field parameter.");
 				}
 
-				return new HeaderFieldParameterPart (parameterName, tokens[idx].Value, section, true);
+				return new HeaderFieldParameterPart (parameterName, AsciiCharSet.GetString (tokens[idx].Value.Span), section, true);
 			}
 
 			if ((tokens[idx].ElementType != StructuredValueElementType.Value) && (tokens[idx].ElementType != StructuredValueElementType.QuotedValue))

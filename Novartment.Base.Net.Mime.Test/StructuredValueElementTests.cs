@@ -1,4 +1,5 @@
-﻿using Novartment.Base.Text;
+﻿using System.Text;
+using Novartment.Base.Text;
 using Xunit;
 
 namespace Novartment.Base.Net.Mime.Test
@@ -11,28 +12,28 @@ namespace Novartment.Base.Net.Mime.Test
 		{
 			Assert.Equal (
 				"=?aa?bb?cc?",
-				new StructuredValueElement (StructuredValueElementType.Value, "=?aa?bb?cc?").Decode ());
+				new StructuredValueElement (StructuredValueElementType.Value, Encoding.ASCII.GetBytes ("=?aa?bb?cc?")).Decode ());
 			Assert.Equal (
 				";",
-				new StructuredValueElement (';').Decode ());
+				new StructuredValueElement ((byte)';').Decode ());
 			Assert.Equal (
 				"=?aa?bb?cc?",
-				new StructuredValueElement (StructuredValueElementType.QuotedValue, "=?aa?bb?cc?").Decode ());
+				new StructuredValueElement (StructuredValueElementType.QuotedValue, Encoding.ASCII.GetBytes ("=?aa?bb?cc?")).Decode ());
 			Assert.Equal (
 				"=?aa?bb?cc?",
-				new StructuredValueElement (StructuredValueElementType.SquareBracketedValue, "=?aa?bb?cc?").Decode ());
+				new StructuredValueElement (StructuredValueElementType.SquareBracketedValue, Encoding.ASCII.GetBytes ("=?aa?bb?cc?")).Decode ());
 			Assert.Equal (
 				"some   \"one\"",
-				new StructuredValueElement (StructuredValueElementType.SquareBracketedValue, "some   \\\"one\\\"").Decode ());
+				new StructuredValueElement (StructuredValueElementType.SquareBracketedValue, Encoding.ASCII.GetBytes ("some   \\\"one\\\"")).Decode ());
 			Assert.Equal (
 				"some   \"one\"",
-				new StructuredValueElement (StructuredValueElementType.QuotedValue, "some   \\\"one\\\"").Decode ());
+				new StructuredValueElement (StructuredValueElementType.QuotedValue, Encoding.ASCII.GetBytes ("some   \\\"one\\\"")).Decode ());
 			Assert.Equal (
 				"тема сообщения текст сообщения",
-				new StructuredValueElement (StructuredValueElementType.Value, "=?utf-8*ru-ru?B?0YLQtdC80LAg0YHQvtC+0LHRidC10L3QuNGPINGC0LXQutGB0YIg0YHQvtC+0LHRidC10L3QuNGP?=").Decode ());
+				new StructuredValueElement (StructuredValueElementType.Value, Encoding.ASCII.GetBytes ("=?utf-8*ru-ru?B?0YLQtdC80LAg0YHQvtC+0LHRidC10L3QuNGPINGC0LXQutGB0YIg0YHQvtC+0LHRidC10L3QuNGP?=")).Decode ());
 			Assert.Equal (
 				"тема сообщения текст сообщения",
-				new StructuredValueElement (StructuredValueElementType.QuotedValue, "=?utf-8*ru-ru?B?0YLQtdC80LAg0YHQvtC+0LHRidC10L3QuNGPINGC0LXQutGB0YIg0YHQvtC+0LHRidC10L3QuNGP?=").Decode ());
+				new StructuredValueElement (StructuredValueElementType.QuotedValue, Encoding.ASCII.GetBytes ("=?utf-8*ru-ru?B?0YLQtdC80LAg0YHQvtC+0LHRidC10L3QuNGPINGC0LXQutGB0YIg0YHQvtC+0LHRidC10L3QuNGP?=")).Decode ());
 		}
 
 		[Fact]
@@ -40,29 +41,29 @@ namespace Novartment.Base.Net.Mime.Test
 		public void Parse_Collection ()
 		{
 			var elements = StructuredValueElementCollection.Parse (
-				"abc,de;fgh \"ijkl\" (mnop)   <rst>\t[uvw]",
+				Encoding.ASCII.GetBytes ("abc,de;fgh \"ijkl\" (mnop)   <rst>\t[uvw]"),
 				AsciiCharClasses.Atom,
 				false,
 				StructuredValueElementType.Unspecified);
 			Assert.Equal (9, elements.Count);
 			Assert.Equal (StructuredValueElementType.Value, elements[0].ElementType);
-			Assert.Equal ("abc", elements[0].Value);
+			Assert.Equal ("abc", Encoding.ASCII.GetString (elements[0].Value.Span));
 			Assert.Equal (StructuredValueElementType.Separator, elements[1].ElementType);
-			Assert.Equal (",", elements[1].Value);
+			Assert.Equal (",", Encoding.ASCII.GetString (elements[1].Value.Span));
 			Assert.Equal (StructuredValueElementType.Value, elements[2].ElementType);
-			Assert.Equal ("de", elements[2].Value);
+			Assert.Equal ("de", Encoding.ASCII.GetString (elements[2].Value.Span));
 			Assert.Equal (StructuredValueElementType.Separator, elements[3].ElementType);
-			Assert.Equal (";", elements[3].Value);
+			Assert.Equal (";", Encoding.ASCII.GetString (elements[3].Value.Span));
 			Assert.Equal (StructuredValueElementType.Value, elements[4].ElementType);
-			Assert.Equal ("fgh", elements[4].Value);
+			Assert.Equal ("fgh", Encoding.ASCII.GetString (elements[4].Value.Span));
 			Assert.Equal (StructuredValueElementType.QuotedValue, elements[5].ElementType);
-			Assert.Equal ("ijkl", elements[5].Value);
+			Assert.Equal ("ijkl", Encoding.ASCII.GetString (elements[5].Value.Span));
 			Assert.Equal (StructuredValueElementType.RoundBracketedValue, elements[6].ElementType);
-			Assert.Equal ("mnop", elements[6].Value);
+			Assert.Equal ("mnop", Encoding.ASCII.GetString (elements[6].Value.Span));
 			Assert.Equal (StructuredValueElementType.AngleBracketedValue, elements[7].ElementType);
-			Assert.Equal ("rst", elements[7].Value);
+			Assert.Equal ("rst", Encoding.ASCII.GetString (elements[7].Value.Span));
 			Assert.Equal (StructuredValueElementType.SquareBracketedValue, elements[8].ElementType);
-			Assert.Equal ("uvw", elements[8].Value);
+			Assert.Equal ("uvw", Encoding.ASCII.GetString (elements[8].Value.Span));
 		}
 
 		[Fact]
@@ -71,12 +72,12 @@ namespace Novartment.Base.Net.Mime.Test
 		{
 			var elements = new StructuredValueElement[]
 			{
-				new StructuredValueElement (StructuredValueElementType.Value, "abc"),
-				new StructuredValueElement (','),
-				new StructuredValueElement (StructuredValueElementType.Value, "=?utf-8?B?INGD0YHQuNC70LXQvdC90YvRhQ==?="),
-				new StructuredValueElement (StructuredValueElementType.Value, "=?us-ascii?q?some_text?="),
-				new StructuredValueElement (';'),
-				new StructuredValueElement (StructuredValueElementType.QuotedValue, "i\\\\jkl"),
+				new StructuredValueElement (StructuredValueElementType.Value, Encoding.ASCII.GetBytes ("abc")),
+				new StructuredValueElement ((byte)','),
+				new StructuredValueElement (StructuredValueElementType.Value, Encoding.ASCII.GetBytes ("=?utf-8?B?INGD0YHQuNC70LXQvdC90YvRhQ==?=")),
+				new StructuredValueElement (StructuredValueElementType.Value, Encoding.ASCII.GetBytes ("=?us-ascii?q?some_text?=")),
+				new StructuredValueElement ((byte)';'),
+				new StructuredValueElement (StructuredValueElementType.QuotedValue, Encoding.ASCII.GetBytes ("i\\\\jkl")),
 			};
 			var result = StructuredValueElementCollection.Decode (elements, elements.Length);
 			Assert.Equal ("abc ,  усиленныхsome text ; i\\jkl", result);

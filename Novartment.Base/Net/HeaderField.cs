@@ -7,15 +7,14 @@ namespace Novartment.Base.Net
 	/// Поле заголовка.
 	/// </summary>
 	public class HeaderField :
-		IValueHolder<string>,
 		IEquatable<HeaderField>
 	{
 		/// <summary>
 		/// Инициализирует новый экземпляр класса HeaderField с указанным именем и значением.
 		/// </summary>
 		/// <param name="name">Имя поля заголовка.</param>
-		/// <param name="value">Значение поля заголовка.</param>
-		public HeaderField (HeaderFieldName name, string value)
+		/// <param name="body">Тело поля заголовка в кодированном виде, используемом для передачи по сетевым протоколам.</param>
+		public HeaderField (HeaderFieldName name, ReadOnlySpan<byte> body)
 		{
 			if (name == HeaderFieldName.Unspecified)
 			{
@@ -25,7 +24,9 @@ namespace Novartment.Base.Net
 			Contract.EndContractBlock ();
 
 			this.Name = name;
-			this.Value = value;
+			var buf = new byte[body.Length];
+			body.CopyTo (buf);
+			this.Body = buf;
 		}
 
 		/// <summary>
@@ -34,9 +35,10 @@ namespace Novartment.Base.Net
 		public HeaderFieldName Name { get; }
 
 		/// <summary>
-		/// Получает значение поля заголовка.
+		/// Получает тело поля заголовка.
+		/// Тело представлено в кодированном виде, готовом для передачи по сетевым протоколам.
 		/// </summary>
-		public string Value { get; }
+		public Memory<byte> Body { get; }
 
 		/// <summary>
 		/// Определяет равенство двух указанных объектов.
@@ -70,7 +72,7 @@ namespace Novartment.Base.Net
 		/// <returns>Строковое представление значения объекта.</returns>
 		public override string ToString ()
 		{
-			return (this.Value != null) ? (this.Name + ": " + this.Value) : this.Name + ":";
+			return (this.Body.Length > 0) ? $"{this.Name}: {this.Body}" : $"{this.Name}:";
 		}
 
 		/// <summary>
@@ -79,18 +81,14 @@ namespace Novartment.Base.Net
 		/// <returns>Хэш-код для текущего объекта.</returns>
 		public override int GetHashCode ()
 		{
-#if NETCOREAPP2_1
-			return this.Name.GetHashCode () ^ this.Value.GetHashCode (StringComparison.Ordinal);
-#else
-			return this.Name.GetHashCode () ^ this.Value.GetHashCode ();
-#endif
+			return this.Name.GetHashCode () ^ this.Body.GetHashCode ();
 		}
 
 		/// <summary>
 		/// Определяет, равен ли заданный объект текущему объекту.
 		/// </summary>
 		/// <param name="obj">Объект, который требуется сравнить с текущим объектом. </param>
-		/// <returns>True , если указанный объект равен текущему объекту; в противном случае — False.</returns>
+		/// <returns>True, если указанный объект равен текущему объекту; в противном случае — False.</returns>
 		public override bool Equals (object obj)
 		{
 			var typedOther = obj as HeaderField;
@@ -101,7 +99,7 @@ namespace Novartment.Base.Net
 		/// Определяет, равен ли заданный объект текущему объекту.
 		/// </summary>
 		/// <param name="other">Объект, который требуется сравнить с текущим объектом. </param>
-		/// <returns>True , если указанный объект равен текущему объекту; в противном случае — False.</returns>
+		/// <returns>True, если указанный объект равен текущему объекту; в противном случае — False.</returns>
 		public bool Equals (HeaderField other)
 		{
 			if (other == null)
@@ -109,9 +107,7 @@ namespace Novartment.Base.Net
 				return false;
 			}
 
-			return
-				(this.Name == other.Name) &&
-				string.Equals (this.Value, other.Value, StringComparison.Ordinal);
+			return (this.Name == other.Name) && this.Body.Equals (other.Body);
 		}
 	}
 }

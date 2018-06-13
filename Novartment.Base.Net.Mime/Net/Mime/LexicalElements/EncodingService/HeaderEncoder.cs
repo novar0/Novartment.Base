@@ -2,14 +2,10 @@
 using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
-using System.Globalization;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Novartment.Base.BinaryStreaming;
 using Novartment.Base.Collections;
-using Novartment.Base.Collections.Immutable;
-using Novartment.Base.Collections.Linq;
 using Novartment.Base.Text;
 
 namespace Novartment.Base.Net.Mime
@@ -268,16 +264,16 @@ namespace Novartment.Base.Net.Mime
 					var size = name.Length;
 					AsciiCharSet.GetBytes (name.AsSpan (), bytes);
 					bytes[size++] = (byte)':';
-					var isEmpty = string.IsNullOrEmpty (field.Value);
+					var isEmpty = field.Body.Length < 1;
 					if (!isEmpty)
 					{
-						if ((field.Value[0] != ' ') && (field.Value[0] != '\t') && ((field.Value[0] != '\r') || (field.Value.Length < 2) || (field.Value[1] != '\n')))
+						if ((field.Body.Span[0] != ' ') && (field.Body.Span[0] != '\t') && ((field.Body.Span[0] != '\r') || (field.Body.Length < 2) || (field.Body.Span[1] != '\n')))
 						{
 							bytes[size++] = (byte)' ';
 						}
 
-						AsciiCharSet.GetBytes (field.Value.AsSpan (), bytes.AsSpan (size));
-						size += field.Value.Length;
+						field.Body.CopyTo (new Memory<byte> (bytes, size, bytes.Length - size));
+						size += field.Body.Length;
 					}
 
 					bytes[size++] = (byte)'\r';

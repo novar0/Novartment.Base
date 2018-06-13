@@ -11,25 +11,6 @@ namespace Novartment.Base.Test
 
 		[Fact]
 		[Trait ("Category", "Text.CodePointReader")]
-		public void EnsureDelimitedElement ()
-		{
-			var delimiter1 = DelimitedElement.CreateBracketed ((int)'(', (int)'}', false);
-			var delimiter2 = DelimitedElement.CreatePrefixedFixedLength ((int)'=', 20);
-			var delimiter3 = DelimitedElement.CreatePrefixedFixedLength ((int)'{', 20);
-			var delimiter4 = DelimitedElement.CreateBracketed ((int)'{', (int)'}', false);
-
-			Assert.Throws<FormatException> (() => UnicodeCodePointReader.EnsureDelimitedElement (default (ReadOnlySpan<char>), delimiter1));
-			Assert.Throws<FormatException> (() => UnicodeCodePointReader.EnsureDelimitedElement (_template.AsSpan ().Slice (7), delimiter1));
-			Assert.Throws<FormatException> (() => UnicodeCodePointReader.EnsureDelimitedElement (_template.AsSpan ().Slice (7), delimiter2));
-			Assert.Throws<FormatException> (() => UnicodeCodePointReader.EnsureDelimitedElement (_template.AsSpan ().Slice (7), delimiter3));
-			var result = UnicodeCodePointReader.EnsureDelimitedElement (_template.AsSpan ().Slice (7), delimiter4);
-			Assert.Equal ("{0🔨жби🔑}", new string (result));
-
-			// TODO: тестировать более сложные DelimitedElement
-		}
-
-		[Fact]
-		[Trait ("Category", "Text.CodePointReader")]
 		public void EnsureCodePoint ()
 		{
 			Assert.Throws<FormatException> (() => UnicodeCodePointReader.EnsureCodePoint (default (ReadOnlySpan<char>), (int)'='));

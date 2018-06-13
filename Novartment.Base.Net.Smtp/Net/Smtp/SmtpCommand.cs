@@ -249,7 +249,11 @@ namespace Novartment.Base.Net.Smtp
 				// адрес не пустой
 				try
 				{
+#if NETCOREAPP2_1
 					returnPath = AddrSpec.Parse (chunkEnumerator.GetStringInBrackets ());
+#else
+					returnPath = AddrSpec.Parse (chunkEnumerator.GetStringInBrackets ().AsSpan ());
+#endif
 				}
 				catch (FormatException excpt)
 				{
@@ -314,7 +318,7 @@ namespace Novartment.Base.Net.Smtp
 						{
 							try
 							{
-								associatedMailbox = AddrSpec.Parse (parameterValue.Substring (1, parameterValue.Length - 2));
+								associatedMailbox = AddrSpec.Parse (parameterValue.AsSpan (1, parameterValue.Length - 2));
 							}
 							catch (FormatException)
 							{
@@ -344,7 +348,11 @@ namespace Novartment.Base.Net.Smtp
 			var recipient = chunkEnumerator.GetStringInBrackets ();
 			try
 			{
+#if NETCOREAPP2_1
 				recepient = AddrSpec.Parse (recipient);
+#else
+				recepient = AddrSpec.Parse (recipient.AsSpan ());
+#endif
 			}
 			catch (FormatException excpt)
 			{

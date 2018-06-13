@@ -194,7 +194,7 @@ namespace Novartment.Base.Net.Mime
 							throw new FormatException ("More than one '" + HeaderFieldNameHelper.GetName (HeaderFieldName.OriginalRecipient) + "' field.");
 						}
 
-						originalRecipient = HeaderDecoder.DecodeNotificationFieldValue (field.Value.AsSpan ());
+						originalRecipient = HeaderDecoder.DecodeNotificationFieldValue (field.Body.Span);
 						break;
 					case HeaderFieldName.FinalRecipient:
 						if (finalRecipient != null)
@@ -202,7 +202,7 @@ namespace Novartment.Base.Net.Mime
 							throw new FormatException ("More than one '" + HeaderFieldNameHelper.GetName (HeaderFieldName.FinalRecipient) + "' field.");
 						}
 
-						finalRecipient = HeaderDecoder.DecodeNotificationFieldValue (field.Value.AsSpan ());
+						finalRecipient = HeaderDecoder.DecodeNotificationFieldValue (field.Body.Span);
 						break;
 					case HeaderFieldName.Action:
 						if (action != DeliveryAttemptResult.Unspecified)
@@ -210,7 +210,7 @@ namespace Novartment.Base.Net.Mime
 							throw new FormatException ("More than one '" + HeaderFieldNameHelper.GetName (HeaderFieldName.Action) + "' field.");
 						}
 
-						var actionStr = field.Value.Trim ();
+						var actionStr = AsciiCharSet.GetString (field.Body.Span).Trim ();
 						var isValidAction = DeliveryStatusActionHelper.TryParse (actionStr, out action);
 						if (!isValidAction)
 						{
@@ -224,7 +224,7 @@ namespace Novartment.Base.Net.Mime
 							throw new FormatException ("More than one '" + HeaderFieldNameHelper.GetName (HeaderFieldName.Status) + "' field.");
 						}
 
-						status = field.Value.Trim ();
+						status = AsciiCharSet.GetString (field.Body.Span).Trim ();
 						break;
 					case HeaderFieldName.RemoteMailTransferAgent:
 						if (remoteMta != null)
@@ -232,7 +232,7 @@ namespace Novartment.Base.Net.Mime
 							throw new FormatException ("More than one '" + HeaderFieldNameHelper.GetName (HeaderFieldName.RemoteMailTransferAgent) + "' field.");
 						}
 
-						remoteMta = HeaderDecoder.DecodeNotificationFieldValue (field.Value.AsSpan ());
+						remoteMta = HeaderDecoder.DecodeNotificationFieldValue (field.Body.Span);
 						break;
 					case HeaderFieldName.DiagnosticCode:
 						if (diagnosticCode != null)
@@ -240,7 +240,7 @@ namespace Novartment.Base.Net.Mime
 							throw new FormatException ("More than one '" + HeaderFieldNameHelper.GetName (HeaderFieldName.DiagnosticCode) + "' field.");
 						}
 
-						diagnosticCode = HeaderDecoder.DecodeNotificationFieldValue (field.Value.AsSpan ());
+						diagnosticCode = HeaderDecoder.DecodeNotificationFieldValue (field.Body.Span);
 						break;
 					case HeaderFieldName.LastAttemptDate:
 						if (lastAttemptDate.HasValue)
@@ -248,7 +248,7 @@ namespace Novartment.Base.Net.Mime
 							throw new FormatException ("More than one '" + HeaderFieldNameHelper.GetName (HeaderFieldName.LastAttemptDate) + "' field.");
 						}
 
-						lastAttemptDate = InternetDateTime.Parse (field.Value);
+						lastAttemptDate = InternetDateTime.Parse (AsciiCharSet.GetString (field.Body.Span));
 						break;
 					case HeaderFieldName.FinalLogId:
 						if (finalLogId != null)
@@ -256,7 +256,7 @@ namespace Novartment.Base.Net.Mime
 							throw new FormatException ("More than one '" + HeaderFieldNameHelper.GetName (HeaderFieldName.FinalLogId) + "' field.");
 						}
 
-						finalLogId = HeaderDecoder.DecodeUnstructured (field.Value.AsSpan ()).Trim ();
+						finalLogId = HeaderDecoder.DecodeUnstructured (field.Body.Span).Trim ();
 						break;
 					case HeaderFieldName.WillRetryUntil:
 						if (willRetryUntil.HasValue)
@@ -264,7 +264,7 @@ namespace Novartment.Base.Net.Mime
 							throw new FormatException ("More than one '" + HeaderFieldNameHelper.GetName (HeaderFieldName.WillRetryUntil) + "' field.");
 						}
 
-						willRetryUntil = InternetDateTime.Parse (field.Value);
+						willRetryUntil = InternetDateTime.Parse (AsciiCharSet.GetString (field.Body.Span));
 						break;
 				}
 			}
@@ -411,7 +411,7 @@ namespace Novartment.Base.Net.Mime
 							throw new FormatException ("More than one '" + HeaderFieldNameHelper.GetName (HeaderFieldName.OriginalEnvelopeId) + "' field.");
 						}
 
-						originalEnvelopeId = HeaderDecoder.DecodeUnstructured (field.Value.AsSpan ()).Trim ();
+						originalEnvelopeId = HeaderDecoder.DecodeUnstructured (field.Body.Span).Trim ();
 						break;
 					case HeaderFieldName.MailTransferAgent:
 						if (reportingMailTransferAgent != null)
@@ -421,7 +421,7 @@ namespace Novartment.Base.Net.Mime
 
 						// reporting-mta-field = "Reporting-MTA" ":" mta-name-type ";" mta-name
 						// mta-name = *text
-						reportingMailTransferAgent = HeaderDecoder.DecodeNotificationFieldValue (field.Value.AsSpan ());
+						reportingMailTransferAgent = HeaderDecoder.DecodeNotificationFieldValue (field.Body.Span);
 						break;
 					case HeaderFieldName.DsnGateway:
 						if (gateway != null)
@@ -429,7 +429,7 @@ namespace Novartment.Base.Net.Mime
 							throw new FormatException ("More than one '" + HeaderFieldNameHelper.GetName (HeaderFieldName.DsnGateway) + "' field.");
 						}
 
-						gateway = HeaderDecoder.DecodeNotificationFieldValue (field.Value.AsSpan ());
+						gateway = HeaderDecoder.DecodeNotificationFieldValue (field.Body.Span);
 						break;
 					case HeaderFieldName.ReceivedFromMailTransferAgent:
 						if (receivedFromMailTransferAgent != null)
@@ -437,7 +437,7 @@ namespace Novartment.Base.Net.Mime
 							throw new FormatException ("More than one '" + HeaderFieldNameHelper.GetName (HeaderFieldName.ReceivedFromMailTransferAgent) + "' field.");
 						}
 
-						receivedFromMailTransferAgent = HeaderDecoder.DecodeNotificationFieldValue (field.Value.AsSpan ());
+						receivedFromMailTransferAgent = HeaderDecoder.DecodeNotificationFieldValue (field.Body.Span);
 						break;
 					case HeaderFieldName.ArrivalDate:
 						if (arrivalDate.HasValue)
@@ -446,7 +446,7 @@ namespace Novartment.Base.Net.Mime
 						}
 
 						// arrival-date-field = "Arrival-Date" ":" date-time
-						arrivalDate = InternetDateTime.Parse (field.Value);
+						arrivalDate = InternetDateTime.Parse (AsciiCharSet.GetString (field.Body.Span));
 						break;
 				}
 			}

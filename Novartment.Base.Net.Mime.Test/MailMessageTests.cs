@@ -95,13 +95,13 @@ namespace Novartment.Base.Net.Mime.Test
 			Assert.Equal (3, msg.ExtraFields.Count);
 			var extField = (ExtensionHeaderField)msg.ExtraFields[0];
 			Assert.Equal ("Content-Quality", extField.ExtensionName);
-			Assert.Equal ("0.3 (poor)", msg.ExtraFields[0].Value);
+			Assert.Equal ("0.3 (poor)", Encoding.ASCII.GetString (msg.ExtraFields[0].Body.Span));
 			extField = (ExtensionHeaderField)msg.ExtraFields[1];
 			Assert.Equal ("X-Priority", extField.ExtensionName);
-			Assert.Equal ("3", msg.ExtraFields[1].Value);
+			Assert.Equal ("3", Encoding.ASCII.GetString (msg.ExtraFields[1].Body.Span));
 			extField = (ExtensionHeaderField)msg.ExtraFields[2];
 			Assert.Equal ("X-MimeOLE", extField.ExtensionName);
-			Assert.Equal ("Produced By Microsoft MimeOLE V6.00.3790.4913", msg.ExtraFields[2].Value);
+			Assert.Equal ("Produced By Microsoft MimeOLE V6.00.3790.4913", Encoding.ASCII.GetString (msg.ExtraFields[2].Body.Span));
 
 			// to
 			Assert.Equal (1, msg.RecipientTo.Count);
@@ -219,16 +219,16 @@ namespace Novartment.Base.Net.Mime.Test
 			Assert.Equal (4, msg.ExtraFields.Count);
 			var extField = (ExtensionHeaderField)msg.ExtraFields[0];
 			Assert.Equal ("X-Priority", extField.ExtensionName);
-			Assert.Equal ("3", msg.ExtraFields[0].Value);
+			Assert.Equal ("3", Encoding.ASCII.GetString (msg.ExtraFields[0].Body.Span));
 			extField = (ExtensionHeaderField)msg.ExtraFields[1];
 			Assert.Equal ("X-MSMail-Priority", extField.ExtensionName);
-			Assert.Equal ("Normal", msg.ExtraFields[1].Value);
+			Assert.Equal ("Normal", Encoding.ASCII.GetString (msg.ExtraFields[1].Body.Span));
 			extField = (ExtensionHeaderField)msg.ExtraFields[2];
 			Assert.Equal ("X-Unsent", extField.ExtensionName);
-			Assert.Equal ("1", msg.ExtraFields[2].Value);
+			Assert.Equal ("1", Encoding.ASCII.GetString (msg.ExtraFields[2].Body.Span));
 			extField = (ExtensionHeaderField)msg.ExtraFields[3];
 			Assert.Equal ("X-MimeOLE", extField.ExtensionName);
-			Assert.Equal ("Produced By Microsoft MimeOLE V6.00.3790.4913", msg.ExtraFields[3].Value);
+			Assert.Equal ("Produced By Microsoft MimeOLE V6.00.3790.4913", Encoding.ASCII.GetString (msg.ExtraFields[3].Body.Span));
 
 			// body
 			Assert.IsType<TextEntityBody> (msg.Body);
@@ -265,22 +265,22 @@ namespace Novartment.Base.Net.Mime.Test
 			Assert.Equal (5, msg.ExtraFields.Count);
 			var extField = (ExtensionHeaderField)msg.ExtraFields[0];
 			Assert.Equal ("X-Priority", extField.ExtensionName);
-			Assert.Equal ("3 (Normal)", msg.ExtraFields[0].Value);
+			Assert.Equal ("3 (Normal)", Encoding.ASCII.GetString (msg.ExtraFields[0].Body.Span));
 			extField = (ExtensionHeaderField)msg.ExtraFields[1];
 			Assert.Equal ("X-MSMail-Priority", extField.ExtensionName);
-			Assert.Equal ("Normal", msg.ExtraFields[1].Value);
+			Assert.Equal ("Normal", Encoding.ASCII.GetString (msg.ExtraFields[1].Body.Span));
 			extField = (ExtensionHeaderField)msg.ExtraFields[2];
 			Assert.Equal ("X-Mailer", extField.ExtensionName);
-			Assert.Equal ("Microsoft Outlook Express 5.00.2615.200", msg.ExtraFields[2].Value);
+			Assert.Equal ("Microsoft Outlook Express 5.00.2615.200", Encoding.ASCII.GetString (msg.ExtraFields[2].Body.Span));
 			extField = (ExtensionHeaderField)msg.ExtraFields[3];
 			Assert.Equal ("X-MIMETrack", extField.ExtensionName);
 			Assert.Equal (
 				"Itemize by SMTP Server on ChelMKMail2/SRV/MechelSG(Release 8.5.2FP4|November 17, 2011) at 15.05.2012 07:49:28,\t" +
 				"Serialize by Router on ChelMKGate1/SRV/MechelSG(Release 8.5.2FP4|November 17, 2011) at 15.05.2012 07:49:27",
-				msg.ExtraFields[3].Value);
+				Encoding.ASCII.GetString (msg.ExtraFields[3].Body.Span));
 			extField = (ExtensionHeaderField)msg.ExtraFields[4];
 			Assert.Equal ("X-OriginalArrivalTime", extField.ExtensionName);
-			Assert.Equal ("15 May 2012 01:49:27.0976 (UTC) FILETIME=[F6915A80:01CD323C]", msg.ExtraFields[4].Value);
+			Assert.Equal ("15 May 2012 01:49:27.0976 (UTC) FILETIME=[F6915A80:01CD323C]", Encoding.ASCII.GetString (msg.ExtraFields[4].Body.Span));
 
 			// body
 			Assert.Equal (ContentMediaType.Multipart, msg.MediaType);
@@ -335,7 +335,7 @@ namespace Novartment.Base.Net.Mime.Test
 			Assert.Equal (1, msg.ExtraFields.Count);
 			var extField = (ExtensionHeaderField)msg.ExtraFields[0];
 			Assert.Equal ("X-DSNContext", extField.ExtensionName);
-			Assert.Equal ("7ce717b1 - 1160 - 00000002 - 00000000", msg.ExtraFields[0].Value);
+			Assert.Equal ("7ce717b1 - 1160 - 00000002 - 00000000", Encoding.ASCII.GetString (msg.ExtraFields[0].Body.Span));
 
 			// structure
 			Assert.IsAssignableFrom<ICompositeEntityBody> (msg.Body);
@@ -386,10 +386,12 @@ namespace Novartment.Base.Net.Mime.Test
 			Assert.Equal (2, nestedMsg.ExtraFields.Count);
 			extField = (ExtensionHeaderField)nestedMsg.ExtraFields[0];
 			Assert.Equal ("X-MIMETrack", extField.ExtensionName);
-			Assert.Equal ("Itemize by SMTP Server on ChelMKMail2/SRV/MechelSG(Release 8.5.2FP4|November 17, 2011) at 13.05.2012 12:48:25,	Serialize by Router on ChelMKGate1/SRV/MechelSG(Release 8.5.2FP4|November 17, 2011) at 13.05.2012 12:48:25,	Serialize complete at 13.05.2012 12:48:25", nestedMsg.ExtraFields[0].Value);
+			Assert.Equal (
+				"Itemize by SMTP Server on ChelMKMail2/SRV/MechelSG(Release 8.5.2FP4|November 17, 2011) at 13.05.2012 12:48:25,	Serialize by Router on ChelMKGate1/SRV/MechelSG(Release 8.5.2FP4|November 17, 2011) at 13.05.2012 12:48:25,	Serialize complete at 13.05.2012 12:48:25",
+				Encoding.ASCII.GetString (nestedMsg.ExtraFields[0].Body.Span));
 			extField = (ExtensionHeaderField)nestedMsg.ExtraFields[1];
 			Assert.Equal ("X-OriginalArrivalTime", extField.ExtensionName);
-			Assert.Equal ("13 May 2012 06:48:25.0831 (UTC) FILETIME=[65894F70:01CD30D4]", nestedMsg.ExtraFields[1].Value);
+			Assert.Equal ("13 May 2012 06:48:25.0831 (UTC) FILETIME=[65894F70:01CD30D4]", Encoding.ASCII.GetString (nestedMsg.ExtraFields[1].Body.Span));
 			Assert.Equal (
 				"Using QNX\r\n--------------------\r\nHome  script=//15/home/dbserver/script/itc/.send_enpl\r\nSending File=raport_espc6h.xml\r\nCurrent Date=Sun May 13 12:47:44 2012\r\n--------------------\r\n\r\nbegin 644 raport_espc6h.xml\r\nM/#]X;6P@=F5R<VEO;CTB,2XP(B!E;F-O9&EN9STB8W X-C8B(#\\^/&1A=&%B\r\nM87-E('AM;&YS/2)U<FDZ.FUE8VAE;\"YR87!O<G0N1&%T85-C:&5M82(^/&5S\r\nM<&,V7VAE870^/&AE871?;G5M8F5R/C$Y,34W,SPO:&5A=%]N=6UB97(^/&5S\r\nM<&,V7V-H96UI<W1R>3X\\=&EM93XR,#$R+3 U+3$S5#$R.C0W.C T/\"]T:6UE\r\nM/CQP<F]B95]N=6UB97(^-C4\\+W!R;V)E7VYU;6)E<CX\\+V5S<&,V7V-H96UI\r\n><W1R>3X\\+V5S<&,V7VAE870^/\"]D871A8F%S93X*\r\n \r\nend\r\n\r\n",
 				((TextEntityBody)nestedMsg.Body).GetText ());

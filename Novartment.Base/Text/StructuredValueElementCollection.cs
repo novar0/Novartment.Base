@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Text;
 using Novartment.Base.Collections;
-using Novartment.Base.Text.CharSpanExtensions;
 
 namespace Novartment.Base.Text
 {
@@ -12,32 +11,32 @@ namespace Novartment.Base.Text
 	/// </summary>
 	public static class StructuredValueElementCollection
 	{
-		private static readonly DelimitedElement _CommentDelimitingData = DelimitedElement.CreateBracketed (
-			'(',
-			')',
-			DelimitedElement.OneEscapedChar,
+		private static readonly ByteSequenceDelimitedElement _CommentDelimitingData = ByteSequenceDelimitedElement.CreateMarkered (
+			(byte)'(',
+			(byte)')',
+			ByteSequenceDelimitedElement.CreatePrefixedFixedLength ((byte)'\\', 2),
 			true);
 
-		private static readonly DelimitedElement _QuotedStringDelimitingData = DelimitedElement.CreateBracketed (
-			'\"',
-			'\"',
-			DelimitedElement.OneEscapedChar,
+		private static readonly ByteSequenceDelimitedElement _QuotedStringDelimitingData = ByteSequenceDelimitedElement.CreateMarkered (
+			(byte)'\"',
+			(byte)'\"',
+			ByteSequenceDelimitedElement.CreatePrefixedFixedLength ((byte)'\\', 2),
 			false);
 
-		private static readonly DelimitedElement _AngleAddrDelimitingData = DelimitedElement.CreateBracketed (
-			'<',
-			'>',
-			DelimitedElement.CreateBracketed (
-				'\"',
-				'\"',
-				DelimitedElement.OneEscapedChar,
+		private static readonly ByteSequenceDelimitedElement _AngleAddrDelimitingData = ByteSequenceDelimitedElement.CreateMarkered (
+			(byte)'<',
+			(byte)'>',
+			ByteSequenceDelimitedElement.CreateMarkered (
+				(byte)'\"',
+				(byte)'\"',
+				ByteSequenceDelimitedElement.CreatePrefixedFixedLength ((byte)'\\', 2),
 				false),
 			false);
 
-		private static readonly DelimitedElement _DomainLiteralDelimitingData = DelimitedElement.CreateBracketed (
-			'[',
-			']',
-			DelimitedElement.OneEscapedChar,
+		private static readonly ByteSequenceDelimitedElement _DomainLiteralDelimitingData = ByteSequenceDelimitedElement.CreateMarkered (
+			(byte)'[',
+			(byte)']',
+			ByteSequenceDelimitedElement.CreatePrefixedFixedLength ((byte)'\\', 2),
 			false);
 
 		/// <summary>
@@ -105,35 +104,7 @@ namespace Novartment.Base.Text
 		/// В создаваемую коллекцию элементы будут помещены в исходном виде, без декодирования.
 		/// </remarks>
 		public static IReadOnlyList<StructuredValueElement> Parse (
-			string source,
-			AsciiCharClasses valueCharClass,
-			bool allowDotInsideValue,
-			StructuredValueElementType typeToSkip = StructuredValueElementType.Unspecified)
-		{
-			if (source == null)
-			{
-				throw new ArgumentNullException (nameof (source));
-			}
-
-			Contract.EndContractBlock ();
-
-			return Parse (source.AsSpan (), valueCharClass, allowDotInsideValue, typeToSkip);
-		}
-
-		/// <summary>
-		/// Создаёт коллекцию элементов структурированного значения из его исходного ASCII-строкового представления.
-		/// </summary>
-		/// <param name="source">Исходное ASCII-строковое значение, представляющее из себя отдельные элементы.</param>
-		/// <param name="valueCharClass">Класс символов, допустимых для отдельных элементов значения.</param>
-		/// <param name="allowDotInsideValue">Признак допустимости символа 'точка' внутри элементов значения.</param>
-		/// <param name="typeToSkip">Тип элементов значения, которые будут пропущены и не попадут в создаваемую коллекцию.</param>
-		/// <returns>Коллекция элементов структурированного значения.</returns>
-		/// <remarks>
-		/// Все элементы в строковом представлении должны быть соответственно закодированы чтобы все знаки строки были из ASCII-набора.
-		/// В создаваемую коллекцию элементы будут помещены в исходном виде, без декодирования.
-		/// </remarks>
-		public static IReadOnlyList<StructuredValueElement> Parse (
-			ReadOnlySpan<char> source,
+			ReadOnlySpan<byte> source,
 			AsciiCharClasses valueCharClass,
 			bool allowDotInsideValue,
 			StructuredValueElementType typeToSkip = StructuredValueElementType.Unspecified)
@@ -145,72 +116,52 @@ namespace Novartment.Base.Text
 			{
 				switch (source[0])
 				{
-					case ' ':
-					case '\t':
+					case (byte)' ':
+					case (byte)'\t':
 						// RFC 5322 часть 3.2.2:
 						// Runs of FWS, comment, or CFWS that occur between lexical elements in a structured header field
 						// are semantically interpreted as a single space character.
-						var whiteSpace = source.GetSubstringOfClassChars (AsciiCharSet.Classes, (short)AsciiCharClasses.WhiteSpace);
+						var whiteSpace = source.SliceElementsOfOneClass (AsciiCharSet.Classes, (short)AsciiCharClasses.WhiteSpace);
 						source = source.Slice (whiteSpace.Length);
 						break;
-					case '"':
-						var quotedValue = source.EnsureDelimitedElement (_QuotedStringDelimitingData);
+					case (byte)'"':
+						var quotedValue = source.SliceDelimitedElement (_QuotedStringDelimitingData);
 						source = source.Slice (quotedValue.Length);
 						if (typeToSkip != StructuredValueElementType.QuotedValue)
 						{
-#if NETCOREAPP2_1
-							var str = new string (quotedValue.Slice (1, quotedValue.Length - 2));
-#else
-							var str = new string (quotedValue.Slice (1, quotedValue.Length - 2).ToArray ());
-#endif
-							elements.Add (new StructuredValueElement (StructuredValueElementType.QuotedValue, str));
+							elements.Add (new StructuredValueElement (StructuredValueElementType.QuotedValue, quotedValue.Slice (1, quotedValue.Length - 2)));
 						}
 
 						break;
-					case '(':
-						var roundBracketedValue = source.EnsureDelimitedElement (_CommentDelimitingData);
+					case (byte)'(':
+						var roundBracketedValue = source.SliceDelimitedElement (_CommentDelimitingData);
 						source = source.Slice (roundBracketedValue.Length);
 						if (typeToSkip != StructuredValueElementType.RoundBracketedValue)
 						{
-#if NETCOREAPP2_1
-							var str = new string (roundBracketedValue.Slice (1, roundBracketedValue.Length - 2));
-#else
-							var str = new string (roundBracketedValue.Slice (1, roundBracketedValue.Length - 2).ToArray ());
-#endif
-							elements.Add (new StructuredValueElement (StructuredValueElementType.RoundBracketedValue, str));
+							elements.Add (new StructuredValueElement (StructuredValueElementType.RoundBracketedValue, roundBracketedValue.Slice (1, roundBracketedValue.Length - 2)));
 						}
 
 						break;
-					case '<':
-						var angleBracketedValue = source.EnsureDelimitedElement (_AngleAddrDelimitingData);
+					case (byte)'<':
+						var angleBracketedValue = source.SliceDelimitedElement (_AngleAddrDelimitingData);
 						source = source.Slice (angleBracketedValue.Length);
 						if (typeToSkip != StructuredValueElementType.AngleBracketedValue)
 						{
-#if NETCOREAPP2_1
-							var str = new string (angleBracketedValue.Slice (1, angleBracketedValue.Length - 2));
-#else
-							var str = new string (angleBracketedValue.Slice (1, angleBracketedValue.Length - 2).ToArray ());
-#endif
-							elements.Add (new StructuredValueElement (StructuredValueElementType.AngleBracketedValue, str));
+							elements.Add (new StructuredValueElement (StructuredValueElementType.AngleBracketedValue, angleBracketedValue.Slice (1, angleBracketedValue.Length - 2)));
 						}
 
 						break;
-					case '[':
-						var squareBracketedValue = source.EnsureDelimitedElement (_DomainLiteralDelimitingData);
+					case (byte)'[':
+						var squareBracketedValue = source.SliceDelimitedElement (_DomainLiteralDelimitingData);
 						source = source.Slice (squareBracketedValue.Length);
 						if (typeToSkip != StructuredValueElementType.SquareBracketedValue)
 						{
-#if NETCOREAPP2_1
-							var str = new string (squareBracketedValue.Slice (1, squareBracketedValue.Length - 2));
-#else
-							var str = new string (squareBracketedValue.Slice (1, squareBracketedValue.Length - 2).ToArray ());
-#endif
-							elements.Add (new StructuredValueElement (StructuredValueElementType.SquareBracketedValue, str));
+							elements.Add (new StructuredValueElement (StructuredValueElementType.SquareBracketedValue, squareBracketedValue.Slice (1, squareBracketedValue.Length - 2)));
 						}
 
 						break;
 					default:
-						var value = source.GetSubstringOfClassChars (AsciiCharSet.Classes, (short)valueCharClass);
+						var value = source.SliceElementsOfOneClass (AsciiCharSet.Classes, (short)valueCharClass);
 						if (value.Length < 1)
 						{
 							if (typeToSkip != StructuredValueElementType.Separator)
@@ -231,19 +182,14 @@ namespace Novartment.Base.Text
 								(subParser[0] == '.') &&
 								AsciiCharSet.IsCharOfClass ((char)subParser[1], valueCharClass))
 							{
-								value = subParser.Slice (1).GetSubstringOfClassChars (AsciiCharSet.Classes, (short)valueCharClass);
+								value = subParser.Slice (1).SliceElementsOfOneClass (AsciiCharSet.Classes, (short)valueCharClass);
 								valueSize += 1 + value.Length;
 								subParser = subParser.Slice (1 + value.Length);
 							}
 
 							if (typeToSkip != StructuredValueElementType.Value)
 							{
-#if NETCOREAPP2_1
-								var str = new string (source.Slice (0, valueSize));
-#else
-								var str = new string (source.Slice (0, valueSize).ToArray ());
-#endif
-								elements.Add (new StructuredValueElement (StructuredValueElementType.Value, str));
+								elements.Add (new StructuredValueElement (StructuredValueElementType.Value, source.Slice (0, valueSize)));
 							}
 
 							source = source.Slice (valueSize);

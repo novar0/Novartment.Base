@@ -182,7 +182,7 @@ namespace Novartment.Base.Net.Mime
 				switch (field.Name)
 				{
 					case HeaderFieldName.ReportingUA:
-						ParseReportingUAField (field.Value.AsSpan ());
+						ParseReportingUAField (field.Body.Span);
 						break;
 					case HeaderFieldName.MdnGateway:
 						if (this.Gateway != null)
@@ -190,7 +190,7 @@ namespace Novartment.Base.Net.Mime
 							throw new FormatException ("More than one '" + HeaderFieldNameHelper.GetName (HeaderFieldName.MdnGateway) + "' field.");
 						}
 
-						this.Gateway = HeaderDecoder.DecodeNotificationFieldValue (field.Value.AsSpan ());
+						this.Gateway = HeaderDecoder.DecodeNotificationFieldValue (field.Body.Span);
 						break;
 					case HeaderFieldName.OriginalRecipient:
 						if (this.OriginalRecipient != null)
@@ -198,7 +198,7 @@ namespace Novartment.Base.Net.Mime
 							throw new FormatException ("More than one '" + HeaderFieldNameHelper.GetName (HeaderFieldName.OriginalRecipient) + "' field.");
 						}
 
-						this.OriginalRecipient = HeaderDecoder.DecodeNotificationFieldValue (field.Value.AsSpan ());
+						this.OriginalRecipient = HeaderDecoder.DecodeNotificationFieldValue (field.Body.Span);
 						break;
 					case HeaderFieldName.FinalRecipient:
 						if (this.FinalRecipient != null)
@@ -206,7 +206,7 @@ namespace Novartment.Base.Net.Mime
 							throw new FormatException ("More than one '" + HeaderFieldNameHelper.GetName (HeaderFieldName.FinalRecipient) + "' field.");
 						}
 
-						this.FinalRecipient = HeaderDecoder.DecodeNotificationFieldValue (field.Value.AsSpan ());
+						this.FinalRecipient = HeaderDecoder.DecodeNotificationFieldValue (field.Body.Span);
 						break;
 					case HeaderFieldName.OriginalMessageId:
 						if (this.OriginalMessageId != null)
@@ -214,19 +214,19 @@ namespace Novartment.Base.Net.Mime
 							throw new FormatException ("More than one '" + HeaderFieldNameHelper.GetName (HeaderFieldName.OriginalMessageId) + "' field.");
 						}
 
-						this.OriginalMessageId = HeaderDecoder.DecodeAddrSpecList (field.Value.AsSpan ()).Single ();
+						this.OriginalMessageId = HeaderDecoder.DecodeAddrSpecList (field.Body.Span).Single ();
 						break;
 					case HeaderFieldName.Disposition:
-						ParseDispositionField (field.Value.AsSpan ());
+						ParseDispositionField (field.Body.Span);
 						break;
 					case HeaderFieldName.Failure:
-						this.FailureInfo.Add (HeaderDecoder.DecodeUnstructured (field.Value.AsSpan ()).Trim ());
+						this.FailureInfo.Add (HeaderDecoder.DecodeUnstructured (field.Body.Span).Trim ());
 						break;
 					case HeaderFieldName.Error:
-						this.ErrorInfo.Add (HeaderDecoder.DecodeUnstructured (field.Value.AsSpan ()).Trim ());
+						this.ErrorInfo.Add (HeaderDecoder.DecodeUnstructured (field.Body.Span).Trim ());
 						break;
 					case HeaderFieldName.Warning:
-						this.WarningInfo.Add (HeaderDecoder.DecodeUnstructured (field.Value.AsSpan ()).Trim ());
+						this.WarningInfo.Add (HeaderDecoder.DecodeUnstructured (field.Body.Span).Trim ());
 						break;
 				}
 			}
@@ -242,7 +242,7 @@ namespace Novartment.Base.Net.Mime
 			}
 		}
 
-		private void ParseReportingUAField (ReadOnlySpan<char> value)
+		private void ParseReportingUAField (ReadOnlySpan<byte> value)
 		{
 			if (this.ReportingUserAgentName != null)
 			{
@@ -258,7 +258,7 @@ namespace Novartment.Base.Net.Mime
 			}
 		}
 
-		private void ParseDispositionField (ReadOnlySpan<char> value)
+		private void ParseDispositionField (ReadOnlySpan<byte> value)
 		{
 			if (this.Disposition != MessageDispositionChangedAction.Unspecified)
 			{

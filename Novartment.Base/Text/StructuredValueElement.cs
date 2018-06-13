@@ -12,8 +12,8 @@ namespace Novartment.Base.Text
 		/// Инициализирует новый экземпляр класса StructuredValueElement представляющий указанный знак-разделитель.
 		/// </summary>
 		/// <param name="separator">Значение создаваемого элемента.</param>
-		public StructuredValueElement (char separator)
-			: this (StructuredValueElementType.Separator, new string (separator, 1))
+		public StructuredValueElement (byte separator)
+			: this (StructuredValueElementType.Separator, new byte[1] { separator })
 		{
 		}
 
@@ -22,16 +22,11 @@ namespace Novartment.Base.Text
 		/// </summary>
 		/// <param name="type">Тип тип, определяющий способ кодирования элемента.</param>
 		/// <param name="value">Кодированное в соответствии с типом значение элемента.</param>
-		public StructuredValueElement (StructuredValueElementType type, string value)
+		public StructuredValueElement (StructuredValueElementType type, ReadOnlySpan<byte> value)
 		{
 			if (type == StructuredValueElementType.Unspecified)
 			{
 				throw new ArgumentOutOfRangeException (nameof (type));
-			}
-
-			if (value == null)
-			{
-				throw new ArgumentNullException (nameof (value));
 			}
 
 			if (value.Length < 1)
@@ -48,7 +43,11 @@ namespace Novartment.Base.Text
 					this.IsWordEncoded = Rfc2047EncodedWord.IsValid (UnquoteString (value));
 					break;
 				case StructuredValueElementType.Value:
-					this.IsWordEncoded = Rfc2047EncodedWord.IsValid (value);
+					this.IsWordEncoded = (value.Length > 8) &&
+						(value[0] == '=') &&
+						(value[1] == '?') &&
+						(value[value.Length - 2] == '?') &&
+						(value[value.Length - 1] == '=');
 					break;
 				case StructuredValueElementType.Separator:
 				default:
@@ -57,7 +56,9 @@ namespace Novartment.Base.Text
 			}
 
 			this.ElementType = type;
-			this.Value = value;
+			var buf = new byte[value.Length];
+			value.CopyTo (buf);
+			this.Value = buf;
 		}
 
 		/// <summary>
@@ -68,7 +69,7 @@ namespace Novartment.Base.Text
 		/// <summary>
 		/// Получает кодированное в соответствии с типом значение элемента.
 		/// </summary>
-		public string Value { get; }
+		public ReadOnlyMemory<byte> Value { get; }
 
 		/// <summary>
 		/// Получает признак того, что исходная строка храниться в виде "word-encoded".
@@ -85,12 +86,14 @@ namespace Novartment.Base.Text
 			{
 				case StructuredValueElementType.SquareBracketedValue:
 				case StructuredValueElementType.QuotedValue:
-					var value = UnquoteString (this.Value);
+					var value = UnquoteString (this.Value.Span);
 					return this.IsWordEncoded ? Rfc2047EncodedWord.Parse (value) : value;
 				case StructuredValueElementType.Value:
-					return this.IsWordEncoded ? Rfc2047EncodedWord.Parse (this.Value) : this.Value;
+					return this.IsWordEncoded ?
+						Rfc2047EncodedWord.Parse (AsciiCharSet.GetString (this.Value.Span)) :
+						AsciiCharSet.GetString (this.Value.Span);
 				case StructuredValueElementType.Separator:
-					return this.Value;
+					return AsciiCharSet.GetString (this.Value.Span);
 				default:
 					throw new InvalidOperationException (FormattableString.Invariant (
 						$"Element of type '{this.ElementType}' is complex and can not be decoded to discrete value."));
@@ -102,11 +105,11 @@ namespace Novartment.Base.Text
 		/// </summary>
 		/// <param name="separator">Символ-разделитель, с которым сравнивается элемент.</param>
 		/// <returns>True если элемент является разделителем, совпадающим с указанным символом.</returns>
-		public bool EqualsSeparator (char separator)
+		public bool EqualsSeparator (byte separator)
 		{
 			return (this.ElementType == StructuredValueElementType.Separator) &&
 				(this.Value.Length == 1) &&
-				(this.Value[0] == separator);
+				(this.Value.Span[0] == separator);
 		}
 
 		/// <summary>
@@ -115,10 +118,10 @@ namespace Novartment.Base.Text
 		/// <returns>Строковое представление значения объекта.</returns>
 		public override string ToString ()
 		{
-			return "<" + this.ElementType + "> " + this.Value;
+			return $"<{this.ElementType}> {this.Value}";
 		}
 
-		private static string UnquoteString (string value)
+		private static string UnquoteString (ReadOnlySpan<byte> value)
 		{
 			int idx = 0;
 			var result = new char[value.Length];
@@ -129,7 +132,7 @@ namespace Novartment.Base.Text
 					i++;
 				}
 
-				result[idx++] = value[i];
+				result[idx++] = (char)value[i];
 			}
 
 			return new string (result, 0, idx);

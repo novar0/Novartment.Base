@@ -565,7 +565,7 @@ namespace Novartment.Base.Net.Mime
 
 			// received       = "Received:" *received-token ";" date-time
 			// received-token = word / angle-addr / addr-spec / domain
-			var data = HeaderDecoder.DecodeUnstructuredAndDate (fieldEntry.Field.Value.AsSpan ());
+			var data = HeaderDecoder.DecodeUnstructuredAndDate (fieldEntry.Field.Body.Span);
 			traceBlock.ReceivedParameters = data.Text.Trim ();
 			traceBlock.ReceivedTime = data.Time;
 			fieldEntry.IsMarked = true;
@@ -578,18 +578,18 @@ namespace Novartment.Base.Net.Mime
 			{
 				case HeaderFieldName.ResentDate:
 					// resent-date = "Resent-Date:" date-time
-					traceBlock.ResentDate = InternetDateTime.Parse (fieldEntry.Field.Value);
+					traceBlock.ResentDate = InternetDateTime.Parse (AsciiCharSet.GetString (fieldEntry.Field.Body.Span));
 					fieldEntry.IsMarked = true;
 					break;
 				case HeaderFieldName.ResentFrom:
 					// resent-from    =  "Resent-From:" mailbox-list
 					// mailbox-list   =  (mailbox *("," mailbox))
-					traceBlock.ResentFrom.AddRange (HeaderDecoder.DecodeMailboxList (fieldEntry.Field.Value.AsSpan ()));
+					traceBlock.ResentFrom.AddRange (HeaderDecoder.DecodeMailboxList (fieldEntry.Field.Body.Span));
 					fieldEntry.IsMarked = true;
 					break;
 				case HeaderFieldName.ResentSender:
 					// resent-sender   =   "Resent-Sender:" mailbox
-					traceBlock.ResentSender = Mailbox.Parse (fieldEntry.Field.Value);
+					traceBlock.ResentSender = Mailbox.Parse (fieldEntry.Field.Body.Span);
 					fieldEntry.IsMarked = true;
 					break;
 				case HeaderFieldName.ResentTo:
@@ -597,7 +597,7 @@ namespace Novartment.Base.Net.Mime
 					// address      = mailbox / group
 					// group        = display-name ":" [mailbox-list / CFWS]
 					// mailbox-list = (mailbox *("," mailbox))
-					traceBlock.ResentTo.AddRange (HeaderDecoder.DecodeMailboxList (fieldEntry.Field.Value.AsSpan ()));
+					traceBlock.ResentTo.AddRange (HeaderDecoder.DecodeMailboxList (fieldEntry.Field.Body.Span));
 					fieldEntry.IsMarked = true;
 					break;
 				case HeaderFieldName.ResentCC:
@@ -605,7 +605,7 @@ namespace Novartment.Base.Net.Mime
 					// address      = mailbox / group
 					// group        = display-name ":" [mailbox-list / CFWS]
 					// mailbox-list = (mailbox *("," mailbox))
-					traceBlock.ResentCC.AddRange (HeaderDecoder.DecodeMailboxList (fieldEntry.Field.Value.AsSpan ()));
+					traceBlock.ResentCC.AddRange (HeaderDecoder.DecodeMailboxList (fieldEntry.Field.Body.Span));
 					fieldEntry.IsMarked = true;
 					break;
 				case HeaderFieldName.ResentBcc:
@@ -613,12 +613,12 @@ namespace Novartment.Base.Net.Mime
 					// address      = mailbox / group
 					// group        = display-name ":" [mailbox-list / CFWS]
 					// mailbox-list = (mailbox *("," mailbox))
-					traceBlock.ResentBcc.AddRange (HeaderDecoder.DecodeMailboxList (fieldEntry.Field.Value.AsSpan ()));
+					traceBlock.ResentBcc.AddRange (HeaderDecoder.DecodeMailboxList (fieldEntry.Field.Body.Span));
 					fieldEntry.IsMarked = true;
 					break;
 				case HeaderFieldName.ResentMessageId:
 					// resent-msg-id   =   "Resent-Message-ID:" msg-id
-					var adrs = HeaderDecoder.DecodeAddrSpecList (fieldEntry.Field.Value.AsSpan ());
+					var adrs = HeaderDecoder.DecodeAddrSpecList (fieldEntry.Field.Body.Span);
 					traceBlock.ResentMessageId = adrs.Single ();
 					fieldEntry.IsMarked = true;
 					break;
@@ -641,7 +641,7 @@ namespace Novartment.Base.Net.Mime
 					// list-id-namespace = domain-name / unmanaged-list-id-namespace
 					// domain-name       = dot-atom-text
 					// unmanaged-list-id-namespace = "localhost"
-					var data = HeaderDecoder.DecodePhraseAndId (fieldEntry.Field.Value.AsSpan ());
+					var data = HeaderDecoder.DecodePhraseAndId (fieldEntry.Field.Body.Span);
 					list.Description = data.Value1;
 					list.Id = data.Value2;
 					fieldEntry.IsMarked = true;
@@ -653,7 +653,7 @@ namespace Novartment.Base.Net.Mime
 					}
 
 					// A list of multiple, alternate, URLs MAY be specified by a comma-separated list of angle-bracket enclosed URLs.
-					list.ArchiveCommands.AddRange (HeaderDecoder.DecodeAngleBracketedlList (fieldEntry.Field.Value.AsSpan ()));
+					list.ArchiveCommands.AddRange (HeaderDecoder.DecodeAngleBracketedlList (fieldEntry.Field.Body.Span));
 					fieldEntry.IsMarked = true;
 					break;
 				case HeaderFieldName.ListHelp:
@@ -663,7 +663,7 @@ namespace Novartment.Base.Net.Mime
 					}
 
 					// A list of multiple, alternate, URLs MAY be specified by a comma-separated list of angle-bracket enclosed URLs.
-					list.HelpCommands.AddRange (HeaderDecoder.DecodeAngleBracketedlList (fieldEntry.Field.Value.AsSpan ()));
+					list.HelpCommands.AddRange (HeaderDecoder.DecodeAngleBracketedlList (fieldEntry.Field.Body.Span));
 					fieldEntry.IsMarked = true;
 					break;
 				case HeaderFieldName.ListOwner:
@@ -673,7 +673,7 @@ namespace Novartment.Base.Net.Mime
 					}
 
 					// A list of multiple, alternate, URLs MAY be specified by a comma-separated list of angle-bracket enclosed URLs.
-					list.OwnerCommands.AddRange (HeaderDecoder.DecodeAngleBracketedlList (fieldEntry.Field.Value.AsSpan ()));
+					list.OwnerCommands.AddRange (HeaderDecoder.DecodeAngleBracketedlList (fieldEntry.Field.Body.Span));
 					fieldEntry.IsMarked = true;
 					break;
 				case HeaderFieldName.ListPost:
@@ -683,7 +683,7 @@ namespace Novartment.Base.Net.Mime
 					}
 
 					// A list of multiple, alternate, URLs MAY be specified by a comma-separated list of angle-bracket enclosed URLs.
-					list.PostCommands.AddRange (HeaderDecoder.DecodeAngleBracketedlList (fieldEntry.Field.Value.AsSpan ()));
+					list.PostCommands.AddRange (HeaderDecoder.DecodeAngleBracketedlList (fieldEntry.Field.Body.Span));
 					fieldEntry.IsMarked = true;
 					break;
 				case HeaderFieldName.ListSubscribe:
@@ -693,7 +693,7 @@ namespace Novartment.Base.Net.Mime
 					}
 
 					// A list of multiple, alternate, URLs MAY be specified by a comma-separated list of angle-bracket enclosed URLs.
-					list.SubscribeCommands.AddRange (HeaderDecoder.DecodeAngleBracketedlList (fieldEntry.Field.Value.AsSpan ()));
+					list.SubscribeCommands.AddRange (HeaderDecoder.DecodeAngleBracketedlList (fieldEntry.Field.Body.Span));
 					fieldEntry.IsMarked = true;
 					break;
 				case HeaderFieldName.ListUnsubscribe:
@@ -703,7 +703,7 @@ namespace Novartment.Base.Net.Mime
 					}
 
 					// A list of multiple, alternate, URLs MAY be specified by a comma-separated list of angle-bracket enclosed URLs.
-					list.UnsubscribeCommands.AddRange (HeaderDecoder.DecodeAngleBracketedlList (fieldEntry.Field.Value.AsSpan ()));
+					list.UnsubscribeCommands.AddRange (HeaderDecoder.DecodeAngleBracketedlList (fieldEntry.Field.Body.Span));
 					fieldEntry.IsMarked = true;
 					break;
 			}
@@ -929,7 +929,7 @@ namespace Novartment.Base.Net.Mime
 
 			// return = "Return-Path:" path
 			// path   = angle-addr / ([CFWS] "<" [CFWS] ">" [CFWS])
-			var adrs = HeaderDecoder.DecodeAddrSpecList (fieldEntry.Field.Value.AsSpan (), true);
+			var adrs = HeaderDecoder.DecodeAddrSpecList (fieldEntry.Field.Body.Span, true);
 			_returnPath = adrs.SingleOrDefault ();
 			fieldEntry.IsMarked = true;
 		}
@@ -942,7 +942,7 @@ namespace Novartment.Base.Net.Mime
 			}
 
 			// version := "MIME-Version" ":" 1*DIGIT "." 1*DIGIT
-			this.MimeVersion = HeaderDecoder.DecodeVersion (fieldEntry.Field.Value.AsSpan ());
+			this.MimeVersion = HeaderDecoder.DecodeVersion (fieldEntry.Field.Body.Span);
 			fieldEntry.IsMarked = true;
 		}
 
@@ -954,7 +954,7 @@ namespace Novartment.Base.Net.Mime
 			}
 
 			// resent-date     =   "Resent-Date:" date-time
-			this.OriginationDate = InternetDateTime.Parse (fieldEntry.Field.Value);
+			this.OriginationDate = InternetDateTime.Parse (AsciiCharSet.GetString (fieldEntry.Field.Body.Span));
 			fieldEntry.IsMarked = true;
 		}
 
@@ -970,7 +970,7 @@ namespace Novartment.Base.Net.Mime
 
 					// from         = "From:" mailbox-list
 					// mailbox-list = (mailbox *("," mailbox))
-					this.From.AddRange (HeaderDecoder.DecodeMailboxList (fieldEntry.Field.Value.AsSpan ()));
+					this.From.AddRange (HeaderDecoder.DecodeMailboxList (fieldEntry.Field.Body.Span));
 					fieldEntry.IsMarked = true;
 					break;
 				case HeaderFieldName.Sender:
@@ -980,7 +980,7 @@ namespace Novartment.Base.Net.Mime
 					}
 
 					// sender = "Sender:" mailbox
-					this.Sender = Mailbox.Parse (fieldEntry.Field.Value);
+					this.Sender = Mailbox.Parse (fieldEntry.Field.Body.Span);
 					fieldEntry.IsMarked = true;
 					break;
 				case HeaderFieldName.ReplyTo:
@@ -993,7 +993,7 @@ namespace Novartment.Base.Net.Mime
 					// address      = mailbox / group
 					// group        = display-name ":" [mailbox-list / CFWS]
 					// mailbox-list = (mailbox *("," mailbox))
-					this.ReplyTo.AddRange (HeaderDecoder.DecodeMailboxList (fieldEntry.Field.Value.AsSpan ()));
+					this.ReplyTo.AddRange (HeaderDecoder.DecodeMailboxList (fieldEntry.Field.Body.Span));
 					fieldEntry.IsMarked = true;
 					break;
 				case HeaderFieldName.To:
@@ -1006,7 +1006,7 @@ namespace Novartment.Base.Net.Mime
 					// address      = mailbox / group
 					// group        = display-name ":" [mailbox-list / CFWS]
 					// mailbox-list = (mailbox *("," mailbox))
-					this.RecipientTo.AddRange (HeaderDecoder.DecodeMailboxList (fieldEntry.Field.Value.AsSpan ()));
+					this.RecipientTo.AddRange (HeaderDecoder.DecodeMailboxList (fieldEntry.Field.Body.Span));
 					fieldEntry.IsMarked = true;
 					break;
 				case HeaderFieldName.CC:
@@ -1019,7 +1019,7 @@ namespace Novartment.Base.Net.Mime
 					// address      = mailbox / group
 					// group        = display-name ":" [mailbox-list / CFWS]
 					// mailbox-list = (mailbox *("," mailbox))
-					this.RecipientCC.AddRange (HeaderDecoder.DecodeMailboxList (fieldEntry.Field.Value.AsSpan ()));
+					this.RecipientCC.AddRange (HeaderDecoder.DecodeMailboxList (fieldEntry.Field.Body.Span));
 					fieldEntry.IsMarked = true;
 					break;
 				case HeaderFieldName.Bcc:
@@ -1032,7 +1032,7 @@ namespace Novartment.Base.Net.Mime
 					// address      = mailbox / group
 					// group        = display-name ":" [mailbox-list / CFWS]
 					// mailbox-list = (mailbox *("," mailbox))
-					this.RecipientBcc.AddRange (HeaderDecoder.DecodeMailboxList (fieldEntry.Field.Value.AsSpan ()));
+					this.RecipientBcc.AddRange (HeaderDecoder.DecodeMailboxList (fieldEntry.Field.Body.Span));
 					fieldEntry.IsMarked = true;
 					break;
 			}
@@ -1046,7 +1046,7 @@ namespace Novartment.Base.Net.Mime
 			}
 
 			// message-id = "Message-ID:" msg-id
-			var adrs = HeaderDecoder.DecodeAddrSpecList (fieldEntry.Field.Value.AsSpan ());
+			var adrs = HeaderDecoder.DecodeAddrSpecList (fieldEntry.Field.Body.Span);
 			this.MessageId = adrs.Single ();
 			fieldEntry.IsMarked = true;
 		}
@@ -1059,7 +1059,7 @@ namespace Novartment.Base.Net.Mime
 			}
 
 			// in-reply-to = "In-Reply-To:" 1*msg-id
-			var addrs = HeaderDecoder.DecodeAddrSpecList (fieldEntry.Field.Value.AsSpan ());
+			var addrs = HeaderDecoder.DecodeAddrSpecList (fieldEntry.Field.Body.Span);
 			this.InReplyTo.AddRange (addrs);
 			fieldEntry.IsMarked = true;
 		}
@@ -1072,7 +1072,7 @@ namespace Novartment.Base.Net.Mime
 			}
 
 			// references = "References:" 1*msg-id
-			var addrs = HeaderDecoder.DecodeAddrSpecList (fieldEntry.Field.Value.AsSpan ());
+			var addrs = HeaderDecoder.DecodeAddrSpecList (fieldEntry.Field.Body.Span);
 			this.References.AddRange (addrs);
 			fieldEntry.IsMarked = true;
 		}
@@ -1085,7 +1085,7 @@ namespace Novartment.Base.Net.Mime
 			}
 
 			// subject = "Subject:" unstructured
-			this.Subject = HeaderDecoder.DecodeUnstructured (fieldEntry.Field.Value.AsSpan ()).Trim ();
+			this.Subject = HeaderDecoder.DecodeUnstructured (fieldEntry.Field.Body.Span).Trim ();
 			fieldEntry.IsMarked = true;
 		}
 
@@ -1094,14 +1094,14 @@ namespace Novartment.Base.Net.Mime
 			var prevComments = (this.Comments != null) ? (this.Comments + "\r\n") : string.Empty;
 
 			// comments = "Comments:" unstructured
-			this.Comments = prevComments + HeaderDecoder.DecodeUnstructured (fieldEntry.Field.Value.AsSpan ()).Trim ();
+			this.Comments = prevComments + HeaderDecoder.DecodeUnstructured (fieldEntry.Field.Body.Span).Trim ();
 			fieldEntry.IsMarked = true;
 		}
 
 		private void ParseKeywordsField (HeaderFieldWithMark fieldEntry)
 		{
 			// keywords = "Keywords:" phrase *("," phrase)
-			this.Keywords.AddRange (HeaderDecoder.DecodePhraseList (fieldEntry.Field.Value.AsSpan ()));
+			this.Keywords.AddRange (HeaderDecoder.DecodePhraseList (fieldEntry.Field.Body.Span));
 			fieldEntry.IsMarked = true;
 		}
 
@@ -1113,7 +1113,7 @@ namespace Novartment.Base.Net.Mime
 			}
 
 			// mdn-request-field = "Disposition-Notification-To" ":" mailbox *("," mailbox)
-			this.DispositionNotificationTo.AddRange (HeaderDecoder.DecodeMailboxList (fieldEntry.Field.Value.AsSpan ()));
+			this.DispositionNotificationTo.AddRange (HeaderDecoder.DecodeMailboxList (fieldEntry.Field.Body.Span));
 			fieldEntry.IsMarked = true;
 		}
 
@@ -1127,7 +1127,7 @@ namespace Novartment.Base.Net.Mime
 			// disposition-notification-parameters = parameter *(";" parameter)
 			// parameter                           = attribute "=" importance "," 1#value
 			// importance                          = "required" / "optional"
-			this.DispositionNotificationOptions.AddRange (HeaderDecoder.DecodeDispositionNotificationParameterList (fieldEntry.Field.Value.AsSpan ()));
+			this.DispositionNotificationOptions.AddRange (HeaderDecoder.DecodeDispositionNotificationParameterList (fieldEntry.Field.Body.Span));
 			fieldEntry.IsMarked = true;
 		}
 
@@ -1141,7 +1141,7 @@ namespace Novartment.Base.Net.Mime
 			// Accept-Language = "Accept-Language:" [CFWS] language-q *( "," [CFWS] language-q )
 			// language-q      = language-range [";" [CFWS] "q=" qvalue ] [CFWS]
 			// value           = ( "0" [ "." 0*3DIGIT ] ) / ( "1" [ "." 0*3("0") ] )
-			this.AcceptLanguages.AddRange (HeaderDecoder.DecodeQualityValueParameterList (fieldEntry.Field.Value.AsSpan ()));
+			this.AcceptLanguages.AddRange (HeaderDecoder.DecodeQualityValueParameterList (fieldEntry.Field.Body.Span));
 			fieldEntry.IsMarked = true;
 		}
 
@@ -1153,7 +1153,7 @@ namespace Novartment.Base.Net.Mime
 			}
 
 			// "Original-Message-ID" ":" msg-id
-			var adrs = HeaderDecoder.DecodeAddrSpecList (fieldEntry.Field.Value.AsSpan ());
+			var adrs = HeaderDecoder.DecodeAddrSpecList (fieldEntry.Field.Body.Span);
 			this.OriginalMessageId = adrs.Single ();
 			fieldEntry.IsMarked = true;
 		}

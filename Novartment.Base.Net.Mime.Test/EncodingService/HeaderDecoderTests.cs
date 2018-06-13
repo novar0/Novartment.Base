@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Text;
 using System.Threading;
 using Novartment.Base.BinaryStreaming;
@@ -17,11 +18,11 @@ namespace Novartment.Base.Net.Mime.Test
 		[Trait ("Category", "Mime.HeaderDecoder")]
 		public void DecodeAtom ()
 		{
-			Assert.Equal ("Header-Test.2012", HeaderDecoder.DecodeAtom ("Header-Test.2012"));
-			Assert.Equal ("no.name", HeaderDecoder.DecodeAtom (" (dd klk 2012) (222 333) no.name (eee 2002 w) "));
-			Assert.Throws<FormatException> (() => HeaderDecoder.DecodeAtom ("a b"));
-			Assert.Throws<FormatException> (() => HeaderDecoder.DecodeAtom ("<ab>"));
-			Assert.Throws<FormatException> (() => HeaderDecoder.DecodeAtom ("a=b"));
+			Assert.Equal ("Header-Test.2012", HeaderDecoder.DecodeAtom (Encoding.ASCII.GetBytes ("Header-Test.2012")));
+			Assert.Equal ("no.name", HeaderDecoder.DecodeAtom (Encoding.ASCII.GetBytes (" (dd klk 2012) (222 333) no.name (eee 2002 w) ")));
+			Assert.Throws<FormatException> (() => HeaderDecoder.DecodeAtom (Encoding.ASCII.GetBytes ("a b")));
+			Assert.Throws<FormatException> (() => HeaderDecoder.DecodeAtom (Encoding.ASCII.GetBytes ("<ab>")));
+			Assert.Throws<FormatException> (() => HeaderDecoder.DecodeAtom (Encoding.ASCII.GetBytes ("a=b")));
 		}
 
 		[Fact]
@@ -29,110 +30,112 @@ namespace Novartment.Base.Net.Mime.Test
 		public void DecodeUnstructured ()
 		{
 			// проверяем что не корректно декодируется пустое значение
-			Assert.Equal (string.Empty, HeaderDecoder.DecodeUnstructured (string.Empty));
+			Assert.Equal (string.Empty, HeaderDecoder.DecodeUnstructured (Array.Empty<byte> ()));
 
 			// проверяем что не корректно декодируется значение только из пробельных символов
-			Assert.Equal ("\t  \t", HeaderDecoder.DecodeUnstructured ("\t  \t"));
-			Assert.Equal ("Simple", HeaderDecoder.DecodeUnstructured ("Simple"));
+			Assert.Equal ("\t  \t", HeaderDecoder.DecodeUnstructured (Encoding.ASCII.GetBytes ("\t  \t")));
+			Assert.Equal ("Simple", HeaderDecoder.DecodeUnstructured (Encoding.ASCII.GetBytes ("Simple")));
 
 			// проверяем что не теряются пробельные символы
-			Assert.Equal ("\t Simple  \" no\\t \\ quoted \"  Text\" ", HeaderDecoder.DecodeUnstructured ("\t Simple  \" no\\t \\ quoted \"  Text\" "));
+			Assert.Equal ("\t Simple  \" no\\t \\ quoted \"  Text\" ", HeaderDecoder.DecodeUnstructured (Encoding.ASCII.GetBytes ("\t Simple  \" no\\t \\ quoted \"  Text\" ")));
 
 			// проверяем что НЕ распознаются треугольные кавычки
-			Assert.Equal ("\t Simple  < not addr >  Text ", HeaderDecoder.DecodeUnstructured ("\t Simple  < not addr >  Text "));
+			Assert.Equal ("\t Simple  < not addr >  Text ", HeaderDecoder.DecodeUnstructured (Encoding.ASCII.GetBytes ("\t Simple  < not addr >  Text ")));
 
 			// проверяем что НЕ распознаются круглые кавычки
-			Assert.Equal ("\t Simple  (not\tcomment)  ;Text ", HeaderDecoder.DecodeUnstructured ("\t Simple  (not\tcomment)  ;Text "));
+			Assert.Equal ("\t Simple  (not\tcomment)  ;Text ", HeaderDecoder.DecodeUnstructured (Encoding.ASCII.GetBytes ("\t Simple  (not\tcomment)  ;Text ")));
 
 			// проверяем что распознаются кодированные слова отделённые пробелом
-			Assert.Equal ("aa 123;abc", HeaderDecoder.DecodeUnstructured ("aa =?utf-8?Q?123;abc?="));
+			Assert.Equal ("aa 123;abc", HeaderDecoder.DecodeUnstructured (Encoding.ASCII.GetBytes ("aa =?utf-8?Q?123;abc?=")));
 
 			// проверяем что НЕ распознаются кодированные слова НЕ отделённые пробелом
-			Assert.Equal ("aa=?utf-8?Q?123;abc?=", HeaderDecoder.DecodeUnstructured ("aa=?utf-8?Q?123;abc?="));
-			Assert.Equal ("\t Simple  (not\tcomment)  Text ", HeaderDecoder.DecodeUnstructured ("=?koi8-r?Q?=09_Simple__(not=09comment)__Text_?="));
+			Assert.Equal ("aa=?utf-8?Q?123;abc?=", HeaderDecoder.DecodeUnstructured (Encoding.ASCII.GetBytes ("aa=?utf-8?Q?123;abc?=")));
+			Assert.Equal ("\t Simple  (not\tcomment)  Text ", HeaderDecoder.DecodeUnstructured (Encoding.ASCII.GetBytes ("=?koi8-r?Q?=09_Simple__(not=09comment)__Text_?=")));
 
 			// проверяем что НЕ соседние кодированные слова склеиваются корректно (с сохранением пробелов)
-			Assert.Equal ("123;abc aa\t\t456;def", HeaderDecoder.DecodeUnstructured ("=?utf-8?Q?123;abc?= aa\t\t=?utf-8?Q?456;def?="));
+			Assert.Equal ("123;abc aa\t\t456;def", HeaderDecoder.DecodeUnstructured (Encoding.ASCII.GetBytes ("=?utf-8?Q?123;abc?= aa\t\t=?utf-8?Q?456;def?=")));
 
 			// проверяем что соседние (разделённые пробелами) кодированные слова склеиваются корректно (без пробелов)
-			Assert.Equal ("Идея состоит в томКонстантин Теличко", HeaderDecoder.DecodeUnstructured ("=?windows-1251?Q?=C8=E4=E5=FF_=F1=EE=F1=F2=EE=E8=F2_=E2_=F2=EE=EC?=\t  =?koi8-r?B?68/O09TBztTJziD0xczJ3svP?="));
+			Assert.Equal (
+				"Идея состоит в томКонстантин Теличко",
+				HeaderDecoder.DecodeUnstructured (Encoding.ASCII.GetBytes ("=?windows-1251?Q?=C8=E4=E5=FF_=F1=EE=F1=F2=EE=E8=F2_=E2_=F2=EE=EC?=\t  =?koi8-r?B?68/O09TBztTJziD0xczJ3svP?=")));
 			Assert.Equal (
 				"Simple=?windows-1251?Q?=C8=E4=E5=FF_=F1=EE=F1=F2=EE=E8=F2_=E2_=F2=EE=EC?=\t  Константин Теличко",
-				HeaderDecoder.DecodeUnstructured ("Simple=?windows-1251?Q?=C8=E4=E5=FF_=F1=EE=F1=F2=EE=E8=F2_=E2_=F2=EE=EC?=\t  =?koi8-r?B?68/O09TBztTJziD0xczJ3svP?="));
+				HeaderDecoder.DecodeUnstructured (Encoding.ASCII.GetBytes ("Simple=?windows-1251?Q?=C8=E4=E5=FF_=F1=EE=F1=F2=EE=E8=F2_=E2_=F2=EE=EC?=\t  =?koi8-r?B?68/O09TBztTJziD0xczJ3svP?=")));
 			Assert.Equal (
 				"Simple Идея состоит в томКонстантин Теличко",
-				HeaderDecoder.DecodeUnstructured ("Simple =?windows-1251?Q?=C8=E4=E5=FF_=F1=EE=F1=F2=EE=E8=F2_=E2_=F2=EE=EC?=\t  =?koi8-r?B?68/O09TBztTJziD0xczJ3svP?="));
+				HeaderDecoder.DecodeUnstructured (Encoding.ASCII.GetBytes ("Simple =?windows-1251?Q?=C8=E4=E5=FF_=F1=EE=F1=F2=EE=E8=F2_=E2_=F2=EE=EC?=\t  =?koi8-r?B?68/O09TBztTJziD0xczJ3svP?=")));
 			Assert.Equal ("\tПри 2012г усиленных мерах безопасности", HeaderDecoder.DecodeUnstructured (
-				"\t=?utf-8?B?0J/RgNC4?= =?utf-8?Q?_2012=D0=B3?=" +
+				Encoding.ASCII.GetBytes ("\t=?utf-8?B?0J/RgNC4?= =?utf-8?Q?_2012=D0=B3?=" +
 				"\t=?utf-8?B?INGD0YHQuNC70LXQvdC90YvRhQ==?= =?utf-8?B?INC80LXRgNCw0YU=?=" +
-				"\t=?utf-8?B?INCx0LXQt9C+0L/QsNGB0L3QvtGB0YLQuA==?="));
-			Assert.Throws<FormatException> (() => HeaderDecoder.DecodeUnstructured ("Simp\u00d7le"));
+				"\t=?utf-8?B?INCx0LXQt9C+0L/QsNGB0L3QvtGB0YLQuA==?=")));
+			Assert.Throws<FormatException> (() => HeaderDecoder.DecodeUnstructured (Encoding.UTF8.GetBytes ("Simp\u00d7le")));
 		}
 
 		[Fact]
 		[Trait ("Category", "Mime.HeaderDecoder")]
 		public void DecodePhrase ()
 		{
-			Assert.Equal ("source", HeaderDecoder.DecodePhrase ("source"));
-			Assert.Equal ("source one", HeaderDecoder.DecodePhrase ("source one"));
-			Assert.Equal ("source one", HeaderDecoder.DecodePhrase ("source  one"));
-			Assert.Equal ("source one", HeaderDecoder.DecodePhrase (" source \t one  "));
-			Assert.Equal ("source source.net Один", HeaderDecoder.DecodePhrase ("source (dd klk 2012) source.net =?utf-8?B?0J7QtNC40L0=?="));
+			Assert.Equal ("source", HeaderDecoder.DecodePhrase (Encoding.ASCII.GetBytes ("source")));
+			Assert.Equal ("source one", HeaderDecoder.DecodePhrase (Encoding.ASCII.GetBytes ("source one")));
+			Assert.Equal ("source one", HeaderDecoder.DecodePhrase (Encoding.ASCII.GetBytes ("source  one")));
+			Assert.Equal ("source one", HeaderDecoder.DecodePhrase (Encoding.ASCII.GetBytes (" source \t one  ")));
+			Assert.Equal ("source source.net Один", HeaderDecoder.DecodePhrase (Encoding.ASCII.GetBytes ("source (dd klk 2012) source.net =?utf-8?B?0J7QtNC40L0=?=")));
 			Assert.Equal (
 				"Join your peers at Eloqua Experience 2013 при best practices and road-tested дисплеем с разрешением порядка",
 				HeaderDecoder.DecodePhrase (
-					"Join your peers at Eloqua Experience 2013 =?utf-8?B?0L/RgNC4?= best practices " +
+					Encoding.ASCII.GetBytes ("Join your peers at Eloqua Experience 2013 =?utf-8?B?0L/RgNC4?= best practices " +
 					"and road-tested (strategies (that) get results) " +
 					"=?utf-8?B?0LTQuNGB0L/Qu9C10LXQvA==?= =?utf-8?B?INGB?= " +
-					"=?utf-8?B?INGA0LDQt9GA0LXRiNC10L3QuNC10Lw=?= =?utf-8?B?INC/0L7RgNGP0LTQutCw?="));
+					"=?utf-8?B?INGA0LDQt9GA0LXRiNC10L3QuNC10Lw=?= =?utf-8?B?INC/0L7RgNGP0LTQutCw?=")));
 		}
 
 		[Fact]
 		[Trait ("Category", "Mime.HeaderDecoder")]
 		public void DecodeAtomList ()
 		{
-			var arr = HeaderDecoder.DecodeAtomList ("ru-ru");
+			var arr = HeaderDecoder.DecodeAtomList (Encoding.ASCII.GetBytes ("ru-ru"));
 			Assert.Equal (1, arr.Count);
 			Assert.Equal ("ru-ru", arr[0]);
 
-			arr = HeaderDecoder.DecodeAtomList (" ru-ru,\t   (not\tcomment)  Text,\t1-2-3-4 ");
+			arr = HeaderDecoder.DecodeAtomList (Encoding.ASCII.GetBytes (" ru-ru,\t   (not\tcomment)  Text,\t1-2-3-4 "));
 			Assert.Equal (3, arr.Count);
 			Assert.Equal ("ru-ru", arr[0]);
 			Assert.Equal ("Text", arr[1]);
 			Assert.Equal ("1-2-3-4", arr[2]);
 
-			Assert.Throws<FormatException> (() => HeaderDecoder.DecodeAtomList ("atom,a b"));
-			Assert.Throws<FormatException> (() => HeaderDecoder.DecodeAtomList ("atom,<ab>"));
-			Assert.Throws<FormatException> (() => HeaderDecoder.DecodeAtomList ("atom,a=b"));
+			Assert.Throws<FormatException> (() => HeaderDecoder.DecodeAtomList (Encoding.ASCII.GetBytes ("atom,a b")));
+			Assert.Throws<FormatException> (() => HeaderDecoder.DecodeAtomList (Encoding.ASCII.GetBytes ("atom,<ab>")));
+			Assert.Throws<FormatException> (() => HeaderDecoder.DecodeAtomList (Encoding.ASCII.GetBytes ("atom,a=b")));
 		}
 
 		[Fact]
 		[Trait ("Category", "Mime.HeaderDecoder")]
 		public void DecodeNotificationFieldValue ()
 		{
-			var value = HeaderDecoder.DecodeNotificationFieldValue ("\trfc822 (mail-addres) ; louisl@larry.slip.umd.edu");
+			var value = HeaderDecoder.DecodeNotificationFieldValue (Encoding.ASCII.GetBytes ("\trfc822 (mail-addres) ; louisl@larry.slip.umd.edu"));
 			Assert.Equal (NotificationFieldValueKind.Mailbox, value.Kind);
 			Assert.Equal ("louisl@larry.slip.umd.edu", value.Value);
 
-			value = HeaderDecoder.DecodeNotificationFieldValue (" smtp ; =?utf-8?B?0LrRgtC+LdGC0L4=?=  2012 ");
+			value = HeaderDecoder.DecodeNotificationFieldValue (Encoding.ASCII.GetBytes (" smtp ; =?utf-8?B?0LrRgtC+LdGC0L4=?=  2012 "));
 			Assert.Equal (NotificationFieldValueKind.Status, value.Kind);
 			Assert.Equal ("кто-то  2012", value.Value);
 
-			Assert.Throws<FormatException> (() => HeaderDecoder.DecodeNotificationFieldValue ("atom;"));
-			Assert.Throws<FormatException> (() => HeaderDecoder.DecodeNotificationFieldValue (";"));
-			Assert.Throws<FormatException> (() => HeaderDecoder.DecodeNotificationFieldValue ("type=id;"));
-			Assert.Throws<FormatException> (() => HeaderDecoder.DecodeNotificationFieldValue ("esmtp;value"));
+			Assert.Throws<FormatException> (() => HeaderDecoder.DecodeNotificationFieldValue (Encoding.ASCII.GetBytes ("atom;")));
+			Assert.Throws<FormatException> (() => HeaderDecoder.DecodeNotificationFieldValue (Encoding.ASCII.GetBytes (";")));
+			Assert.Throws<FormatException> (() => HeaderDecoder.DecodeNotificationFieldValue (Encoding.ASCII.GetBytes ("type=id;")));
+			Assert.Throws<FormatException> (() => HeaderDecoder.DecodeNotificationFieldValue (Encoding.ASCII.GetBytes ("esmtp;value")));
 		}
 
 		[Fact]
 		[Trait ("Category", "Mime.HeaderDecoder")]
 		public void DecodeUnstructuredPair ()
 		{
-			var data = HeaderDecoder.DecodeUnstructuredPair ("\t Simple  < not addr >  Text ");
+			var data = HeaderDecoder.DecodeUnstructuredPair (Encoding.ASCII.GetBytes ("\t Simple  < not addr >  Text "));
 			Assert.Equal ("\t Simple  < not addr >  Text ", data.Value1);
 			Assert.Null (data.Value2);
 
-			data = HeaderDecoder.DecodeUnstructuredPair ("\t Simple  < not addr >  Text ; \t=?utf-8?B?0J/RgNC4?= =?utf-8?Q?_2012=D0=B3?=\t ");
+			data = HeaderDecoder.DecodeUnstructuredPair (Encoding.ASCII.GetBytes ("\t Simple  < not addr >  Text ; \t=?utf-8?B?0J/RgNC4?= =?utf-8?Q?_2012=D0=B3?=\t "));
 			Assert.Equal ("\t Simple  < not addr >  Text ", data.Value1);
 			Assert.Equal (" \tПри 2012г\t ", data.Value2);
 		}
@@ -141,46 +144,46 @@ namespace Novartment.Base.Net.Mime.Test
 		[Trait ("Category", "Mime.HeaderDecoder")]
 		public void DecodeUnstructuredAndDate ()
 		{
-			var data = HeaderDecoder.DecodeUnstructuredAndDate ("\t Simple  < not addr >  Text ; Tue, 15 May 2012 02:49:22 +0100  ");
+			var data = HeaderDecoder.DecodeUnstructuredAndDate (Encoding.ASCII.GetBytes ("\t Simple  < not addr >  Text ; Tue, 15 May 2012 02:49:22 +0100  "));
 			Assert.Equal ("\t Simple  < not addr >  Text ", data.Text);
 			Assert.Equal (new DateTimeOffset (2012, 5, 15, 2, 49, 22, new TimeSpan (1, 0, 0)), data.Time);
 
-			data = HeaderDecoder.DecodeUnstructuredAndDate ("Simple Text ; Tue, 15 May 2012 02:49:22 +0100");
+			data = HeaderDecoder.DecodeUnstructuredAndDate (Encoding.ASCII.GetBytes ("Simple Text ; Tue, 15 May 2012 02:49:22 +0100"));
 			Assert.Equal ("Simple Text ", data.Text);
 			Assert.Equal (new DateTimeOffset (2012, 5, 15, 2, 49, 22, new TimeSpan (1, 0, 0)), data.Time);
 
-			Assert.Throws<FormatException> (() => HeaderDecoder.DecodeUnstructuredAndDate ("Tue, 15 May 2012 02:49:22 + 0100"));
+			Assert.Throws<FormatException> (() => HeaderDecoder.DecodeUnstructuredAndDate (Encoding.ASCII.GetBytes ("Tue, 15 May 2012 02:49:22 + 0100")));
 		}
 
 		[Fact]
 		[Trait ("Category", "Mime")]
 		public void DecodePhraseAndId ()
 		{
-			var data = HeaderDecoder.DecodePhraseAndId (" ( comment here )    <some.id@someserver.com> ");
+			var data = HeaderDecoder.DecodePhraseAndId (Encoding.ASCII.GetBytes (" ( comment here )    <some.id@someserver.com> "));
 			Assert.Null (data.Value1);
 			Assert.Equal ("some.id@someserver.com", data.Value2);
 
-			data = HeaderDecoder.DecodePhraseAndId ("\t Simple  (not\tcomment)  Text     <some.id@someserver.com>");
+			data = HeaderDecoder.DecodePhraseAndId (Encoding.ASCII.GetBytes ("\t Simple  (not\tcomment)  Text     <some.id@someserver.com>"));
 			Assert.Equal ("Simple Text", data.Value1);
 			Assert.Equal ("some.id@someserver.com", data.Value2);
 
-			data = HeaderDecoder.DecodePhraseAndId ("\t=?utf-8?B?0J/RgNC4?= =?utf-8?Q?_2012=D0=B3?=\t<some.id@someserver.com> ");
+			data = HeaderDecoder.DecodePhraseAndId (Encoding.ASCII.GetBytes ("\t=?utf-8?B?0J/RgNC4?= =?utf-8?Q?_2012=D0=B3?=\t<some.id@someserver.com> "));
 			Assert.Equal ("При 2012г", data.Value1);
 			Assert.Equal ("some.id@someserver.com", data.Value2);
 
-			Assert.Throws<FormatException> (() => HeaderDecoder.DecodePhraseAndId (string.Empty));
-			Assert.Throws<FormatException> (() => HeaderDecoder.DecodePhraseAndId ("Some Text postmaser@someserver.com"));
+			Assert.Throws<FormatException> (() => HeaderDecoder.DecodePhraseAndId (Array.Empty<byte> ()));
+			Assert.Throws<FormatException> (() => HeaderDecoder.DecodePhraseAndId (Encoding.ASCII.GetBytes ("Some Text postmaser@someserver.com")));
 		}
 
 		[Fact]
 		[Trait ("Category", "Mime.HeaderDecoder")]
 		public void DecodePhraseList ()
 		{
-			var arr = HeaderDecoder.DecodePhraseList ("ru-ru");
+			var arr = HeaderDecoder.DecodePhraseList (Encoding.ASCII.GetBytes ("ru-ru"));
 			Assert.Equal (1, arr.Count);
 			Assert.Equal ("ru-ru", arr[0]);
 
-			arr = HeaderDecoder.DecodePhraseList (" ru-ru,\t Simple  (not\tcomment)  Text,\t=?utf-8?B?0J/RgNC4?= =?utf-8?Q?_2012=D0=B3?= ");
+			arr = HeaderDecoder.DecodePhraseList (Encoding.ASCII.GetBytes (" ru-ru,\t Simple  (not\tcomment)  Text,\t=?utf-8?B?0J/RgNC4?= =?utf-8?Q?_2012=D0=B3?= "));
 			Assert.Equal (3, arr.Count);
 			Assert.Equal ("ru-ru", arr[0]);
 			Assert.Equal ("Simple Text", arr[1]);
@@ -191,17 +194,17 @@ namespace Novartment.Base.Net.Mime.Test
 		[Trait ("Category", "Mime.HeaderDecoder")]
 		public void DecodeAddrSpecList ()
 		{
-			var addrs = HeaderDecoder.DecodeAddrSpecList ("(return path here) < (none) > ", true);
+			var addrs = HeaderDecoder.DecodeAddrSpecList (Encoding.ASCII.GetBytes ("(return path here) < (none) > "), true);
 			Assert.Equal (0, addrs.Count);
-			addrs = HeaderDecoder.DecodeAddrSpecList ("\troot@server10.espc2.mechel.com", true);
+			addrs = HeaderDecoder.DecodeAddrSpecList (Encoding.ASCII.GetBytes ("\troot@server10.espc2.mechel.com"), true);
 			Assert.Equal (1, addrs.Count);
 			Assert.Equal ("root", addrs[0].LocalPart);
 			Assert.Equal ("server10.espc2.mechel.com", addrs[0].Domain);
-			addrs = HeaderDecoder.DecodeAddrSpecList ("\t <\"sp1 <d>\"@[some...strange domain]>  ");
+			addrs = HeaderDecoder.DecodeAddrSpecList (Encoding.ASCII.GetBytes ("\t <\"sp1 <d>\"@[some...strange domain]>  "));
 			Assert.Equal (1, addrs.Count);
 			Assert.Equal ("sp1 <d>", addrs[0].LocalPart);
 			Assert.Equal ("some...strange domain", addrs[0].Domain);
-			addrs = HeaderDecoder.DecodeAddrSpecList ("\t<root@server10.espc2.mechel.com>\t <\"sp1 <d>\"@[some...strange domain]> < 2V1WYw6Z100000137@itc-serv01.chmk.mechelgroup.ru> ");
+			addrs = HeaderDecoder.DecodeAddrSpecList (Encoding.ASCII.GetBytes ("\t<root@server10.espc2.mechel.com>\t <\"sp1 <d>\"@[some...strange domain]> < 2V1WYw6Z100000137@itc-serv01.chmk.mechelgroup.ru> "));
 			Assert.Equal (3, addrs.Count);
 			Assert.Equal ("root", addrs[0].LocalPart);
 			Assert.Equal ("server10.espc2.mechel.com", addrs[0].Domain);
@@ -210,14 +213,15 @@ namespace Novartment.Base.Net.Mime.Test
 			Assert.Equal ("2V1WYw6Z100000137", addrs[2].LocalPart);
 			Assert.Equal ("itc-serv01.chmk.mechelgroup.ru", addrs[2].Domain);
 
-			Assert.Throws<FormatException> (() => HeaderDecoder.DecodeAddrSpecList ("<postmaster@server.com> report@gov.ru"));
+			Assert.Throws<FormatException> (() => HeaderDecoder.DecodeAddrSpecList (Encoding.ASCII.GetBytes ("<postmaster@server.com> report@gov.ru")));
 		}
 
 		[Fact]
 		[Trait ("Category", "Mime.HeaderDecoder")]
 		public void DecodeMailboxList ()
 		{
-			var arr = HeaderDecoder.DecodeMailboxList ("no.name@mailinator.com,\t\"Recipient A.B. \\\"First\\\"\" <sp1@[some strange domain]>,\t=?windows-1251?Q?new_=F1=EE=E2=F1=E5=EC_one_222?= <\"namewith,comma\"@mailinator.com>,\t=?windows-1251?Q?=C8=E4=E5=FF_=F1=EE=F1=F2=EE=E8=F2_=E2_=F2=EE=EC=2C_=F7?=\t=?windows-1251?Q?=F2=EE=E1=FB_=EF=E8=F1=E0=F2=FC_=F2=E5=F1=F2=FB_=E4=EB=FF_?=\t=?windows-1251?Q?=EA=E0=E6=E4=EE=E9_=ED=E5=F2=F0=E8=E2=E8=E0=EB=FC=ED=EE=E9?=\t=?windows-1251?Q?_=F4=F3=ED=EA=F6=E8=E8_=E8=EB=E8_=EC=E5=F2=EE=E4=E0?= <sp3@mailinator.com>");
+			var arr = HeaderDecoder.DecodeMailboxList (Encoding.ASCII.GetBytes (
+					"no.name@mailinator.com,\t\"Recipient A.B. \\\"First\\\"\" <sp1@[some strange domain]>,\t=?windows-1251?Q?new_=F1=EE=E2=F1=E5=EC_one_222?= <\"namewith,comma\"@mailinator.com>,\t=?windows-1251?Q?=C8=E4=E5=FF_=F1=EE=F1=F2=EE=E8=F2_=E2_=F2=EE=EC=2C_=F7?=\t=?windows-1251?Q?=F2=EE=E1=FB_=EF=E8=F1=E0=F2=FC_=F2=E5=F1=F2=FB_=E4=EB=FF_?=\t=?windows-1251?Q?=EA=E0=E6=E4=EE=E9_=ED=E5=F2=F0=E8=E2=E8=E0=EB=FC=ED=EE=E9?=\t=?windows-1251?Q?_=F4=F3=ED=EA=F6=E8=E8_=E8=EB=E8_=EC=E5=F2=EE=E4=E0?= <sp3@mailinator.com>"));
 			Assert.Equal (4, arr.Count);
 			Assert.Null (arr[0].Name);
 			Assert.Equal ("no.name", arr[0].Address.LocalPart);
@@ -232,7 +236,8 @@ namespace Novartment.Base.Net.Mime.Test
 			Assert.Equal ("sp3", arr[3].Address.LocalPart);
 			Assert.Equal ("mailinator.com", arr[3].Address.Domain);
 
-			arr = HeaderDecoder.DecodeMailboxList ("=?utf-8?Q?2012_=D0=B3?= <one@mail.ru>, \"man 2\" <two@gmail.ru>, three@hotmail.com, \"Price of Persia\" <prince@persia.com>, \"King of Scotland\" <king.scotland@server.net>");
+			arr = HeaderDecoder.DecodeMailboxList (Encoding.ASCII.GetBytes (
+				"=?utf-8?Q?2012_=D0=B3?= <one@mail.ru>, \"man 2\" <two@gmail.ru>, three@hotmail.com, \"Price of Persia\" <prince@persia.com>, \"King of Scotland\" <king.scotland@server.net>"));
 			Assert.Equal (5, arr.Count);
 			Assert.Equal ("2012 г", arr[0].Name);
 			Assert.Equal ("one", arr[0].Address.LocalPart);
@@ -255,18 +260,18 @@ namespace Novartment.Base.Net.Mime.Test
 		[Trait ("Category", "Mime.HeaderDecoder")]
 		public void DecodeQualityValueParameterList ()
 		{
-			var arr = HeaderDecoder.DecodeQualityValueParameterList ("ru-ru");
+			var arr = HeaderDecoder.DecodeQualityValueParameterList (Encoding.ASCII.GetBytes ("ru-ru"));
 			Assert.Equal (1, arr.Count);
 			Assert.Equal (1.0M, arr[0].Importance);
 			Assert.Equal ("ru-ru", arr[0].Value);
 
-			arr = HeaderDecoder.DecodeQualityValueParameterList ("ru-ru,ru,en-us");
+			arr = HeaderDecoder.DecodeQualityValueParameterList (Encoding.ASCII.GetBytes ("ru-ru,ru,en-us"));
 			Assert.Equal (3, arr.Count);
 			Assert.Equal ("ru-ru", arr[0].Value);
 			Assert.Equal ("ru", arr[1].Value);
 			Assert.Equal ("en-us", arr[2].Value);
 
-			arr = HeaderDecoder.DecodeQualityValueParameterList ("ru-ru,ru;q=0.8,en-us;q=0.5,en;q=0.3");
+			arr = HeaderDecoder.DecodeQualityValueParameterList (Encoding.ASCII.GetBytes ("ru-ru,ru;q=0.8,en-us;q=0.5,en;q=0.3"));
 			Assert.Equal (4, arr.Count);
 			Assert.Equal (1.0M, arr[0].Importance);
 			Assert.Equal ("ru-ru", arr[0].Value);
@@ -277,25 +282,25 @@ namespace Novartment.Base.Net.Mime.Test
 			Assert.Equal (0.3M, arr[3].Importance);
 			Assert.Equal ("en", arr[3].Value);
 
-			Assert.Throws<FormatException> (() => HeaderDecoder.DecodeQualityValueParameterList ("<ru>;q=0.8,en-us;q=0.5"));
-			Assert.Throws<FormatException> (() => HeaderDecoder.DecodeQualityValueParameterList ("ru:q=0.8,en-us;q=0.5"));
-			Assert.Throws<FormatException> (() => HeaderDecoder.DecodeQualityValueParameterList ("ru;i=0.8,en-us;q=0.5"));
-			Assert.Throws<FormatException> (() => HeaderDecoder.DecodeQualityValueParameterList ("ru;q-0.8,en-us;q=0.5"));
-			Assert.Throws<FormatException> (() => HeaderDecoder.DecodeQualityValueParameterList ("ru;q=<0.8>,en-us;q=0.5"));
-			Assert.Throws<FormatException> (() => HeaderDecoder.DecodeQualityValueParameterList ("ru;q=0.a8,en-us;q=0.5"));
-			Assert.Throws<FormatException> (() => HeaderDecoder.DecodeQualityValueParameterList ("ru;q=-0.8,en-us;q=0.5"));
-			Assert.Throws<FormatException> (() => HeaderDecoder.DecodeQualityValueParameterList ("ru;q=1.8,en-us;q=0.5"));
+			Assert.Throws<FormatException> (() => HeaderDecoder.DecodeQualityValueParameterList (Encoding.ASCII.GetBytes ("<ru>;q=0.8,en-us;q=0.5")));
+			Assert.Throws<FormatException> (() => HeaderDecoder.DecodeQualityValueParameterList (Encoding.ASCII.GetBytes ("ru:q=0.8,en-us;q=0.5")));
+			Assert.Throws<FormatException> (() => HeaderDecoder.DecodeQualityValueParameterList (Encoding.ASCII.GetBytes ("ru;i=0.8,en-us;q=0.5")));
+			Assert.Throws<FormatException> (() => HeaderDecoder.DecodeQualityValueParameterList (Encoding.ASCII.GetBytes ("ru;q-0.8,en-us;q=0.5")));
+			Assert.Throws<FormatException> (() => HeaderDecoder.DecodeQualityValueParameterList (Encoding.ASCII.GetBytes ("ru;q=<0.8>,en-us;q=0.5")));
+			Assert.Throws<FormatException> (() => HeaderDecoder.DecodeQualityValueParameterList (Encoding.ASCII.GetBytes ("ru;q=0.a8,en-us;q=0.5")));
+			Assert.Throws<FormatException> (() => HeaderDecoder.DecodeQualityValueParameterList (Encoding.ASCII.GetBytes ("ru;q=-0.8,en-us;q=0.5")));
+			Assert.Throws<FormatException> (() => HeaderDecoder.DecodeQualityValueParameterList (Encoding.ASCII.GetBytes ("ru;q=1.8,en-us;q=0.5")));
 		}
 
 		[Fact]
 		[Trait ("Category", "Mime.HeaderDecoder")]
 		public void DecodeAngleBracketedlList ()
 		{
-			var arr = HeaderDecoder.DecodeAngleBracketedlList ("<ru-ru>");
+			var arr = HeaderDecoder.DecodeAngleBracketedlList (Encoding.ASCII.GetBytes ("<ru-ru>"));
 			Assert.Equal (1, arr.Count);
 			Assert.Equal ("ru-ru", arr[0]);
 
-			arr = HeaderDecoder.DecodeAngleBracketedlList (" (no one) <ru-ru>,\t ( comment here )    <some.id@someserver.com> ");
+			arr = HeaderDecoder.DecodeAngleBracketedlList (Encoding.ASCII.GetBytes (" (no one) <ru-ru>,\t ( comment here )    <some.id@someserver.com> "));
 			Assert.Equal (2, arr.Count);
 			Assert.Equal ("ru-ru", arr[0]);
 			Assert.Equal ("some.id@someserver.com", arr[1]);
@@ -305,31 +310,32 @@ namespace Novartment.Base.Net.Mime.Test
 		[Trait ("Category", "Mime.HeaderDecoder")]
 		public void DecodeVersion ()
 		{
-			var data = HeaderDecoder.DecodeVersion ("1.0");
+			var data = HeaderDecoder.DecodeVersion (Encoding.ASCII.GetBytes ("1.0"));
 			Assert.Equal (1, data.Major);
 			Assert.Equal (0, data.Minor);
 
-			data = HeaderDecoder.DecodeVersion (" ( comment here )  2 . ( new) 5 ");
+			data = HeaderDecoder.DecodeVersion (Encoding.ASCII.GetBytes (" ( comment here )  2 . ( new) 5 "));
 			Assert.Equal (2, data.Major);
 			Assert.Equal (5, data.Minor);
 
-			Assert.Throws<FormatException> (() => HeaderDecoder.DecodeVersion ("1.0 a"));
-			Assert.Throws<FormatException> (() => HeaderDecoder.DecodeVersion ("1;0"));
-			Assert.Throws<FormatException> (() => HeaderDecoder.DecodeVersion ("1.<0>"));
-			Assert.Throws<FormatException> (() => HeaderDecoder.DecodeVersion ("1a.0"));
-			Assert.Throws<FormatException> (() => HeaderDecoder.DecodeVersion ("1.b0"));
+			Assert.Throws<FormatException> (() => HeaderDecoder.DecodeVersion (Encoding.ASCII.GetBytes ("1.0 a")));
+			Assert.Throws<FormatException> (() => HeaderDecoder.DecodeVersion (Encoding.ASCII.GetBytes ("1;0")));
+			Assert.Throws<FormatException> (() => HeaderDecoder.DecodeVersion (Encoding.ASCII.GetBytes ("1.<0>")));
+			Assert.Throws<FormatException> (() => HeaderDecoder.DecodeVersion (Encoding.ASCII.GetBytes ("1a.0")));
+			Assert.Throws<FormatException> (() => HeaderDecoder.DecodeVersion (Encoding.ASCII.GetBytes ("1.b0")));
 		}
 
 		[Fact]
 		[Trait ("Category", "Mime.HeaderDecoder")]
 		public void DecodeAtomAndParameterList ()
 		{
-			var data = HeaderDecoder.DecodeAtomAndParameterList ("text/plain");
+			var data = HeaderDecoder.DecodeAtomAndParameterList (Encoding.ASCII.GetBytes ("text/plain"));
 			Assert.Equal ("text/plain", data.Text);
 			var arr = data.Parameters;
 			Assert.Equal (0, arr.Count);
 
-			data = HeaderDecoder.DecodeAtomAndParameterList (" text/plain\t;\t   format = flowed (obsolette) ;\t   charset= \"koi8-r\"  ; reply-type = original  ");
+			data = HeaderDecoder.DecodeAtomAndParameterList (Encoding.ASCII.GetBytes (
+				" text/plain\t;\t   format = flowed (obsolette) ;\t   charset= \"koi8-r\"  ; reply-type = original  "));
 			Assert.Equal ("text/plain", data.Text);
 			arr = data.Parameters;
 			Assert.Equal (3, arr.Count);
@@ -345,13 +351,14 @@ namespace Novartment.Base.Net.Mime.Test
 		[Trait ("Category", "Mime.HeaderDecoder")]
 		public void DecodeDispositionAction ()
 		{
-			var data = HeaderDecoder.DecodeDispositionAction ("manual-action/MDN-sent-manually;displayed");
+			var data = HeaderDecoder.DecodeDispositionAction (Encoding.ASCII.GetBytes ("manual-action/MDN-sent-manually;displayed"));
 			Assert.Equal ("manual-action", data.Value1);
 			Assert.Equal ("MDN-sent-manually", data.Value2);
 			Assert.Equal ("displayed", data.Value3);
 			Assert.Equal (0, data.List.Count);
 
-			data = HeaderDecoder.DecodeDispositionAction ("\t automatic-action /  MDN-sent-automatically  ; deleted / some1, some2 , some3 ");
+			data = HeaderDecoder.DecodeDispositionAction (Encoding.ASCII.GetBytes (
+				"\t automatic-action /  MDN-sent-automatically  ; deleted / some1, some2 , some3 "));
 			Assert.Equal ("automatic-action", data.Value1);
 			Assert.Equal ("MDN-sent-automatically", data.Value2);
 			Assert.Equal ("deleted", data.Value3);
@@ -361,31 +368,32 @@ namespace Novartment.Base.Net.Mime.Test
 			Assert.Equal ("some3", data.List[2]);
 
 			Assert.Throws<FormatException> (() => HeaderDecoder.DecodeDispositionAction (
-				"manual-action/MDN-sent-manually"));
+				Encoding.ASCII.GetBytes ("manual-action/MDN-sent-manually")));
 			Assert.Throws<FormatException> (() => HeaderDecoder.DecodeDispositionAction (
-				"manual-action;MDN-sent-manually;displayed"));
+				Encoding.ASCII.GetBytes ("manual-action;MDN-sent-manually;displayed")));
 			Assert.Throws<FormatException> (() => HeaderDecoder.DecodeDispositionAction (
-				"manual-action/MDN-sent-manually/displayed"));
+				Encoding.ASCII.GetBytes ("manual-action/MDN-sent-manually/displayed")));
 			Assert.Throws<FormatException> (() => HeaderDecoder.DecodeDispositionAction (
-				"manual-action/<MDN-sent-manually>;displayed"));
+				Encoding.ASCII.GetBytes ("manual-action/<MDN-sent-manually>;displayed")));
 			Assert.Throws<FormatException> (() => HeaderDecoder.DecodeDispositionAction (
-				"manual-action/MDN-sent-manually;<displayed>"));
+				Encoding.ASCII.GetBytes ("manual-action/MDN-sent-manually;<displayed>")));
 			Assert.Throws<FormatException> (() => HeaderDecoder.DecodeDispositionAction (
-				"<manual-action>/MDN-sent-manually;displayed"));
+				Encoding.ASCII.GetBytes ("<manual-action>/MDN-sent-manually;displayed")));
 		}
 
 		[Fact]
 		[Trait ("Category", "Mime.HeaderDecoder")]
 		public void DecodeDispositionNotificationParameterList ()
 		{
-			var arr = HeaderDecoder.DecodeDispositionNotificationParameterList ("signed-receipt-protocol=optional,pkcs7-signature");
+			var arr = HeaderDecoder.DecodeDispositionNotificationParameterList (Encoding.ASCII.GetBytes ("signed-receipt-protocol=optional,pkcs7-signature"));
 			Assert.Equal (1, arr.Count);
 			Assert.Equal ("signed-receipt-protocol", arr[0].Name);
 			Assert.Equal (DispositionNotificationParameterImportance.Optional, arr[0].Importance);
 			Assert.Equal (1, arr[0].Values.Count);
 			Assert.Equal ("pkcs7-signature", arr[0].Values[0]);
 
-			arr = HeaderDecoder.DecodeDispositionNotificationParameterList ("  signed-receipt-protocol = optional ,  pkcs7-signature (obsolette)  ; \t   signed-receipt-micalg = required , sha1   , ( second ) md5  ");
+			arr = HeaderDecoder.DecodeDispositionNotificationParameterList (Encoding.ASCII.GetBytes (
+				"  signed-receipt-protocol = optional ,  pkcs7-signature (obsolette)  ; \t   signed-receipt-micalg = required , sha1   , ( second ) md5  "));
 			Assert.Equal (2, arr.Count);
 			Assert.Equal ("signed-receipt-protocol", arr[0].Name);
 			Assert.Equal (DispositionNotificationParameterImportance.Optional, arr[0].Importance);
@@ -398,19 +406,19 @@ namespace Novartment.Base.Net.Mime.Test
 			Assert.Equal ("md5", arr[1].Values[1]);
 
 			Assert.Throws<FormatException> (() => HeaderDecoder.DecodeDispositionNotificationParameterList (
-				"signed-receipt-protocol=optional,"));
+				Encoding.ASCII.GetBytes ("signed-receipt-protocol=optional,")));
 			Assert.Throws<FormatException> (() => HeaderDecoder.DecodeDispositionNotificationParameterList (
-				"signed-receipt-protocol,optional,pkcs7-signature"));
+				Encoding.ASCII.GetBytes ("signed-receipt-protocol,optional,pkcs7-signature")));
 			Assert.Throws<FormatException> (() => HeaderDecoder.DecodeDispositionNotificationParameterList (
-				"signed-receipt-protocol=optional=pkcs7-signature"));
+				Encoding.ASCII.GetBytes ("signed-receipt-protocol=optional=pkcs7-signature")));
 			Assert.Throws<FormatException> (() => HeaderDecoder.DecodeDispositionNotificationParameterList (
-				"<signed-receipt-protocol>=optional,pkcs7-signature"));
+				Encoding.ASCII.GetBytes ("<signed-receipt-protocol>=optional,pkcs7-signature")));
 			Assert.Throws<FormatException> (() => HeaderDecoder.DecodeDispositionNotificationParameterList (
-				"signed-receipt-protocol=[optional],pkcs7-signature"));
+				Encoding.ASCII.GetBytes ("signed-receipt-protocol=[optional],pkcs7-signature")));
 			Assert.Throws<FormatException> (() => HeaderDecoder.DecodeDispositionNotificationParameterList (
-				"signed-receipt-protocol=optional,<pkcs7-signature>"));
+				Encoding.ASCII.GetBytes ("signed-receipt-protocol=optional,<pkcs7-signature>")));
 			Assert.Throws<FormatException> (() => HeaderDecoder.DecodeDispositionNotificationParameterList (
-				"signed-receipt-protocol=ignore,pkcs7-signature"));
+				Encoding.ASCII.GetBytes ("signed-receipt-protocol=ignore,pkcs7-signature")));
 		}
 
 		[Fact]
@@ -430,34 +438,41 @@ namespace Novartment.Base.Net.Mime.Test
 			fields = HeaderDecoder.LoadHeaderFieldsAsync (src, CancellationToken.None).Result;
 			Assert.Equal (4, fields.Count);
 			Assert.Equal (HeaderFieldName.ContentType, fields[0].Name);
-			Assert.Equal ("text/plain;\tformat=flowed;\tcharset=\"koi8-r\";\treply-type=original", fields[0].Value);
+			Assert.Equal ("text/plain;\tformat=flowed;\tcharset=\"koi8-r\";\treply-type=original", Encoding.ASCII.GetString (fields[0].Body.Span));
 			Assert.Equal (HeaderFieldName.PreventNonDeliveryReport, fields[1].Name);
-			Assert.Equal (string.Empty, fields[1].Value);
+			Assert.Equal (0, fields[1].Body.Length);
 			Assert.Equal (HeaderFieldName.Received, fields[2].Name);
-			Assert.Equal ("by server10.espc2.mechel.com (8.8.8/1.37)\tid CAA22933; Tue, 15 May 2012 02:49:22 +0100", fields[2].Value);
+			Assert.Equal ("by server10.espc2.mechel.com (8.8.8/1.37)\tid CAA22933; Tue, 15 May 2012 02:49:22 +0100", Encoding.ASCII.GetString (fields[2].Body.Span));
 			Assert.Equal (HeaderFieldName.AutoForwarded, fields[3].Name);
-			Assert.Equal (":Q2hlY2sgSW50ZWdyaXR5IQ==", fields[3].Value);
+			Assert.Equal (":Q2hlY2sgSW50ZWdyaXR5IQ==", Encoding.ASCII.GetString (fields[3].Body.Span));
 		}
 
 		[Fact]
 		[Trait ("Category", "Mime.HeaderDecoder")]
 		public void ParseFoldedField ()
 		{
+			var buffer = new byte[1024];
 			var src = new ArrayBufferedSource (Encoding.ASCII.GetBytes ("x-Type:"));
-			var field = HeaderDecoder.ParseFoldedFieldAsync (src, CancellationToken.None).Result;
+			var field = HeaderDecoder.ParseFoldedFieldAsync (src, buffer, CancellationToken.None).Result;
 			Assert.IsType<ExtensionHeaderField> (field);
 			Assert.Equal (HeaderFieldName.Extension, field.Name);
-			Assert.Equal (string.Empty, field.Value);
+			Assert.Equal (0, field.Body.Length);
 			Assert.Equal ("x-Type", ((ExtensionHeaderField)field).ExtensionName);
 
 			src = new ArrayBufferedSource (Encoding.ASCII.GetBytes (
 				"content-Type:  \r\n   text/plain;\r\n\t\t\t\tformat=flowed;\r\n\t\tcharset=\"koi8-r\";\r\n\treply-type=original  \t \t"));
-			field = HeaderDecoder.ParseFoldedFieldAsync (src, CancellationToken.None).Result;
+			field = HeaderDecoder.ParseFoldedFieldAsync (src, buffer, CancellationToken.None).Result;
 			Assert.Equal (HeaderFieldName.ContentType, field.Name);
-			Assert.Equal ("text/plain;\t\t\t\tformat=flowed;\t\tcharset=\"koi8-r\";\treply-type=original", field.Value);
+			Assert.Equal ("text/plain;\t\t\t\tformat=flowed;\t\tcharset=\"koi8-r\";\treply-type=original", Encoding.ASCII.GetString (field.Body.Span));
 
 			src = new ArrayBufferedSource (Encoding.ASCII.GetBytes ("Subject=about"));
-			Assert.ThrowsAsync<FormatException> (() => HeaderDecoder.ParseFoldedFieldAsync (src, CancellationToken.None));
+			Assert.ThrowsAsync<FormatException> (() => HeaderDecoder.ParseFoldedFieldAsync (src, buffer, CancellationToken.None));
+
+			var strm = new MemoryStream (Encoding.ASCII.GetBytes ("Subject:about"));
+			var src2 = StreamExtensions.AsBufferedSource (strm, new byte[5]);
+			field = HeaderDecoder.ParseFoldedFieldAsync (src2, buffer, CancellationToken.None).Result;
+			Assert.Equal (HeaderFieldName.Subject, field.Name);
+			Assert.Equal ("about", Encoding.ASCII.GetString (field.Body.Span));
 		}
 	}
 }
