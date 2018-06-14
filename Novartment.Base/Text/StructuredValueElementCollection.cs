@@ -43,13 +43,14 @@ namespace Novartment.Base.Text
 		/// Воссоздаёт строку, закодированную в виде последовательности элементов.
 		/// </summary>
 		/// <param name="elements">Список элементов составляющих строку.</param>
+		/// <param name="source">Исходное ASCII-строковое значение.</param>
 		/// <param name="count">Количество элементов списка, которые составляют строку.</param>
 		/// <returns>Строка, декодированная из последовательности элементов.</returns>
 		/// <remarks>
 		/// Все элементы будут декодированы, а не просто склеены в единую строку.
 		/// Результирующая строка может содержать произвольные знаки, а не только ASCII-набор.
 		/// </remarks>
-		public static string Decode (this IReadOnlyList<StructuredValueElement> elements, int count)
+		public static string Decode (this IReadOnlyList<StructuredValueElement> elements, ReadOnlySpan<byte> source, int count)
 		{
 			if (elements == null)
 			{
@@ -60,9 +61,9 @@ namespace Novartment.Base.Text
 
 			var result = new StringBuilder ();
 			var prevIsWordEncoded = false;
-			for (var i = 0; i < count; i++)
+			for (var idx = 0; idx < count; idx++)
 			{
-				var token = elements[i];
+				var token = elements[idx];
 				if ((token.ElementType != StructuredValueElementType.Separator) &&
 					(token.ElementType != StructuredValueElementType.Value) &&
 					(token.ElementType != StructuredValueElementType.QuotedValue))
@@ -71,12 +72,18 @@ namespace Novartment.Base.Text
 						$"Element of type '{token.ElementType}' is complex and can not be decoded into discrete value."));
 				}
 
-				var decodedValue = token.Decode ();
+				var tokenSrc = source.Slice (token.StartPosition, token.Length);
+				var tokenIsWordEncoded = (tokenSrc.Length > 8) &&
+					(tokenSrc[0] == '=') &&
+					(tokenSrc[1] == '?') &&
+					(tokenSrc[tokenSrc.Length - 2] == '?') &&
+					(tokenSrc[tokenSrc.Length - 1] == '=');
+				var decodedValue = StructuredValueElementCollection.DecodeElement (tokenSrc, token.ElementType);
 
 				// RFC 2047 часть 6.2:
 				// When displaying a particular header field that contains multiple 'encoded-word's,
 				// any 'linear-white-space' that separates a pair of adjacent 'encoded-word's is ignored
-				if ((!prevIsWordEncoded || !token.IsWordEncoded) && (result.Length > 0))
+				if ((!prevIsWordEncoded || !tokenIsWordEncoded) && (result.Length > 0))
 				{
 					// RFC 5322 часть 3.2.2:
 					// Runs of FWS, comment, or CFWS that occur between lexical elements in a structured header field
@@ -84,7 +91,7 @@ namespace Novartment.Base.Text
 					result.Append (' ');
 				}
 
-				prevIsWordEncoded = token.IsWordEncoded;
+				prevIsWordEncoded = tokenIsWordEncoded;
 				result.Append (decodedValue);
 			}
 
@@ -112,87 +119,90 @@ namespace Novartment.Base.Text
 			// TODO: заменить вызовы CodePointReader на более простые, учитывая что исходная строка состоит только из ASCII
 			// TODO: добавить пропуск кодированных слов (внутри них могут быть символы "(<[ если оно в кодировке Q)
 			var elements = new ArrayList<StructuredValueElement> ();
-			while (source.Length > 0)
+			var pos = 0;
+			while (pos < source.Length)
 			{
-				switch (source[0])
+				switch (source[pos])
 				{
 					case (byte)' ':
 					case (byte)'\t':
 						// RFC 5322 часть 3.2.2:
 						// Runs of FWS, comment, or CFWS that occur between lexical elements in a structured header field
 						// are semantically interpreted as a single space character.
-						var whiteSpace = source.SliceElementsOfOneClass (AsciiCharSet.Classes, (short)AsciiCharClasses.WhiteSpace);
-						source = source.Slice (whiteSpace.Length);
+						var whiteSpace = source.Slice (pos).SliceElementsOfOneClass (AsciiCharSet.Classes, (short)AsciiCharClasses.WhiteSpace);
+						pos += whiteSpace.Length;
 						break;
 					case (byte)'"':
-						var quotedValue = source.SliceDelimitedElement (_QuotedStringDelimitingData);
-						source = source.Slice (quotedValue.Length);
+						var quotedValue = source.Slice (pos).SliceDelimitedElement (_QuotedStringDelimitingData);
 						if (typeToSkip != StructuredValueElementType.QuotedValue)
 						{
-							elements.Add (new StructuredValueElement (StructuredValueElementType.QuotedValue, quotedValue.Slice (1, quotedValue.Length - 2)));
+							elements.Add (new StructuredValueElement (StructuredValueElementType.QuotedValue, pos + 1, quotedValue.Length - 2));
 						}
+
+						pos += quotedValue.Length;
 
 						break;
 					case (byte)'(':
-						var roundBracketedValue = source.SliceDelimitedElement (_CommentDelimitingData);
-						source = source.Slice (roundBracketedValue.Length);
+						var roundBracketedValue = source.Slice (pos).SliceDelimitedElement (_CommentDelimitingData);
 						if (typeToSkip != StructuredValueElementType.RoundBracketedValue)
 						{
-							elements.Add (new StructuredValueElement (StructuredValueElementType.RoundBracketedValue, roundBracketedValue.Slice (1, roundBracketedValue.Length - 2)));
+							elements.Add (new StructuredValueElement (StructuredValueElementType.RoundBracketedValue, pos + 1, roundBracketedValue.Length - 2));
 						}
+
+						pos += roundBracketedValue.Length;
 
 						break;
 					case (byte)'<':
-						var angleBracketedValue = source.SliceDelimitedElement (_AngleAddrDelimitingData);
-						source = source.Slice (angleBracketedValue.Length);
+						var angleBracketedValue = source.Slice (pos).SliceDelimitedElement (_AngleAddrDelimitingData);
 						if (typeToSkip != StructuredValueElementType.AngleBracketedValue)
 						{
-							elements.Add (new StructuredValueElement (StructuredValueElementType.AngleBracketedValue, angleBracketedValue.Slice (1, angleBracketedValue.Length - 2)));
+							elements.Add (new StructuredValueElement (StructuredValueElementType.AngleBracketedValue, pos + 1, angleBracketedValue.Length - 2));
 						}
+
+						pos += angleBracketedValue.Length;
 
 						break;
 					case (byte)'[':
-						var squareBracketedValue = source.SliceDelimitedElement (_DomainLiteralDelimitingData);
-						source = source.Slice (squareBracketedValue.Length);
+						var squareBracketedValue = source.Slice (pos).SliceDelimitedElement (_DomainLiteralDelimitingData);
 						if (typeToSkip != StructuredValueElementType.SquareBracketedValue)
 						{
-							elements.Add (new StructuredValueElement (StructuredValueElementType.SquareBracketedValue, squareBracketedValue.Slice (1, squareBracketedValue.Length - 2)));
+							elements.Add (new StructuredValueElement (StructuredValueElementType.SquareBracketedValue, pos + 1, squareBracketedValue.Length - 2));
 						}
+
+						pos += squareBracketedValue.Length;
 
 						break;
 					default:
-						var value = source.SliceElementsOfOneClass (AsciiCharSet.Classes, (short)valueCharClass);
-						if (value.Length < 1)
+						var value = source.Slice (pos).SliceElementsOfOneClass (AsciiCharSet.Classes, (short)valueCharClass);
+						var valueSize = value.Length;
+						if (valueSize < 1)
 						{
 							if (typeToSkip != StructuredValueElementType.Separator)
 							{
-								elements.Add (new StructuredValueElement (source[0]));
+								elements.Add (new StructuredValueElement (StructuredValueElementType.Separator, pos, 1));
 							}
 
-							source = source.Slice (1);
+							pos++;
 						}
 						else
 						{
-							var valueSize = value.Length;
-							var subParser = source.Slice (valueSize);
+							var valuePos = pos;
+							pos += valueSize;
 
 							// continue if dot followed by atom
-							while ((subParser.Length > 1) &&
+							while (((pos + 1) < source.Length) &&
 								allowDotInsideValue &&
-								(subParser[0] == '.') &&
-								AsciiCharSet.IsCharOfClass ((char)subParser[1], valueCharClass))
+								(source[pos] == '.') &&
+								AsciiCharSet.IsCharOfClass ((char)source[pos + 1], valueCharClass))
 							{
-								value = subParser.Slice (1).SliceElementsOfOneClass (AsciiCharSet.Classes, (short)valueCharClass);
-								valueSize += 1 + value.Length;
-								subParser = subParser.Slice (1 + value.Length);
+								value = source.Slice (pos + 1).SliceElementsOfOneClass (AsciiCharSet.Classes, (short)valueCharClass);
+								pos += value.Length + 1;
 							}
 
 							if (typeToSkip != StructuredValueElementType.Value)
 							{
-								elements.Add (new StructuredValueElement (StructuredValueElementType.Value, source.Slice (0, valueSize)));
+								elements.Add (new StructuredValueElement (StructuredValueElementType.Value, valuePos, pos - valuePos));
 							}
-
-							source = source.Slice (valueSize);
 						}
 
 						break;
@@ -200,6 +210,58 @@ namespace Novartment.Base.Text
 			}
 
 			return elements;
+		}
+
+
+		/// <summary>
+		/// Декодирует значение элемента в соответствии с его типом.
+		/// </summary>
+		/// <param name="source">Кодированное в соответствии с типом значение элемента.</param>
+		/// <param name="type">Тип, определяющий способ кодирования элемента.</param>
+		/// <returns>Декодировенное значение элемента.</returns>
+		public static string DecodeElement (ReadOnlySpan<byte> source, StructuredValueElementType type)
+		{
+			if ((type != StructuredValueElementType.SquareBracketedValue) &&
+				(type != StructuredValueElementType.QuotedValue) &&
+				(type != StructuredValueElementType.Value) &&
+				(type != StructuredValueElementType.Separator))
+			{
+				throw new InvalidOperationException (FormattableString.Invariant (
+					$"Element of type '{type}' is complex and can not be decoded to discrete value."));
+			}
+
+			string valueStr = ((type == StructuredValueElementType.SquareBracketedValue) || (type == StructuredValueElementType.QuotedValue)) ?
+				UnquoteString (source) :
+				AsciiCharSet.GetString (source);
+			if (type == StructuredValueElementType.Separator)
+			{
+				return valueStr;
+			}
+
+			var isWordEncoded = (valueStr.Length > 8) &&
+				(valueStr[0] == '=') &&
+				(valueStr[1] == '?') &&
+				(valueStr[valueStr.Length - 2] == '?') &&
+				(valueStr[valueStr.Length - 1] == '=');
+
+			return isWordEncoded ? Rfc2047EncodedWord.Parse (valueStr) : valueStr;
+		}
+
+		private static string UnquoteString (ReadOnlySpan<byte> value)
+		{
+			int idx = 0;
+			var result = new char[value.Length];
+			for (var i = 0; i < value.Length; i++)
+			{
+				if (value[i] == '\\')
+				{
+					i++;
+				}
+
+				result[idx++] = (char)value[i];
+			}
+
+			return new string (result, 0, idx);
 		}
 	}
 }

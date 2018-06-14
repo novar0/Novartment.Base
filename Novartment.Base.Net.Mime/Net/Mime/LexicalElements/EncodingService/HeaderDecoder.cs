@@ -9,8 +9,6 @@ using Novartment.Base.BinaryStreaming;
 using Novartment.Base.Collections;
 using Novartment.Base.Collections.Linq;
 using Novartment.Base.Text;
-using Novartment.Base.Text.CharSpanExtensions;
-using static System.Linq.Enumerable;
 
 namespace Novartment.Base.Net.Mime
 {
@@ -91,7 +89,7 @@ namespace Novartment.Base.Net.Mime
 				throw new FormatException ("Invalid value for type 'atom'.");
 			}
 
-			return AsciiCharSet.GetString (elements[0].Value.Span);
+			return AsciiCharSet.GetString (source.Slice (elements[0].StartPosition, elements[0].Length));
 		}
 
 		/// <summary>
@@ -177,7 +175,7 @@ namespace Novartment.Base.Net.Mime
 				throw new FormatException ("Empty value is invalid for format 'phrase'.");
 			}
 
-			return elements.Decode (elements.Count);
+			return elements.Decode (source, elements.Count);
 		}
 
 		/// <summary>
@@ -187,17 +185,32 @@ namespace Novartment.Base.Net.Mime
 		/// <returns>Collection of 'atom's.</returns>
 		internal static IReadOnlyList<string> DecodeAtomList (ReadOnlySpan<byte> source)
 		{
-			var elementSets = StructuredValueElementCollection.Parse (source, AsciiCharClasses.Token, false, StructuredValueElementType.RoundBracketedValue)
-				.Split (item => item.EqualsSeparator ((byte)','));
+			var elementCombined = StructuredValueElementCollection.Parse (source, AsciiCharClasses.Token, false, StructuredValueElementType.RoundBracketedValue);
 			var result = new ArrayList<string> ();
-			foreach (var elements in elementSets)
+			var lastItemIsSeparator = true;
+			foreach (var item in elementCombined)
 			{
-				if ((elements.Count != 1) || (elements[0].ElementType != StructuredValueElementType.Value))
+				var isSeparator = (item.ElementType == StructuredValueElementType.Separator) && (item.Length == 1) && (source[item.StartPosition] == (byte)',');
+				if (isSeparator)
 				{
-					throw new FormatException ("Value does not conform to format 'comma-separated atoms'.");
-				}
+					if (lastItemIsSeparator)
+					{
+						throw new FormatException ("Value does not conform to format 'comma-separated atoms'.");
+					}
 
-				result.Add (AsciiCharSet.GetString (elements[0].Value.Span));
+					lastItemIsSeparator = true;
+				}
+				else
+				{
+					if (!lastItemIsSeparator || (item.ElementType != StructuredValueElementType.Value))
+					{
+						throw new FormatException ("Value does not conform to format 'comma-separated atoms'.");
+					}
+
+					lastItemIsSeparator = false;
+
+					result.Add (AsciiCharSet.GetString (source.Slice (item.StartPosition, item.Length)));
+				}
 			}
 
 			return result;
@@ -231,7 +244,8 @@ namespace Novartment.Base.Net.Mime
 
 			var value = source.Slice (idx + 1);
 
-			var isValidNotificationFieldValue = NotificationFieldValueTypeHelper.TryParse (AsciiCharSet.GetString (typeTokens[0].Value.Span), out NotificationFieldValueKind valueType);
+			var str = AsciiCharSet.GetString (source.Slice (typeTokens[0].StartPosition, typeTokens[0].Length));
+			var isValidNotificationFieldValue = NotificationFieldValueTypeHelper.TryParse (str, out NotificationFieldValueKind valueType);
 			if (!isValidNotificationFieldValue)
 			{
 				throw new FormatException ("Value does not conform to format 'type;value'.");
@@ -308,10 +322,10 @@ namespace Novartment.Base.Net.Mime
 			string text = null;
 			if (elements.Count > 1)
 			{
-				text = elements.Decode (elements.Count - 1);
+				text = elements.Decode (source, elements.Count - 1);
 			}
 
-			var id = AsciiCharSet.GetString (elements[elements.Count - 1].Value.Span);
+			var id = AsciiCharSet.GetString (source.Slice (elements[elements.Count - 1].StartPosition, elements[elements.Count - 1].Length));
 			return new TwoStrings () { Value1 = text, Value2 = id };
 		}
 
@@ -322,9 +336,32 @@ namespace Novartment.Base.Net.Mime
 		/// <returns>Collection of 'phrase's.</returns>
 		internal static IReadOnlyList<string> DecodePhraseList (ReadOnlySpan<byte> source)
 		{
-			var elementSets = StructuredValueElementCollection.Parse (source, AsciiCharClasses.Atom, false, StructuredValueElementType.RoundBracketedValue)
-				.Split (item => item.EqualsSeparator ((byte)','));
-			return elementSets.Select (elements => elements.Decode (elements.Count)).ToArray ().AsReadOnlyList ();
+			var elementCombined = StructuredValueElementCollection.Parse (source, AsciiCharClasses.Atom, false, StructuredValueElementType.RoundBracketedValue);
+			var result = new ArrayList<string> ();
+			var elements = new ArrayList<StructuredValueElement> ();
+			foreach (var item in elementCombined)
+			{
+				var isSeparator = (item.ElementType == StructuredValueElementType.Separator) && (item.Length == 1) && (source[item.StartPosition] == (byte)',');
+				if (isSeparator)
+				{
+					if (elements.Count > 0)
+					{
+						result.Add (elements.Decode (source, elements.Count));
+						elements.Clear ();
+					}
+				}
+				else
+				{
+					elements.Add (item);
+				}
+			}
+
+			if (elements.Count > 0)
+			{
+				result.Add (elements.Decode (source, elements.Count));
+			}
+
+			return result;
 		}
 
 		/// <summary>
@@ -338,9 +375,9 @@ namespace Novartment.Base.Net.Mime
 			var elements = StructuredValueElementCollection.Parse (source, AsciiCharClasses.Atom, true, StructuredValueElementType.RoundBracketedValue);
 
 			// non-compilant server may specify single address without angle brackets
-			if (elements[0].ElementType != StructuredValueElementType.AngleBracketedValue)
+			if ((elements.Count > 0) && (elements[0].ElementType != StructuredValueElementType.AngleBracketedValue))
 			{
-				var addr = AddrSpec.Parse (elements);
+				var addr = AddrSpec.Parse (source, elements);
 				return ReadOnlyList.Repeat (addr, 1);
 			}
 
@@ -352,17 +389,31 @@ namespace Novartment.Base.Net.Mime
 					throw new FormatException ("Value does not conform to list of 'angle-addr' format.");
 				}
 
-				var subTokens = StructuredValueElementCollection.Parse (token.Value.Span, AsciiCharClasses.Atom, true, StructuredValueElementType.RoundBracketedValue);
+				var subSource = source.Slice (token.StartPosition, token.Length);
+				var subTokens = StructuredValueElementCollection.Parse (
+					subSource,
+					AsciiCharClasses.Atom,
+					true,
+					StructuredValueElementType.RoundBracketedValue);
 				if (enableEmptyAddrSpec)
 				{
-					var isComment = subTokens.All (item => item.ElementType == StructuredValueElementType.RoundBracketedValue);
+					var isComment = true;
+					foreach (var item in subTokens)
+					{
+						if (item.ElementType != StructuredValueElementType.RoundBracketedValue)
+						{
+							isComment = false;
+							break;
+						}
+					}
+
 					if (isComment)
 					{
 						continue;
 					}
 				}
 
-				var addr = AddrSpec.Parse (subTokens);
+				var addr = AddrSpec.Parse (subSource, subTokens);
 				result.Add (addr);
 			}
 
@@ -376,9 +427,32 @@ namespace Novartment.Base.Net.Mime
 		/// <returns>Collection of Mailbox.</returns>
 		internal static IReadOnlyList<Mailbox> DecodeMailboxList (ReadOnlySpan<byte> source)
 		{
-			var elements = StructuredValueElementCollection.Parse (source, AsciiCharClasses.Atom, true, StructuredValueElementType.RoundBracketedValue);
-			var elementSets = elements.Split (item => item.EqualsSeparator ((byte)','));
-			return elementSets.Select (Mailbox.Parse).ToArray ().AsReadOnlyList ();
+			var elementCombined = StructuredValueElementCollection.Parse (source, AsciiCharClasses.Atom, true, StructuredValueElementType.RoundBracketedValue);
+			var result = new ArrayList<Mailbox> ();
+			var elements = new ArrayList<StructuredValueElement> ();
+			foreach (var item in elementCombined)
+			{
+				var isSeparator = (item.ElementType == StructuredValueElementType.Separator) && (item.Length == 1) && (source[item.StartPosition] == (byte)',');
+				if (isSeparator)
+				{
+					if (elements.Count > 0)
+					{
+						result.Add (Mailbox.Parse (source, elements));
+						elements.Clear ();
+					}
+				}
+				else
+				{
+					elements.Add (item);
+				}
+			}
+
+			if (elements.Count > 0)
+			{
+				result.Add (Mailbox.Parse (source, elements));
+			}
+
+			return result;
 		}
 
 		/// <summary>
@@ -400,12 +474,36 @@ namespace Novartment.Base.Net.Mime
 				angle-bracket enclosed URL, the remainder of the field (the
 				current, and all subsequent, sub-items) SHOULD be ignored.
 			*/
-			var elements = StructuredValueElementCollection.Parse (source, AsciiCharClasses.Atom, false, StructuredValueElementType.RoundBracketedValue);
-			var elementSets = elements.Split (item => item.EqualsSeparator ((byte)','));
-			var list1 = elementSets
-				.TakeWhile (parameterElements => (parameterElements.Count == 1) && (parameterElements[0].ElementType == StructuredValueElementType.AngleBracketedValue));
-			var list2 = list1.Select (parameterElements => AsciiCharSet.GetString (parameterElements[0].Value.Span));
-			return list2.ToArray ().AsReadOnlyList ();
+
+			var elementCombined = StructuredValueElementCollection.Parse (source, AsciiCharClasses.Atom, false, StructuredValueElementType.RoundBracketedValue);
+			var result = new ArrayList<string> ();
+			var lastItemIsSeparator = true;
+			foreach (var item in elementCombined)
+			{
+				var isSeparator = (item.ElementType == StructuredValueElementType.Separator) && (item.Length == 1) && (source[item.StartPosition] == (byte)',');
+				if (isSeparator)
+				{
+					if (lastItemIsSeparator)
+					{
+						break;
+					}
+
+					lastItemIsSeparator = true;
+				}
+				else
+				{
+					if (!lastItemIsSeparator || (item.ElementType != StructuredValueElementType.AngleBracketedValue))
+					{
+						break;
+					}
+
+					lastItemIsSeparator = false;
+
+					result.Add (AsciiCharSet.GetString (source.Slice (item.StartPosition, item.Length)));
+				}
+			}
+
+			return result;
 		}
 
 		/// <summary>
@@ -415,47 +513,34 @@ namespace Novartment.Base.Net.Mime
 		/// <returns>Decoded atom value and collection of HeaderFieldParameter.</returns>
 		internal static StringAndParameters DecodeAtomAndParameterList (ReadOnlySpan<byte> source)
 		{
-			var parameters = new ArrayList<HeaderFieldParameter> ();
+			var parameterDecoder = new HeaderFieldParameterDecoder ();
 			var idx = source.IndexOf ((byte)';');
 			if (idx >= 0)
 			{
-				var elements = StructuredValueElementCollection.Parse (source.Slice (idx + 1), AsciiCharClasses.Token, false, StructuredValueElementType.RoundBracketedValue);
-				var elementSets = elements.Split (item => item.EqualsSeparator ((byte)';'));
-				string parameterName = null;
-				Encoding parameterEncoding = null;
-				var parameterValue = string.Empty;
-				foreach (var part in elementSets.Select (parameterElements => HeaderFieldParameterPart.Parse (parameterElements)))
-				{
-					if (part.Section == 0)
-					{
-						// начался новый параметр
-						// возвращаем предыдущий параметр если был
-						if (parameterName != null)
-						{
-							parameters.Add (new HeaderFieldParameter (parameterName, parameterValue));
-						}
+				var subSource = source.Slice (idx + 1);
 
-						parameterName = part.Name;
-						parameterValue = string.Empty;
-						try
+				var elementCombined = StructuredValueElementCollection.Parse (subSource, AsciiCharClasses.Token, false, StructuredValueElementType.RoundBracketedValue);
+				var elements = new ArrayList<StructuredValueElement> ();
+				foreach (var item in elementCombined)
+				{
+					var isSeparator = (item.ElementType == StructuredValueElementType.Separator) && (item.Length == 1) && (subSource[item.StartPosition] == (byte)';');
+					if (isSeparator)
+					{
+						if (elements.Count > 0)
 						{
-							parameterEncoding = Encoding.GetEncoding (part.Encoding ?? "us-ascii");
-						}
-						catch (ArgumentException excpt)
-						{
-							throw new FormatException (
-								FormattableString.Invariant ($"'{part.Encoding}' is not valid code page name."),
-								excpt);
+							parameterDecoder.AddPart (HeaderFieldParameterPart.Parse (subSource, elements));
+							elements.Clear ();
 						}
 					}
-
-					parameterValue += part.GetValue (parameterEncoding);
+					else
+					{
+						elements.Add (item);
+					}
 				}
 
-				// возвращаем предыдущий параметр если был
-				if (parameterName != null)
+				if (elements.Count > 0)
 				{
-					parameters.Add (new HeaderFieldParameter (parameterName, parameterValue));
+					parameterDecoder.AddPart (HeaderFieldParameterPart.Parse (subSource, elements));
 				}
 
 				source = source.Slice (0, idx);
@@ -467,8 +552,8 @@ namespace Novartment.Base.Net.Mime
 				throw new FormatException (FormattableString.Invariant ($"Invalid value for type 'atom'."));
 			}
 
-			var txt = AsciiCharSet.GetString (valueTokens[0].Value.Span);
-			return new StringAndParameters () { Text = txt, Parameters = parameters };
+			var txt = AsciiCharSet.GetString (source.Slice (valueTokens[0].StartPosition, valueTokens[0].Length));
+			return new StringAndParameters () { Text = txt, Parameters = parameterDecoder.GetResult () };
 		}
 
 		internal static ThreeStringsAndList DecodeDispositionAction (ReadOnlySpan<byte> source)
@@ -476,35 +561,52 @@ namespace Novartment.Base.Net.Mime
 			var elements = StructuredValueElementCollection.Parse (source, AsciiCharClasses.Token, false, StructuredValueElementType.RoundBracketedValue);
 			if ((elements.Count < 5) ||
 				(elements[0].ElementType != StructuredValueElementType.Value) ||
-				!elements[1].EqualsSeparator ((byte)'/') ||
+				(elements[1].ElementType != StructuredValueElementType.Separator) || (elements[1].Length != 1) || (source[elements[1].StartPosition] != (byte)'/') ||
 				(elements[2].ElementType != StructuredValueElementType.Value) ||
-				!elements[3].EqualsSeparator ((byte)';') ||
+				(elements[3].ElementType != StructuredValueElementType.Separator) || (elements[3].Length != 1) || (source[elements[3].StartPosition] != (byte)';') ||
 				(elements[4].ElementType != StructuredValueElementType.Value))
 			{
 				throw new FormatException ("Specified value does not represent valid 'disposition-action'.");
 			}
 
-			var actionMode = elements[0].Decode ();
-			var sendingMode = elements[2].Decode ();
-			var dispositionType = elements[4].Decode ();
-			var modifiers = new ArrayList<string> ();
+			var actionMode = StructuredValueElementCollection.DecodeElement (source.Slice (elements[0].StartPosition, elements[0].Length), elements[0].ElementType);
+			var sendingMode = StructuredValueElementCollection.DecodeElement (source.Slice (elements[2].StartPosition, elements[2].Length), elements[2].ElementType);
+			var dispositionType = StructuredValueElementCollection.DecodeElement (source.Slice (elements[4].StartPosition, elements[4].Length), elements[4].ElementType);
 			if (elements.Count > 5)
 			{
-				var isSlashSeparator = elements[5].EqualsSeparator ((byte)'/');
+				var isSlashSeparator = (elements[5].ElementType == StructuredValueElementType.Separator) && (elements[5].Length == 1) && (source[elements[5].StartPosition] == (byte)'/');
 				if (!isSlashSeparator)
 				{
 					throw new FormatException ("Specified value does not represent valid 'disposition-action'.");
 				}
 			}
 
-			var modifiersTokenSet = elements
-				.Skip (6)
-				.Split (item => item.EqualsSeparator ((byte)','));
-			foreach (var modifierTokens in modifiersTokenSet)
+			var elementCombined = StructuredValueElementCollection.Parse (source, AsciiCharClasses.Token, false, StructuredValueElementType.RoundBracketedValue);
+			var lastItemIsSeparator = true;
+			var modifiers = new ArrayList<string> ();
+			for (var idx = 6; idx < elementCombined.Count; idx++)
 			{
-				if ((modifierTokens.Count == 1) && (modifierTokens[0].ElementType == StructuredValueElementType.Value))
+				var item = elementCombined[idx];
+				var isSeparator = (item.ElementType == StructuredValueElementType.Separator) && (item.Length == 1) && (source[item.StartPosition] == (byte)',');
+				if (isSeparator)
 				{
-					modifiers.Add (modifierTokens[0].Decode ());
+					if (lastItemIsSeparator)
+					{
+						throw new FormatException ("Value does not conform to format 'comma-separated atoms'.");
+					}
+
+					lastItemIsSeparator = true;
+				}
+				else
+				{
+					if (!lastItemIsSeparator || (item.ElementType != StructuredValueElementType.Value))
+					{
+						throw new FormatException ("Value does not conform to format 'comma-separated atoms'.");
+					}
+
+					lastItemIsSeparator = false;
+
+					modifiers.Add (StructuredValueElementCollection.DecodeElement (source.Slice (item.StartPosition, item.Length), item.ElementType));
 				}
 			}
 
@@ -524,43 +626,32 @@ namespace Novartment.Base.Net.Mime
 		/// <returns>Decoded collection of DispositionNotificationParameter.</returns>
 		internal static IReadOnlyList<DispositionNotificationParameter> DecodeDispositionNotificationParameterList (ReadOnlySpan<byte> source)
 		{
-			var elements = StructuredValueElementCollection.Parse (source, AsciiCharClasses.Token, false, StructuredValueElementType.RoundBracketedValue);
-			var elementSets = elements.Split (item => item.EqualsSeparator ((byte)';'));
+			// disposition-notification-parameters = parameter *(";" parameter)
+			// parameter                           = attribute "=" importance "," 1#value
+			// importance                          = "required" / "optional"
+			var elementCombined = StructuredValueElementCollection.Parse (source, AsciiCharClasses.Token, false, StructuredValueElementType.RoundBracketedValue);
 			var result = new ArrayList<DispositionNotificationParameter> ();
-			foreach (var parameterElements in elementSets)
+			var elements = new ArrayList<StructuredValueElement> ();
+			foreach (var item in elementCombined)
 			{
-				if ((parameterElements.Count < 5) ||
-					(parameterElements[0].ElementType != StructuredValueElementType.Value) ||
-					!parameterElements[1].EqualsSeparator ((byte)'=') ||
-					(parameterElements[2].ElementType != StructuredValueElementType.Value) ||
-					!parameterElements[3].EqualsSeparator ((byte)',') ||
-					(parameterElements[4].ElementType != StructuredValueElementType.Value))
+				var isSeparator = (item.ElementType == StructuredValueElementType.Separator) && (item.Length == 1) && (source[item.StartPosition] == (byte)';');
+				if (isSeparator)
 				{
-					throw new FormatException ("Invalid value of 'disposition-notification' parameter.");
+					if (elements.Count > 0)
+					{
+						result.Add (DecodeDispositionNotificationParameter (source, elements));
+						elements.Clear ();
+					}
 				}
-
-				var name = AsciiCharSet.GetString (parameterElements[0].Value.Span);
-
-				var values = parameterElements
-					.Skip (2)
-					.Split (item => item.EqualsSeparator ((byte)','))
-					.Select (set => set[0].Value)
-					.ToArray ().AsReadOnlyList ();
-
-				var importance = DispositionNotificationParameterImportance.Unspecified;
-				var isValidParameterImportance = (values.Count >= 2) && ParameterImportanceHelper.TryParse (values[0].Span, out importance);
-				if (!isValidParameterImportance)
+				else
 				{
-					throw new FormatException ("Invalid value of 'disposition-notification' parameter.");
+					elements.Add (item);
 				}
+			}
 
-				var valuesStr = new string[values.Count - 1];
-				for (int i = 1; i < values.Count; i++)
-				{
-					valuesStr[i - 1] = AsciiCharSet.GetString (values[i].Span);
-				}
-
-				result.Add (new DispositionNotificationParameter (name, importance, valuesStr));
+			if (elements.Count > 0)
+			{
+				result.Add (DecodeDispositionNotificationParameter (source, elements));
 			}
 
 			return result;
@@ -573,43 +664,31 @@ namespace Novartment.Base.Net.Mime
 		/// <returns>Collection of QualityValueParameters.</returns>
 		internal static IReadOnlyList<QualityValueParameter> DecodeQualityValueParameterList (ReadOnlySpan<byte> source)
 		{
-			var elements = StructuredValueElementCollection.Parse (source, AsciiCharClasses.Token, false, StructuredValueElementType.RoundBracketedValue);
-			var elementSets = elements.Split (item => item.EqualsSeparator ((byte)','));
+			var elementCombined = StructuredValueElementCollection.Parse (source, AsciiCharClasses.Token, false, StructuredValueElementType.RoundBracketedValue);
+			var elements = new ArrayList<StructuredValueElement> ();
 			decimal defaultQuality = 1.0m;
 			var result = new ArrayList<QualityValueParameter> ();
-			foreach (var parameterElements in elementSets)
+			foreach (var item in elementCombined)
 			{
-				if (parameterElements[0].ElementType != StructuredValueElementType.Value)
+				var isSeparator = (item.ElementType == StructuredValueElementType.Separator) && (item.Length == 1) && (source[item.StartPosition] == (byte)',');
+				if (isSeparator)
 				{
-					throw new FormatException ("Value does not conform to format 'language-q'. First item is not 'atom'.");
-				}
-
-				var value = AsciiCharSet.GetString (parameterElements[0].Value.Span);
-				var quality = defaultQuality;
-				if (parameterElements.Count > 1)
-				{
-					if ((parameterElements.Count != 5) ||
-						!parameterElements[1].EqualsSeparator ((byte)';') ||
-						(parameterElements[2].ElementType != StructuredValueElementType.Value) || (parameterElements[2].Value.Length != 1) || ((parameterElements[2].Value.Span[0] != (byte)'q') && (parameterElements[2].Value.Span[0] != (byte)'Q')) ||
-						!parameterElements[3].EqualsSeparator ((byte)'=') ||
-						(parameterElements[4].ElementType != StructuredValueElementType.Value))
+					if (elements.Count > 0)
 					{
-						throw new FormatException ("Value does not conform to format 'language-q'.");
-					}
-
-					var qualityStr = AsciiCharSet.GetString (parameterElements[4].Value.Span);
-					var isValidNumber = decimal.TryParse (qualityStr, NumberStyles.AllowDecimalPoint, _NumberFormatDot, out quality);
-					if (!isValidNumber ||
-						(quality < 0.0m) ||
-						(quality > 1.0m))
-					{
-						throw new FormatException ("Value does not conform to format 'language-q'. Value of 'quality' not in range 0...1.0.");
+						result.Add (DecodeQualityValueParameter (source, elements, defaultQuality));
+						defaultQuality -= 0.01m;
+						elements.Clear ();
 					}
 				}
+				else
+				{
+					elements.Add (item);
+				}
+			}
 
-				result.Add (new QualityValueParameter (value, quality));
-
-				defaultQuality -= 0.01m;
+			if (elements.Count > 0)
+			{
+				result.Add (DecodeQualityValueParameter (source, elements, defaultQuality));
 			}
 
 			return result;
@@ -626,14 +705,14 @@ namespace Novartment.Base.Net.Mime
 
 			if ((elements.Count != 3) ||
 				(elements[0].ElementType != StructuredValueElementType.Value) ||
-				!elements[1].EqualsSeparator ((byte)'.') ||
+				(elements[1].ElementType != StructuredValueElementType.Separator) || (elements[1].Length != 1) || (source[elements[1].StartPosition] != (byte)'.') ||
 				(elements[2].ElementType != StructuredValueElementType.Value))
 			{
 				throw new FormatException ("Value does not conform to format 'version'.");
 			}
 
-			var n1Str = elements[0].Decode ();
-			var n2Str = elements[2].Decode ();
+			var n1Str = StructuredValueElementCollection.DecodeElement (source.Slice (elements[0].StartPosition, elements[0].Length), elements[0].ElementType);
+			var n2Str = StructuredValueElementCollection.DecodeElement (source.Slice (elements[2].StartPosition, elements[2].Length), elements[2].ElementType);
 			var n1 = int.Parse (
 					n1Str,
 					NumberStyles.AllowLeadingWhite | NumberStyles.AllowTrailingWhite,
@@ -707,9 +786,12 @@ namespace Novartment.Base.Net.Mime
 		// Значение подвергается анфолдингу (замене множества пробельных знаков и переводов строки на один пробел).
 		internal static async Task<HeaderField> ParseFoldedFieldAsync (IBufferedSource source, Memory<byte> buffer, CancellationToken cancellationToken)
 		{
-			// RFC 5322 part 2.2: A field body MUST NOT include CR and LF except when used in "folding" and "unfolding"
-			// RFC 5322 part 2.2.3: Each header field should be treated in its unfolded form for further syntactic and semantic evaluation.
-			// RFC 5322 part 3.2.2: CRLF that appears in FWS is semantically "invisible".
+			/*
+			RFC 5322
+			part 2.2: A field body MUST NOT include CR and LF except when used in "folding" and "unfolding"
+			part 2.2.3: Each header field should be treated in its unfolded form for further syntactic and semantic evaluation.
+			part 3.2.2: CRLF that appears in FWS is semantically "invisible".
+			*/
 
 			var nameSize = await source.CopyToBufferUntilMarkerAsync ((byte)':', buffer, cancellationToken).ConfigureAwait (false);
 			if ((nameSize < 1) || source.IsEmpty ())
@@ -745,6 +827,78 @@ namespace Novartment.Base.Net.Mime
 			return isKnown ?
 				new HeaderField (knownName, TrimWhiteSpace (buffer.Span.Slice (0, valueSize))) :
 				new ExtensionHeaderField (name, TrimWhiteSpace (buffer.Span.Slice (0, valueSize)));
+		}
+
+		private static DispositionNotificationParameter DecodeDispositionNotificationParameter (ReadOnlySpan<byte> source, IReadOnlyList<StructuredValueElement> elements)
+		{
+			/*
+			parameter  = attribute "=" importance "," 1#value
+			importance = "required" / "optional"
+			*/
+
+			if ((elements.Count < 5) ||
+				(elements[0].ElementType != StructuredValueElementType.Value) ||
+				(elements[1].ElementType != StructuredValueElementType.Separator) || (elements[1].Length != 1) || (source[elements[1].StartPosition] != (byte)'=') ||
+				(elements[2].ElementType != StructuredValueElementType.Value) ||
+				(elements[3].ElementType != StructuredValueElementType.Separator) || (elements[3].Length != 1) || (source[elements[3].StartPosition] != (byte)',') ||
+				(elements[4].ElementType != StructuredValueElementType.Value))
+			{
+				throw new FormatException ("Invalid value of 'disposition-notification' parameter.");
+			}
+
+			var name = AsciiCharSet.GetString (source.Slice (elements[0].StartPosition, elements[0].Length));
+
+			var importance = DispositionNotificationParameterImportance.Unspecified;
+			var isValidParameterImportance = ParameterImportanceHelper.TryParse (source.Slice (elements[2].StartPosition, elements[2].Length), out importance);
+			if (!isValidParameterImportance)
+			{
+				throw new FormatException ("Invalid value of 'disposition-notification' parameter.");
+			}
+
+			var valuesStr = new ArrayList<string> ();
+			for (var idx = 4; idx < elements.Count; idx++)
+			{
+				var item = elements[idx];
+				if ((item.ElementType != StructuredValueElementType.Separator) || (item.Length != 1) || (source[item.StartPosition] == (byte)';'))
+				{
+					valuesStr.Add (AsciiCharSet.GetString (source.Slice (item.StartPosition, item.Length)));
+				}
+			}
+
+			return new DispositionNotificationParameter (name, importance, valuesStr);
+		}
+
+		private static QualityValueParameter DecodeQualityValueParameter (ReadOnlySpan<byte> source, IReadOnlyList<StructuredValueElement> elements, decimal defaultQuality)
+		{
+			if ((elements.Count < 1) || (elements[0].ElementType != StructuredValueElementType.Value))
+			{
+				throw new FormatException ("Value does not conform to format 'language-q'. First item is not 'atom'.");
+			}
+
+			var value = AsciiCharSet.GetString (source.Slice (elements[0].StartPosition, elements[0].Length));
+			var quality = defaultQuality;
+			if (elements.Count > 1)
+			{
+				if ((elements.Count != 5) ||
+					(elements[1].ElementType != StructuredValueElementType.Separator) || (elements[1].Length != 1) || (source[elements[1].StartPosition] != (byte)';') ||
+					(elements[2].ElementType != StructuredValueElementType.Value) || (elements[2].Length != 1) || ((source[elements[2].StartPosition] != (byte)'q') && (source[elements[2].StartPosition] != (byte)'Q')) ||
+					(elements[3].ElementType != StructuredValueElementType.Separator) || (elements[3].Length != 1) || (source[elements[3].StartPosition] != (byte)'=') ||
+					(elements[4].ElementType != StructuredValueElementType.Value))
+				{
+					throw new FormatException ("Value does not conform to format 'language-q'.");
+				}
+
+				var qualityStr = AsciiCharSet.GetString (source.Slice (elements[4].StartPosition, elements[4].Length));
+				var isValidNumber = decimal.TryParse (qualityStr, NumberStyles.AllowDecimalPoint, _NumberFormatDot, out quality);
+				if (!isValidNumber ||
+					(quality < 0.0m) ||
+					(quality > 1.0m))
+				{
+					throw new FormatException ("Value does not conform to format 'language-q'. Value of 'quality' not in range 0...1.0.");
+				}
+			}
+
+			return new QualityValueParameter (value, quality);
 		}
 
 		// пропускаем начальные и конечные пробелы (0x20 и 0x09)

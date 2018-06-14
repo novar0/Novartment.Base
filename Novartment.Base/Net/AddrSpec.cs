@@ -117,7 +117,7 @@ namespace Novartment.Base.Net
 				AsciiCharClasses.Atom,
 				true,
 				StructuredValueElementType.RoundBracketedValue);
-			return Parse (elements);
+			return Parse (source, elements);
 		}
 
 		/// <summary>
@@ -151,23 +151,17 @@ namespace Novartment.Base.Net
 				AsciiCharClasses.Atom,
 				true,
 				StructuredValueElementType.RoundBracketedValue);
-			return Parse (elements);
+			return Parse (buf, elements);
 		}
 
 		/// <summary>
-		/// Создаёт интернет-идентификатор из указанной коллекции элементов значения.
+		/// Создаёт интернет-идентификатор из указанного строкового представления.
 		/// </summary>
+		/// <param name="source">Строковое представление интернет-идентификатора.</param>
 		/// <param name="elements">Коллекции элементов значения, которые составляют интернет-идентификатор.</param>
-		/// <returns>Интернет-идентификатор, созданный из коллекции элементов значения.</returns>
-		public static AddrSpec Parse (IReadOnlyList<StructuredValueElement> elements)
+		/// <returns>Интернет-идентификатор, созданный из строкового представления.</returns>
+		public static AddrSpec Parse (ReadOnlySpan<byte> source, IReadOnlyList<StructuredValueElement> elements)
 		{
-			if (elements == null)
-			{
-				throw new ArgumentNullException (nameof (elements));
-			}
-
-			Contract.EndContractBlock ();
-
 			/*
 			addr-spec       =  local-part "@" domain
 			local-part      =  dot-atom / quoted-string
@@ -181,21 +175,21 @@ namespace Novartment.Base.Net
 			if (elements.Count == 1)
 			{
 				// особый случай для совместимости со старыми реализациями
-				localPart = AsciiCharSet.GetString (elements[0].Value.Span);
+				localPart = AsciiCharSet.GetString (source.Slice (elements[0].StartPosition, elements[0].Length));
 				domain = "localhost";
 			}
 			else
 			{
 				if ((elements.Count != 3) ||
 					((elements[0].ElementType != StructuredValueElementType.Value) && (elements[0].ElementType != StructuredValueElementType.QuotedValue)) ||
-					!elements[1].EqualsSeparator ((byte)'@') ||
+					(elements[1].ElementType != StructuredValueElementType.Separator) || (elements[1].Length != 1) || (source[elements[1].StartPosition] != (byte)'@') ||
 					((elements[2].ElementType != StructuredValueElementType.Value) && (elements[2].ElementType != StructuredValueElementType.SquareBracketedValue)))
 				{
 					throw new FormatException ("Value does not conform to format 'addr-spec'.");
 				}
 
-				localPart = elements[0].Decode ();
-				domain = elements[2].Decode ();
+				localPart = StructuredValueElementCollection.DecodeElement (source.Slice (elements[0].StartPosition, elements[0].Length), elements[0].ElementType);
+				domain = StructuredValueElementCollection.DecodeElement (source.Slice (elements[2].StartPosition, elements[2].Length), elements[2].ElementType);
 			}
 
 			return new AddrSpec (localPart, domain);

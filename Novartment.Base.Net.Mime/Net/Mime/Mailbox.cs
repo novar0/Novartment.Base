@@ -101,7 +101,7 @@ namespace Novartment.Base.Net.Mime
 		public static Mailbox Parse (ReadOnlySpan<byte> source)
 		{
 			var elements = StructuredValueElementCollection.Parse (source, AsciiCharClasses.Atom, true, StructuredValueElementType.RoundBracketedValue);
-			return Parse (elements);
+			return Parse (source, elements);
 		}
 
 		/// <summary>
@@ -121,15 +121,16 @@ namespace Novartment.Base.Net.Mime
 			var buf = new byte[source.Length];
 			AsciiCharSet.GetBytes (source, buf);
 			var elements = StructuredValueElementCollection.Parse (buf, AsciiCharClasses.Atom, true, StructuredValueElementType.RoundBracketedValue);
-			return Parse (elements);
+			return Parse (buf, elements);
 		}
 
 		/// <summary>
 		/// Создаёт почтовый ящик из указанной коллекции элементов значения.
 		/// </summary>
+		/// <param name="source">Исходное ASCII-строковое значение.</param>
 		/// <param name="elements">Коллекции элементов значения, которые составляют почтовый ящик.</param>
 		/// <returns>Почтовый ящик, созданный из коллекции элементов значения.</returns>
-		public static Mailbox Parse (IReadOnlyList<StructuredValueElement> elements)
+		public static Mailbox Parse (ReadOnlySpan<byte> source, IReadOnlyList<StructuredValueElement> elements)
 		{
 			if (elements == null)
 			{
@@ -155,7 +156,7 @@ namespace Novartment.Base.Net.Mime
 					(elements[0].ElementType == StructuredValueElementType.QuotedValue))
 				{
 					// non-standard form of addr-spec: "addrs@server.com"
-					return new Mailbox (AddrSpec.Parse (elements[0].Value.Span), null);
+					return new Mailbox (AddrSpec.Parse (source.Slice (elements[0].StartPosition, elements[0].Length)), null);
 				}
 
 				throw new FormatException ("Value does not conform to format 'mailbox'.");
@@ -163,12 +164,12 @@ namespace Novartment.Base.Net.Mime
 
 			if ((cnt == 3) &&
 				((elements[0].ElementType == StructuredValueElementType.Value) || (elements[0].ElementType == StructuredValueElementType.QuotedValue)) &&
-				elements[1].EqualsSeparator ((byte)'@') &&
+				(elements[1].ElementType == StructuredValueElementType.Separator) && (elements[1].Length == 1) && (source[elements[1].StartPosition] == (byte)'@') &&
 				((elements[2].ElementType == StructuredValueElementType.Value) || (elements[2].ElementType == StructuredValueElementType.SquareBracketedValue)))
 			{
 				// addr-spec
-				var localPart = elements[0].Decode ();
-				var domain = elements[2].Decode ();
+				var localPart = StructuredValueElementCollection.DecodeElement (source.Slice (elements[0].StartPosition, elements[0].Length), elements[0].ElementType);
+				var domain = StructuredValueElementCollection.DecodeElement (source.Slice (elements[2].StartPosition, elements[2].Length), elements[2].ElementType);
 				var addr = new AddrSpec (localPart, domain);
 				return new Mailbox (addr);
 			}
@@ -179,8 +180,8 @@ namespace Novartment.Base.Net.Mime
 			}
 
 			// [display-name] angle-addr
-			var displayName = elements.Decode (elements.Count - 1);
-			var addr2 = AddrSpec.Parse (elements[cnt - 1].Value.Span);
+			var displayName = elements.Decode (source, elements.Count - 1);
+			var addr2 = AddrSpec.Parse (source.Slice (elements[cnt - 1].StartPosition, elements[cnt - 1].Length));
 			return new Mailbox (addr2, displayName);
 		}
 
