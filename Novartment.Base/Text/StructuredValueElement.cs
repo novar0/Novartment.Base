@@ -7,7 +7,7 @@ namespace Novartment.Base.Text
 	/// </summary>
 	public struct StructuredValueElement
 	{
-		private static readonly StructuredValueElement _invalid = new StructuredValueElement (StructuredValueElementType.Unspecified, -1, -1);
+		private static readonly StructuredValueElement _invalid = new StructuredValueElement (default (StructuredValueElementType), default (int), default (int));
 
 		/// <summary>
 		/// Инициализирует новый экземпляр класса StructuredValueElement на основе указанного типа и кодированного значения.

@@ -250,25 +250,27 @@ namespace Novartment.Base.Net.Mime
 				throw new FormatException ("Value does not conform to format 'type;value'.");
 			}
 
-			// в 'atom' не может быть ';'. допускаем что в коментах тоже нет ';'
-			var idx = source.IndexOf ((byte)';');
-			if ((idx < 1) || ((idx + 1) >= source.Length))
+			var parserPos = 0;
+			var typeElement = StructuredValueParser.GetNextElementAtom (source, ref parserPos);
+			if (!typeElement.IsValid)
 			{
 				throw new FormatException ("Value does not conform to format 'type;value'.");
 			}
 
-			var parserPos = 0;
-			var subSource = source.Slice (0, idx);
-			var typeToken = StructuredValueParser.GetNextElementAtom (subSource, ref parserPos);
-
-			var str = AsciiCharSet.GetString (subSource.Slice (typeToken.StartPosition, typeToken.Length));
-			var isValidNotificationFieldValue = NotificationFieldValueTypeHelper.TryParse (str, out NotificationFieldValueKind valueType);
+			var typeStr = typeElement.DecodeElement (source);
+			var isValidNotificationFieldValue = NotificationFieldValueTypeHelper.TryParse (typeStr, out NotificationFieldValueKind valueType);
 			if (!isValidNotificationFieldValue)
 			{
 				throw new FormatException ("Value does not conform to format 'type;value'.");
 			}
 
-			var value = source.Slice (idx + 1);
+			var separatorElement = StructuredValueParser.GetNextElementAtom (source, ref parserPos);
+			if ((separatorElement.ElementType != StructuredValueElementType.Separator) || (separatorElement.Length != 1) || (source[separatorElement.StartPosition] != (byte)';'))
+			{
+				throw new FormatException ("Value does not conform to format 'type;value'.");
+			}
+
+			var value = source.Slice (separatorElement.StartPosition + separatorElement.Length);
 			var valueStr = DecodeUnstructured (value).Trim ();
 
 			return new NotificationFieldValue (valueType, valueStr);
@@ -727,40 +729,79 @@ namespace Novartment.Base.Net.Mime
 		internal static IReadOnlyList<DispositionNotificationParameter> DecodeDispositionNotificationParameterList (ReadOnlySpan<byte> source)
 		{
 			/*
-			disposition-notification-parameters = parameter *(";" parameter)
-			parameter                           = attribute "=" importance "," 1#value
-			importance                          = "required" / "optional"
+			disposition-notification-parameter-list = disposition-notification-parameter *([FWS] ";" [FWS] disposition-notification-parameter)
+			disposition-notification-parameter = attribute [FWS] "=" [FWS] importance [FWS] "," [FWS] value *([FWS] "," [FWS] value)
+			importance = "required" / "optional"
+			attribute = Atom
+			value = atom / quoted-string
 			*/
 
 			var parserPos = 0;
 			var result = new ArrayList<DispositionNotificationParameter> ();
-			var elements = new ArrayList<StructuredValueElement> ();
+
 			while (true)
 			{
-				var item = StructuredValueParser.GetNextElementToken (source, ref parserPos);
-				if (!item.IsValid)
+				var attributeElement = StructuredValueParser.GetNextElementToken (source, ref parserPos);
+				if (!attributeElement.IsValid)
 				{
 					break;
 				}
 
-				var isSeparator = (item.ElementType == StructuredValueElementType.Separator) && (item.Length == 1) && (source[item.StartPosition] == (byte)';');
-				if (isSeparator)
-				{
-					if (elements.Count > 0)
-					{
-						result.Add (DecodeDispositionNotificationParameter (source, elements));
-						elements.Clear ();
-					}
-				}
-				else
-				{
-					elements.Add (item);
-				}
-			}
+				var equalityElement = StructuredValueParser.GetNextElementToken (source, ref parserPos);
+				var importanceElement = StructuredValueParser.GetNextElementToken (source, ref parserPos);
 
-			if (elements.Count > 0)
-			{
-				result.Add (DecodeDispositionNotificationParameter (source, elements));
+				if (
+					(attributeElement.ElementType != StructuredValueElementType.Value) ||
+					(equalityElement.ElementType != StructuredValueElementType.Separator) || (equalityElement.Length != 1) || (source[equalityElement.StartPosition] != (byte)'=') ||
+					(importanceElement.ElementType != StructuredValueElementType.Value))
+				{
+					throw new FormatException ("Invalid value of 'disposition-notification' parameter.");
+				}
+
+				var name = AsciiCharSet.GetString (source.Slice (attributeElement.StartPosition, attributeElement.Length));
+
+				var importance = DispositionNotificationParameterImportance.Unspecified;
+				var isValidParameterImportance = ParameterImportanceHelper.TryParse (source.Slice (importanceElement.StartPosition, importanceElement.Length), out importance);
+				if (!isValidParameterImportance)
+				{
+					throw new FormatException ("Invalid value of 'disposition-notification' parameter.");
+				}
+
+				// перебираем элементы значения, идущие через запятую
+				var values = new ArrayList<string> ();
+				while (true)
+				{
+					var separatorElement = StructuredValueParser.GetNextElementToken (source, ref parserPos);
+
+					// точка-с-запятой означает начало нового параметра если она после элемента значения
+					if (!separatorElement.IsValid ||
+						((values.Count > 0) && (separatorElement.ElementType == StructuredValueElementType.Separator) && (separatorElement.Length == 1) && (source[separatorElement.StartPosition] == (byte)';')))
+					{
+						break;
+					}
+
+					if ((separatorElement.ElementType != StructuredValueElementType.Separator) || (separatorElement.Length != 1) || (source[separatorElement.StartPosition] != (byte)','))
+					{
+						throw new FormatException ("Invalid value of 'disposition-notification' parameter.");
+					}
+
+					var valueElement = StructuredValueParser.GetNextElementToken (source, ref parserPos);
+	
+					if ((valueElement.ElementType != StructuredValueElementType.Value) && (valueElement.ElementType != StructuredValueElementType.QuotedValue))
+					{
+						throw new FormatException ("Invalid value of 'disposition-notification' parameter.");
+					}
+
+					var valueSrc = valueElement.DecodeElement (source);
+					values.Add (valueSrc);
+				}
+
+				if (values.Count < 1)
+				{
+					throw new FormatException ("Invalid value of 'disposition-notification' parameter.");
+				}
+
+				result.Add (new DispositionNotificationParameter (name, importance, values));
 			}
 
 			return result;
@@ -946,45 +987,6 @@ namespace Novartment.Base.Net.Mime
 			return isKnown ?
 				new HeaderField (knownName, TrimWhiteSpace (buffer.Span.Slice (0, valueSize))) :
 				new ExtensionHeaderField (name, TrimWhiteSpace (buffer.Span.Slice (0, valueSize)));
-		}
-
-		private static DispositionNotificationParameter DecodeDispositionNotificationParameter (ReadOnlySpan<byte> source, IReadOnlyList<StructuredValueElement> elements)
-		{
-			/*
-			parameter  = attribute "=" importance "," 1#value
-			importance = "required" / "optional"
-			*/
-
-			if ((elements.Count < 5) ||
-				(elements[0].ElementType != StructuredValueElementType.Value) ||
-				(elements[1].ElementType != StructuredValueElementType.Separator) || (elements[1].Length != 1) || (source[elements[1].StartPosition] != (byte)'=') ||
-				(elements[2].ElementType != StructuredValueElementType.Value) ||
-				(elements[3].ElementType != StructuredValueElementType.Separator) || (elements[3].Length != 1) || (source[elements[3].StartPosition] != (byte)',') ||
-				(elements[4].ElementType != StructuredValueElementType.Value))
-			{
-				throw new FormatException ("Invalid value of 'disposition-notification' parameter.");
-			}
-
-			var name = AsciiCharSet.GetString (source.Slice (elements[0].StartPosition, elements[0].Length));
-
-			var importance = DispositionNotificationParameterImportance.Unspecified;
-			var isValidParameterImportance = ParameterImportanceHelper.TryParse (source.Slice (elements[2].StartPosition, elements[2].Length), out importance);
-			if (!isValidParameterImportance)
-			{
-				throw new FormatException ("Invalid value of 'disposition-notification' parameter.");
-			}
-
-			var valuesStr = new ArrayList<string> ();
-			for (var idx = 4; idx < elements.Count; idx++)
-			{
-				var item = elements[idx];
-				if ((item.ElementType != StructuredValueElementType.Separator) || (item.Length != 1) || (source[item.StartPosition] == (byte)';'))
-				{
-					valuesStr.Add (AsciiCharSet.GetString (source.Slice (item.StartPosition, item.Length)));
-				}
-			}
-
-			return new DispositionNotificationParameter (name, importance, valuesStr);
 		}
 
 		private static QualityValueParameter DecodeQualityValueParameter (ReadOnlySpan<byte> source, IReadOnlyList<StructuredValueElement> elements, decimal defaultQuality)

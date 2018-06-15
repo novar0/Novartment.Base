@@ -393,7 +393,7 @@ namespace Novartment.Base.Net.Mime.Test
 			Assert.Equal ("pkcs7-signature", arr[0].Values[0]);
 
 			arr = HeaderDecoder.DecodeDispositionNotificationParameterList (Encoding.ASCII.GetBytes (
-				"  signed-receipt-protocol = optional ,  pkcs7-signature (obsolette)  ; \t   signed-receipt-micalg = required , sha1   , ( second ) md5  "));
+				"  signed-receipt-protocol = optional ,  pkcs7-signature (obsolette)  ; \t   signed-receipt-micalg = required , \"sha1=sha2\"   , ( second ) md5  "));
 			Assert.Equal (2, arr.Count);
 			Assert.Equal ("signed-receipt-protocol", arr[0].Name);
 			Assert.Equal (DispositionNotificationParameterImportance.Optional, arr[0].Importance);
@@ -402,7 +402,7 @@ namespace Novartment.Base.Net.Mime.Test
 			Assert.Equal ("signed-receipt-micalg", arr[1].Name);
 			Assert.Equal (DispositionNotificationParameterImportance.Required, arr[1].Importance);
 			Assert.Equal (2, arr[1].Values.Count);
-			Assert.Equal ("sha1", arr[1].Values[0]);
+			Assert.Equal ("sha1=sha2", arr[1].Values[0]);
 			Assert.Equal ("md5", arr[1].Values[1]);
 
 			Assert.Throws<FormatException> (() => HeaderDecoder.DecodeDispositionNotificationParameterList (
