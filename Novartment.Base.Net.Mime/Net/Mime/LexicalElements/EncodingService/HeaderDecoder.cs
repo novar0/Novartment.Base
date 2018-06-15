@@ -106,8 +106,8 @@ namespace Novartment.Base.Net.Mime
 			while (source.Length > 0)
 			{
 				// выделяем отдельно группы пробельных символов, потому что их надо пропускать если они между 'encoded-word'
-				var nextCP = source[0];
-				if ((nextCP == ' ') || (nextCP == '\t'))
+				var octet = source[0];
+				if ((octet == ' ') || (octet == '\t'))
 				{
 					lastWhiteSpace = source.SliceElementsOfOneClass (AsciiCharSet.Classes, (short)AsciiCharClasses.WhiteSpace);
 					source = source.Slice (lastWhiteSpace.Length);
@@ -118,11 +118,11 @@ namespace Novartment.Base.Net.Mime
 					source = source.Slice (value.Length);
 					if (value.Length < 1)
 					{
-						nextCP = source[0];
-						if (nextCP > AsciiCharSet.MaxCharValue)
+						octet = source[0];
+						if (octet > AsciiCharSet.MaxCharValue)
 						{
 							throw new FormatException (FormattableString.Invariant (
-								$"Value contains invalid for 'unstructured' character U+{nextCP:x}. Expected characters are U+0009 and U+0020...U+007E."));
+								$"Value contains invalid for 'unstructured' character U+{octet:x}. Expected characters are U+0009 and U+0020...U+007E."));
 						}
 					}
 
@@ -140,14 +140,15 @@ namespace Novartment.Base.Net.Mime
 						result.Append (AsciiCharSet.GetString (lastWhiteSpace));
 					}
 
+					var valueStr = AsciiCharSet.GetString (value);
 					prevIsWordEncoded = isWordEncoded;
 					if (isWordEncoded)
 					{
-						result.Append (Rfc2047EncodedWord.Parse (AsciiCharSet.GetString (value)));
+						result.Append (Rfc2047EncodedWord.Parse (valueStr));
 					}
 					else
 					{
-						result.Append (AsciiCharSet.GetString (value));
+						result.Append (valueStr);
 					}
 
 					lastWhiteSpace = default (ReadOnlySpan<byte>);
@@ -171,7 +172,7 @@ namespace Novartment.Base.Net.Mime
 		internal static string DecodePhrase (ReadOnlySpan<byte> source)
 		{
 			var parserPos = 0;
-			var decoder = new StructuredValueDecoder ();
+			var decoder = new StructuredValuePhraseDecoder ();
 			var isEmpty = true;
 			while (true)
 			{
@@ -333,7 +334,7 @@ namespace Novartment.Base.Net.Mime
 		internal static TwoStrings DecodePhraseAndId (ReadOnlySpan<byte> source)
 		{
 			var parserPos = 0;
-			StructuredValueDecoder decoder = null;
+			StructuredValuePhraseDecoder decoder = null;
 			bool isEmpty = true;
 			var lastElement = StructuredValueElement.Invalid;
 			while (true)
@@ -355,7 +356,7 @@ namespace Novartment.Base.Net.Mime
 				{
 					if (decoder == null)
 					{
-						decoder = new StructuredValueDecoder ();
+						decoder = new StructuredValuePhraseDecoder ();
 					}
 
 					decoder.AddElement (source, lastElement);
@@ -382,7 +383,7 @@ namespace Novartment.Base.Net.Mime
 		internal static IReadOnlyList<string> DecodePhraseList (ReadOnlySpan<byte> source)
 		{
 			var parserPos = 0;
-			StructuredValueDecoder decoder = null;
+			StructuredValuePhraseDecoder decoder = null;
 			bool isDecoderEmpty = true;
 			var result = new ArrayList<string> ();
 			while (true)
@@ -406,7 +407,7 @@ namespace Novartment.Base.Net.Mime
 				{
 					if (isDecoderEmpty)
 					{
-						decoder = new StructuredValueDecoder ();
+						decoder = new StructuredValuePhraseDecoder ();
 					}
 
 					decoder.AddElement (source, item);
@@ -664,9 +665,9 @@ namespace Novartment.Base.Net.Mime
 				throw new FormatException ("Specified value does not represent valid 'disposition-action'.");
 			}
 
-			var actionMode = StructuredValueDecoder.DecodeElement (source.Slice (element1.StartPosition, element1.Length), element1.ElementType);
-			var sendingMode = StructuredValueDecoder.DecodeElement (source.Slice (element3.StartPosition, element3.Length), element3.ElementType);
-			var dispositionType = StructuredValueDecoder.DecodeElement (source.Slice (element5.StartPosition, element5.Length), element5.ElementType);
+			var actionMode = element1.DecodeElement (source);
+			var sendingMode = element3.DecodeElement (source);
+			var dispositionType = element5.DecodeElement (source);
 			if (element6.IsValid)
 			{
 				var isSlashSeparator = (element6.ElementType == StructuredValueElementType.Separator) && (element6.Length == 1) && (source[element6.StartPosition] == (byte)'/');
@@ -705,7 +706,7 @@ namespace Novartment.Base.Net.Mime
 
 					lastItemIsSeparator = false;
 
-					modifiers.Add (StructuredValueDecoder.DecodeElement (source.Slice (item.StartPosition, item.Length), item.ElementType));
+					modifiers.Add (item.DecodeElement (source));
 				}
 			}
 
@@ -829,8 +830,8 @@ namespace Novartment.Base.Net.Mime
 				throw new FormatException ("Value does not conform to format 'version'.");
 			}
 
-			var n1Str = StructuredValueDecoder.DecodeElement (source.Slice (element1.StartPosition, element1.Length), element1.ElementType);
-			var n2Str = StructuredValueDecoder.DecodeElement (source.Slice (element3.StartPosition, element3.Length), element3.ElementType);
+			var n1Str = element1.DecodeElement (source);
+			var n2Str = element3.DecodeElement (source);
 			var n1 = int.Parse (
 					n1Str,
 					NumberStyles.AllowLeadingWhite | NumberStyles.AllowTrailingWhite,

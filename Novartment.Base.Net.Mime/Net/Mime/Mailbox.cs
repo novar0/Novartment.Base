@@ -162,15 +162,15 @@ namespace Novartment.Base.Net.Mime
 				((element3.ElementType == StructuredValueElementType.Value) || (element3.ElementType == StructuredValueElementType.SquareBracketedValue)))
 			{
 				// addr-spec
-				var localPart = StructuredValueDecoder.DecodeElement (source.Slice (element1.StartPosition, element1.Length), element1.ElementType);
-				var domain = StructuredValueDecoder.DecodeElement (source.Slice (element3.StartPosition, element3.Length), element3.ElementType);
+				var localPart = element1.DecodeElement (source);
+				var domain = element3.DecodeElement (source);
 				var addr = new AddrSpec (localPart, domain);
 				return new Mailbox (addr);
 			}
 
 			// более трёх элементов
 			parserPos = 0; // сбрасываем декодирование на начало
-			var decoder = new StructuredValueDecoder ();
+			var decoder = new StructuredValuePhraseDecoder ();
 			bool isEmpty = true;
 			var lastElement = StructuredValueElement.Invalid;
 			while (true)

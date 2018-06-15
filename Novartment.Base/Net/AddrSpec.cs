@@ -172,8 +172,8 @@ namespace Novartment.Base.Net
 					throw new FormatException ("Value does not conform to format 'addr-spec'.");
 				}
 
-				localPart = StructuredValueDecoder.DecodeElement (source.Slice (element1.StartPosition, element1.Length), element1.ElementType);
-				domain = StructuredValueDecoder.DecodeElement (source.Slice (element3.StartPosition, element3.Length), element3.ElementType);
+				localPart = element1.DecodeElement (source);
+				domain = element3.DecodeElement (source);
 			}
 
 			return new AddrSpec (localPart, domain);
