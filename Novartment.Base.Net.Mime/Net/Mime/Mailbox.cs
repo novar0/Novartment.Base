@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using Novartment.Base.Text;
 
@@ -49,11 +48,7 @@ namespace Novartment.Base.Net.Mime
 
 			Contract.EndContractBlock ();
 
-#if NETCOREAPP2_1
 			this.Address = AddrSpec.Parse (address);
-#else
-			this.Address = AddrSpec.Parse (address.AsSpan ());
-#endif
 			this.Name = displayName;
 		}
 
@@ -94,22 +89,11 @@ namespace Novartment.Base.Net.Mime
 		}
 
 		/// <summary>
-		/// Создаёт почтовый ящик из строкового представления.
+		/// Создаёт почтовый ящик из указанной коллекции элементов значения.
 		/// </summary>
-		/// <param name="source">Строковое представление почтового ящика.</param>
-		/// <returns>Почтовый ящик, созданный из строкового представления.</returns>
-		public static Mailbox Parse (ReadOnlySpan<byte> source)
-		{
-			var elements = StructuredValueElementCollection.Parse (source, AsciiCharClasses.Atom, true, StructuredValueElementType.RoundBracketedValue);
-			return Parse (source, elements);
-		}
-
-		/// <summary>
-		/// Создаёт почтовый ящик из строкового представления.
-		/// </summary>
-		/// <param name="source">Строковое представление почтового ящика.</param>
-		/// <returns>Почтовый ящик, созданный из строкового представления.</returns>
-		public static Mailbox Parse (ReadOnlySpan<char> source)
+		/// <param name="source">Исходное ASCII-строковое значение.</param>
+		/// <returns>Почтовый ящик, созданный из коллекции элементов значения.</returns>
+		public static Mailbox Parse (string source)
 		{
 			if (source == null)
 			{
@@ -118,70 +102,108 @@ namespace Novartment.Base.Net.Mime
 
 			Contract.EndContractBlock ();
 
-			var buf = new byte[source.Length];
-			AsciiCharSet.GetBytes (source, buf);
-			var elements = StructuredValueElementCollection.Parse (buf, AsciiCharClasses.Atom, true, StructuredValueElementType.RoundBracketedValue);
-			return Parse (buf, elements);
+			return Parse (source.AsSpan ());
 		}
 
 		/// <summary>
 		/// Создаёт почтовый ящик из указанной коллекции элементов значения.
 		/// </summary>
 		/// <param name="source">Исходное ASCII-строковое значение.</param>
-		/// <param name="elements">Коллекции элементов значения, которые составляют почтовый ящик.</param>
 		/// <returns>Почтовый ящик, созданный из коллекции элементов значения.</returns>
-		public static Mailbox Parse (ReadOnlySpan<byte> source, IReadOnlyList<StructuredValueElement> elements)
+		public static Mailbox Parse (ReadOnlySpan<char> source)
 		{
-			if (elements == null)
-			{
-				throw new ArgumentNullException (nameof (elements));
-			}
+			var buf = new byte[source.Length];
+			AsciiCharSet.GetBytes (source, buf);
+			return Parse (buf);
+		}
 
-			Contract.EndContractBlock ();
+		/// <summary>
+		/// Создаёт почтовый ящик из указанной коллекции элементов значения.
+		/// </summary>
+		/// <param name="source">Исходное ASCII-строковое значение.</param>
+		/// <returns>Почтовый ящик, созданный из коллекции элементов значения.</returns>
+		public static Mailbox Parse (ReadOnlySpan<byte> source)
+		{
+			/*
+			mailbox      = name-addr / addr-spec
+			name-addr    = [display-name] angle-addr
+			angle-addr   = [CFWS] "<" addr-spec ">" [CFWS]
+			display-name = phrase
+			*/
 
-			// mailbox      = name-addr / addr-spec
-			// name-addr    = [display-name] angle-addr
-			// angle-addr   = [CFWS] "<" addr-spec ">" [CFWS]
-			// display-name = phrase
-			var cnt = elements.Count;
+			var parserPos = 0;
+			var element1 = StructuredValueParser.GetNextElementDotAtom (source, ref parserPos);
 
-			if (cnt < 1)
+			if (!element1.IsValid)
 			{
 				throw new FormatException ("Value does not conform to format 'mailbox'.");
 			}
 
-			if (cnt == 1)
+			// один элемент
+			var element2 = StructuredValueParser.GetNextElementDotAtom (source, ref parserPos);
+			if (element1.IsValid && !element2.IsValid)
 			{
-				if ((elements[0].ElementType == StructuredValueElementType.AngleBracketedValue) || // angle-addr
-					(elements[0].ElementType == StructuredValueElementType.QuotedValue))
+				if ((element1.ElementType == StructuredValueElementType.AngleBracketedValue) || // angle-addr
+					(element1.ElementType == StructuredValueElementType.QuotedValue))
 				{
 					// non-standard form of addr-spec: "addrs@server.com"
-					return new Mailbox (AddrSpec.Parse (source.Slice (elements[0].StartPosition, elements[0].Length)), null);
+					return new Mailbox (AddrSpec.Parse (source.Slice (element1.StartPosition, element1.Length)), null);
 				}
 
 				throw new FormatException ("Value does not conform to format 'mailbox'.");
 			}
 
-			if ((cnt == 3) &&
-				((elements[0].ElementType == StructuredValueElementType.Value) || (elements[0].ElementType == StructuredValueElementType.QuotedValue)) &&
-				(elements[1].ElementType == StructuredValueElementType.Separator) && (elements[1].Length == 1) && (source[elements[1].StartPosition] == (byte)'@') &&
-				((elements[2].ElementType == StructuredValueElementType.Value) || (elements[2].ElementType == StructuredValueElementType.SquareBracketedValue)))
+			// три элемента
+			var element3 = StructuredValueParser.GetNextElementDotAtom (source, ref parserPos);
+			var element4 = StructuredValueParser.GetNextElementDotAtom (source, ref parserPos);
+			if (!element4.IsValid &&
+				((element1.ElementType == StructuredValueElementType.Value) || (element1.ElementType == StructuredValueElementType.QuotedValue)) &&
+				(element2.ElementType == StructuredValueElementType.Separator) && (element2.Length == 1) && (source[element2.StartPosition] == (byte)'@') &&
+				((element3.ElementType == StructuredValueElementType.Value) || (element3.ElementType == StructuredValueElementType.SquareBracketedValue)))
 			{
 				// addr-spec
-				var localPart = StructuredValueElementCollection.DecodeElement (source.Slice (elements[0].StartPosition, elements[0].Length), elements[0].ElementType);
-				var domain = StructuredValueElementCollection.DecodeElement (source.Slice (elements[2].StartPosition, elements[2].Length), elements[2].ElementType);
+				var localPart = StructuredValueDecoder.DecodeElement (source.Slice (element1.StartPosition, element1.Length), element1.ElementType);
+				var domain = StructuredValueDecoder.DecodeElement (source.Slice (element3.StartPosition, element3.Length), element3.ElementType);
 				var addr = new AddrSpec (localPart, domain);
 				return new Mailbox (addr);
 			}
 
-			if (elements[cnt - 1].ElementType != StructuredValueElementType.AngleBracketedValue)
+			// более трёх элементов
+			parserPos = 0; // сбрасываем декодирование на начало
+			var decoder = new StructuredValueDecoder ();
+			bool isEmpty = true;
+			var lastElement = StructuredValueElement.Invalid;
+			while (true)
+			{
+				var element = StructuredValueParser.GetNextElementDotAtom (source, ref parserPos);
+				if (!element.IsValid)
+				{
+					if (isEmpty)
+					{
+						throw new FormatException ("Value does not conform format 'phrase' + <id>.");
+					}
+
+					break;
+				}
+
+				isEmpty = false;
+
+				if (lastElement.IsValid)
+				{
+					decoder.AddElement (source, lastElement);
+				}
+
+				lastElement = element;
+			}
+
+			if (lastElement.ElementType != StructuredValueElementType.AngleBracketedValue)
 			{
 				throw new FormatException ("Value does not conform to format 'mailbox'.");
 			}
 
 			// [display-name] angle-addr
-			var displayName = elements.Decode (source, elements.Count - 1);
-			var addr2 = AddrSpec.Parse (source.Slice (elements[cnt - 1].StartPosition, elements[cnt - 1].Length));
+			var displayName = decoder.GetResult ();
+			var addr2 = AddrSpec.Parse (source.Slice (lastElement.StartPosition, lastElement.Length));
 			return new Mailbox (addr2, displayName);
 		}
 

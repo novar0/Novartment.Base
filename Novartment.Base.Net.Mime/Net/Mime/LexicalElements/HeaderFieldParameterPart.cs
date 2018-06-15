@@ -168,7 +168,7 @@ namespace Novartment.Base.Net.Mime
 
 			return new HeaderFieldParameterPart (
 				parameterName,
-				StructuredValueElementCollection.DecodeElement (source.Slice (tokens[idx].StartPosition, tokens[idx].Length), tokens[idx].ElementType),
+				StructuredValueDecoder.DecodeElement (source.Slice (tokens[idx].StartPosition, tokens[idx].Length), tokens[idx].ElementType),
 				section,
 				false);
 		}

@@ -110,21 +110,6 @@ namespace Novartment.Base.Net
 		/// </summary>
 		/// <param name="source">Строковое представление интернет-идентификатора.</param>
 		/// <returns>Интернет-идентификатор, созданный из строкового представления.</returns>
-		public static AddrSpec Parse (ReadOnlySpan<byte> source)
-		{
-			var elements = StructuredValueElementCollection.Parse (
-				source,
-				AsciiCharClasses.Atom,
-				true,
-				StructuredValueElementType.RoundBracketedValue);
-			return Parse (source, elements);
-		}
-
-		/// <summary>
-		/// Создаёт интернет-идентификатор из указанного строкового представления.
-		/// </summary>
-		/// <param name="source">Строковое представление интернет-идентификатора.</param>
-		/// <returns>Интернет-идентификатор, созданный из строкового представления.</returns>
 		public static AddrSpec Parse (string source)
 		{
 			if (source == null)
@@ -146,21 +131,15 @@ namespace Novartment.Base.Net
 		{
 			var buf = new byte[source.Length];
 			AsciiCharSet.GetBytes (source, buf);
-			var elements = StructuredValueElementCollection.Parse (
-				buf,
-				AsciiCharClasses.Atom,
-				true,
-				StructuredValueElementType.RoundBracketedValue);
-			return Parse (buf, elements);
+			return Parse (buf);
 		}
 
 		/// <summary>
 		/// Создаёт интернет-идентификатор из указанного строкового представления.
 		/// </summary>
 		/// <param name="source">Строковое представление интернет-идентификатора.</param>
-		/// <param name="elements">Коллекции элементов значения, которые составляют интернет-идентификатор.</param>
 		/// <returns>Интернет-идентификатор, созданный из строкового представления.</returns>
-		public static AddrSpec Parse (ReadOnlySpan<byte> source, IReadOnlyList<StructuredValueElement> elements)
+		public static AddrSpec Parse (ReadOnlySpan<byte> source)
 		{
 			/*
 			addr-spec       =  local-part "@" domain
@@ -172,24 +151,29 @@ namespace Novartment.Base.Net
 			string localPart;
 			string domain;
 
-			if (elements.Count == 1)
+			var parserPos = 0;
+			var element1 = StructuredValueParser.GetNextElementDotAtom (source, ref parserPos);
+			var element2 = StructuredValueParser.GetNextElementDotAtom (source, ref parserPos);
+			if (element1.IsValid && !element2.IsValid)
 			{
 				// особый случай для совместимости со старыми реализациями
-				localPart = AsciiCharSet.GetString (source.Slice (elements[0].StartPosition, elements[0].Length));
+				localPart = AsciiCharSet.GetString (source.Slice (element1.StartPosition, element1.Length));
 				domain = "localhost";
 			}
 			else
 			{
-				if ((elements.Count != 3) ||
-					((elements[0].ElementType != StructuredValueElementType.Value) && (elements[0].ElementType != StructuredValueElementType.QuotedValue)) ||
-					(elements[1].ElementType != StructuredValueElementType.Separator) || (elements[1].Length != 1) || (source[elements[1].StartPosition] != (byte)'@') ||
-					((elements[2].ElementType != StructuredValueElementType.Value) && (elements[2].ElementType != StructuredValueElementType.SquareBracketedValue)))
+				var element3 = StructuredValueParser.GetNextElementDotAtom (source, ref parserPos);
+				var element4 = StructuredValueParser.GetNextElementDotAtom (source, ref parserPos);
+				if (element4.IsValid ||
+					((element1.ElementType != StructuredValueElementType.Value) && (element1.ElementType != StructuredValueElementType.QuotedValue)) ||
+					(element2.ElementType != StructuredValueElementType.Separator) || (element2.Length != 1) || (source[element2.StartPosition] != (byte)'@') ||
+					((element3.ElementType != StructuredValueElementType.Value) && (element3.ElementType != StructuredValueElementType.SquareBracketedValue)))
 				{
 					throw new FormatException ("Value does not conform to format 'addr-spec'.");
 				}
 
-				localPart = StructuredValueElementCollection.DecodeElement (source.Slice (elements[0].StartPosition, elements[0].Length), elements[0].ElementType);
-				domain = StructuredValueElementCollection.DecodeElement (source.Slice (elements[2].StartPosition, elements[2].Length), elements[2].ElementType);
+				localPart = StructuredValueDecoder.DecodeElement (source.Slice (element1.StartPosition, element1.Length), element1.ElementType);
+				domain = StructuredValueDecoder.DecodeElement (source.Slice (element3.StartPosition, element3.Length), element3.ElementType);
 			}
 
 			return new AddrSpec (localPart, domain);

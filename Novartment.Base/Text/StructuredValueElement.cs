@@ -1,13 +1,12 @@
-﻿using System;
-using System.Diagnostics.Contracts;
-
-namespace Novartment.Base.Text
+﻿namespace Novartment.Base.Text
 {
 	/// <summary>
 	/// Элемент структурированного значения.
 	/// </summary>
 	public struct StructuredValueElement
 	{
+		private static readonly StructuredValueElement _invalid = new StructuredValueElement (StructuredValueElementType.Unspecified, -1, -1);
+
 		/// <summary>
 		/// Инициализирует новый экземпляр класса StructuredValueElement на основе указанного типа и кодированного значения.
 		/// </summary>
@@ -16,17 +15,15 @@ namespace Novartment.Base.Text
 		/// <param name="length">Количество элементов в source.</param>
 		public StructuredValueElement (StructuredValueElementType type, int startPosition, int length)
 		{
-			if (type == StructuredValueElementType.Unspecified)
-			{
-				throw new ArgumentOutOfRangeException (nameof (type));
-			}
-
-			Contract.EndContractBlock ();
-
 			this.ElementType = type;
 			this.StartPosition = startPosition;
 			this.Length = length;
 		}
+
+		/// <summary>
+		/// Получает особый элемент-метку, который не может быть получен в результате обычного разбора.
+		/// </summary>
+		public static StructuredValueElement Invalid => _invalid;
 
 		/// <summary>
 		/// Получает тип, определяющий способ кодирования элемента.
@@ -42,5 +39,10 @@ namespace Novartment.Base.Text
 		/// Получает количество байт элемента.
 		/// </summary>
 		public int Length { get; }
+
+		/// <summary>
+		/// Получает признак валидности элемента.
+		/// </summary>
+		public bool IsValid => (this.ElementType != _invalid.ElementType) || (this.StartPosition != _invalid.StartPosition) || (this.Length != _invalid.Length);
 	}
 }
