@@ -102,23 +102,48 @@ namespace Novartment.Base.Net.Mime
 		{
 			var result = new StringBuilder ();
 			var prevIsWordEncoded = false;
-			var lastWhiteSpace = default (ReadOnlySpan<byte>);
-			while (source.Length > 0)
+			var lastWhiteSpacePos = 0;
+			var lastWhiteSpaceLength = 0;
+			var pos = 0;
+			while (pos < source.Length)
 			{
 				// выделяем отдельно группы пробельных символов, потому что их надо пропускать если они между 'encoded-word'
-				var octet = source[0];
+				var octet = source[pos];
 				if ((octet == ' ') || (octet == '\t'))
 				{
-					lastWhiteSpace = source.SliceElementsOfOneClass (AsciiCharSet.Classes, (short)AsciiCharClasses.WhiteSpace);
-					source = source.Slice (lastWhiteSpace.Length);
+					lastWhiteSpacePos = pos;
+					while (pos < source.Length)
+					{
+						octet = source[pos];
+						if ((octet >= AsciiCharSet.Classes.Count) || ((AsciiCharSet.Classes[octet] & (short)AsciiCharClasses.WhiteSpace) == 0))
+						{
+							break;
+						}
+
+						pos++;
+					}
+
+					lastWhiteSpaceLength = pos - lastWhiteSpacePos;
 				}
 				else
 				{
-					var value = source.SliceElementsOfOneClass (AsciiCharSet.Classes, (short)AsciiCharClasses.Visible);
-					source = source.Slice (value.Length);
-					if (value.Length < 1)
+					var valuePos = pos;
+					while (pos < source.Length)
 					{
-						octet = source[0];
+						octet = source[pos];
+						if ((octet >= AsciiCharSet.Classes.Count) || ((AsciiCharSet.Classes[octet] & (short)AsciiCharClasses.Visible) == 0))
+						{
+							break;
+						}
+
+						pos++;
+					}
+
+					var valueLength = pos - valuePos;
+
+					if (valueLength < 1)
+					{
+						octet = source[pos];
 						if (octet > AsciiCharSet.MaxCharValue)
 						{
 							throw new FormatException (FormattableString.Invariant (
@@ -126,21 +151,21 @@ namespace Novartment.Base.Net.Mime
 						}
 					}
 
-					var isWordEncoded = (value.Length > 8) &&
-						(value[0] == '=') &&
-						(value[1] == '?') &&
-						(value[value.Length - 2] == '?') &&
-						(value[value.Length - 1] == '=');
+					var isWordEncoded = (valueLength > 8) &&
+						(source[valuePos] == '=') &&
+						(source[valuePos + 1] == '?') &&
+						(source[pos - 2] == '?') &&
+						(source[pos - 1] == '=');
 
 					// RFC 2047 часть 6.2:
 					// When displaying a particular header field that contains multiple 'encoded-word's,
 					// any 'linear-white-space' that separates a pair of adjacent 'encoded-word's is ignored
-					if ((!prevIsWordEncoded || !isWordEncoded) && (lastWhiteSpace.Length > 0))
+					if ((!prevIsWordEncoded || !isWordEncoded) && (lastWhiteSpaceLength > 0))
 					{
-						result.Append (AsciiCharSet.GetString (lastWhiteSpace));
+						result.Append (AsciiCharSet.GetString (source.Slice (lastWhiteSpacePos, lastWhiteSpaceLength)));
 					}
 
-					var valueStr = AsciiCharSet.GetString (value);
+					var valueStr = AsciiCharSet.GetString (source.Slice (valuePos, valueLength));
 					prevIsWordEncoded = isWordEncoded;
 					if (isWordEncoded)
 					{
@@ -151,13 +176,13 @@ namespace Novartment.Base.Net.Mime
 						result.Append (valueStr);
 					}
 
-					lastWhiteSpace = default (ReadOnlySpan<byte>);
+					lastWhiteSpacePos = lastWhiteSpaceLength = 0;
 				}
 			}
 
-			if (lastWhiteSpace.Length > 0)
+			if (lastWhiteSpaceLength > 0)
 			{
-				result.Append (AsciiCharSet.GetString (lastWhiteSpace));
+				result.Append (AsciiCharSet.GetString (source.Slice (lastWhiteSpacePos, lastWhiteSpaceLength)));
 			}
 
 			return result.ToString ();
@@ -299,6 +324,11 @@ namespace Novartment.Base.Net.Mime
 		/// <returns>Decoded string value and date.</returns>
 		internal static TextAndTime DecodeUnstructuredAndDate (ReadOnlySpan<byte> source)
 		{
+			/*
+			received       = "Received:" *received-token ";" date-time CRLF
+			received-token = word / angle-addr / addr-spec / domain
+			*/
+
 			if (source == null)
 			{
 				throw new ArgumentNullException (nameof (source));
@@ -306,25 +336,10 @@ namespace Novartment.Base.Net.Mime
 
 			Contract.EndContractBlock ();
 
-			// received       = "Received:" *received-token ";" date-time CRLF
-			// received-token = word / angle-addr / addr-spec / domain
-			var nextCP = source[0];
-			var delimData = ByteSequenceDelimitedElement.CreateMarkered (
-				nextCP,
-				(byte)';',
-				ByteSequenceDelimitedElement.CreateMarkered ((byte)'\"', (byte)'\"', ByteSequenceDelimitedElement.CreatePrefixedFixedLength ((byte)'\\', 2), false),
-				false);
-			var parameters = source.SliceDelimitedElement (delimData);
-			source = source.Slice (parameters.Length);
-			if (source.Length < 1)
-			{
-				throw new FormatException ("Value does not conform to format '*received-token;date-time'.");
-			}
+			var parametersPos = FindPositionAfterSemicolon (source);
+			var str = AsciiCharSet.GetString (source.Slice (0, parametersPos - 1));
+			var date = InternetDateTime.Parse (AsciiCharSet.GetString (source.Slice (parametersPos))); // TODO: предусмотреть вариант наличия коментов до или после даты
 
-			// TODO: предусмотреть вариант наличия коментов до или после даты
-			var date = InternetDateTime.Parse (AsciiCharSet.GetString (source));
-
-			var str = AsciiCharSet.GetString (parameters.Slice (0, parameters.Length - 1));
 			return new TextAndTime () { Text = str, Time = date };
 		}
 
@@ -602,50 +617,32 @@ namespace Novartment.Base.Net.Mime
 		/// <returns>Decoded atom value and collection of HeaderFieldParameter.</returns>
 		internal static StringAndParameters DecodeAtomAndParameterList (ReadOnlySpan<byte> source)
 		{
+			// Content-Type and Content-Disposition fields
+			var parserPos = 0;
+			var valueElement = StructuredValueParser.GetNextElementAtom (source, ref parserPos);
+			var value = AsciiCharSet.GetString (source.Slice (valueElement.StartPosition, valueElement.Length));
+
 			var parameterDecoder = new HeaderFieldParameterDecoder ();
-			var idx = source.IndexOf ((byte)';');
-			if (idx >= 0)
+			while (true)
 			{
-				var subSource = source.Slice (idx + 1);
-
-				var parserPos = 0;
-				var elements = new ArrayList<StructuredValueElement> ();
-				while (true)
+				var item = StructuredValueParser.GetNextElementToken (source, ref parserPos);
+				if (!item.IsValid)
 				{
-					var item = StructuredValueParser.GetNextElementToken (subSource, ref parserPos);
-					if (!item.IsValid)
-					{
-						break;
-					}
-
-					var isSeparator = (item.ElementType == StructuredValueElementType.Separator) && (item.Length == 1) && (subSource[item.StartPosition] == (byte)';');
-					if (isSeparator)
-					{
-						if (elements.Count > 0)
-						{
-							parameterDecoder.AddPart (HeaderFieldParameterPart.Parse (subSource, elements));
-							elements.Clear ();
-						}
-					}
-					else
-					{
-						elements.Add (item);
-					}
+					break;
 				}
 
-				if (elements.Count > 0)
+				var isSeparator = (item.ElementType == StructuredValueElementType.Separator) && (item.Length == 1) && (source[item.StartPosition] == (byte)';');
+				if (!isSeparator)
 				{
-					parameterDecoder.AddPart (HeaderFieldParameterPart.Parse (subSource, elements));
+					throw new FormatException ("Value does not conform to 'atom *(; parameter)' format.");
 				}
 
-				source = source.Slice (0, idx);
+				var part = HeaderFieldParameterPart.Parse (source, ref parserPos);
+
+				parameterDecoder.AddPart (part);
 			}
 
-			var parserPos2 = 0;
-			var valueToken = StructuredValueParser.GetNextElementAtom (source, ref parserPos2);
-
-			var txt = AsciiCharSet.GetString (source.Slice (valueToken.StartPosition, valueToken.Length));
-			return new StringAndParameters () { Text = txt, Parameters = parameterDecoder.GetResult () };
+			return new StringAndParameters () { Text = value, Parameters = parameterDecoder.GetResult () };
 		}
 
 		internal static ThreeStringsAndList DecodeDispositionAction (ReadOnlySpan<byte> source)
@@ -786,7 +783,7 @@ namespace Novartment.Base.Net.Mime
 					}
 
 					var valueElement = StructuredValueParser.GetNextElementToken (source, ref parserPos);
-	
+
 					if ((valueElement.ElementType != StructuredValueElementType.Value) && (valueElement.ElementType != StructuredValueElementType.QuotedValue))
 					{
 						throw new FormatException ("Invalid value of 'disposition-notification' parameter.");
@@ -815,36 +812,23 @@ namespace Novartment.Base.Net.Mime
 		internal static IReadOnlyList<QualityValueParameter> DecodeQualityValueParameterList (ReadOnlySpan<byte> source)
 		{
 			var parserPos = 0;
-			var elements = new ArrayList<StructuredValueElement> ();
 			decimal defaultQuality = 1.0m;
 			var result = new ArrayList<QualityValueParameter> ();
 			while (true)
 			{
-				var item = StructuredValueParser.GetNextElementToken (source, ref parserPos);
-				if (!item.IsValid)
+				result.Add (DecodeQualityValueParameter (source, defaultQuality, ref parserPos));
+				defaultQuality -= 0.01m;
+
+				var separatorElement = StructuredValueParser.GetNextElementToken (source, ref parserPos);
+				if (!separatorElement.IsValid)
 				{
 					break;
 				}
 
-				var isSeparator = (item.ElementType == StructuredValueElementType.Separator) && (item.Length == 1) && (source[item.StartPosition] == (byte)',');
-				if (isSeparator)
+				if ((separatorElement.ElementType != StructuredValueElementType.Separator) || (separatorElement.Length != 1) || (source[separatorElement.StartPosition] != (byte)','))
 				{
-					if (elements.Count > 0)
-					{
-						result.Add (DecodeQualityValueParameter (source, elements, defaultQuality));
-						defaultQuality -= 0.01m;
-						elements.Clear ();
-					}
+					throw new FormatException ("Invalid value of QualityValue parameter list.");
 				}
-				else
-				{
-					elements.Add (item);
-				}
-			}
-
-			if (elements.Count > 0)
-			{
-				result.Add (DecodeQualityValueParameter (source, elements, defaultQuality));
 			}
 
 			return result;
@@ -989,27 +973,91 @@ namespace Novartment.Base.Net.Mime
 				new ExtensionHeaderField (name, TrimWhiteSpace (buffer.Span.Slice (0, valueSize)));
 		}
 
-		private static QualityValueParameter DecodeQualityValueParameter (ReadOnlySpan<byte> source, IReadOnlyList<StructuredValueElement> elements, decimal defaultQuality)
+		// находит позицию символа ';' пропуская значения в кавычках
+		private static int FindPositionAfterSemicolon (this ReadOnlySpan<byte> source)
 		{
-			if ((elements.Count < 1) || (elements[0].ElementType != StructuredValueElementType.Value))
+			var pos = 0;
+
+			while (pos < source.Length)
+			{
+				var octet = source[pos];
+				if (octet == (byte)'\"')
+				{
+					// началось значение quoted-string, пропускаем всё до завершающих кавычек
+					while (true)
+					{
+						if (pos >= source.Length)
+						{
+							throw new FormatException (FormattableString.Invariant ($"Quoted value end marker not found in source."));
+						}
+
+						octet = source[pos];
+						if (octet == (byte)'\\')
+						{
+							// пропускаем квотированный символ чтобы не спутать его с завершающей кавычкой
+							pos += 2;
+							if (pos >= source.Length)
+							{
+								throw new FormatException ("Unexpected end of quoted element.");
+							}
+						}
+						else
+						{
+							pos++;
+							if (octet == (byte)'\"')
+							{
+								break;
+							}
+						}
+					}
+				}
+				else
+				{
+					pos++;
+					if (octet == (byte)';')
+					{
+						return pos;
+					}
+				}
+			}
+
+			throw new FormatException (FormattableString.Invariant ($"Ending end marker ';' not found in source."));
+		}
+
+		private static QualityValueParameter DecodeQualityValueParameter (ReadOnlySpan<byte> source, decimal defaultQuality, ref int parserPos)
+		{
+			/*
+			language-q = language-range [";" [CFWS] "q=" qvalue ] [CFWS]
+			value      = ( "0" [ "." 0*3DIGIT ] ) / ( "1" [ "." 0*3("0") ] )
+			*/
+
+			var valueElement = StructuredValueParser.GetNextElementToken (source, ref parserPos);
+			if (valueElement.ElementType != StructuredValueElementType.Value)
 			{
 				throw new FormatException ("Value does not conform to format 'language-q'. First item is not 'atom'.");
 			}
 
-			var value = AsciiCharSet.GetString (source.Slice (elements[0].StartPosition, elements[0].Length));
+			var value = AsciiCharSet.GetString (source.Slice (valueElement.StartPosition, valueElement.Length));
 			var quality = defaultQuality;
-			if (elements.Count > 1)
+
+			var subParserPos = parserPos;
+			var separatorElement = StructuredValueParser.GetNextElementToken (source, ref subParserPos);
+			var isSemicolon = (separatorElement.ElementType == StructuredValueElementType.Separator) && (separatorElement.Length == 1) && (source[separatorElement.StartPosition] == (byte)';');
+			if (isSemicolon)
 			{
-				if ((elements.Count != 5) ||
-					(elements[1].ElementType != StructuredValueElementType.Separator) || (elements[1].Length != 1) || (source[elements[1].StartPosition] != (byte)';') ||
-					(elements[2].ElementType != StructuredValueElementType.Value) || (elements[2].Length != 1) || ((source[elements[2].StartPosition] != (byte)'q') && (source[elements[2].StartPosition] != (byte)'Q')) ||
-					(elements[3].ElementType != StructuredValueElementType.Separator) || (elements[3].Length != 1) || (source[elements[3].StartPosition] != (byte)'=') ||
-					(elements[4].ElementType != StructuredValueElementType.Value))
+				parserPos = subParserPos;
+				var separatorElement1 = StructuredValueParser.GetNextElementToken (source, ref parserPos);
+				var separatorElement2 = StructuredValueParser.GetNextElementToken (source, ref parserPos);
+				var qualityElement = StructuredValueParser.GetNextElementToken (source, ref parserPos);
+				if (
+					(separatorElement1.ElementType != StructuredValueElementType.Value) || (separatorElement1.Length != 1) || ((source[separatorElement1.StartPosition] != (byte)'q') && (source[separatorElement1.StartPosition] != (byte)'Q')) ||
+					(separatorElement2.ElementType != StructuredValueElementType.Separator) || (separatorElement2.Length != 1) || (source[separatorElement2.StartPosition] != (byte)'=') ||
+					(qualityElement.ElementType != StructuredValueElementType.Value))
 				{
 					throw new FormatException ("Value does not conform to format 'language-q'.");
 				}
 
-				var qualityStr = AsciiCharSet.GetString (source.Slice (elements[4].StartPosition, elements[4].Length));
+				var qualityStr = AsciiCharSet.GetString (source.Slice (qualityElement.StartPosition, qualityElement.Length));
 				var isValidNumber = decimal.TryParse (qualityStr, NumberStyles.AllowDecimalPoint, _NumberFormatDot, out quality);
 				if (!isValidNumber ||
 					(quality < 0.0m) ||

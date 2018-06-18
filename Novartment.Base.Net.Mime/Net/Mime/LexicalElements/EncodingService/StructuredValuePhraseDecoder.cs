@@ -41,7 +41,6 @@ namespace Novartment.Base.Text
 					$"Element of type '{element.ElementType}' is complex and can not be decoded into discrete value."));
 			}
 
-			var elementSrc = source.Slice (element.StartPosition, element.Length);
 			var isWordEncoded = (element.Length > 8) &&
 				(source[element.StartPosition] == '=') &&
 				(source[element.StartPosition + 1] == '?') &&

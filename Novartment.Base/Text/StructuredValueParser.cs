@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Text;
 
 namespace Novartment.Base.Text
 {
@@ -8,34 +7,6 @@ namespace Novartment.Base.Text
 	/// </summary>
 	public static class StructuredValueParser
 	{
-		private static readonly ByteSequenceDelimitedElement _CommentDelimitingData = ByteSequenceDelimitedElement.CreateMarkered (
-			(byte)'(',
-			(byte)')',
-			ByteSequenceDelimitedElement.CreatePrefixedFixedLength ((byte)'\\', 2),
-			true);
-
-		private static readonly ByteSequenceDelimitedElement _QuotedStringDelimitingData = ByteSequenceDelimitedElement.CreateMarkered (
-			(byte)'\"',
-			(byte)'\"',
-			ByteSequenceDelimitedElement.CreatePrefixedFixedLength ((byte)'\\', 2),
-			false);
-
-		private static readonly ByteSequenceDelimitedElement _AngleAddrDelimitingData = ByteSequenceDelimitedElement.CreateMarkered (
-			(byte)'<',
-			(byte)'>',
-			ByteSequenceDelimitedElement.CreateMarkered (
-				(byte)'\"',
-				(byte)'\"',
-				ByteSequenceDelimitedElement.CreatePrefixedFixedLength ((byte)'\\', 2),
-				false),
-			false);
-
-		private static readonly ByteSequenceDelimitedElement _DomainLiteralDelimitingData = ByteSequenceDelimitedElement.CreateMarkered (
-			(byte)'[',
-			(byte)']',
-			ByteSequenceDelimitedElement.CreatePrefixedFixedLength ((byte)'\\', 2),
-			false);
-
 		/// <summary>
 		/// Создаёт элемент структурированного значения типа RFC 822 'atom' из его исходного ASCII-строкового представления.
 		/// </summary>
@@ -99,76 +70,96 @@ namespace Novartment.Base.Text
 						// RFC 5322 часть 3.2.2:
 						// Runs of FWS, comment, or CFWS that occur between lexical elements in a structured header field
 						// are semantically interpreted as a single space character.
-						var whiteSpace = source.Slice (position).SliceElementsOfOneClass (AsciiCharSet.Classes, (short)AsciiCharClasses.WhiteSpace);
-						position += whiteSpace.Length;
+						while (position < source.Length)
+						{
+							var octet = source[position];
+							if ((octet >= AsciiCharSet.Classes.Count) || ((AsciiCharSet.Classes[octet] & (short)AsciiCharClasses.WhiteSpace) == 0))
+							{
+								break;
+							}
+
+							position++;
+						}
+
 						break;
 					case (byte)'"':
-						var quotedValue = source.Slice (position).SliceDelimitedElement (_QuotedStringDelimitingData);
-						var pos1 = position + 1;
-						position += quotedValue.Length;
+						var startPos1 = position;
+						position = EnsureDelimitedElement (source, position, StructuredValueParserDelimitingElement.QuotedString);
 						if (typeToSkip != StructuredValueElementType.QuotedValue)
 						{
-							return new StructuredValueElement (StructuredValueElementType.QuotedValue, pos1, quotedValue.Length - 2);
+							return new StructuredValueElement (StructuredValueElementType.QuotedValue, startPos1 + 1, position - startPos1 - 2);
 						}
 
 						break;
 					case (byte)'(':
-						var roundBracketedValue = source.Slice (position).SliceDelimitedElement (_CommentDelimitingData);
-						var pos2 = position + 1;
-						position += roundBracketedValue.Length;
+						var startPos2 = position;
+						position = EnsureDelimitedElement (source, position, StructuredValueParserDelimitingElement.CommentDelimitingData);
 						if (typeToSkip != StructuredValueElementType.RoundBracketedValue)
 						{
-							return new StructuredValueElement (StructuredValueElementType.RoundBracketedValue, pos2, roundBracketedValue.Length - 2);
+							return new StructuredValueElement (StructuredValueElementType.RoundBracketedValue, startPos2 + 1, position - startPos2 - 2);
 						}
 
 						break;
 					case (byte)'<':
-						var angleBracketedValue = source.Slice (position).SliceDelimitedElement (_AngleAddrDelimitingData);
-						var pos3 = position + 1;
-						position += angleBracketedValue.Length;
+						var startPos3 = position;
+						position = EnsureDelimitedElement (source, position, StructuredValueParserDelimitingElement.AngleAddr);
 						if (typeToSkip != StructuredValueElementType.AngleBracketedValue)
 						{
-							return new StructuredValueElement (StructuredValueElementType.AngleBracketedValue, pos3, angleBracketedValue.Length - 2);
+							return new StructuredValueElement (StructuredValueElementType.AngleBracketedValue, startPos3 + 1, position - startPos3 - 2);
 						}
 
 						break;
 					case (byte)'[':
-						var squareBracketedValue = source.Slice (position).SliceDelimitedElement (_DomainLiteralDelimitingData);
-						var pos4 = position + 1;
-						position += squareBracketedValue.Length;
+						var startPos4 = position;
+						position = EnsureDelimitedElement (source, position, StructuredValueParserDelimitingElement.DomainLiteral);
 						if (typeToSkip != StructuredValueElementType.SquareBracketedValue)
 						{
-							return new StructuredValueElement (StructuredValueElementType.SquareBracketedValue, pos4, squareBracketedValue.Length - 2);
+							return new StructuredValueElement (StructuredValueElementType.SquareBracketedValue, startPos4 + 1, position - startPos4 - 2);
 						}
 
 						break;
 					default:
-						var value = source.Slice (position).SliceElementsOfOneClass (AsciiCharSet.Classes, (short)valueCharClass);
-						var valueSize = value.Length;
-						if (valueSize < 1)
+						var valuePos = position;
+						while (position < source.Length)
 						{
-							var pos5 = position;
+							var octet = source[position];
+							if ((octet >= AsciiCharSet.Classes.Count) || ((AsciiCharSet.Classes[octet] & (short)valueCharClass) == 0))
+							{
+								break;
+							}
+
+							position++;
+						}
+
+						if (position <= valuePos)
+						{
 							position++;
 							if (typeToSkip != StructuredValueElementType.Separator)
 							{
-								return new StructuredValueElement (StructuredValueElementType.Separator, pos5, 1);
+								return new StructuredValueElement (StructuredValueElementType.Separator, valuePos, 1);
 							}
 
 							position++;
 						}
 						else
 						{
-							var valuePos = position;
-							position += valueSize;
-
 							// continue if dot followed by atom
 							while (((position + 1) < source.Length) &&
 								allowDotInsideValue &&
 								(source[position] == '.') &&
 								AsciiCharSet.IsCharOfClass ((char)source[position + 1], valueCharClass))
 							{
-								value = source.Slice (position + 1).SliceElementsOfOneClass (AsciiCharSet.Classes, (short)valueCharClass);
-								position += value.Length + 1;
+								position++;
+								while (position < source.Length)
+								{
+									var octet = source[position];
+									if ((octet >= AsciiCharSet.Classes.Count) || ((AsciiCharSet.Classes[octet] & (short)valueCharClass) == 0))
+									{
+										break;
+									}
+
+									position++;
+								}
 							}
 
 							if (typeToSkip != StructuredValueElementType.Value)
@@ -182,6 +173,62 @@ namespace Novartment.Base.Text
 			}
 
 			return StructuredValueElement.Invalid;
+		}
+
+		/// <summary>
+		/// Выделяет в указанном диапазоне байтов поддиапазон, отвечающий указанному ограничению.
+		/// Если диапазон не соответствует требованиям ограничителя, то генерируется исключение.
+		/// </summary>
+		private static int EnsureDelimitedElement (ReadOnlySpan<byte> source, int pos, StructuredValueParserDelimitingElement delimitedElement)
+		{
+			// первый символ уже проверен, пропускаем
+			pos++;
+
+			int nestingLevel = 0;
+			var ignoreElement = delimitedElement.IgnoreElement;
+			while (nestingLevel >= 0)
+			{
+				if (pos >= source.Length)
+				{
+					throw new FormatException (FormattableString.Invariant ($"Ending end marker 0x'{delimitedElement.EndMarker:x}' not found in source."));
+				}
+
+				var octet = source[pos];
+				switch (ignoreElement)
+				{
+					case IngoreElementType.QuotedValue when octet == '\"':
+						pos = EnsureDelimitedElement (source, pos, StructuredValueParserDelimitingElement.QuotedString);
+						break;
+					case IngoreElementType.EscapedChar when octet == (byte)'\\':
+						pos += 2;
+						if (pos > source.Length)
+						{
+							throw new FormatException ("Unexpected end of fixed-length element.");
+						}
+
+						break;
+					case IngoreElementType.Unspecified:
+					default:
+						var isStartNested = delimitedElement.AllowNesting && (octet == delimitedElement.StarMarker);
+						if (isStartNested)
+						{
+							pos++;
+							nestingLevel++;
+						}
+						else
+						{
+							pos++;
+							if (octet == delimitedElement.EndMarker)
+							{
+								nestingLevel--;
+							}
+						}
+
+						break;
+				}
+			}
+
+			return pos;
 		}
 	}
 }

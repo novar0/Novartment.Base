@@ -108,12 +108,12 @@ namespace Novartment.Base.Text
 				if (binaryEncoding)
 				{
 					buffer = ArrayPool<byte>.Shared.Rent (((value.Length / 4) * 3) + 2);
-					resultSize = ParseBString (valueStr, buffer, encoding);
+					resultSize = ParseBString (valueStr, buffer);
 				}
 				else
 				{
 					buffer = ArrayPool<byte>.Shared.Rent (value.Length);
-					resultSize = ParseQString (valueStr, buffer, encoding);
+					resultSize = ParseQString (valueStr, buffer);
 				}
 
 				return encoding.GetString (buffer, 0, resultSize);
@@ -174,7 +174,7 @@ namespace Novartment.Base.Text
 
 		// Конвертирует "B"-encoded строку в массив байт согласно RFC 2045 часть 6.8.</summary>
 		// Отказался от использования Convert.FromBase64String() потому, что там лояльно относятся к лишним пробелам.
-		private static int ParseBString (ReadOnlySpan<char> value, Span<byte> buffer, Encoding encoding)
+		private static int ParseBString (ReadOnlySpan<char> value, Span<byte> buffer)
 		{
 			var endOffset = value.Length;
 			var offset = 0;
@@ -263,7 +263,7 @@ namespace Novartment.Base.Text
 		}
 
 		// Конвертирует "Q"-encoded строку в массив байт согласно RFC 2047 часть 4.2.
-		private static int ParseQString (ReadOnlySpan<char> value, Span<byte> buffer, Encoding encoding)
+		private static int ParseQString (ReadOnlySpan<char> value, Span<byte> buffer)
 		{
 			if (value.Length < 1)
 			{

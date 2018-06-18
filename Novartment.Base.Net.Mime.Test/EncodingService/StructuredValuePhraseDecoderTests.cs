@@ -2,7 +2,7 @@
 using Novartment.Base.Text;
 using Xunit;
 
-namespace Novartment.Base.Test
+namespace Novartment.Base.Net.Mime.Test
 {
 	public class StructuredValuePhraseDecoderTests
 	{
