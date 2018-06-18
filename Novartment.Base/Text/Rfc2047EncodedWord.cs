@@ -40,23 +40,25 @@ namespace Novartment.Base.Text
 			// encoding = etoken
 			if (value.Length < 8)
 			{
-#if NETCOREAPP2_1
-				var str = new string (value);
-#else
-				var str = new string (value.ToArray ());
-#endif
-				throw new FormatException (FormattableString.Invariant (
-					$"Value '{str}' is not valid 'encoded-word'."));
+				throw new FormatException ("Specified value is too short for 'encoded-word'.");
 			}
 
-			value = value.EnsureCodePoint ('=').EnsureCodePoint ('?');
-			var charsetStr = value.GetSubstringOfClassChars (AsciiCharSet.Classes, (short)AsciiCharClasses.ExtendedToken);
-			value = value.Slice (charsetStr.Length);
-			var idx = charsetStr.IndexOf ('*');
-			if (idx > 0)
+			if ((value[0] != '=') || (value[1] != '?'))
 			{
-				charsetStr = charsetStr.Slice (0, idx);
+				throw new FormatException ("Specified 'encoded-word' value does not contain required start chars '=?'.");
 			}
+
+			value = value.Slice (2);
+			var charsetAndLangStr = value.GetSubstringOfClassChars (AsciiCharSet.Classes, (short)AsciiCharClasses.ExtendedToken);
+
+			// префикс ?Q? и суффикс ?=
+			if ((value.Length < (charsetAndLangStr.Length + 5)) || (value[charsetAndLangStr.Length] != '?'))
+			{
+				throw new FormatException ("Specified 'encoded-word' value does not contain '?' char after 'charset'.");
+			}
+
+			var idx = charsetAndLangStr.IndexOf ('*');
+			var charsetStr = (idx > 0) ? charsetAndLangStr.Slice (0, idx) : charsetAndLangStr;
 
 			Encoding encoding;
 			try
@@ -69,22 +71,12 @@ namespace Novartment.Base.Text
 			}
 			catch (ArgumentException e)
 			{
-#if NETCOREAPP2_1
-				var paramStr = new string (charsetStr);
-				var str = new string (value);
-#else
-				var paramStr = new string (charsetStr.ToArray ());
-				var str = new string (value.ToArray ());
-#endif
-				throw new FormatException (
-					FormattableString.Invariant ($"Invalid 'charset' parameter '{paramStr}' in 'encoded-word'-value '{str}'."),
-					e);
+				throw new FormatException ($"Invalid 'charset' parameter in 'encoded-word'-value.", e);
 			}
 
-			value = value.EnsureCodePoint ('?');
-			var wordEncodingChar = value.GetFirstCodePoint ();
+			var encodingChar = value[charsetAndLangStr.Length + 1];
 			var binaryEncoding = false;
-			switch (wordEncodingChar)
+			switch (encodingChar)
 			{
 				case 'q':
 				case 'Q':
@@ -94,32 +86,45 @@ namespace Novartment.Base.Text
 					binaryEncoding = true;
 					break;
 				default:
-#if NETCOREAPP2_1
-					var str = new string (value);
-#else
-					var str = new string (value.ToArray ());
-#endif
-					throw new FormatException (FormattableString.Invariant (
-						$"Unsupported value of 'encoding' ('{wordEncodingChar}') in 'encoded-word' value '{str}'. Expected 'Q' or 'B'."));
+					throw new FormatException ("Unsupported value of 'encoding' in 'encoded-word' value. Expected 'Q' or 'B'.");
 			}
 
-			value = value.Slice (1).EnsureCodePoint ('?');
-			var end = value.Length - 2;
-			if ((value[end] != '?') || (value[end + 1] != '='))
+			if (value[charsetAndLangStr.Length + 2] != '?')
 			{
-#if NETCOREAPP2_1
-				var str = new string (value);
-#else
-				var str = new string (value.ToArray ());
-#endif
-				throw new FormatException (FormattableString.Invariant (
-					$"Ending '?=' not found in 'encoded-word'-value '{str}'."));
+				throw new FormatException ("Char '?' not found after 'encoding' in 'encoded-word' value.");
 			}
 
-			value = value.Slice (0, value.Length - 2);
-			return binaryEncoding ?
-				ParseBString (value, encoding) :
-				ParseQString (value, encoding);
+			if ((value[value.Length - 2] != '?') || (value[value.Length - 1] != '='))
+			{
+				throw new FormatException ("Ending '?=' chars not found in 'encoded-word' value.");
+			}
+
+			var valueStr = value.Slice (charsetAndLangStr.Length + 3, value.Length - charsetAndLangStr.Length - 5);
+			int resultSize;
+
+			byte[] buffer = null;
+			try
+			{
+				if (binaryEncoding)
+				{
+					buffer = ArrayPool<byte>.Shared.Rent (((value.Length / 4) * 3) + 2);
+					resultSize = ParseBString (valueStr, buffer, encoding);
+				}
+				else
+				{
+					buffer = ArrayPool<byte>.Shared.Rent (value.Length);
+					resultSize = ParseQString (valueStr, buffer, encoding);
+				}
+
+				return encoding.GetString (buffer, 0, resultSize);
+			}
+			finally
+			{
+				if (buffer != null)
+				{
+					ArrayPool<byte>.Shared.Return (buffer);
+				}
+			}
 		}
 
 		/// <summary>
@@ -169,195 +174,140 @@ namespace Novartment.Base.Text
 
 		// Конвертирует "B"-encoded строку в массив байт согласно RFC 2045 часть 6.8.</summary>
 		// Отказался от использования Convert.FromBase64String() потому, что там лояльно относятся к лишним пробелам.
-		private static string ParseBString (ReadOnlySpan<char> value, Encoding encoding)
+		private static int ParseBString (ReadOnlySpan<char> value, Span<byte> buffer, Encoding encoding)
 		{
 			var endOffset = value.Length;
-			var buffer = ArrayPool<byte>.Shared.Rent (((endOffset / 4) * 3) + 2);
-			try
+			var offset = 0;
+			int bufferOffset = 0;
+			uint num2 = 0xff;
+			while (offset < endOffset)
 			{
-				var offset = 0;
-				int bufferOffset = 0;
-				uint num2 = 0xff;
-				while (offset < endOffset)
+				uint num = value[offset++];
+				switch (num)
 				{
-					uint num = value[offset++];
-					switch (num)
-					{
-						case '+': num = 62; break;
-						case '/': num = 63; break;
-						case '=':
-							if (offset != endOffset)
+					case '+': num = 62; break;
+					case '/': num = 63; break;
+					case '=':
+						if (offset != endOffset)
+						{
+							if ((offset != (endOffset - 1)) || (value[offset] != '='))
 							{
-								if ((offset != (endOffset - 1)) || (value[offset] != '='))
-								{
-#if NETCOREAPP2_1
-									var str = new string (value);
-#else
-									var str = new string (value.ToArray ());
-#endif
-									throw new FormatException (FormattableString.Invariant (
-										$"Invalid position {offset - 1} of char '=' in base64-encoded string '{str}'."));
-								}
+								throw new FormatException ("Invalid position of char '=' in base64-encoded string.");
+							}
 
-								num2 = num2 << 12;
-								if ((num2 & 0x80000000) == 0)
-								{
-#if NETCOREAPP2_1
-									var str = new string (value);
-#else
-									var str = new string (value.ToArray ());
-#endif
-									throw new FormatException (FormattableString.Invariant (
-										$"Invalid position {offset - 1} of char '=' in base64-encoded string '{str}'."));
-								}
+							num2 = num2 << 12;
+							if ((num2 & 0x80000000) == 0)
+							{
+								throw new FormatException ("Invalid position of char '=' in base64-encoded string.");
+							}
 
-								buffer[bufferOffset++] = (byte)(num2 >> 16);
+							buffer[bufferOffset++] = (byte)(num2 >> 16);
+						}
+						else
+						{
+							num2 = num2 << 6;
+							if ((num2 & 0x80000000) == 0)
+							{
+								throw new FormatException ("Invalid position of char '=' in base64-encoded string.");
+							}
+
+							buffer[bufferOffset++] = (byte)(num2 >> 16);
+							buffer[bufferOffset++] = (byte)(num2 >> 8);
+						}
+
+						return bufferOffset;
+					default:
+						if ((num - 'A') <= 25)
+						{
+							num -= 'A';
+						}
+						else
+						{
+							if ((num - 'a') <= 25)
+							{
+								num -= 71;
 							}
 							else
 							{
-								num2 = num2 << 6;
-								if ((num2 & 0x80000000) == 0)
+								if ((num - '0') <= 9)
 								{
-#if NETCOREAPP2_1
-									var str = new string (value);
-#else
-									var str = new string (value.ToArray ());
-#endif
-									throw new FormatException (FormattableString.Invariant (
-										$"Invalid position {offset - 1} of char '=' in base64-encoded string '{str}'."));
-								}
-
-								buffer[bufferOffset++] = (byte)(num2 >> 16);
-								buffer[bufferOffset++] = (byte)(num2 >> 8);
-							}
-
-							return encoding.GetString (buffer, 0, bufferOffset);
-						default:
-							if ((num - 'A') <= 25)
-							{
-								num -= 'A';
-							}
-							else
-							{
-								if ((num - 'a') <= 25)
-								{
-									num -= 71;
+									num += 4;
 								}
 								else
 								{
-									if ((num - '0') <= 9)
-									{
-										num += 4;
-									}
-									else
-									{
-#if NETCOREAPP2_1
-										var str = new string (value);
-#else
-										var str = new string (value.ToArray ());
-#endif
-										throw new FormatException (FormattableString.Invariant (
-											$"Invalid char U+{num:x} in position {offset - 1} of base64-encoded string '{str}'."));
-									}
+									throw new FormatException (FormattableString.Invariant (
+										$"Invalid char U+{num:x} in base64-encoded string."));
 								}
 							}
+						}
 
-							break;
-					}
-
-					num2 = (num2 << 6) | num;
-					if ((num2 & 0x80000000) != 0)
-					{
-						buffer[bufferOffset++] = (byte)(num2 >> 16);
-						buffer[bufferOffset++] = (byte)(num2 >> 8);
-						buffer[bufferOffset++] = (byte)num2;
-						num2 = 0xff;
-					}
+						break;
 				}
 
-				if (num2 != 0xff)
+				num2 = (num2 << 6) | num;
+				if ((num2 & 0x80000000) != 0)
 				{
-#if NETCOREAPP2_1
-					var str = new string (value);
-#else
-					var str = new string (value.ToArray ());
-#endif
-					throw new FormatException (FormattableString.Invariant (
-						$"Incorrectly ended base64-encoded string '{str}'."));
+					buffer[bufferOffset++] = (byte)(num2 >> 16);
+					buffer[bufferOffset++] = (byte)(num2 >> 8);
+					buffer[bufferOffset++] = (byte)num2;
+					num2 = 0xff;
 				}
+			}
 
-				return encoding.GetString (buffer, 0, bufferOffset);
-			}
-			finally
+			if (num2 != 0xff)
 			{
-				ArrayPool<byte>.Shared.Return (buffer);
+				throw new FormatException ("Incorrectly ended base64-encoded string.");
 			}
+
+			return bufferOffset;
 		}
 
 		// Конвертирует "Q"-encoded строку в массив байт согласно RFC 2047 часть 4.2.
-		private static string ParseQString (ReadOnlySpan<char> value, Encoding encoding)
+		private static int ParseQString (ReadOnlySpan<char> value, Span<byte> buffer, Encoding encoding)
 		{
 			if (value.Length < 1)
 			{
-				return string.Empty;
+				return 0;
 			}
 
 			var endOffset = value.Length;
-			var buffer = ArrayPool<byte>.Shared.Rent (endOffset);
-			try
+			var offset = 0;
+			var bufferOffset = 0;
+			while (offset < endOffset)
 			{
-				var offset = 0;
-				var bufferOffset = 0;
-				while (offset < endOffset)
+				var octet = value[offset];
+				switch (octet)
 				{
-					var c = value[offset];
-					switch (c)
-					{
-						case '_': // The 8-bit hexadecimal value 20 (e.g., ISO-8859-1 SPACE) may be represented as "_" (underscore, ASCII 95.)
-							buffer[bufferOffset++] = 0x20;
-							offset++;
-							break;
-						case '=': // Any 8-bit value may be represented by a "=" followed by two hexadecimal digits.
-							if ((offset + 2) >= endOffset)
-							{
-#if NETCOREAPP2_1
-								var str = new string (value);
-#else
-								var str = new string (value.ToArray ());
-#endif
-								throw new FormatException (FormattableString.Invariant (
-									$"Invalid HEX char U+{c:x} in position {offset} of q-encoded string '{str}'."));
-							}
+					case '_': // The 8-bit hexadecimal value 20 (e.g., ISO-8859-1 SPACE) may be represented as "_" (underscore, ASCII 95.)
+						buffer[bufferOffset++] = 0x20;
+						offset++;
+						break;
+					case '=': // Any 8-bit value may be represented by a "=" followed by two hexadecimal digits.
+						if ((offset + 2) >= endOffset)
+						{
+							throw new FormatException (FormattableString.Invariant (
+								$"Invalid HEX char U+{octet:x} in position {offset} of q-encoded string."));
+						}
 
-							// This must be encoded 8-bit byte
-							buffer[bufferOffset++] = Hex.ParseByte (value[offset + 1], value[offset + 2]);
-							offset += 3;
-							break;
-						default: // Just write back all other bytes
-							var isVisibleChar = AsciiCharSet.IsCharOfClass (c, AsciiCharClasses.Visible);
-							if (!isVisibleChar)
-							{
-#if NETCOREAPP2_1
-								var str = new string (value);
-#else
-								var str = new string (value.ToArray ());
-#endif
-								throw new FormatException (FormattableString.Invariant (
-									$"Invalid char U+{c:x} in position {offset} of q-encoded string '{str}'."));
-							}
+						// This must be encoded 8-bit byte
+						buffer[bufferOffset++] = Hex.ParseByte (value[offset + 1], value[offset + 2]);
+						offset += 3;
+						break;
+					default: // Just write back all other bytes
+						var isVisibleChar = AsciiCharSet.IsCharOfClass (octet, AsciiCharClasses.Visible);
+						if (!isVisibleChar)
+						{
+							throw new FormatException (FormattableString.Invariant (
+								$"Invalid char U+{octet:x} in position {offset} of q-encoded string."));
+						}
 
-							buffer[bufferOffset++] = (byte)c;
-							offset++;
-							break;
-					}
+						buffer[bufferOffset++] = (byte)octet;
+						offset++;
+						break;
 				}
+			}
 
-				return encoding.GetString (buffer, 0, bufferOffset);
-			}
-			finally
-			{
-				ArrayPool<byte>.Shared.Return (buffer);
-			}
+			return bufferOffset;
 		}
 	}
 }
