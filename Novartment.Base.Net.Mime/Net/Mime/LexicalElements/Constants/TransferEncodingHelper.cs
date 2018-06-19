@@ -30,44 +30,37 @@ namespace Novartment.Base.Net.Mime
 		/// <param name="source">String representation of ContentTransferEncoding enumeration value.</param>
 		/// <param name="result">When this method returns, contains the ContentTransferEncoding value.</param>
 		/// <returns>True was value parsed successfully; otherwise, false.</returns>
-		internal static bool TryParse (string source, out ContentTransferEncoding result)
+		internal static bool TryParse (ReadOnlySpan<char> source, out ContentTransferEncoding result)
 		{
-			if (source == null)
-			{
-				throw new ArgumentNullException (nameof (source));
-			}
-
-			Contract.EndContractBlock ();
-
-			var isQuotedPrintable = TransferEncodingNames.QuotedPrintable.Equals (source, StringComparison.OrdinalIgnoreCase);
+			var isQuotedPrintable = TransferEncodingNames.QuotedPrintable.AsSpan ().SequenceEqual (source);
 			if (isQuotedPrintable)
 			{
 				result = ContentTransferEncoding.QuotedPrintable;
 				return true;
 			}
 
-			var isBase64 = TransferEncodingNames.Base64.Equals (source, StringComparison.OrdinalIgnoreCase);
+			var isBase64 = TransferEncodingNames.Base64.AsSpan ().SequenceEqual (source);
 			if (isBase64)
 			{
 				result = ContentTransferEncoding.Base64;
 				return true;
 			}
 
-			var isSevenBit = TransferEncodingNames.SevenBit.Equals (source, StringComparison.OrdinalIgnoreCase);
+			var isSevenBit = TransferEncodingNames.SevenBit.AsSpan ().SequenceEqual (source);
 			if (isSevenBit)
 			{
 				result = ContentTransferEncoding.SevenBit;
 				return true;
 			}
 
-			var isEightBit = TransferEncodingNames.EightBit.Equals (source, StringComparison.OrdinalIgnoreCase);
+			var isEightBit = TransferEncodingNames.EightBit.AsSpan ().SequenceEqual (source);
 			if (isEightBit)
 			{
 				result = ContentTransferEncoding.EightBit;
 				return true;
 			}
 
-			var isBinary = TransferEncodingNames.Binary.Equals (source, StringComparison.OrdinalIgnoreCase);
+			var isBinary = TransferEncodingNames.Binary.AsSpan ().SequenceEqual (source);
 			if (isBinary)
 			{
 				result = ContentTransferEncoding.Binary;

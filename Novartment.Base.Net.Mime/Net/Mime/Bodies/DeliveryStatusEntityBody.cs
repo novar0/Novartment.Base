@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Threading;
@@ -104,26 +105,35 @@ namespace Novartment.Base.Net.Mime
 
 				// Parse per-message fields.
 				var headerSource = new TemplateSeparatedBufferedSource (source, HeaderDecoder.CarriageReturnLinefeed2, false);
-				var headerFields = await HeaderDecoder.LoadHeaderFieldsAsync (headerSource, cancellationToken).ConfigureAwait (false);
-				ParseHeader (headerFields);
+				var header = await HeaderDecoder.LoadHeaderAsync (headerSource, cancellationToken).ConfigureAwait (false);
 
-				// Parse per-recipient fields.
-				this.Recipients.Clear ();
-				while (true)
+				var buffer = ArrayPool<char>.Shared.Rent (HeaderDecoder.MaximumHeaderFieldBodySize);
+				try
 				{
-					var crlfFound = await headerSource.TrySkipPartAsync (cancellationToken).ConfigureAwait (false);
-					if (!crlfFound || headerSource.IsEmpty ())
-					{
-						break;
-					}
+					ParseHeader (header, buffer);
 
-					headerFields = await HeaderDecoder.LoadHeaderFieldsAsync (headerSource, cancellationToken).ConfigureAwait (false);
-					if (headerFields.Count < 1)
+					// Parse per-recipient fields.
+					this.Recipients.Clear ();
+					while (true)
 					{
-						break;
-					}
+						var crlfFound = await headerSource.TrySkipPartAsync (cancellationToken).ConfigureAwait (false);
+						if (!crlfFound || headerSource.IsEmpty ())
+						{
+							break;
+						}
 
-					this.Recipients.Add (ParseHeaderRecipient (headerFields));
+						header = await HeaderDecoder.LoadHeaderAsync (headerSource, cancellationToken).ConfigureAwait (false);
+						if (header.Count < 1)
+						{
+							break;
+						}
+
+						this.Recipients.Add (ParseHeaderRecipient (header, buffer));
+					}
+				}
+				finally
+				{
+					ArrayPool<char>.Shared.Return (buffer);
 				}
 			}
 		}
@@ -172,7 +182,7 @@ namespace Novartment.Base.Net.Mime
 
 		// Создаёт коллекцию свойств уведомления о статусе доставки сообщения конкретному адресату
 		// на основе указанной коллекции полей заголовка уведомления о статусе доставки сообщения конкретному адресату.
-		private static RecipientDeliveryStatus ParseHeaderRecipient (IReadOnlyCollection<HeaderField> fields)
+		private static RecipientDeliveryStatus ParseHeaderRecipient (IReadOnlyCollection<HeaderField> fields, Span<char> buffer)
 		{
 			NotificationFieldValue originalRecipient = null;
 			NotificationFieldValue finalRecipient = null;
@@ -184,6 +194,7 @@ namespace Novartment.Base.Net.Mime
 			string finalLogId = null;
 			DateTimeOffset? willRetryUntil = null;
 
+			ReadOnlySpan<char> unfoldedBody;
 			foreach (var field in fields)
 			{
 				switch (field.Name)
@@ -194,7 +205,8 @@ namespace Novartment.Base.Net.Mime
 							throw new FormatException ("More than one '" + HeaderFieldNameHelper.GetName (HeaderFieldName.OriginalRecipient) + "' field.");
 						}
 
-						originalRecipient = HeaderDecoder.DecodeNotificationFieldValue (field.Body.Span);
+						unfoldedBody = HeaderDecoder.UnfoldFieldBody (field.Body.Span, buffer).Trim ();
+						originalRecipient = HeaderDecoder.DecodeNotificationFieldValue (unfoldedBody);
 						break;
 					case HeaderFieldName.FinalRecipient:
 						if (finalRecipient != null)
@@ -202,7 +214,8 @@ namespace Novartment.Base.Net.Mime
 							throw new FormatException ("More than one '" + HeaderFieldNameHelper.GetName (HeaderFieldName.FinalRecipient) + "' field.");
 						}
 
-						finalRecipient = HeaderDecoder.DecodeNotificationFieldValue (field.Body.Span);
+						unfoldedBody = HeaderDecoder.UnfoldFieldBody (field.Body.Span, buffer).Trim ();
+						finalRecipient = HeaderDecoder.DecodeNotificationFieldValue (unfoldedBody);
 						break;
 					case HeaderFieldName.Action:
 						if (action != DeliveryAttemptResult.Unspecified)
@@ -210,11 +223,11 @@ namespace Novartment.Base.Net.Mime
 							throw new FormatException ("More than one '" + HeaderFieldNameHelper.GetName (HeaderFieldName.Action) + "' field.");
 						}
 
-						var actionStr = AsciiCharSet.GetString (field.Body.Span).Trim ();
-						var isValidAction = DeliveryStatusActionHelper.TryParse (actionStr, out action);
+						unfoldedBody = HeaderDecoder.UnfoldFieldBody (field.Body.Span, buffer).Trim ();
+						var isValidAction = DeliveryStatusActionHelper.TryParse (unfoldedBody, out action);
 						if (!isValidAction)
 						{
-							throw new FormatException ("Unrecognized value of Delivery Status Action: '" + actionStr + "'.");
+							throw new FormatException ("Unrecognized value of Delivery Status Action.");
 						}
 
 						break;
@@ -224,7 +237,12 @@ namespace Novartment.Base.Net.Mime
 							throw new FormatException ("More than one '" + HeaderFieldNameHelper.GetName (HeaderFieldName.Status) + "' field.");
 						}
 
-						status = AsciiCharSet.GetString (field.Body.Span).Trim ();
+						unfoldedBody = HeaderDecoder.UnfoldFieldBody (field.Body.Span, buffer).Trim ();
+#if NETCOREAPP2_1
+						status = new string (unfoldedBody);
+#else
+						status = new string (unfoldedBody.ToArray ());
+#endif
 						break;
 					case HeaderFieldName.RemoteMailTransferAgent:
 						if (remoteMta != null)
@@ -232,7 +250,8 @@ namespace Novartment.Base.Net.Mime
 							throw new FormatException ("More than one '" + HeaderFieldNameHelper.GetName (HeaderFieldName.RemoteMailTransferAgent) + "' field.");
 						}
 
-						remoteMta = HeaderDecoder.DecodeNotificationFieldValue (field.Body.Span);
+						unfoldedBody = HeaderDecoder.UnfoldFieldBody (field.Body.Span, buffer).Trim ();
+						remoteMta = HeaderDecoder.DecodeNotificationFieldValue (unfoldedBody);
 						break;
 					case HeaderFieldName.DiagnosticCode:
 						if (diagnosticCode != null)
@@ -240,7 +259,8 @@ namespace Novartment.Base.Net.Mime
 							throw new FormatException ("More than one '" + HeaderFieldNameHelper.GetName (HeaderFieldName.DiagnosticCode) + "' field.");
 						}
 
-						diagnosticCode = HeaderDecoder.DecodeNotificationFieldValue (field.Body.Span);
+						unfoldedBody = HeaderDecoder.UnfoldFieldBody (field.Body.Span, buffer).Trim ();
+						diagnosticCode = HeaderDecoder.DecodeNotificationFieldValue (unfoldedBody);
 						break;
 					case HeaderFieldName.LastAttemptDate:
 						if (lastAttemptDate.HasValue)
@@ -248,7 +268,8 @@ namespace Novartment.Base.Net.Mime
 							throw new FormatException ("More than one '" + HeaderFieldNameHelper.GetName (HeaderFieldName.LastAttemptDate) + "' field.");
 						}
 
-						lastAttemptDate = InternetDateTime.Parse (AsciiCharSet.GetString (field.Body.Span));
+						unfoldedBody = HeaderDecoder.UnfoldFieldBody (field.Body.Span, buffer).Trim ();
+						lastAttemptDate = InternetDateTime.Parse (unfoldedBody);
 						break;
 					case HeaderFieldName.FinalLogId:
 						if (finalLogId != null)
@@ -256,7 +277,8 @@ namespace Novartment.Base.Net.Mime
 							throw new FormatException ("More than one '" + HeaderFieldNameHelper.GetName (HeaderFieldName.FinalLogId) + "' field.");
 						}
 
-						finalLogId = HeaderDecoder.DecodeUnstructured (field.Body.Span).Trim ();
+						unfoldedBody = HeaderDecoder.UnfoldFieldBody (field.Body.Span, buffer);
+						finalLogId = HeaderDecoder.DecodeUnstructured (unfoldedBody).Trim ();
 						break;
 					case HeaderFieldName.WillRetryUntil:
 						if (willRetryUntil.HasValue)
@@ -264,7 +286,8 @@ namespace Novartment.Base.Net.Mime
 							throw new FormatException ("More than one '" + HeaderFieldNameHelper.GetName (HeaderFieldName.WillRetryUntil) + "' field.");
 						}
 
-						willRetryUntil = InternetDateTime.Parse (AsciiCharSet.GetString (field.Body.Span));
+						unfoldedBody = HeaderDecoder.UnfoldFieldBody (field.Body.Span, buffer).Trim ();
+						willRetryUntil = InternetDateTime.Parse (unfoldedBody);
 						break;
 				}
 			}
@@ -393,7 +416,7 @@ namespace Novartment.Base.Net.Mime
 
 		// Создаёт коллекцию свойств уведомления о статусе доставки сообщения
 		// на основе указанной коллекции полей заголовка уведомления о статусе доставки сообщения.
-		private void ParseHeader (IReadOnlyCollection<HeaderField> fields)
+		private void ParseHeader (IReadOnlyCollection<HeaderField> header, Span<char> buffer)
 		{
 			string originalEnvelopeId = null;
 			NotificationFieldValue reportingMailTransferAgent = null;
@@ -401,7 +424,8 @@ namespace Novartment.Base.Net.Mime
 			NotificationFieldValue receivedFromMailTransferAgent = null;
 			DateTimeOffset? arrivalDate = null;
 
-			foreach (var field in fields)
+			ReadOnlySpan<char> unfoldedBody;
+			foreach (var field in header)
 			{
 				switch (field.Name)
 				{
@@ -411,7 +435,8 @@ namespace Novartment.Base.Net.Mime
 							throw new FormatException ("More than one '" + HeaderFieldNameHelper.GetName (HeaderFieldName.OriginalEnvelopeId) + "' field.");
 						}
 
-						originalEnvelopeId = HeaderDecoder.DecodeUnstructured (field.Body.Span).Trim ();
+						unfoldedBody = HeaderDecoder.UnfoldFieldBody (field.Body.Span, buffer);
+						originalEnvelopeId = HeaderDecoder.DecodeUnstructured (unfoldedBody).Trim ();
 						break;
 					case HeaderFieldName.MailTransferAgent:
 						if (reportingMailTransferAgent != null)
@@ -421,7 +446,8 @@ namespace Novartment.Base.Net.Mime
 
 						// reporting-mta-field = "Reporting-MTA" ":" mta-name-type ";" mta-name
 						// mta-name = *text
-						reportingMailTransferAgent = HeaderDecoder.DecodeNotificationFieldValue (field.Body.Span);
+						unfoldedBody = HeaderDecoder.UnfoldFieldBody (field.Body.Span, buffer);
+						reportingMailTransferAgent = HeaderDecoder.DecodeNotificationFieldValue (unfoldedBody);
 						break;
 					case HeaderFieldName.DsnGateway:
 						if (gateway != null)
@@ -429,7 +455,8 @@ namespace Novartment.Base.Net.Mime
 							throw new FormatException ("More than one '" + HeaderFieldNameHelper.GetName (HeaderFieldName.DsnGateway) + "' field.");
 						}
 
-						gateway = HeaderDecoder.DecodeNotificationFieldValue (field.Body.Span);
+						unfoldedBody = HeaderDecoder.UnfoldFieldBody (field.Body.Span, buffer);
+						gateway = HeaderDecoder.DecodeNotificationFieldValue (unfoldedBody);
 						break;
 					case HeaderFieldName.ReceivedFromMailTransferAgent:
 						if (receivedFromMailTransferAgent != null)
@@ -437,7 +464,8 @@ namespace Novartment.Base.Net.Mime
 							throw new FormatException ("More than one '" + HeaderFieldNameHelper.GetName (HeaderFieldName.ReceivedFromMailTransferAgent) + "' field.");
 						}
 
-						receivedFromMailTransferAgent = HeaderDecoder.DecodeNotificationFieldValue (field.Body.Span);
+						unfoldedBody = HeaderDecoder.UnfoldFieldBody (field.Body.Span, buffer);
+						receivedFromMailTransferAgent = HeaderDecoder.DecodeNotificationFieldValue (unfoldedBody);
 						break;
 					case HeaderFieldName.ArrivalDate:
 						if (arrivalDate.HasValue)
@@ -446,7 +474,8 @@ namespace Novartment.Base.Net.Mime
 						}
 
 						// arrival-date-field = "Arrival-Date" ":" date-time
-						arrivalDate = InternetDateTime.Parse (AsciiCharSet.GetString (field.Body.Span));
+						unfoldedBody = HeaderDecoder.UnfoldFieldBody (field.Body.Span, buffer);
+						arrivalDate = InternetDateTime.Parse (unfoldedBody);
 						break;
 				}
 			}

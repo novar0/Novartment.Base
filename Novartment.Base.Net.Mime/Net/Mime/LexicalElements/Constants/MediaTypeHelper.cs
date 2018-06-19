@@ -32,7 +32,7 @@ namespace Novartment.Base.Net.Mime
 		/// <param name="source">String representation of ContentMediaType enumeration value.</param>
 		/// <param name="result">When this method returns, contains the ContentMediaType value.</param>
 		/// <returns>True was value parsed successfully; otherwise, false.</returns>
-		internal static bool TryParse (string source, out ContentMediaType result)
+		internal static bool TryParse (ReadOnlySpan<char> source, out ContentMediaType result)
 		{
 			if (source == null)
 			{
@@ -41,49 +41,49 @@ namespace Novartment.Base.Net.Mime
 
 			Contract.EndContractBlock ();
 
-			var isText = MediaTypeNames.Text.Equals (source, StringComparison.OrdinalIgnoreCase);
+			var isText = MediaTypeNames.Text.AsSpan ().SequenceEqual (source);
 			if (isText)
 			{
 				result = ContentMediaType.Text;
 				return true;
 			}
 
-			var isImage = MediaTypeNames.Image.Equals (source, StringComparison.OrdinalIgnoreCase);
+			var isImage = MediaTypeNames.Image.AsSpan ().SequenceEqual (source);
 			if (isImage)
 			{
 				result = ContentMediaType.Image;
 				return true;
 			}
 
-			var isAudio = MediaTypeNames.Audio.Equals (source, StringComparison.OrdinalIgnoreCase);
+			var isAudio = MediaTypeNames.Audio.AsSpan ().SequenceEqual (source);
 			if (isAudio)
 			{
 				result = ContentMediaType.Audio;
 				return true;
 			}
 
-			var isVideo = MediaTypeNames.Video.Equals (source, StringComparison.OrdinalIgnoreCase);
+			var isVideo = MediaTypeNames.Video.AsSpan ().SequenceEqual (source);
 			if (isVideo)
 			{
 				result = ContentMediaType.Video;
 				return true;
 			}
 
-			var isApplication = MediaTypeNames.Application.Equals (source, StringComparison.OrdinalIgnoreCase);
+			var isApplication = MediaTypeNames.Application.AsSpan ().SequenceEqual (source);
 			if (isApplication)
 			{
 				result = ContentMediaType.Application;
 				return true;
 			}
 
-			var isMultipart = MediaTypeNames.Multipart.Equals (source, StringComparison.OrdinalIgnoreCase);
+			var isMultipart = MediaTypeNames.Multipart.AsSpan ().SequenceEqual (source);
 			if (isMultipart)
 			{
 				result = ContentMediaType.Multipart;
 				return true;
 			}
 
-			var isMessage = MediaTypeNames.Message.Equals (source, StringComparison.OrdinalIgnoreCase);
+			var isMessage = MediaTypeNames.Message.AsSpan ().SequenceEqual (source);
 			if (isMessage)
 			{
 				result = ContentMediaType.Message;

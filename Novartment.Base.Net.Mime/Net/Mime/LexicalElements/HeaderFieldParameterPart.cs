@@ -41,7 +41,7 @@ namespace Novartment.Base.Net.Mime
 
 		internal bool IsExtendedValue { get; }
 
-		internal static HeaderFieldParameterPart Parse (ReadOnlySpan<byte> source, ref int parserPos)
+		internal static HeaderFieldParameterPart Parse (ReadOnlySpan<char> source, ref int parserPos)
 		{
 			/*
 			RFC 2184 part 7:
@@ -75,12 +75,16 @@ namespace Novartment.Base.Net.Mime
 				throw new FormatException ("Invalid format of header field parameter.");
 			}
 
-			var parameterName = AsciiCharSet.GetString (source.Slice (nameElement.StartPosition, nameElement.Length));
+#if NETCOREAPP2_1
+			var parameterName = new string (source.Slice (nameElement.StartPosition, nameElement.Length));
+#else
+			var parameterName = new string (source.Slice (nameElement.StartPosition, nameElement.Length).ToArray ());
+#endif
 			var section = 0;
 			string encoding = null;
 			var isExtendedValue = false;
 
-			if (source[separatorElement.StartPosition] == (byte)'*')
+			if (source[separatorElement.StartPosition] == '*')
 			{
 				var sectionElement = StructuredValueParser.GetNextElementToken (source, ref parserPos);
 				if (sectionElement.ElementType != StructuredValueElementType.Value)
@@ -88,10 +92,17 @@ namespace Novartment.Base.Net.Mime
 					throw new FormatException ("Invalid format of header field parameter.");
 				}
 
+#if NETCOREAPP2_1
 				section = int.Parse (
-					AsciiCharSet.GetString (source.Slice (sectionElement.StartPosition, sectionElement.Length)),
+					source.Slice (sectionElement.StartPosition, sectionElement.Length),
 					NumberStyles.AllowLeadingWhite | NumberStyles.AllowTrailingWhite,
 					CultureInfo.InvariantCulture);
+#else
+				section = int.Parse (
+					new string (source.Slice (sectionElement.StartPosition, sectionElement.Length).ToArray ()),
+					NumberStyles.AllowLeadingWhite | NumberStyles.AllowTrailingWhite,
+					CultureInfo.InvariantCulture);
+#endif
 				separatorElement = StructuredValueParser.GetNextElementToken (source, ref parserPos);
 				if (separatorElement.ElementType != StructuredValueElementType.Separator)
 				{
@@ -99,7 +110,7 @@ namespace Novartment.Base.Net.Mime
 				}
 			}
 
-			var isStarSeparator = (separatorElement.ElementType == StructuredValueElementType.Separator) && (separatorElement.Length == 1) && (source[separatorElement.StartPosition] == (byte)'*');
+			var isStarSeparator = (separatorElement.ElementType == StructuredValueElementType.Separator) && (separatorElement.Length == 1) && (source[separatorElement.StartPosition] == '*');
 			if (isStarSeparator)
 			{
 				isExtendedValue = true;
@@ -107,7 +118,7 @@ namespace Novartment.Base.Net.Mime
 			}
 			else
 			{
-				var isEqualitySign = (separatorElement.ElementType == StructuredValueElementType.Separator) && (separatorElement.Length == 1) && (source[separatorElement.StartPosition] == (byte)'=');
+				var isEqualitySign = (separatorElement.ElementType == StructuredValueElementType.Separator) && (separatorElement.Length == 1) && (source[separatorElement.StartPosition] == '=');
 				if (!isEqualitySign)
 				{
 					throw new FormatException ("Invalid format of header field parameter.");
@@ -121,11 +132,15 @@ namespace Novartment.Base.Net.Mime
 				string language = null;
 				if (item.ElementType == StructuredValueElementType.Value)
 				{ // charset
-					encoding = AsciiCharSet.GetString (source.Slice (item.StartPosition, item.Length));
+#if NETCOREAPP2_1
+					encoding = new string (source.Slice (item.StartPosition, item.Length));
+#else
+					encoding = new string (source.Slice (item.StartPosition, item.Length).ToArray ());
+#endif
 					item = StructuredValueParser.GetNextElementToken (source, ref parserPos);
 				}
 
-				if ((item.ElementType != StructuredValueElementType.Separator) || (item.Length != 1) || (source[item.StartPosition] != (byte)'\''))
+				if ((item.ElementType != StructuredValueElementType.Separator) || (item.Length != 1) || (source[item.StartPosition] != '\''))
 				{
 					throw new FormatException ("Invalid format of header field parameter.");
 				}
@@ -133,11 +148,15 @@ namespace Novartment.Base.Net.Mime
 				item = StructuredValueParser.GetNextElementToken (source, ref parserPos);
 				if (item.ElementType == StructuredValueElementType.Value)
 				{ // language
-					language = AsciiCharSet.GetString (source.Slice (item.StartPosition, item.Length));
+#if NETCOREAPP2_1
+					language = new string (source.Slice (item.StartPosition, item.Length));
+#else
+					language = new string (source.Slice (item.StartPosition, item.Length).ToArray ());
+#endif
 					item = StructuredValueParser.GetNextElementToken (source, ref parserPos);
 				}
 
-				if ((item.ElementType != StructuredValueElementType.Separator) || (item.Length != 1) || (source[item.StartPosition] != (byte)'\''))
+				if ((item.ElementType != StructuredValueElementType.Separator) || (item.Length != 1) || (source[item.StartPosition] != '\''))
 				{
 					throw new FormatException ("Invalid format of header field parameter.");
 				}
@@ -148,7 +167,12 @@ namespace Novartment.Base.Net.Mime
 					throw new FormatException ("Invalid format of header field parameter.");
 				}
 
-				return new HeaderFieldParameterPart (parameterName, AsciiCharSet.GetString (source.Slice (item.StartPosition, item.Length)), encoding, language);
+#if NETCOREAPP2_1
+				var valueStr = new string (source.Slice (item.StartPosition, item.Length));
+#else
+				var valueStr = new string (source.Slice (item.StartPosition, item.Length).ToArray ());
+#endif
+				return new HeaderFieldParameterPart (parameterName, valueStr, encoding, language);
 			}
 
 			if (isExtendedValue)
@@ -158,7 +182,12 @@ namespace Novartment.Base.Net.Mime
 					throw new FormatException ("Invalid format of header field parameter.");
 				}
 
-				return new HeaderFieldParameterPart (parameterName, AsciiCharSet.GetString (source.Slice (item.StartPosition, item.Length)), section, true);
+#if NETCOREAPP2_1
+				var valueStr = new string (source.Slice (item.StartPosition, item.Length));
+#else
+				var valueStr = new string (source.Slice (item.StartPosition, item.Length).ToArray ());
+#endif
+				return new HeaderFieldParameterPart (parameterName, valueStr, section, true);
 			}
 
 			if ((item.ElementType != StructuredValueElementType.Value) && (item.ElementType != StructuredValueElementType.QuotedValue))
@@ -168,7 +197,7 @@ namespace Novartment.Base.Net.Mime
 
 			return new HeaderFieldParameterPart (
 				parameterName,
-				item.DecodeElement (source),
+				item.Decode (source),
 				section,
 				false);
 		}

@@ -11,12 +11,12 @@ namespace Novartment.Base.Test
 		[Trait ("Category", "Mime")]
 		public void Parse ()
 		{
-			ReadOnlySpan<byte> src = default (ReadOnlySpan<byte>);
+			var src = default (ReadOnlySpan<char>);
 			var parserPos = 0;
 			var element = StructuredValueParser.GetNextElement (src, ref parserPos, AsciiCharClasses.Atom, false, StructuredValueElementType.Unspecified);
 			Assert.False (element.IsValid);
 
-			src = Encoding.ASCII.GetBytes ("abc,de;fgh \"ijkl\" (mnop)   <rst>\t[uvw]");
+			src = "abc,de;fgh \"ijkl\" (mnop)   <rst>\t[uvw]";
 			parserPos = 0;
 			element = StructuredValueParser.GetNextElement (src, ref parserPos, AsciiCharClasses.Atom, false, StructuredValueElementType.Unspecified);
 			Assert.Equal (StructuredValueElementType.Value, element.ElementType);
@@ -64,27 +64,75 @@ namespace Novartment.Base.Test
 		[Trait ("Category", "Mime")]
 		public void DecodeElement ()
 		{
-			var src = Encoding.ASCII.GetBytes ("=?aa?bb?cc?").AsSpan ();
+			var src = "=?aa?bb?cc?".AsSpan ();
 			var item = new StructuredValueElement (StructuredValueElementType.Value, 0, src.Length);
-			Assert.Equal ("=?aa?bb?cc?", item.DecodeElement (src));
-			src = Encoding.ASCII.GetBytes ("=?aa?bb?cc?");
+			Assert.Equal ("=?aa?bb?cc?", item.Decode (src));
+
+			src = "=?aa?bb?cc?";
 			item = new StructuredValueElement (StructuredValueElementType.QuotedValue, 0, src.Length);
-			Assert.Equal ("=?aa?bb?cc?", item.DecodeElement (src));
-			src = Encoding.ASCII.GetBytes ("=?aa?bb?cc?");
+			Assert.Equal ("=?aa?bb?cc?", item.Decode (src));
+
+			src = "=?aa?bb?cc?";
 			item = new StructuredValueElement (StructuredValueElementType.SquareBracketedValue, 0, src.Length);
-			Assert.Equal ("=?aa?bb?cc?", item.DecodeElement (src));
-			src = Encoding.ASCII.GetBytes ("some   \\\"one\\\"");
+			Assert.Equal ("=?aa?bb?cc?", item.Decode (src));
+
+			src = "some   \\\"one\\\"";
 			item = new StructuredValueElement (StructuredValueElementType.SquareBracketedValue, 0, src.Length);
-			Assert.Equal ("some   \"one\"", item.DecodeElement (src));
-			src = Encoding.ASCII.GetBytes ("some   \\\"one\\\"");
+			Assert.Equal ("some   \"one\"", item.Decode (src));
+
+			src = "some   \\\"one\\\"";
 			item = new StructuredValueElement (StructuredValueElementType.QuotedValue, 0, src.Length);
-			Assert.Equal ("some   \"one\"", item.DecodeElement (src));
-			src = Encoding.ASCII.GetBytes ("=?utf-8*ru-ru?B?0YLQtdC80LAg0YHQvtC+0LHRidC10L3QuNGPINGC0LXQutGB0YIg0YHQvtC+0LHRidC10L3QuNGP?=");
+			Assert.Equal ("some   \"one\"", item.Decode (src));
+
+			src = "=?utf-8*ru-ru?B?0YLQtdC80LAg0YHQvtC+0LHRidC10L3QuNGPINGC0LXQutGB0YIg0YHQvtC+0LHRidC10L3QuNGP?=";
 			item = new StructuredValueElement (StructuredValueElementType.Value, 0, src.Length);
-			Assert.Equal ("тема сообщения текст сообщения", item.DecodeElement (src));
-			src = Encoding.ASCII.GetBytes ("=?utf-8*ru-ru?B?0YLQtdC80LAg0YHQvtC+0LHRidC10L3QuNGPINGC0LXQutGB0YIg0YHQvtC+0LHRidC10L3QuNGP?=");
+			Assert.Equal ("тема сообщения текст сообщения", item.Decode (src));
+
+			src = "=?utf-8*ru-ru?B?0YLQtdC80LAg0YHQvtC+0LHRidC10L3QuNGPINGC0LXQutGB0YIg0YHQvtC+0LHRidC10L3QuNGP?=";
 			item = new StructuredValueElement (StructuredValueElementType.QuotedValue, 0, src.Length);
-			Assert.Equal ("тема сообщения текст сообщения", item.DecodeElement (src));
+			Assert.Equal ("тема сообщения текст сообщения", item.Decode (src));
+		}
+
+		[Fact]
+		[Trait ("Category", "Mime")]
+		public void DecodeElementSpan ()
+		{
+			var buf = new char[500];
+
+			var src = "=?aa?bb?cc?".AsSpan ();
+			var item = new StructuredValueElement (StructuredValueElementType.Value, 0, src.Length);
+			var size = item.Decode (src, buf);
+			Assert.Equal ("=?aa?bb?cc?", new string (buf, 0, size));
+
+			src = "=?aa?bb?cc?";
+			item = new StructuredValueElement (StructuredValueElementType.QuotedValue, 0, src.Length);
+			size = item.Decode (src, buf);
+			Assert.Equal ("=?aa?bb?cc?", new string (buf, 0, size));
+
+			src = "=?aa?bb?cc?";
+			item = new StructuredValueElement (StructuredValueElementType.SquareBracketedValue, 0, src.Length);
+			size = item.Decode (src, buf);
+			Assert.Equal ("=?aa?bb?cc?", new string (buf, 0, size));
+
+			src = "some   \\\"one\\\"";
+			item = new StructuredValueElement (StructuredValueElementType.SquareBracketedValue, 0, src.Length);
+			size = item.Decode (src, buf);
+			Assert.Equal ("some   \"one\"", new string (buf, 0, size));
+
+			src = "some   \\\"one\\\"";
+			item = new StructuredValueElement (StructuredValueElementType.QuotedValue, 0, src.Length);
+			size = item.Decode (src, buf);
+			Assert.Equal ("some   \"one\"", new string (buf, 0, size));
+
+			src = "=?utf-8*ru-ru?B?0YLQtdC80LAg0YHQvtC+0LHRidC10L3QuNGPINGC0LXQutGB0YIg0YHQvtC+0LHRidC10L3QuNGP?=";
+			item = new StructuredValueElement (StructuredValueElementType.Value, 0, src.Length);
+			size = item.Decode (src, buf);
+			Assert.Equal ("тема сообщения текст сообщения", new string (buf, 0, size));
+
+			src = "=?utf-8*ru-ru?B?0YLQtdC80LAg0YHQvtC+0LHRidC10L3QuNGPINGC0LXQutGB0YIg0YHQvtC+0LHRidC10L3QuNGP?=";
+			item = new StructuredValueElement (StructuredValueElementType.QuotedValue, 0, src.Length);
+			size = item.Decode (src, buf);
+			Assert.Equal ("тема сообщения текст сообщения", new string (buf, 0, size));
 		}
 	}
 }

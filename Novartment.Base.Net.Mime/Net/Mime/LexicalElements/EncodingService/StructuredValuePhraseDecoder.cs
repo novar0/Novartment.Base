@@ -31,7 +31,7 @@ namespace Novartment.Base.Text
 		/// </summary>
 		/// <param name="source">Исходное ASCII-строковое значение.</param>
 		/// <param name="element">Элемент для добавления в декодированный результат.</param>
-		public void AddElement (ReadOnlySpan<byte> source, StructuredValueElement element)
+		public void AddElement (ReadOnlySpan<char> source, StructuredValueElement element)
 		{
 			if ((element.ElementType != StructuredValueElementType.Separator) &&
 				(element.ElementType != StructuredValueElementType.Value) &&
@@ -46,7 +46,7 @@ namespace Novartment.Base.Text
 				(source[element.StartPosition + 1] == '?') &&
 				(source[element.StartPosition + element.Length - 2] == '?') &&
 				(source[element.StartPosition + element.Length - 1] == '=');
-			var decodedValue = element.DecodeElement (source);
+			var decodedValue = element.Decode (source);
 
 			// RFC 2047 часть 6.2:
 			// When displaying a particular header field that contains multiple 'encoded-word's,

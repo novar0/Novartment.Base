@@ -30,44 +30,37 @@ namespace Novartment.Base.Net.Mime
 		/// <param name="source">String representation of DeliveryStatusAction enumeration value.</param>
 		/// <param name="result">When this method returns, contains the DeliveryStatusAction value.</param>
 		/// <returns>True was value parsed successfully; otherwise, false.</returns>
-		internal static bool TryParse (string source, out DeliveryAttemptResult result)
+		internal static bool TryParse (ReadOnlySpan<char> source, out DeliveryAttemptResult result)
 		{
-			if (source == null)
-			{
-				throw new ArgumentNullException (nameof (source));
-			}
-
-			Contract.EndContractBlock ();
-
-			var isFailed = DeliveryStatusActionNames.Failed.Equals (source, StringComparison.OrdinalIgnoreCase);
+			var isFailed = DeliveryStatusActionNames.Failed.AsSpan ().SequenceEqual (source);
 			if (isFailed)
 			{
 				result = DeliveryAttemptResult.Failed;
 				return true;
 			}
 
-			var isDelayed = DeliveryStatusActionNames.Delayed.Equals (source, StringComparison.OrdinalIgnoreCase);
+			var isDelayed = DeliveryStatusActionNames.Delayed.AsSpan ().SequenceEqual (source);
 			if (isDelayed)
 			{
 				result = DeliveryAttemptResult.Delayed;
 				return true;
 			}
 
-			var isDelivered = DeliveryStatusActionNames.Delivered.Equals (source, StringComparison.OrdinalIgnoreCase);
+			var isDelivered = DeliveryStatusActionNames.Delivered.AsSpan ().SequenceEqual (source);
 			if (isDelivered)
 			{
 				result = DeliveryAttemptResult.Delivered;
 				return true;
 			}
 
-			var isRelayed = DeliveryStatusActionNames.Relayed.Equals (source, StringComparison.OrdinalIgnoreCase);
+			var isRelayed = DeliveryStatusActionNames.Relayed.AsSpan ().SequenceEqual (source);
 			if (isRelayed)
 			{
 				result = DeliveryAttemptResult.Relayed;
 				return true;
 			}
 
-			var isExpanded = DeliveryStatusActionNames.Expanded.Equals (source, StringComparison.OrdinalIgnoreCase);
+			var isExpanded = DeliveryStatusActionNames.Expanded.AsSpan ().SequenceEqual (source);
 			if (isExpanded)
 			{
 				result = DeliveryAttemptResult.Expanded;

@@ -1,4 +1,6 @@
-﻿namespace Novartment.Base.Net.Mime
+﻿using System;
+
+namespace Novartment.Base.Net.Mime
 {
 	/// <summary>
 	/// Обёртка для поля заголовка, позволяющая ставить на нём отметку.

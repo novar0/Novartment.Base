@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.Contracts;
@@ -273,9 +274,9 @@ namespace Novartment.Base.Net.Mime
 			async Task LoadAsyncStateMachine ()
 			{
 				var headerSource = new TemplateSeparatedBufferedSource (source, HeaderDecoder.CarriageReturnLinefeed2, false);
-				var fields = await HeaderDecoder.LoadHeaderFieldsAsync (headerSource, cancellationToken).ConfigureAwait (false);
+				var header = await HeaderDecoder.LoadHeaderAsync (headerSource, cancellationToken).ConfigureAwait (false);
 				await headerSource.TrySkipPartAsync (cancellationToken).ConfigureAwait (false);
-				var markedFields = fields.Select (item => new HeaderFieldWithMark (item)).DuplicateToArray ();
+				var markedFields = header.Select (item => new HeaderFieldWithMark (item)).DuplicateToArray ();
 				var contentProperties = LoadPropertiesFromHeader (markedFields, defaultMediaType, defaultMediaSubtype);
 				LoadExtraFields (markedFields);
 				this.ExtraFields.Clear ();
@@ -437,38 +438,31 @@ namespace Novartment.Base.Net.Mime
 			}
 		}
 
-		private static void ParseContentTransferEncodingField (
-			HeaderFieldWithMark fieldEntry,
-			EssentialContentProperties contentProperties,
-			ref ContentTransferEncoding transferEncoding)
+		private static bool ParseContentTransferEncodingField (ReadOnlySpan<char> body, EssentialContentProperties contentProperties, ref ContentTransferEncoding transferEncoding)
 		{
 			if (transferEncoding != ContentTransferEncoding.Unspecified)
 			{
 				throw new FormatException ("More than one '" + HeaderFieldNameHelper.GetName (HeaderFieldName.ContentTransferEncoding) + "' field.");
 			}
 
-			var isValidTransferEncoding = TransferEncodingHelper.TryParse (HeaderDecoder.DecodeAtom (fieldEntry.Field.Body.Span), out transferEncoding);
+			var isValidTransferEncoding = TransferEncodingHelper.TryParse (HeaderDecoder.DecodeAtom (body), out transferEncoding);
 			if (isValidTransferEncoding)
 			{
 				contentProperties.TransferEncoding = transferEncoding;
-				fieldEntry.IsMarked = true;
+				return true;
 			}
-			else
-			{
-				// According to RFC 2045 part 6.4:
-				// Any entity with an unrecognized Content-Transfer-Encoding must be treated as if it has a Content-Type of "application/octet-stream",
-				// regardless of what the Content-Type header field actually says.
-				contentProperties.MediaType = ContentMediaType.Application;
-				contentProperties.MediaSubtype = ApplicationMediaSubtypeNames.OctetStream;
-				contentProperties.TransferEncoding = ContentTransferEncoding.Binary;
-				contentProperties.Parameters.Clear ();
-			}
+
+			// According to RFC 2045 part 6.4:
+			// Any entity with an unrecognized Content-Transfer-Encoding must be treated as if it has a Content-Type of "application/octet-stream",
+			// regardless of what the Content-Type header field actually says.
+			contentProperties.MediaType = ContentMediaType.Application;
+			contentProperties.MediaSubtype = ApplicationMediaSubtypeNames.OctetStream;
+			contentProperties.TransferEncoding = ContentTransferEncoding.Binary;
+			contentProperties.Parameters.Clear ();
+			return false;
 		}
 
-		private EssentialContentProperties LoadPropertiesFromHeader (
-			IReadOnlyList<HeaderFieldWithMark> header,
-			ContentMediaType defaultMediaType,
-			string defaultMediaSubtype)
+		private EssentialContentProperties LoadPropertiesFromHeader (IReadOnlyList<HeaderFieldWithMark> header, ContentMediaType defaultMediaType, string defaultMediaSubtype)
 		{
 			if (header == null)
 			{
@@ -487,55 +481,75 @@ namespace Novartment.Base.Net.Mime
 			// будет принудительно использован Content-Type: application/octet-stream независимо от фактически указанного.
 			var contentProperties = new EssentialContentProperties ();
 
-			// перебираем все поля
-			foreach (var field in header.Where (item => !item.IsMarked))
+			var buffer = ArrayPool<char>.Shared.Rent (HeaderDecoder.MaximumHeaderFieldBodySize);
+			try
 			{
-				try
+				ReadOnlySpan<char> unfoldedBody;
+				foreach (var fieldEntry in header.Where (item => !item.IsMarked))
 				{
-					switch (field.Field.Name)
+					try
 					{
-						case HeaderFieldName.ContentType:
-							ParseContentTypeField (field, contentProperties);
-							break;
-						case HeaderFieldName.ContentDisposition:
-							ParseContentDispositionField (field);
-							break;
-						case HeaderFieldName.ContentTransferEncoding:
-							ParseContentTransferEncodingField (field, contentProperties, ref transferEncoding);
-							break;
-						case HeaderFieldName.ContentId:
-							ParseContentIdField (field);
-							break;
-						case HeaderFieldName.ContentDescription:
-							ParseContentDescriptionField (field);
-							break;
-						case HeaderFieldName.ContentBase:
-							ParseContentBaseField (field);
-							break;
-						case HeaderFieldName.ContentLocation:
-							ParseContentLocationField (field);
-							break;
-						case HeaderFieldName.ContentFeatures:
-							ParseContentFeaturesField (field);
-							break;
-						case HeaderFieldName.ContentLanguage:
-							ParseContentLanguageField (field);
-							break;
-						case HeaderFieldName.ContentAlternative:
-							ParseContentAlternativeField (field);
-							break;
-						case HeaderFieldName.ContentMD5:
-							ParseContentMD5Field (field);
-							break;
-						case HeaderFieldName.ContentDuration:
-							ParseContentDurationField (field);
-							break;
+						switch (fieldEntry.Field.Name)
+						{
+							case HeaderFieldName.ContentType:
+								unfoldedBody = HeaderDecoder.UnfoldFieldBody (fieldEntry.Field.Body.Span, buffer);
+								fieldEntry.IsMarked = ParseContentTypeField (unfoldedBody, contentProperties);
+								break;
+							case HeaderFieldName.ContentDisposition:
+								unfoldedBody = HeaderDecoder.UnfoldFieldBody (fieldEntry.Field.Body.Span, buffer);
+								fieldEntry.IsMarked = ParseContentDispositionField (unfoldedBody);
+								break;
+							case HeaderFieldName.ContentTransferEncoding:
+								unfoldedBody = HeaderDecoder.UnfoldFieldBody (fieldEntry.Field.Body.Span, buffer);
+								fieldEntry.IsMarked = ParseContentTransferEncodingField (unfoldedBody, contentProperties, ref transferEncoding);
+								break;
+							case HeaderFieldName.ContentId:
+								unfoldedBody = HeaderDecoder.UnfoldFieldBody (fieldEntry.Field.Body.Span, buffer);
+								fieldEntry.IsMarked = ParseContentIdField (unfoldedBody);
+								break;
+							case HeaderFieldName.ContentDescription:
+								unfoldedBody = HeaderDecoder.UnfoldFieldBody (fieldEntry.Field.Body.Span, buffer);
+								fieldEntry.IsMarked = ParseContentDescriptionField (unfoldedBody);
+								break;
+							case HeaderFieldName.ContentBase:
+								unfoldedBody = HeaderDecoder.UnfoldFieldBody (fieldEntry.Field.Body.Span, buffer);
+								fieldEntry.IsMarked = ParseContentBaseField (unfoldedBody);
+								break;
+							case HeaderFieldName.ContentLocation:
+								unfoldedBody = HeaderDecoder.UnfoldFieldBody (fieldEntry.Field.Body.Span, buffer);
+								fieldEntry.IsMarked = ParseContentLocationField (unfoldedBody);
+								break;
+							case HeaderFieldName.ContentFeatures:
+								unfoldedBody = HeaderDecoder.UnfoldFieldBody (fieldEntry.Field.Body.Span, buffer);
+								fieldEntry.IsMarked = ParseContentFeaturesField (unfoldedBody);
+								break;
+							case HeaderFieldName.ContentLanguage:
+								unfoldedBody = HeaderDecoder.UnfoldFieldBody (fieldEntry.Field.Body.Span, buffer);
+								fieldEntry.IsMarked = ParseContentLanguageField (unfoldedBody);
+								break;
+							case HeaderFieldName.ContentAlternative:
+								unfoldedBody = HeaderDecoder.UnfoldFieldBody (fieldEntry.Field.Body.Span, buffer);
+								fieldEntry.IsMarked = ParseContentAlternativeField (unfoldedBody);
+								break;
+							case HeaderFieldName.ContentMD5:
+								unfoldedBody = HeaderDecoder.UnfoldFieldBody (fieldEntry.Field.Body.Span, buffer);
+								fieldEntry.IsMarked = ParseContentMD5Field (unfoldedBody);
+								break;
+							case HeaderFieldName.ContentDuration:
+								unfoldedBody = HeaderDecoder.UnfoldFieldBody (fieldEntry.Field.Body.Span, buffer);
+								fieldEntry.IsMarked = ParseContentDurationField (unfoldedBody);
+								break;
+						}
+					}
+					catch (FormatException)
+					{
+						// игнорируем некорректные поля, они останутся немаркированными
 					}
 				}
-				catch (FormatException)
-				{
-					// игнорируем некорректные поля, они останутся немаркированными
-				}
+			}
+			finally
+			{
+				ArrayPool<char>.Shared.Return (buffer);
 			}
 
 			// RFC 2045 part 5.2:
@@ -556,9 +570,9 @@ namespace Novartment.Base.Net.Mime
 			}
 
 			return contentProperties;
-		}
+			}
 
-		private void ParseContentTypeField (HeaderFieldWithMark fieldEntry, EssentialContentProperties contentProperties)
+		private bool ParseContentTypeField (ReadOnlySpan<char> body, EssentialContentProperties contentProperties)
 		{
 			if ((_type != ContentMediaType.Unspecified) || (_subtype != null))
 			{
@@ -579,25 +593,24 @@ namespace Novartment.Base.Net.Mime
 			*/
 			try
 			{
-				var data = HeaderDecoder.DecodeAtomAndParameterList (fieldEntry.Field.Body.Span);
-#if NETCOREAPP2_1
-				var idx = data.Text.IndexOf ('/', StringComparison.Ordinal);
-#else
+				var data = HeaderDecoder.DecodeAtomAndParameterList (body);
 				var idx = data.Text.IndexOf ('/');
-#endif
 				if ((idx < 1) || (idx > (data.Text.Length - 2)))
 				{
 					throw new FormatException ("Invalid format of '" + HeaderFieldNameHelper.GetName (HeaderFieldName.ContentType) + "' field.");
 				}
 
-				var mediaTypeStr = data.Text.Substring (0, idx);
-				var isValidMediaType = MediaTypeHelper.TryParse (mediaTypeStr, out _type);
+				var isValidMediaType = MediaTypeHelper.TryParse (data.Text.Slice (0, idx), out _type);
 				if (!isValidMediaType)
 				{
-					throw new FormatException ("Unrecognized value of MediaType '" + mediaTypeStr + "'.");
+					throw new FormatException ("Unrecognized value of MediaType.");
 				}
 
-				_subtype = data.Text.Substring (idx + 1);
+#if NETCOREAPP2_1
+				_subtype = new string (data.Text.Slice (idx + 1));
+#else
+				_subtype = new string (data.Text.Slice (idx + 1).ToArray ());
+#endif
 				contentProperties.Parameters.AddRange (data.Parameters);
 				foreach (var parameter in data.Parameters)
 				{
@@ -620,7 +633,7 @@ namespace Novartment.Base.Net.Mime
 					contentProperties.MediaSubtype = _subtype;
 				}
 
-				fieldEntry.IsMarked = true;
+				return true;
 			}
 			catch (FormatException)
 			{
@@ -634,10 +647,12 @@ namespace Novartment.Base.Net.Mime
 					contentProperties.MediaSubtype = DefaultSubtype;
 					contentProperties.Parameters.Clear ();
 				}
+
+				return false;
 			}
 		}
 
-		private void ParseContentDispositionField (HeaderFieldWithMark fieldEntry)
+		private bool ParseContentDispositionField (ReadOnlySpan<char> body)
 		{
 			if (_dispositionType != ContentDispositionType.Unspecified)
 			{
@@ -647,7 +662,7 @@ namespace Novartment.Base.Net.Mime
 			// disposition := "Content-Disposition" ":" disposition-type *(";" disposition-parm)
 			// disposition-type := "inline" / "attachment" / extension-token
 			// disposition-parm := filename-parm / creation-date-parm / modification-date-parm / read-date-parm / size-parm / parameter
-			var data = HeaderDecoder.DecodeAtomAndParameterList (fieldEntry.Field.Body.Span);
+			var data = HeaderDecoder.DecodeAtomAndParameterList (body);
 			var isValidDispositionType = DispositionTypeHelper.TryParse (data.Text, out ContentDispositionType dtype);
 			if (isValidDispositionType)
 			{
@@ -698,66 +713,74 @@ namespace Novartment.Base.Net.Mime
 				}
 			}
 
-			fieldEntry.IsMarked = true;
+			return true;
 		}
 
-		private void ParseContentIdField (HeaderFieldWithMark fieldEntry)
+		private bool ParseContentIdField (ReadOnlySpan<char> body)
 		{
 			if (this.Id != null)
 			{
 				throw new FormatException ("More than one '" + HeaderFieldNameHelper.GetName (HeaderFieldName.ContentId) + "' field.");
 			}
 
-			var adrs = HeaderDecoder.DecodeAddrSpecList (fieldEntry.Field.Body.Span);
+			var adrs = HeaderDecoder.DecodeAddrSpecList (body);
 			this.Id = adrs.Single ();
-			fieldEntry.IsMarked = true;
+			return true;
 		}
 
-		private void ParseContentDescriptionField (HeaderFieldWithMark fieldEntry)
+		private bool ParseContentDescriptionField (ReadOnlySpan<char> body)
 		{
 			if (this.Description != null)
 			{
 				throw new FormatException ("More than one '" + HeaderFieldNameHelper.GetName (HeaderFieldName.ContentDescription) + "' field.");
 			}
 
-			this.Description = HeaderDecoder.DecodeUnstructured (fieldEntry.Field.Body.Span).Trim ();
-			fieldEntry.IsMarked = true;
+			this.Description = HeaderDecoder.DecodeUnstructured (body).Trim ();
+			return true;
 		}
 
-		private void ParseContentBaseField (HeaderFieldWithMark fieldEntry)
+		private bool ParseContentBaseField (ReadOnlySpan<char> body)
 		{
 			if (this.Base != null)
 			{
 				throw new FormatException ("More than one '" + HeaderFieldNameHelper.GetName (HeaderFieldName.ContentBase) + "' field.");
 			}
 
-			this.Base = AsciiCharSet.GetString (fieldEntry.Field.Body.Span).Trim ();
-			fieldEntry.IsMarked = true;
+#if NETCOREAPP2_1
+			this.Base = new string (body.Trim ());
+#else
+			this.Base = new string (body.Trim ().ToArray ());
+#endif
+			return true;
 		}
 
-		private void ParseContentLocationField (HeaderFieldWithMark fieldEntry)
+		private bool ParseContentLocationField (ReadOnlySpan<char> body)
 		{
 			if (this.Location != null)
 			{
 				throw new FormatException ("More than one '" + HeaderFieldNameHelper.GetName (HeaderFieldName.ContentLocation) + "' field.");
 			}
 
-			this.Location = AsciiCharSet.GetString (fieldEntry.Field.Body.Span).Trim ();
-			fieldEntry.IsMarked = true;
+#if NETCOREAPP2_1
+			this.Location = new string (body.Trim ());
+#else
+			this.Location = new string (body.Trim ().ToArray ());
+#endif
+			return true;
 		}
 
-		private void ParseContentFeaturesField (HeaderFieldWithMark fieldEntry)
+		private bool ParseContentFeaturesField (ReadOnlySpan<char> body)
 		{
 			if (this.Features != null)
 			{
 				throw new FormatException ("More than one '" + HeaderFieldNameHelper.GetName (HeaderFieldName.ContentFeatures) + "' field.");
 			}
 
-			this.Features = HeaderDecoder.DecodeUnstructured (fieldEntry.Field.Body.Span).Trim ();
-			fieldEntry.IsMarked = true;
+			this.Features = HeaderDecoder.DecodeUnstructured (body).Trim ();
+			return true;
 		}
 
-		private void ParseContentLanguageField (HeaderFieldWithMark fieldEntry)
+		private bool ParseContentLanguageField (ReadOnlySpan<char> body)
 		{
 			if (this.Languages.Count > 0)
 			{
@@ -765,46 +788,60 @@ namespace Novartment.Base.Net.Mime
 			}
 
 			// Language-List = Language-Tag [CFWS] *("," [CFWS] Language-Tag [CFWS])
-			this.Languages.AddRange (HeaderDecoder.DecodeAtomList (fieldEntry.Field.Body.Span));
-			fieldEntry.IsMarked = true;
+			this.Languages.AddRange (HeaderDecoder.DecodeAtomList (body));
+			return true;
 		}
 
-		private void ParseContentAlternativeField (HeaderFieldWithMark fieldEntry)
+		private bool ParseContentAlternativeField (ReadOnlySpan<char> body)
 		{
-			this.Alternatives.Add (HeaderDecoder.DecodeUnstructured (fieldEntry.Field.Body.Span).Trim ());
-			fieldEntry.IsMarked = true;
+			this.Alternatives.Add (HeaderDecoder.DecodeUnstructured (body).Trim ());
+			return true;
 		}
 
-		private void ParseContentMD5Field (HeaderFieldWithMark fieldEntry)
+		private bool ParseContentMD5Field (ReadOnlySpan<char> body)
 		{
 			if (_md5 != null)
 			{
 				throw new FormatException ("More than one '" + HeaderFieldNameHelper.GetName (HeaderFieldName.ContentMD5) + "' field.");
 			}
 
-			var md5 = Convert.FromBase64String (AsciiCharSet.GetString (fieldEntry.Field.Body.Span));
-			if (md5.Length != 16)
+#if NETCOREAPP2_1
+			var md5 = new byte[16];
+			var success = Convert.TryFromBase64Chars (body, md5, out int size);
+#else
+			var md5 = Convert.FromBase64String (new string (body.ToArray ()));
+			var success = true;
+			var size = md5.Length;
+#endif
+			if (!success || (size != 16))
 			{
 				throw new FormatException ("Invalid format of '" + HeaderFieldNameHelper.GetName (HeaderFieldName.ContentMD5) + "' field.");
 			}
 
 			_md5 = md5;
-			fieldEntry.IsMarked = true;
+			return true;
 		}
 
-		private void ParseContentDurationField (HeaderFieldWithMark fieldEntry)
+		private bool ParseContentDurationField (ReadOnlySpan<char> body)
 		{
 			if (_duration != null)
 			{
 				throw new FormatException ("More than one '" + HeaderFieldNameHelper.GetName (HeaderFieldName.ContentDuration) + "' field.");
 			}
 
+#if NETCOREAPP2_1
 			var seconds = int.Parse (
-				AsciiCharSet.GetString (fieldEntry.Field.Body.Span),
+				body,
 				NumberStyles.AllowLeadingWhite | NumberStyles.AllowTrailingWhite,
 				CultureInfo.InvariantCulture);
+#else
+			var seconds = int.Parse (
+				new string (body.ToArray ()),
+				NumberStyles.AllowLeadingWhite | NumberStyles.AllowTrailingWhite,
+				CultureInfo.InvariantCulture);
+#endif
 			_duration = new TimeSpan (0, 0, seconds);
-			fieldEntry.IsMarked = true;
+			return true;
 		}
 
 		private HeaderFieldBuilder CreateContentTypeField ()

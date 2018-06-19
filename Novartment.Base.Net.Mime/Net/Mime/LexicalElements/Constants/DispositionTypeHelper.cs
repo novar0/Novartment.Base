@@ -28,30 +28,25 @@ namespace Novartment.Base.Net.Mime
 		/// <param name="source">String representation of ContentDispositionType enumeration value.</param>
 		/// <param name="result">When this method returns, contains the ContentDispositionType value.</param>
 		/// <returns>True was value parsed successfully; otherwise, false.</returns>
-		internal static bool TryParse (string source, out ContentDispositionType result)
+		internal static bool TryParse (ReadOnlySpan<char> source, out ContentDispositionType result)
 		{
-			if (source == null)
-			{
-				throw new ArgumentNullException (nameof (source));
-			}
-
 			Contract.EndContractBlock ();
 
-			var isInline = DispositionTypeNames.Inline.Equals (source, StringComparison.OrdinalIgnoreCase);
+			var isInline = DispositionTypeNames.Inline.AsSpan ().SequenceEqual (source);
 			if (isInline)
 			{
 				result = ContentDispositionType.Inline;
 				return true;
 			}
 
-			var isAttachment = DispositionTypeNames.Attachment.Equals (source, StringComparison.OrdinalIgnoreCase);
+			var isAttachment = DispositionTypeNames.Attachment.AsSpan ().SequenceEqual (source);
 			if (isAttachment)
 			{
 				result = ContentDispositionType.Attachment;
 				return true;
 			}
 
-			var isFormData = DispositionTypeNames.FormData.Equals (source, StringComparison.OrdinalIgnoreCase);
+			var isFormData = DispositionTypeNames.FormData.AsSpan ().SequenceEqual (source);
 			if (isFormData)
 			{
 				result = ContentDispositionType.FormData;

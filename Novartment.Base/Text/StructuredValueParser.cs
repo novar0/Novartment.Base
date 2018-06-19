@@ -13,7 +13,7 @@ namespace Novartment.Base.Text
 		/// <param name="source">Исходное ASCII-строковое значение, представляющее из себя отдельные элементы.</param>
 		/// <param name="position">Позиция в source, начиная с которой будет получен элемент.</param>
 		/// <returns>Элемент структурированного значения.</returns>
-		public static StructuredValueElement GetNextElementDotAtom (ReadOnlySpan<byte> source, ref int position)
+		public static StructuredValueElement GetNextElementDotAtom (ReadOnlySpan<char> source, ref int position)
 		{
 			return GetNextElement (source, ref position, AsciiCharClasses.Atom, true, StructuredValueElementType.RoundBracketedValue);
 		}
@@ -24,7 +24,7 @@ namespace Novartment.Base.Text
 		/// <param name="source">Исходное ASCII-строковое значение, представляющее из себя отдельные элементы.</param>
 		/// <param name="position">Позиция в source, начиная с которой будет получен элемент.</param>
 		/// <returns>Элемент структурированного значения.</returns>
-		public static StructuredValueElement GetNextElementAtom (ReadOnlySpan<byte> source, ref int position)
+		public static StructuredValueElement GetNextElementAtom (ReadOnlySpan<char> source, ref int position)
 		{
 			return GetNextElement (source, ref position, AsciiCharClasses.Atom, false, StructuredValueElementType.RoundBracketedValue);
 		}
@@ -35,7 +35,7 @@ namespace Novartment.Base.Text
 		/// <param name="source">Исходное ASCII-строковое значение, представляющее из себя отдельные элементы.</param>
 		/// <param name="position">Позиция в source, начиная с которой будет получен элемент.</param>
 		/// <returns>Элемент структурированного значения.</returns>
-		public static StructuredValueElement GetNextElementToken (ReadOnlySpan<byte> source, ref int position)
+		public static StructuredValueElement GetNextElementToken (ReadOnlySpan<char> source, ref int position)
 		{
 			return GetNextElement (source, ref position, AsciiCharClasses.Token, false, StructuredValueElementType.RoundBracketedValue);
 		}
@@ -54,7 +54,7 @@ namespace Novartment.Base.Text
 		/// В создаваемую коллекцию элементы будут помещены в исходном виде, без декодирования.
 		/// </remarks>
 		public static StructuredValueElement GetNextElement (
-			ReadOnlySpan<byte> source,
+			ReadOnlySpan<char> source,
 			ref int position,
 			AsciiCharClasses valueCharClass,
 			bool allowDotInsideValue,
@@ -65,8 +65,8 @@ namespace Novartment.Base.Text
 			{
 				switch (source[position])
 				{
-					case (byte)' ':
-					case (byte)'\t':
+					case ' ':
+					case '\t':
 						// RFC 5322 часть 3.2.2:
 						// Runs of FWS, comment, or CFWS that occur between lexical elements in a structured header field
 						// are semantically interpreted as a single space character.
@@ -82,7 +82,7 @@ namespace Novartment.Base.Text
 						}
 
 						break;
-					case (byte)'"':
+					case '"':
 						var startPos1 = position;
 						position = EnsureDelimitedElement (source, position, StructuredValueParserDelimitingElement.QuotedString);
 						if (typeToSkip != StructuredValueElementType.QuotedValue)
@@ -91,7 +91,7 @@ namespace Novartment.Base.Text
 						}
 
 						break;
-					case (byte)'(':
+					case '(':
 						var startPos2 = position;
 						position = EnsureDelimitedElement (source, position, StructuredValueParserDelimitingElement.CommentDelimitingData);
 						if (typeToSkip != StructuredValueElementType.RoundBracketedValue)
@@ -100,7 +100,7 @@ namespace Novartment.Base.Text
 						}
 
 						break;
-					case (byte)'<':
+					case '<':
 						var startPos3 = position;
 						position = EnsureDelimitedElement (source, position, StructuredValueParserDelimitingElement.AngleAddr);
 						if (typeToSkip != StructuredValueElementType.AngleBracketedValue)
@@ -109,7 +109,7 @@ namespace Novartment.Base.Text
 						}
 
 						break;
-					case (byte)'[':
+					case '[':
 						var startPos4 = position;
 						position = EnsureDelimitedElement (source, position, StructuredValueParserDelimitingElement.DomainLiteral);
 						if (typeToSkip != StructuredValueElementType.SquareBracketedValue)
@@ -179,7 +179,7 @@ namespace Novartment.Base.Text
 		/// Выделяет в указанном диапазоне байтов поддиапазон, отвечающий указанному ограничению.
 		/// Если диапазон не соответствует требованиям ограничителя, то генерируется исключение.
 		/// </summary>
-		private static int EnsureDelimitedElement (ReadOnlySpan<byte> source, int pos, StructuredValueParserDelimitingElement delimitedElement)
+		private static int EnsureDelimitedElement (ReadOnlySpan<char> source, int pos, StructuredValueParserDelimitingElement delimitedElement)
 		{
 			// первый символ уже проверен, пропускаем
 			pos++;
@@ -199,7 +199,7 @@ namespace Novartment.Base.Text
 					case IngoreElementType.QuotedValue when octet == '\"':
 						pos = EnsureDelimitedElement (source, pos, StructuredValueParserDelimitingElement.QuotedString);
 						break;
-					case IngoreElementType.EscapedChar when octet == (byte)'\\':
+					case IngoreElementType.EscapedChar when octet == '\\':
 						pos += 2;
 						if (pos > source.Length)
 						{

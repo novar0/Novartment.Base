@@ -1,5 +1,4 @@
-﻿using System.Text;
-using Novartment.Base.Text;
+﻿using Novartment.Base.Text;
 using Xunit;
 
 namespace Novartment.Base.Net.Mime.Test
@@ -19,7 +18,7 @@ namespace Novartment.Base.Net.Mime.Test
 				";",
 				"i\\\\jkl",
 			};
-			var src = Encoding.ASCII.GetBytes (string.Join (' ', strs));
+			var src = string.Join (' ', strs);
 			var elements = new StructuredValueElement[]
 			{
 				new StructuredValueElement (StructuredValueElementType.Value, 0, strs[0].Length),

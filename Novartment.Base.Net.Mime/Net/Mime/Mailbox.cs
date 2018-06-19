@@ -112,18 +112,6 @@ namespace Novartment.Base.Net.Mime
 		/// <returns>Почтовый ящик, созданный из коллекции элементов значения.</returns>
 		public static Mailbox Parse (ReadOnlySpan<char> source)
 		{
-			var buf = new byte[source.Length];
-			AsciiCharSet.GetBytes (source, buf);
-			return Parse (buf);
-		}
-
-		/// <summary>
-		/// Создаёт почтовый ящик из указанной коллекции элементов значения.
-		/// </summary>
-		/// <param name="source">Исходное ASCII-строковое значение.</param>
-		/// <returns>Почтовый ящик, созданный из коллекции элементов значения.</returns>
-		public static Mailbox Parse (ReadOnlySpan<byte> source)
-		{
 			/*
 			mailbox      = name-addr / addr-spec
 			name-addr    = [display-name] angle-addr
@@ -158,12 +146,12 @@ namespace Novartment.Base.Net.Mime
 			var element4 = StructuredValueParser.GetNextElementDotAtom (source, ref parserPos);
 			if (!element4.IsValid &&
 				((element1.ElementType == StructuredValueElementType.Value) || (element1.ElementType == StructuredValueElementType.QuotedValue)) &&
-				(element2.ElementType == StructuredValueElementType.Separator) && (element2.Length == 1) && (source[element2.StartPosition] == (byte)'@') &&
+				(element2.ElementType == StructuredValueElementType.Separator) && (element2.Length == 1) && (source[element2.StartPosition] == '@') &&
 				((element3.ElementType == StructuredValueElementType.Value) || (element3.ElementType == StructuredValueElementType.SquareBracketedValue)))
 			{
 				// addr-spec
-				var localPart = element1.DecodeElement (source);
-				var domain = element3.DecodeElement (source);
+				var localPart = element1.Decode (source);
+				var domain = element3.Decode (source);
 				var addr = new AddrSpec (localPart, domain);
 				return new Mailbox (addr);
 			}

@@ -29,6 +29,22 @@ namespace Novartment.Base.Test
 
 		[Fact]
 		[Trait ("Category", "Text.Rfc2047EncodedWord")]
+		public void Parse_QEncodingSpan ()
+		{
+			var buf = new char[500];
+
+			var size = Rfc2047EncodedWord.Parse ("=?us-ascii?q?some_text?=", buf);
+			Assert.Equal ("some text", new string (buf, 0, size));
+
+			size = Rfc2047EncodedWord.Parse ("=?us-ascii*ru-ru?q?some_text?=", buf);
+			Assert.Equal ("some text", new string (buf, 0, size));
+
+			size = Rfc2047EncodedWord.Parse ("=?windows-1251*ru-ru?Q?=C8=E4=E5=FF_=F1=EE=F1=F2=EE=E8=F2_=E2_=F2=EE=EC?=", buf);
+			Assert.Equal ("Идея состоит в том", new string (buf, 0, size));
+		}
+
+		[Fact]
+		[Trait ("Category", "Text.Rfc2047EncodedWord")]
 		public void Parse_BEncoding ()
 		{
 			Assert.Equal (
@@ -43,6 +59,24 @@ namespace Novartment.Base.Test
 			Assert.Equal (
 				" мерах",
 				Rfc2047EncodedWord.Parse ("=?utf-8?B?INC80LXRgNCw0YU=?=")); // длина кратно 3 + 2
+		}
+
+		[Fact]
+		[Trait ("Category", "Text.Rfc2047EncodedWord")]
+		public void Parse_BEncodingSpan ()
+		{
+			var buf = new char[500];
+			var size = Rfc2047EncodedWord.Parse ("=?koi8-r?B?68/O09TBztTJziD0xczJ3svP?=", buf); // 8-битно
+			Assert.Equal ("Константин Теличко", new string (buf, 0, size));
+
+			size = Rfc2047EncodedWord.Parse ("=?utf-8*ru-ru?B?0YLQtdC80LAg0YHQvtC+0LHRidC10L3QuNGPINGC0LXQutGB0YIg0YHQvtC+0LHRidC10L3QuNGP?=", buf); // длина кратно 3
+			Assert.Equal ("тема сообщения текст сообщения", new string (buf, 0, size));
+
+			size = Rfc2047EncodedWord.Parse ("=?utf-8?B?INGD0YHQuNC70LXQvdC90YvRhQ==?=", buf); // длина кратно 3 + 1
+			Assert.Equal (" усиленных", new string (buf, 0, size));
+
+			size = Rfc2047EncodedWord.Parse ("=?utf-8?B?INC80LXRgNCw0YU=?=", buf); // длина кратно 3 + 2
+			Assert.Equal (" мерах", new string (buf, 0, size));
 		}
 
 		[Fact]
@@ -62,6 +96,26 @@ namespace Novartment.Base.Test
 			Assert.Throws<FormatException> (() => Rfc2047EncodedWord.Parse ("=?utf-8?B?INC8`LXRgNCw0YU=?="));
 			Assert.Throws<FormatException> (() => Rfc2047EncodedWord.Parse ("=?utf-8?B?INC8|LXRgNCw0YU=?="));
 			Assert.Throws<FormatException> (() => Rfc2047EncodedWord.Parse ("=?utf-8*ru-ru?B?0YLQtdC80LAg0YHQvtC+0LHRidC10L3QuNGPINGC0LXQutGB0YIg0YHQvtC+0LHRidC10L3QuNG?="));
+		}
+
+		[Fact]
+		[Trait ("Category", "Text.Rfc2047EncodedWord")]
+		public void ParseExceptionSpan ()
+		{
+			var buf = new char[500];
+			Assert.Throws<FormatException> (() => Rfc2047EncodedWord.Parse ("=?a?B??", buf));
+			Assert.Throws<FormatException> (() => Rfc2047EncodedWord.Parse ("=?uk-ascii?q?text?=", buf));
+			Assert.Throws<FormatException> (() => Rfc2047EncodedWord.Parse ("=?us-ascii?t?text?=", buf));
+			Assert.Throws<FormatException> (() => Rfc2047EncodedWord.Parse ("=?us-ascii?q?text?", buf));
+			Assert.Throws<FormatException> (() => Rfc2047EncodedWord.Parse ("=?utf-8?B?INC80LXRgN=w0YU=?=", buf));
+			Assert.Throws<FormatException> (() => Rfc2047EncodedWord.Parse ("=?utf-8?B?INC80LXRgNCw0Y=?=", buf));
+			Assert.Throws<FormatException> (() => Rfc2047EncodedWord.Parse ("=?utf-8?B?INC8.LXRgNCw0YU=?=", buf));
+			Assert.Throws<FormatException> (() => Rfc2047EncodedWord.Parse ("=?utf-8?B?INC8:LXRgNCw0YU=?=", buf));
+			Assert.Throws<FormatException> (() => Rfc2047EncodedWord.Parse ("=?utf-8?B?INC8@LXRgNCw0YU=?=", buf));
+			Assert.Throws<FormatException> (() => Rfc2047EncodedWord.Parse ("=?utf-8?B?INC8[LXRgNCw0YU=?=", buf));
+			Assert.Throws<FormatException> (() => Rfc2047EncodedWord.Parse ("=?utf-8?B?INC8`LXRgNCw0YU=?=", buf));
+			Assert.Throws<FormatException> (() => Rfc2047EncodedWord.Parse ("=?utf-8?B?INC8|LXRgNCw0YU=?=", buf));
+			Assert.Throws<FormatException> (() => Rfc2047EncodedWord.Parse ("=?utf-8*ru-ru?B?0YLQtdC80LAg0YHQvtC+0LHRidC10L3QuNGPINGC0LXQutGB0YIg0YHQvtC+0LHRidC10L3QuNG?=", buf));
 		}
 
 		[Fact]

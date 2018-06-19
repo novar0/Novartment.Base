@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Threading;
@@ -97,7 +98,7 @@ namespace Novartment.Base.Net.Mime
 			Contract.EndContractBlock ();
 
 			var headerSource = new TemplateSeparatedBufferedSource (source, HeaderDecoder.CarriageReturnLinefeed2, false);
-			var task = HeaderDecoder.LoadHeaderFieldsAsync (headerSource, cancellationToken);
+			var task = HeaderDecoder.LoadHeaderAsync (headerSource, cancellationToken);
 
 			return LoadAsyncFinalizer ();
 
@@ -177,58 +178,76 @@ namespace Novartment.Base.Net.Mime
 				"displayed" / "deleted"
 			*/
 
-			foreach (var field in fields)
+			var buffer = ArrayPool<char>.Shared.Rent (HeaderDecoder.MaximumHeaderFieldBodySize);
+			try
 			{
-				switch (field.Name)
+				ReadOnlySpan<char> unfoldedBody;
+				foreach (var field in fields)
 				{
-					case HeaderFieldName.ReportingUA:
-						ParseReportingUAField (field.Body.Span);
-						break;
-					case HeaderFieldName.MdnGateway:
-						if (this.Gateway != null)
-						{
-							throw new FormatException ("More than one '" + HeaderFieldNameHelper.GetName (HeaderFieldName.MdnGateway) + "' field.");
-						}
+					switch (field.Name)
+					{
+						case HeaderFieldName.ReportingUA:
+							unfoldedBody = HeaderDecoder.UnfoldFieldBody (field.Body.Span, buffer);
+							ParseReportingUAField (unfoldedBody);
+							break;
+						case HeaderFieldName.MdnGateway:
+							if (this.Gateway != null)
+							{
+								throw new FormatException ("More than one '" + HeaderFieldNameHelper.GetName (HeaderFieldName.MdnGateway) + "' field.");
+							}
 
-						this.Gateway = HeaderDecoder.DecodeNotificationFieldValue (field.Body.Span);
-						break;
-					case HeaderFieldName.OriginalRecipient:
-						if (this.OriginalRecipient != null)
-						{
-							throw new FormatException ("More than one '" + HeaderFieldNameHelper.GetName (HeaderFieldName.OriginalRecipient) + "' field.");
-						}
+							unfoldedBody = HeaderDecoder.UnfoldFieldBody (field.Body.Span, buffer);
+							this.Gateway = HeaderDecoder.DecodeNotificationFieldValue (unfoldedBody);
+							break;
+						case HeaderFieldName.OriginalRecipient:
+							if (this.OriginalRecipient != null)
+							{
+								throw new FormatException ("More than one '" + HeaderFieldNameHelper.GetName (HeaderFieldName.OriginalRecipient) + "' field.");
+							}
 
-						this.OriginalRecipient = HeaderDecoder.DecodeNotificationFieldValue (field.Body.Span);
-						break;
-					case HeaderFieldName.FinalRecipient:
-						if (this.FinalRecipient != null)
-						{
-							throw new FormatException ("More than one '" + HeaderFieldNameHelper.GetName (HeaderFieldName.FinalRecipient) + "' field.");
-						}
+							unfoldedBody = HeaderDecoder.UnfoldFieldBody (field.Body.Span, buffer);
+							this.OriginalRecipient = HeaderDecoder.DecodeNotificationFieldValue (unfoldedBody);
+							break;
+						case HeaderFieldName.FinalRecipient:
+							if (this.FinalRecipient != null)
+							{
+								throw new FormatException ("More than one '" + HeaderFieldNameHelper.GetName (HeaderFieldName.FinalRecipient) + "' field.");
+							}
 
-						this.FinalRecipient = HeaderDecoder.DecodeNotificationFieldValue (field.Body.Span);
-						break;
-					case HeaderFieldName.OriginalMessageId:
-						if (this.OriginalMessageId != null)
-						{
-							throw new FormatException ("More than one '" + HeaderFieldNameHelper.GetName (HeaderFieldName.OriginalMessageId) + "' field.");
-						}
+							unfoldedBody = HeaderDecoder.UnfoldFieldBody (field.Body.Span, buffer);
+							this.FinalRecipient = HeaderDecoder.DecodeNotificationFieldValue (unfoldedBody);
+							break;
+						case HeaderFieldName.OriginalMessageId:
+							if (this.OriginalMessageId != null)
+							{
+								throw new FormatException ("More than one '" + HeaderFieldNameHelper.GetName (HeaderFieldName.OriginalMessageId) + "' field.");
+							}
 
-						this.OriginalMessageId = HeaderDecoder.DecodeAddrSpecList (field.Body.Span).Single ();
-						break;
-					case HeaderFieldName.Disposition:
-						ParseDispositionField (field.Body.Span);
-						break;
-					case HeaderFieldName.Failure:
-						this.FailureInfo.Add (HeaderDecoder.DecodeUnstructured (field.Body.Span).Trim ());
-						break;
-					case HeaderFieldName.Error:
-						this.ErrorInfo.Add (HeaderDecoder.DecodeUnstructured (field.Body.Span).Trim ());
-						break;
-					case HeaderFieldName.Warning:
-						this.WarningInfo.Add (HeaderDecoder.DecodeUnstructured (field.Body.Span).Trim ());
-						break;
+							unfoldedBody = HeaderDecoder.UnfoldFieldBody (field.Body.Span, buffer);
+							this.OriginalMessageId = HeaderDecoder.DecodeAddrSpecList (unfoldedBody).Single ();
+							break;
+						case HeaderFieldName.Disposition:
+							unfoldedBody = HeaderDecoder.UnfoldFieldBody (field.Body.Span, buffer);
+							ParseDispositionField (unfoldedBody);
+							break;
+						case HeaderFieldName.Failure:
+							unfoldedBody = HeaderDecoder.UnfoldFieldBody (field.Body.Span, buffer);
+							this.FailureInfo.Add (HeaderDecoder.DecodeUnstructured (unfoldedBody).Trim ());
+							break;
+						case HeaderFieldName.Error:
+							unfoldedBody = HeaderDecoder.UnfoldFieldBody (field.Body.Span, buffer);
+							this.ErrorInfo.Add (HeaderDecoder.DecodeUnstructured (unfoldedBody).Trim ());
+							break;
+						case HeaderFieldName.Warning:
+							unfoldedBody = HeaderDecoder.UnfoldFieldBody (field.Body.Span, buffer);
+							this.WarningInfo.Add (HeaderDecoder.DecodeUnstructured (unfoldedBody).Trim ());
+							break;
+					}
 				}
+			}
+			finally
+			{
+				ArrayPool<char>.Shared.Return (buffer);
 			}
 
 			if (this.FinalRecipient == null)
@@ -242,7 +261,7 @@ namespace Novartment.Base.Net.Mime
 			}
 		}
 
-		private void ParseReportingUAField (ReadOnlySpan<byte> value)
+		private void ParseReportingUAField (ReadOnlySpan<char> value)
 		{
 			if (this.ReportingUserAgentName != null)
 			{
@@ -258,7 +277,7 @@ namespace Novartment.Base.Net.Mime
 			}
 		}
 
-		private void ParseDispositionField (ReadOnlySpan<byte> value)
+		private void ParseDispositionField (ReadOnlySpan<char> value)
 		{
 			if (this.Disposition != MessageDispositionChangedAction.Unspecified)
 			{

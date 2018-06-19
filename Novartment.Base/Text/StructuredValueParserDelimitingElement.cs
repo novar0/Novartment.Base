@@ -13,30 +13,30 @@
 	internal struct StructuredValueParserDelimitingElement
 	{
 		internal static readonly StructuredValueParserDelimitingElement CommentDelimitingData = new StructuredValueParserDelimitingElement (
-			startMarker: (byte)'(',
-			endMarker: (byte)')',
+			startMarker: '(',
+			endMarker: ')',
 			ignoreElement: IngoreElementType.EscapedChar,
 			allowNesting: true);
 
 		internal static readonly StructuredValueParserDelimitingElement QuotedString = new StructuredValueParserDelimitingElement (
-			startMarker: (byte)'\"',
-			endMarker: (byte)'\"',
+			startMarker: '\"',
+			endMarker: '\"',
 			ignoreElement: IngoreElementType.EscapedChar,
 			allowNesting: false);
 
 		internal static readonly StructuredValueParserDelimitingElement AngleAddr = new StructuredValueParserDelimitingElement (
-			startMarker: (byte)'<',
-			endMarker: (byte)'>',
+			startMarker: '<',
+			endMarker: '>',
 			ignoreElement: IngoreElementType.QuotedValue,
 			allowNesting: false);
 
 		internal static readonly StructuredValueParserDelimitingElement DomainLiteral = new StructuredValueParserDelimitingElement (
-			startMarker: (byte)'[',
-			endMarker: (byte)']',
+			startMarker: '[',
+			endMarker: ']',
 			ignoreElement: IngoreElementType.EscapedChar,
 			allowNesting: false);
 
-		internal StructuredValueParserDelimitingElement (byte startMarker, byte endMarker, IngoreElementType ignoreElement, bool allowNesting)
+		internal StructuredValueParserDelimitingElement (char startMarker, char endMarker, IngoreElementType ignoreElement, bool allowNesting)
 		{
 			this.StarMarker = startMarker;
 			this.EndMarker = endMarker;
@@ -45,10 +45,10 @@
 		}
 
 		/// <summary>Начальный байт элемента.</summary>
-		internal byte StarMarker { get; }
+		internal char StarMarker { get; }
 
 		/// <summary>Конечный байт элемента.</summary>
-		internal byte EndMarker { get; }
+		internal char EndMarker { get; }
 
 		/// <summary>Разрешены ли вложенные элементы.</summary>
 		internal bool AllowNesting { get; }

@@ -198,15 +198,15 @@ namespace Novartment.Base.Net.Mime.Test
 			Assert.Equal (4, entity.ExtraFields.Count);
 			var extField = (ExtensionHeaderField)entity.ExtraFields[0];
 			Assert.Equal ("X-Priority", extField.ExtensionName);
-			Assert.Equal ("3", Encoding.ASCII.GetString (entity.ExtraFields[0].Body.Span));
+			Assert.Equal (" 3", Encoding.ASCII.GetString (entity.ExtraFields[0].Body.Span));
 			extField = (ExtensionHeaderField)entity.ExtraFields[1];
 			Assert.Equal ("X-MimeOLE", extField.ExtensionName);
-			Assert.Equal ("Produced By Microsoft MimeOLE V6.00.3790.4913", Encoding.ASCII.GetString (entity.ExtraFields[1].Body.Span));
+			Assert.Equal (" Produced By Microsoft MimeOLE V6.00.3790.4913", Encoding.ASCII.GetString (entity.ExtraFields[1].Body.Span));
 			Assert.Equal (HeaderFieldName.AcceptLanguage, entity.ExtraFields[2].Name);
-			Assert.Equal ("ru-ru,ru;q=0.8,en-us;q=0.5,en;q=0.3", Encoding.ASCII.GetString (entity.ExtraFields[2].Body.Span));
+			Assert.Equal (" ru-ru,ru;q=0.8,en-us;q=0.5,en;q=0.3", Encoding.ASCII.GetString (entity.ExtraFields[2].Body.Span));
 			extField = (ExtensionHeaderField)entity.ExtraFields[3];
 			Assert.Equal ("Content-Quality", extField.ExtensionName);
-			Assert.Equal ("0.3 (poor)", Encoding.ASCII.GetString (entity.ExtraFields[3].Body.Span));
+			Assert.Equal (" 0.3 (poor)", Encoding.ASCII.GetString (entity.ExtraFields[3].Body.Span));
 
 			Assert.IsType<TextEntityBody> (entity.Body);
 			Assert.Equal ("some text", ((TextEntityBody)entity.Body).GetText ());

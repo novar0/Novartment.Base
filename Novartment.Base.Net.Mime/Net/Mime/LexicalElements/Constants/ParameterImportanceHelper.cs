@@ -27,17 +27,16 @@ namespace Novartment.Base.Net.Mime
 		/// <param name="source">String representation of ParameterImportance enumeration value.</param>
 		/// <param name="result">When this method returns, contains the ParameterImportance value.</param>
 		/// <returns>True was value parsed successfully; otherwise, false.</returns>
-		internal static bool TryParse (ReadOnlySpan<byte> source, out DispositionNotificationParameterImportance result)
+		internal static bool TryParse (ReadOnlySpan<char> source, out DispositionNotificationParameterImportance result)
 		{
-			var sourceStr = AsciiCharSet.GetString (source);
-			var isRequired = ParameterImportanceNames.Required.Equals (sourceStr, StringComparison.OrdinalIgnoreCase);
+			var isRequired = ParameterImportanceNames.Required.AsSpan ().SequenceEqual (source);
 			if (isRequired)
 			{
 				result = DispositionNotificationParameterImportance.Required;
 				return true;
 			}
 
-			var isOptional = ParameterImportanceNames.Optional.Equals (sourceStr, StringComparison.OrdinalIgnoreCase);
+			var isOptional = ParameterImportanceNames.Optional.AsSpan ().SequenceEqual (source);
 			if (isOptional)
 			{
 				result = DispositionNotificationParameterImportance.Optional;

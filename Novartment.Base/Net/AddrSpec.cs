@@ -129,18 +129,6 @@ namespace Novartment.Base.Net
 		/// <returns>Интернет-идентификатор, созданный из строкового представления.</returns>
 		public static AddrSpec Parse (ReadOnlySpan<char> source)
 		{
-			var buf = new byte[source.Length];
-			AsciiCharSet.GetBytes (source, buf);
-			return Parse (buf);
-		}
-
-		/// <summary>
-		/// Создаёт интернет-идентификатор из указанного строкового представления.
-		/// </summary>
-		/// <param name="source">Строковое представление интернет-идентификатора.</param>
-		/// <returns>Интернет-идентификатор, созданный из строкового представления.</returns>
-		public static AddrSpec Parse (ReadOnlySpan<byte> source)
-		{
 			/*
 			addr-spec       =  local-part "@" domain
 			local-part      =  dot-atom / quoted-string
@@ -157,7 +145,11 @@ namespace Novartment.Base.Net
 			if (element1.IsValid && !element2.IsValid)
 			{
 				// особый случай для совместимости со старыми реализациями
-				localPart = AsciiCharSet.GetString (source.Slice (element1.StartPosition, element1.Length));
+#if NETCOREAPP2_1
+				localPart = new string (source.Slice (element1.StartPosition, element1.Length));
+#else
+				localPart = new string (source.Slice (element1.StartPosition, element1.Length).ToArray ());
+#endif
 				domain = "localhost";
 			}
 			else
@@ -172,8 +164,8 @@ namespace Novartment.Base.Net
 					throw new FormatException ("Value does not conform to format 'addr-spec'.");
 				}
 
-				localPart = element1.DecodeElement (source);
-				domain = element3.DecodeElement (source);
+				localPart = element1.Decode (source);
+				domain = element3.Decode (source);
 			}
 
 			return new AddrSpec (localPart, domain);
