@@ -78,12 +78,12 @@ namespace Novartment.Base.Net.Smtp
 			}
 
 			// для команды нужно минимум 6 байт
-			if (connection.Reader.Buffer.Length < 6)
+			if (connection.Reader.BufferMemory.Length < 6)
 			{
 				throw new ArgumentOutOfRangeException (
 					nameof (connection),
 					FormattableString.Invariant (
-						$"Aborting protocol because of insufficient connection.Reader.Buffer.Length ({connection.Reader.Buffer.Length}). Required minimum 6 bytes."));
+						$"Aborting protocol because of insufficient connection.Reader.Buffer.Length ({connection.Reader.BufferMemory.Length}). Required minimum 6 bytes."));
 			}
 
 			Contract.EndContractBlock ();

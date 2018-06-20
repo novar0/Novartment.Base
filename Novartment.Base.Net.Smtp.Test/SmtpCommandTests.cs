@@ -441,8 +441,8 @@ namespace Novartment.Base.Smtp.Test
 		public void Construction ()
 		{
 			// размер источника равен указанному
-			var buf = new byte[100];
-			var src = new ArrayBufferedSource (buf, 3, 10);
+			Memory<byte> buf = new byte[100];
+			var src = new ArrayBufferedSource (buf.Slice (3, 10));
 			var cmd = new SmtpBdatCommand (src, 10, false);
 			Assert.NotNull (cmd.Source);
 			Assert.Equal (10, cmd.Source.Count);
@@ -450,7 +450,7 @@ namespace Novartment.Base.Smtp.Test
 			Assert.True (cmd.Source.IsExhausted);
 
 			// размер источника меньше указанного
-			src = new ArrayBufferedSource (buf, 2, 1);
+			src = new ArrayBufferedSource (buf.Slice (2, 1));
 			cmd = new SmtpBdatCommand (src, 33, false);
 			Assert.NotNull (cmd.Source);
 			Assert.Equal (1, cmd.Source.Count);
@@ -459,7 +459,7 @@ namespace Novartment.Base.Smtp.Test
 			Assert.ThrowsAsync<NotEnoughDataException> (() => cmd.Source.FillBufferAsync (CancellationToken.None));
 
 			// размер источника больше указанного
-			src = new ArrayBufferedSource (buf, 15, 19);
+			src = new ArrayBufferedSource (buf.Slice (15, 19));
 			cmd = new SmtpBdatCommand (src, 8, false);
 			Assert.NotNull (cmd.Source);
 			Assert.Equal (8, cmd.Source.Count);

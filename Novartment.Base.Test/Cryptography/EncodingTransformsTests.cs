@@ -1,4 +1,4 @@
-﻿using System.Security.Cryptography;
+﻿using System;
 using System.Text;
 using Xunit;
 
@@ -19,13 +19,13 @@ namespace Novartment.Base.Test
 		[Trait ("Category", "Cryptography.CryptoTransform")]
 		public void FromBase64Converter ()
 		{
-			ICryptoTransform coder = new FromBase64Converter ();
+			ISpanCryptoTransform coder = new FromBase64Converter ();
 			Assert.True (coder.CanTransformMultipleBlocks);
 			var buf = Encoding.UTF8.GetBytes (Template1Base64);
 			var result1 = new byte[buf.Length];
-			var size = coder.TransformBlock (buf, 0, 800, result1, 0);
-			var result2 = coder.TransformFinalBlock (buf, 800, buf.Length - 800);
-			var resutlStr = Encoding.UTF8.GetString (result1, 0, size) + Encoding.UTF8.GetString (result2, 0, result2.Length);
+			var size = coder.TransformBlock (buf.AsSpan (0, 800), result1);
+			var result2 = coder.TransformFinalBlock (buf.AsSpan (800, buf.Length - 800));
+			var resutlStr = Encoding.UTF8.GetString (result1, 0, size) + Encoding.UTF8.GetString (result2.Span);
 			Assert.Equal (Template1Html, resutlStr);
 		}
 
@@ -33,25 +33,25 @@ namespace Novartment.Base.Test
 		[Trait ("Category", "Cryptography.CryptoTransform")]
 		public void ToQuotedPrintableWithLineBreaksTransform_Text ()
 		{
-			ICryptoTransform coder = new ToQuotedPrintableWithLineBreaksConverter (true);
+			ISpanCryptoTransform coder = new ToQuotedPrintableWithLineBreaksConverter (true);
 			Assert.True (coder.CanTransformMultipleBlocks);
 			Assert.Equal (25, coder.InputBlockSize);
 			Assert.Equal (78, coder.OutputBlockSize);
 			var buf = Encoding.UTF8.GetBytes ("DOCTYPE-html PUBLIC*123456");
 			var result1 = new byte[buf.Length * 4];
 			int nBlocks = buf.Length / coder.InputBlockSize;
-			var size = coder.TransformBlock (buf, 0, nBlocks * coder.InputBlockSize, result1, 0);
-			var result2 = coder.TransformFinalBlock (buf, nBlocks * coder.InputBlockSize, buf.Length - (nBlocks * coder.InputBlockSize));
-			var resutlStr = Encoding.UTF8.GetString (result1, 0, size) + Encoding.UTF8.GetString (result2, 0, result2.Length);
+			var size = coder.TransformBlock (buf.AsSpan (0, nBlocks * coder.InputBlockSize), result1);
+			var result2 = coder.TransformFinalBlock (buf.AsSpan (nBlocks * coder.InputBlockSize, buf.Length - (nBlocks * coder.InputBlockSize)));
+			var resutlStr = Encoding.UTF8.GetString (result1, 0, size) + Encoding.UTF8.GetString (result2.Span);
 			Assert.Equal ("DOCTYPE-html PUBLIC*123456", resutlStr);
 
 			coder = new ToQuotedPrintableWithLineBreaksConverter (true);
 			buf = Encoding.UTF8.GetBytes (Template2MostlyAsciiText);
 			result1 = new byte[buf.Length * 4];
 			nBlocks = buf.Length / coder.InputBlockSize;
-			size = coder.TransformBlock (buf, 0, nBlocks * coder.InputBlockSize, result1, 0);
-			result2 = coder.TransformFinalBlock (buf, nBlocks * coder.InputBlockSize, buf.Length - (nBlocks * coder.InputBlockSize));
-			resutlStr = Encoding.UTF8.GetString (result1, 0, size) + Encoding.UTF8.GetString (result2, 0, result2.Length);
+			size = coder.TransformBlock (buf.AsSpan (0, nBlocks * coder.InputBlockSize), result1);
+			result2 = coder.TransformFinalBlock (buf.AsSpan (nBlocks * coder.InputBlockSize, buf.Length - (nBlocks * coder.InputBlockSize)));
+			resutlStr = Encoding.UTF8.GetString (result1, 0, size) + Encoding.UTF8.GetString (result2.Span);
 			Assert.Equal (Template2QuotedPrintable, resutlStr);
 		}
 
@@ -59,10 +59,10 @@ namespace Novartment.Base.Test
 		[Trait ("Category", "Cryptography.CryptoTransform")]
 		public void FromQuotedPrintableTransform_Text ()
 		{
-			ICryptoTransform coder = new FromQuotedPrintableConverter ();
+			ISpanCryptoTransform coder = new FromQuotedPrintableConverter ();
 			var buf = Encoding.UTF8.GetBytes (Template2QuotedPrintable);
 			var result = new byte[buf.Length];
-			var size = coder.TransformBlock (buf, 0, buf.Length, result, 0);
+			var size = coder.TransformBlock (buf, result);
 			Assert.Equal (Template2MostlyAsciiText, Encoding.UTF8.GetString (result, 0, size));
 		}
 
@@ -70,16 +70,16 @@ namespace Novartment.Base.Test
 		[Trait ("Category", "Cryptography.CryptoTransform")]
 		public void ToQuotedPrintableWithLineBreaksTransform_Binary ()
 		{
-			ICryptoTransform coder = new ToQuotedPrintableWithLineBreaksConverter (false);
+			ISpanCryptoTransform coder = new ToQuotedPrintableWithLineBreaksConverter (false);
 			Assert.True (coder.CanTransformMultipleBlocks);
 			Assert.Equal (25, coder.InputBlockSize);
 			Assert.Equal (78, coder.OutputBlockSize);
 			var buf = Encoding.UTF8.GetBytes (Template1Html);
 			var result1 = new byte[buf.Length * 4];
 			int nBlocks = buf.Length / coder.InputBlockSize;
-			var size = coder.TransformBlock (buf, 0, nBlocks * coder.InputBlockSize, result1, 0);
-			var result2 = coder.TransformFinalBlock (buf, nBlocks * coder.InputBlockSize, buf.Length - (nBlocks * coder.InputBlockSize));
-			var resutlStr = Encoding.UTF8.GetString (result1, 0, size) + Encoding.UTF8.GetString (result2, 0, result2.Length);
+			var size = coder.TransformBlock (buf.AsSpan (0, nBlocks * coder.InputBlockSize), result1);
+			var result2 = coder.TransformFinalBlock (buf.AsSpan (nBlocks * coder.InputBlockSize, buf.Length - (nBlocks * coder.InputBlockSize)));
+			var resutlStr = Encoding.UTF8.GetString (result1, 0, size) + Encoding.UTF8.GetString (result2.Span);
 			Assert.Equal (Template1QuotedPrintable, resutlStr);
 		}
 
@@ -87,10 +87,10 @@ namespace Novartment.Base.Test
 		[Trait ("Category", "Cryptography.CryptoTransform")]
 		public void FromQuotedPrintableTransform_Binary ()
 		{
-			ICryptoTransform coder = new FromQuotedPrintableConverter ();
+			ISpanCryptoTransform coder = new FromQuotedPrintableConverter ();
 			var buf = Encoding.UTF8.GetBytes (Template1QuotedPrintable);
 			var result = new byte[buf.Length];
-			var size = coder.TransformBlock (buf, 0, buf.Length, result, 0);
+			var size = coder.TransformBlock (buf, result);
 			Assert.Equal (Template1Html, Encoding.UTF8.GetString (result, 0, size));
 		}
 
@@ -98,15 +98,15 @@ namespace Novartment.Base.Test
 		[Trait ("Category", "Cryptography.CryptoTransform")]
 		public void ToBase64WithLineBreaksTransform ()
 		{
-			ICryptoTransform coder = new ToBase64WithLineBreaksConverter ();
+			ISpanCryptoTransform coder = new ToBase64WithLineBreaksConverter ();
 			Assert.True (coder.CanTransformMultipleBlocks);
 			Assert.Equal (57, coder.InputBlockSize);
 			Assert.Equal (78, coder.OutputBlockSize);
 			var buf = Encoding.UTF8.GetBytes (Template1Html);
 			var result1 = new byte[buf.Length * 2];
-			var size = coder.TransformBlock (buf, 0, 11 * 57, result1, 0);
-			var result2 = coder.TransformFinalBlock (buf, 11 * 57, buf.Length - (11 * 57));
-			var resutlStr = Encoding.UTF8.GetString (result1, 0, size) + Encoding.UTF8.GetString (result2, 0, result2.Length);
+			var size = coder.TransformBlock (buf.AsSpan (0, 11 * 57), result1);
+			var result2 = coder.TransformFinalBlock (buf.AsSpan (11 * 57, buf.Length - (11 * 57)));
+			var resutlStr = Encoding.UTF8.GetString (result1, 0, size) + Encoding.UTF8.GetString (result2.Span);
 			Assert.Equal (Template1Base64, resutlStr);
 		}
 	}

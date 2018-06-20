@@ -42,7 +42,7 @@ namespace Novartment.Base.BinaryStreaming
 				throw new ArgumentNullException (nameof (separator));
 			}
 
-			if ((separator.Length < 1) || (separator.Length > source.Buffer.Length))
+			if ((separator.Length < 1) || (separator.Length > source.BufferMemory.Length))
 			{
 				throw new ArgumentOutOfRangeException (nameof (separator));
 			}
@@ -60,7 +60,7 @@ namespace Novartment.Base.BinaryStreaming
 		/// Текущая начальная позиция и количество доступных данных содержатся в свойствах Offset и Count,
 		/// при этом сам буфер остаётся неизменным всё время жизни источника.
 		/// </summary>
-		public byte[] Buffer => _source.Buffer;
+		public ReadOnlyMemory<byte> BufferMemory => _source.BufferMemory;
 
 		/// <summary>
 		/// Получает начальную позицию данных, доступных в Buffer.
@@ -147,7 +147,7 @@ namespace Novartment.Base.BinaryStreaming
 		/// <returns>Задача, представляющая операцию.</returns>
 		public Task EnsureBufferAsync (int size, CancellationToken cancellationToken)
 		{
-			if ((size < 0) || (size > this.Buffer.Length))
+			if ((size < 0) || (size > this.BufferMemory.Length))
 			{
 				throw new ArgumentOutOfRangeException (nameof (size));
 			}
@@ -244,7 +244,7 @@ namespace Novartment.Base.BinaryStreaming
 				_foundTemplateLength = 0;
 			}
 
-			var buf = _source.Buffer;
+			var buf = _source.BufferMemory.Span;
 			while (((_foundTemplateOffset + _foundTemplateLength) < (_source.Offset + _source.Count)) && (_foundTemplateLength < _template.Length))
 			{
 				if (buf[_foundTemplateOffset + _foundTemplateLength] == _template[_foundTemplateLength])

@@ -769,7 +769,7 @@ namespace Novartment.Base.Net.Mime
 			{
 				header.Add (HeaderFieldBuilder.CreateAddrSpecList (
 					HeaderFieldName.InReplyTo,
-					inReplyTo.WhereNotNull ().ToArray ().AsReadOnlyList ()));
+					inReplyTo.WhereNotNull ().ToArray ()));
 			}
 
 			// References
@@ -777,7 +777,7 @@ namespace Novartment.Base.Net.Mime
 			{
 				header.Add (HeaderFieldBuilder.CreateAddrSpecList (
 					HeaderFieldName.References,
-					references.WhereNotNull ().ToArray ().AsReadOnlyList ()));
+					references.WhereNotNull ().ToArray ()));
 			}
 
 			// Original-Message-ID

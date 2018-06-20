@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Diagnostics.Contracts;
-using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 using Novartment.Base.BinaryStreaming;
@@ -15,8 +14,7 @@ namespace Novartment.Base.Net.Mime
 		IDiscreteEntityBody
 	{
 		private static readonly int _DefaultEncodeBufferSize = 32000;
-		private byte[] _encodedData;
-		private int _encodedDataSize;
+		private ReadOnlyMemory<byte> _encodedData;
 
 		/// <summary>
 		/// Инициализирует новый экземпляр класса DataEntityBody
@@ -44,8 +42,7 @@ namespace Novartment.Base.Net.Mime
 		/// </summary>
 		public void Clear ()
 		{
-			_encodedData = null;
-			_encodedDataSize = 0;
+			_encodedData = default;
 		}
 
 		/// <summary>
@@ -75,7 +72,6 @@ namespace Novartment.Base.Net.Mime
 			{
 				var result = await task.ConfigureAwait (false);
 				_encodedData = result;
-				_encodedDataSize = result.Length;
 			}
 		}
 
@@ -98,10 +94,10 @@ namespace Novartment.Base.Net.Mime
 
 			async Task SaveAsyncStateMachine ()
 			{
-				var isEmptyBody = (_encodedData == null) || (_encodedDataSize < 1);
+				var isEmptyBody = _encodedData.Length < 1;
 				if (!isEmptyBody)
 				{
-					await destination.WriteAsync (_encodedData, 0, _encodedDataSize, cancellationToken).ConfigureAwait (false);
+					await destination.WriteAsync (_encodedData, cancellationToken).ConfigureAwait (false);
 				}
 
 				// RFC 5321 part 4.1.1.4:
@@ -109,16 +105,11 @@ namespace Novartment.Base.Net.Mime
 				// in that case, the originating SMTP system MUST either reject the message as invalid or
 				// add <CRLF> in order to have the receiving SMTP server recognize the "end of data" condition.
 				if (isEmptyBody ||
-					(_encodedDataSize < 2) ||
-					(_encodedData[_encodedDataSize - 2] != HeaderDecoder.CarriageReturnLinefeed[0]) ||
-					(_encodedData[_encodedDataSize - 1] != HeaderDecoder.CarriageReturnLinefeed[1]))
+					(_encodedData.Length < 2) ||
+					(_encodedData.Span[_encodedData.Length - 2] != HeaderDecoder.CarriageReturnLinefeed[0]) ||
+					(_encodedData.Span[_encodedData.Length - 1] != HeaderDecoder.CarriageReturnLinefeed[1]))
 				{
-					await destination.WriteAsync (
-						HeaderDecoder.CarriageReturnLinefeed,
-						0,
-						HeaderDecoder.CarriageReturnLinefeed.Length,
-						cancellationToken)
-						.ConfigureAwait (false);
+					await destination.WriteAsync (HeaderDecoder.CarriageReturnLinefeed, cancellationToken).ConfigureAwait (false);
 				}
 			}
 		}
@@ -133,22 +124,22 @@ namespace Novartment.Base.Net.Mime
 		/// </remarks>
 		public IBufferedSource GetDataSource ()
 		{
-			if (_encodedData == null)
+			if (_encodedData.Length < 1)
 			{
 				throw new InvalidOperationException ("Entity body does not have any data.");
 			}
 
-			IBufferedSource src = new ArrayBufferedSource (_encodedData, 0, _encodedDataSize);
+			IBufferedSource src = new ArrayBufferedSource (_encodedData);
 			IBufferedSource dst;
 			switch (this.TransferEncoding)
 			{
 				case ContentTransferEncoding.QuotedPrintable:
 					var transform = new FromQuotedPrintableConverter ();
-					dst = new CryptoTransformingBufferedSource (src, transform, CreateCryptoOutputBuffer (transform, _encodedDataSize));
+					dst = new CryptoTransformingBufferedSource (src, transform, CreateCryptoOutputBuffer (transform, _encodedData.Length));
 					break;
 				case ContentTransferEncoding.Base64:
 					var transform2 = new FromBase64Converter ();
-					dst = new CryptoTransformingBufferedSource (src, transform2, CreateCryptoOutputBuffer (transform2, _encodedDataSize));
+					dst = new CryptoTransformingBufferedSource (src, transform2, CreateCryptoOutputBuffer (transform2, _encodedData.Length));
 					break;
 				case ContentTransferEncoding.EightBit:
 				case ContentTransferEncoding.SevenBit:
@@ -212,7 +203,6 @@ namespace Novartment.Base.Net.Mime
 				var result = await task.ConfigureAwait (false);
 
 				_encodedData = result;
-				_encodedDataSize = result.Length;
 				return result.Length;
 			}
 		}
@@ -224,7 +214,7 @@ namespace Novartment.Base.Net.Mime
 		/// <param name="cryptoTransform">Криптографическое преобразование, для результатов которого создаётся буфер.</param>
 		/// <param name="inputSizeHint">Подсказка о размере входных данных, может быть ноль если о размере ничего не известно.</param>
 		/// <returns>Созданный байтовый буфер.</returns>
-		private static byte[] CreateCryptoOutputBuffer (ICryptoTransform cryptoTransform, int inputSizeHint)
+		private static byte[] CreateCryptoOutputBuffer (ISpanCryptoTransform cryptoTransform, int inputSizeHint)
 		{
 			if (cryptoTransform == null)
 			{

@@ -53,7 +53,7 @@ namespace Novartment.Base.BinaryStreaming
 		/// Текущая начальная позиция и количество доступных данных содержатся в свойствах Offset и Count,
 		/// при этом сам буфер остаётся неизменным всё время жизни источника.
 		/// </summary>
-		public byte[] Buffer => _source.Buffer;
+		public ReadOnlyMemory<byte> BufferMemory => _source.BufferMemory;
 
 		/// <summary>
 		/// Получает начальную позицию данных, доступных в Buffer.
@@ -173,7 +173,7 @@ namespace Novartment.Base.BinaryStreaming
 		/// <returns>Задача, представляющая операцию.</returns>
 		public Task EnsureBufferAsync (int size, CancellationToken cancellationToken)
 		{
-			if ((size < 0) || (size > this.Buffer.Length))
+			if ((size < 0) || (size > this.BufferMemory.Length))
 			{
 				throw new ArgumentOutOfRangeException (nameof (size));
 			}

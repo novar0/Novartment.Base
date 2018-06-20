@@ -29,7 +29,7 @@ namespace Novartment.Base.Test
 
 			using (var hashProvider = IncrementalHash.CreateHash (HashAlgorithmName.MD5))
 			{
-				var hash = HashFileExtensions.HashFileAsync (hashProvider, fn1, null, CancellationToken.None).Result;
+				var hash = IncrementalHashExtensions.HashFileAsync (hashProvider, fn1, null, CancellationToken.None).Result;
 				Assert.Equal (_md5OfTextTemplate, hash);
 			}
 
@@ -52,7 +52,7 @@ namespace Novartment.Base.Test
 
 			using (var hashProvider = IncrementalHash.CreateHash (HashAlgorithmName.MD5))
 			{
-				var hash = HashFileExtensions.CopyFileWithHashingAsync (hashProvider, fn1, fn2, null, CancellationToken.None).Result;
+				var hash = IncrementalHashExtensions.CopyFileWithHashingAsync (hashProvider, fn1, fn2, null, CancellationToken.None).Result;
 				Assert.Equal (_md5OfTextTemplate, hash);
 			}
 

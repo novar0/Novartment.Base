@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Novartment.Base.BinaryStreaming
@@ -9,14 +10,12 @@ namespace Novartment.Base.BinaryStreaming
 	public interface IBinaryDestination
 	{
 		/// <summary>
-		/// Асинхронно записывает в получатель указанный сегмент массива байтов.
+		/// Асинхронно записывает в получатель указанный диапазон байтов.
 		/// </summary>
 		/// <param name="buffer">Буфер, из которого записываются данные.</param>
-		/// <param name="offset">Смещение байтов (начиная с нуля) в buffer, с которого начинается копирование байтов.</param>
-		/// <param name="count">Число байтов для записи.</param>
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
 		/// <returns>Задача, представляющая асинхронную операцию записи.</returns>
-		Task WriteAsync (byte[] buffer, int offset, int count, CancellationToken cancellationToken);
+		Task WriteAsync (ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default);
 
 		/// <summary>
 		/// Указывает что запись окончена.

@@ -8,9 +8,9 @@ using System.Threading.Tasks;
 namespace Novartment.Base.IO
 {
 	/// <summary>
-	/// Методы расширения ICryptoTransform для работы с файлами.
+	/// Методы расширения IncrementalHash для работы с файлами.
 	/// </summary>
-	public static class HashFileExtensions
+	public static class IncrementalHashExtensions
 	{
 		/// <summary>
 		/// Вычисляет хэш-функцию для файла, используя указанный алгоритм хэширования

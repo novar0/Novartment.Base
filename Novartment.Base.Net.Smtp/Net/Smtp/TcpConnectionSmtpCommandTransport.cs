@@ -31,7 +31,7 @@ namespace Novartment.Base.Net.Smtp
 			}
 
 			// нужно минимум 5 байтов для команды (QUIT + CRLF) или ответа (три цифры + CRLF)
-			if (connection.Reader.Buffer.Length < 5)
+			if (connection.Reader.BufferMemory.Length < 5)
 			{
 				throw new InvalidOperationException ("Too small connection.Reader.Buffer.Length, required minimum 5 bytes.");
 			}
@@ -201,7 +201,7 @@ namespace Novartment.Base.Net.Smtp
 			_logger?.LogTrace (">>> " + (isCRLF ? text.Substring (0, size - 2) : text));
 
 			_pendingReplies = null;
-			return _writer.WriteAsync (buf, 0, size, cancellationToken);
+			return _writer.WriteAsync (buf.AsMemory (0, size), cancellationToken);
 		}
 	}
 }

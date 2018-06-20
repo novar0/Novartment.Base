@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Diagnostics.Contracts;
-using System.Security.Cryptography;
 using Novartment.Base.Text;
 
 namespace Novartment.Base
@@ -9,7 +7,7 @@ namespace Novartment.Base
 	/// Трансформация для раскодирования из "Base64" согласно RFC 2045 часть 6.8.
 	/// </summary>
 	public sealed class FromBase64Converter :
-		ICryptoTransform
+		ISpanCryptoTransform
 	{
 		private char[] _cache = new char[4];
 		private int _cachedCount = 0;
@@ -45,43 +43,14 @@ namespace Novartment.Base
 		/// Преобразует заданную область входного массива байтов и копирует результат в заданную область выходного массива байтов.
 		/// </summary>
 		/// <param name="inputBuffer">Входные данные, для которых вычисляется преобразование.</param>
-		/// <param name="inputOffset">Смещение во входном массиве байтов, начиная с которого следует использовать данные.</param>
-		/// <param name="inputCount">Число байтов во входном массиве для использования в качестве данных.</param>
 		/// <param name="outputBuffer">Выходной массив, в который записывается результат преобразования.</param>
-		/// <param name="outputOffset">Смещение в выходном массиве байтов, начиная с которого следует записывать данные.</param>
 		/// <returns>Число записанных байтов.</returns>
-		public int TransformBlock (byte[] inputBuffer, int inputOffset, int inputCount, byte[] outputBuffer, int outputOffset)
+		public int TransformBlock (ReadOnlySpan<byte> inputBuffer, Span<byte> outputBuffer)
 		{
-			if (inputBuffer == null)
-			{
-				throw new ArgumentNullException (nameof (inputBuffer));
-			}
-
-			if ((inputOffset < 0) || (inputOffset > inputBuffer.Length) || ((inputOffset == inputBuffer.Length) && (inputCount > 0)))
-			{
-				throw new ArgumentOutOfRangeException (nameof (inputOffset));
-			}
-
-			if ((inputCount < 0) || ((inputOffset + inputCount) > inputBuffer.Length))
-			{
-				throw new ArgumentOutOfRangeException (nameof (inputCount));
-			}
-
-			if (outputBuffer == null)
-			{
-				throw new ArgumentNullException (nameof (outputBuffer));
-			}
-
-			if ((outputOffset < 0) || (outputOffset > outputBuffer.Length) || ((outputOffset == outputBuffer.Length) && (inputCount > 0)))
-			{
-				throw new ArgumentOutOfRangeException (nameof (outputOffset));
-			}
-
-			Contract.EndContractBlock ();
-
+			var outputOffset = 0;
 			var reserved = _cache.Length; // резервируем первые 4-байта для содержимого кэша
-			var buf = CreateCopyUsingBase64Alphabet (inputBuffer, inputOffset, inputCount, reserved);
-			inputCount = buf.Length - reserved;
+			var buf = CreateCopyUsingBase64Alphabet (inputBuffer, reserved);
+			var inputCount = buf.Length - reserved;
 			var totalSize = inputCount + _cachedCount;
 			if (totalSize < 4)
 			{ // все уходит в кэш, ничего не возвращаем
@@ -102,7 +71,7 @@ namespace Novartment.Base
 				Array.Copy (buf, bufStart + bufLen, _cache, 0, _cachedCount);
 
 				var base64chars = Convert.FromBase64CharArray (buf, bufStart, bufLen);
-				Array.Copy (base64chars, 0, outputBuffer, outputOffset, base64chars.Length);
+				base64chars.AsSpan (0, base64chars.Length).CopyTo (outputBuffer.Slice (outputOffset));
 				return base64chars.Length;
 			}
 		}
@@ -111,31 +80,12 @@ namespace Novartment.Base
 		/// Преобразует заданную область заданного массива байтов.
 		/// </summary>
 		/// <param name="inputBuffer">Входные данные, для которых вычисляется преобразование.</param>
-		/// <param name="inputOffset">Смещение в массиве байтов, начиная с которого следует использовать данные.</param>
-		/// <param name="inputCount">Число байтов в массиве для использования в качестве данных.</param>
 		/// <returns>Вычисленное преобразование.</returns>
-		public byte[] TransformFinalBlock (byte[] inputBuffer, int inputOffset, int inputCount)
+		public ReadOnlyMemory<byte> TransformFinalBlock (ReadOnlySpan<byte> inputBuffer)
 		{
-			if (inputBuffer == null)
-			{
-				throw new ArgumentNullException (nameof (inputBuffer));
-			}
-
-			if ((inputOffset < 0) || (inputOffset > inputBuffer.Length) || ((inputOffset == inputBuffer.Length) && (inputCount > 0)))
-			{
-				throw new ArgumentOutOfRangeException (nameof (inputOffset));
-			}
-
-			if ((inputCount < 0) || ((inputOffset + inputCount) > inputBuffer.Length))
-			{
-				throw new ArgumentOutOfRangeException (nameof (inputCount));
-			}
-
-			Contract.EndContractBlock ();
-
 			var reserved = _cache.Length; // резервируем первые 4-байта для содержимого кэша
-			var buf = CreateCopyUsingBase64Alphabet (inputBuffer, inputOffset, inputCount, reserved);
-			inputCount = buf.Length + _cachedCount - reserved;
+			var buf = CreateCopyUsingBase64Alphabet (inputBuffer, reserved);
+			var inputCount = buf.Length + _cachedCount - reserved;
 			if ((inputCount & 3) != 0)
 			{
 				throw new FormatException ("Base64-encoded data is not multiple of 4.");
@@ -160,18 +110,21 @@ namespace Novartment.Base
 		{
 		}
 
-		private static char[] CreateCopyUsingBase64Alphabet (byte[] buffer, int offset, int count, int reserved)
+		private static char[] CreateCopyUsingBase64Alphabet (ReadOnlySpan<byte> buffer, int reserved)
 		{
-			// RFC 2045 часть 6.8 правила декодирования:
-			// Any characters outside of the base64 alphabet are to be ignored in base64-encoded data.
-			// ... the occurrence of any "=" characters may be taken as evidence that the end of the data has been reached
+			/*
+			RFC 2045 часть 6.8 правила декодирования:
+			Any characters outside of the base64 alphabet are to be ignored in base64-encoded data.
+			... the occurrence of any "=" characters may be taken as evidence that the end of the data has been reached
+			*/
 
 			// валидация и подсчет необходимого размера
+			var count = buffer.Length;
 			int base64AlphabetCharCount = 0;
 			var lastChar = char.MaxValue;
 			for (var index = 0; index < count; index++)
 			{
-				var nextChar = (char)buffer[offset + index];
+				var nextChar = (char)buffer[index];
 				var isNextCharWhiteSpace = char.IsWhiteSpace (nextChar);
 				if (!isNextCharWhiteSpace)
 				{
@@ -197,7 +150,7 @@ namespace Novartment.Base
 			var idx = reserved;
 			for (var index = 0; index < count; ++index)
 			{
-				var nextChar = (char)buffer[offset + index];
+				var nextChar = (char)buffer[index];
 				var isNextCharBase64 = (nextChar == '=') ||
 					AsciiCharSet.IsCharOfClass (nextChar, AsciiCharClasses.Base64Alphabet);
 				if (isNextCharBase64)

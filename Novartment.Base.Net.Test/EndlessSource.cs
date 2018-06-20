@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Novartment.Base.BinaryStreaming;
 
@@ -6,7 +7,7 @@ namespace Novartment.Base.Net.Test
 {
 	internal class EndlessSource : IBufferedSource
 	{
-		public byte[] Buffer => new byte[20];
+		public ReadOnlyMemory<byte> BufferMemory => new byte[20];
 
 		public int Count => 20;
 

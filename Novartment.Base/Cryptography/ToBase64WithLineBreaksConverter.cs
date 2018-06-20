@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Diagnostics.Contracts;
-using System.Security.Cryptography;
 using Novartment.Base.Text;
 
 namespace Novartment.Base
@@ -15,7 +13,7 @@ namespace Novartment.Base
 	/// в) вставляет перевод строки в конце каждого выходного блока.
 	/// </remarks>
 	public sealed class ToBase64WithLineBreaksConverter :
-		ICryptoTransform
+		ISpanCryptoTransform
 	{
 		private static readonly int _maxLineLen = 76;
 		private readonly char[] _outArray = new char[_maxLineLen + 2];
@@ -51,56 +49,33 @@ namespace Novartment.Base
 		/// Преобразует заданную область входного массива байтов и копирует результат в заданную область выходного массива байтов.
 		/// </summary>
 		/// <param name="inputBuffer">Входные данные, для которых вычисляется преобразование.</param>
-		/// <param name="inputOffset">Смещение во входном массиве байтов, начиная с которого следует использовать данные.</param>
-		/// <param name="inputCount">Число байтов во входном массиве для использования в качестве данных.</param>
 		/// <param name="outputBuffer">Выходной массив, в который записывается результат преобразования.</param>
-		/// <param name="outputOffset">Смещение в выходном массиве байтов, начиная с которого следует записывать данные.</param>
 		/// <returns>Число записанных байтов.</returns>
-		public int TransformBlock (byte[] inputBuffer, int inputOffset, int inputCount, byte[] outputBuffer, int outputOffset)
+		public int TransformBlock (ReadOnlySpan<byte> inputBuffer, Span<byte> outputBuffer)
 		{
-			if (inputBuffer == null)
-			{
-				throw new ArgumentNullException (nameof (inputBuffer));
-			}
-
-			if ((inputOffset < 0) || (inputOffset > inputBuffer.Length) || ((inputOffset == inputBuffer.Length) && (inputCount > 0)))
-			{
-				throw new ArgumentOutOfRangeException (nameof (inputOffset));
-			}
-
-			if ((inputCount < 0) || ((inputOffset + inputCount) > inputBuffer.Length))
-			{
-				throw new ArgumentOutOfRangeException (nameof (inputCount));
-			}
-
-			if (outputBuffer == null)
-			{
-				throw new ArgumentNullException (nameof (outputBuffer));
-			}
-
-			if ((outputOffset < 0) || (outputOffset > outputBuffer.Length) || ((outputOffset == outputBuffer.Length) && (inputCount > 0)))
-			{
-				throw new ArgumentOutOfRangeException (nameof (outputOffset));
-			}
-
-			Contract.EndContractBlock ();
-
+			var inputOffset = 0;
+			var outputOffset = 0;
 			int outputSize = 0;
-			var endInputOffset = inputOffset + inputCount;
-			while (inputOffset < endInputOffset)
+			while (inputOffset < inputBuffer.Length)
 			{
-				var size = Convert.ToBase64CharArray (inputBuffer, inputOffset, InputBlockSize, _outArray, 0);
+#if NETCOREAPP2_1
+				Convert.TryToBase64Chars (inputBuffer.Slice (inputOffset, this.InputBlockSize), _outArray, out int size, Base64FormattingOptions.None);
+#else
+				var tempBuf = new byte[this.InputBlockSize];
+				inputBuffer.Slice (inputOffset, this.InputBlockSize).CopyTo (tempBuf);
+				var size = Convert.ToBase64CharArray (tempBuf, 0, tempBuf.Length, _outArray, 0, Base64FormattingOptions.None);
+#endif
 				if (size != _maxLineLen)
 				{
 					throw new FormatException (FormattableString.Invariant (
 						$"Wrong size of chunk of base64-encoded data. Specified {size}, expected {_maxLineLen}."));
 				}
 
-				AsciiCharSet.GetBytes (_outArray.AsSpan (0, size), outputBuffer.AsSpan (outputOffset));
+				AsciiCharSet.GetBytes (_outArray.AsSpan (0, size), outputBuffer.Slice (outputOffset));
 				outputBuffer[outputOffset + size++] = 0x0d;
 				outputBuffer[outputOffset + size++] = 0x0a;
 				outputSize += size;
-				inputOffset += InputBlockSize;
+				inputOffset += this.InputBlockSize;
 				outputOffset += size;
 			}
 
@@ -111,34 +86,21 @@ namespace Novartment.Base
 		/// Преобразует заданную область заданного массива байтов.
 		/// </summary>
 		/// <param name="inputBuffer">Входные данные, для которых вычисляется преобразование.</param>
-		/// <param name="inputOffset">Смещение в массиве байтов, начиная с которого следует использовать данные.</param>
-		/// <param name="inputCount">Число байтов в массиве для использования в качестве данных.</param>
 		/// <returns>Вычисленное преобразование.</returns>
-		public byte[] TransformFinalBlock (byte[] inputBuffer, int inputOffset, int inputCount)
+		public ReadOnlyMemory<byte> TransformFinalBlock (ReadOnlySpan<byte> inputBuffer)
 		{
-			if (inputBuffer == null)
-			{
-				throw new ArgumentNullException (nameof (inputBuffer));
-			}
-
-			if ((inputOffset < 0) || (inputOffset > inputBuffer.Length) || ((inputOffset == inputBuffer.Length) && (inputCount > 0)))
-			{
-				throw new ArgumentOutOfRangeException (nameof (inputOffset));
-			}
-
-			if ((inputCount < 0) || ((inputOffset + inputCount) > inputBuffer.Length))
-			{
-				throw new ArgumentOutOfRangeException (nameof (inputCount));
-			}
-
-			Contract.EndContractBlock ();
-
-			if (inputCount == 0)
+			if (inputBuffer.Length < 1)
 			{
 				return Array.Empty<byte> ();
 			}
 
-			var size = Convert.ToBase64CharArray (inputBuffer, inputOffset, inputCount, _outArray, 0);
+#if NETCOREAPP2_1
+			Convert.TryToBase64Chars (inputBuffer, _outArray, out int size, Base64FormattingOptions.None);
+#else
+			var tempBuf = new byte[inputBuffer.Length];
+			inputBuffer.CopyTo (tempBuf);
+			var size = Convert.ToBase64CharArray (tempBuf, 0, tempBuf.Length, _outArray, 0, Base64FormattingOptions.None);
+#endif
 			var result = new byte[size];
 			AsciiCharSet.GetBytes (_outArray.AsSpan (0, size), result);
 			return result;

@@ -19,7 +19,7 @@ namespace Novartment.Base.BinaryStreaming
 		/// </summary>
 		public static readonly IBufferedSource Empty = new ArrayBufferedSource (Array.Empty<byte> ());
 
-		private readonly byte[] _buffer;
+		private readonly ReadOnlyMemory<byte> _buffer;
 		private int _offset;
 		private int _count;
 
@@ -27,48 +27,11 @@ namespace Novartment.Base.BinaryStreaming
 		/// Инициализирует новый экземпляр ArrayBufferedSource использующий в качестве буфера предоставленный массив байтов.
 		/// </summary>
 		/// <param name="buffer">Массив байтов, который будет буфером источника.</param>
-		public ArrayBufferedSource(byte[] buffer)
+		public ArrayBufferedSource(ReadOnlyMemory<byte> buffer)
 		{
-			if (buffer == null)
-			{
-				throw new ArgumentNullException(nameof(buffer));
-			}
-
-			Contract.EndContractBlock();
-
 			_buffer = buffer;
 			_offset = 0;
 			_count = buffer.Length;
-		}
-
-		/// <summary>
-		/// Инициализирует новый экземпляр ArrayBufferedSource использующий в качестве буфера предоставленный сегмента массива байтов.
-		/// </summary>
-		/// <param name="buffer">Массив байтов, который будет буфером источника.</param>
-		/// <param name="offset">Позиция начала данных в buffer.</param>
-		/// <param name="count">Количество байтов в buffer.</param>
-		public ArrayBufferedSource(byte[] buffer, int offset, int count)
-		{
-			if (buffer == null)
-			{
-				throw new ArgumentNullException(nameof(buffer));
-			}
-
-			if ((offset < 0) || (offset > buffer.Length) || ((offset == buffer.Length) && (count > 0)))
-			{
-				throw new ArgumentOutOfRangeException(nameof(offset));
-			}
-
-			if ((count < 0) || ((offset + count) > buffer.Length))
-			{
-				throw new ArgumentOutOfRangeException(nameof(count));
-			}
-
-			Contract.EndContractBlock();
-
-			_buffer = buffer;
-			_offset = offset;
-			_count = count;
 		}
 
 		/// <summary>
@@ -76,7 +39,7 @@ namespace Novartment.Base.BinaryStreaming
 		/// Текущая начальная позиция и количество доступных данных содержатся в свойствах Offset и Count,
 		/// при этом сам буфер остаётся неизменным всё время жизни источника.
 		/// </summary>
-		public byte[] Buffer => _buffer;
+		public ReadOnlyMemory<byte> BufferMemory => _buffer;
 
 		/// <summary>
 		/// Получает начальную позицию данных, доступных в Buffer.
@@ -139,7 +102,7 @@ namespace Novartment.Base.BinaryStreaming
 		/// <returns>Задача, представляющая операцию.</returns>
 		public Task EnsureBufferAsync (int size, CancellationToken cancellationToken)
 		{
-			if ((size < 0) || (size > this.Buffer.Length))
+			if ((size < 0) || (size > this.BufferMemory.Length))
 			{
 				throw new ArgumentOutOfRangeException (nameof (size));
 			}

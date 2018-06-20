@@ -22,7 +22,7 @@ namespace Novartment.Base.Net.Mime
 
 		protected override int ValidatePartData (int validatedPartLength)
 		{
-			var buf = _source.Buffer;
+			var buf = _source.BufferMemory.Span;
 			var endOffset = _source.Offset + _source.Count;
 			var startOffset = _source.Offset + validatedPartLength;
 			_foundSeparatorLength = -1;

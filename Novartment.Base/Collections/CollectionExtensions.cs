@@ -347,7 +347,7 @@ namespace Novartment.Base.Collections
 				{
 					if (list.Count > 0)
 					{
-						yield return GetReadOnlyView (list);
+						yield return list;
 					}
 
 					list = new ArrayList<T> ();
@@ -360,7 +360,7 @@ namespace Novartment.Base.Collections
 
 			if (list.Count > 0)
 			{
-				yield return GetReadOnlyView (list);
+				yield return list;
 			}
 		}
 
@@ -759,82 +759,6 @@ namespace Novartment.Base.Collections
 		}
 
 		/// <summary>
-		/// Создаёт обёртку только для чтения для указанной коллекции.
-		/// </summary>
-		/// <typeparam name="T">Тип элементов коллекции.</typeparam>
-		/// <param name="source">Исходная коллекция для создания обёртки только для чтения.</param>
-		/// <returns>Обёртка только для чтения для указанной коллекции.</returns>
-		public static IReadOnlyCollection<T> AsReadOnlyCollection<T> (this ICollection<T> source)
-		{
-			if (source == null)
-			{
-				throw new ArgumentNullException (nameof (source));
-			}
-
-			Contract.EndContractBlock ();
-
-			var readOnlyCollection = source as IReadOnlyCollection<T>;
-			return readOnlyCollection ?? new GenericCollectionAsReadOnlyDecorator<T> (source);
-		}
-
-		/// <summary>
-		/// Создаёт обёртку только для чтения для указанной коллекции.
-		/// </summary>
-		/// <typeparam name="T">Тип элементов коллекции.</typeparam>
-		/// <param name="source">Исходная коллекция для создания обёртки только для чтения.</param>
-		/// <returns>Обёртка только для чтения для указанной коллекции.</returns>
-		public static IReadOnlyCollection<T> AsReadOnlyCollection<T> (this ICollection source)
-		{
-			if (source == null)
-			{
-				throw new ArgumentNullException (nameof (source));
-			}
-
-			Contract.EndContractBlock ();
-
-			var readOnlyCollection = source as IReadOnlyCollection<T>;
-			return readOnlyCollection ?? new CollectionAsReadOnlyDecorator<T> (source);
-		}
-
-		/// <summary>
-		/// Создаёт обёртку только для чтения для указанного списка.
-		/// </summary>
-		/// <typeparam name="T">Тип элементов списка.</typeparam>
-		/// <param name="source">Исходный список для создания обёртки только для чтения.</param>
-		/// <returns>Список только для чтения для указанного списка.</returns>
-		public static IReadOnlyList<T> AsReadOnlyList<T> (this IList<T> source)
-		{
-			if (source == null)
-			{
-				throw new ArgumentNullException (nameof (source));
-			}
-
-			Contract.EndContractBlock ();
-
-			var readOnlyList = source as IReadOnlyList<T>;
-			return readOnlyList ?? new GenericListAsReadOnlyDecorator<T> (source);
-		}
-
-		/// <summary>
-		/// Создаёт обёртку только для чтения для указанного списка.
-		/// </summary>
-		/// <typeparam name="T">Тип элементов списка.</typeparam>
-		/// <param name="source">Исходный список для создания обёртки только для чтения.</param>
-		/// <returns>Список только для чтения для указанного списка.</returns>
-		public static IReadOnlyList<T> AsReadOnlyList<T> (this IList source)
-		{
-			if (source == null)
-			{
-				throw new ArgumentNullException (nameof (source));
-			}
-
-			Contract.EndContractBlock ();
-
-			var readOnlyList = source as IReadOnlyList<T>;
-			return readOnlyList ?? new ListAsReadOnlyDecorator<T> (source);
-		}
-
-		/// <summary>
 		/// Создаёт массив, в который оптимально доступным образом скопированы все элементы указанной последовательности.
 		/// </summary>
 		/// <typeparam name="T">Тип элементов последовательности.</typeparam>
@@ -1018,93 +942,6 @@ namespace Novartment.Base.Collections
 			}
 
 			return new ArrayList<T> (array, 0, length);
-		}
-
-		/// <summary>
-		/// Получает представление только для чтения для указанного списка.
-		/// </summary>
-		/// <typeparam name="T">Тип элементов списка.</typeparam>
-		/// <param name="arrayList">Список, для которого будет получено представление только для чтения.</param>
-		/// <returns>Представление только для чтения для указанного списка.</returns>
-		public static IReadOnlyList<T> GetReadOnlyView<T> (this ArrayList<T> arrayList)
-		{
-			if (arrayList == null)
-			{
-				throw new ArgumentNullException (nameof (arrayList));
-			}
-
-			Contract.EndContractBlock ();
-
-			arrayList.Defragment ();
-			return new ReadOnlyArray<T> (arrayList.Array, arrayList.Count);
-		}
-
-		internal class GenericCollectionAsReadOnlyDecorator<T> : IReadOnlyCollection<T>
-		{
-			private readonly ICollection<T> _collection;
-
-			internal GenericCollectionAsReadOnlyDecorator (ICollection<T> collection)
-			{
-				_collection = collection;
-			}
-
-			public int Count => _collection.Count;
-
-			public IEnumerator<T> GetEnumerator () => _collection.GetEnumerator ();
-
-			IEnumerator IEnumerable.GetEnumerator () => _collection.GetEnumerator ();
-		}
-
-		internal class CollectionAsReadOnlyDecorator<T> : IReadOnlyCollection<T>
-		{
-			private readonly ICollection _collection;
-
-			internal CollectionAsReadOnlyDecorator (ICollection collection)
-			{
-				_collection = collection;
-			}
-
-			public int Count => _collection.Count;
-
-			public IEnumerator<T> GetEnumerator () => _collection.Cast<T> ().GetEnumerator ();
-
-			IEnumerator IEnumerable.GetEnumerator () => _collection.GetEnumerator ();
-		}
-
-		internal class GenericListAsReadOnlyDecorator<T> : IReadOnlyList<T>
-		{
-			private readonly IList<T> _list;
-
-			internal GenericListAsReadOnlyDecorator (IList<T> list)
-			{
-				_list = list;
-			}
-
-			public int Count => _list.Count;
-
-			public T this[int index] => _list[index];
-
-			public IEnumerator<T> GetEnumerator () => _list.GetEnumerator ();
-
-			IEnumerator IEnumerable.GetEnumerator () => _list.GetEnumerator ();
-		}
-
-		internal class ListAsReadOnlyDecorator<T> : IReadOnlyList<T>
-		{
-			private readonly IList _list;
-
-			internal ListAsReadOnlyDecorator (IList list)
-			{
-				_list = list;
-			}
-
-			public int Count => _list.Count;
-
-			public T this[int index] => (T)_list[index];
-
-			public IEnumerator<T> GetEnumerator () => _list.Cast<T> ().GetEnumerator ();
-
-			IEnumerator IEnumerable.GetEnumerator () => _list.GetEnumerator ();
 		}
 	}
 }

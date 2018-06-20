@@ -92,7 +92,7 @@ namespace Novartment.Base.BinaryStreaming
 			}
 			else
 			{
-				_destination.WriteAsync (buffer, offset, count, CancellationToken.None).Wait ();
+				_destination.WriteAsync (buffer.AsMemory (offset, count), CancellationToken.None).Wait ();
 			}
 		}
 
@@ -125,8 +125,8 @@ namespace Novartment.Base.BinaryStreaming
 			Contract.EndContractBlock ();
 
 			return (_destination is StreamExtensions.StreamBinaryDestination streamBinaryDestination) ?
-				streamBinaryDestination.BaseStream.WriteAsync(buffer, offset, count, cancellationToken) :
-				_destination.WriteAsync(buffer, offset, count, cancellationToken);
+				streamBinaryDestination.BaseStream.WriteAsync (buffer, offset, count, cancellationToken) :
+				_destination.WriteAsync (buffer.AsMemory (offset, count), cancellationToken);
 		}
 
 		/// <summary>
@@ -148,7 +148,7 @@ namespace Novartment.Base.BinaryStreaming
 		public override Task FlushAsync (CancellationToken cancellationToken)
 		{
 			return (_destination is StreamExtensions.StreamBinaryDestination streamBinaryDestination) ?
-				streamBinaryDestination.BaseStream.FlushAsync() :
+				streamBinaryDestination.BaseStream.FlushAsync () :
 				Task.CompletedTask;
 		}
 
@@ -186,7 +186,7 @@ namespace Novartment.Base.BinaryStreaming
 				var toCopy = Math.Min (available, count);
 				if (toCopy > 0)
 				{
-					Array.Copy (_source.Buffer, _source.Offset, buffer, offset, toCopy);
+					_source.BufferMemory.Slice (_source.Offset, toCopy).CopyTo (buffer.AsMemory (offset));
 					_source.SkipBuffer (toCopy);
 				}
 
@@ -202,7 +202,7 @@ namespace Novartment.Base.BinaryStreaming
 				}
 
 				var toCopy = Math.Min (_source.Count, count);
-				Array.Copy (_source.Buffer, _source.Offset, buffer, offset, toCopy);
+				_source.BufferMemory.Slice (_source.Offset, toCopy).CopyTo (buffer.AsMemory (offset));
 				offset += toCopy;
 				count -= toCopy;
 				resultSize += toCopy;
@@ -227,7 +227,7 @@ namespace Novartment.Base.BinaryStreaming
 				}
 			}
 
-			var result = (int)_source.Buffer[_source.Offset];
+			var result = (int)_source.BufferMemory.Span[_source.Offset];
 			_source.SkipBuffer (1);
 			return result;
 		}
@@ -270,7 +270,7 @@ namespace Novartment.Base.BinaryStreaming
 				var toCopy = Math.Min (available, count);
 				if (toCopy > 0)
 				{
-					Array.Copy (_source.Buffer, _source.Offset, buffer, offset, toCopy);
+					_source.BufferMemory.Slice (_source.Offset, toCopy).CopyTo (buffer.AsMemory (offset));
 					_source.SkipBuffer (toCopy);
 				}
 
@@ -296,7 +296,7 @@ namespace Novartment.Base.BinaryStreaming
 					}
 
 					var toCopy = Math.Min (_source.Count, count);
-					Array.Copy (_source.Buffer, _source.Offset, buffer, offset, toCopy);
+					_source.BufferMemory.Slice (_source.Offset, toCopy).CopyTo (buffer.AsMemory (offset));
 					offset += toCopy;
 					count -= toCopy;
 					resultSize += toCopy;

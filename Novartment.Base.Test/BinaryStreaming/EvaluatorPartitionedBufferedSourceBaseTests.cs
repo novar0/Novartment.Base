@@ -24,19 +24,19 @@ namespace Novartment.Base.Test
 			src.FillBufferAsync (CancellationToken.None).Wait ();
 			Assert.True (src.TrySkipPartAsync (CancellationToken.None).Result);
 			src.EnsureBufferAsync (3, CancellationToken.None).Wait ();
-			Assert.Equal (FillFunction (firstPartPos), src.Buffer[src.Offset]);
-			Assert.Equal (FillFunction (firstPartPos + 1), src.Buffer[src.Offset + 1]);
-			Assert.Equal (FillFunction (firstPartPos + 2), src.Buffer[src.Offset + 2]);
+			Assert.Equal (FillFunction (firstPartPos), src.BufferMemory.Span[src.Offset]);
+			Assert.Equal (FillFunction (firstPartPos + 1), src.BufferMemory.Span[src.Offset + 1]);
+			Assert.Equal (FillFunction (firstPartPos + 2), src.BufferMemory.Span[src.Offset + 2]);
 			Assert.True (src.TrySkipPartAsync (CancellationToken.None).Result);
 			src.EnsureBufferAsync (3, CancellationToken.None).Wait ();
-			Assert.Equal (FillFunction (secondPartPos), src.Buffer[src.Offset]);
-			Assert.Equal (FillFunction (secondPartPos + 1), src.Buffer[src.Offset + 1]);
-			Assert.Equal (FillFunction (secondPartPos + 2), src.Buffer[src.Offset + 2]);
+			Assert.Equal (FillFunction (secondPartPos), src.BufferMemory.Span[src.Offset]);
+			Assert.Equal (FillFunction (secondPartPos + 1), src.BufferMemory.Span[src.Offset + 1]);
+			Assert.Equal (FillFunction (secondPartPos + 2), src.BufferMemory.Span[src.Offset + 2]);
 			Assert.True (src.TrySkipPartAsync (CancellationToken.None).Result);
 			src.EnsureBufferAsync (3, CancellationToken.None).Wait ();
-			Assert.Equal (FillFunction (thirdPartPos), src.Buffer[src.Offset]);
-			Assert.Equal (FillFunction (thirdPartPos + 1), src.Buffer[src.Offset + 1]);
-			Assert.Equal (FillFunction (thirdPartPos + 2), src.Buffer[src.Offset + 2]);
+			Assert.Equal (FillFunction (thirdPartPos), src.BufferMemory.Span[src.Offset]);
+			Assert.Equal (FillFunction (thirdPartPos + 1), src.BufferMemory.Span[src.Offset + 1]);
+			Assert.Equal (FillFunction (thirdPartPos + 2), src.BufferMemory.Span[src.Offset + 2]);
 
 			// части в конце источника
 			long size = 0x4000000000000000L;
@@ -75,12 +75,12 @@ namespace Novartment.Base.Test
 				var startOffset = _source.Offset + validatedPartLength;
 				while (startOffset < (_source.Offset + _source.Count))
 				{
-					if (_source.Buffer[startOffset] < 100)
+					if (_source.BufferMemory.Span[startOffset] < 100)
 					{
 						var epilogueSize = 1;
 						while ((startOffset + epilogueSize) < (_source.Offset + _source.Count))
 						{
-							if (_source.Buffer[startOffset + epilogueSize] >= 100)
+							if (_source.BufferMemory.Span[startOffset + epilogueSize] >= 100)
 							{
 								_epilogueSize = epilogueSize;
 								break;

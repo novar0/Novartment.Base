@@ -73,7 +73,7 @@ namespace Novartment.Base.Media
 				throw new ArgumentNullException (nameof (source));
 			}
 
-			if (source.Buffer.Length < 18)
+			if (source.BufferMemory.Length < 18)
 			{
 				throw new ArgumentOutOfRangeException (nameof (source));
 			}
@@ -115,12 +115,31 @@ namespace Novartment.Base.Media
 					WORD	wBitsPerSample;
 					WORD	cbSize;
 				*/
-				var formatTag = BitConverter.ToUInt16 (source.Buffer, source.Offset);
-				var channels = BitConverter.ToUInt16 (source.Buffer, source.Offset + 2);
-				var samplesPerSec = BitConverter.ToUInt32 (source.Buffer, source.Offset + 4);
-				var averageBytesPerSecond = BitConverter.ToUInt32 (source.Buffer, source.Offset + 8);
-				var blockAlign = BitConverter.ToUInt16 (source.Buffer, source.Offset + 12);
-				var bitsPerSample = BitConverter.ToUInt16 (source.Buffer, source.Offset + 14);
+
+				// TODO: сделать проще, без использования BitConverter
+				var sourceBuf = source.BufferMemory;
+#if NETCOREAPP2_1
+				var formatTag = BitConverter.ToUInt16 (sourceBuf.Span.Slice (source.Offset));
+				var channels = BitConverter.ToUInt16 (sourceBuf.Span.Slice (source.Offset + 2));
+				var samplesPerSec = BitConverter.ToUInt32 (sourceBuf.Span.Slice (source.Offset + 4));
+				var averageBytesPerSecond = BitConverter.ToUInt32 (sourceBuf.Span.Slice (source.Offset + 8));
+				var blockAlign = BitConverter.ToUInt16 (sourceBuf.Span.Slice (source.Offset + 12));
+				var bitsPerSample = BitConverter.ToUInt16 (sourceBuf.Span.Slice (source.Offset + 14));
+#else
+				var tempBuf = new byte[4];
+				sourceBuf.Slice (source.Offset, 2).CopyTo (tempBuf);
+				var formatTag = BitConverter.ToUInt16 (tempBuf, 0);
+				sourceBuf.Slice (source.Offset + 2, 2).CopyTo (tempBuf);
+				var channels = BitConverter.ToUInt16 (tempBuf, 0);
+				sourceBuf.Slice (source.Offset + 4, 4).CopyTo (tempBuf);
+				var samplesPerSec = BitConverter.ToUInt32 (tempBuf, 0);
+				sourceBuf.Slice (source.Offset + 8, 4).CopyTo (tempBuf);
+				var averageBytesPerSecond = BitConverter.ToUInt32 (tempBuf, 0);
+				sourceBuf.Slice (source.Offset + 12, 2).CopyTo (tempBuf);
+				var blockAlign = BitConverter.ToUInt16 (tempBuf, 0);
+				sourceBuf.Slice (source.Offset + 14, 2).CopyTo (tempBuf);
+				var bitsPerSample = BitConverter.ToUInt16 (tempBuf, 0);
+#endif
 
 				return new AviStreamInfoAudioFormat (
 					formatTag,

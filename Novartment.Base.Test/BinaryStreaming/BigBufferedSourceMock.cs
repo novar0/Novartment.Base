@@ -10,7 +10,7 @@ namespace Novartment.Base.Test
 	public class BigBufferedSourceMock :
 		IFastSkipBufferedSource
 	{
-		private readonly byte[] _buffer;
+		private readonly Memory<byte> _buffer;
 		private readonly long _size = 0L;
 		private readonly Func<long, byte> _dataFunction;
 		private long _position = 0;
@@ -30,7 +30,7 @@ namespace Novartment.Base.Test
 			_dataFunction = dataFunction;
 		}
 
-		public byte[] Buffer => _buffer;
+		public ReadOnlyMemory<byte> BufferMemory => _buffer;
 
 		public int Offset => _offset;
 
@@ -61,16 +61,17 @@ namespace Novartment.Base.Test
 					// сдвигаем в начало данные буфера
 					if (_count > 0)
 					{
-						Array.Copy (_buffer, _offset, _buffer, 0, _count);
+						_buffer.Slice (_offset, _count).CopyTo (_buffer);
 					}
 
 					_offset = 0;
 				}
 
 				int i = 0;
+				var span = _buffer.Span;
 				while (((_offset + _count + i) < _buffer.Length) && ((_position + i) < _size))
 				{
-					_buffer[_offset + _count + i] = _dataFunction.Invoke (_position + i);
+					span[_offset + _count + i] = _dataFunction.Invoke (_position + i);
 					i++;
 				}
 
@@ -88,7 +89,7 @@ namespace Novartment.Base.Test
 
 		public Task EnsureBufferAsync (int size, CancellationToken cancellationToken)
 		{
-			if ((size < 0) || (size > this.Buffer.Length))
+			if ((size < 0) || (size > this.BufferMemory.Length))
 			{
 				throw new ArgumentOutOfRangeException (nameof (size));
 			}
@@ -106,16 +107,17 @@ namespace Novartment.Base.Test
 					{
 						if (available > 0)
 						{
-							Array.Copy (_buffer, _offset, _buffer, 0, available);
+							_buffer.Slice (_offset, available).CopyTo (_buffer);
 						}
 
 						_offset = 0;
 					}
 
 					int i = 0;
+					var span = _buffer.Span;
 					while ((i < shortage) && ((_position + i) < _size))
 					{
-						_buffer[_offset + _count + i] = _dataFunction.Invoke (_position + i);
+						span[_offset + _count + i] = _dataFunction.Invoke (_position + i);
 						i++;
 					}
 

@@ -291,7 +291,7 @@ namespace Novartment.Base.Net.Mime.Test
 				"Received: by server10.espc2.mechel.com (8.8.8/1.37) id CAA22933; Tue, 15 May\r\n 2012 02:49:22 +0100\r\n" +
 				"Content-MD5: :Q2hlY2sgSW50ZWdyaXR5IQ==\r\n";
 			Assert.Equal (template.Length, bytes.Count);
-			Assert.Equal (template, Encoding.ASCII.GetString (bytes.Buffer, 0, bytes.Count));
+			Assert.Equal (template, Encoding.ASCII.GetString (bytes.Buffer.Slice (0, bytes.Count)));
 		}
 	}
 }

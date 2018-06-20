@@ -5,7 +5,7 @@ namespace Novartment.Base.Net.Smtp
 {
 	internal class BytesChunkEnumerator
 	{
-		private readonly byte[] _value;
+		private readonly ReadOnlyMemory<byte> _value;
 
 		private readonly int _endOffset;
 
@@ -13,7 +13,7 @@ namespace Novartment.Base.Net.Smtp
 
 		private int _nextOffset;
 
-		internal BytesChunkEnumerator (byte[] value, int offset, int count)
+		internal BytesChunkEnumerator (ReadOnlyMemory<byte> value, int offset, int count)
 		{
 			_value = value;
 			_currentOffset = offset;
@@ -28,7 +28,7 @@ namespace Novartment.Base.Net.Smtp
 			var isClosingBracketFound = MoveToNextChunk (whiteSpace, closingBracket, true);
 			return isClosingBracketFound &&
 				((_nextOffset - _currentOffset) > 1) &&
-				(_value[_currentOffset] == openingBracket);
+				(_value.Span[_currentOffset] == openingBracket);
 		}
 
 		// В начале пропускает skipMark,
@@ -36,7 +36,8 @@ namespace Novartment.Base.Net.Smtp
 		// возвращает False если после skipMark данные кончились.
 		internal bool MoveToNextChunk (byte skipMark, byte endingMark, bool includeEndingMark = false)
 		{
-			while ((_nextOffset < _endOffset) && (_value[_nextOffset] == skipMark))
+			var span = _value.Span;
+			while ((_nextOffset < _endOffset) && (span[_nextOffset] == skipMark))
 			{
 				_nextOffset++;
 			}
@@ -47,7 +48,7 @@ namespace Novartment.Base.Net.Smtp
 				return false;
 			}
 
-			while ((_nextOffset < _endOffset) && !(_value[_nextOffset] == endingMark))
+			while ((_nextOffset < _endOffset) && !(span[_nextOffset] == endingMark))
 			{
 				_nextOffset++;
 			}
@@ -62,17 +63,17 @@ namespace Novartment.Base.Net.Smtp
 
 		internal string GetString ()
 		{
-			return AsciiCharSet.GetString (_value.AsSpan (_currentOffset, _nextOffset - _currentOffset));
+			return AsciiCharSet.GetString (_value.Span.Slice (_currentOffset, _nextOffset - _currentOffset));
 		}
 
 		internal string GetStringMaskingInvalidChars ()
 		{
-			return AsciiCharSet.GetStringMaskingInvalidChars (_value.AsSpan (_currentOffset, _nextOffset - _currentOffset), '?');
+			return AsciiCharSet.GetStringMaskingInvalidChars (_value.Span.Slice (_currentOffset, _nextOffset - _currentOffset), '?');
 		}
 
 		internal string GetStringInBrackets ()
 		{
-			return AsciiCharSet.GetString (_value.AsSpan (_currentOffset + 1, _nextOffset - _currentOffset - 2));
+			return AsciiCharSet.GetString (_value.Span.Slice (_currentOffset + 1, _nextOffset - _currentOffset - 2));
 		}
 	}
 }

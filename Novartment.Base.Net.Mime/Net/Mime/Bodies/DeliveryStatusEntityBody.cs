@@ -167,14 +167,14 @@ namespace Novartment.Base.Net.Mime
 			{
 				await HeaderEncoder.SaveHeaderAsync (header, destination, cancellationToken)
 					.ConfigureAwait (false);
-				await destination.WriteAsync (HeaderDecoder.CarriageReturnLinefeed, 0, HeaderDecoder.CarriageReturnLinefeed.Length, cancellationToken)
+				await destination.WriteAsync (HeaderDecoder.CarriageReturnLinefeed, cancellationToken)
 					.ConfigureAwait (false);
 				foreach (var recipientBlock in this.Recipients)
 				{
 					var headerFields = CreateHeaderRecipient (recipientBlock);
 					await HeaderEncoder.SaveHeaderAsync (headerFields, destination, cancellationToken)
 						.ConfigureAwait (false);
-					await destination.WriteAsync (HeaderDecoder.CarriageReturnLinefeed, 0, HeaderDecoder.CarriageReturnLinefeed.Length, cancellationToken)
+					await destination.WriteAsync (HeaderDecoder.CarriageReturnLinefeed, cancellationToken)
 						.ConfigureAwait (false);
 				}
 			}
@@ -411,7 +411,7 @@ namespace Novartment.Base.Net.Mime
 					recipient.WillRetryUntil.Value.ToInternetString ()));
 			}
 
-			return fields.GetReadOnlyView ();
+			return fields;
 		}
 
 		// Создаёт коллекцию свойств уведомления о статусе доставки сообщения

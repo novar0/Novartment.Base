@@ -161,11 +161,11 @@ namespace Novartment.Base.Net.Mime
 				foreach (var entity in this.Parts)
 				{
 					cancellationToken.ThrowIfCancellationRequested ();
-					await destination.WriteAsync (nextBoundary, 0, nextBoundary.Length, cancellationToken).ConfigureAwait (false);
+					await destination.WriteAsync (nextBoundary, cancellationToken).ConfigureAwait (false);
 					await entity.SaveAsync (destination, cancellationToken).ConfigureAwait (false);
 				}
 
-				await destination.WriteAsync (endBoundary, 0, endBoundary.Length, cancellationToken).ConfigureAwait (false);
+				await destination.WriteAsync (endBoundary, cancellationToken).ConfigureAwait (false);
 			}
 		}
 

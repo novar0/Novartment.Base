@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -21,9 +22,13 @@ namespace Novartment.Base.BinaryStreaming
 
 			internal Stream BaseStream => _stream;
 
-			public Task WriteAsync (byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+			public Task WriteAsync (ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default)
 			{
-				return _stream.WriteAsync (buffer, offset, count, cancellationToken);
+#if NETCOREAPP2_1
+				return _stream.WriteAsync (buffer, cancellationToken).AsTask ();
+#else
+				return _stream.WriteAsync (buffer.ToArray (), 0, buffer.Length, cancellationToken);
+#endif
 			}
 
 			public void SetComplete ()

@@ -50,7 +50,7 @@ namespace Novartment.Base.Net.Mime
 		private ContentMediaType _type;
 		private string _subtype;
 		private ContentDispositionType _dispositionType;
-		private byte[] _md5;
+		private ReadOnlyMemory<byte> _md5;
 		private TimeSpan? _duration;
 
 		/// <summary>
@@ -172,16 +172,11 @@ namespace Novartment.Base.Net.Mime
 
 		/// <summary>Получает или устанавливает MD5-хэш содержимого.
 		/// Соответствует полю заголовка "Content-MD5" определённому в RFC 1864.</summary>
-		public byte[] MD5
+		public ReadOnlyMemory<byte> MD5
 		{
 			get => _md5;
 			set
 			{
-				if (value == null)
-				{
-					throw new ArgumentNullException (nameof (value));
-				}
-
 				if (value.Length != 16)
 				{
 					throw new ArgumentOutOfRangeException (nameof (value));
@@ -320,7 +315,7 @@ namespace Novartment.Base.Net.Mime
 			async Task SaveAsyncStateMachine ()
 			{
 				await HeaderEncoder.SaveHeaderAsync (header, destination, cancellationToken).ConfigureAwait (false);
-				await destination.WriteAsync (HeaderDecoder.CarriageReturnLinefeed, 0, HeaderDecoder.CarriageReturnLinefeed.Length, cancellationToken).ConfigureAwait (false);
+				await destination.WriteAsync (HeaderDecoder.CarriageReturnLinefeed, cancellationToken).ConfigureAwait (false);
 				if (_body != null)
 				{
 					await _body.SaveAsync (destination, cancellationToken).ConfigureAwait (false);
@@ -424,9 +419,15 @@ namespace Novartment.Base.Net.Mime
 			}
 
 			// Content-MD5
-			if (_md5 != null)
+			if (_md5.Length > 0)
 			{
-				header.Add (HeaderFieldBuilder.CreateExactValue (HeaderFieldName.ContentMD5, Convert.ToBase64String (_md5)));
+				var tempBuf = new char[(_md5.Length * 4) + 2];
+#if NETCOREAPP2_1
+				Convert.TryToBase64Chars (_md5.Span, tempBuf, out int tempBufSize, Base64FormattingOptions.None);
+#else
+				var tempBufSize = Convert.ToBase64CharArray (_md5.ToArray (), 0, _md5.Length, tempBuf, 0);
+#endif
+				header.Add (HeaderFieldBuilder.CreateExactValue (HeaderFieldName.ContentMD5, new string (tempBuf, 0, tempBufSize)));
 			}
 
 			// Content-Duration
@@ -800,7 +801,7 @@ namespace Novartment.Base.Net.Mime
 
 		private bool ParseContentMD5Field (ReadOnlySpan<char> body)
 		{
-			if (_md5 != null)
+			if (_md5.Length > 0)
 			{
 				throw new FormatException ("More than one '" + HeaderFieldNameHelper.GetName (HeaderFieldName.ContentMD5) + "' field.");
 			}

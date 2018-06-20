@@ -210,7 +210,7 @@ namespace Novartment.Base.Net
 					try
 					{
 						await task.ConfigureAwait (false);
-						var buf = new byte[this.Reader.Buffer.Length];
+						var buf = new byte[this.Reader.BufferMemory.Length];
 						return new SslStreamBinaryConnection (this.LocalEndPoint, this.RemoteEndPoint, secureStream, buf);
 					}
 					catch
@@ -280,7 +280,7 @@ namespace Novartment.Base.Net
 					try
 					{
 						await task.ConfigureAwait (false);
-						var buf = new byte[this.Reader.Buffer.Length];
+						var buf = new byte[this.Reader.BufferMemory.Length];
 						return new SslStreamBinaryConnection (this.LocalEndPoint, this.RemoteEndPoint, secureStream, buf);
 					}
 					catch

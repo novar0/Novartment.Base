@@ -12,6 +12,7 @@ namespace Novartment.Base.Net
 	/// Источник данных, представленный байтовым буфером,
 	/// предоставляющий данные, считанные из указанного сокета.
 	/// </summary>
+	// TODO: переделать чтобы _buffer был Memory<byte> (мешает то, что его нельзя передать в _socket.ReceiveAsync)
 	[DebuggerDisplay ("{Offset}...{Offset+Count} ({Buffer.Length}) exhausted={IsExhausted}")]
 	public class SocketBufferedSource :
 		IBufferedSource
@@ -52,11 +53,11 @@ namespace Novartment.Base.Net
 		}
 
 		/// <summary>
-		/// Получает буфер, в котором содержится некоторая часть данных сокета.
+		/// Получает буфер, в котором содержится некоторая часть данных источника.
 		/// Текущая начальная позиция и количество доступных данных содержатся в свойствах Offset и Count,
 		/// при этом сам буфер остаётся неизменным всё время жизни источника.
 		/// </summary>
-		public byte[] Buffer => _buffer;
+		public ReadOnlyMemory<byte> BufferMemory => _buffer;
 
 		/// <summary>
 		/// Получает начальную позицию данных, доступных в Buffer.

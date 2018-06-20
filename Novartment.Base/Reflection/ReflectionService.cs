@@ -86,10 +86,11 @@ namespace Novartment.Base.Reflection
 				return ReadOnlyList.Empty<AttributeArgument> ();
 			}
 
-			return attr.ConstructorArguments.AsReadOnlyList ()
+			return attr.ConstructorArguments
 				.Select (item => new AttributeArgument (null, item.Value))
-				.Concat (attr.NamedArguments.AsReadOnlyList ().Select (item =>
-					new AttributeArgument (item.MemberName, item.TypedValue.Value)));
+				.Concat (attr.NamedArguments.Select (item =>
+					new AttributeArgument (item.MemberName, item.TypedValue.Value)))
+				.DuplicateToArray ();
 		}
 
 		/// <summary>

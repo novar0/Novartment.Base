@@ -165,7 +165,7 @@ namespace Novartment.Base.Net.Mime.Test
 
 			var bytes = new BinaryDestinationMock (8192);
 			compositeEntityBody.SaveAsync (bytes, CancellationToken.None).Wait ();
-			var text = Encoding.UTF8.GetString (bytes.Buffer, 0, bytes.Count);
+			var text = Encoding.UTF8.GetString (bytes.Buffer.Slice (0, bytes.Count));
 			var lines = text.Split (new string[] { "\r\n" }, StringSplitOptions.None);
 
 			for (var idx = 0; idx < _bodySample2.Length; idx++)

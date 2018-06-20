@@ -173,6 +173,7 @@ namespace Novartment.Base.Net.Smtp
 			var elements = new ArrayList<string> (1);
 			bool isLastElement = false;
 			int lastNumber = -1;
+			var sourceBuf = source.BufferMemory.Span;
 			do
 			{
 				int idx = 0;
@@ -185,9 +186,9 @@ namespace Novartment.Base.Net.Smtp
 
 					idx++;
 				}
-				while ((source.Buffer[source.Offset + idx - 1] != 0x0d) || (source.Buffer[source.Offset + idx] != 0x0a));
+				while ((sourceBuf[source.Offset + idx - 1] != 0x0d) || (sourceBuf[source.Offset + idx] != 0x0a));
 				idx++;
-				logger?.LogTrace ("<<< " + AsciiCharSet.GetStringMaskingInvalidChars (source.Buffer.AsSpan (source.Offset, idx - 2), '?'));
+				logger?.LogTrace ("<<< " + AsciiCharSet.GetStringMaskingInvalidChars (sourceBuf.Slice (source.Offset, idx - 2), '?'));
 
 				// RFC 5321 part 4.5.3.1.5:
 				// The maximum total length of a reply line including the reply code and the <CRLF> is 512 octets.
@@ -202,9 +203,9 @@ namespace Novartment.Base.Net.Smtp
 					throw new FormatException ("Reply line do not contains 3-digit code.");
 				}
 
-				var codeChar1 = source.Buffer[source.Offset];
-				var codeChar2 = source.Buffer[source.Offset + 1];
-				var codeChar3 = source.Buffer[source.Offset + 2];
+				var codeChar1 = sourceBuf[source.Offset];
+				var codeChar2 = sourceBuf[source.Offset + 1];
+				var codeChar3 = sourceBuf[source.Offset + 2];
 
 				// RFC 5321 part 4.2: Reply-code  = %x32-35 %x30-35 %x30-39
 				if ((codeChar1 < 0x32) || (codeChar1 > 0x35) ||
@@ -214,9 +215,9 @@ namespace Novartment.Base.Net.Smtp
 					throw new FormatException ("Reply line do not contains valid 3-digit code.");
 				}
 
-				lastNumber = ((source.Buffer[source.Offset] - 0x030) * 100) +
-					((source.Buffer[source.Offset + 1] - 0x30) * 10) +
-					(source.Buffer[source.Offset + 2] - 0x30);
+				lastNumber = ((sourceBuf[source.Offset] - 0x030) * 100) +
+					((sourceBuf[source.Offset + 1] - 0x30) * 10) +
+					(sourceBuf[source.Offset + 2] - 0x30);
 
 				// 'nnn CRLF' = 6 bytes
 				if (idx < 6)
@@ -225,7 +226,7 @@ namespace Novartment.Base.Net.Smtp
 				}
 				else
 				{
-					var separator = source.Buffer[source.Offset + 3];
+					var separator = sourceBuf[source.Offset + 3];
 					if ((separator != 0x20) && (separator != 0x2d))
 					{
 						throw new FormatException ("Reply line contains invalid character after 3-digit code.");
@@ -234,7 +235,7 @@ namespace Novartment.Base.Net.Smtp
 					isLastElement = separator != 0x2d;
 					if (idx > 6)
 					{
-						var text = AsciiCharSet.GetString (source.Buffer.AsSpan (source.Offset + 4, idx - 6)); // 'nnn CRLF' = 6 bytes
+						var text = AsciiCharSet.GetString (sourceBuf.Slice (source.Offset + 4, idx - 6)); // 'nnn CRLF' = 6 bytes
 						elements.Add (text);
 					}
 				}

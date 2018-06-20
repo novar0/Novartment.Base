@@ -154,11 +154,28 @@ namespace Novartment.Base.Media
 						DWORD dwReserved[4];
 						*/
 						await chunk.Source.EnsureBufferAsync (56, cancellationToken).ConfigureAwait (false); // "To small size of RIFF-chunk 'avih'. Expected minimum 56 bytes.");
-						microSecPerFrame = BitConverter.ToUInt32 (chunk.Source.Buffer, chunk.Source.Offset);
-						flags = BitConverter.ToUInt32 (chunk.Source.Buffer, chunk.Source.Offset + 12);
-						totalFrames = BitConverter.ToUInt32 (chunk.Source.Buffer, chunk.Source.Offset + 16);
-						width = BitConverter.ToUInt32 (chunk.Source.Buffer, chunk.Source.Offset + 32);
-						height = BitConverter.ToUInt32 (chunk.Source.Buffer, chunk.Source.Offset + 36);
+
+						// TODO: сделать проще, без использования BitConverter
+#if NETCOREAPP2_1
+						var sourceBuf = chunk.Source.BufferMemory;
+						microSecPerFrame = BitConverter.ToUInt32 (sourceBuf.Span.Slice (chunk.Source.Offset));
+						flags = BitConverter.ToUInt32 (sourceBuf.Span.Slice (chunk.Source.Offset + 12));
+						totalFrames = BitConverter.ToUInt32 (sourceBuf.Span.Slice (chunk.Source.Offset + 16));
+						width = BitConverter.ToUInt32 (sourceBuf.Span.Slice (chunk.Source.Offset + 32));
+						height = BitConverter.ToUInt32 (sourceBuf.Span.Slice (chunk.Source.Offset + 36));
+#else
+						var tempBuf = new byte[4];
+						chunk.Source.BufferMemory.Slice (chunk.Source.Offset, 4).CopyTo (tempBuf);
+						microSecPerFrame = BitConverter.ToUInt32 (tempBuf, 0);
+						chunk.Source.BufferMemory.Slice (chunk.Source.Offset + 12, 4).CopyTo (tempBuf);
+						flags = BitConverter.ToUInt32 (tempBuf, 0);
+						chunk.Source.BufferMemory.Slice (chunk.Source.Offset + 16, 4).CopyTo (tempBuf);
+						totalFrames = BitConverter.ToUInt32 (tempBuf, 0);
+						chunk.Source.BufferMemory.Slice (chunk.Source.Offset + 32, 4).CopyTo (tempBuf);
+						width = BitConverter.ToUInt32 (tempBuf, 0);
+						chunk.Source.BufferMemory.Slice (chunk.Source.Offset + 36, 4).CopyTo (tempBuf);
+						height = BitConverter.ToUInt32 (tempBuf, 0);
+#endif
 					}
 
 					if (chunk.IsSubChunkList)

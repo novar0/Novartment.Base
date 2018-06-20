@@ -239,7 +239,7 @@ namespace Novartment.Base.Sample
 						// it inserts a return-path line at the beginning of the mail data.
 						var returnPath = "Return-Path:" + _returnPath.ToAngleString () + "\r\n";
 						var buf = Encoding.ASCII.GetBytes (returnPath);
-						await destination.WriteAsync (buf, 0, buf.Length, cancellationToken).ConfigureAwait (false);
+						await destination.WriteAsync (buf.AsMemory (), cancellationToken).ConfigureAwait (false);
 					}
 
 					// RFC 5321 part 4.4:
@@ -257,7 +257,7 @@ namespace Novartment.Base.Sample
 						localHostFqdn,
 						DateTimeOffset.Now.ToInternetString ());
 					var buf2 = Encoding.ASCII.GetBytes (received);
-					await destination.WriteAsync (buf2, 0, buf2.Length, cancellationToken).ConfigureAwait (false);
+					await destination.WriteAsync (buf2.AsMemory (), cancellationToken).ConfigureAwait (false);
 					await source.WriteToAsync (destination, cancellationToken).ConfigureAwait (false);
 				}
 			}

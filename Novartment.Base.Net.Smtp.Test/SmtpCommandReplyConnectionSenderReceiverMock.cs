@@ -53,7 +53,7 @@ namespace Novartment.Base.Smtp.Test
 							break;
 						}
 
-						strm.Write (source.Buffer, source.Offset, source.Count);
+						strm.Write (source.BufferMemory.Span.Slice (source.Offset, source.Count));
 						source.SkipBuffer (source.Count);
 					}
 				}

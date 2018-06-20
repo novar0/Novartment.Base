@@ -60,7 +60,7 @@ namespace Novartment.Base.Media
 				throw new ArgumentNullException (nameof (source));
 			}
 
-			if (source.Buffer.Length < 8)
+			if (source.BufferMemory.Length < 8)
 			{
 				throw new ArgumentOutOfRangeException (nameof (source));
 			}
@@ -90,8 +90,16 @@ namespace Novartment.Base.Media
 					throw new FormatException ("Specified source is too small for Riff-chunk. Expected minimum 8 bytes.", exception);
 				}
 
-				var id = AsciiCharSet.GetString (source.Buffer.AsSpan (source.Offset, 4));
-				var size = (long)BitConverter.ToUInt32 (source.Buffer, source.Offset + 4);
+				var id = AsciiCharSet.GetString (source.BufferMemory.Span.Slice (source.Offset, 4));
+
+				// TODO: сделать проще, без использования BitConverter
+#if NETCOREAPP2_1
+				var size = (long)BitConverter.ToUInt32 (source.BufferMemory.Span.Slice (source.Offset + 4));
+#else
+				var tempBuf = new byte[4];
+				source.BufferMemory.Slice (source.Offset + 4, 4).CopyTo (tempBuf);
+				var size = (long)BitConverter.ToUInt32 (tempBuf, 0);
+#endif
 				source.SkipBuffer (8);
 
 				var data = new SizeLimitedBufferedSource (source, size);

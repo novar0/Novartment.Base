@@ -585,9 +585,9 @@ namespace Novartment.Base.Smtp.Test
 
 			var mailBodyChunk1 = "Hello dear!\r\n";
 			var mailBodyChunk2 = "Tell me please how you feel about last meeting.";
-			var bytes = Encoding.ASCII.GetBytes (mailBodyChunk1 + mailBodyChunk2);
-			var src1 = new SizeLimitedBufferedSource (new ArrayBufferedSource (bytes), mailBodyChunk1.Length);
-			var src2 = new SizeLimitedBufferedSource (new ArrayBufferedSource (bytes, mailBodyChunk1.Length, mailBodyChunk2.Length), mailBodyChunk2.Length);
+			Memory<byte> bytes = Encoding.ASCII.GetBytes (mailBodyChunk1 + mailBodyChunk2);
+			var src1 = new ArrayBufferedSource (bytes.Slice (0, mailBodyChunk1.Length));
+			var src2 = new ArrayBufferedSource (bytes.Slice (mailBodyChunk1.Length));
 
 			sender.ReceivedCommands.Enqueue (new SmtpBdatCommand (src1, mailBodyChunk1.Length, false));
 			Assert.True (session.ReceiveCommandSendReplyAsync (CancellationToken.None).Result);
@@ -607,7 +607,7 @@ namespace Novartment.Base.Smtp.Test
 			Assert.Equal (1, createdTransactionsCount);
 			Assert.True (trctn.Completed);
 			Assert.True (trctn.Disposed);
-			Assert.Equal (mailBodyChunk1.Length + mailBodyChunk2.Length, src2.Offset);
+			Assert.Equal (mailBodyChunk2.Length, src2.Offset);
 			Assert.Equal (mailBodyChunk1 + mailBodyChunk2, trctn.ReadedData);
 		}
 

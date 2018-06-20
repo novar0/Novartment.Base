@@ -58,9 +58,6 @@ namespace Novartment.Base.Net.Smtp
 				return new SmtpActualDataCommand (source, true);
 			}
 
-			var buffer = source.Buffer;
-			var offset = source.Offset;
-
 			var countToCRLF = FindCRLF (source);
 			if (countToCRLF < 0)
 			{
@@ -68,7 +65,7 @@ namespace Novartment.Base.Net.Smtp
 				return new SmtpInvalidSyntaxCommand (SmtpCommandType.Unknown, "Ending CRLF not found in command.");
 			}
 
-			logger?.LogTrace ("<<< " + AsciiCharSet.GetStringMaskingInvalidChars (buffer.AsSpan (offset, countToCRLF), '?'));
+			logger?.LogTrace ("<<< " + AsciiCharSet.GetStringMaskingInvalidChars (source.BufferMemory.Span.Slice (source.Offset, countToCRLF), '?'));
 
 			// RFC 5321 part 4.5.3.1.4:
 			// The maximum total length of a command line including the command word and the <CRLF> is 512 octets.
@@ -85,7 +82,7 @@ namespace Novartment.Base.Net.Smtp
 				return ParseAuthenticationResponse (source, countToCRLF);
 			}
 
-			var chunkEnumerator = new BytesChunkEnumerator (buffer, offset, countToCRLF);
+			var chunkEnumerator = new BytesChunkEnumerator (source.BufferMemory, source.Offset, countToCRLF);
 			countToCRLF += 2;
 			var isChunkFound = chunkEnumerator.MoveToNextChunk (0x0d, 0x20);
 			if (!isChunkFound)
@@ -193,7 +190,7 @@ namespace Novartment.Base.Net.Smtp
 
 		private static int FindCRLF (IBufferedSource source)
 		{
-			var buffer = source.Buffer;
+			var buffer = source.BufferMemory.Span;
 			var offset = source.Offset;
 			var count = source.Count;
 
@@ -214,7 +211,7 @@ namespace Novartment.Base.Net.Smtp
 		private static SmtpCommand ParseAuthenticationResponse (IBufferedSource source, int countToCRLF)
 		{
 			// RFC 4953 part 4: If the client wishes to cancel the authentication exchange, it issues a line with a single "*".
-			if ((countToCRLF == 1) && source.Buffer[source.Offset] == (byte)'*')
+			if ((countToCRLF == 1) && source.BufferMemory.Span[source.Offset] == (byte)'*')
 			{
 				return new SmtpSaslResponseCommand (null);
 			}
@@ -222,7 +219,7 @@ namespace Novartment.Base.Net.Smtp
 			byte[] response;
 			try
 			{
-				var responseBase64 = AsciiCharSet.GetString (source.Buffer.AsSpan (source.Offset, countToCRLF));
+				var responseBase64 = AsciiCharSet.GetString (source.BufferMemory.Span.Slice (source.Offset, countToCRLF));
 				response = Convert.FromBase64String (responseBase64);
 			}
 			catch (FormatException excpt)

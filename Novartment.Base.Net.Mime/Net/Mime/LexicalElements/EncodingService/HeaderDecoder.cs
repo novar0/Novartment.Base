@@ -1039,7 +1039,7 @@ namespace Novartment.Base.Net.Mime
 				}
 
 				cancellationToken.ThrowIfCancellationRequested ();
-				Array.Copy (fieldSource.Buffer, fieldSource.Offset, buffer, 0, available);
+				fieldSource.BufferMemory.Slice (fieldSource.Offset, available).CopyTo (buffer);
 				valueSize += available;
 				fieldSource.SkipBuffer (available);
 			}

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,9 +13,9 @@ namespace Novartment.Base.Net.Test
 
 		internal Queue<string> Queue => _queue;
 
-		public Task WriteAsync (byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+		public Task WriteAsync (ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken)
 		{
-			var str = Encoding.UTF8.GetString (buffer, offset, count);
+			var str = Encoding.UTF8.GetString (buffer.Span);
 			_queue.Enqueue (str);
 			return Task.CompletedTask;
 		}

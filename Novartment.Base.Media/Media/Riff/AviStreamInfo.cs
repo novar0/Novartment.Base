@@ -204,23 +204,59 @@ namespace Novartment.Base.Media
 								short int bottom;
 							 */
 							await chunk.Source.EnsureBufferAsync (56, cancellationToken).ConfigureAwait (false); // "Insuficient size of RIFF-chunk 'strh'. Expected minimum 56 bytes.");
-							type = AsciiCharSet.GetString (chunk.Source.Buffer.AsSpan (chunk.Source.Offset, 4));
-							var handlerNumber = BitConverter.ToUInt32 (chunk.Source.Buffer, chunk.Source.Offset + 4);
+							type = AsciiCharSet.GetString (chunk.Source.BufferMemory.Span.Slice (chunk.Source.Offset, 4));
+
+							// TODO: сделать проще, без использования BitConverter
+							var sourceBuf = chunk.Source.BufferMemory;
+#if NETCOREAPP2_1
+							var handlerNumber = BitConverter.ToUInt32 (sourceBuf.Span.Slice (chunk.Source.Offset + 4));
 							handler = (handlerNumber == 0) ? null : (handlerNumber >= 0x20202020) ?
-									AsciiCharSet.GetString (chunk.Source.Buffer.AsSpan (chunk.Source.Offset + 4, 4)) :
+									AsciiCharSet.GetString (sourceBuf.Span.Slice (chunk.Source.Offset + 4, 4)) :
 									handlerNumber.ToString (CultureInfo.InvariantCulture);
-							options = BitConverter.ToUInt32 (chunk.Source.Buffer, chunk.Source.Offset + 8);
-							priority = BitConverter.ToUInt16 (chunk.Source.Buffer, chunk.Source.Offset + 12);
-							language = BitConverter.ToUInt16 (chunk.Source.Buffer, chunk.Source.Offset + 14);
-							scale = BitConverter.ToUInt32 (chunk.Source.Buffer, chunk.Source.Offset + 20);
-							rate = BitConverter.ToUInt32 (chunk.Source.Buffer, chunk.Source.Offset + 24);
-							start = BitConverter.ToUInt32 (chunk.Source.Buffer, chunk.Source.Offset + 28);
-							length = BitConverter.ToUInt32 (chunk.Source.Buffer, chunk.Source.Offset + 32);
-							sampleSize = BitConverter.ToUInt32 (chunk.Source.Buffer, chunk.Source.Offset + 44);
-							left = BitConverter.ToUInt16 (chunk.Source.Buffer, chunk.Source.Offset + 48);
-							top = BitConverter.ToUInt16 (chunk.Source.Buffer, chunk.Source.Offset + 50);
-							right = BitConverter.ToUInt16 (chunk.Source.Buffer, chunk.Source.Offset + 52);
-							bottom = BitConverter.ToUInt16 (chunk.Source.Buffer, chunk.Source.Offset + 54);
+							options = BitConverter.ToUInt32 (sourceBuf.Span.Slice (chunk.Source.Offset + 8));
+							priority = BitConverter.ToUInt16 (sourceBuf.Span.Slice (chunk.Source.Offset + 12));
+							language = BitConverter.ToUInt16 (sourceBuf.Span.Slice (chunk.Source.Offset + 14));
+							scale = BitConverter.ToUInt32 (sourceBuf.Span.Slice (chunk.Source.Offset + 20));
+							rate = BitConverter.ToUInt32 (sourceBuf.Span.Slice (chunk.Source.Offset + 24));
+							start = BitConverter.ToUInt32 (sourceBuf.Span.Slice (chunk.Source.Offset + 28));
+							length = BitConverter.ToUInt32 (sourceBuf.Span.Slice (chunk.Source.Offset + 32));
+							sampleSize = BitConverter.ToUInt32 (sourceBuf.Span.Slice (chunk.Source.Offset + 44));
+							left = BitConverter.ToUInt16 (sourceBuf.Span.Slice (chunk.Source.Offset + 48));
+							top = BitConverter.ToUInt16 (sourceBuf.Span.Slice (chunk.Source.Offset + 50));
+							right = BitConverter.ToUInt16 (sourceBuf.Span.Slice (chunk.Source.Offset + 52));
+							bottom = BitConverter.ToUInt16 (sourceBuf.Span.Slice (chunk.Source.Offset + 54));
+#else
+							var tempBuf = new byte[4];
+							sourceBuf.Slice (chunk.Source.Offset + 4, 4).CopyTo (tempBuf);
+							var handlerNumber = BitConverter.ToUInt32 (tempBuf, 0);
+							handler = (handlerNumber == 0) ? null : (handlerNumber >= 0x20202020) ?
+								AsciiCharSet.GetString (sourceBuf.Span.Slice (chunk.Source.Offset + 4, 4)) :
+								handlerNumber.ToString (CultureInfo.InvariantCulture);
+							sourceBuf.Slice (chunk.Source.Offset + 8, 4).CopyTo (tempBuf);
+							options = BitConverter.ToUInt32 (tempBuf, 0);
+							sourceBuf.Slice (chunk.Source.Offset + 12, 2).CopyTo (tempBuf);
+							priority = BitConverter.ToUInt16 (tempBuf, 0);
+							sourceBuf.Slice (chunk.Source.Offset + 14, 2).CopyTo (tempBuf);
+							language = BitConverter.ToUInt16 (tempBuf, 0);
+							sourceBuf.Slice (chunk.Source.Offset + 20, 4).CopyTo (tempBuf);
+							scale = BitConverter.ToUInt32 (tempBuf, 0);
+							sourceBuf.Slice (chunk.Source.Offset + 24, 4).CopyTo (tempBuf);
+							rate = BitConverter.ToUInt32 (tempBuf, 0);
+							sourceBuf.Slice (chunk.Source.Offset + 28, 4).CopyTo (tempBuf);
+							start = BitConverter.ToUInt32 (tempBuf, 0);
+							sourceBuf.Slice (chunk.Source.Offset + 32, 4).CopyTo (tempBuf);
+							length = BitConverter.ToUInt32 (tempBuf, 0);
+							sourceBuf.Slice (chunk.Source.Offset + 44, 4).CopyTo (tempBuf);
+							sampleSize = BitConverter.ToUInt32 (tempBuf, 0);
+							sourceBuf.Slice (chunk.Source.Offset + 48, 2).CopyTo (tempBuf);
+							left = BitConverter.ToUInt16 (tempBuf, 0);
+							sourceBuf.Slice (chunk.Source.Offset + 50, 2).CopyTo (tempBuf);
+							top = BitConverter.ToUInt16 (tempBuf, 0);
+							sourceBuf.Slice (chunk.Source.Offset + 52, 2).CopyTo (tempBuf);
+							right = BitConverter.ToUInt16 (tempBuf, 0);
+							sourceBuf.Slice (chunk.Source.Offset + 54, 2).CopyTo (tempBuf);
+							bottom = BitConverter.ToUInt16 (tempBuf, 0);
+#endif
 						}
 					}
 				}

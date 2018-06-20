@@ -16,24 +16,19 @@ namespace Novartment.Base.Test
 			_buffer = new byte[maxSize];
 		}
 
-		public byte[] Buffer => _buffer;
+		public ReadOnlySpan<byte> Buffer => _buffer;
 
 		public int Count => _count;
 
-		public Task WriteAsync (byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+		public Task WriteAsync (ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken)
 		{
 			if (_completed)
 			{
 				throw new InvalidOperationException ("Can not write to completed destination.");
 			}
 
-			if (count > _buffer.Length - _count)
-			{
-				throw new InvalidOperationException ("Insufficient buffer size.");
-			}
-
-			Array.Copy (buffer, offset, _buffer, _count, count);
-			_count += count;
+			buffer.CopyTo (_buffer.AsMemory (_count, _buffer.Length - _count));
+			_count += buffer.Length;
 			return Task.CompletedTask;
 		}
 

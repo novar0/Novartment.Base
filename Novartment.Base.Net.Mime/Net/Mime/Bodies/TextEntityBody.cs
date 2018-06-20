@@ -102,7 +102,7 @@ namespace Novartment.Base.Net.Mime
 			Contract.EndContractBlock ();
 
 			var bytes = this.Encoding.GetBytes (value);
-			var dataSrc = new ArrayBufferedSource (bytes, 0, bytes.Length);
+			var dataSrc = new ArrayBufferedSource (bytes);
 			SetDataAsync (dataSrc, CancellationToken.None).Wait ();
 		}
 	}

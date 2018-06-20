@@ -278,7 +278,7 @@ namespace Novartment.Base.Net.Mime
 
 					bytes[size++] = (byte)'\r';
 					bytes[size++] = (byte)'\n';
-					await destination.WriteAsync (bytes, 0, size, cancellationToken).ConfigureAwait (false);
+					await destination.WriteAsync (bytes.AsMemory (0, size), cancellationToken).ConfigureAwait (false);
 					totalSize += size;
 				}
 

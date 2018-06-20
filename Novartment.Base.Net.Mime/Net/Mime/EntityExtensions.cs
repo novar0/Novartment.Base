@@ -92,7 +92,7 @@ namespace Novartment.Base.Net.Mime
 				}
 			}
 
-			return result.GetReadOnlyView ();
+			return result;
 		}
 
 		/// <summary>
@@ -114,7 +114,7 @@ namespace Novartment.Base.Net.Mime
 				.Where (e => (e != null) &&
 					((e.DispositionType == ContentDispositionType.Attachment) ||
 					((e.Body is IDiscreteEntityBody) && !(e.Body is TextEntityBody))))
-				.ToArray ().AsReadOnlyList ();
+				.ToArray ();
 		}
 
 		/// <summary>

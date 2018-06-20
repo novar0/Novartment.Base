@@ -19,20 +19,11 @@ namespace Novartment.Base.Smtp.Test
 		internal TcpConnectionMock (
 			IPEndPoint localEndpoint,
 			IPEndPoint remoteEndpoint,
-			byte[] inData)
-			: this (localEndpoint, remoteEndpoint, inData, inData.Length)
-		{
-		}
-
-		internal TcpConnectionMock (
-			IPEndPoint localEndpoint,
-			IPEndPoint remoteEndpoint,
-			byte[] inData,
-			int count)
+			Memory<byte> inData)
 		{
 			_localEndpoint = new IPHostEndPoint (localEndpoint);
 			_remoteEndpoint = new IPHostEndPoint (remoteEndpoint);
-			_inData = new ArrayBufferedSource (inData, 0, count);
+			_inData = new ArrayBufferedSource (inData);
 		}
 
 		internal TcpConnectionMock (

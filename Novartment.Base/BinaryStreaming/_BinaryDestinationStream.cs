@@ -67,7 +67,7 @@ namespace Novartment.Base.BinaryStreaming
 
 				Contract.EndContractBlock ();
 
-				_destination.WriteAsync (buffer, offset, count, CancellationToken.None).Wait ();
+				_destination.WriteAsync (buffer.AsMemory (offset, count), CancellationToken.None).Wait ();
 			}
 
 			public override Task WriteAsync (byte[] buffer, int offset, int count, CancellationToken cancellationToken)
@@ -89,7 +89,7 @@ namespace Novartment.Base.BinaryStreaming
 
 				Contract.EndContractBlock ();
 
-				return _destination.WriteAsync (buffer, offset, count, CancellationToken.None);
+				return _destination.WriteAsync (buffer.AsMemory (offset, count), CancellationToken.None);
 			}
 
 			protected override void Dispose (bool disposing)

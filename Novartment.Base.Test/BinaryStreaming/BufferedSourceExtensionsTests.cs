@@ -67,7 +67,7 @@ namespace Novartment.Base.Test
 			var result = src.CopyToBufferUntilMarkerAsync (170, dest, CancellationToken.None).Result;
 			Assert.Equal (0, result); // no bytes copied
 			Assert.Equal (85, dest[0]); // destination untouched
-			Assert.Equal (170, src.Buffer[src.Offset]); // marker in source at start
+			Assert.Equal (170, src.BufferMemory.Span[src.Offset]); // marker in source at start
 
 			// not found with size less than buffer
 			Array.Fill<byte> (dest, 85);
@@ -108,7 +108,7 @@ namespace Novartment.Base.Test
 			Assert.Equal (168, dest[2]);
 			Assert.Equal (169, dest[3]);
 			Assert.Equal (85, dest[4]); // destination untouched
-			Assert.Equal (174, src.Buffer[src.Offset]); // marker in source at start
+			Assert.Equal (174, src.BufferMemory.Span[src.Offset]); // marker in source at start
 
 			// first byte in second buffer
 			Array.Fill<byte> (dest, 85);
@@ -121,7 +121,7 @@ namespace Novartment.Base.Test
 			Assert.Equal (169, dest[3]);
 			Assert.Equal (174, dest[4]);
 			Assert.Equal (85, dest[5]); // destination untouched
-			Assert.Equal (175, src.Buffer[src.Offset]); // marker in source at start
+			Assert.Equal (175, src.BufferMemory.Span[src.Offset]); // marker in source at start
 
 			// last byte of source
 			Array.Fill<byte> (dest, 85);
@@ -135,7 +135,7 @@ namespace Novartment.Base.Test
 			Assert.Equal (174, dest[4]);
 			Assert.Equal (175, dest[5]);
 			Assert.Equal (85, dest[6]); // destination untouched
-			Assert.Equal (172, src.Buffer[src.Offset]); // marker in source at start
+			Assert.Equal (172, src.BufferMemory.Span[src.Offset]); // marker in source at start
 			Assert.Equal (1, src.Count);
 		}
 
@@ -152,8 +152,8 @@ namespace Novartment.Base.Test
 			var result = src.CopyToBufferUntilMarkerAsync (170, 171, dest, CancellationToken.None).Result;
 			Assert.Equal (0, result); // no bytes copied
 			Assert.Equal (85, dest[0]); // destination untouched
-			Assert.Equal (170, src.Buffer[src.Offset]); // marker in source at start
-			Assert.Equal (171, src.Buffer[src.Offset + 1]);
+			Assert.Equal (170, src.BufferMemory.Span[src.Offset]); // marker in source at start
+			Assert.Equal (171, src.BufferMemory.Span[src.Offset + 1]);
 
 			// not found with size less than buffer
 			Array.Fill<byte> (dest, 85);
@@ -223,8 +223,8 @@ namespace Novartment.Base.Test
 			Assert.Equal (171, dest[1]);
 			Assert.Equal (168, dest[2]);
 			Assert.Equal (85, dest[3]); // destination untouched
-			Assert.Equal (169, src.Buffer[src.Offset]); // marker in source at start
-			Assert.Equal (174, src.Buffer[src.Offset + 1]);
+			Assert.Equal (169, src.BufferMemory.Span[src.Offset]); // marker in source at start
+			Assert.Equal (174, src.BufferMemory.Span[src.Offset + 1]);
 
 			// first byte in second buffer
 			Array.Fill<byte> (dest, 85);
@@ -237,8 +237,8 @@ namespace Novartment.Base.Test
 			Assert.Equal (169, dest[3]);
 			Assert.Equal (174, dest[4]);
 			Assert.Equal (85, dest[5]); // destination untouched
-			Assert.Equal (175, src.Buffer[src.Offset]); // marker in source at start
-			Assert.Equal (172, src.Buffer[src.Offset + 1]);
+			Assert.Equal (175, src.BufferMemory.Span[src.Offset]); // marker in source at start
+			Assert.Equal (172, src.BufferMemory.Span[src.Offset + 1]);
 
 			// last byte in first buffer and first byte in second buffer
 			Array.Fill<byte> (dest, 85);
@@ -250,8 +250,8 @@ namespace Novartment.Base.Test
 			Assert.Equal (168, dest[2]);
 			Assert.Equal (169, dest[3]);
 			Assert.Equal (85, dest[4]); // destination untouched
-			Assert.Equal (174, src.Buffer[src.Offset]); // marker in source at start
-			Assert.Equal (175, src.Buffer[src.Offset + 1]);
+			Assert.Equal (174, src.BufferMemory.Span[src.Offset]); // marker in source at start
+			Assert.Equal (175, src.BufferMemory.Span[src.Offset + 1]);
 
 			// last byte of source
 			Array.Fill<byte> (dest, 85);
@@ -266,8 +266,8 @@ namespace Novartment.Base.Test
 			Assert.Equal (175, dest[5]);
 			Assert.Equal (85, dest[6]); // destination untouched
 			Assert.Equal (2, src.Count);
-			Assert.Equal (172, src.Buffer[src.Offset]); // marker in source at start
-			Assert.Equal (173, src.Buffer[src.Offset + 1]);
+			Assert.Equal (172, src.BufferMemory.Span[src.Offset]); // marker in source at start
+			Assert.Equal (173, src.BufferMemory.Span[src.Offset + 1]);
 		}
 
 		[Fact]
@@ -307,7 +307,7 @@ namespace Novartment.Base.Test
 			Assert.Equal (testSampleSize, result.Length);
 			for (int i = 0; i < testSampleSize; i++)
 			{
-				Assert.Equal (FillFunction ((long)(skipSize + i)), result[i]);
+				Assert.Equal (FillFunction ((long)(skipSize + i)), result.Span[i]);
 			}
 		}
 

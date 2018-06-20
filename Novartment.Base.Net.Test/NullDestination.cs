@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Novartment.Base.BinaryStreaming;
 
@@ -10,6 +11,6 @@ namespace Novartment.Base.Net.Test
 		{
 		}
 
-		public Task WriteAsync (byte[] buffer, int offset, int count, CancellationToken cancellationToken) => Task.CompletedTask;
+		public Task WriteAsync (ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken) => Task.CompletedTask;
 	}
 }

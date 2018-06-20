@@ -35,7 +35,7 @@ namespace Novartment.Base.Net.Mime
 				return validatedPartLength;
 			}
 
-			var buf = _source.Buffer;
+			var buf = _source.BufferMemory.Span;
 			var endOffset = _source.Offset + _source.Count;
 			var startOffset = _source.Offset + validatedPartLength;
 

@@ -46,8 +46,7 @@ namespace Novartment.Base.Net.Test
 			return new TcpConnectionMock (
 					new IPHostEndPoint (_endpoint),
 					new IPHostEndPoint (remoteEndpoint),
-					new byte[1000],
-					0);
+					default (ReadOnlyMemory<byte>));
 		}
 
 		internal void SimulateIncomingConnection (IPEndPoint remoteEndpoint)

@@ -38,12 +38,12 @@ namespace Novartment.Base.Test
 			Assert.Equal (TaskStatus.RanToCompletion, sources[0].Task.Status);
 			Assert.False (sources[1].Task.IsCompleted);
 			Assert.False (sources[2].Task.IsCompleted);
-			Assert.Equal (FillFunction (0), src.Buffer[src.Offset]);
-			Assert.Equal (FillFunction (1), src.Buffer[src.Offset + 1]);
-			Assert.Equal (FillFunction (2), src.Buffer[src.Offset + 2]);
-			Assert.Equal (FillFunction (54), src.Buffer[src.Offset + 3]);
-			Assert.Equal (FillFunction (55), src.Buffer[src.Offset + 4]);
-			Assert.Equal (FillFunction (56), src.Buffer[src.Offset + 5]);
+			Assert.Equal (FillFunction (0), src.BufferMemory.Span[src.Offset]);
+			Assert.Equal (FillFunction (1), src.BufferMemory.Span[src.Offset + 1]);
+			Assert.Equal (FillFunction (2), src.BufferMemory.Span[src.Offset + 2]);
+			Assert.Equal (FillFunction (54), src.BufferMemory.Span[src.Offset + 3]);
+			Assert.Equal (FillFunction (55), src.BufferMemory.Span[src.Offset + 4]);
+			Assert.Equal (FillFunction (56), src.BufferMemory.Span[src.Offset + 5]);
 			src.SkipBuffer (6);
 
 			Assert.Equal ((long)int.MaxValue, src.TryFastSkipAsync ((long)int.MaxValue, CancellationToken.None).Result);
@@ -56,9 +56,9 @@ namespace Novartment.Base.Test
 			Assert.Equal (TaskStatus.RanToCompletion, sources[0].Task.Status);
 			Assert.Equal (TaskStatus.RanToCompletion, sources[1].Task.Status);
 			Assert.Equal (TaskStatus.RanToCompletion, sources[2].Task.Status);
-			Assert.Equal (FillFunction (21), src.Buffer[src.Offset]);
-			Assert.Equal (FillFunction (22), src.Buffer[src.Offset + 1]);
-			Assert.Equal (FillFunction (23), src.Buffer[src.Offset + 2]);
+			Assert.Equal (FillFunction (21), src.BufferMemory.Span[src.Offset]);
+			Assert.Equal (FillFunction (22), src.BufferMemory.Span[src.Offset + 1]);
+			Assert.Equal (FillFunction (23), src.BufferMemory.Span[src.Offset + 2]);
 			src.SkipBuffer (3);
 			src.FillBufferAsync (CancellationToken.None).Wait ();
 			Assert.True (src.IsExhausted);

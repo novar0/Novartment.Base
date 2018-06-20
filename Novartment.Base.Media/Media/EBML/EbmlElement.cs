@@ -128,59 +128,60 @@ namespace Novartment.Base.Media
 			}
 
 			long result;
+			var sourceBuffer = _source.BufferMemory.Span;
 			switch (_size)
 			{
 				case 8:
-					result = (long)_source.Buffer[_source.Offset + 7] |
-						(long)_source.Buffer[_source.Offset + 6] << 8 |
-						(long)_source.Buffer[_source.Offset + 5] << 16 |
-						(long)_source.Buffer[_source.Offset + 4] << 24 |
-						(long)_source.Buffer[_source.Offset + 3] << 32 |
-						(long)_source.Buffer[_source.Offset + 2] << 40 |
-						(long)_source.Buffer[_source.Offset + 1] << 48 |
-						(long)_source.Buffer[_source.Offset] << 56;
+					result = (long)sourceBuffer[_source.Offset + 7] |
+						(long)sourceBuffer[_source.Offset + 6] << 8 |
+						(long)sourceBuffer[_source.Offset + 5] << 16 |
+						(long)sourceBuffer[_source.Offset + 4] << 24 |
+						(long)sourceBuffer[_source.Offset + 3] << 32 |
+						(long)sourceBuffer[_source.Offset + 2] << 40 |
+						(long)sourceBuffer[_source.Offset + 1] << 48 |
+						(long)sourceBuffer[_source.Offset] << 56;
 					break;
 				case 7:
-					result = (long)_source.Buffer[_source.Offset + 6] |
-						(long)_source.Buffer[_source.Offset + 5] << 8 |
-						(long)_source.Buffer[_source.Offset + 4] << 16 |
-						(long)_source.Buffer[_source.Offset + 3] << 24 |
-						(long)_source.Buffer[_source.Offset + 2] << 32 |
-						(long)_source.Buffer[_source.Offset + 1] << 40 |
-						(long)_source.Buffer[_source.Offset] << 48;
+					result = (long)sourceBuffer[_source.Offset + 6] |
+						(long)sourceBuffer[_source.Offset + 5] << 8 |
+						(long)sourceBuffer[_source.Offset + 4] << 16 |
+						(long)sourceBuffer[_source.Offset + 3] << 24 |
+						(long)sourceBuffer[_source.Offset + 2] << 32 |
+						(long)sourceBuffer[_source.Offset + 1] << 40 |
+						(long)sourceBuffer[_source.Offset] << 48;
 					break;
 				case 6:
-					result = (long)_source.Buffer[_source.Offset + 5] |
-						(long)_source.Buffer[_source.Offset + 4] << 8 |
-						(long)_source.Buffer[_source.Offset + 3] << 16 |
-						(long)_source.Buffer[_source.Offset + 2] << 24 |
-						(long)_source.Buffer[_source.Offset + 1] << 32 |
-						(long)_source.Buffer[_source.Offset] << 40;
+					result = (long)sourceBuffer[_source.Offset + 5] |
+						(long)sourceBuffer[_source.Offset + 4] << 8 |
+						(long)sourceBuffer[_source.Offset + 3] << 16 |
+						(long)sourceBuffer[_source.Offset + 2] << 24 |
+						(long)sourceBuffer[_source.Offset + 1] << 32 |
+						(long)sourceBuffer[_source.Offset] << 40;
 					break;
 				case 5:
-					result = (long)_source.Buffer[_source.Offset + 4] |
-						(long)_source.Buffer[_source.Offset + 3] << 8 |
-						(long)_source.Buffer[_source.Offset + 2] << 16 |
-						(long)_source.Buffer[_source.Offset + 1] << 24 |
-						(long)_source.Buffer[_source.Offset] << 32;
+					result = (long)sourceBuffer[_source.Offset + 4] |
+						(long)sourceBuffer[_source.Offset + 3] << 8 |
+						(long)sourceBuffer[_source.Offset + 2] << 16 |
+						(long)sourceBuffer[_source.Offset + 1] << 24 |
+						(long)sourceBuffer[_source.Offset] << 32;
 					break;
 				case 4:
-					result = (long)_source.Buffer[_source.Offset + 3] |
-						(long)_source.Buffer[_source.Offset + 2] << 8 |
-						(long)_source.Buffer[_source.Offset + 1] << 16 |
-						(long)_source.Buffer[_source.Offset] << 24;
+					result = (long)sourceBuffer[_source.Offset + 3] |
+						(long)sourceBuffer[_source.Offset + 2] << 8 |
+						(long)sourceBuffer[_source.Offset + 1] << 16 |
+						(long)sourceBuffer[_source.Offset] << 24;
 					break;
 				case 3:
-					result = (long)_source.Buffer[_source.Offset + 2] |
-						(long)_source.Buffer[_source.Offset + 1] << 8 |
-						(long)_source.Buffer[_source.Offset] << 16;
+					result = (long)sourceBuffer[_source.Offset + 2] |
+						(long)sourceBuffer[_source.Offset + 1] << 8 |
+						(long)sourceBuffer[_source.Offset] << 16;
 					break;
 				case 2:
-					result = (long)_source.Buffer[_source.Offset + 1] |
-						(long)_source.Buffer[_source.Offset] << 8;
+					result = (long)sourceBuffer[_source.Offset + 1] |
+						(long)sourceBuffer[_source.Offset] << 8;
 					break;
 				case 1:
-					result = (long)_source.Buffer[_source.Offset];
+					result = (long)sourceBuffer[_source.Offset];
 					break;
 				default:
 					throw new FormatException (FormattableString.Invariant ($"Ivalid size ({_size}) of data of type Int. Expected 1 to 8 bytes."));
@@ -203,59 +204,60 @@ namespace Novartment.Base.Media
 			}
 
 			ulong result;
+			var sourceBuf = _source.BufferMemory.Span;
 			switch (_size)
 			{
 				case 8:
-					result = (ulong)_source.Buffer[_source.Offset + 7] |
-						(ulong)_source.Buffer[_source.Offset + 6] << 8 |
-						(ulong)_source.Buffer[_source.Offset + 5] << 16 |
-						(ulong)_source.Buffer[_source.Offset + 4] << 24 |
-						(ulong)_source.Buffer[_source.Offset + 3] << 32 |
-						(ulong)_source.Buffer[_source.Offset + 2] << 40 |
-						(ulong)_source.Buffer[_source.Offset + 1] << 48 |
-						(ulong)_source.Buffer[_source.Offset] << 56;
+					result = (ulong)sourceBuf[_source.Offset + 7] |
+						(ulong)sourceBuf[_source.Offset + 6] << 8 |
+						(ulong)sourceBuf[_source.Offset + 5] << 16 |
+						(ulong)sourceBuf[_source.Offset + 4] << 24 |
+						(ulong)sourceBuf[_source.Offset + 3] << 32 |
+						(ulong)sourceBuf[_source.Offset + 2] << 40 |
+						(ulong)sourceBuf[_source.Offset + 1] << 48 |
+						(ulong)sourceBuf[_source.Offset] << 56;
 					break;
 				case 7:
-					result = (ulong)_source.Buffer[_source.Offset + 6] |
-						(ulong)_source.Buffer[_source.Offset + 5] << 8 |
-						(ulong)_source.Buffer[_source.Offset + 4] << 16 |
-						(ulong)_source.Buffer[_source.Offset + 3] << 24 |
-						(ulong)_source.Buffer[_source.Offset + 2] << 32 |
-						(ulong)_source.Buffer[_source.Offset + 1] << 40 |
-						(ulong)_source.Buffer[_source.Offset] << 48;
+					result = (ulong)sourceBuf[_source.Offset + 6] |
+						(ulong)sourceBuf[_source.Offset + 5] << 8 |
+						(ulong)sourceBuf[_source.Offset + 4] << 16 |
+						(ulong)sourceBuf[_source.Offset + 3] << 24 |
+						(ulong)sourceBuf[_source.Offset + 2] << 32 |
+						(ulong)sourceBuf[_source.Offset + 1] << 40 |
+						(ulong)sourceBuf[_source.Offset] << 48;
 					break;
 				case 6:
-					result = (ulong)_source.Buffer[_source.Offset + 5] |
-						(ulong)_source.Buffer[_source.Offset + 4] << 8 |
-						(ulong)_source.Buffer[_source.Offset + 3] << 16 |
-						(ulong)_source.Buffer[_source.Offset + 2] << 24 |
-						(ulong)_source.Buffer[_source.Offset + 1] << 32 |
-						(ulong)_source.Buffer[_source.Offset] << 40;
+					result = (ulong)sourceBuf[_source.Offset + 5] |
+						(ulong)sourceBuf[_source.Offset + 4] << 8 |
+						(ulong)sourceBuf[_source.Offset + 3] << 16 |
+						(ulong)sourceBuf[_source.Offset + 2] << 24 |
+						(ulong)sourceBuf[_source.Offset + 1] << 32 |
+						(ulong)sourceBuf[_source.Offset] << 40;
 					break;
 				case 5:
-					result = (ulong)_source.Buffer[_source.Offset + 4] |
-						(ulong)_source.Buffer[_source.Offset + 3] << 8 |
-						(ulong)_source.Buffer[_source.Offset + 2] << 16 |
-						(ulong)_source.Buffer[_source.Offset + 1] << 24 |
-						(ulong)_source.Buffer[_source.Offset] << 32;
+					result = (ulong)sourceBuf[_source.Offset + 4] |
+						(ulong)sourceBuf[_source.Offset + 3] << 8 |
+						(ulong)sourceBuf[_source.Offset + 2] << 16 |
+						(ulong)sourceBuf[_source.Offset + 1] << 24 |
+						(ulong)sourceBuf[_source.Offset] << 32;
 					break;
 				case 4:
-					result = (ulong)_source.Buffer[_source.Offset + 3] |
-						(ulong)_source.Buffer[_source.Offset + 2] << 8 |
-						(ulong)_source.Buffer[_source.Offset + 1] << 16 |
-						(ulong)_source.Buffer[_source.Offset] << 24;
+					result = (ulong)sourceBuf[_source.Offset + 3] |
+						(ulong)sourceBuf[_source.Offset + 2] << 8 |
+						(ulong)sourceBuf[_source.Offset + 1] << 16 |
+						(ulong)sourceBuf[_source.Offset] << 24;
 					break;
 				case 3:
-					result = (ulong)_source.Buffer[_source.Offset + 2] |
-						(ulong)_source.Buffer[_source.Offset + 1] << 8 |
-						(ulong)_source.Buffer[_source.Offset] << 16;
+					result = (ulong)sourceBuf[_source.Offset + 2] |
+						(ulong)sourceBuf[_source.Offset + 1] << 8 |
+						(ulong)sourceBuf[_source.Offset] << 16;
 					break;
 				case 2:
-					result = (ulong)_source.Buffer[_source.Offset + 1] |
-						(ulong)_source.Buffer[_source.Offset] << 8;
+					result = (ulong)sourceBuf[_source.Offset + 1] |
+						(ulong)sourceBuf[_source.Offset] << 8;
 					break;
 				case 1:
-					result = (ulong)_source.Buffer[_source.Offset];
+					result = (ulong)sourceBuf[_source.Offset];
 					break;
 				default:
 					throw new FormatException (FormattableString.Invariant ($"Ivalid size ({_size}) of data of type UInt. Expected 1 to 8 bytes."));
@@ -285,7 +287,7 @@ namespace Novartment.Base.Media
 			}
 
 			var buf = new byte[_size];
-			Array.Copy (_source.Buffer, _source.Offset, buf, 0, (int)_size);
+			_source.BufferMemory.Slice (_source.Offset, (int)_size).CopyTo (buf.AsMemory ());
 			if (BitConverter.IsLittleEndian)
 			{
 				Array.Reverse (buf);
@@ -321,10 +323,10 @@ namespace Novartment.Base.Media
 
 			if (!_allDataBuffered)
 			{
-				throw new NotSupportedException (FormattableString.Invariant ($"Text data size {_size} is too big. Supported maximum is {_source.Buffer.Length}."));
+				throw new NotSupportedException (FormattableString.Invariant ($"Text data size {_size} is too big. Supported maximum is {_source.BufferMemory.Length}."));
 			}
 
-			var result = AsciiCharSet.GetString (_source.Buffer.AsSpan (_source.Offset, (int)_size));
+			var result = AsciiCharSet.GetString (_source.BufferMemory.Span.Slice (_source.Offset, (int)_size));
 			_source.SkipBuffer ((int)_size);
 			_readed += _size;
 			return result;
@@ -343,10 +345,14 @@ namespace Novartment.Base.Media
 
 			if (!_allDataBuffered)
 			{
-				throw new NotSupportedException (FormattableString.Invariant ($"Text data size {_size} is too big. Supported maximum is {_source.Buffer.Length}."));
+				throw new NotSupportedException (FormattableString.Invariant ($"Text data size {_size} is too big. Supported maximum is {_source.BufferMemory.Length}."));
 			}
 
-			var result = Encoding.UTF8.GetString (_source.Buffer, _source.Offset, (int)_size);
+#if NETCOREAPP2_1
+			var result = Encoding.UTF8.GetString (_source.BufferMemory.Span.Slice (_source.Offset, (int)_size));
+#else
+			var result = Encoding.UTF8.GetString (_source.BufferMemory.ToArray (), _source.Offset, (int)_size);
+#endif
 			_source.SkipBuffer ((int)_size);
 			_readed += _size;
 			return result;
@@ -376,27 +382,27 @@ namespace Novartment.Base.Media
 		{
 			await source.EnsureBufferAsync (1, cancellationToken).ConfigureAwait (false);
 
-			if (source.Buffer[source.Offset] == 0)
+			if (source.BufferMemory.Span[source.Offset] == 0)
 			{
 				throw new NotSupportedException ("VInt values more then 8 bytes are not suppoted.");
 			}
 
-			var extraBytes = ((source.Buffer[source.Offset] & 0xf0) != 0) ?
-				_ExtraBytesSize[source.Buffer[source.Offset] >> 4] :
-				(4 + _ExtraBytesSize[source.Buffer[source.Offset]]);
+			var extraBytes = ((source.BufferMemory.Span[source.Offset] & 0xf0) != 0) ?
+				_ExtraBytesSize[source.BufferMemory.Span[source.Offset] >> 4] :
+				(4 + _ExtraBytesSize[source.BufferMemory.Span[source.Offset]]);
 
 			var size = extraBytes + 1;
-			if (size > source.Buffer.Length)
+			if (size > source.BufferMemory.Length)
 			{
 				throw new FormatException ();
 			}
 
 			await source.EnsureBufferAsync (size, cancellationToken).ConfigureAwait (false);
 
-			ulong encodedValue = source.Buffer[source.Offset];
+			ulong encodedValue = source.BufferMemory.Span[source.Offset];
 			for (var i = 0; i < extraBytes; i++)
 			{
-				encodedValue = encodedValue << 8 | source.Buffer[source.Offset + i + 1];
+				encodedValue = encodedValue << 8 | source.BufferMemory.Span[source.Offset + i + 1];
 			}
 
 			source.SkipBuffer (size);
@@ -408,27 +414,27 @@ namespace Novartment.Base.Media
 		{
 			await source.EnsureBufferAsync (1, cancellationToken).ConfigureAwait (false);
 
-			if (source.Buffer[source.Offset] == 0)
+			if (source.BufferMemory.Span[source.Offset] == 0)
 			{
 				throw new NotSupportedException ("Size of VInt more than 8 bytes is not supported.");
 			}
 
-			var extraBytes = ((source.Buffer[source.Offset] & 0xf0) != 0) ?
-				_ExtraBytesSize[source.Buffer[source.Offset] >> 4] :
-				(4 + _ExtraBytesSize[source.Buffer[source.Offset]]);
+			var extraBytes = ((source.BufferMemory.Span[source.Offset] & 0xf0) != 0) ?
+				_ExtraBytesSize[source.BufferMemory.Span[source.Offset] >> 4] :
+				(4 + _ExtraBytesSize[source.BufferMemory.Span[source.Offset]]);
 
 			var size = extraBytes + 1;
-			if (size > source.Buffer.Length)
+			if (size > source.BufferMemory.Length)
 			{
 				throw new FormatException ();
 			}
 
 			await source.EnsureBufferAsync (size, cancellationToken).ConfigureAwait (false);
 
-			ulong encodedValue = source.Buffer[source.Offset];
+			ulong encodedValue = source.BufferMemory.Span[source.Offset];
 			for (var i = 0; i < extraBytes; i++)
 			{
-				encodedValue = encodedValue << 8 | source.Buffer[source.Offset + i + 1];
+				encodedValue = encodedValue << 8 | source.BufferMemory.Span[source.Offset + i + 1];
 			}
 
 			source.SkipBuffer (size);

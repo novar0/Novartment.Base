@@ -9,6 +9,7 @@ namespace Novartment.Base.BinaryStreaming
 	/// <content>
 	/// Класс-обёртка StreamBufferedSource для представления Stream в виде IFastSkipBufferedSource.
 	/// </content>
+	// TODO: переделать чтобы _buffer был Memory<byte>
 	public static partial class StreamExtensions
 	{
 		private class StreamBufferedSource :
@@ -26,7 +27,7 @@ namespace Novartment.Base.BinaryStreaming
 				_buffer = buffer;
 			}
 
-			public byte[] Buffer => _buffer;
+			public ReadOnlyMemory<byte> BufferMemory => _buffer;
 
 			public int Offset => _offset;
 

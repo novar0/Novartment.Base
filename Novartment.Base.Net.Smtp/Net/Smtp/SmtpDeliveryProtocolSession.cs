@@ -567,7 +567,7 @@ namespace Novartment.Base.Net.Smtp
 				// порция не последняя, поэтому создаём поставщика порций
 				_chunkingAgency = new JobAgency<IBufferedSource, int> ();
 				_chunksBufferedSource = new AggregatingBufferedSource (
-					new byte[bdatCommand.Source.Buffer.Length],
+					new byte[bdatCommand.Source.BufferMemory.Length],
 					_chunkingAgency);
 				try
 				{

@@ -192,7 +192,7 @@ namespace Novartment.Base.BinaryStreaming
 			{
 				// копируем то, что уже есть в буфере
 				totalSize = Math.Min (buffer.Length, source.Count);
-				new Span<byte> (source.Buffer, source.Offset, totalSize).CopyTo (buffer.Span);
+				source.BufferMemory.Slice (source.Offset, totalSize).CopyTo (buffer);
 				source.SkipBuffer (totalSize);
 				buffer = buffer.Slice (totalSize);
 			}
@@ -217,7 +217,7 @@ namespace Novartment.Base.BinaryStreaming
 					else
 					{
 						var size = Math.Min (source.Count, buffer.Length);
-						new Span<byte> (source.Buffer, source.Offset, size).CopyTo (buffer.Span);
+						source.BufferMemory.Slice (source.Offset, size).CopyTo (buffer);
 						source.SkipBuffer (size);
 						totalSize += size;
 
@@ -258,9 +258,10 @@ namespace Novartment.Base.BinaryStreaming
 			// проверяем то, что уже есть в буфере
 			var offset = source.Offset;
 			var end = offset + source.Count;
+			var sourceBuf = source.BufferMemory.Span;
 			while (offset < end)
 			{
-				if (source.Buffer[offset] == value)
+				if (sourceBuf[offset] == value)
 				{
 					return Task.FromResult (offset);
 				}
@@ -269,7 +270,7 @@ namespace Novartment.Base.BinaryStreaming
 			}
 
 			if (source.IsExhausted || // источник исчерпался
-				((source.Offset < 1) && (offset >= source.Buffer.Length)))
+				((source.Offset < 1) && (offset >= source.BufferMemory.Length)))
 			{
 				// буфер полон, запрашивать данные больше нет смысла
 				return Task.FromResult (-1);
@@ -298,7 +299,7 @@ namespace Novartment.Base.BinaryStreaming
 
 					while (offset < end)
 					{
-						if (source.Buffer[offset] == value)
+						if (source.BufferMemory.Span[offset] == value)
 						{
 							return offset;
 						}
@@ -326,15 +327,16 @@ namespace Novartment.Base.BinaryStreaming
 			// проверяем то, что уже есть в буфере
 			var offset = source.Offset;
 			var end = offset + source.Count;
+			var sourceBuffer = source.BufferMemory.Span;
 			while (offset < end)
 			{
 				outCount = offset - source.Offset;
-				var b = source.Buffer[offset];
+				var b = sourceBuffer[offset];
 				if (b == marker)
 				{
 					if (outCount > 0)
 					{
-						new Span<byte> (source.Buffer, source.Offset, outCount).CopyTo (buffer.Span);
+						source.BufferMemory.Slice (source.Offset, outCount).CopyTo (buffer);
 						source.SkipBuffer (outCount);
 					}
 
@@ -352,7 +354,7 @@ namespace Novartment.Base.BinaryStreaming
 			outCount = source.Count;
 			if (outCount > 0)
 			{
-				new Span<byte> (source.Buffer, source.Offset, outCount).CopyTo (buffer.Span);
+				source.BufferMemory.Slice (source.Offset, outCount).CopyTo (buffer);
 				source.SkipBuffer (outCount);
 			}
 
@@ -380,12 +382,12 @@ namespace Novartment.Base.BinaryStreaming
 					while (offset < end)
 					{
 						outCount = offset - source.Offset;
-						var b = source.Buffer[offset];
+						var b = source.BufferMemory.Span[offset];
 						if (b == marker)
 						{
 							if (outCount > 0)
 							{
-								new Span<byte> (source.Buffer, source.Offset, outCount).CopyTo (buffer.Span);
+								source.BufferMemory.Slice (source.Offset, outCount).CopyTo (buffer);
 								source.SkipBuffer (outCount);
 							}
 
@@ -403,7 +405,7 @@ namespace Novartment.Base.BinaryStreaming
 					outCount = source.Count;
 					if (outCount > 0)
 					{
-						new Span<byte> (source.Buffer, source.Offset, outCount).CopyTo (buffer.Span);
+						source.BufferMemory.Slice (source.Offset, outCount).CopyTo (buffer);
 						source.SkipBuffer (outCount);
 						buffer = buffer.Slice (outCount);
 						totalOutCount += outCount;
@@ -436,10 +438,11 @@ namespace Novartment.Base.BinaryStreaming
 			// проверяем то, что уже есть в буфере
 			var offset = source.Offset;
 			var end = offset + source.Count;
+			var sourceBuf = source.BufferMemory.Span;
 			while (offset < end)
 			{
 				outCount = offset - source.Offset;
-				var b1 = source.Buffer[offset];
+				var b1 = sourceBuf[offset];
 				if (b1 == marker1)
 				{
 					if ((offset == (end - 1)) && !source.IsExhausted)
@@ -449,12 +452,12 @@ namespace Novartment.Base.BinaryStreaming
 					}
 					else
 					{
-						var b2 = ((offset + 1) < end) ? source.Buffer[offset + 1] : notMarker;
+						var b2 = ((offset + 1) < end) ? sourceBuf[offset + 1] : notMarker;
 						if (b2 == marker2)
 						{
 							if (outCount > 0)
 							{
-								new Span<byte> (source.Buffer, source.Offset, outCount).CopyTo (buffer.Span);
+								source.BufferMemory.Slice (source.Offset, outCount).CopyTo (buffer);
 								source.SkipBuffer (outCount);
 							}
 
@@ -474,7 +477,7 @@ namespace Novartment.Base.BinaryStreaming
 			outCount = offset - source.Offset;
 			if (outCount > 0)
 			{
-				new Span<byte> (source.Buffer, source.Offset, outCount).CopyTo (buffer.Span);
+				source.BufferMemory.Slice (source.Offset, outCount).CopyTo (buffer);
 				source.SkipBuffer (outCount);
 			}
 
@@ -502,7 +505,7 @@ namespace Novartment.Base.BinaryStreaming
 					while (offset < end)
 					{
 						outCount = offset - source.Offset;
-						var b1 = source.Buffer[offset];
+						var b1 = source.BufferMemory.Span[offset];
 						if (b1 == marker1)
 						{
 							if ((offset == (end - 1)) && !source.IsExhausted)
@@ -512,12 +515,12 @@ namespace Novartment.Base.BinaryStreaming
 							}
 							else
 							{
-								var b2 = ((offset + 1) < end) ? source.Buffer[offset + 1] : notMarker;
+								var b2 = ((offset + 1) < end) ? source.BufferMemory.Span[offset + 1] : notMarker;
 								if (b2 == marker2)
 								{
 									if (outCount > 0)
 									{
-										new Span<byte> (source.Buffer, source.Offset, outCount).CopyTo (buffer.Span);
+										source.BufferMemory.Slice (source.Offset, outCount).CopyTo (buffer);
 										source.SkipBuffer (outCount);
 									}
 
@@ -537,7 +540,7 @@ namespace Novartment.Base.BinaryStreaming
 					outCount = offset - source.Offset;
 					if (outCount > 0)
 					{
-						new Span<byte> (source.Buffer, source.Offset, outCount).CopyTo (buffer.Span);
+						source.BufferMemory.Slice (source.Offset, outCount).CopyTo (buffer);
 						source.SkipBuffer (outCount);
 						buffer = buffer.Slice (outCount);
 						totalOutCount += outCount;
@@ -557,7 +560,7 @@ namespace Novartment.Base.BinaryStreaming
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
 		/// <returns>Задача, результатом которой является массив байтов, считанный из источника.</returns>
 		/// <remarks>Возвращаемый массив является копией и не связан массивом-буфером источника.</remarks>
-		public static Task<byte[]> ReadAllBytesAsync (this IBufferedSource source, CancellationToken cancellationToken)
+		public static Task<ReadOnlyMemory<byte>> ReadAllBytesAsync (this IBufferedSource source, CancellationToken cancellationToken)
 #pragma warning restore CA1801 // Review unused parameters
 		{
 			if (source == null)
@@ -573,21 +576,21 @@ namespace Novartment.Base.BinaryStreaming
 				var copy = new byte[sizeExhausted];
 				if (sizeExhausted > 0)
 				{
-					Array.Copy (source.Buffer, source.Offset, copy, 0, sizeExhausted);
+					source.BufferMemory.Slice (source.Offset, sizeExhausted).CopyTo (copy);
 					source.SkipBuffer (sizeExhausted);
 				}
 
-				return Task.FromResult (copy);
+				return Task.FromResult<ReadOnlyMemory<byte>> (copy);
 			}
 
 			return ReadAllBytesAsyncStateMachine ();
 
-			async Task<byte[]> ReadAllBytesAsyncStateMachine ()
+			async Task<ReadOnlyMemory<byte>> ReadAllBytesAsyncStateMachine ()
 			{
 				await source.FillBufferAsync (cancellationToken).ConfigureAwait (false);
 				var size = source.Count;
 				int totalSize = 0;
-				var memStream = new MemoryStream (size);
+				var memStream = new ArrayBinaryDestination (size);
 				while (size > 0)
 				{
 					cancellationToken.ThrowIfCancellationRequested ();
@@ -597,14 +600,14 @@ namespace Novartment.Base.BinaryStreaming
 							$"Too big size of data ({(long)totalSize + (long)size}). Supported maximum is {int.MaxValue}."));
 					}
 
-					memStream.Write (source.Buffer, source.Offset, size);
+					memStream.Write (source.BufferMemory.Span.Slice (source.Offset, size));
 					totalSize += size;
 					source.SkipBuffer (size);
 					await source.FillBufferAsync (cancellationToken).ConfigureAwait (false);
 					size = source.Count;
 				}
 
-				return memStream.ToArray ();
+				return memStream.Buffer;
 			}
 		}
 
@@ -629,14 +632,20 @@ namespace Novartment.Base.BinaryStreaming
 
 			Contract.EndContractBlock ();
 
-			// обязательно читать полностью всё потому что неизвестно сколько байт занимают отдельные символы
+			// нельзя декодировать частями, потому что неизвестно сколько байт занимают отдельные символы
 			var task = ReadAllBytesAsync (source, cancellationToken);
 			return ReadAllTextAsyncFinalizer ();
 
 			async Task<string> ReadAllTextAsyncFinalizer ()
 			{
 				var buf = await task.ConfigureAwait (false);
-				return encoding.GetString (buf, 0, buf.Length);
+#if NETCOREAPP2_1
+				return encoding.GetString (buf.Span);
+#else
+				var tempBuf = new byte[buf.Length];
+				buf.CopyTo (tempBuf);
+				return encoding.GetString (tempBuf);
+#endif
 			}
 		}
 
@@ -681,7 +690,7 @@ namespace Novartment.Base.BinaryStreaming
 					}
 
 					cancellationToken.ThrowIfCancellationRequested ();
-					await destination.WriteAsync (source.Buffer, source.Offset, available, cancellationToken).ConfigureAwait (false);
+					await destination.WriteAsync (source.BufferMemory.Slice (source.Offset, available), cancellationToken).ConfigureAwait (false);
 					resultSize += available;
 					source.SkipBuffer (available);
 				}

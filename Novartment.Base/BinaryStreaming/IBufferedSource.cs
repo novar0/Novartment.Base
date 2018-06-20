@@ -1,4 +1,5 @@
-﻿using System.Diagnostics.Contracts;
+﻿using System;
+using System.Diagnostics.Contracts;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -15,16 +16,16 @@ namespace Novartment.Base.BinaryStreaming
 		/// Текущая начальная позиция и количество доступных данных содержатся в свойствах Offset и Count,
 		/// при этом сам буфер остаётся неизменным всё время жизни источника.
 		/// </summary>
-		byte[] Buffer { get; }
+		ReadOnlyMemory<byte> BufferMemory { get; }
 
 		/// <summary>
-		/// Получает начальную позицию данных, доступных в Buffer.
-		/// Количество данных, доступных в Buffer, содержится в Count.
+		/// Получает начальную позицию данных, доступных в BufferMemory.
+		/// Количество данных, доступных в BufferMemory, содержится в Count.
 		/// </summary>
 		int Offset { get; }
 
 		/// <summary>
-		/// Получает количество данных, доступных в Buffer.
+		/// Получает количество данных, доступных в BufferMemory.
 		/// Начальная позиция доступных данных содержится в Offset.
 		/// </summary>
 		int Count { get; }
@@ -87,7 +88,7 @@ namespace Novartment.Base.BinaryStreaming
 		{
 		}
 
-		public byte[] Buffer => null;
+		public ReadOnlyMemory<byte> BufferMemory => default;
 
 		public int Offset => 0;
 
@@ -97,7 +98,7 @@ namespace Novartment.Base.BinaryStreaming
 
 		public Task FillBufferAsync (CancellationToken cancellationToken)
 		{
-			Contract.Ensures (this.Buffer == Contract.OldValue (this.Buffer));
+			Contract.Ensures (this.BufferMemory.Equals (Contract.OldValue (this.BufferMemory)));
 			Contract.Ensures ((this.Count > 0) || this.IsExhausted);
 			Contract.EndContractBlock ();
 			return Task.CompletedTask;
@@ -106,8 +107,9 @@ namespace Novartment.Base.BinaryStreaming
 		public Task EnsureBufferAsync (int size, CancellationToken cancellationToken)
 		{
 			Contract.Requires (size >= 0);
-			Contract.Requires (size <= Buffer.Length);
-			Contract.Ensures (this.Buffer == Contract.OldValue (this.Buffer));
+			Contract.Requires (size <= BufferMemory.Length);
+
+			Contract.Ensures (this.BufferMemory.Equals (Contract.OldValue (this.BufferMemory)));
 			Contract.EndContractBlock ();
 			return Task.CompletedTask;
 		}
@@ -115,7 +117,8 @@ namespace Novartment.Base.BinaryStreaming
 		public void SkipBuffer (int size)
 		{
 			Contract.Requires ((size >= 0) && (size <= this.Count));
-			Contract.Ensures (this.Buffer == Contract.OldValue (this.Buffer));
+
+			Contract.Ensures (this.BufferMemory.Equals (Contract.OldValue (this.BufferMemory)));
 			Contract.Ensures ((this.Offset + this.Count) == (Contract.OldValue (this.Offset) + Contract.OldValue (this.Count)));
 			Contract.Ensures (this.IsExhausted == Contract.OldValue (this.IsExhausted));
 			Contract.EndContractBlock ();

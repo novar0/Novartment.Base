@@ -162,7 +162,7 @@ namespace Novartment.Base.Net.Mime.Test
 			Assert.Equal (634776000130000000L, entity.ReadDate.Value.Ticks);
 			Assert.Equal (16, entity.MD5.Length);
 			var md5 = new byte[16];
-			entity.MD5.CopyTo (md5, 0);
+			entity.MD5.CopyTo (md5.AsMemory ());
 			Assert.Equal (0x43, md5[0]);
 			Assert.Equal (0x68, md5[1]);
 			Assert.Equal (0x65, md5[2]);
@@ -242,7 +242,7 @@ namespace Novartment.Base.Net.Mime.Test
 
 			var bytes = new BinaryDestinationMock (8192);
 			entity.SaveAsync (bytes, CancellationToken.None).Wait ();
-			var rawData = Encoding.ASCII.GetString (bytes.Buffer, 0, bytes.Count);
+			var rawData = Encoding.ASCII.GetString (bytes.Buffer.Slice (0, bytes.Count));
 
 			var elements = SplitToElements (rawData);
 			Assert.Equal (14, elements.Count);

@@ -27,7 +27,7 @@ namespace Novartment.Base.Media
 				throw new ArgumentNullException (nameof (source));
 			}
 
-			if (source.Buffer.Length < 2)
+			if (source.BufferMemory.Length < 2)
 			{
 				throw new ArgumentOutOfRangeException (nameof (source));
 			}

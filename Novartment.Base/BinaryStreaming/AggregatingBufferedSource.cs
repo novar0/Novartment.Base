@@ -13,7 +13,7 @@ namespace Novartment.Base.BinaryStreaming
 	public class AggregatingBufferedSource :
 		IFastSkipBufferedSource
 	{
-		private readonly byte[] _buffer;
+		private readonly Memory<byte> _buffer;
 		private readonly IJobProvider<IBufferedSource, int> _sourceProvider;
 		private int _offset = 0;
 		private int _count = 0;
@@ -26,7 +26,7 @@ namespace Novartment.Base.BinaryStreaming
 		/// </summary>
 		/// <param name="buffer">Массив байтов, который будет буфером источника.</param>
 		/// <param name="sources">Перечислитель, поставляющий источники данных.</param>
-		public AggregatingBufferedSource(byte[] buffer, IEnumerable<IBufferedSource> sources)
+		public AggregatingBufferedSource(Memory<byte> buffer, IEnumerable<IBufferedSource> sources)
 			: this(buffer, new EnumerableSourceProvider(sources))
 		{
 		}
@@ -39,13 +39,8 @@ namespace Novartment.Base.BinaryStreaming
 		/// <param name="sourceProvider">
 		/// Поставщик источников.
 		/// Источник-маркер будет означать окончание поставки.</param>
-		public AggregatingBufferedSource(byte[] buffer, IJobProvider<IBufferedSource, int> sourceProvider)
+		public AggregatingBufferedSource(Memory<byte> buffer, IJobProvider<IBufferedSource, int> sourceProvider)
 		{
-			if (buffer == null)
-			{
-				throw new ArgumentNullException(nameof(buffer));
-			}
-
 			if (sourceProvider == null)
 			{
 				throw new ArgumentNullException(nameof(sourceProvider));
@@ -63,7 +58,7 @@ namespace Novartment.Base.BinaryStreaming
 		/// Текущая начальная позиция и количество доступных данных содержатся в свойствах Offset и Count,
 		/// при этом сам буфер остаётся неизменным всё время жизни источника.
 		/// </summary>
-		public byte[] Buffer => _buffer;
+		public ReadOnlyMemory<byte> BufferMemory => _buffer;
 
 		/// <summary>
 		/// Получает начальную позицию данных, доступных в Buffer.
@@ -126,7 +121,7 @@ namespace Novartment.Base.BinaryStreaming
 		/// <returns>Задача, представляющая операцию.</returns>
 		public Task EnsureBufferAsync (int size, CancellationToken cancellationToken)
 		{
-			if ((size < 0) || (size > this.Buffer.Length))
+			if ((size < 0) || (size > this.BufferMemory.Length))
 			{
 				throw new ArgumentOutOfRangeException (nameof (size));
 			}
@@ -279,7 +274,7 @@ namespace Novartment.Base.BinaryStreaming
 			var size = Math.Min (_buffer.Length - _count, _currentSourceJob.Item.Count);
 			if (size > 0)
 			{
-				Array.Copy (_currentSourceJob.Item.Buffer, _currentSourceJob.Item.Offset, _buffer, _offset + _count, size);
+				_currentSourceJob.Item.BufferMemory.Slice (_currentSourceJob.Item.Offset, size).CopyTo (_buffer.Slice (_offset + _count));
 				_currentSourceJob.Item.SkipBuffer (size);
 				_count += size;
 				if (_currentSourceJob.Item.IsExhausted && (_currentSourceJob.Item.Count < 1))
@@ -301,7 +296,7 @@ namespace Novartment.Base.BinaryStreaming
 			{
 				if (_count > 0)
 				{
-					Array.Copy (_buffer, _offset, _buffer, 0, _count);
+					_buffer.Slice (_offset, _count).CopyTo (_buffer);
 				}
 
 				_offset = 0;

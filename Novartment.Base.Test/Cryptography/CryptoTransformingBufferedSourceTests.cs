@@ -67,15 +67,15 @@ namespace Novartment.Base.Test
 
 			Skip (transform, totalSkip);
 			transform.EnsureBufferAsync (3, CancellationToken.None).Wait ();
-			Assert.Equal ((byte)~FillFunction (MapTransformIndexBackToOriginal (totalSkip, mock)), transform.Buffer[transform.Offset]);
-			Assert.Equal ((byte)~FillFunction (MapTransformIndexBackToOriginal (totalSkip + 1, mock)), transform.Buffer[transform.Offset + 1]);
-			Assert.Equal ((byte)~FillFunction (MapTransformIndexBackToOriginal (totalSkip + 2, mock)), transform.Buffer[transform.Offset + 2]);
+			Assert.Equal ((byte)~FillFunction (MapTransformIndexBackToOriginal (totalSkip, mock)), transform.BufferMemory.Span[transform.Offset]);
+			Assert.Equal ((byte)~FillFunction (MapTransformIndexBackToOriginal (totalSkip + 1, mock)), transform.BufferMemory.Span[transform.Offset + 1]);
+			Assert.Equal ((byte)~FillFunction (MapTransformIndexBackToOriginal (totalSkip + 2, mock)), transform.BufferMemory.Span[transform.Offset + 2]);
 			transform.EnsureBufferAsync (bufferSkip, CancellationToken.None).Wait ();
 			transform.SkipBuffer (bufferSkip);
 			transform.EnsureBufferAsync (3, CancellationToken.None).Wait ();
-			Assert.Equal ((byte)~FillFunction (MapTransformIndexBackToOriginal (totalSkip + bufferSkip, mock)), transform.Buffer[transform.Offset]);
-			Assert.Equal ((byte)~FillFunction (MapTransformIndexBackToOriginal (totalSkip + bufferSkip + 1, mock)), transform.Buffer[transform.Offset + 1]);
-			Assert.Equal ((byte)~FillFunction (MapTransformIndexBackToOriginal (totalSkip + bufferSkip + 2, mock)), transform.Buffer[transform.Offset + 2]);
+			Assert.Equal ((byte)~FillFunction (MapTransformIndexBackToOriginal (totalSkip + bufferSkip, mock)), transform.BufferMemory.Span[transform.Offset]);
+			Assert.Equal ((byte)~FillFunction (MapTransformIndexBackToOriginal (totalSkip + bufferSkip + 1, mock)), transform.BufferMemory.Span[transform.Offset + 1]);
+			Assert.Equal ((byte)~FillFunction (MapTransformIndexBackToOriginal (totalSkip + bufferSkip + 2, mock)), transform.BufferMemory.Span[transform.Offset + 2]);
 		}
 
 		[Theory]
@@ -149,7 +149,7 @@ namespace Novartment.Base.Test
 					break;
 				}
 
-				Array.Copy (transform.Buffer, transform.Offset, result, len, transform.Count);
+				transform.BufferMemory.Slice (transform.Offset, transform.Count).CopyTo (result.AsMemory (len));
 				len += transform.Count;
 				transform.SkipBuffer (transform.Count);
 			}
@@ -176,7 +176,7 @@ namespace Novartment.Base.Test
 			}
 		}
 
-		private static long MapTransformIndexBackToOriginal (long resultIndex, ICryptoTransform transform)
+		private static long MapTransformIndexBackToOriginal (long resultIndex, ISpanCryptoTransform transform)
 		{
 			var blockNumber = resultIndex / (long)transform.OutputBlockSize;
 			var blockOffset = (resultIndex % (long)transform.OutputBlockSize) % (long)transform.InputBlockSize;

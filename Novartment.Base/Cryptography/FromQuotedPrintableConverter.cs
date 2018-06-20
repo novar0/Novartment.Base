@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Diagnostics.Contracts;
-using System.Security.Cryptography;
 using Novartment.Base.Text;
 
 namespace Novartment.Base
@@ -9,7 +7,7 @@ namespace Novartment.Base
 	/// Трансформация для раскодирования из "Quoted-Printable" согласно RFC 2045 часть 6.7.
 	/// </summary>
 	public sealed class FromQuotedPrintableConverter :
-		ICryptoTransform
+		ISpanCryptoTransform
 	{
 		private readonly byte[] _buffer = new byte[3];
 		private int _bufferOffset = 0;
@@ -45,39 +43,13 @@ namespace Novartment.Base
 		/// Преобразует заданную область входного массива байтов и копирует результат в заданную область выходного массива байтов.
 		/// </summary>
 		/// <param name="inputBuffer">Входные данные, для которых вычисляется преобразование.</param>
-		/// <param name="inputOffset">Смещение во входном массиве байтов, начиная с которого следует использовать данные.</param>
-		/// <param name="inputCount">Число байтов во входном массиве для использования в качестве данных.</param>
 		/// <param name="outputBuffer">Выходной массив, в который записывается результат преобразования.</param>
-		/// <param name="outputOffset">Смещение в выходном массиве байтов, начиная с которого следует записывать данные.</param>
 		/// <returns>Число записанных байтов.</returns>
-		public int TransformBlock (byte[] inputBuffer, int inputOffset, int inputCount, byte[] outputBuffer, int outputOffset)
+		public int TransformBlock (ReadOnlySpan<byte> inputBuffer, Span<byte> outputBuffer)
 		{
-			if (inputBuffer == null)
-			{
-				throw new ArgumentNullException (nameof (inputBuffer));
-			}
-
-			if ((inputOffset < 0) || (inputOffset > inputBuffer.Length) || ((inputOffset == inputBuffer.Length) && (inputCount > 0)))
-			{
-				throw new ArgumentOutOfRangeException (nameof (inputOffset));
-			}
-
-			if ((inputCount < 0) || ((inputOffset + inputCount) > inputBuffer.Length))
-			{
-				throw new ArgumentOutOfRangeException (nameof (inputCount));
-			}
-
-			if (outputBuffer == null)
-			{
-				throw new ArgumentNullException (nameof (outputBuffer));
-			}
-
-			if ((outputOffset < 0) || (outputOffset > outputBuffer.Length) || ((outputOffset == outputBuffer.Length) && (inputCount > 0)))
-			{
-				throw new ArgumentOutOfRangeException (nameof (outputOffset));
-			}
-
-			Contract.EndContractBlock ();
+			var inputOffset = 0;
+			var inputCount = inputBuffer.Length;
+			var outputOffset = 0;
 			var ret = 0;
 
 			while (inputCount-- > 0)
@@ -145,38 +117,19 @@ namespace Novartment.Base
 		/// Преобразует заданную область заданного массива байтов.
 		/// </summary>
 		/// <param name="inputBuffer">Входные данные, для которых вычисляется преобразование.</param>
-		/// <param name="inputOffset">Смещение в массиве байтов, начиная с которого следует использовать данные.</param>
-		/// <param name="inputCount">Число байтов в массиве для использования в качестве данных.</param>
 		/// <returns>Вычисленное преобразование.</returns>
-		public byte[] TransformFinalBlock (byte[] inputBuffer, int inputOffset, int inputCount)
+		public ReadOnlyMemory<byte> TransformFinalBlock (ReadOnlySpan<byte> inputBuffer)
 		{
-			if (inputBuffer == null)
+			if (inputBuffer.Length < 1)
 			{
-				throw new ArgumentNullException (nameof (inputBuffer));
+				_bufferOffset = 0;
+				return default;
 			}
 
-			if ((inputOffset < 0) || (inputOffset > inputBuffer.Length) || ((inputOffset == inputBuffer.Length) && (inputCount > 0)))
-			{
-				throw new ArgumentOutOfRangeException (nameof (inputOffset));
-			}
-
-			if ((inputCount < 0) || ((inputOffset + inputCount) > inputBuffer.Length))
-			{
-				throw new ArgumentOutOfRangeException (nameof (inputCount));
-			}
-
-			Contract.EndContractBlock ();
-
-			var outputBuffer = new byte[inputCount];
-			if (inputCount > 0)
-			{
-				var len = TransformBlock (inputBuffer, inputOffset, inputCount, outputBuffer, 0);
-				Array.Resize (ref outputBuffer, len);
-			}
-
+			var outputBuffer = new byte[inputBuffer.Length];
+			var len = TransformBlock (inputBuffer, outputBuffer);
 			_bufferOffset = 0;
-
-			return outputBuffer;
+			return outputBuffer.AsMemory (0, len);
 		}
 
 		/// <summary>

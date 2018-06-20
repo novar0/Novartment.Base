@@ -141,10 +141,8 @@ namespace Novartment.Base.Net.Mime
 
 			async Task SaveAsyncStateMachine ()
 			{
-				await HeaderEncoder.SaveHeaderAsync (header, destination, cancellationToken)
-					.ConfigureAwait (false);
-				await destination.WriteAsync (HeaderDecoder.CarriageReturnLinefeed, 0, HeaderDecoder.CarriageReturnLinefeed.Length, cancellationToken)
-					.ConfigureAwait (false);
+				await HeaderEncoder.SaveHeaderAsync (header, destination, cancellationToken).ConfigureAwait (false);
+				await destination.WriteAsync (HeaderDecoder.CarriageReturnLinefeed, cancellationToken).ConfigureAwait (false);
 			}
 		}
 

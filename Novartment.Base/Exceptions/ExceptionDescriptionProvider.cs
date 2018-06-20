@@ -52,12 +52,12 @@ namespace Novartment.Base
 
 			if (exception is AggregateException aggregateException && (aggregateException.InnerExceptions != null))
 			{
-				innerExcpts = aggregateException.InnerExceptions.AsReadOnlyList ();
+				innerExcpts = aggregateException.InnerExceptions;
 			}
 
 			if (exception is ReflectionTypeLoadException reflectionTypeLoadException && (reflectionTypeLoadException.LoaderExceptions != null))
 			{
-				innerExcpts = reflectionTypeLoadException.LoaderExceptions.AsReadOnlyList ();
+				innerExcpts = reflectionTypeLoadException.LoaderExceptions;
 			}
 
 			if ((innerExcpts == null) && (exception.InnerException != null))
@@ -237,7 +237,7 @@ namespace Novartment.Base
 			return CreateDescription (exception)
 				.EnumerateHierarchy (false)
 				.Select (item => item.ToString (true, tracePatternToHide))
-				.ToArray ().AsReadOnlyList ();
+				.ToArray ();
 		}
 
 		/// <summary>

@@ -32,7 +32,7 @@ namespace Novartment.Base.Net
 					.Select (addressInfo => addressInfo.Address)
 					.Where (item => item.AddressFamily == family)
 					.Where (IsValidHostAddress))
-					.ToArray ().AsReadOnlyList ();
+					.ToArray ();
 		}
 
 		/// <summary>

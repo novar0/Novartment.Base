@@ -304,7 +304,7 @@ namespace Novartment.Base.Net.Mime.Test
 			using (var prov = MD5.Create ())
 #pragma warning restore CA5351 // Do not use insecure cryptographic algorithm MD5.
 			{
-				hash = prov.ComputeHash (data);
+				hash = prov.ComputeHash (data.ToArray ());
 			}
 
 			Assert.Equal<byte> (
@@ -445,7 +445,7 @@ namespace Novartment.Base.Net.Mime.Test
 
 			var bytes = new BinaryDestinationMock (8192);
 			msg.SaveAsync (bytes, CancellationToken.None).Wait ();
-			var rawData = Encoding.ASCII.GetString (bytes.Buffer, 0, bytes.Count);
+			var rawData = Encoding.ASCII.GetString (bytes.Buffer.Slice (0, bytes.Count));
 
 			var elements = SplitToElements (rawData);
 			var headers = elements
@@ -525,7 +525,7 @@ namespace Novartment.Base.Net.Mime.Test
 
 			var bytes = new BinaryDestinationMock (8192);
 			msg.SaveAsync (bytes, CancellationToken.None).Wait ();
-			var rawData = Encoding.ASCII.GetString (bytes.Buffer, 0, bytes.Count);
+			var rawData = Encoding.ASCII.GetString (bytes.Buffer.Slice (0, bytes.Count));
 
 			Assert.IsType<CompositeEntityBody> (msg.Body);
 			var sampleBoundary = ((CompositeEntityBody)msg.Body).Boundary;

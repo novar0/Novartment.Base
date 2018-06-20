@@ -19,20 +19,11 @@ namespace Novartment.Base.Net.Test
 		internal TcpConnectionMock (
 			IPHostEndPoint localEndpoint,
 			IPHostEndPoint remoteEndpoint,
-			byte[] inData)
-			: this (localEndpoint, remoteEndpoint, inData, inData.Length)
-		{
-		}
-
-		internal TcpConnectionMock (
-			IPHostEndPoint localEndpoint,
-			IPHostEndPoint remoteEndpoint,
-			byte[] inData,
-			int count)
+			ReadOnlyMemory<byte> inData)
 		{
 			_localEndpoint = localEndpoint;
 			_remoteEndpoint = remoteEndpoint;
-			_inData = new ArrayBufferedSource (inData, 0, count);
+			_inData = new ArrayBufferedSource (inData);
 		}
 
 		internal TcpConnectionMock (
