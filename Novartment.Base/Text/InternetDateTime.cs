@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Diagnostics.Contracts;
 using System.Globalization;
-using Novartment.Base.Text.CharSpanExtensions;
 
 namespace Novartment.Base.Text
 {
@@ -32,11 +31,11 @@ namespace Novartment.Base.Text
 		/// <summary>
 		/// Конвертирует RFC 2822 строковое представление времени в объект типа DateTimeOffset.
 		/// </summary>
-		/// <param name="value">
+		/// <param name="source">
 		/// Строковое представление времени согласно RFC 2822.
 		/// Комментарии (текст в круглых скобках) не допускаются.</param>
 		/// <returns>Объект типа DateTimeOffset соответствующий указанному строковому представлению.</returns>
-		public static DateTimeOffset Parse (ReadOnlySpan<char> value)
+		public static DateTimeOffset Parse (ReadOnlySpan<char> source)
 		{
 			/*
 			date-time   = [ day-of-week "," ] date time [CFWS]
@@ -54,21 +53,20 @@ namespace Novartment.Base.Text
 			zone        = (FWS ( "+" / "-" ) 4DIGIT)
 			*/
 
-			var wsSize = value.GetSubstringOfClassChars (AsciiCharSet.Classes, (short)AsciiCharClasses.WhiteSpace).Length;
-			var token = value.Slice (wsSize).GetSubstringOfNotClassChars (AsciiCharSet.Classes, (short)AsciiCharClasses.WhiteSpace);
-			value = value.Slice (wsSize + token.Length);
+			var pos = 0;
+			SkipWhiteSpace (source, ref pos);
+			var token = ReadNonWhiteSpace (source, ref pos);
 
 			if (token.Length < 1)
 			{
-				throw new FormatException ("Invalid string representation of data/time. Non-whitespace characters not found.");
+				throw new FormatException ("Invalid string representation of data/time. Value is empty.");
 			}
 
 			// Skip optional [ day-of-week "," ]
 			if (token[token.Length - 1] == ',')
 			{
-				wsSize = value.GetSubstringOfClassChars (AsciiCharSet.Classes, (short)AsciiCharClasses.WhiteSpace).Length;
-				token = value.Slice (wsSize).GetSubstringOfNotClassChars (AsciiCharSet.Classes, (short)AsciiCharClasses.WhiteSpace);
-				value = value.Slice (wsSize + token.Length);
+				SkipWhiteSpace (source, ref pos);
+				token = ReadNonWhiteSpace (source, ref pos);
 			}
 
 			// day
@@ -83,15 +81,13 @@ namespace Novartment.Base.Text
 			}
 
 			// month
-			wsSize = value.GetSubstringOfClassChars (AsciiCharSet.Classes, (short)AsciiCharClasses.WhiteSpace).Length;
-			token = value.Slice (wsSize).GetSubstringOfNotClassChars (AsciiCharSet.Classes, (short)AsciiCharClasses.WhiteSpace);
-			value = value.Slice (wsSize + token.Length);
+			SkipWhiteSpace (source, ref pos);
+			token = ReadNonWhiteSpace (source, ref pos);
 			var month = GetMonth (token);
 
 			// year
-			wsSize = value.GetSubstringOfClassChars (AsciiCharSet.Classes, (short)AsciiCharClasses.WhiteSpace).Length;
-			token = value.Slice (wsSize).GetSubstringOfNotClassChars (AsciiCharSet.Classes, (short)AsciiCharClasses.WhiteSpace);
-			value = value.Slice (wsSize + token.Length);
+			SkipWhiteSpace (source, ref pos);
+			token = ReadNonWhiteSpace (source, ref pos);
 #if NETCOREAPP2_1
 			var isValidYear = int.TryParse (token, out int year);
 #else
@@ -120,9 +116,8 @@ namespace Novartment.Base.Text
 			}
 
 			// hour:minute[:seconds]
-			wsSize = value.GetSubstringOfClassChars (AsciiCharSet.Classes, (short)AsciiCharClasses.WhiteSpace).Length;
-			token = value.Slice (wsSize).GetSubstringOfNotClassChars (AsciiCharSet.Classes, (short)AsciiCharClasses.WhiteSpace);
-			value = value.Slice (wsSize + token.Length);
+			SkipWhiteSpace (source, ref pos);
+			token = ReadNonWhiteSpace (source, ref pos);
 			if ((token.Length < 5) || (token[2] != ':'))
 			{
 				throw new FormatException ("Invalid string representation of data/time, semicolon not found in time value.");
@@ -168,19 +163,17 @@ namespace Novartment.Base.Text
 			}
 
 			// timezone
-			wsSize = value.GetSubstringOfClassChars (AsciiCharSet.Classes, (short)AsciiCharClasses.WhiteSpace).Length;
-			token = value.Slice (wsSize).GetSubstringOfNotClassChars (AsciiCharSet.Classes, (short)AsciiCharClasses.WhiteSpace);
+			SkipWhiteSpace (source, ref pos);
+			token = ReadNonWhiteSpace (source, ref pos);
 			if (token.Length < 1)
 			{
 				throw new FormatException ("Invalid string representation of data/time. Missed time zone.");
 			}
 
-			value = value.Slice (wsSize + token.Length);
 			var timeZoneMinutes = GetTimeZone (token);
 
-			// проверяем чтобы не было лишних символов
-			wsSize = value.GetSubstringOfClassChars (AsciiCharSet.Classes, (short)AsciiCharClasses.WhiteSpace).Length;
-			if ((value.Length - wsSize) > 0)
+			SkipWhiteSpace (source, ref pos);
+			if (pos < source.Length)
 			{
 				throw new FormatException ("Invalid string representation of data/time. Unrecognized tail characters.");
 			}
@@ -206,6 +199,47 @@ namespace Novartment.Base.Text
 			var str2 = dateTime.Offset.TotalHours.ToString ("+00;-00", CultureInfo.InvariantCulture);
 			var str3 = Math.Abs (dateTime.Offset.Minutes).ToString ("00", CultureInfo.InvariantCulture);
 			return str1 + str2 + str3;
+		}
+
+		/// <summary>
+		/// Пропускает пробельное пространство.
+		/// </summary>
+		private static int SkipWhiteSpace (ReadOnlySpan<char> source, ref int pos)
+		{
+			while (pos < source.Length)
+			{
+				var character = source[pos];
+
+				if ((character >= AsciiCharSet.Classes.Count) || ((AsciiCharSet.Classes[character] & (short)AsciiCharClasses.WhiteSpace) == 0))
+				{
+					break;
+				}
+
+				pos++;
+			}
+
+			return pos;
+		}
+
+		/// <summary>
+		/// Выделяет подстроку, состоящую из любых символов, кроме символов указанного типа.
+		/// </summary>
+		private static ReadOnlySpan<char> ReadNonWhiteSpace (ReadOnlySpan<char> source, ref int pos)
+		{
+			var startPos = pos;
+			while (pos < source.Length)
+			{
+				var character = source[pos];
+
+				if ((character < AsciiCharSet.Classes.Count) && ((AsciiCharSet.Classes[character] & (short)AsciiCharClasses.WhiteSpace) != 0))
+				{
+					break;
+				}
+
+				pos++;
+			}
+
+			return source.Slice (startPos, pos - startPos);
 		}
 
 		private static int GetMonth (ReadOnlySpan<char> monthSpan)

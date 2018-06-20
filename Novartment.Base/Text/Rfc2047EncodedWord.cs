@@ -2,7 +2,6 @@
 using System.Buffers;
 using System.Diagnostics.Contracts;
 using System.Text;
-using Novartment.Base.Text.CharSpanExtensions;
 
 namespace Novartment.Base.Text
 {
