@@ -44,5 +44,54 @@ namespace Novartment.Base.Text
 
 			return list;
 		}
+
+		/// <summary>
+		/// Получает UTF-32 код знака в строке в указанной позиции, обновляя позицию чтобы указывала на следующий знак.
+		/// </summary>
+		/// <param name="source">Исходная строка.</param>
+		/// <param name="position">Позиция в source для получения знака, будет обновлена чтобы указывала на следующий знак.</param>
+		/// <returns>UTF-32 код знака в строке в указанной позиции. Позиция обновлена чтобы указывала на следующий знак.</returns>
+		public static int GetCodePoint (this string source, ref int position)
+		{
+			if (source == null)
+			{
+				throw new ArgumentNullException (nameof (source));
+			}
+
+			Contract.EndContractBlock ();
+
+			return GetCodePoint (source.AsSpan (), ref position);
+		}
+
+		/// <summary>
+		/// Получает UTF-32 код знака в строке в указанной позиции, обновляя позицию чтобы указывала на следующий знак.
+		/// </summary>
+		/// <param name="source">Исходная строка.</param>
+		/// <param name="position">Позиция в source для получения знака, будет обновлена чтобы указывала на следующий знак.</param>
+		/// <returns>UTF-32 код знака в строке в указанной позиции. Позиция обновлена чтобы указывала на следующий знак.</returns>
+		public static int GetCodePoint (this ReadOnlySpan<char> source, ref int position)
+		{
+			if ((position < 0) || (position >= source.Length))
+			{
+				throw new ArgumentOutOfRangeException (nameof (position));
+			}
+
+			Contract.EndContractBlock ();
+
+			var highSurrogate = source[position++];
+			if ((position >= source.Length) || (highSurrogate < 0xd800) || (highSurrogate > 0xdbff))
+			{
+				return highSurrogate;
+			}
+
+			var lowSurrogate = source[position];
+			if ((lowSurrogate < 0xdc00) || (lowSurrogate > 0xdfff))
+			{
+				return highSurrogate;
+			}
+
+			position++;
+			return ((highSurrogate - '\ud800') * 0x400) + (lowSurrogate - '\udc00') + 0x10000;
+		}
 	}
 }
