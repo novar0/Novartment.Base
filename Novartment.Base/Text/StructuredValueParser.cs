@@ -2,6 +2,13 @@
 
 namespace Novartment.Base.Text
 {
+	internal enum IngoreElementType
+	{
+		Unspecified,
+		QuotedValue,
+		EscapedChar,
+	}
+
 	/// <summary>
 	/// Методы для создания и обработки коллекций StructuredValueElement.
 	/// </summary>
@@ -84,7 +91,13 @@ namespace Novartment.Base.Text
 						break;
 					case '"':
 						var startPos1 = position;
-						position = EnsureDelimitedElement (source, position, StructuredValueParserDelimitingElement.QuotedString);
+						position = SkipDelimitedElement (
+							source: source,
+							pos: position,
+							startMarker: '\"',
+							endMarker: '\"',
+							ignoreElement: IngoreElementType.EscapedChar,
+							allowNesting: false);
 						if (typeToSkip != StructuredValueElementType.QuotedValue)
 						{
 							return new StructuredValueElement (StructuredValueElementType.QuotedValue, startPos1 + 1, position - startPos1 - 2);
@@ -93,7 +106,13 @@ namespace Novartment.Base.Text
 						break;
 					case '(':
 						var startPos2 = position;
-						position = EnsureDelimitedElement (source, position, StructuredValueParserDelimitingElement.CommentDelimitingData);
+						position = SkipDelimitedElement (
+							source: source,
+							pos: position,
+							startMarker: '(',
+							endMarker: ')',
+							ignoreElement: IngoreElementType.EscapedChar,
+							allowNesting: true);
 						if (typeToSkip != StructuredValueElementType.RoundBracketedValue)
 						{
 							return new StructuredValueElement (StructuredValueElementType.RoundBracketedValue, startPos2 + 1, position - startPos2 - 2);
@@ -102,7 +121,13 @@ namespace Novartment.Base.Text
 						break;
 					case '<':
 						var startPos3 = position;
-						position = EnsureDelimitedElement (source, position, StructuredValueParserDelimitingElement.AngleAddr);
+						position = SkipDelimitedElement (
+							source: source,
+							pos: position,
+							startMarker: '<',
+							endMarker: '>',
+							ignoreElement: IngoreElementType.QuotedValue,
+							allowNesting: false);
 						if (typeToSkip != StructuredValueElementType.AngleBracketedValue)
 						{
 							return new StructuredValueElement (StructuredValueElementType.AngleBracketedValue, startPos3 + 1, position - startPos3 - 2);
@@ -111,7 +136,13 @@ namespace Novartment.Base.Text
 						break;
 					case '[':
 						var startPos4 = position;
-						position = EnsureDelimitedElement (source, position, StructuredValueParserDelimitingElement.DomainLiteral);
+						position = SkipDelimitedElement (
+							source: source,
+							pos: position,
+							startMarker: '[',
+							endMarker: ']',
+							ignoreElement: IngoreElementType.EscapedChar,
+							allowNesting: false);
 						if (typeToSkip != StructuredValueElementType.SquareBracketedValue)
 						{
 							return new StructuredValueElement (StructuredValueElementType.SquareBracketedValue, startPos4 + 1, position - startPos4 - 2);
@@ -179,25 +210,30 @@ namespace Novartment.Base.Text
 		/// Выделяет в указанном диапазоне байтов поддиапазон, отвечающий указанному ограничению.
 		/// Если диапазон не соответствует требованиям ограничителя, то генерируется исключение.
 		/// </summary>
-		private static int EnsureDelimitedElement (ReadOnlySpan<char> source, int pos, StructuredValueParserDelimitingElement delimitedElement)
+		private static int SkipDelimitedElement (ReadOnlySpan<char> source, int pos, char startMarker, char endMarker, IngoreElementType ignoreElement, bool allowNesting)
 		{
 			// первый символ уже проверен, пропускаем
 			pos++;
 
 			int nestingLevel = 0;
-			var ignoreElement = delimitedElement.IgnoreElement;
 			while (nestingLevel >= 0)
 			{
 				if (pos >= source.Length)
 				{
-					throw new FormatException (FormattableString.Invariant ($"Ending end marker 0x'{delimitedElement.EndMarker:x}' not found in source."));
+					throw new FormatException (FormattableString.Invariant ($"Ending end marker 0x'{endMarker:x}' not found in source."));
 				}
 
 				var octet = source[pos];
 				switch (ignoreElement)
 				{
 					case IngoreElementType.QuotedValue when octet == '\"':
-						pos = EnsureDelimitedElement (source, pos, StructuredValueParserDelimitingElement.QuotedString);
+						pos = SkipDelimitedElement (
+							source: source,
+							pos: pos,
+							startMarker: '\"',
+							endMarker: '\"',
+							ignoreElement: IngoreElementType.EscapedChar,
+							allowNesting: false);
 						break;
 					case IngoreElementType.EscapedChar when octet == '\\':
 						pos += 2;
@@ -209,7 +245,7 @@ namespace Novartment.Base.Text
 						break;
 					case IngoreElementType.Unspecified:
 					default:
-						var isStartNested = delimitedElement.AllowNesting && (octet == delimitedElement.StarMarker);
+						var isStartNested = allowNesting && (octet == startMarker);
 						if (isStartNested)
 						{
 							pos++;
@@ -218,7 +254,7 @@ namespace Novartment.Base.Text
 						else
 						{
 							pos++;
-							if (octet == delimitedElement.EndMarker)
+							if (octet == endMarker)
 							{
 								nestingLevel--;
 							}
