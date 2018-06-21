@@ -175,7 +175,7 @@ namespace Novartment.Base.Net.Smtp
 
 		private async Task TransferDataWithoutChunking (IBufferedSource data, CancellationToken cancellationToken)
 		{
-			var result = await _session.ProcessCommandAsync (SmtpCommand.Data, cancellationToken).ConfigureAwait (false);
+			var result = await _session.ProcessCommandAsync (SmtpCommand.CachedCmdData, cancellationToken).ConfigureAwait (false);
 			if (!result.IsPositiveIntermediate)
 			{
 				throw new InvalidOperationException (string.Join ("\r\n", result.Text));

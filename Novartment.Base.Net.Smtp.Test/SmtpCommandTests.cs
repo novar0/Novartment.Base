@@ -301,8 +301,8 @@ namespace Novartment.Base.Smtp.Test
 			Assert.Equal (SmtpCommandType.Bdat, cmd.CommandType);
 			Assert.IsType<SmtpBdatCommand> (cmd);
 			var cmdBdat = (SmtpBdatCommand)cmd;
-			Assert.Equal (4647785733979898881L, cmdBdat.Source.UnusedSize);
-			Assert.Equal (sampleData.Length, cmdBdat.Source.Count);
+			Assert.Equal (4647785733979898881L, cmdBdat.SourceData.UnusedSize);
+			Assert.Equal (sampleData.Length, cmdBdat.SourceData.Count);
 			Assert.False (cmdBdat.IsLast);
 			Assert.Equal (cmdStr.Length, source.Offset);
 
@@ -312,11 +312,11 @@ namespace Novartment.Base.Smtp.Test
 			Assert.Equal (SmtpCommandType.Bdat, cmd.CommandType);
 			Assert.IsType<SmtpBdatCommand> (cmd);
 			cmdBdat = (SmtpBdatCommand)cmd;
-			Assert.Equal (2L, cmdBdat.Source.UnusedSize);
-			Assert.Equal (2, cmdBdat.Source.Count);
+			Assert.Equal (2L, cmdBdat.SourceData.UnusedSize);
+			Assert.Equal (2, cmdBdat.SourceData.Count);
 			Assert.True (cmdBdat.IsLast);
 			Assert.Equal (cmdStr.Length, source.Offset);
-			cmdBdat.Source.SkipBuffer (cmdBdat.Source.Count);
+			cmdBdat.SourceData.SkipBuffer (cmdBdat.SourceData.Count);
 			Assert.Equal (cmdStr.Length + 2, source.Offset);
 
 			// StartTls
@@ -381,14 +381,14 @@ namespace Novartment.Base.Smtp.Test
 			Assert.IsType<SmtpSaslResponseCommand> (cmd);
 			var cmdSaslResponse = (SmtpSaslResponseCommand)cmd;
 			Assert.Equal (8, cmdSaslResponse.Response.Length);
-			Assert.Equal (0, cmdSaslResponse.Response[0]);
-			Assert.Equal (97, cmdSaslResponse.Response[1]);
-			Assert.Equal (97, cmdSaslResponse.Response[2]);
-			Assert.Equal (97, cmdSaslResponse.Response[3]);
-			Assert.Equal (0, cmdSaslResponse.Response[4]);
-			Assert.Equal (98, cmdSaslResponse.Response[5]);
-			Assert.Equal (98, cmdSaslResponse.Response[6]);
-			Assert.Equal (98, cmdSaslResponse.Response[7]);
+			Assert.Equal (0, cmdSaslResponse.Response.Span[0]);
+			Assert.Equal (97, cmdSaslResponse.Response.Span[1]);
+			Assert.Equal (97, cmdSaslResponse.Response.Span[2]);
+			Assert.Equal (97, cmdSaslResponse.Response.Span[3]);
+			Assert.Equal (0, cmdSaslResponse.Response.Span[4]);
+			Assert.Equal (98, cmdSaslResponse.Response.Span[5]);
+			Assert.Equal (98, cmdSaslResponse.Response.Span[6]);
+			Assert.Equal (98, cmdSaslResponse.Response.Span[7]);
 			Assert.Equal (cmdStr.Length, source.Offset);
 		}
 
@@ -396,16 +396,16 @@ namespace Novartment.Base.Smtp.Test
 		[Trait ("Category", "Net.Smtp")]
 		public void ToString_ ()
 		{
-			var str = SmtpCommand.Data.ToString ();
+			var str = SmtpCommand.CachedCmdData.ToString ();
 			Assert.Equal ("DATA\r\n", str);
 
-			str = SmtpCommand.Noop.ToString ();
+			str = SmtpCommand.CachedCmdNoop.ToString ();
 			Assert.Equal ("NOOP\r\n", str);
 
-			str = SmtpCommand.Quit.ToString ();
+			str = SmtpCommand.CachedCmdQuit.ToString ();
 			Assert.Equal ("QUIT\r\n", str);
 
-			str = SmtpCommand.Rset.ToString ();
+			str = SmtpCommand.CachedCmdRset.ToString ();
 			Assert.Equal ("RSET\r\n", str);
 
 			var id = "my-007-id";
@@ -444,27 +444,27 @@ namespace Novartment.Base.Smtp.Test
 			Memory<byte> buf = new byte[100];
 			var src = new ArrayBufferedSource (buf.Slice (3, 10));
 			var cmd = new SmtpBdatCommand (src, 10, false);
-			Assert.NotNull (cmd.Source);
-			Assert.Equal (10, cmd.Source.Count);
-			cmd.Source.FillBufferAsync (CancellationToken.None).Wait ();
-			Assert.True (cmd.Source.IsExhausted);
+			Assert.NotNull (cmd.SourceData);
+			Assert.Equal (10, cmd.SourceData.Count);
+			cmd.SourceData.FillBufferAsync (CancellationToken.None).Wait ();
+			Assert.True (cmd.SourceData.IsExhausted);
 
 			// размер источника меньше указанного
 			src = new ArrayBufferedSource (buf.Slice (2, 1));
 			cmd = new SmtpBdatCommand (src, 33, false);
-			Assert.NotNull (cmd.Source);
-			Assert.Equal (1, cmd.Source.Count);
-			cmd.Source.FillBufferAsync (CancellationToken.None).Wait ();
-			cmd.Source.SkipBuffer (cmd.Source.Count);
-			Assert.ThrowsAsync<NotEnoughDataException> (() => cmd.Source.FillBufferAsync (CancellationToken.None));
+			Assert.NotNull (cmd.SourceData);
+			Assert.Equal (1, cmd.SourceData.Count);
+			cmd.SourceData.FillBufferAsync (CancellationToken.None).Wait ();
+			cmd.SourceData.SkipBuffer (cmd.SourceData.Count);
+			Assert.ThrowsAsync<NotEnoughDataException> (() => cmd.SourceData.FillBufferAsync (CancellationToken.None));
 
 			// размер источника больше указанного
 			src = new ArrayBufferedSource (buf.Slice (15, 19));
 			cmd = new SmtpBdatCommand (src, 8, false);
-			Assert.NotNull (cmd.Source);
-			Assert.Equal (8, cmd.Source.Count);
-			cmd.Source.FillBufferAsync (CancellationToken.None).Wait ();
-			Assert.Equal (8, cmd.Source.UnusedSize);
+			Assert.NotNull (cmd.SourceData);
+			Assert.Equal (8, cmd.SourceData.Count);
+			cmd.SourceData.FillBufferAsync (CancellationToken.None).Wait ();
+			Assert.Equal (8, cmd.SourceData.UnusedSize);
 		}
 	}
 }

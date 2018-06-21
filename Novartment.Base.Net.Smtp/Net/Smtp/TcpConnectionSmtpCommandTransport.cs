@@ -182,10 +182,10 @@ namespace Novartment.Base.Net.Smtp
 			{
 				command = SmtpCommand.Parse (_reader, expectedInputType, _logger);
 			}
-			catch (FormatException excpt)
+			catch (FormatException)
 			{
 				// исключение произойдёт ТОЛЬКО если не распознано первое слово (собственно команда)
-				command = new SmtpUnknownCommand (excpt.Message);
+				command = SmtpCommand.CachedCmdUnknown;
 			}
 
 			return command;

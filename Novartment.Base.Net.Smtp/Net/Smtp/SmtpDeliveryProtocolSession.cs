@@ -180,9 +180,9 @@ namespace Novartment.Base.Net.Smtp
 		// Не обрабатывает никаких исключений, их нужно ловить снаружи.
 		private Task<SmtpReplyWithGroupingMark> ProcessCommandAsync (SmtpCommand command, CancellationToken cancellationToken)
 		{
-			if (command is SmtpUnknownCommand)
+			if (command.CommandType == SmtpCommandType.Unknown)
 			{
-				_logger?.LogWarning ("Unknown command. " + ((SmtpUnknownCommand)command).Message);
+				_logger?.LogWarning ("Unknown command.");
 				return Task.FromResult (SmtpReply.NotImplemented.DisallowGrouping ());
 			}
 
@@ -372,7 +372,7 @@ namespace Novartment.Base.Net.Smtp
 				return SmtpReply.SyntaxErrorInParameter.DisallowGrouping ();
 			}
 
-			_authenticatedUser = await AuthenticateUserAsync (authResponseCommand.Response).ConfigureAwait (false);
+			_authenticatedUser = await AuthenticateUserAsync (authResponseCommand.Response.Span).ConfigureAwait (false);
 			if (_authenticatedUser == null)
 			{
 				throw new InvalidCredentialException ();
@@ -533,7 +533,7 @@ namespace Novartment.Base.Net.Smtp
 			if (!_clientIdentified || (_currentTransaction == null))
 			{
 				// не поздоровались или не начали транзакцию
-				return bdatCommand.Source
+				return bdatCommand.SourceData
 					.SkipToEndAsync (cancellationToken) // пропускаем все данные (предотвратить их передачу невозможно)
 					.ContinueWith<SmtpReplyWithGroupingMark> (
 						notUsed => { throw new BadSequenceOfSmtpCommandsException (); },
@@ -546,7 +546,7 @@ namespace Novartment.Base.Net.Smtp
 			{
 				// не указаны получатели
 				ResetTransaction ();
-				return bdatCommand.Source
+				return bdatCommand.SourceData
 					.SkipToEndAsync (cancellationToken) // пропускаем все данные (предотвратить их передачу невозможно)
 					.ContinueWith<SmtpReplyWithGroupingMark> (
 						notUsed => { throw new NoValidRecipientsException (); },
@@ -567,7 +567,7 @@ namespace Novartment.Base.Net.Smtp
 				// порция не последняя, поэтому создаём поставщика порций
 				_chunkingAgency = new JobAgency<IBufferedSource, int> ();
 				_chunksBufferedSource = new AggregatingBufferedSource (
-					new byte[bdatCommand.Source.BufferMemory.Length],
+					new byte[bdatCommand.SourceData.BufferMemory.Length],
 					_chunkingAgency);
 				try
 				{
@@ -590,7 +590,7 @@ namespace Novartment.Base.Net.Smtp
 		{
 			try
 			{
-				await _currentTransaction.TransferDataAndFinishAsync (bdatCommand.Source, bdatCommand.Size, cancellationToken).ConfigureAwait (false);
+				await _currentTransaction.TransferDataAndFinishAsync (bdatCommand.SourceData, bdatCommand.Size, cancellationToken).ConfigureAwait (false);
 				return SmtpReply.OK.AllowGrouping ();
 			}
 			finally
@@ -601,10 +601,10 @@ namespace Novartment.Base.Net.Smtp
 
 		private async Task<SmtpReplyWithGroupingMark> ProcessCommandBdatNextChunk (SmtpBdatCommand bdatCommand, CancellationToken cancellationToken)
 		{
-			if (!bdatCommand.Source.IsExhausted || (bdatCommand.Source.Count > 0))
+			if (!bdatCommand.SourceData.IsExhausted || (bdatCommand.SourceData.Count > 0))
 			{
 				// если порция не пустая, то ожидаем пока поставщик порций обработает её
-				var chunkCompletionTask = OfferChunkCheckExhaustedAsync (bdatCommand.Source, cancellationToken);
+				var chunkCompletionTask = OfferChunkCheckExhaustedAsync (bdatCommand.SourceData, cancellationToken);
 
 				// тут надо ждать обе задачи - поставку и потребление,
 				// потому что успешно завершена будет поставка,
@@ -652,7 +652,7 @@ namespace Novartment.Base.Net.Smtp
 			return SmtpReply.OK.AllowGrouping ();
 		}
 
-		private Task<object> AuthenticateUserAsync (byte[] userPasswordData)
+		private Task<object> AuthenticateUserAsync (ReadOnlySpan<byte> userPasswordData)
 		{
 			if (_securityParameters.ClientAuthenticator == null)
 			{
@@ -663,23 +663,26 @@ namespace Novartment.Base.Net.Smtp
 			// authcid   = 1*SAFE ; MUST accept up to 255 octets
 			// authzid   = 1*SAFE ; MUST accept up to 255 octets
 			// passwd    = 1*SAFE ; MUST accept up to 255 octets
-			var idx1 = Array.IndexOf<byte> (userPasswordData, 0);
+			var idx1 = userPasswordData.IndexOf ((byte)0);
 			if ((idx1 < 0) || (idx1 >= (userPasswordData.Length - 1)))
 			{
 				return Task.FromResult<object> (null);
 			}
 
-			var idx2 = Array.IndexOf<byte> (userPasswordData, 0, idx1 + 1);
+			var idx2 = userPasswordData.Slice (idx1 + 1).IndexOf ((byte)0);
 			if (idx2 < 0)
 			{
 				return Task.FromResult<object> (null);
 			}
 
-			/*var authorizationIdentity = (idx1 > 0) ?
-				Encoding.UTF8.GetString (userPasswordData, 0, idx1) :
-				null;*/
-			var authenticationIdentity = Encoding.UTF8.GetString (userPasswordData, idx1 + 1, idx2 - idx1 - 1);
-			var password = Encoding.UTF8.GetString (userPasswordData, idx2 + 1, userPasswordData.Length - idx2 - 1);
+			/*var authorizationIdentity = (idx1 > 0) ? Encoding.UTF8.GetString (userPasswordData.Slice (0, idx1)) : null;*/
+#if NETCOREAPP2_1
+			var authenticationIdentity = Encoding.UTF8.GetString (userPasswordData.Slice (idx1 + 1, idx2 - idx1 - 1));
+			var password = Encoding.UTF8.GetString (userPasswordData.Slice (idx2 + 1));
+#else
+			var authenticationIdentity = Encoding.UTF8.GetString (userPasswordData.Slice (idx1 + 1, idx2 - idx1 - 1).ToArray ());
+			var password = Encoding.UTF8.GetString (userPasswordData.Slice (idx2 + 1).ToArray ());
+#endif
 			return _securityParameters.ClientAuthenticator.Invoke (authenticationIdentity, password);
 		}
 

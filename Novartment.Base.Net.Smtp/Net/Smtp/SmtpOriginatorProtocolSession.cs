@@ -37,7 +37,7 @@ namespace Novartment.Base.Net.Smtp
 			{
 				try
 				{
-					_transport.SendCommandAsync (SmtpCommand.Quit, CancellationToken.None).Wait ();
+					_transport.SendCommandAsync (SmtpCommand.CachedCmdQuit, CancellationToken.None).Wait ();
 				}
 				catch (ObjectDisposedException)
 				{
@@ -57,7 +57,7 @@ namespace Novartment.Base.Net.Smtp
 		internal async Task ReceiveGreetingAndStartAsync (CancellationToken cancellationToken)
 		{
 			// ждём приветствие сервера
-			var greeting = await ProcessCommandAsync (SmtpCommand.NoCommand, cancellationToken).ConfigureAwait (false);
+			var greeting = await ProcessCommandAsync (SmtpCommand.CachedCmdNoCommand, cancellationToken).ConfigureAwait (false);
 			if (!greeting.IsPositive)
 			{
 				throw new InvalidOperationException (string.Join ("\r\n", greeting.Text));
@@ -74,7 +74,7 @@ namespace Novartment.Base.Net.Smtp
 				throw new InvalidOperationException ("Remote host not supports TLS.");
 			}
 
-			var reply = await ProcessCommandAsync (SmtpCommand.StartTls, cancellationToken).ConfigureAwait (false);
+			var reply = await ProcessCommandAsync (SmtpCommand.CachedCmdStartTls, cancellationToken).ConfigureAwait (false);
 			if (!reply.IsPositive)
 			{
 				throw new InvalidOperationException ("Remote host does not agreed to start TLS.");
@@ -171,7 +171,7 @@ namespace Novartment.Base.Net.Smtp
 		internal async Task FinishAsync (CancellationToken cancellationToken)
 		{
 			// посылаем прощальную команду QUIT
-			var reply = await ProcessCommandAsync (SmtpCommand.Quit, cancellationToken).ConfigureAwait (false);
+			var reply = await ProcessCommandAsync (SmtpCommand.CachedCmdQuit, cancellationToken).ConfigureAwait (false);
 			if (!reply.IsPositive)
 			{
 				throw new InvalidOperationException (string.Join ("\r\n", reply.Text));
@@ -200,13 +200,13 @@ namespace Novartment.Base.Net.Smtp
 					var bdatCmd = (SmtpBdatCommand)command;
 					try
 					{
-						await _transport.SendBinaryAsync (bdatCmd.Source, cancellationToken).ConfigureAwait (false);
+						await _transport.SendBinaryAsync (bdatCmd.SourceData, cancellationToken).ConfigureAwait (false);
 					}
 					catch (NotEnoughDataException excpt)
 					{
 						// в указанном источнике оказалось данных меньше чем указанный размер
 						throw new UnrecoverableProtocolException (
-							FormattableString.Invariant ($"Source provided less data ({bdatCmd.Size - bdatCmd.Source.UnusedSize}) then specified ({bdatCmd.Size}). Appended {bdatCmd.Source.UnusedSize} bytes."),
+							FormattableString.Invariant ($"Source provided less data ({bdatCmd.Size - bdatCmd.SourceData.UnusedSize}) then specified ({bdatCmd.Size}). Appended {bdatCmd.SourceData.UnusedSize} bytes."),
 							excpt);
 					}
 
