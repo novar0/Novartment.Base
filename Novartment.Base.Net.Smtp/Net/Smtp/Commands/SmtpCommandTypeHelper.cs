@@ -1,38 +1,50 @@
-﻿namespace Novartment.Base.Net.Smtp
+﻿using System;
+using Novartment.Base.Collections;
+
+namespace Novartment.Base.Net.Smtp
 {
 	internal static class SmtpCommandTypeHelper
 	{
-		internal static SmtpCommandType Parse (BytesChunkEnumerator chunkEnumerator)
+		private static ArrayList<Tuple<string, SmtpCommandType>> nameDictionary = new ArrayList<Tuple<string, SmtpCommandType>>
 		{
-			var commandTypeStr = chunkEnumerator.GetString ().ToUpperInvariant ();
+			Tuple.Create ("DATA", SmtpCommandType.Data),
+			Tuple.Create ("NOOP", SmtpCommandType.Noop),
+			Tuple.Create ("QUIT", SmtpCommandType.Quit),
+			Tuple.Create ("RSET", SmtpCommandType.Rset),
+			Tuple.Create ("VRFY", SmtpCommandType.Vrfy),
+			Tuple.Create ("EHLO", SmtpCommandType.Ehlo),
+			Tuple.Create ("HELO", SmtpCommandType.Helo),
+			Tuple.Create ("MAIL FROM:", SmtpCommandType.MailFrom),
+			Tuple.Create ("RCPT TO:", SmtpCommandType.RcptTo),
+			Tuple.Create ("BDAT", SmtpCommandType.Bdat),
+			Tuple.Create ("STARTTLS", SmtpCommandType.StartTls),
+			Tuple.Create("AUTH", SmtpCommandType.Auth),
+		};
 
-			if ((commandTypeStr == "MAIL") || (commandTypeStr == "RCPT"))
+		internal static SmtpCommandType Parse (ReadOnlySpan<char> value, BytesChunkEnumerator chunkEnumerator)
+		{
+			var commandTypeStr = chunkEnumerator.GetString (value);
+
+			if ("MAIL".AsSpan ().Equals (commandTypeStr, StringComparison.OrdinalIgnoreCase) || "RCPT".AsSpan ().Equals (commandTypeStr, StringComparison.OrdinalIgnoreCase))
 			{
 				// если команда из двух слов, то добавляем второе
 				// ищем второе слово оканчивающееся на ':'
-				var isSecondWordFound = chunkEnumerator.MoveToNextChunk (0x0d, (byte)':', true);
+				var isSecondWordFound = chunkEnumerator.ExtendToNextChunk (value, ':');
 				if (isSecondWordFound)
 				{
-					commandTypeStr += chunkEnumerator.GetString ().ToUpperInvariant ();
+					commandTypeStr = chunkEnumerator.GetString (value);
 				}
 			}
 
-			switch (commandTypeStr)
+			foreach (var entry in nameDictionary)
 			{
-				case "DATA": return SmtpCommandType.Data;
-				case "NOOP": return SmtpCommandType.Noop;
-				case "QUIT": return SmtpCommandType.Quit;
-				case "RSET": return SmtpCommandType.Rset;
-				case "VRFY": return SmtpCommandType.Vrfy;
-				case "EHLO": return SmtpCommandType.Ehlo;
-				case "HELO": return SmtpCommandType.Helo;
-				case "MAIL FROM:": return SmtpCommandType.MailFrom;
-				case "RCPT TO:": return SmtpCommandType.RcptTo;
-				case "BDAT": return SmtpCommandType.Bdat;
-				case "STARTTLS": return SmtpCommandType.StartTls;
-				case "AUTH": return SmtpCommandType.Auth;
-				default: return SmtpCommandType.Unknown;
+				if (entry.Item1.AsSpan ().Equals (commandTypeStr, StringComparison.OrdinalIgnoreCase))
+				{
+					return entry.Item2;
+				}
 			}
+
+			return SmtpCommandType.Unknown;
 		}
 	}
 }

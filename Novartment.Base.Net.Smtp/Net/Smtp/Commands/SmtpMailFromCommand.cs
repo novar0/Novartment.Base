@@ -27,9 +27,9 @@ namespace Novartment.Base.Net.Smtp
 
 		internal ContentTransferEncoding RequestedContentTransferEncoding => _requestedContentTransferEncoding;
 
-		internal static SmtpCommand Parse (BytesChunkEnumerator chunkEnumerator)
+		internal static SmtpCommand Parse (ReadOnlySpan<char> value, BytesChunkEnumerator chunkEnumerator)
 		{
-			var isAngleBracketedValueFound = chunkEnumerator.MoveToNextBracketedValue (0x20, (byte)'<', (byte)'>');
+			var isAngleBracketedValueFound = chunkEnumerator.MoveToNextAngleBracketedValue (value);
 			if (!isAngleBracketedValueFound)
 			{
 				return new SmtpInvalidSyntaxCommand (SmtpCommandType.MailFrom, "Unrecognized 'MAIL FROM' parameter.");
@@ -41,11 +41,7 @@ namespace Novartment.Base.Net.Smtp
 				// адрес не пустой
 				try
 				{
-#if NETCOREAPP2_1
-					returnPath = AddrSpec.Parse (chunkEnumerator.GetStringInBrackets ());
-#else
-					returnPath = AddrSpec.Parse (chunkEnumerator.GetStringInBrackets ().AsSpan ());
-#endif
+					returnPath = AddrSpec.Parse (chunkEnumerator.GetStringInBrackets (value));
 				}
 				catch (FormatException excpt)
 				{
@@ -61,42 +57,47 @@ namespace Novartment.Base.Net.Smtp
 			var bodyType = ContentTransferEncoding.SevenBit;
 			var bodyTypeSpecified = false;
 			AddrSpec associatedMailbox = null;
-			while (chunkEnumerator.MoveToNextChunk (0x20, 0x20, false))
+			while (chunkEnumerator.MoveToNextChunk (value, true, ' ', false))
 			{
-				var parameterNameAndValue = chunkEnumerator.GetStringMaskingInvalidChars ();
+				var parameterNameAndValue = chunkEnumerator.GetString (value);
 				var charsInParameterName = Math.Min (5, parameterNameAndValue.Length);
-				var parameterName = parameterNameAndValue.Substring (0, charsInParameterName);
-				var parameterValue = parameterNameAndValue.Substring (charsInParameterName);
-				switch (parameterName.ToUpperInvariant ())
+				var parameterName = parameterNameAndValue.Slice (0, charsInParameterName);
+				var parameterValue = parameterNameAndValue.Slice (charsInParameterName);
+				if ("BODY=".AsSpan ().Equals (parameterName, StringComparison.OrdinalIgnoreCase))
 				{
-					case "BODY=":
-						switch (parameterValue.ToUpperInvariant ())
+					if ("8BITMIME".AsSpan ().Equals (parameterValue, StringComparison.OrdinalIgnoreCase))
+					{
+						if (bodyTypeSpecified)
 						{
-							case "8BITMIME":
-								if (bodyTypeSpecified)
-								{
-									return new SmtpInvalidSyntaxCommand (SmtpCommandType.MailFrom, "'MAIL FROM' BODY parameter specified more than once.");
-								}
-
-								bodyType = ContentTransferEncoding.EightBit;
-								bodyTypeSpecified = true;
-								break;
-							case "BINARYMIME":
-								if (bodyTypeSpecified)
-								{
-									return new SmtpInvalidSyntaxCommand (SmtpCommandType.MailFrom, "'MAIL FROM' BODY parameter specified more than once.");
-								}
-
-								bodyType = ContentTransferEncoding.Binary;
-								bodyTypeSpecified = true;
-								break;
-							default:
-								return new SmtpInvalidSyntaxCommand (SmtpCommandType.MailFrom, FormattableString.Invariant (
-									$"Unrecognized 'MAIL FROM' BODY parameter value '{parameterValue}'. Expected 8BITMIME or BINARYMIME."));
+							return new SmtpInvalidSyntaxCommand (SmtpCommandType.MailFrom, "'MAIL FROM' BODY parameter specified more than once.");
 						}
 
-						break;
-					case "AUTH=":
+						bodyType = ContentTransferEncoding.EightBit;
+						bodyTypeSpecified = true;
+					}
+					else
+					{
+						if ("BINARYMIME".AsSpan ().Equals (parameterValue, StringComparison.OrdinalIgnoreCase))
+						{
+							if (bodyTypeSpecified)
+							{
+								return new SmtpInvalidSyntaxCommand (SmtpCommandType.MailFrom, "'MAIL FROM' BODY parameter specified more than once.");
+							}
+
+							bodyType = ContentTransferEncoding.Binary;
+							bodyTypeSpecified = true;
+						}
+						else
+						{
+							return new SmtpInvalidSyntaxCommand (SmtpCommandType.MailFrom, FormattableString.Invariant (
+								$"Unrecognized 'MAIL FROM' BODY parameter value. Expected 8BITMIME or BINARYMIME."));
+						}
+					}
+				}
+				else
+				{
+					if ("AUTH=".AsSpan ().Equals (parameterName, StringComparison.OrdinalIgnoreCase))
+					{
 						if ((parameterValue.Length < 2) || (parameterValue[0] != '<') || (parameterValue[parameterValue.Length - 1] != '>'))
 						{
 							return new SmtpInvalidSyntaxCommand (SmtpCommandType.MailFrom, "Unrecognized 'MAIL FROM' AUTH parameter.");
@@ -110,18 +111,19 @@ namespace Novartment.Base.Net.Smtp
 						{
 							try
 							{
-								associatedMailbox = AddrSpec.Parse (parameterValue.AsSpan (1, parameterValue.Length - 2));
+								associatedMailbox = AddrSpec.Parse (parameterValue.Slice (1, parameterValue.Length - 2));
 							}
 							catch (FormatException)
 							{
 								return new SmtpInvalidSyntaxCommand (SmtpCommandType.MailFrom, "Unrecognized 'MAIL FROM' AUTH parameter.");
 							}
 						}
-
-						break;
-					default:
+					}
+					else
+					{
 						return new SmtpInvalidSyntaxCommand (SmtpCommandType.MailFrom, FormattableString.Invariant (
-							$"Unrecognized 'MAIL FROM' parameter '{parameterNameAndValue}'. Expected BODY or AUTH."));
+							$"Unrecognized 'MAIL FROM' parameter. Expected BODY or AUTH."));
+					}
 				}
 			}
 

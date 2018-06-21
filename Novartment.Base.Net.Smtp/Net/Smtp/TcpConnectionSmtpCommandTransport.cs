@@ -17,11 +17,16 @@ namespace Novartment.Base.Net.Smtp
 	internal class TcpConnectionSmtpCommandTransport :
 		ISmtpCommandTransport
 	{
+		// RFC 5321 part 4.5.3.1.4: The maximum total length of a command line including the command word and the <CRLF> is 512 octets.
+		// RFC 5321 part 4.5.3.1.6: The maximum total length of a text line including the <CRLF> is 1000 octets
+		private const int MaximumCommandLength = 1000;
+
 		private readonly ILogger _logger;
 		private IBufferedSource _reader;
 		private IBinaryDestination _writer;
 		private ITcpConnection _connection;
 		private string _pendingReplies = null;
+		private char[] _commandBuf = new char[MaximumCommandLength];
 
 		internal TcpConnectionSmtpCommandTransport (ITcpConnection connection, ILogger logger = null)
 		{
@@ -91,7 +96,74 @@ namespace Novartment.Base.Net.Smtp
 				}
 			}
 
-			return ParseReceivedCommand (expectedInputType);
+			SmtpCommand command;
+			if (expectedInputType == SmtpCommand.ExpectedInputType.Data)
+			{
+				// TODO: сделать первые два байта разделителя (0x0d, 0x0a) частью данных
+				command = new SmtpActualDataCommand ();
+			}
+			else
+			{
+				command = ExtractCommand (
+					_reader.BufferMemory.Span.Slice (_reader.Offset, _reader.Count),
+					expectedInputType,
+					out int bytesToSkip);
+
+				_reader.SkipBuffer (bytesToSkip);
+			}
+
+			if (command is SmtpBdatCommand bdatCommand)
+			{
+				bdatCommand.SetSource (_reader);
+			}
+
+			if (command is SmtpActualDataCommand dataCommand)
+			{
+				dataCommand.SetSource (_reader, true);
+			}
+
+			return command;
+		}
+
+		private SmtpCommand ExtractCommand (ReadOnlySpan<byte> source, SmtpCommand.ExpectedInputType expectedInputType, out int bytesToSkip)
+		{
+			SmtpCommand command;
+			bytesToSkip = FindCRLF (source);
+			if (bytesToSkip < 0)
+			{
+				bytesToSkip = source.Length;
+				command = new SmtpInvalidSyntaxCommand (SmtpCommandType.Unknown, "Ending CRLF not found in command.");
+			}
+			else
+			{
+				if (bytesToSkip >= MaximumCommandLength)
+				{
+					command = new SmtpTooLongCommand ();
+				}
+				else
+				{
+					// RFC 5321 part 2.4: Commands and replies are composed of characters from the ASCII character set
+					for (var i = 0; i < bytesToSkip - 2; i++)
+					{
+						var octet = source[i];
+						if (octet > AsciiCharSet.MaxCharValue)
+						{
+							throw new FormatException (FormattableString.Invariant (
+								$"Invalid ASCII char U+{octet:x}. Acceptable range is from U+0000 to U+007F."));
+						}
+						else
+						{
+							_commandBuf[i] = (char)octet;
+						}
+					}
+
+					_logger?.LogTrace ("<<< " + new string (_commandBuf, 0, bytesToSkip - 2));
+
+					command = SmtpCommand.Parse (_commandBuf.AsSpan (0, bytesToSkip - 2), expectedInputType);
+				}
+			}
+
+			return command;
 		}
 
 		public async Task<SmtpReply> ReceiveReplyAsync (CancellationToken cancellationToken)
@@ -142,6 +214,22 @@ namespace Novartment.Base.Net.Smtp
 			return source.WriteToAsync (_writer, cancellationToken);
 		}
 
+		private static int FindCRLF (ReadOnlySpan<byte> buffer)
+		{
+			int countToCRLF = 0;
+			while ((buffer[countToCRLF] != 0x0d) || (buffer[countToCRLF + 1] != 0x0a))
+			{
+				if (countToCRLF >= (buffer.Length - 2))
+				{
+					return -1;
+				}
+
+				countToCRLF++;
+			}
+
+			return countToCRLF + 2;
+		}
+
 		private static string GetHashAlgorithmName (HashAlgorithmType hashAlgorithmType)
 		{
 			switch ((int)hashAlgorithmType)
@@ -173,22 +261,6 @@ namespace Novartment.Base.Net.Smtp
 			_reader = connection.Reader;
 			_writer = connection.Writer;
 			_connection = connection;
-		}
-
-		private SmtpCommand ParseReceivedCommand (SmtpCommand.ExpectedInputType expectedInputType)
-		{
-			SmtpCommand command;
-			try
-			{
-				command = SmtpCommand.Parse (_reader, expectedInputType, _logger);
-			}
-			catch (FormatException)
-			{
-				// исключение произойдёт ТОЛЬКО если не распознано первое слово (собственно команда)
-				command = SmtpCommand.CachedCmdUnknown;
-			}
-
-			return command;
 		}
 
 		private Task SendTextAsync (string text, CancellationToken cancellationToken)

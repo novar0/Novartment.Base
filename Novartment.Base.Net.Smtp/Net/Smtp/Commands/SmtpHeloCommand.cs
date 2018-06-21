@@ -4,18 +4,22 @@ namespace Novartment.Base.Net.Smtp
 {
 	internal class SmtpHeloCommand : SmtpCommand
 	{
-		internal SmtpHeloCommand (string clientIdentification)
+		internal SmtpHeloCommand (ReadOnlySpan<char> clientIdentification)
 			: base (SmtpCommandType.Helo)
 		{
-			this.ClientIdentification = clientIdentification;
+#if NETCOREAPP2_1
+			this.ClientIdentification = new string (clientIdentification);
+#else
+			this.ClientIdentification = new string (clientIdentification.ToArray ());
+#endif
 		}
 
 		internal string ClientIdentification { get; }
 
-		internal static SmtpHeloCommand Parse (BytesChunkEnumerator chunkEnumerator)
+		internal static SmtpHeloCommand Parse (ReadOnlySpan<char> value, BytesChunkEnumerator chunkEnumerator)
 		{
-			chunkEnumerator.MoveToNextChunk (0x20, 0x0d);
-			return new SmtpHeloCommand (chunkEnumerator.GetStringMaskingInvalidChars ());
+			chunkEnumerator.MoveToNextChunk (value, true, (char)0x0d);
+			return new SmtpHeloCommand (chunkEnumerator.GetString (value));
 		}
 
 		public override string ToString ()

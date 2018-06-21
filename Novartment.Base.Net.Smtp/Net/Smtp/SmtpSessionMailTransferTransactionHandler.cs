@@ -163,7 +163,8 @@ namespace Novartment.Base.Net.Smtp
 
 		private async Task TransferDataWithChunking (IBufferedSource data, long exactSize, CancellationToken cancellationToken)
 		{
-			var cmd = new SmtpBdatCommand (data, exactSize, true);
+			var cmd = new SmtpBdatCommand (exactSize, true);
+			cmd.SetSource (data);
 			var reply = await _session.ProcessCommandAsync (cmd, cancellationToken).ConfigureAwait (false);
 			if (!reply.IsPositive)
 			{
@@ -181,7 +182,8 @@ namespace Novartment.Base.Net.Smtp
 				throw new InvalidOperationException (string.Join ("\r\n", result.Text));
 			}
 
-			var cmd = new SmtpActualDataCommand (data, false);
+			var cmd = new SmtpActualDataCommand ();
+			cmd.SetSource (data, false);
 			result = await _session.ProcessCommandAsync (cmd, cancellationToken).ConfigureAwait (false);
 			if (!result.IsPositive)
 			{

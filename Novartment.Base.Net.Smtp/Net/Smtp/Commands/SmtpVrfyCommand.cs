@@ -4,19 +4,23 @@ namespace Novartment.Base.Net.Smtp
 {
 	internal class SmtpVrfyCommand : SmtpCommand
 	{
-		internal SmtpVrfyCommand (string parameters)
+		internal SmtpVrfyCommand (ReadOnlySpan<char> parameters)
 			: base (SmtpCommandType.Vrfy)
 		{
-			this.Parameters = parameters;
+#if NETCOREAPP2_1
+			this.Parameters = new string (parameters);
+#else
+			this.Parameters = new string (parameters.ToArray ());
+#endif
 		}
 
 		internal string Parameters { get; }
 
-		internal static SmtpCommand Parse (BytesChunkEnumerator chunkEnumerator)
+		internal static SmtpCommand Parse (ReadOnlySpan<char> value, BytesChunkEnumerator chunkEnumerator)
 		{
-			bool isChunkFound = chunkEnumerator.MoveToNextChunk (0x20, 0x0d);
+			bool isChunkFound = chunkEnumerator.MoveToNextChunk (value, true, (char)0x0d);
 			return isChunkFound ?
-				(SmtpCommand)new SmtpVrfyCommand (chunkEnumerator.GetStringMaskingInvalidChars ()) :
+				(SmtpCommand)new SmtpVrfyCommand (chunkEnumerator.GetString (value)) :
 				new SmtpInvalidSyntaxCommand (SmtpCommandType.Vrfy, "Missed 'VRFY' parameter.");
 		}
 

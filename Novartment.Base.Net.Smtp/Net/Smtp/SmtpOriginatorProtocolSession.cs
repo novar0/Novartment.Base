@@ -246,7 +246,7 @@ namespace Novartment.Base.Net.Smtp
 		{
 			// посылаем приветственную команду EHLO
 			_serverSupportedExtensions.Clear ();
-			var reply = await ProcessCommandAsync (new SmtpEhloCommand (_hostFqdn), cancellationToken).ConfigureAwait (false);
+			var reply = await ProcessCommandAsync (new SmtpEhloCommand (_hostFqdn.AsSpan ()), cancellationToken).ConfigureAwait (false);
 			if (reply.IsPositive)
 			{
 				foreach (var extension in reply.Text)
@@ -270,7 +270,7 @@ namespace Novartment.Base.Net.Smtp
 				}
 
 				// если сервер не понял EHLO, посылаем HELO
-				reply = await ProcessCommandAsync (new SmtpHeloCommand (_hostFqdn), cancellationToken).ConfigureAwait (false);
+				reply = await ProcessCommandAsync (new SmtpHeloCommand (_hostFqdn.AsSpan ()), cancellationToken).ConfigureAwait (false);
 				if (!reply.IsPositive)
 				{
 					throw new InvalidOperationException (string.Join ("\r\n", reply.Text));

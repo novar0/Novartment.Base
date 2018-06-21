@@ -218,7 +218,9 @@ namespace Novartment.Base.Smtp.Test
 
 			var mailBody = "Hello dear!\r\nTell me please how you feel about last meeting.";
 			var src = new ArrayBufferedSource (Encoding.ASCII.GetBytes (mailBody + "\r\n.\r\n"));
-			sender.ReceivedCommands.Enqueue (new SmtpActualDataCommand (src, true));
+			var cmd = new SmtpActualDataCommand ();
+			cmd.SetSource (src, true);
+			sender.ReceivedCommands.Enqueue (cmd);
 			Assert.True (session.ReceiveCommandSendReplyAsync (CancellationToken.None).Result);
 			reply = sender.SendedReplies.Dequeue ();
 			Assert.Empty (sender.SendedReplies);
@@ -289,7 +291,9 @@ namespace Novartment.Base.Smtp.Test
 
 			mailBody = "33 sample\r\n\r\n\r\ndata 33";
 			src = new ArrayBufferedSource (Encoding.ASCII.GetBytes (mailBody + "\r\n.\r\n"));
-			sender.ReceivedCommands.Enqueue (new SmtpActualDataCommand (src, true));
+			cmd = new SmtpActualDataCommand ();
+			cmd.SetSource (src, true);
+			sender.ReceivedCommands.Enqueue (cmd);
 			Assert.True (session.ReceiveCommandSendReplyAsync (CancellationToken.None).Result);
 			reply = sender.SendedReplies.Dequeue ();
 			Assert.Empty (sender.SendedReplies);
@@ -552,7 +556,9 @@ namespace Novartment.Base.Smtp.Test
 
 			var mailBody = "Hello\r\n.\r\n";
 			var src = new ArrayBufferedSource (Encoding.ASCII.GetBytes (mailBody));
-			sender.ReceivedCommands.Enqueue (new SmtpActualDataCommand (src, true));
+			var cmd = new SmtpActualDataCommand ();
+			cmd.SetSource (src, true);
+			sender.ReceivedCommands.Enqueue (cmd);
 			Assert.True (session.ReceiveCommandSendReplyAsync (CancellationToken.None).Result);
 			reply = sender.SendedReplies.Dequeue ();
 			Assert.Empty (sender.SendedReplies);
@@ -589,7 +595,9 @@ namespace Novartment.Base.Smtp.Test
 			var src1 = new ArrayBufferedSource (bytes.Slice (0, mailBodyChunk1.Length));
 			var src2 = new ArrayBufferedSource (bytes.Slice (mailBodyChunk1.Length));
 
-			sender.ReceivedCommands.Enqueue (new SmtpBdatCommand (src1, mailBodyChunk1.Length, false));
+			var cmd = new SmtpBdatCommand (mailBodyChunk1.Length, false);
+			cmd.SetSource (src1);
+			sender.ReceivedCommands.Enqueue (cmd);
 			Assert.True (session.ReceiveCommandSendReplyAsync (CancellationToken.None).Result);
 			var reply = sender.SendedReplies.Dequeue ();
 			Assert.Empty (sender.SendedReplies);
@@ -599,7 +607,9 @@ namespace Novartment.Base.Smtp.Test
 			Assert.False (trctn.Disposed);
 			Assert.Equal (mailBodyChunk1.Length, src1.Offset);
 
-			sender.ReceivedCommands.Enqueue (new SmtpBdatCommand (src2, mailBodyChunk2.Length, true));
+			cmd = new SmtpBdatCommand (mailBodyChunk2.Length, true);
+			cmd.SetSource (src2);
+			sender.ReceivedCommands.Enqueue (cmd);
 			Assert.True (session.ReceiveCommandSendReplyAsync (CancellationToken.None).Result);
 			reply = sender.SendedReplies.Dequeue ();
 			Assert.Empty (sender.SendedReplies);
@@ -643,7 +653,9 @@ namespace Novartment.Base.Smtp.Test
 
 			// источник не сможет пропустить разделитель, что означает неожиданный обрыв данных
 			var src = new ArrayBufferedSource (mailBodyBytes);
-			sender.ReceivedCommands.Enqueue (new SmtpActualDataCommand (src, true));
+			var cmd = new SmtpActualDataCommand ();
+			cmd.SetSource (src, true);
+			sender.ReceivedCommands.Enqueue (cmd);
 			Assert.True (session.ReceiveCommandSendReplyAsync (CancellationToken.None).Result);
 			reply = sender.SendedReplies.Dequeue ();
 			Assert.Empty (sender.SendedReplies);
@@ -658,7 +670,9 @@ namespace Novartment.Base.Smtp.Test
 
 			// укажем размер больше чем у источника, что означает неожиданный обрыв данных
 			var src2 = new SizeLimitedBufferedSource (new ArrayBufferedSource (mailBodyBytes), mailBodyBytes.Length + 555);
-			sender.ReceivedCommands.Enqueue (new SmtpBdatCommand (src2, mailBodyBytes.Length + 555, false));
+			var cmd2 = new SmtpBdatCommand (mailBodyBytes.Length + 555, false);
+			cmd2.SetSource (src2);
+			sender.ReceivedCommands.Enqueue (cmd2);
 			Assert.True (session.ReceiveCommandSendReplyAsync (CancellationToken.None).Result);
 			reply = sender.SendedReplies.Dequeue ();
 			Assert.Empty (sender.SendedReplies);
@@ -815,7 +829,9 @@ namespace Novartment.Base.Smtp.Test
 
 			var mailBody = "Hello";
 			var src = new ArrayBufferedSource (Encoding.ASCII.GetBytes (mailBody));
-			sender.ReceivedCommands.Enqueue (new SmtpActualDataCommand (src, true));
+			var cmd = new SmtpActualDataCommand ();
+			cmd.SetSource (src, true);
+			sender.ReceivedCommands.Enqueue (cmd);
 			var cts = new CancellationTokenSource ();
 			var task = session.ReceiveCommandSendReplyAsync (cts.Token);
 			Assert.True (trctn.SlowOperationInProgressEvent.WaitOne ());
@@ -853,7 +869,9 @@ namespace Novartment.Base.Smtp.Test
 			var mailBodyChunk = "Hello";
 			var subSrc = new ArrayBufferedSource (Encoding.ASCII.GetBytes (mailBodyChunk));
 			var src = new SizeLimitedBufferedSource (subSrc, mailBodyChunk.Length);
-			sender.ReceivedCommands.Enqueue (new SmtpBdatCommand (src, mailBodyChunk.Length, false));
+			var cmd = new SmtpBdatCommand (mailBodyChunk.Length, false);
+			cmd.SetSource (src);
+			sender.ReceivedCommands.Enqueue (cmd);
 			var cts = new CancellationTokenSource ();
 			var task = session.ReceiveCommandSendReplyAsync (cts.Token);
 			Assert.True (trctn.SlowOperationInProgressEvent.WaitOne ());

@@ -347,14 +347,14 @@ namespace Novartment.Base.Net.Smtp
 			// the SASL mechanism is known to complete in one round-trip,
 			// and a security layer is not negotiated by the client.
 			// Two examples of such SASL mechanisms are PLAIN [PLAIN] and EXTERNAL [SASL].
-			if (authCommand.InitialResponse == null)
+			if (authCommand.InitialResponse.Length < 1)
 			{
 				_expectedInput = SmtpCommand.ExpectedInputType.AuthenticationResponse;
 				return SmtpReply.CreateSaslChallenge (null).DisallowGrouping ();
 			}
 			else
 			{
-				_authenticatedUser = await AuthenticateUserAsync (authCommand.InitialResponse).ConfigureAwait (false);
+				_authenticatedUser = await AuthenticateUserAsync (authCommand.InitialResponse.Span).ConfigureAwait (false);
 				if (_authenticatedUser == null)
 				{
 					throw new InvalidCredentialException ();
