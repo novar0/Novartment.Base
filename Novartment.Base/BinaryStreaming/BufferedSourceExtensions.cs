@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Diagnostics.Contracts;
-using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -256,23 +255,16 @@ namespace Novartment.Base.BinaryStreaming
 			Contract.EndContractBlock ();
 
 			// проверяем то, что уже есть в буфере
-			var offset = source.Offset;
-			var end = offset + source.Count;
-			var sourceBuf = source.BufferMemory.Span;
-			while (offset < end)
+			var idx = source.BufferMemory.Span.Slice (source.Offset, source.Count).IndexOf (value);
+			if (idx >= 0)
 			{
-				if (sourceBuf[offset] == value)
-				{
-					return Task.FromResult (offset);
-				}
-
-				offset++;
+				return Task.FromResult (idx);
 			}
 
-			if (source.IsExhausted || // источник исчерпался
-				((source.Offset < 1) && (offset >= source.BufferMemory.Length)))
+			if (source.IsExhausted || (source.Count >= source.BufferMemory.Length))
 			{
-				// буфер полон, запрашивать данные больше нет смысла
+				// источник исчерпался или буфер полон
+				// запрашивать данные больше нет смысла
 				return Task.FromResult (-1);
 			}
 
@@ -287,24 +279,18 @@ namespace Novartment.Base.BinaryStreaming
 
 					// запоминаем сколько мы уже просмотрели от начала, потому что начало сдвинется при запросе новых данных
 					// запрашиваем дополнительные данные (старые данные останутся в буфере)
-					var sizeScanned = offset - source.Offset;
+					var sizeScanned = source.Count;
 					await source.FillBufferAsync (cancellationToken).ConfigureAwait (false);
-					offset = source.Offset + sizeScanned;
-					end = source.Offset + source.Count;
-					if (offset >= end)
+					if (sizeScanned >= source.Count)
 					{
 						// запрос не добавил новых данных, что означает что в буфер больше ничего не влезет
 						break;
 					}
 
-					while (offset < end)
+					var idx2 = source.BufferMemory.Span.Slice (source.Offset + sizeScanned, source.Count - sizeScanned).IndexOf (value);
+					if (idx2 >= 0)
 					{
-						if (source.BufferMemory.Span[offset] == value)
-						{
-							return offset;
-						}
-
-						offset++;
+						return source.Offset + sizeScanned + idx;
 					}
 				}
 
@@ -313,6 +299,20 @@ namespace Novartment.Base.BinaryStreaming
 			}
 		}
 
+		/// <summary>
+		/// Асинхронно копирует данные указанного источника в указанный буфер до появления в них указанного маркера.
+		/// </summary>
+		/// <param name="source">
+		/// Источник данных для копирования.
+		/// Если будет встречен маркер, то после завершения источник будет указывать на него.
+		/// Если марке не будет найден, то после завершения источник будет исчерпан.</param>
+		/// <param name="marker">Байт-марке, при встрече которого в данных копирование будет прекращено.</param>
+		/// <param name="buffer">Буфер, куда будут копироваться все данные источника.</param>
+		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
+		/// <returns>
+		/// Количество скопированных байтов источника до того, как встретился маркер.
+		/// Если маркер не встретился, то будут скопированы все данные источника.
+		/// </returns>
 		public static Task<int> CopyToBufferUntilMarkerAsync (this IBufferedSource source, byte marker, Memory<byte> buffer, CancellationToken cancellationToken)
 		{
 			if (source == null)
@@ -322,222 +322,57 @@ namespace Novartment.Base.BinaryStreaming
 
 			Contract.EndContractBlock ();
 
-			int outCount;
-
 			// проверяем то, что уже есть в буфере
-			var offset = source.Offset;
-			var end = offset + source.Count;
-			var sourceBuffer = source.BufferMemory.Span;
-			while (offset < end)
+			var idx = source.BufferMemory.Span.Slice (source.Offset, source.Count).IndexOf (marker);
+			if (idx >= 0)
 			{
-				outCount = offset - source.Offset;
-				var b = sourceBuffer[offset];
-				if (b == marker)
+				if (idx > 0)
 				{
-					if (outCount > 0)
-					{
-						source.BufferMemory.Slice (source.Offset, outCount).CopyTo (buffer);
-						source.SkipBuffer (outCount);
-					}
-
-					return Task.FromResult (outCount);
+					source.BufferMemory.Slice (source.Offset, idx).CopyTo (buffer);
+					source.SkipBuffer (idx);
 				}
 
-				if (outCount >= buffer.Length)
-				{
-					throw new InvalidOperationException ("Too small destination.");
-				}
-
-				offset++;
+				return Task.FromResult (idx);
 			}
 
-			outCount = source.Count;
-			if (outCount > 0)
+			var totalOutCount = source.Count;
+			if (totalOutCount > 0)
 			{
-				source.BufferMemory.Slice (source.Offset, outCount).CopyTo (buffer);
-				source.SkipBuffer (outCount);
+				source.BufferMemory.Slice (source.Offset, totalOutCount).CopyTo (buffer);
+				source.SkipBuffer (totalOutCount);
 			}
 
 			if (source.IsExhausted)
 			{
-				return Task.FromResult (outCount);
+				return Task.FromResult (totalOutCount);
 			}
 
-			buffer = buffer.Slice (outCount);
+			buffer = buffer.Slice (totalOutCount);
 
 			// продолжение поиска с предварительным вызовом заполнения буфера
 			return CopyToBufferUntilMarkerStateMachine ();
 
 			async Task<int> CopyToBufferUntilMarkerStateMachine ()
 			{
-				var totalOutCount = outCount;
 				while (!source.IsExhausted)
 				{
 					cancellationToken.ThrowIfCancellationRequested ();
 
 					await source.FillBufferAsync (cancellationToken).ConfigureAwait (false);
-					offset = source.Offset;
-					end = source.Offset + source.Count;
 
-					while (offset < end)
+					var idx2 = source.BufferMemory.Span.Slice (source.Offset, source.Count).IndexOf (marker);
+					if (idx2 >= 0)
 					{
-						outCount = offset - source.Offset;
-						var b = source.BufferMemory.Span[offset];
-						if (b == marker)
+						if (idx2 > 0)
 						{
-							if (outCount > 0)
-							{
-								source.BufferMemory.Slice (source.Offset, outCount).CopyTo (buffer);
-								source.SkipBuffer (outCount);
-							}
-
-							return totalOutCount + outCount;
+							source.BufferMemory.Slice (source.Offset, idx2).CopyTo (buffer);
+							source.SkipBuffer (idx2);
 						}
 
-						if ((totalOutCount + outCount) >= buffer.Length)
-						{
-							throw new InvalidOperationException ("Too small destination.");
-						}
-
-						offset++;
+						return totalOutCount + idx2;
 					}
 
-					outCount = source.Count;
-					if (outCount > 0)
-					{
-						source.BufferMemory.Slice (source.Offset, outCount).CopyTo (buffer);
-						source.SkipBuffer (outCount);
-						buffer = buffer.Slice (outCount);
-						totalOutCount += outCount;
-					}
-				}
-
-				// источник исчерпался или нет места в буфере, запрашивать данные больше нет смысла
-				return totalOutCount;
-			}
-		}
-
-		public static Task<int> CopyToBufferUntilMarkerAsync (this IBufferedSource source, byte marker1, byte marker2, Memory<byte> buffer, CancellationToken cancellationToken)
-		{
-			if (source == null)
-			{
-				throw new ArgumentNullException (nameof (source));
-			}
-
-			Contract.EndContractBlock ();
-
-			// нужен байт, который точно не равен маркеру
-			var notMarker = 0;
-			while ((notMarker == marker1) || (notMarker == marker2))
-			{
-				notMarker++;
-			}
-
-			int outCount;
-
-			// проверяем то, что уже есть в буфере
-			var offset = source.Offset;
-			var end = offset + source.Count;
-			var sourceBuf = source.BufferMemory.Span;
-			while (offset < end)
-			{
-				outCount = offset - source.Offset;
-				var b1 = sourceBuf[offset];
-				if (b1 == marker1)
-				{
-					if ((offset == (end - 1)) && !source.IsExhausted)
-					{
-						// если буфер кончается маркером1 то его пока не рассматривать
-						break;
-					}
-					else
-					{
-						var b2 = ((offset + 1) < end) ? sourceBuf[offset + 1] : notMarker;
-						if (b2 == marker2)
-						{
-							if (outCount > 0)
-							{
-								source.BufferMemory.Slice (source.Offset, outCount).CopyTo (buffer);
-								source.SkipBuffer (outCount);
-							}
-
-							return Task.FromResult (outCount);
-						}
-					}
-				}
-
-				if (outCount >= buffer.Length)
-				{
-					throw new InvalidOperationException ("Too small destination.");
-				}
-
-				offset++;
-			}
-
-			outCount = offset - source.Offset;
-			if (outCount > 0)
-			{
-				source.BufferMemory.Slice (source.Offset, outCount).CopyTo (buffer);
-				source.SkipBuffer (outCount);
-			}
-
-			if (source.IsExhausted)
-			{
-				return Task.FromResult (outCount);
-			}
-
-			buffer = buffer.Slice (outCount);
-
-			// продолжение поиска с предварительным вызовом заполнения буфера
-			return CopyToBufferUntilMarkerStateMachine ();
-
-			async Task<int> CopyToBufferUntilMarkerStateMachine ()
-			{
-				var totalOutCount = outCount;
-				while (!source.IsExhausted)
-				{
-					cancellationToken.ThrowIfCancellationRequested ();
-
-					await source.FillBufferAsync (cancellationToken).ConfigureAwait (false);
-					offset = source.Offset;
-					end = source.Offset + source.Count;
-
-					while (offset < end)
-					{
-						outCount = offset - source.Offset;
-						var b1 = source.BufferMemory.Span[offset];
-						if (b1 == marker1)
-						{
-							if ((offset == (end - 1)) && !source.IsExhausted)
-							{
-								// если буфер кончается маркером1 то его пока не рассматривать
-								break;
-							}
-							else
-							{
-								var b2 = ((offset + 1) < end) ? source.BufferMemory.Span[offset + 1] : notMarker;
-								if (b2 == marker2)
-								{
-									if (outCount > 0)
-									{
-										source.BufferMemory.Slice (source.Offset, outCount).CopyTo (buffer);
-										source.SkipBuffer (outCount);
-									}
-
-									return totalOutCount + outCount;
-								}
-							}
-						}
-
-						if ((totalOutCount + outCount) >= buffer.Length)
-						{
-							throw new InvalidOperationException ("Too small destination.");
-						}
-
-						offset++;
-					}
-
-					outCount = offset - source.Offset;
+					var outCount = source.Count;
 					if (outCount > 0)
 					{
 						source.BufferMemory.Slice (source.Offset, outCount).CopyTo (buffer);

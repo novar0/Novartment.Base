@@ -56,7 +56,7 @@ namespace Novartment.Base.Test
 
 		[Fact]
 		[Trait ("Category", "BufferedSource")]
-		public void CopyToBufferUntilMarker1 ()
+		public void CopyToBufferUntilMarker ()
 		{
 			int bufSize = 5;
 			var dest = new byte[1000];
@@ -137,137 +137,6 @@ namespace Novartment.Base.Test
 			Assert.Equal (85, dest[6]); // destination untouched
 			Assert.Equal (172, src.BufferMemory.Span[src.Offset]); // marker in source at start
 			Assert.Equal (1, src.Count);
-		}
-
-		[Fact]
-		[Trait ("Category", "BufferedSource")]
-		public void CopyToBufferUntilMarker2 ()
-		{
-			int bufSize = 5;
-			var dest = new byte[1000];
-
-			// first byte in first buffer
-			Array.Fill<byte> (dest, 85);
-			var src = new BigBufferedSourceMock (long.MaxValue, bufSize, FillFunction);
-			var result = src.CopyToBufferUntilMarkerAsync (170, 171, dest, CancellationToken.None).Result;
-			Assert.Equal (0, result); // no bytes copied
-			Assert.Equal (85, dest[0]); // destination untouched
-			Assert.Equal (170, src.BufferMemory.Span[src.Offset]); // marker in source at start
-			Assert.Equal (171, src.BufferMemory.Span[src.Offset + 1]);
-
-			// not found with size less than buffer
-			Array.Fill<byte> (dest, 85);
-			src = new BigBufferedSourceMock (4, bufSize, FillFunction);
-			result = src.CopyToBufferUntilMarkerAsync (84, 85, dest, CancellationToken.None).Result;
-			Assert.Equal (4, result); // no bytes copied
-			Assert.Equal (170, dest[0]);
-			Assert.Equal (171, dest[1]);
-			Assert.Equal (168, dest[2]);
-			Assert.Equal (169, dest[3]);
-			Assert.Equal (85, dest[4]); // destination untouched
-			Assert.Equal (0, src.Count);
-			Assert.True (src.IsExhausted);
-
-			// first marker found as last byte, second not found, size less than buffer
-			Array.Fill<byte> (dest, 85);
-			src = new BigBufferedSourceMock (4, bufSize, FillFunction);
-			result = src.CopyToBufferUntilMarkerAsync (169, 85, dest, CancellationToken.None).Result;
-			Assert.Equal (4, result); // no bytes copied
-			Assert.Equal (170, dest[0]);
-			Assert.Equal (171, dest[1]);
-			Assert.Equal (168, dest[2]);
-			Assert.Equal (169, dest[3]);
-			Assert.Equal (85, dest[4]); // destination untouched
-			Assert.Equal (0, src.Count);
-			Assert.True (src.IsExhausted);
-
-			// not found with size bigger than buffer
-			Array.Fill<byte> (dest, 85);
-			src = new BigBufferedSourceMock (7, bufSize, FillFunction);
-			result = src.CopyToBufferUntilMarkerAsync (84, 85, dest, CancellationToken.None).Result;
-			Assert.Equal (7, result); // no bytes copied
-			Assert.Equal (170, dest[0]);
-			Assert.Equal (171, dest[1]);
-			Assert.Equal (168, dest[2]);
-			Assert.Equal (169, dest[3]);
-			Assert.Equal (174, dest[4]);
-			Assert.Equal (175, dest[5]);
-			Assert.Equal (172, dest[6]);
-			Assert.Equal (85, dest[7]); // destination untouched
-			Assert.Equal (0, src.Count); // marker in source at start
-			Assert.True (src.IsExhausted);
-
-			// first marker found as last byte, second not found, size bigger than buffer
-			Array.Fill<byte> (dest, 85);
-			src = new BigBufferedSourceMock (8, bufSize, FillFunction);
-			result = src.CopyToBufferUntilMarkerAsync (173, 85, dest, CancellationToken.None).Result;
-			Assert.Equal (8, result); // no bytes copied
-			Assert.Equal (170, dest[0]);
-			Assert.Equal (171, dest[1]);
-			Assert.Equal (168, dest[2]);
-			Assert.Equal (169, dest[3]);
-			Assert.Equal (174, dest[4]);
-			Assert.Equal (175, dest[5]);
-			Assert.Equal (172, dest[6]);
-			Assert.Equal (173, dest[7]);
-			Assert.Equal (85, dest[8]); // destination untouched
-			Assert.Equal (0, src.Count); // marker in source at start
-			Assert.True (src.IsExhausted);
-
-			// last byte in first buffer
-			Array.Fill<byte> (dest, 85);
-			src = new BigBufferedSourceMock (long.MaxValue, bufSize, FillFunction);
-			result = src.CopyToBufferUntilMarkerAsync (169, 174, dest, CancellationToken.None).Result;
-			Assert.Equal (3, result);
-			Assert.Equal (170, dest[0]);
-			Assert.Equal (171, dest[1]);
-			Assert.Equal (168, dest[2]);
-			Assert.Equal (85, dest[3]); // destination untouched
-			Assert.Equal (169, src.BufferMemory.Span[src.Offset]); // marker in source at start
-			Assert.Equal (174, src.BufferMemory.Span[src.Offset + 1]);
-
-			// first byte in second buffer
-			Array.Fill<byte> (dest, 85);
-			src = new BigBufferedSourceMock (long.MaxValue, bufSize, FillFunction);
-			result = src.CopyToBufferUntilMarkerAsync (175, 172, dest, CancellationToken.None).Result;
-			Assert.Equal (5, result);
-			Assert.Equal (170, dest[0]);
-			Assert.Equal (171, dest[1]);
-			Assert.Equal (168, dest[2]);
-			Assert.Equal (169, dest[3]);
-			Assert.Equal (174, dest[4]);
-			Assert.Equal (85, dest[5]); // destination untouched
-			Assert.Equal (175, src.BufferMemory.Span[src.Offset]); // marker in source at start
-			Assert.Equal (172, src.BufferMemory.Span[src.Offset + 1]);
-
-			// last byte in first buffer and first byte in second buffer
-			Array.Fill<byte> (dest, 85);
-			src = new BigBufferedSourceMock (long.MaxValue, bufSize, FillFunction);
-			result = src.CopyToBufferUntilMarkerAsync (174, 175, dest, CancellationToken.None).Result;
-			Assert.Equal (4, result);
-			Assert.Equal (170, dest[0]);
-			Assert.Equal (171, dest[1]);
-			Assert.Equal (168, dest[2]);
-			Assert.Equal (169, dest[3]);
-			Assert.Equal (85, dest[4]); // destination untouched
-			Assert.Equal (174, src.BufferMemory.Span[src.Offset]); // marker in source at start
-			Assert.Equal (175, src.BufferMemory.Span[src.Offset + 1]);
-
-			// last byte of source
-			Array.Fill<byte> (dest, 85);
-			src = new BigBufferedSourceMock (8, bufSize, FillFunction);
-			result = src.CopyToBufferUntilMarkerAsync (172, 173, dest, CancellationToken.None).Result;
-			Assert.Equal (6, result);
-			Assert.Equal (170, dest[0]);
-			Assert.Equal (171, dest[1]);
-			Assert.Equal (168, dest[2]);
-			Assert.Equal (169, dest[3]);
-			Assert.Equal (174, dest[4]);
-			Assert.Equal (175, dest[5]);
-			Assert.Equal (85, dest[6]); // destination untouched
-			Assert.Equal (2, src.Count);
-			Assert.Equal (172, src.BufferMemory.Span[src.Offset]); // marker in source at start
-			Assert.Equal (173, src.BufferMemory.Span[src.Offset + 1]);
 		}
 
 		[Fact]
