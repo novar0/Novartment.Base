@@ -13,7 +13,7 @@ namespace Novartment.Base.Net.Mime
 	public class DataEntityBody :
 		IDiscreteEntityBody
 	{
-		private static readonly int _DefaultEncodeBufferSize = 32000;
+		private const int DefaultEncodeBufferSize = 32000;
 		private ReadOnlyMemory<byte> _encodedData;
 
 		/// <summary>
@@ -226,7 +226,7 @@ namespace Novartment.Base.Net.Mime
 			int blocks;
 			if (inputSizeHint < 1)
 			{
-				blocks = _DefaultEncodeBufferSize / cryptoTransform.OutputBlockSize;
+				blocks = DefaultEncodeBufferSize / cryptoTransform.OutputBlockSize;
 			}
 			else
 			{

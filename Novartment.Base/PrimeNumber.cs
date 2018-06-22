@@ -7,7 +7,7 @@ namespace Novartment.Base
 	/// </summary>
 	public static class PrimeNumber
 	{
-		private static readonly int[] _Primes =
+		private static readonly int[] Primes =
 		{
 			3, 7, 11, 0x11, 0x17, 0x1d, 0x25, 0x2f, 0x3b, 0x47, 0x59, 0x6b, 0x83, 0xa3, 0xc5, 0xef,
 			0x125, 0x161, 0x1af, 0x209, 0x277, 0x2f9, 0x397, 0x44f, 0x52f, 0x63d, 0x78b, 0x91d, 0xaf1, 0xd2b, 0xfd1, 0x12fd,
@@ -20,7 +20,7 @@ namespace Novartment.Base
 		/// <summary>
 		/// Получает минимальное простое число больше двух.
 		/// </summary>
-		public static int MinValue => _Primes[0];
+		public static int MinValue => Primes[0];
 
 		/// <summary>
 		/// Получает простое число равное или большее чем указанное.
@@ -29,9 +29,9 @@ namespace Novartment.Base
 		/// <returns>Простое число равное или большее чем указано.</returns>
 		public static int GetGreaterThanOrEqual (int min)
 		{
-			for (var i = 0; i < _Primes.Length; i++)
+			for (var i = 0; i < Primes.Length; i++)
 			{
-				var num2 = _Primes[i];
+				var num2 = Primes[i];
 				if (num2 >= min)
 				{
 					return num2;

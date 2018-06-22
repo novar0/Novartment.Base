@@ -9,7 +9,7 @@ namespace Novartment.Base
 	public class ReferenceEqualityComparer :
 		IEqualityComparer<object>
 	{
-		private static readonly IEqualityComparer<object> _Default = new ReferenceEqualityComparer ();
+		private static readonly IEqualityComparer<object> _default = new ReferenceEqualityComparer ();
 
 		private ReferenceEqualityComparer ()
 		{
@@ -18,7 +18,7 @@ namespace Novartment.Base
 		/// <summary>
 		/// Получает экземпляр ссылочного компаратора.
 		/// </summary>
-		public static IEqualityComparer<object> Default => _Default;
+		public static IEqualityComparer<object> Default => _default;
 
 		/// <summary>
 		/// Определяет, указывают ли обе указанных ссылки на один объект.

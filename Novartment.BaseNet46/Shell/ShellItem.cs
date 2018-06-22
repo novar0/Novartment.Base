@@ -17,12 +17,12 @@ namespace Novartment.Base.Shell
 	[DebuggerDisplay ("{DisplayNameRelative}")]
 	public class ShellItem
 	{
-		private static readonly Guid _GuidIShellItem = new Guid ("43826D1E-E718-42EE-BC55-A1E261C37BFE");
-		private static readonly ShellPropertyKey _ShellPropertyKeySize = new ShellPropertyKey (new Guid ("B725F130-47EF-101A-A5F1-02608C9EEBAC"), 12);
-		private static readonly ShellPropertyKey _ShellPropertyKeyFileAttributes = new ShellPropertyKey (new Guid ("B725F130-47EF-101A-A5F1-02608C9EEBAC"), 13);
-		private static readonly ShellPropertyKey _ShellPropertyKeyDateModified = new ShellPropertyKey (new Guid ("B725F130-47EF-101A-A5F1-02608C9EEBAC"), 14);
-		private static readonly ShellPropertyKey _ShellPropertyKeyDateCreated = new ShellPropertyKey (new Guid ("B725F130-47EF-101A-A5F1-02608C9EEBAC"), 15);
-		private static readonly ShellPropertyKey _ShellPropertyKeyDateAccessed = new ShellPropertyKey (new Guid ("B725F130-47EF-101A-A5F1-02608C9EEBAC"), 16);
+		private static readonly Guid _guidIShellItem = new Guid ("43826D1E-E718-42EE-BC55-A1E261C37BFE");
+		private static readonly ShellPropertyKey _shellPropertyKeySize = new ShellPropertyKey (new Guid ("B725F130-47EF-101A-A5F1-02608C9EEBAC"), 12);
+		private static readonly ShellPropertyKey _shellPropertyKeyFileAttributes = new ShellPropertyKey (new Guid ("B725F130-47EF-101A-A5F1-02608C9EEBAC"), 13);
+		private static readonly ShellPropertyKey _shellPropertyKeyDateModified = new ShellPropertyKey (new Guid ("B725F130-47EF-101A-A5F1-02608C9EEBAC"), 14);
+		private static readonly ShellPropertyKey _shellPropertyKeyDateCreated = new ShellPropertyKey (new Guid ("B725F130-47EF-101A-A5F1-02608C9EEBAC"), 15);
+		private static readonly ShellPropertyKey _shellPropertyKeyDateAccessed = new ShellPropertyKey (new Guid ("B725F130-47EF-101A-A5F1-02608C9EEBAC"), 16);
 		private readonly IShellItem _nativeShellItem;
 
 		/// <summary>
@@ -170,7 +170,7 @@ namespace Novartment.Base.Shell
 					throw new NotSupportedException("Failed to get properties of shell item because it does not implements required IShellItem2 interface.");
 				}
 
-				var hr = shellItem.GetUInt64 (_ShellPropertyKeySize, out ulong size);
+				var hr = shellItem.GetUInt64 (_shellPropertyKeySize, out ulong size);
 				if (hr != 0)
 				{
 					return null;
@@ -190,7 +190,7 @@ namespace Novartment.Base.Shell
 					throw new NotSupportedException("Failed to get properties of shell item because it does not implements required IShellItem2 interface.");
 				}
 
-				var hr = shellItem.GetInt32 (_ShellPropertyKeyFileAttributes, out int attributes);
+				var hr = shellItem.GetInt32 (_shellPropertyKeyFileAttributes, out int attributes);
 				if (hr != 0)
 				{
 					return null;
@@ -210,7 +210,7 @@ namespace Novartment.Base.Shell
 					throw new NotSupportedException("Failed to get properties of shell item because it does not implements required IShellItem2 interface.");
 				}
 
-				var hr = shellItem.GetFileTime (_ShellPropertyKeyDateModified, out long time);
+				var hr = shellItem.GetFileTime (_shellPropertyKeyDateModified, out long time);
 				if (hr != 0)
 				{
 					return null;
@@ -230,7 +230,7 @@ namespace Novartment.Base.Shell
 					throw new NotSupportedException("Failed to get properties of shell item because it does not implements required IShellItem2 interface.");
 				}
 
-				var hr = shellItem.GetFileTime (_ShellPropertyKeyDateCreated, out long time);
+				var hr = shellItem.GetFileTime (_shellPropertyKeyDateCreated, out long time);
 				if (hr != 0)
 				{
 					return null;
@@ -250,7 +250,7 @@ namespace Novartment.Base.Shell
 					throw new NotSupportedException("Failed to get properties of shell item because it does not implements required IShellItem2 interface.");
 				}
 
-				var hr = shellItem.GetFileTime (_ShellPropertyKeyDateAccessed, out long time);
+				var hr = shellItem.GetFileTime (_shellPropertyKeyDateAccessed, out long time);
 				if (hr != 0)
 				{
 					return null;
@@ -285,7 +285,7 @@ namespace Novartment.Base.Shell
 				throw new ThreadStateException ("For shell functions thread must be STA.");
 			}
 
-			var guid = _GuidIShellItem;
+			var guid = _guidIShellItem;
 			var hr = NativeMethods.Shell32.SHCreateItemFromParsingName (
 				path,
 				IntPtr.Zero,
@@ -502,8 +502,8 @@ namespace Novartment.Base.Shell
 		internal class ShellItemsEnumerable :
 			IEnumerable<IShellItem>
 		{
-			private static readonly string _GuidIEnumShellItems = "70629033-e363-4a28-a567-0db78006e6d7";
-			private static readonly string _GuidEnumItemsHandler = "94f60519-2850-4924-aa5a-d15e84868039"; // BHID_EnumItems
+			private static readonly string _guidIEnumShellItems = "70629033-e363-4a28-a567-0db78006e6d7";
+			private static readonly string _guidEnumItemsHandler = "94f60519-2850-4924-aa5a-d15e84868039"; // BHID_EnumItems
 			private readonly IShellItem _nativeShellItem;
 
 			internal ShellItemsEnumerable (IShellItem nativeShellItem)
@@ -518,8 +518,8 @@ namespace Novartment.Base.Shell
 
 			public IEnumerator<IShellItem> GetEnumerator ()
 			{
-				var guid = new Guid (_GuidIEnumShellItems);
-				var handler = new Guid (_GuidEnumItemsHandler);
+				var guid = new Guid (_guidIEnumShellItems);
+				var handler = new Guid (_guidEnumItemsHandler);
 				var hr = _nativeShellItem.BindToHandler (
 					IntPtr.Zero,
 					ref handler,

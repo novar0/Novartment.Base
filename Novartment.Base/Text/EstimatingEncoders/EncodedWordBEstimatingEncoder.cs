@@ -10,7 +10,7 @@ namespace Novartment.Base.Text
 	public class EncodedWordBEstimatingEncoder :
 		IEstimatingEncoder
 	{
-		private static readonly byte[] _Base64Table =
+		private static readonly byte[] _base64Table =
 		{
 			0x41, 0x42, 0x43, 0x44, 0x45, 0x46, 0x47, 0x48, 0x49, 0x4a, 0x4b, 0x4c, 0x4d, 0x4e, 0x4f, 0x50, 0x51, 0x52, 0x53, 0x54, 0x55, 0x56, 0x57, 0x58, 0x59, 0x5a,
 			0x61, 0x62, 0x63, 0x64, 0x65, 0x66, 0x67, 0x68, 0x69, 0x6a, 0x6b, 0x6c, 0x6d, 0x6e, 0x6f, 0x70, 0x71, 0x72, 0x73, 0x74, 0x75, 0x76, 0x77, 0x78, 0x79, 0x7a,
@@ -190,27 +190,27 @@ namespace Novartment.Base.Text
 			var tailPos = offset + (length - tail);
 			while (offset < tailPos)
 			{
-				outData[outOffset++] = _Base64Table[(inData[offset] & 0xfc) >> 2];
-				outData[outOffset++] = _Base64Table[((inData[offset] & 0x03) << 4) | ((inData[offset + 1] & 0xf0) >> 4)];
-				outData[outOffset++] = _Base64Table[((inData[offset + 1] & 0x0f) << 2) | ((inData[offset + 2] & 0xc0) >> 6)];
-				outData[outOffset++] = _Base64Table[inData[offset + 2] & 0x3f];
+				outData[outOffset++] = _base64Table[(inData[offset] & 0xfc) >> 2];
+				outData[outOffset++] = _base64Table[((inData[offset] & 0x03) << 4) | ((inData[offset + 1] & 0xf0) >> 4)];
+				outData[outOffset++] = _base64Table[((inData[offset + 1] & 0x0f) << 2) | ((inData[offset + 2] & 0xc0) >> 6)];
+				outData[outOffset++] = _base64Table[inData[offset + 2] & 0x3f];
 				offset += 3;
 			}
 
 			switch (tail)
 			{
 				case 1:
-					outData[outOffset] = _Base64Table[(inData[tailPos] & 0xfc) >> 2];
-					outData[outOffset + 1] = _Base64Table[(inData[tailPos] & 0x03) << 4];
-					outData[outOffset + 2] = _Base64Table[0x40];
-					outData[outOffset + 3] = _Base64Table[0x40];
+					outData[outOffset] = _base64Table[(inData[tailPos] & 0xfc) >> 2];
+					outData[outOffset + 1] = _base64Table[(inData[tailPos] & 0x03) << 4];
+					outData[outOffset + 2] = _base64Table[0x40];
+					outData[outOffset + 3] = _base64Table[0x40];
 					outOffset += 4;
 					break;
 				case 2:
-					outData[outOffset] = _Base64Table[(inData[tailPos] & 0xfc) >> 2];
-					outData[outOffset + 1] = _Base64Table[((inData[tailPos] & 0x03) << 4) | ((inData[tailPos + 1] & 0xf0) >> 4)];
-					outData[outOffset + 2] = _Base64Table[(inData[tailPos + 1] & 0x0f) << 2];
-					outData[outOffset + 3] = _Base64Table[0x40];
+					outData[outOffset] = _base64Table[(inData[tailPos] & 0xfc) >> 2];
+					outData[outOffset + 1] = _base64Table[((inData[tailPos] & 0x03) << 4) | ((inData[tailPos + 1] & 0xf0) >> 4)];
+					outData[outOffset + 2] = _base64Table[(inData[tailPos + 1] & 0x0f) << 2];
+					outData[outOffset + 3] = _base64Table[0x40];
 					outOffset += 4;
 					break;
 			}

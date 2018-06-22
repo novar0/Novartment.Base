@@ -73,7 +73,7 @@ namespace Novartment.Base.Net.Mime
 		- MUST NOT be used in any structured field body except within a 'comment' or 'phrase'.
 		*/
 
-		private static readonly NumberFormatInfo _NumberFormatDot = new NumberFormatInfo { NumberDecimalSeparator = ".", NumberGroupSeparator = "," };
+		private static readonly NumberFormatInfo _numberFormatDot = new NumberFormatInfo { NumberDecimalSeparator = ".", NumberGroupSeparator = "," };
 
 		/// <summary>
 		/// Decodes 'atom' value from specified representation.
@@ -1143,13 +1143,13 @@ namespace Novartment.Base.Net.Mime
 				var isValidNumber = decimal.TryParse (
 					source.Slice (qualityElement.StartPosition, qualityElement.Length),
 					NumberStyles.AllowDecimalPoint,
-					_NumberFormatDot,
+					_numberFormatDot,
 					out quality);
 #else
 				var isValidNumber = decimal.TryParse (
 					new string (source.Slice (qualityElement.StartPosition, qualityElement.Length).ToArray ()),
 					NumberStyles.AllowDecimalPoint,
-					_NumberFormatDot,
+					_numberFormatDot,
 					out quality);
 #endif
 				if (!isValidNumber ||

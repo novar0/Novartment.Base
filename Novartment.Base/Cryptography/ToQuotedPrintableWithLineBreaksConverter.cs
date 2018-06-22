@@ -9,12 +9,12 @@ namespace Novartment.Base
 	public sealed class ToQuotedPrintableWithLineBreaksConverter :
 		ISpanCryptoTransform
 	{
-		private static readonly int _maxLineLen = 75; // по стандарту предел 76 печатных символов, но чтобы начать новую строку надо добавлять символ '='
-		private static readonly int _inputBlockSize = 25;
+		private const int MaximumLineLen = 75; // по стандарту предел 76 печатных символов, но чтобы начать новую строку надо добавлять символ '='
+		private const int MaximumSourceToSurelyFitMaximumLineLen = 25;
 		private readonly bool _isText;
 
-		private readonly byte[] _outArray = new byte[(_maxLineLen * 2) + 3];
-		private readonly int[] _outArraySizes = new int[(_maxLineLen * 2) + 3];
+		private readonly byte[] _outArray = new byte[(MaximumLineLen * 2) + 3];
+		private readonly int[] _outArraySizes = new int[(MaximumLineLen * 2) + 3];
 
 		private int _outArrayOffset;
 		private int _outArrayCount;
@@ -36,12 +36,12 @@ namespace Novartment.Base
 		/// <summary>
 		/// Получает размер входного блока.
 		/// </summary>
-		public int InputBlockSize => _inputBlockSize;
+		public int InputBlockSize => MaximumSourceToSurelyFitMaximumLineLen;
 
 		/// <summary>
 		/// Получает размер выходного блока.
 		/// </summary>
-		public int OutputBlockSize => _maxLineLen + 3;
+		public int OutputBlockSize => MaximumLineLen + 3;
 
 		/// <summary>
 		/// Получает значение, указывающее на возможность повторного использования текущего преобразования.
@@ -103,7 +103,7 @@ namespace Novartment.Base
 					else
 					{
 						// данных хватает на целую строку, выводим её
-						if ((totalSize + _outArraySizes[idx]) > _maxLineLen)
+						if ((totalSize + _outArraySizes[idx]) > MaximumLineLen)
 						{
 							_outArray.AsSpan (0, totalSize).CopyTo (outputBuffer.Slice (outputOffset));
 							outputSize += totalSize;
@@ -144,7 +144,7 @@ namespace Novartment.Base
 				}
 
 				// сюда попали только когда в буфере недостаточно данных для вывода строки, поэтому добавляем данные в буфер
-				var inputSize = Math.Min (_inputBlockSize, inputEndOffset - inputOffset);
+				var inputSize = Math.Min (MaximumSourceToSurelyFitMaximumLineLen, inputEndOffset - inputOffset);
 				FillOutBuffer (inputBuffer.Slice (inputOffset, inputSize));
 				inputOffset += inputSize;
 			}
@@ -160,7 +160,7 @@ namespace Novartment.Base
 		/// <returns>Вычисленное преобразование.</returns>
 		public ReadOnlyMemory<byte> TransformFinalBlock (ReadOnlySpan<byte> inputBuffer)
 		{
-			var result = new byte[_maxLineLen + _outArray.Length];
+			var result = new byte[MaximumLineLen + _outArray.Length];
 			int resultOffset = 0;
 			if (inputBuffer.Length > 0)
 			{

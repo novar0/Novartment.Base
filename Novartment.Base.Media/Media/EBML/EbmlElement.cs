@@ -16,9 +16,9 @@ namespace Novartment.Base.Media
 	[CLSCompliant (false)]
 	public class EbmlElement
 	{
-		private static readonly DateTime _MilleniumStart = new DateTime (2001, 1, 1, 0, 0, 0, DateTimeKind.Utc);
-		private static readonly sbyte[] _ExtraBytesSize = { 4, 3, 2, 2, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0 };
-		private static readonly ulong[] _DataBitsMask =
+		private static readonly DateTime MilleniumStart = new DateTime (2001, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+		private static readonly sbyte[] ExtraBytesSize = { 4, 3, 2, 2, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0 };
+		private static readonly ulong[] DataBitsMask =
 		{
 			(1L << 0) - 1,
 			(1L << 7) - 1,
@@ -307,7 +307,7 @@ namespace Novartment.Base.Media
 		/// <returns>the element data as a date.</returns>
 		public DateTime ReadDate ()
 		{
-			return _MilleniumStart.AddTicks (ReadInt () / 100L);
+			return MilleniumStart.AddTicks (ReadInt () / 100L);
 		}
 
 		/// <summary>
@@ -388,8 +388,8 @@ namespace Novartment.Base.Media
 			}
 
 			var extraBytes = ((source.BufferMemory.Span[source.Offset] & 0xf0) != 0) ?
-				_ExtraBytesSize[source.BufferMemory.Span[source.Offset] >> 4] :
-				(4 + _ExtraBytesSize[source.BufferMemory.Span[source.Offset]]);
+				ExtraBytesSize[source.BufferMemory.Span[source.Offset] >> 4] :
+				(4 + ExtraBytesSize[source.BufferMemory.Span[source.Offset]]);
 
 			var size = extraBytes + 1;
 			if (size > source.BufferMemory.Length)
@@ -420,8 +420,8 @@ namespace Novartment.Base.Media
 			}
 
 			var extraBytes = ((source.BufferMemory.Span[source.Offset] & 0xf0) != 0) ?
-				_ExtraBytesSize[source.BufferMemory.Span[source.Offset] >> 4] :
-				(4 + _ExtraBytesSize[source.BufferMemory.Span[source.Offset]]);
+				ExtraBytesSize[source.BufferMemory.Span[source.Offset] >> 4] :
+				(4 + ExtraBytesSize[source.BufferMemory.Span[source.Offset]]);
 
 			var size = extraBytes + 1;
 			if (size > source.BufferMemory.Length)
@@ -439,7 +439,7 @@ namespace Novartment.Base.Media
 
 			source.SkipBuffer (size);
 
-			return encodedValue & _DataBitsMask[extraBytes + 1];
+			return encodedValue & DataBitsMask[extraBytes + 1];
 		}
 	}
 }

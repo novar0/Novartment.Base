@@ -21,10 +21,11 @@ namespace Novartment.Base
 		IClipboard
 	{
 		/// <summary>Количество попыток выполнения запрошенных операций.</summary>
-		private static readonly int _RetryCount = 10;
+		private const int RetryCount = 10;
 
 		/// <summary>Пауза между попытками выполнения запрошенных операций (миллисекунды).</summary>
-		private static readonly int _RetryPeriodMs = 100;
+		private const int RetryPeriodMs = 100;
+
 		private readonly Func<IDataContainer, IDataObject> _toComDataObjectConverter;
 		private readonly Func<IDataObject, IDataContainer> _fromComDataObjectConverter;
 
@@ -66,7 +67,7 @@ namespace Novartment.Base
 				throw new ThreadStateException ("For OLE functions thread must be STA.");
 			}
 
-			var num = _RetryCount;
+			var num = RetryCount;
 			while (true)
 			{
 				var hr = NativeMethods.Ole32.OleFlushClipboard ();
@@ -80,7 +81,7 @@ namespace Novartment.Base
 					Marshal.ThrowExceptionForHR (hr);
 				}
 
-				Thread.Sleep (_RetryPeriodMs);
+				Thread.Sleep (RetryPeriodMs);
 			}
 		}
 
@@ -106,7 +107,7 @@ namespace Novartment.Base
 			}
 
 			var dataObject = _toComDataObjectConverter.Invoke (data);
-			var num = _RetryCount;
+			var num = RetryCount;
 			int hr;
 			while (true)
 			{
@@ -116,7 +117,7 @@ namespace Novartment.Base
 					break;
 				}
 
-				Thread.Sleep (_RetryPeriodMs);
+				Thread.Sleep (RetryPeriodMs);
 			}
 
 			Marshal.ThrowExceptionForHR (hr);
@@ -139,7 +140,7 @@ namespace Novartment.Base
 				throw new ThreadStateException ("For OLE functions thread must be STA.");
 			}
 
-			var num = _RetryCount;
+			var num = RetryCount;
 			IDataObject result;
 			while (true)
 			{
@@ -155,7 +156,7 @@ namespace Novartment.Base
 					Marshal.ThrowExceptionForHR (hr);
 				}
 
-				Thread.Sleep (_RetryPeriodMs);
+				Thread.Sleep (RetryPeriodMs);
 			}
 
 			return _fromComDataObjectConverter.Invoke (result);
@@ -182,7 +183,7 @@ namespace Novartment.Base
 			}
 
 			var data = _toComDataObjectConverter.Invoke (dataObject);
-			var num = _RetryCount;
+			var num = RetryCount;
 			while (true)
 			{
 				var hr = NativeMethods.Ole32.OleSetClipboard (data);
@@ -196,7 +197,7 @@ namespace Novartment.Base
 					Marshal.ThrowExceptionForHR (hr);
 				}
 
-				Thread.Sleep (_RetryPeriodMs);
+				Thread.Sleep (RetryPeriodMs);
 			}
 		}
 	}

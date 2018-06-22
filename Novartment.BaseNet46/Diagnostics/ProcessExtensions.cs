@@ -141,7 +141,7 @@ namespace Novartment.Base
 		internal class ProcessTaskCompletionSourceWrapper : TaskCompletionSource<object>,
 			IDisposable
 		{
-			private static readonly TimeSpan _MutexCheckPeriod = new TimeSpan (0, 0, 0, 0, 100);
+			private static readonly TimeSpan _mutexCheckPeriod = new TimeSpan (0, 0, 0, 0, 100);
 			private readonly CancellationToken _cancellationToken;
 			private readonly ReusableDisposable _cTokenReg = new ReusableDisposable ();
 			private readonly ReusableDisposable<ITimer> _mutexQueryTimer = new ReusableDisposable<ITimer> ();
@@ -196,7 +196,7 @@ namespace Novartment.Base
 					{
 						var timer = new AppDomainQueueTimer<bool> (TimerTick, false)
 						{
-							Interval = _MutexCheckPeriod,
+							Interval = _mutexCheckPeriod,
 						};
 						_mutexQueryTimer.Value = timer;
 						_mutexQueryTimer.Value.Start ();

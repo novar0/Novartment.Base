@@ -15,7 +15,7 @@ namespace Novartment.Base.UI.Wpf
 	/// </summary>
 	public static class FlowDocumentExtensions
 	{
-		private static readonly string _UrlRegex = @"(?<Protocol>\w+):\/\/(?<Domain>[\w@][\w.:@]+)\/?[\w\.?=%&=\-@/$,]*";
+		private const string UrlRegex = @"(?<Protocol>\w+):\/\/(?<Domain>[\w@][\w.:@]+)\/?[\w\.?=%&=\-@/$,]*";
 
 		/// <summary>
 		/// Преобразует части текста, являющиейся ссылками в работающие ссылки.
@@ -54,7 +54,7 @@ namespace Novartment.Base.UI.Wpf
 		private static IReadOnlyList<LinkData> GetLinksInDocument (FlowDocument document)
 		{
 			var result = new ArrayList<LinkData> ();
-			var regex = new Regex (_UrlRegex);
+			var regex = new Regex (UrlRegex);
 			foreach (var run in new BlockCollectionRunsIterator (document.Blocks))
 			{
 				var tr = new TextRange (run.ContentStart, run.ContentEnd);

@@ -13,7 +13,7 @@ namespace Novartment.Base.Net.Smtp
 	internal class SmtpDeliveryProtocolSession :
 		IDisposable
 	{
-		private static readonly string[] _SupportedExtensions =
+		private static readonly string[] SupportedExtensions =
 		{
 			"PIPELINING", // RFC 2920
 			"8BITMIME", // RFC 6152
@@ -281,7 +281,7 @@ namespace Novartment.Base.Net.Smtp
 			_clientIdentified = true;
 			_remoteEndPoint.HostName = command.ClientIdentification;
 			ResetTransaction ();
-			var supportedExtensions = new ArrayList<string> (_SupportedExtensions);
+			var supportedExtensions = new ArrayList<string> (SupportedExtensions);
 
 			// RFC 3207 part 4.2:
 			// A server MUST NOT return the STARTTLS extension in response to an EHLO command received after a TLS handshake has completed.

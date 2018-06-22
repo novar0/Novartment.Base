@@ -78,12 +78,12 @@ namespace Novartment.Base
 		/// <summary>Locations of one or more existing shell namespace objects.</summary>
 		public static readonly string ShellIdList = "Shell IDList Array";
 
-		private static readonly string _FileName = "FileName";
-		private static readonly string _FileNameW = "FileNameW";
-		private static readonly string _StringFormat = "System.String";
-		private static readonly string _DrawingBitmapFormat = "System.Drawing.Bitmap";
-		private static readonly string _DrawingImagingMetafileFormat = "System.Drawing.Imaging.Metafile";
-		private static readonly string _WindowsMediaImagingBitmapSource = "System.Windows.Media.Imaging.BitmapSource";
+		private static readonly string FileName = "FileName";
+		private static readonly string FileNameW = "FileNameW";
+		private static readonly string StringFormat = "System.String";
+		private static readonly string DrawingBitmapFormat = "System.Drawing.Bitmap";
+		private static readonly string DrawingImagingMetafileFormat = "System.Drawing.Imaging.Metafile";
+		private static readonly string WindowsMediaImagingBitmapSource = "System.Windows.Media.Imaging.BitmapSource";
 
 		/// <summary>
 		/// Получение списка названий форматов, в которые возможно автоматическое конвертирование указанного формата.
@@ -99,29 +99,29 @@ namespace Novartment.Base
 
 			if ((format == DataContainerFormats.Text) ||
 				(format == DataContainerFormats.UnicodeText) ||
-				(format == DataContainerFormats._StringFormat))
+				(format == DataContainerFormats.StringFormat))
 			{
-				return new ReadOnlyArray<string> (new[] { DataContainerFormats.Text, DataContainerFormats.UnicodeText, DataContainerFormats._StringFormat });
+				return new ReadOnlyArray<string> (new[] { DataContainerFormats.Text, DataContainerFormats.UnicodeText, DataContainerFormats.StringFormat });
 			}
 
 			if ((format == DataContainerFormats.FileDrop) ||
-				(format == DataContainerFormats._FileName) ||
-				(format == DataContainerFormats._FileNameW))
+				(format == DataContainerFormats.FileName) ||
+				(format == DataContainerFormats.FileNameW))
 			{
-				return new ReadOnlyArray<string> (new[] { DataContainerFormats.FileDrop, DataContainerFormats._FileNameW, DataContainerFormats._FileName });
+				return new ReadOnlyArray<string> (new[] { DataContainerFormats.FileDrop, DataContainerFormats.FileNameW, DataContainerFormats.FileName });
 			}
 
 			if ((format == DataContainerFormats.Bitmap) ||
-				(format == DataContainerFormats._WindowsMediaImagingBitmapSource) ||
-				(format == DataContainerFormats._DrawingBitmapFormat))
+				(format == DataContainerFormats.WindowsMediaImagingBitmapSource) ||
+				(format == DataContainerFormats.DrawingBitmapFormat))
 			{
-				return new ReadOnlyArray<string> (new[] { DataContainerFormats.Bitmap, DataContainerFormats._DrawingBitmapFormat, DataContainerFormats._WindowsMediaImagingBitmapSource });
+				return new ReadOnlyArray<string> (new[] { DataContainerFormats.Bitmap, DataContainerFormats.DrawingBitmapFormat, DataContainerFormats.WindowsMediaImagingBitmapSource });
 			}
 
 			if ((format == DataContainerFormats.EnhancedMetafile) ||
-				(format == DataContainerFormats._DrawingImagingMetafileFormat))
+				(format == DataContainerFormats.DrawingImagingMetafileFormat))
 			{
-				return new ReadOnlyArray<string> (new[] { DataContainerFormats.EnhancedMetafile, DataContainerFormats._DrawingImagingMetafileFormat });
+				return new ReadOnlyArray<string> (new[] { DataContainerFormats.EnhancedMetafile, DataContainerFormats.DrawingImagingMetafileFormat });
 			}
 
 			return ReadOnlyList.Repeat (format, 1);

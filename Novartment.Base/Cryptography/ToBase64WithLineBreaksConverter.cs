@@ -15,8 +15,8 @@ namespace Novartment.Base
 	public sealed class ToBase64WithLineBreaksConverter :
 		ISpanCryptoTransform
 	{
-		private static readonly int _maxLineLen = 76;
-		private readonly char[] _outArray = new char[_maxLineLen + 2];
+		private const int MaxLineLen = 76;
+		private readonly char[] _outArray = new char[MaxLineLen + 2];
 
 		/// <summary>
 		/// Инициализирует новый экземпляр класса ToBase64WithLineBreaksConverter.
@@ -28,12 +28,12 @@ namespace Novartment.Base
 		/// <summary>
 		/// Получает размер входного блока.
 		/// </summary>
-		public int InputBlockSize => (_maxLineLen * 6) / 8;
+		public int InputBlockSize => (MaxLineLen * 6) / 8;
 
 		/// <summary>
 		/// Получает размер выходного блока.
 		/// </summary>
-		public int OutputBlockSize => _maxLineLen + 2;
+		public int OutputBlockSize => MaxLineLen + 2;
 
 		/// <summary>
 		/// Получает значение, указывающее на возможность повторного использования текущего преобразования.
@@ -65,10 +65,10 @@ namespace Novartment.Base
 				inputBuffer.Slice (inputOffset, this.InputBlockSize).CopyTo (tempBuf);
 				var size = Convert.ToBase64CharArray (tempBuf, 0, tempBuf.Length, _outArray, 0, Base64FormattingOptions.None);
 #endif
-				if (size != _maxLineLen)
+				if (size != MaxLineLen)
 				{
 					throw new FormatException (FormattableString.Invariant (
-						$"Wrong size of chunk of base64-encoded data. Specified {size}, expected {_maxLineLen}."));
+						$"Wrong size of chunk of base64-encoded data. Specified {size}, expected {MaxLineLen}."));
 				}
 
 				AsciiCharSet.GetBytes (_outArray.AsSpan (0, size), outputBuffer.Slice (outputOffset));
