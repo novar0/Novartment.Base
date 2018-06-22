@@ -13,7 +13,7 @@ namespace Novartment.Base.Net
 	/// предоставляющий данные, считанные из указанного сокета.
 	/// </summary>
 	// TODO: переделать чтобы _buffer был Memory<byte> (мешает то, что его нельзя передать в _socket.ReceiveAsync)
-	[DebuggerDisplay ("{Offset}...{Offset+Count} ({Buffer.Length}) exhausted={IsExhausted}")]
+	[DebuggerDisplay ("{Offset}...{Offset+Count} ({BufferMemory.Length}) exhausted={IsExhausted}")]
 	public class SocketBufferedSource :
 		IBufferedSource
 	{

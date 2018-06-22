@@ -174,7 +174,7 @@ namespace Novartment.Base.Net
 					// останавливаем все сессии
 					foreach (var client in binding.ConnectedClients)
 					{
-						if (abortActiveConnections && _logger.IsEnabled (LogLevel.Trace))
+						if (abortActiveConnections && (_logger != null) && _logger.IsEnabled (LogLevel.Trace))
 						{
 							_logger?.LogTrace (FormattableString.Invariant ($"Aborting client {client.EndPoint}."));
 						}
@@ -196,7 +196,7 @@ namespace Novartment.Base.Net
 				return Task.CompletedTask;
 			}
 
-			if (_logger.IsEnabled (LogLevel.Trace))
+			if ((_logger != null) && _logger.IsEnabled (LogLevel.Trace))
 			{
 				_logger?.LogTrace (FormattableString.Invariant ($"Waiting completion of {listeners} listeners and {clients} connections."));
 			}

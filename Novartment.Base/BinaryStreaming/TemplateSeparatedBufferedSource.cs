@@ -11,7 +11,7 @@ namespace Novartment.Base.BinaryStreaming
 	/// предоставляющий данные другого источника данных,
 	/// разделяя их на части по указанному образцу-разделителю.
 	/// </summary>
-	[DebuggerDisplay ("{Offset}...{Offset+Count} ({Buffer.Length}) exhausted={IsExhausted}")]
+	[DebuggerDisplay ("{Offset}...{Offset+Count} ({BufferMemory.Length}) exhausted={IsExhausted}")]
 	public class TemplateSeparatedBufferedSource :
 		IPartitionedBufferedSource
 	{

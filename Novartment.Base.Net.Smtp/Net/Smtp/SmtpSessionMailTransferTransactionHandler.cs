@@ -153,7 +153,7 @@ namespace Novartment.Base.Net.Smtp
 				throw new InvalidOperationException ("Requested binary encoding, but BINARYMIME requires exactSize to be known.");
 			}
 
-			if (_logger.IsEnabled (LogLevel.Information))
+			if ((_logger != null) && _logger.IsEnabled (LogLevel.Information))
 			{
 				_logger?.LogInformation ("Starting transfering mail data from " + _startingReturnPath + " to " + string.Join (",", _acceptedRecipients));
 			}

@@ -117,7 +117,7 @@ namespace Novartment.Base.Data
 				return null;
 			}
 
-			if (_logger.IsEnabled (LogLevel.Trace))
+			if ((_logger != null) && _logger.IsEnabled (LogLevel.Trace))
 			{
 				_logger?.LogTrace (FormattableString.Invariant ($"Executing: {_lastIdentityStatement}"));
 			}
@@ -316,7 +316,7 @@ namespace Novartment.Base.Data
 					dbCommand.Parameters.Add (dataParam);
 
 					var type = (param.Value == null) ? "null" : param.Value.GetType ().Name;
-					if (_logger.IsEnabled (LogLevel.Trace))
+					if ((_logger != null) && _logger.IsEnabled (LogLevel.Trace))
 					{
 						_logger?.LogTrace (FormattableString.Invariant ($"name={dataParam.ParameterName} value={param.Value} type={type} DbType={dataParam.DbType}"));
 					}

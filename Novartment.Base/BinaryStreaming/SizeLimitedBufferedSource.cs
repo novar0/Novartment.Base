@@ -10,7 +10,7 @@ namespace Novartment.Base.BinaryStreaming
 	/// Источник данных, представленный байтовым буфером,
 	/// предоставляющий указанное число байтов из другого источника данных.
 	/// </summary>
-	[DebuggerDisplay ("{Offset}...{Offset+Count} ({Buffer.Length}) exhausted={IsExhausted}")]
+	[DebuggerDisplay ("{Offset}...{Offset+Count} ({BufferMemory.Length}) exhausted={IsExhausted}")]
 	public class SizeLimitedBufferedSource :
 		IFastSkipBufferedSource
 	{

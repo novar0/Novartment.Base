@@ -10,7 +10,7 @@ namespace Novartment.Base.BinaryStreaming
 	/// Ретранслятор, дублирующий асинхронный источник, представленный байтовым буфером,
 	/// отправляющий уведомления о потреблённых из источника данных.
 	/// </summary>
-	[DebuggerDisplay ("{Offset}...{Offset+Count} ({Buffer.Length}) exhausted={IsExhausted}")]
+	[DebuggerDisplay ("{Offset}...{Offset+Count} ({BufferMemory.Length}) exhausted={IsExhausted}")]
 	public class ObservableBufferedSource :
 		IFastSkipBufferedSource
 	{

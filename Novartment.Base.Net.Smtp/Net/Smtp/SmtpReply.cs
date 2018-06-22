@@ -188,7 +188,7 @@ namespace Novartment.Base.Net.Smtp
 				}
 				while ((sourceBuf[source.Offset + idx - 1] != 0x0d) || (sourceBuf[source.Offset + idx] != 0x0a));
 				idx++;
-				if (logger.IsEnabled (LogLevel.Trace))
+				if ((logger != null) && logger.IsEnabled (LogLevel.Trace))
 				{
 					logger?.LogTrace ("<<< " + AsciiCharSet.GetStringMaskingInvalidChars (sourceBuf.Slice (source.Offset, idx - 2), '?'));
 				}

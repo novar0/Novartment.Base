@@ -132,7 +132,7 @@ namespace Novartment.Base.Data
 				cmdText = "SELECT * FROM " + _connectionManager.FormatObjectName (tableName, schemaName);
 			}
 
-			if (_logger.IsEnabled (LogLevel.Trace))
+			if ((_logger != null) && _logger.IsEnabled (LogLevel.Trace))
 			{
 				_logger?.LogTrace (FormattableString.Invariant ($"Executing: {cmdText}"));
 			}
@@ -178,7 +178,7 @@ namespace Novartment.Base.Data
 					.Concat (_plusParameters.Select (param => param.Placeholder)));
 
 				var cmdText = "INSERT INTO " + _connectionManager.FormatObjectName (tableName, schemaName) + " (" + columnList + ") VALUES (" + valueList + ")";
-				if (_logger.IsEnabled (LogLevel.Trace))
+				if ((_logger != null) && _logger.IsEnabled (LogLevel.Trace))
 				{
 					_logger?.LogTrace (FormattableString.Invariant ($"Executing: {cmdText}"));
 				}
@@ -221,7 +221,7 @@ namespace Novartment.Base.Data
 					_keyParameters.Select (param => _connectionManager.FormatObjectName (param.Name) + "=" + param.Placeholder));
 
 				var cmdText = "UPDATE " + _connectionManager.FormatObjectName (tableName, schemaName) + " SET " + columnList + " WHERE " + keyColumnList;
-				if (_logger.IsEnabled (LogLevel.Trace))
+				if ((_logger != null) && _logger.IsEnabled (LogLevel.Trace))
 				{
 					_logger?.LogTrace (FormattableString.Invariant ($"Executing: {cmdText}"));
 				}
@@ -288,7 +288,7 @@ namespace Novartment.Base.Data
 					_keyParameters.Select (param => _connectionManager.FormatObjectName (param.Name) + "=" + param.Placeholder));
 
 				var cmdText = "SELECT COUNT(*) FROM " + _connectionManager.FormatObjectName (tableName, schemaName) + " WHERE " + columnList;
-				if (_logger.IsEnabled (LogLevel.Trace))
+				if ((_logger != null) && _logger.IsEnabled (LogLevel.Trace))
 				{
 					_logger?.LogTrace (FormattableString.Invariant ($"Executing: {cmdText}"));
 				}
@@ -325,7 +325,7 @@ namespace Novartment.Base.Data
 					_keyParameters.Select (param => _connectionManager.FormatObjectName (param.Name) + "=" + param.Placeholder));
 
 				var cmdText = "DELETE " + _connectionManager.FormatObjectName (tableName, schemaName) + " WHERE " + columnList;
-				if (_logger.IsEnabled (LogLevel.Trace))
+				if ((_logger != null) && _logger.IsEnabled (LogLevel.Trace))
 				{
 					_logger?.LogTrace (FormattableString.Invariant ($"Executing: {cmdText}"));
 				}
@@ -374,7 +374,7 @@ namespace Novartment.Base.Data
 
 			Contract.EndContractBlock ();
 
-			if (_logger.IsEnabled (LogLevel.Trace))
+			if ((_logger != null) && _logger.IsEnabled (LogLevel.Trace))
 			{
 				_logger?.LogTrace (FormattableString.Invariant ($"Executing procedure: {procedureName}"));
 			}
@@ -402,7 +402,7 @@ namespace Novartment.Base.Data
 
 			Contract.EndContractBlock ();
 
-			if (_logger.IsEnabled (LogLevel.Trace))
+			if ((_logger != null) && _logger.IsEnabled (LogLevel.Trace))
 			{
 				_logger?.LogTrace (FormattableString.Invariant ($"Executing function: {functionName}"));
 			}
