@@ -117,7 +117,11 @@ namespace Novartment.Base.Data
 				return null;
 			}
 
-			_logger?.LogTrace (FormattableString.Invariant ($"Executing: {_lastIdentityStatement}"));
+			if (_logger.IsEnabled (LogLevel.Trace))
+			{
+				_logger?.LogTrace (FormattableString.Invariant ($"Executing: {_lastIdentityStatement}"));
+			}
+
 			var dbCommand = CreateCommand ();
 			dbCommand.CommandText = _lastIdentityStatement;
 			return dbCommand.ExecuteScalar ();
@@ -312,7 +316,10 @@ namespace Novartment.Base.Data
 					dbCommand.Parameters.Add (dataParam);
 
 					var type = (param.Value == null) ? "null" : param.Value.GetType ().Name;
-					_logger?.LogTrace (FormattableString.Invariant ($"name={dataParam.ParameterName} value={param.Value} type={type} DbType={dataParam.DbType}"));
+					if (_logger.IsEnabled (LogLevel.Trace))
+					{
+						_logger?.LogTrace (FormattableString.Invariant ($"name={dataParam.ParameterName} value={param.Value} type={type} DbType={dataParam.DbType}"));
+					}
 				}
 			}
 

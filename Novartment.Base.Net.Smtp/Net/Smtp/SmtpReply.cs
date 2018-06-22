@@ -188,7 +188,10 @@ namespace Novartment.Base.Net.Smtp
 				}
 				while ((sourceBuf[source.Offset + idx - 1] != 0x0d) || (sourceBuf[source.Offset + idx] != 0x0a));
 				idx++;
-				logger?.LogTrace ("<<< " + AsciiCharSet.GetStringMaskingInvalidChars (sourceBuf.Slice (source.Offset, idx - 2), '?'));
+				if (logger.IsEnabled (LogLevel.Trace))
+				{
+					logger?.LogTrace ("<<< " + AsciiCharSet.GetStringMaskingInvalidChars (sourceBuf.Slice (source.Offset, idx - 2), '?'));
+				}
 
 				// RFC 5321 part 4.5.3.1.5:
 				// The maximum total length of a reply line including the reply code and the <CRLF> is 512 octets.

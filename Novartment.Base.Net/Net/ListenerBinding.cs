@@ -95,8 +95,11 @@ namespace Novartment.Base.Net
 					var client = new ConnectedClient (connection, finishingTask, cts);
 					_connections[connection.RemoteEndPoint] = client;
 
-					_logger?.LogTrace (FormattableString.Invariant (
-						$"Listener {_listener.LocalEndpoint}: new client connected {connection.RemoteEndPoint}. Connected clients {_connections.Count}."));
+					if (_logger.IsEnabled (LogLevel.Trace))
+					{
+						_logger?.LogTrace (FormattableString.Invariant (
+							$"Listener {_listener.LocalEndpoint}: new client connected {connection.RemoteEndPoint}. Connected clients {_connections.Count}."));
+					}
 				}
 			}
 			finally
@@ -115,8 +118,11 @@ namespace Novartment.Base.Net
 				{
 					_connections.TryRemove (cntn.RemoteEndPoint, out ConnectedClient connectionProtocolTask);
 					cntn.Dispose ();
-					_logger?.LogTrace (FormattableString.Invariant (
-						$"Listener {_listener.LocalEndpoint}: client disconnected {cntn.RemoteEndPoint}. Connected clients {_connections.Count}."));
+					if (_logger.IsEnabled (LogLevel.Trace))
+					{
+						_logger?.LogTrace (FormattableString.Invariant (
+							$"Listener {_listener.LocalEndpoint}: client disconnected {cntn.RemoteEndPoint}. Connected clients {_connections.Count}."));
+					}
 				}
 			}
 		}

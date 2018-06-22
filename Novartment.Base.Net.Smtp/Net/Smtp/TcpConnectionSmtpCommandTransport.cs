@@ -63,8 +63,12 @@ namespace Novartment.Base.Net.Smtp
 			_logger?.LogTrace ("Starting TLS as client...");
 			var newConnection = await tlsCapableConnection.StartTlsClientAsync (clientCertificates, CancellationToken.None)
 				.ConfigureAwait (false);
-			_logger?.LogInformation (FormattableString.Invariant (
-				$@"Started TLS client: Protocol={newConnection.TlsProtocol}, Cipher={newConnection.CipherAlgorithm}/{newConnection.CipherStrength}, Hash={GetHashAlgorithmName (newConnection.HashAlgorithm)}/{newConnection.HashStrength}, KeyExchange={GetExchangeAlgorithmName (newConnection.KeyExchangeAlgorithm)}/{newConnection.KeyExchangeStrength}"));
+			if (_logger.IsEnabled (LogLevel.Information))
+			{
+				_logger?.LogInformation (FormattableString.Invariant (
+					$@"Started TLS client: Protocol={newConnection.TlsProtocol}, Cipher={newConnection.CipherAlgorithm}/{newConnection.CipherStrength}, Hash={GetHashAlgorithmName (newConnection.HashAlgorithm)}/{newConnection.HashStrength}, KeyExchange={GetExchangeAlgorithmName (newConnection.KeyExchangeAlgorithm)}/{newConnection.KeyExchangeStrength}"));
+			}
+
 			SetConnection (newConnection);
 		}
 
@@ -78,8 +82,12 @@ namespace Novartment.Base.Net.Smtp
 			_logger?.LogTrace ("Starting TLS as server...");
 			var newConnection = await tlsCapableConnection.StartTlsServerAsync (serverCertificate, clientCertificateRequired, CancellationToken.None)
 				.ConfigureAwait (false);
-			_logger?.LogInformation (FormattableString.Invariant (
-				$@"Started TLS server: Protocol={newConnection.TlsProtocol}, Cipher={newConnection.CipherAlgorithm}/{newConnection.CipherStrength}, Hash={GetHashAlgorithmName (newConnection.HashAlgorithm)}/{newConnection.HashStrength}, KeyExchange={GetExchangeAlgorithmName (newConnection.KeyExchangeAlgorithm)}/{newConnection.KeyExchangeStrength}"));
+			if (_logger.IsEnabled (LogLevel.Information))
+			{
+				_logger?.LogInformation (FormattableString.Invariant (
+					$@"Started TLS server: Protocol={newConnection.TlsProtocol}, Cipher={newConnection.CipherAlgorithm}/{newConnection.CipherStrength}, Hash={GetHashAlgorithmName (newConnection.HashAlgorithm)}/{newConnection.HashStrength}, KeyExchange={GetExchangeAlgorithmName (newConnection.KeyExchangeAlgorithm)}/{newConnection.KeyExchangeStrength}"));
+			}
+
 			SetConnection (newConnection);
 		}
 
@@ -157,7 +165,10 @@ namespace Novartment.Base.Net.Smtp
 						}
 					}
 
-					_logger?.LogTrace ("<<< " + new string (_commandBuf, 0, bytesToSkip - 2));
+					if (_logger.IsEnabled (LogLevel.Trace))
+					{
+						_logger?.LogTrace ("<<< " + new string (_commandBuf, 0, bytesToSkip - 2));
+					}
 
 					command = SmtpCommand.Parse (_commandBuf.AsSpan (0, bytesToSkip - 2), expectedInputType);
 				}
@@ -270,7 +281,10 @@ namespace Novartment.Base.Net.Smtp
 			AsciiCharSet.GetBytes (text.AsSpan (), buf);
 
 			var isCRLF = (size > 1) && (buf[size - 2] == 0x0d) && (buf[size - 1] == 0x0a);
-			_logger?.LogTrace (">>> " + (isCRLF ? text.Substring (0, size - 2) : text));
+			if (_logger.IsEnabled (LogLevel.Trace))
+			{
+				_logger?.LogTrace (">>> " + (isCRLF ? text.Substring (0, size - 2) : text));
+			}
 
 			_pendingReplies = null;
 			return _writer.WriteAsync (buf.AsMemory (0, size), cancellationToken);
