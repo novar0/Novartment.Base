@@ -14,26 +14,41 @@ namespace Novartment.Base.Net.Smtp
 			Tuple.Create ("VRFY", SmtpCommandType.Vrfy),
 			Tuple.Create ("EHLO", SmtpCommandType.Ehlo),
 			Tuple.Create ("HELO", SmtpCommandType.Helo),
-			Tuple.Create ("MAIL FROM:", SmtpCommandType.MailFrom),
-			Tuple.Create ("RCPT TO:", SmtpCommandType.RcptTo),
+			Tuple.Create ("MAIL FROM", SmtpCommandType.MailFrom),
+			Tuple.Create ("RCPT TO", SmtpCommandType.RcptTo),
 			Tuple.Create ("BDAT", SmtpCommandType.Bdat),
 			Tuple.Create ("STARTTLS", SmtpCommandType.StartTls),
-			Tuple.Create("AUTH", SmtpCommandType.Auth),
+			Tuple.Create ("AUTH", SmtpCommandType.Auth),
 		};
 
-		internal static SmtpCommandType Parse (ReadOnlySpan<char> value, BytesChunkEnumerator chunkEnumerator)
+		internal static SmtpCommandType Parse (ReadOnlySpan<char> source, ref int pos)
 		{
-			var commandTypeStr = chunkEnumerator.GetString (value);
+			var firstWordStartPos = pos;
+			var firstWordEndPos = source.Slice (pos).IndexOf (' ');
+			if (firstWordEndPos < 1)
+			{
+				firstWordEndPos = source.Length - pos;
+			}
 
-			if ("MAIL".AsSpan ().Equals (commandTypeStr, StringComparison.OrdinalIgnoreCase) || "RCPT".AsSpan ().Equals (commandTypeStr, StringComparison.OrdinalIgnoreCase))
+			var commandTypeStr = source.Slice (pos, firstWordEndPos);
+			pos += firstWordEndPos;
+
+			if (((pos + firstWordEndPos) < source.Length) &&
+				(
+				"MAIL".AsSpan ().Equals (commandTypeStr, StringComparison.OrdinalIgnoreCase) ||
+				"RCPT".AsSpan ().Equals (commandTypeStr, StringComparison.OrdinalIgnoreCase)
+				))
 			{
 				// если команда из двух слов, то добавляем второе
 				// ищем второе слово оканчивающееся на ':'
-				var isSecondWordFound = chunkEnumerator.ExtendToNextChunk (value, ':');
-				if (isSecondWordFound)
+				var secondWordEndPos = source.Slice (pos + 1).IndexOf (':');
+				if (secondWordEndPos < 1)
 				{
-					commandTypeStr = chunkEnumerator.GetString (value);
+					return SmtpCommandType.Unknown;
 				}
+
+				commandTypeStr = source.Slice (firstWordStartPos, firstWordEndPos + 1 + secondWordEndPos);
+				pos += secondWordEndPos + 2;
 			}
 
 			foreach (var entry in nameDictionary)

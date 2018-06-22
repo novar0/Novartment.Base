@@ -1,4 +1,5 @@
 ﻿using System;
+using Novartment.Base.Text;
 
 namespace Novartment.Base.Net.Smtp
 {
@@ -27,43 +28,76 @@ namespace Novartment.Base.Net.Smtp
 
 		internal ContentTransferEncoding RequestedContentTransferEncoding => _requestedContentTransferEncoding;
 
-		internal static SmtpCommand Parse (ReadOnlySpan<char> value, BytesChunkEnumerator chunkEnumerator)
+		internal static SmtpCommand Parse (ReadOnlySpan<char> value)
 		{
-			var isAngleBracketedValueFound = chunkEnumerator.MoveToNextAngleBracketedValue (value);
-			if (!isAngleBracketedValueFound)
+			/*
+			MAIL FROM:<reverse-path> [SP <esmtp-parameters> ] <CRLF> ; Reverse-path   = "<" Mailbox ">" / "<>"
+
+			RFC 5321:
+			Mail-parameters ::= esmtp-param *(SP esmtp-param)
+			esmtp-param    = esmtp-keyword ["=" esmtp-value]
+			esmtp-keyword  = (ALPHA / DIGIT) *(ALPHA / DIGIT / "-")
+			esmtp-value    = 1*(%d33-60 / %d62-126) ; any CHAR excluding "=", SP, and control characters.
+			*/
+
+			var pos = 0;
+			var pathEelement = StructuredValueParser.GetNextElementDotAtom (value, ref pos);
+			if (pathEelement.ElementType != StructuredValueElementType.AngleBracketedValue)
 			{
 				return new SmtpInvalidSyntaxCommand (SmtpCommandType.MailFrom, "Unrecognized 'MAIL FROM' parameter.");
 			}
 
-			AddrSpec returnPath = null;
-			if (chunkEnumerator.ChunkSize > 2)
-			{
-				// адрес не пустой
-				try
-				{
-					returnPath = AddrSpec.Parse (chunkEnumerator.GetStringInBrackets (value));
-				}
-				catch (FormatException excpt)
-				{
-					return new SmtpInvalidSyntaxCommand (SmtpCommandType.MailFrom, FormattableString.Invariant (
-						$"Unrecognized 'MAIL FROM' parameter. {excpt.Message}"));
-				}
-			}
+			var returnPath = pathEelement.Length > 0 ?
+				AddrSpec.Parse (value.Slice (pathEelement.StartPosition, pathEelement.Length)) :
+				null;
 
-			// RFC 3030:
-			// Mail-parameters  = esmtp-param *(SP esmtp-param)
-			// esmtp-param      = esmtp-keyword ["=" esmtp-value]
-			// body-value ::= "7BIT" / "8BITMIME" / "BINARYMIME"
+			/*
+			Дальше разбираем параметры, нераспознанные нельзя игнорировать согласно RFC 5321 part 4.1.1.11:
+			If the server SMTP does not recognize or cannot implement one or more of the parameters
+			associated with a particular MAIL FROM or RCPT TO command, it will return code 555.
+			*/
+
+			value = value.Slice (pos);
+			pos = 0;
+
 			var bodyType = ContentTransferEncoding.SevenBit;
 			var bodyTypeSpecified = false;
 			AddrSpec associatedMailbox = null;
-			while (chunkEnumerator.MoveToNextChunk (value, true, ' ', false))
+			while (true)
 			{
-				var parameterNameAndValue = chunkEnumerator.GetString (value);
-				var charsInParameterName = Math.Min (5, parameterNameAndValue.Length);
-				var parameterName = parameterNameAndValue.Slice (0, charsInParameterName);
-				var parameterValue = parameterNameAndValue.Slice (charsInParameterName);
-				if ("BODY=".AsSpan ().Equals (parameterName, StringComparison.OrdinalIgnoreCase))
+				// пропускаем начальные пробелы
+				while ((pos < value.Length) && (value[pos] == ' '))
+				{
+					pos++;
+				}
+
+				if (pos >= value.Length)
+				{
+					break;
+				}
+
+				// ограничиваем параметр пробелом перед следующим параметром
+				var posEnd = value.Slice (pos).IndexOf (' ');
+				if (posEnd < 0)
+				{
+					posEnd = value.Length;
+				}
+				else
+				{
+					posEnd += pos;
+				}
+
+				var valuePos = value.Slice (pos, posEnd - pos).IndexOf ('=');
+				if (valuePos < 0)
+				{
+					return new SmtpInvalidSyntaxCommand (SmtpCommandType.MailFrom, "Unrecognized 'MAIL FROM' AUTH parameter.");
+				}
+
+				var parameterName = value.Slice (pos, valuePos);
+				var parameterValue = value.Slice (pos + valuePos + 1, posEnd - pos - valuePos - 1);
+				pos = posEnd;
+
+				if ("BODY".AsSpan ().Equals (parameterName, StringComparison.OrdinalIgnoreCase))
 				{
 					if ("8BITMIME".AsSpan ().Equals (parameterValue, StringComparison.OrdinalIgnoreCase))
 					{
@@ -96,7 +130,7 @@ namespace Novartment.Base.Net.Smtp
 				}
 				else
 				{
-					if ("AUTH=".AsSpan ().Equals (parameterName, StringComparison.OrdinalIgnoreCase))
+					if ("AUTH".AsSpan ().Equals (parameterName, StringComparison.OrdinalIgnoreCase))
 					{
 						if ((parameterValue.Length < 2) || (parameterValue[0] != '<') || (parameterValue[parameterValue.Length - 1] != '>'))
 						{

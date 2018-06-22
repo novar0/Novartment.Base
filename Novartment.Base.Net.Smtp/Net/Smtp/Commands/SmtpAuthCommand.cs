@@ -1,4 +1,5 @@
 ﻿using System;
+using Novartment.Base.Text;
 
 namespace Novartment.Base.Net.Smtp
 {
@@ -16,50 +17,57 @@ namespace Novartment.Base.Net.Smtp
 
 		internal ReadOnlyMemory<byte> InitialResponse { get; }
 
-		internal static SmtpCommand Parse (ReadOnlySpan<char> value, BytesChunkEnumerator chunkEnumerator)
+		internal static SmtpCommand Parse (ReadOnlySpan<char> value)
 		{
-			var isParameterFound = chunkEnumerator.MoveToNextChunk (value, true, ' ');
-			if (!isParameterFound)
+			/*
+			RFC 4954:
+			"AUTH" SP sasl-mech [SP initial-response] *(CRLF [base64]) [CRLF cancel-response] CRLF
+			initial-response= base64 / "="
+
+			*(CRLF [base64]) [CRLF cancel-response] тут не рассматривается, он придёт как отдельная команда
+			*/
+
+			var pos = 0;
+			var saslMechElement = StructuredValueParser.GetNextElement (value, ref pos, AsciiCharClasses.Visible, false);
+			if (saslMechElement.ElementType != StructuredValueElementType.Value)
 			{
-				return new SmtpInvalidSyntaxCommand (SmtpCommandType.Auth, "Missed 'AUTH' mechanism parameter.");
+				return new SmtpInvalidSyntaxCommand (SmtpCommandType.Auth, "Unrecognized 'AUTH' mechanism parameter.");
 			}
 
 #if NETCOREAPP2_1
-			var mechanism = new string (chunkEnumerator.GetString (value));
+			var mechanism = new string (value.Slice (saslMechElement.StartPosition, saslMechElement.Length));
 #else
-			var mechanism = new string (chunkEnumerator.GetString (value).ToArray ());
+			var mechanism = new string (value.Slice (saslMechElement.StartPosition, saslMechElement.Length).ToArray ());
 #endif
-			byte[] initialResponse = null;
-			int responseSize = 0;
-			var isInitialResponseFound = chunkEnumerator.MoveToNextChunk (value, true, (char)0x0d);
-			if (isInitialResponseFound)
-			{
-				var initialResponseBase64 = chunkEnumerator.GetString (value);
 
-				if ((initialResponseBase64.Length != 1) || (initialResponseBase64[0] != '='))
-				{
-#if NETCOREAPP2_1
-					initialResponse = new byte[(initialResponseBase64.Length / 4 * 3) + 2];
-					if (!Convert.TryFromBase64Chars (initialResponseBase64, initialResponse, out responseSize))
-					{
-						return new SmtpInvalidSyntaxCommand (SmtpCommandType.Auth, FormattableString.Invariant (
-							$"Unrecognized 'AUTH' initial-response parameter."));
-					}
-#else
-					try
-					{
-						initialResponse = Convert.FromBase64String (new string (initialResponseBase64.ToArray ()));
-						responseSize = initialResponse.Length;
-					}
-					catch (FormatException excpt)
-					{
-						return new SmtpInvalidSyntaxCommand (SmtpCommandType.Auth, FormattableString.Invariant (
-							$"Unrecognized 'AUTH' initial-response parameter. {excpt.Message}"));
-					}
-#endif
-				}
+			var initialEesponseElement = StructuredValueParser.GetNextElement (value, ref pos, AsciiCharClasses.Visible, false);
+			if (!initialEesponseElement.IsValid || ((initialEesponseElement.Length == 1) && (value[initialEesponseElement.StartPosition] == '=')))
+			{
+				return new SmtpAuthCommand (mechanism, default);
 			}
 
+			byte[] initialResponse;
+			int responseSize;
+			var initialResponseBase64 = value.Slice (initialEesponseElement.StartPosition, initialEesponseElement.Length);
+#if NETCOREAPP2_1
+			initialResponse = new byte[(initialResponseBase64.Length / 4 * 3) + 2];
+			if (!Convert.TryFromBase64Chars (initialResponseBase64, initialResponse, out responseSize))
+			{
+				return new SmtpInvalidSyntaxCommand (SmtpCommandType.Auth, FormattableString.Invariant (
+					$"Unrecognized 'AUTH' initial-response parameter."));
+			}
+#else
+			try
+			{
+				initialResponse = Convert.FromBase64String (new string (initialResponseBase64.ToArray ()));
+				responseSize = initialResponse.Length;
+			}
+			catch (FormatException excpt)
+			{
+				return new SmtpInvalidSyntaxCommand (SmtpCommandType.Auth, FormattableString.Invariant (
+					$"Unrecognized 'AUTH' initial-response parameter. {excpt.Message}"));
+			}
+#endif
 			return new SmtpAuthCommand (mechanism, initialResponse.AsMemory (0, responseSize));
 		}
 

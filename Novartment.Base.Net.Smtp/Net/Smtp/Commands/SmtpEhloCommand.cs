@@ -1,4 +1,5 @@
 ﻿using System;
+using Novartment.Base.Text;
 
 namespace Novartment.Base.Net.Smtp
 {
@@ -16,10 +17,10 @@ namespace Novartment.Base.Net.Smtp
 
 		internal string ClientIdentification { get; }
 
-		internal static SmtpEhloCommand Parse (ReadOnlySpan<char> value, BytesChunkEnumerator chunkEnumerator)
+		internal static SmtpEhloCommand Parse (ReadOnlySpan<char> value)
 		{
-			chunkEnumerator.MoveToNextChunk (value, true, (char)0x0d);
-			return new SmtpEhloCommand (chunkEnumerator.GetString (value));
+			// ehlo = "EHLO" SP ( Domain / address-literal ) CRLF
+			return new SmtpEhloCommand (value.Trim ());
 		}
 
 		public override string ToString ()

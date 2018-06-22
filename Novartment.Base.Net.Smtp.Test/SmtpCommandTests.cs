@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Text;
 using System.Threading;
 using Novartment.Base.BinaryStreaming;
 using Novartment.Base.Net;
@@ -12,9 +11,8 @@ namespace Novartment.Base.Smtp.Test
 	{
 		[Fact]
 		[Trait ("Category", "Net.Smtp")]
-		public void Parse ()
+		public void ParseUnknown ()
 		{
-			// UnknownCommand
 			var cmd = SmtpCommand.Parse (new char[] { (char)0, (char)0, (char)0, (char)0, (char)0, (char)0, (char)0 }, SmtpCommand.ExpectedInputType.Command);
 			Assert.Equal (SmtpCommandType.Unknown, cmd.CommandType);
 
@@ -29,57 +27,91 @@ namespace Novartment.Base.Smtp.Test
 
 			cmd = SmtpCommand.Parse ("MAIL FROM <someone@server.com>", SmtpCommand.ExpectedInputType.Command);
 			Assert.Equal (SmtpCommandType.Unknown, cmd.CommandType);
+		}
 
-			// Data
-			cmd = SmtpCommand.Parse ("DATA", SmtpCommand.ExpectedInputType.Command);
+		[Fact]
+		[Trait ("Category", "Net.Smtp")]
+		public void ParseData ()
+		{
+			var cmd = SmtpCommand.Parse ("DATA", SmtpCommand.ExpectedInputType.Command);
 			Assert.Equal (SmtpCommandType.Data, cmd.CommandType);
 
 			cmd = SmtpCommand.Parse ("Data", SmtpCommand.ExpectedInputType.Command);
 			Assert.Equal (SmtpCommandType.Data, cmd.CommandType);
+		}
 
-			// Noop
-			cmd = SmtpCommand.Parse ("NOOP", SmtpCommand.ExpectedInputType.Command);
+		[Fact]
+		[Trait ("Category", "Net.Smtp")]
+		public void ParseNoop ()
+		{
+			var cmd = SmtpCommand.Parse ("NOOP", SmtpCommand.ExpectedInputType.Command);
 			Assert.Equal (SmtpCommandType.Noop, cmd.CommandType);
 
 			cmd = SmtpCommand.Parse ("NOOP --synchronize transaction NOW--", SmtpCommand.ExpectedInputType.Command);
 			Assert.Equal (SmtpCommandType.Noop, cmd.CommandType);
+		}
 
-			// Quit
-			cmd = SmtpCommand.Parse ("QUIT", SmtpCommand.ExpectedInputType.Command);
+		[Fact]
+		[Trait ("Category", "Net.Smtp")]
+		public void ParseQuit ()
+		{
+			var cmd = SmtpCommand.Parse ("QUIT", SmtpCommand.ExpectedInputType.Command);
 			Assert.Equal (SmtpCommandType.Quit, cmd.CommandType);
+		}
 
-			// Rset
-			cmd = SmtpCommand.Parse ("rset", SmtpCommand.ExpectedInputType.Command);
+		[Fact]
+		[Trait ("Category", "Net.Smtp")]
+		public void ParseRset ()
+		{
+			var cmd = SmtpCommand.Parse ("rset", SmtpCommand.ExpectedInputType.Command);
 			Assert.Equal (SmtpCommandType.Rset, cmd.CommandType);
 
 			cmd = SmtpCommand.Parse ("RSET", SmtpCommand.ExpectedInputType.Command);
 			Assert.Equal (SmtpCommandType.Rset, cmd.CommandType);
+		}
 
-			// Vrfy
-			cmd = SmtpCommand.Parse ("VRFY", SmtpCommand.ExpectedInputType.Command);
+		[Fact]
+		[Trait ("Category", "Net.Smtp")]
+		public void ParseVrfy ()
+		{
+			var cmd = SmtpCommand.Parse ("VRFY", SmtpCommand.ExpectedInputType.Command);
 			Assert.Equal (SmtpCommandType.Vrfy, cmd.CommandType);
 			Assert.IsType<SmtpInvalidSyntaxCommand> (cmd);
 
 			cmd = SmtpCommand.Parse ("VRFY John Doe", SmtpCommand.ExpectedInputType.Command);
 			Assert.Equal (SmtpCommandType.Vrfy, cmd.CommandType);
+		}
 
-			// Helo
+		[Fact]
+		[Trait ("Category", "Net.Smtp")]
+		public void ParseHelo ()
+		{
 			var id = "insufficient\tsystem\tstorage";
-			cmd = SmtpCommand.Parse ("HELO " + id, SmtpCommand.ExpectedInputType.Command);
+			var cmd = SmtpCommand.Parse ("HELO " + id, SmtpCommand.ExpectedInputType.Command);
 			Assert.Equal (SmtpCommandType.Helo, cmd.CommandType);
 			Assert.IsType<SmtpHeloCommand> (cmd);
 			var cmdHelo = (SmtpHeloCommand)cmd;
 			Assert.Equal (id, cmdHelo.ClientIdentification);
+		}
 
-			// Ehlo
-			cmd = SmtpCommand.Parse ("EHLO " + id, SmtpCommand.ExpectedInputType.Command);
+		[Fact]
+		[Trait ("Category", "Net.Smtp")]
+		public void ParseEhlo ()
+		{
+			var id = "insufficient\tsystem\tstorage";
+			var cmd = SmtpCommand.Parse ("EHLO " + id, SmtpCommand.ExpectedInputType.Command);
 			Assert.Equal (SmtpCommandType.Ehlo, cmd.CommandType);
 			Assert.IsType<SmtpEhloCommand> (cmd);
 			var cmdEhlo = (SmtpEhloCommand)cmd;
 			Assert.Equal (id, cmdEhlo.ClientIdentification);
+		}
 
-			// MailFrom
-			cmd = SmtpCommand.Parse ("MAIL from:someone@server.com", SmtpCommand.ExpectedInputType.Command);
+		[Fact]
+		[Trait ("Category", "Net.Smtp")]
+		public void ParseMailfrom ()
+		{
+			var id = "insufficient\tsystem\tstorage";
+			var cmd = SmtpCommand.Parse ("MAIL from:someone@server.com", SmtpCommand.ExpectedInputType.Command);
 			Assert.Equal (SmtpCommandType.MailFrom, cmd.CommandType);
 			Assert.IsType<SmtpInvalidSyntaxCommand> (cmd);
 
@@ -133,9 +165,14 @@ namespace Novartment.Base.Smtp.Test
 			Assert.Equal (new AddrSpec ("someone", "server.com"), cmdMailFrom.ReturnPath);
 			Assert.Equal (new AddrSpec ("someone", "server.com"), cmdMailFrom.AssociatedMailbox);
 			Assert.Equal (ContentTransferEncoding.Binary, cmdMailFrom.RequestedContentTransferEncoding);
+		}
 
-			// RcptTo
-			cmd = SmtpCommand.Parse ("RCPT TO:<@support>", SmtpCommand.ExpectedInputType.Command);
+		[Fact]
+		[Trait ("Category", "Net.Smtp")]
+		public void ParseRcptto ()
+		{
+			var id = "insufficient\tsystem\tstorage";
+			var cmd = SmtpCommand.Parse ("RCPT TO:<@support>", SmtpCommand.ExpectedInputType.Command);
 			Assert.IsType<SmtpInvalidSyntaxCommand> (cmd);
 			Assert.Equal (SmtpCommandType.RcptTo, cmd.CommandType);
 
@@ -155,12 +192,14 @@ namespace Novartment.Base.Smtp.Test
 
 			cmd = SmtpCommand.Parse ("rcpt TO:<someone@server.com> " + id, SmtpCommand.ExpectedInputType.Command);
 			Assert.Equal (SmtpCommandType.RcptTo, cmd.CommandType);
-			Assert.IsType<SmtpRcptToCommand> (cmd);
-			cmdRcptTo = (SmtpRcptToCommand)cmd;
-			Assert.Equal (new AddrSpec ("someone", "server.com"), cmdRcptTo.Recipient);
+			Assert.IsType<SmtpInvalidSyntaxCommand> (cmd);
+		}
 
-			// Bdat
-			cmd = SmtpCommand.Parse ("BDAT", SmtpCommand.ExpectedInputType.Command);
+		[Fact]
+		[Trait ("Category", "Net.Smtp")]
+		public void ParseBdat ()
+		{
+			var cmd = SmtpCommand.Parse ("BDAT", SmtpCommand.ExpectedInputType.Command);
 			Assert.Equal (SmtpCommandType.Bdat, cmd.CommandType);
 			Assert.IsType<SmtpInvalidSyntaxCommand> (cmd);
 
@@ -168,7 +207,7 @@ namespace Novartment.Base.Smtp.Test
 			Assert.Equal (SmtpCommandType.Bdat, cmd.CommandType);
 			Assert.IsType<SmtpInvalidSyntaxCommand> (cmd);
 
-			cmd = SmtpCommand.Parse ("bdat 10LAST", SmtpCommand.ExpectedInputType.Command);
+			cmd = SmtpCommand.Parse ("bdat LAST", SmtpCommand.ExpectedInputType.Command);
 			Assert.Equal (SmtpCommandType.Bdat, cmd.CommandType);
 			Assert.IsType<SmtpInvalidSyntaxCommand> (cmd);
 
@@ -176,20 +215,37 @@ namespace Novartment.Base.Smtp.Test
 			Assert.Equal (SmtpCommandType.Bdat, cmd.CommandType);
 			Assert.IsType<SmtpBdatCommand> (cmd);
 			var cmdBdat = (SmtpBdatCommand)cmd;
+			Assert.Equal (4647785733979898881, cmdBdat.Size);
 			Assert.False (cmdBdat.IsLast);
 
 			cmd = SmtpCommand.Parse ("bDAT 2 LAST", SmtpCommand.ExpectedInputType.Command);
 			Assert.Equal (SmtpCommandType.Bdat, cmd.CommandType);
 			Assert.IsType<SmtpBdatCommand> (cmd);
 			cmdBdat = (SmtpBdatCommand)cmd;
+			Assert.Equal (2, cmdBdat.Size);
 			Assert.True (cmdBdat.IsLast);
 
-			// StartTls
-			cmd = SmtpCommand.Parse ("STARTTLS", SmtpCommand.ExpectedInputType.Command);
-			Assert.Equal (SmtpCommandType.StartTls, cmd.CommandType);
+			cmd = SmtpCommand.Parse ("bdat 10LAST", SmtpCommand.ExpectedInputType.Command);
+			Assert.Equal (SmtpCommandType.Bdat, cmd.CommandType);
+			Assert.IsType<SmtpBdatCommand> (cmd);
+			cmdBdat = (SmtpBdatCommand)cmd;
+			Assert.Equal (10, cmdBdat.Size);
+			Assert.True (cmdBdat.IsLast);
+		}
 
-			// Auth
-			cmd = SmtpCommand.Parse ("AUTH", SmtpCommand.ExpectedInputType.Command);
+		[Fact]
+		[Trait ("Category", "Net.Smtp")]
+		public void ParseStarttls ()
+		{
+			var cmd = SmtpCommand.Parse ("STARTTLS", SmtpCommand.ExpectedInputType.Command);
+			Assert.Equal (SmtpCommandType.StartTls, cmd.CommandType);
+		}
+
+		[Fact]
+		[Trait ("Category", "Net.Smtp")]
+		public void ParseAuth ()
+		{
+			var cmd = SmtpCommand.Parse ("AUTH", SmtpCommand.ExpectedInputType.Command);
 			Assert.Equal (SmtpCommandType.Auth, cmd.CommandType);
 			Assert.IsType<SmtpInvalidSyntaxCommand> (cmd);
 

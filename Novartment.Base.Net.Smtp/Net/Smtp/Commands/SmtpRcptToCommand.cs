@@ -1,4 +1,5 @@
 ﻿using System;
+using Novartment.Base.Text;
 
 namespace Novartment.Base.Net.Smtp
 {
@@ -12,24 +13,42 @@ namespace Novartment.Base.Net.Smtp
 
 		internal AddrSpec Recipient { get; }
 
-		internal static SmtpCommand Parse (ReadOnlySpan<char> value, BytesChunkEnumerator chunkEnumerator)
+		internal static SmtpCommand Parse (ReadOnlySpan<char> value)
 		{
-			var isAngleBracketedValueFound = chunkEnumerator.MoveToNextAngleBracketedValue (value);
-			if (!isAngleBracketedValueFound)
+			// RCPT TO:<forward-path> [ SP <rcpt-parameters> ] <CRLF> ; Forward-path   = "<" Mailbox ">"
+			var pos = 0;
+			var pathEelement = StructuredValueParser.GetNextElementDotAtom (value, ref pos);
+			if (pathEelement.ElementType != StructuredValueElementType.AngleBracketedValue)
 			{
 				return new SmtpInvalidSyntaxCommand (SmtpCommandType.RcptTo, "Unrecognized 'RCPT TO' parameter.");
 			}
 
-			AddrSpec recepient = null;
-			var recipient = chunkEnumerator.GetStringInBrackets (value);
+			AddrSpec recepient;
 			try
 			{
-				recepient = AddrSpec.Parse (recipient);
+				recepient = AddrSpec.Parse (value.Slice (pathEelement.StartPosition, pathEelement.Length));
 			}
 			catch (FormatException excpt)
 			{
 				return new SmtpInvalidSyntaxCommand (SmtpCommandType.RcptTo, FormattableString.Invariant (
 					$"Unrecognized 'RCPT TO' parameter. {excpt}"));
+			}
+
+			/*
+			Нераспознанные параметры нельзя игнорировать согласно RFC 5321 part 4.1.1.11:
+			If the server SMTP does not recognize or cannot implement one or more of the parameters
+			associated with a particular MAIL FROM or RCPT TO command, it will return code 555.
+			*/
+
+			// пропускаем пробелы
+			while ((pos < value.Length) && (value[pos] == ' '))
+			{
+				pos++;
+			}
+
+			if (pos < value.Length)
+			{
+				return new SmtpInvalidSyntaxCommand (SmtpCommandType.RcptTo, "Unrecognized 'RCPT TO' parameter.");
 			}
 
 			return new SmtpRcptToCommand (recepient);

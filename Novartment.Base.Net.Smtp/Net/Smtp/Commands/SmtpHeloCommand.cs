@@ -16,10 +16,10 @@ namespace Novartment.Base.Net.Smtp
 
 		internal string ClientIdentification { get; }
 
-		internal static SmtpHeloCommand Parse (ReadOnlySpan<char> value, BytesChunkEnumerator chunkEnumerator)
+		internal static SmtpHeloCommand Parse (ReadOnlySpan<char> value)
 		{
-			chunkEnumerator.MoveToNextChunk (value, true, (char)0x0d);
-			return new SmtpHeloCommand (chunkEnumerator.GetString (value));
+			// helo = "HELO" SP Domain CRLF
+			return new SmtpHeloCommand (value.Trim ());
 		}
 
 		public override string ToString ()

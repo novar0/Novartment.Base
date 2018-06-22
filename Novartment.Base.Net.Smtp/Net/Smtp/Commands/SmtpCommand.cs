@@ -1,5 +1,4 @@
 ﻿using System;
-using Novartment.Base.Text;
 
 namespace Novartment.Base.Net.Smtp
 {
@@ -56,18 +55,10 @@ namespace Novartment.Base.Net.Smtp
 				return authResponseCmd;
 			}
 
-			var chunkEnumerator = new BytesChunkEnumerator ();
-			var isChunkFound = chunkEnumerator.MoveToNextChunk (source, false, ' ');
-			if (!isChunkFound)
-			{
-				return new SmtpInvalidSyntaxCommand (SmtpCommandType.Unknown, "Line is empty.");
-			}
-
 			// делаем терпимый к отклонениям от стандарта разбор
 			SmtpCommand result = null;
 			var pos = 0;
-			//var commandTypeElement = StructuredValueParser.GetNextElementToken (source, ref pos);
-			var commandType = SmtpCommandTypeHelper.Parse (source, chunkEnumerator);
+			var commandType = SmtpCommandTypeHelper.Parse (source, ref pos);
 			switch (commandType)
 			{
 				case SmtpCommandType.Data: // data = "DATA" CRLF
@@ -85,26 +76,26 @@ namespace Novartment.Base.Net.Smtp
 				case SmtpCommandType.StartTls:
 					result = CachedCmdStartTls;
 					break;
-				case SmtpCommandType.Vrfy: // vrfy = "VRFY" SP String CRLF
-					result = SmtpVrfyCommand.Parse (source, chunkEnumerator);
+				case SmtpCommandType.Vrfy:
+					result = SmtpVrfyCommand.Parse (source.Slice (pos));
 					break;
-				case SmtpCommandType.Ehlo: // ehlo = "EHLO" SP ( Domain / address-literal ) CRLF
-					result = SmtpEhloCommand.Parse (source, chunkEnumerator);
+				case SmtpCommandType.Ehlo:
+					result = SmtpEhloCommand.Parse (source.Slice (pos));
 					break;
-				case SmtpCommandType.Helo: // helo = "HELO" SP Domain CRLF
-					result = SmtpHeloCommand.Parse (source, chunkEnumerator);
+				case SmtpCommandType.Helo:
+					result = SmtpHeloCommand.Parse (source.Slice (pos));
 					break;
-				case SmtpCommandType.MailFrom: // MAIL FROM:<reverse-path> [SP <mail-parameters> ] <CRLF> ; Reverse-path   = "<" Mailbox ">" / "<>"
-					result = SmtpMailFromCommand.Parse (source, chunkEnumerator);
+				case SmtpCommandType.MailFrom:
+					result = SmtpMailFromCommand.Parse (source.Slice (pos));
 					break;
-				case SmtpCommandType.RcptTo: // RCPT TO:<forward-path> [ SP <rcpt-parameters> ] <CRLF> ; Forward-path   = "<" Mailbox ">"
-					result = SmtpRcptToCommand.Parse (source, chunkEnumerator);
+				case SmtpCommandType.RcptTo:
+					result = SmtpRcptToCommand.Parse (source.Slice (pos));
 					break;
-				case SmtpCommandType.Bdat: // bdat-cmd = "BDAT" SP chunk-size [ SP end-marker ] CR LF
-					result = SmtpBdatCommand.Parse (source, chunkEnumerator);
+				case SmtpCommandType.Bdat:
+					result = SmtpBdatCommand.Parse (source.Slice (pos));
 					break;
 				case SmtpCommandType.Auth:
-					result = SmtpAuthCommand.Parse (source, chunkEnumerator);
+					result = SmtpAuthCommand.Parse (source.Slice (pos));
 					break;
 				default:
 					result = CachedCmdUnknown;

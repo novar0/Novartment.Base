@@ -16,11 +16,12 @@ namespace Novartment.Base.Net.Smtp
 
 		internal string Parameters { get; }
 
-		internal static SmtpCommand Parse (ReadOnlySpan<char> value, BytesChunkEnumerator chunkEnumerator)
+		internal static SmtpCommand Parse (ReadOnlySpan<char> value)
 		{
-			bool isChunkFound = chunkEnumerator.MoveToNextChunk (value, true, (char)0x0d);
-			return isChunkFound ?
-				(SmtpCommand)new SmtpVrfyCommand (chunkEnumerator.GetString (value)) :
+			// vrfy = "VRFY" SP String CRLF
+			var trimmedValue = value.Trim ();
+			return trimmedValue.Length > 0 ?
+				(SmtpCommand)new SmtpVrfyCommand (trimmedValue) :
 				new SmtpInvalidSyntaxCommand (SmtpCommandType.Vrfy, "Missed 'VRFY' parameter.");
 		}
 

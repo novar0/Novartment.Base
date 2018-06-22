@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Globalization;
 using Novartment.Base.BinaryStreaming;
+using Novartment.Base.Text;
 
 namespace Novartment.Base.Net.Smtp
 {
@@ -24,21 +25,30 @@ namespace Novartment.Base.Net.Smtp
 			this.SourceData = new SizeLimitedBufferedSource (source, this.Size);
 		}
 
-		internal static SmtpCommand Parse (ReadOnlySpan<char> value, BytesChunkEnumerator chunkEnumerator)
+		internal static SmtpCommand Parse (ReadOnlySpan<char> value)
 		{
-			// Любая ошибка в обработке BDAT - очень нехороший случай,
-			// потому что клиент будет слать данные не дожидаясь ответа об ошибке,
-			// а мы не знаем сколько этих данных и будем считать их командами.
-			// Поэтому проявляем максимальную толерантность к нарушению формата этой команды.
-			var isSizeFound = chunkEnumerator.MoveToNextChunk (value, true, ' ');
-			if (!isSizeFound)
+			/*
+			bdat-cmd = "BDAT" SP chunk-size [ SP end-marker ] CR LF
+			chunk-size ::= 1*DIGIT
+			end-marker ::= "LAST"
+
+			Согласно стандарту, нельзя вернуть ошибку до начала передачи данных, поэтому
+			любая ошибка в обработке BDAT - очень нехороший случай:
+			клиент будет слать данные не дожидаясь ответа об ошибке,
+			а мы не знаем сколько этих данных и будем считать их командами.
+			Поэтому проявляем максимальную толерантность к нарушению формата этой команды.
+			*/
+
+			var pos = 0;
+			var sizeElement = StructuredValueParser.GetNextElement (value, ref pos, AsciiCharClasses.Digit, false);
+			if (sizeElement.ElementType != StructuredValueElementType.Value)
 			{
-				return new SmtpInvalidSyntaxCommand (SmtpCommandType.Bdat, "Missed size parameter in 'BDAT' command.");
+				return new SmtpInvalidSyntaxCommand (SmtpCommandType.Bdat, "Unrecognized size parameter in 'BDAT' command.");
 			}
 
+			var sizeStr = value.Slice (sizeElement.StartPosition, sizeElement.Length);
 			long size;
 			bool isLast;
-			var sizeStr = chunkEnumerator.GetString (value);
 			try
 			{
 #if NETCOREAPP2_1
@@ -54,7 +64,7 @@ namespace Novartment.Base.Net.Smtp
 #endif
 
 				// любые непробельные символы после размера считаем индикатором последней части
-				isLast = chunkEnumerator.MoveToNextChunk (value, true, ' ');
+				isLast = StructuredValueParser.GetNextElement (value, ref pos, AsciiCharClasses.Visible, false).IsValid;
 			}
 			catch (FormatException excpt)
 			{

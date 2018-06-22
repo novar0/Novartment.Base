@@ -39,6 +39,10 @@ namespace Novartment.Base.Text
 		/// RFC 822 'atom' text.
 		/// Printable US-ASCII characters not including <code>()&lt;&gt;@,;:\[]".</code>.
 		/// </summary>
+		/// <remarks>
+		/// Alpha + Digit + <code>!#$%&amp;'*+-/=?^_`{|}~</code>.
+		/// Same as Visible excluding all kind of brackets, 'at', 'reverse solidus', 'dot', 'comma', 'colon' and 'semicolon'.
+		/// </remarks>
 		Atom = 0x0010,
 
 		/// <summary>
@@ -47,12 +51,19 @@ namespace Novartment.Base.Text
 		/// Updated in RFC 2231.
 		/// Printable US-ASCII characters not including <code>()&lt;&gt;@,;:\[]"/?=*'%</code>.
 		/// </summary>
+		/// <remarks>
+		/// Alpha + Digit + <code>!#$&amp;+-^_`{|}~</code>.
+		/// Same as Visible plus 'dot' and excluding 'solidus', 'question', 'equality', 'asterix', 'apostrophe' and 'percent'.
+		/// </remarks>
 		Token = 0x0020,
 
 		/// <summary>
 		/// RFC 2047 'token' used as 'charset' and 'encoding'.
 		/// Printable US-ASCII characters not including <code>()&lt;&gt;@,;:\[]"/?=."</code>.
 		/// </summary>
+		/// <remarks>
+		/// Same as Visible and excluding 'solidus', 'question', 'equality'.
+		/// </remarks>
 		ExtendedToken = 0x0040,
 
 		/// <summary>

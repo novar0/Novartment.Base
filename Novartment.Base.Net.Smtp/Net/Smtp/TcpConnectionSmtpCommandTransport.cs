@@ -63,7 +63,7 @@ namespace Novartment.Base.Net.Smtp
 			_logger?.LogTrace ("Starting TLS as client...");
 			var newConnection = await tlsCapableConnection.StartTlsClientAsync (clientCertificates, CancellationToken.None)
 				.ConfigureAwait (false);
-			if (_logger.IsEnabled (LogLevel.Information))
+			if ((_logger != null) && _logger.IsEnabled (LogLevel.Information))
 			{
 				_logger?.LogInformation (FormattableString.Invariant (
 					$@"Started TLS client: Protocol={newConnection.TlsProtocol}, Cipher={newConnection.CipherAlgorithm}/{newConnection.CipherStrength}, Hash={GetHashAlgorithmName (newConnection.HashAlgorithm)}/{newConnection.HashStrength}, KeyExchange={GetExchangeAlgorithmName (newConnection.KeyExchangeAlgorithm)}/{newConnection.KeyExchangeStrength}"));
@@ -82,7 +82,7 @@ namespace Novartment.Base.Net.Smtp
 			_logger?.LogTrace ("Starting TLS as server...");
 			var newConnection = await tlsCapableConnection.StartTlsServerAsync (serverCertificate, clientCertificateRequired, CancellationToken.None)
 				.ConfigureAwait (false);
-			if (_logger.IsEnabled (LogLevel.Information))
+			if ((_logger != null) && _logger.IsEnabled (LogLevel.Information))
 			{
 				_logger?.LogInformation (FormattableString.Invariant (
 					$@"Started TLS server: Protocol={newConnection.TlsProtocol}, Cipher={newConnection.CipherAlgorithm}/{newConnection.CipherStrength}, Hash={GetHashAlgorithmName (newConnection.HashAlgorithm)}/{newConnection.HashStrength}, KeyExchange={GetExchangeAlgorithmName (newConnection.KeyExchangeAlgorithm)}/{newConnection.KeyExchangeStrength}"));
@@ -91,9 +91,17 @@ namespace Novartment.Base.Net.Smtp
 			SetConnection (newConnection);
 		}
 
-		public async Task<SmtpCommand> ReceiveCommandAsync (SmtpCommand.ExpectedInputType expectedInputType, CancellationToken cancellationToken)
+		public Task<SmtpCommand> ReceiveCommandAsync (SmtpCommand.ExpectedInputType expectedInputType, CancellationToken cancellationToken)
 		{
-			if (_reader.Count < 1)
+			if (_reader.Count > 0)
+			{
+				var cmd = GetCommandFromReaderBuffer (expectedInputType);
+				return Task.FromResult (cmd);
+			}
+
+			return ReceiveCommandAsyncStateMachine ();
+
+			async Task<SmtpCommand> ReceiveCommandAsyncStateMachine ()
 			{
 				await _reader.FillBufferAsync (cancellationToken).ConfigureAwait (false);
 
@@ -102,23 +110,88 @@ namespace Novartment.Base.Net.Smtp
 					// данные кончились, означает подключение разорвано
 					throw new IOException ("Connection closed waiting for command.");
 				}
-			}
 
-			SmtpCommand command;
+				return GetCommandFromReaderBuffer (expectedInputType);
+			}
+		}
+
+		private SmtpCommand GetCommandFromReaderBuffer (SmtpCommand.ExpectedInputType expectedInputType)
+		{
 			if (expectedInputType == SmtpCommand.ExpectedInputType.Data)
 			{
 				// TODO: сделать первые два байта разделителя (0x0d, 0x0a) частью данных
-				command = new SmtpActualDataCommand ();
+				var cmd = new SmtpActualDataCommand ();
+				cmd.SetSource (_reader, true);
+				return cmd;
 			}
-			else
-			{
-				command = ExtractCommand (
-					_reader.BufferMemory.Span.Slice (_reader.Offset, _reader.Count),
-					expectedInputType,
-					out int bytesToSkip);
 
-				_reader.SkipBuffer (bytesToSkip);
+			var source = _reader.BufferMemory.Span.Slice (_reader.Offset, _reader.Count);
+
+			var inPos = 0;
+			var outPos = 0;
+			var isInvalidCharsFound = false;
+			var isSizeLimitExceeded = false;
+
+			// независимо от корректности команды мы должны посчитать сколько пропустить байт (то есть найти CRLF)
+			while (true)
+			{
+				if (inPos > (source.Length - 2))
+				{
+					// вся строка просканирована, CRLF не найден
+					_reader.SkipBuffer (source.Length);
+					return new SmtpInvalidSyntaxCommand (SmtpCommandType.Unknown, "Ending CRLF not found in command.");
+				}
+
+				var octet = source[inPos];
+				if ((octet == 0x0d) && (source[inPos + 1] == 0x0a))
+				{
+					// CRLF найден
+					break;
+				}
+
+				if (!isInvalidCharsFound && !isSizeLimitExceeded)
+				{
+					// некорректные символы не встречены, предел по длине не достигнут, продолжаем наполнять _commandBuf
+					if (octet > AsciiCharSet.MaxCharValue)
+					{
+						// RFC 5321 part 2.4: Commands and replies are composed of characters from the ASCII character set
+						isInvalidCharsFound = true;
+					}
+					else
+					{
+						if (outPos > MaximumCommandLength)
+						{
+							// достигли предела по длине _commandBuf
+							isSizeLimitExceeded = true;
+						}
+						else
+						{
+							_commandBuf[outPos++] = (char)octet;
+						}
+					}
+				}
+
+				inPos++;
 			}
+
+			_reader.SkipBuffer (inPos + 2);
+
+			if (isInvalidCharsFound)
+			{
+				return new SmtpInvalidSyntaxCommand (SmtpCommandType.Unknown, "Invalid non-ASCII chars found in command.");
+			}
+
+			if (isSizeLimitExceeded)
+			{
+				return new SmtpTooLongCommand ();
+			}
+
+			if ((_logger != null) && _logger.IsEnabled (LogLevel.Trace))
+			{
+				_logger?.LogTrace ("<<< " + new string (_commandBuf, 0, outPos));
+			}
+
+			var command = SmtpCommand.Parse (_commandBuf.AsSpan (0, outPos), expectedInputType);
 
 			if (command is SmtpBdatCommand bdatCommand)
 			{
@@ -128,50 +201,6 @@ namespace Novartment.Base.Net.Smtp
 			if (command is SmtpActualDataCommand dataCommand)
 			{
 				dataCommand.SetSource (_reader, true);
-			}
-
-			return command;
-		}
-
-		private SmtpCommand ExtractCommand (ReadOnlySpan<byte> source, SmtpCommand.ExpectedInputType expectedInputType, out int bytesToSkip)
-		{
-			SmtpCommand command;
-			bytesToSkip = FindCRLF (source);
-			if (bytesToSkip < 0)
-			{
-				bytesToSkip = source.Length;
-				command = new SmtpInvalidSyntaxCommand (SmtpCommandType.Unknown, "Ending CRLF not found in command.");
-			}
-			else
-			{
-				if (bytesToSkip >= MaximumCommandLength)
-				{
-					command = new SmtpTooLongCommand ();
-				}
-				else
-				{
-					// RFC 5321 part 2.4: Commands and replies are composed of characters from the ASCII character set
-					for (var i = 0; i < bytesToSkip - 2; i++)
-					{
-						var octet = source[i];
-						if (octet > AsciiCharSet.MaxCharValue)
-						{
-							throw new FormatException (FormattableString.Invariant (
-								$"Invalid ASCII char U+{octet:x}. Acceptable range is from U+0000 to U+007F."));
-						}
-						else
-						{
-							_commandBuf[i] = (char)octet;
-						}
-					}
-
-					if (_logger.IsEnabled (LogLevel.Trace))
-					{
-						_logger?.LogTrace ("<<< " + new string (_commandBuf, 0, bytesToSkip - 2));
-					}
-
-					command = SmtpCommand.Parse (_commandBuf.AsSpan (0, bytesToSkip - 2), expectedInputType);
-				}
 			}
 
 			return command;
@@ -225,22 +254,6 @@ namespace Novartment.Base.Net.Smtp
 			return source.WriteToAsync (_writer, cancellationToken);
 		}
 
-		private static int FindCRLF (ReadOnlySpan<byte> buffer)
-		{
-			int countToCRLF = 0;
-			while ((buffer[countToCRLF] != 0x0d) || (buffer[countToCRLF + 1] != 0x0a))
-			{
-				if (countToCRLF >= (buffer.Length - 2))
-				{
-					return -1;
-				}
-
-				countToCRLF++;
-			}
-
-			return countToCRLF + 2;
-		}
-
 		private static string GetHashAlgorithmName (HashAlgorithmType hashAlgorithmType)
 		{
 			switch ((int)hashAlgorithmType)
@@ -281,7 +294,7 @@ namespace Novartment.Base.Net.Smtp
 			AsciiCharSet.GetBytes (text.AsSpan (), buf);
 
 			var isCRLF = (size > 1) && (buf[size - 2] == 0x0d) && (buf[size - 1] == 0x0a);
-			if (_logger.IsEnabled (LogLevel.Trace))
+			if ((_logger != null) && _logger.IsEnabled (LogLevel.Trace))
 			{
 				_logger?.LogTrace (">>> " + (isCRLF ? text.Substring (0, size - 2) : text));
 			}
