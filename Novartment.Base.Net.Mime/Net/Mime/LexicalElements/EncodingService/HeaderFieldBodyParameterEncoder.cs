@@ -11,7 +11,7 @@ namespace Novartment.Base.Net.Mime
 	/// <summary>
 	/// Строковое значение, позволяющее получать информацию об отдельных сегментах, разделённых пробелами.
 	/// </summary>
-	internal class HeaderValueParameterEncoder
+	internal class HeaderFieldBodyParameterEncoder
 	{
 		private readonly string _name;
 		private readonly byte[] _value;
@@ -19,7 +19,7 @@ namespace Novartment.Base.Net.Mime
 		private readonly IEstimatingEncoder _extendedParameterEncoder;
 		private int _currentSegmentNumber = 0;
 
-		private HeaderValueParameterEncoder (string parameterName, byte[] parameterValue, EstimatingEncoderChunk[] valueParts, IEstimatingEncoder extendedParameterEncoder)
+		private HeaderFieldBodyParameterEncoder (string parameterName, byte[] parameterValue, EstimatingEncoderChunk[] valueParts, IEstimatingEncoder extendedParameterEncoder)
 		{
 			_name = parameterName;
 			_value = parameterValue;
@@ -34,7 +34,7 @@ namespace Novartment.Base.Net.Mime
 		/// </summary>
 		/// <param name="parameterName">Имя параметра.</param>
 		/// <param name="parameterValue">Текст для разбивки на части.</param>
-		internal static HeaderValueParameterEncoder Parse (string parameterName, string parameterValue)
+		internal static HeaderFieldBodyParameterEncoder Parse (string parameterName, string parameterValue)
 		{
 			/*
 			RFC 2231 часть 4.1:
@@ -49,7 +49,7 @@ namespace Novartment.Base.Net.Mime
 
 			var isEncodingNeeded = !AsciiCharSet.IsAllOfClass (parameterValue, AsciiCharClasses.Visible | AsciiCharClasses.WhiteSpace);
 
-			var extendedParameterEncoder = new ExtendedParameterValueEstimatingEncoder (Encoding.UTF8);
+			var extendedParameterEncoder = new HeaderFieldBodyExtendedParameterValueEstimatingEncoder (Encoding.UTF8);
 			var encodersOne = ReadOnlyList.Repeat<IEstimatingEncoder> (extendedParameterEncoder, 1);
 			var encodersAll = new ReadOnlyArray<IEstimatingEncoder> (new IEstimatingEncoder[]
 			{
@@ -64,9 +64,9 @@ namespace Novartment.Base.Net.Mime
 					encodersAll, // если нужна кодировка то первый кусок принудительно делаем в виде 'extended-value'
 				bytes,
 				HeaderEncoder.MaxLineLengthRecommended,
-				(segmentNumber, encoder) => extra + ((segmentNumber == 0) ? 1 : (1 + (int)Math.Log10 (segmentNumber))) + ((encoder is ExtendedParameterValueEstimatingEncoder) ? 1 : 0));
+				(segmentNumber, encoder) => extra + ((segmentNumber == 0) ? 1 : (1 + (int)Math.Log10 (segmentNumber))) + ((encoder is HeaderFieldBodyExtendedParameterValueEstimatingEncoder) ? 1 : 0));
 
-			var data = new HeaderValueParameterEncoder (parameterName, bytes, valueParts, extendedParameterEncoder);
+			var data = new HeaderFieldBodyParameterEncoder (parameterName, bytes, valueParts, extendedParameterEncoder);
 			return data;
 		}
 
@@ -85,7 +85,7 @@ namespace Novartment.Base.Net.Mime
 				return null;
 			}
 
-			var isSingleUnencodedPart = (_valueSegments.Length < 2) && !(_valueSegments[0].Encoder is ExtendedParameterValueEstimatingEncoder);
+			var isSingleUnencodedPart = (_valueSegments.Length < 2) && !(_valueSegments[0].Encoder is HeaderFieldBodyExtendedParameterValueEstimatingEncoder);
 
 			var outBytesRequiredCapacity = isSingleUnencodedPart ?
 					_name.Length + 2 + (_valueSegments[_currentSegmentNumber].Count * 2) :

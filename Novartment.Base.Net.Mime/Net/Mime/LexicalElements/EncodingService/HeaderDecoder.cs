@@ -657,7 +657,7 @@ namespace Novartment.Base.Net.Mime
 			var parserPos = 0;
 			var valueElement = StructuredHeaderFieldLexicalToken.ParseAtom (source, ref parserPos);
 
-			var parameterDecoder = new HeaderFieldParameterDecoder ();
+			var parameterDecoder = new HeaderFieldBodyParameterDecoder ();
 			while (true)
 			{
 				var item = StructuredHeaderFieldLexicalToken.ParseToken (source, ref parserPos);

@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Text;
-using System.Threading;
-using Xunit;
 using Novartment.Base.Collections;
+using Xunit;
 
 namespace Novartment.Base.Net.Mime.Test
 {
@@ -17,55 +16,13 @@ namespace Novartment.Base.Net.Mime.Test
 		[Trait ("Category", "Mime.HeaderEncoder")]
 		public void EncodeUnstructured ()
 		{
+			// более подробные тесты в HeaderValueEncoderTests
 			var values = new ArrayListMock ();
 			HeaderEncoder.EncodeUnstructured (values, string.Empty);
 			Assert.Equal (0, values.Count);
 
-			values = new ArrayListMock ();
-			HeaderEncoder.EncodeUnstructured (values, "value");
-			Assert.Equal (1, values.Count);
-			Assert.Equal ("value", values[0]);
-			values = new ArrayListMock ();
-			HeaderEncoder.EncodeUnstructured (values, "value1  (value2) \t value3");
-			Assert.Equal (3, values.Count);
-			Assert.Equal ("value1", values[0]);
-			Assert.Equal ("  (value2)", values[1]);
-			Assert.Equal (" \t value3", values[2]);
-
-			// похоже на комментарии и на строки в кавычках (не должны распознаваться)
-			values = new ArrayListMock ();
-			HeaderEncoder.EncodeUnstructured (values, "\t (a 1)  \"[no\\\\ne]\" bb\tccc  ");
-			Assert.Equal (5, values.Count);
-			Assert.Equal ("\t (a", values[0]);
-			Assert.Equal (" 1)", values[1]);
-			Assert.Equal ("  \"[no\\\\ne]\"", values[2]);
-			Assert.Equal (" bb", values[3]);
-			Assert.Equal ("\tccc  ", values[4]);
-
-			// похоже на кодированные слова (должны быть закодированы)
-			var template = "aaa   =?utf-8?B?0JY=?= bbb";
-			values = new ArrayListMock ();
-			HeaderEncoder.EncodeUnstructured (values, template);
-			Assert.Equal (3, values.Count);
-			Assert.Equal ("aaa", values[0]);
-			Assert.Equal ("   =?utf-8?B?PT91dGYtOD9CPzBKWT0/PQ==?=", values[1]);
-			Assert.Equal (" bbb", values[2]);
-			template = " =?utf-64?q?one?= \t=?utf-8?B?0JY=?= ";
-			values = new ArrayListMock ();
-			HeaderEncoder.EncodeUnstructured (values, template);
-			Assert.Equal (1, values.Count);
-			Assert.Equal (" =?utf-8?B?PT91dGYtNjQ/cT9vbmU/PSAJPT91dGYtOD9CPzBKWT0/PSA=?=", values[0]);
-
-			// не-ASCII символы (должны быть закодированы)
-			template = "1:  §2 \t ДВА   ©1999...2001";
-			values = new ArrayListMock ();
-			HeaderEncoder.EncodeUnstructured (values, template);
-			Assert.Equal (2, values.Count);
-			Assert.Equal ("1:", values[0]);
-			Assert.Equal ("  =?utf-8?B?wqcyIAkg0JTQktCQICAgwqkxOTk5Li4uMjAwMQ==?=", values[1]);
-
 			// разбиение на части ограниченные макс.разрешенной длиной
-			template = "An 'encoded-word' may, appear: in a message; values or \"body part\" values according слово to the снова rules valuerulesvaluerulesvaluerulesvaluerulesvaluerulesvaluerulesvaluerulesvaluerules again";
+			var template = "An 'encoded-word' may, appear: in a message; values or \"body part\" values according слово to the снова rules valuerulesvaluerulesvaluerulesvaluerulesvaluerulesvaluerulesvaluerulesvaluerules again";
 			values = new ArrayListMock ();
 			HeaderEncoder.EncodeUnstructured (values, template);
 			Assert.Equal (17, values.Count);
@@ -92,136 +49,10 @@ namespace Novartment.Base.Net.Mime.Test
 		[Trait ("Category", "Mime.HeaderEncoder")]
 		public void EncodePhrase ()
 		{
-			// пробельные символы в начале, конце и середине
-			var values = new ArrayListMock ();
-			HeaderEncoder.EncodePhrase (values, "abc");
-			Assert.Equal (1, values.Count);
-			Assert.Equal ("abc", values[0]);
-			values = new ArrayListMock ();
-			HeaderEncoder.EncodePhrase (values, "abc def");
-			Assert.Equal (2, values.Count);
-			Assert.Equal ("abc", values[0]);
-			Assert.Equal (" def", values[1]);
-			values = new ArrayListMock ();
-			HeaderEncoder.EncodePhrase (values, "abc\tdef");
-			Assert.Equal (1, values.Count);
-			Assert.Equal ("\"abc\tdef\"", values[0]);
-			values = new ArrayListMock ();
-			HeaderEncoder.EncodePhrase (values, " abc def");
-			Assert.Equal (2, values.Count);
-			Assert.Equal ("\" abc\"", values[0]);
-			Assert.Equal (" def", values[1]);
-			values = new ArrayListMock ();
-			HeaderEncoder.EncodePhrase (values, "abc def ");
-			Assert.Equal (2, values.Count);
-			Assert.Equal ("abc", values[0]);
-			Assert.Equal (" \"def \"", values[1]);
-			values = new ArrayListMock ();
-			HeaderEncoder.EncodePhrase (values, "abc  def");
-			Assert.Equal (2, values.Count);
-			Assert.Equal ("abc", values[0]);
-			Assert.Equal (" \" def\"", values[1]);
-			values = new ArrayListMock ();
-			HeaderEncoder.EncodePhrase (values, " abc def ");
-			Assert.Equal (1, values.Count);
-			Assert.Equal ("\" abc def \"", values[0]);
-
-			// максимум что можно представить в виде atom
-			values = new ArrayListMock ();
-			HeaderEncoder.EncodePhrase (values, "!#$%&'*+-/=?^_`{|}~abyzABYZ0189");
-			Assert.Equal (1, values.Count);
-			Assert.Equal ("!#$%&'*+-/=?^_`{|}~abyzABYZ0189", values[0]);
-
-			// максимум что можно представить в виде quotable
-			values = new ArrayListMock ();
-			HeaderEncoder.EncodePhrase (values, "!\"#$%&'()*+,-./0123456789:;<=>?@ABYZ[\\]^_`abyz{|}~");
-			Assert.Equal (1, values.Count);
-			Assert.Equal ("\"!\\\"#$%&'()*+,-./0123456789:;<=>?@ABYZ[\\\\]^_`abyz{|}~\"", values[0]);
-
-			// требуется кодирование
-			values = new ArrayListMock ();
-			HeaderEncoder.EncodePhrase (values, "ABYZ©9810abyz!*+-/");
-			Assert.Equal (1, values.Count);
-			Assert.Equal ("=?utf-8?B?QUJZWsKpOTgxMGFieXohKistLw==?=", values[0]);
-			values = new ArrayListMock ();
-			HeaderEncoder.EncodePhrase (values, "«§2©2123}»");
-			Assert.Equal (1, values.Count);
-			Assert.Equal ("=?utf-8?B?wqvCpzLCqTIxMjN9wrs=?=", values[0]);
-
-			// похоже на кодированное слово (отдельно)
-			values = new ArrayListMock ();
-			HeaderEncoder.EncodePhrase (values, "=?utf-8?B?0JY=?=");
-			Assert.Equal (1, values.Count);
-			Assert.Equal ("=?utf-8?B?PT91dGYtOD9CPzBKWT0/PQ==?=", values[0]);
-
-			// похоже на кодированное слово (среди непохожих)
-			values = new ArrayListMock ();
-			HeaderEncoder.EncodePhrase (values, "abc =?utf-8?B?0JY=?= def");
-			Assert.Equal (3, values.Count);
-			Assert.Equal ("abc", values[0]);
-			Assert.Equal (" =?utf-8?B?PT91dGYtOD9CPzBKWT0/PQ==?=", values[1]);
-			Assert.Equal (" def", values[2]);
-
-			// похоже на кодированное слово (выделено табами)
-			values = new ArrayListMock ();
-			HeaderEncoder.EncodePhrase (values, "abc\t=?utf-8?B?0JY=?=\tdef");
-			Assert.Equal (1, values.Count);
-			Assert.Equal ("=?utf-8?B?YWJjCT0/dXRmLTg/Qj8wSlk9Pz0JZGVm?=", values[0]);
-
-			// не похоже на кодированное слово (не выделено пробельными символами)
-			values = new ArrayListMock ();
-			HeaderEncoder.EncodePhrase (values, "aaa_=?utf-8?B?0JY=?=_bbb");
-			Assert.Equal (1, values.Count);
-			Assert.Equal ("aaa_=?utf-8?B?0JY=?=_bbb", values[0]);
-
-			// объединение нескольких слов
-			// a a - объединять не нужно, оставляем свободу комбинирования
-			values = new ArrayListMock ();
-			HeaderEncoder.EncodePhrase (values, "abyz!#$%&'*+- ABYZ0189/=?^_`{|}~");
-			Assert.Equal (2, values.Count);
-			Assert.Equal ("abyz!#$%&'*+-", values[0]);
-			Assert.Equal (" ABYZ0189/=?^_`{|}~", values[1]);
-
-			// q q - объединять можно чтобы съэкономить две кавычки. нужно ли?
-			values = new ArrayListMock ();
-			HeaderEncoder.EncodePhrase (values, "@ABYZ 0123456789;");
-			Assert.Equal (1, values.Count);
-			Assert.Equal ("\"@ABYZ 0123456789;\"", values[0]);
-
-			// e e - объединять нужно чтобы прилично съэкономить на обрамлении encoded-word
-			values = new ArrayListMock ();
-			HeaderEncoder.EncodePhrase (values, "ABYZ©9810 abyz§!*+-/");
-			Assert.Equal (1, values.Count);
-			Assert.Equal ("=?utf-8?B?QUJZWsKpOTgxMCBhYnl6wqchKistLw==?=", values[0]);
-
-			// q a q - объединять можно чтобы съэкономить две кавычки. нужно ли?
-			values = new ArrayListMock ();
-			HeaderEncoder.EncodePhrase (values, "@ABYZ value 0123456789;");
-			Assert.Equal (1, values.Count);
-			Assert.Equal ("\"@ABYZ value 0123456789;\"", values[0]);
-
-			// q e q - объединять невозможно
-			values = new ArrayListMock ();
-			HeaderEncoder.EncodePhrase (values, "@ABYZ §2000 0123456789;");
-			Assert.Equal (3, values.Count);
-			Assert.Equal ("\"@ABYZ\"", values[0]);
-			Assert.Equal (" =?utf-8?B?wqcyMDAw?=", values[1]);
-			Assert.Equal (" \"0123456789;\"", values[2]);
-
-			// e a e - объединять нужно чтобы прилично съэкономить на обрамлении encoded-word
-			values = new ArrayListMock ();
-			HeaderEncoder.EncodePhrase (values, "ABYZ©9810 value abyz§!*+-/");
-			Assert.Equal (1, values.Count);
-			Assert.Equal ("=?utf-8?B?QUJZWsKpOTgxMCB2YWx1ZSBhYnl6wqchKistLw==?=", values[0]);
-
-			// e q e - объединять можно чтобы съэкономить на обрамлении encoded-word, но зависит от размера q посередине. нужно ли?
-			values = new ArrayListMock ();
-			HeaderEncoder.EncodePhrase (values, "ABYZ©9810 @ABYZ abyz§!*+-/");
-			Assert.Equal (1, values.Count);
-			Assert.Equal ("=?utf-8?B?QUJZWsKpOTgxMCBAQUJZWiBhYnl6wqchKistLw==?=", values[0]);
+			// более подробные тесты в HeaderValueEncoderTests
 
 			// разбиение на части ограниченные макс.разрешенной длиной
-			values = new ArrayListMock ();
+			var values = new ArrayListMock ();
 			HeaderEncoder.EncodePhrase (values, "An 'encoded-word' may, appear: in a message; values or \"body part\" values according слово to the снова rules valuerulesvaluerulesvaluerulesvaluerulesvaluerulesvaluerulesvaluerulesvaluerules again");
 			Assert.Equal (9, values.Count);
 			Assert.Equal ("An", values[0]);

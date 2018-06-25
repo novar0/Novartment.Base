@@ -3,7 +3,7 @@ using Xunit;
 
 namespace Novartment.Base.Net.Mime.Test
 {
-	public class StructuredValuePhraseDecoderTests
+	public class StructuredHeaderFieldLexicalTokenTests
 	{
 		[Fact]
 		[Trait ("Category", "Mime")]

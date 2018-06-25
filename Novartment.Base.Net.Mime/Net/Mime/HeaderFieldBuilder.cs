@@ -1,7 +1,7 @@
 ﻿using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
-using System.Text;
 using Novartment.Base.Collections;
 using Novartment.Base.Collections.Linq;
 using Novartment.Base.Text;
@@ -16,18 +16,22 @@ namespace Novartment.Base.Net.Mime
 	{
 		private readonly HeaderFieldName _name;
 		private readonly IAdjustableList<HeaderFieldParameter> _parameters = new ArrayList<HeaderFieldParameter> ();
-		private readonly IReadOnlyCollection<string> _valueParts;
+		private readonly IReadOnlyList<string> _valueParts;
 
 		/// <summary>
 		/// Инициализирует новый экземпляр класса HeaderFieldBuilder с указанным именем и набором частей значения поля.
 		/// </summary>
 		/// <param name="name">Имя поля заголовка.</param>
 		/// <param name="valueParts">Набор частей значения поля заголовка.</param>
-		private HeaderFieldBuilder (HeaderFieldName name, IReadOnlyCollection<string> valueParts)
+		private HeaderFieldBuilder (HeaderFieldName name, IReadOnlyList<string> valueParts)
 		{
 			_name = name;
 			_valueParts = valueParts;
 		}
+
+		public HeaderFieldName Name => _name;
+
+		public IReadOnlyList<string> ValueParts => _valueParts;
 
 		/// <summary>
 		/// Создает поле заголовка из указанного значения.
@@ -90,7 +94,7 @@ namespace Novartment.Base.Net.Mime
 
 			Contract.EndContractBlock ();
 
-			return new HeaderFieldBuilder (name, addrSpecs.Select (item => item.ToAngleString ()));
+			return new HeaderFieldBuilder (name, addrSpecs.Select (item => item.ToAngleString ()).ToList ());
 		}
 
 		/// <summary>
@@ -541,11 +545,12 @@ namespace Novartment.Base.Net.Mime
 		}
 
 		/// <summary>
-		/// Генерирует поле заголовка с фолдингом по указанной длине строки.
+		/// Генерирует двоичное представление поле заголовка для передачи по протоколу с фолдингом по указанной длине строки.
 		/// </summary>
+		/// <param name="buf">Буфер куда будет сгнерировано тело.</param>
 		/// <param name="maxLineLength">Максимальная длина строки, по которой будет производиться фолдинг значения поля заголовка.</param>
-		/// <returns>Сгенерированное поле заголовка.</returns>
-		public HeaderField ToHeaderField (int maxLineLength)
+		/// <returns>Количество байт, записанных в буфер.</returns>
+		public int CreateBinaryTransportRepresentation (Span<byte> buf, int maxLineLength)
 		{
 			// RFC 5322:
 			// 1) FWS (the folding white space token) indicates a place where folding may take place.
@@ -562,7 +567,7 @@ namespace Novartment.Base.Net.Mime
 				parts[parts.Count - 1] = parts[parts.Count - 1] + ';';
 			}
 
-			// для каждого парамтра добавляем его части в общую коллекцию
+			// для каждого параметра добавляем его части в общую коллекцию
 			for (var i = 0; i < _parameters.Count; i++)
 			{
 				HeaderEncoder.EncodeHeaderFieldParameter (parts, _parameters[i]);
@@ -576,9 +581,12 @@ namespace Novartment.Base.Net.Mime
 			}
 
 			// формируем склеенную из частей строку вставляя где надо переводы строки и пробелы
-			var lineLen = HeaderFieldNameHelper.GetName (_name).Length + 1; // имя плюс двоеточие
-			var result = new byte[HeaderDecoder.MaximumHeaderFieldBodySize];
-			var outPos = 0;
+			var name = HeaderFieldNameHelper.GetName (_name);
+			var lineLen = name.Length;
+			AsciiCharSet.GetBytes (name.AsSpan (), buf);
+			buf[lineLen++] = (byte)':';
+
+			var outPos = lineLen;
 			foreach (var part in parts)
 			{
 				var partLength = part?.Length ?? 0;
@@ -594,37 +602,28 @@ namespace Novartment.Base.Net.Mime
 					if (lineLen > maxLineLength)
 					{
 						lineLen = partLength + 1; // плюс пробел
-						result[outPos++] = (byte)'\r';
-						result[outPos++] = (byte)'\n';
+						buf[outPos++] = (byte)'\r';
+						buf[outPos++] = (byte)'\n';
 					}
 
 					if (needWhiteSpace)
 					{
-						if (outPos > 0)
-						{
-							result[outPos++] = (byte)' ';
-						}
-						else
-						{
-							lineLen--;
-						}
+						buf[outPos++] = (byte)' ';
 					}
 
 #if NETCOREAPP2_1
-					AsciiCharSet.GetBytes (part, result.AsSpan (outPos));
+					AsciiCharSet.GetBytes (part, buf.Slice (outPos));
 #else
-					AsciiCharSet.GetBytes (part.AsSpan (), result.AsSpan (outPos));
+					AsciiCharSet.GetBytes (part.AsSpan (), buf.Slice (outPos));
 #endif
 					outPos += part.Length;
 				}
 			}
 
-			if (outPos > HeaderEncoder.MaxOneFieldSize)
-			{
-				throw new NotSupportedException (FormattableString.Invariant ($"Header field value too big ({outPos} bytes). Supported maximum is {HeaderEncoder.MaxOneFieldSize}."));
-			}
+			buf[outPos++] = (byte)'\r';
+			buf[outPos++] = (byte)'\n';
 
-			return new HeaderField (_name, result.AsSpan (0, outPos));
+			return outPos;
 		}
 	}
 }

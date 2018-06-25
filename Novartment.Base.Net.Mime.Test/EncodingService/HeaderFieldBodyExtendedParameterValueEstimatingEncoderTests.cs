@@ -3,7 +3,7 @@ using Xunit;
 
 namespace Novartment.Base.Net.Mime.Test
 {
-	public class ExtendedParameterValueEstimatingEncoderTests
+	public class HeaderFieldBodyExtendedParameterValueEstimatingEncoderTests
 	{
 		private static readonly string Template1 = "token#numer_one2001";
 		private static readonly string Template2 = " two\tthree";
@@ -18,7 +18,7 @@ namespace Novartment.Base.Net.Mime.Test
 		{
 			var encoding = Encoding.UTF8;
 			var buf = encoding.GetBytes (Template1 + Template2 + Template3 + Template4);
-			var encoder = new ExtendedParameterValueEstimatingEncoder (encoding);
+			var encoder = new HeaderFieldBodyExtendedParameterValueEstimatingEncoder (encoding);
 			var encodedBuf = new byte[999];
 
 			// полная строка, неподходящие начинаются с середины, первый кусок

@@ -8,7 +8,7 @@ namespace Novartment.Base.Net.Mime
 	/// <summary>
 	/// Кодирует 'extended-initial-value' и 'extended-other-values' согласно RFC 2231.
 	/// </summary>
-	internal class ExtendedParameterValueEstimatingEncoder :
+	internal class HeaderFieldBodyExtendedParameterValueEstimatingEncoder :
 		IEstimatingEncoder
 	{
 		private readonly Encoding _encoding;
@@ -17,7 +17,7 @@ namespace Novartment.Base.Net.Mime
 		/// Инициализирует новый экземпляр класса ExtendedParameterValueEstimatingEncoder с указанием используемой кодировки.
 		/// </summary>
 		/// <param name="encoding">Кодировка, используемая для двоичного представления символов.</param>
-		internal ExtendedParameterValueEstimatingEncoder (Encoding encoding)
+		internal HeaderFieldBodyExtendedParameterValueEstimatingEncoder (Encoding encoding)
 		{
 			if (encoding == null)
 			{

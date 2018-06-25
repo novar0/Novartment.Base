@@ -5,14 +5,14 @@ using Novartment.Base.Collections;
 
 namespace Novartment.Base.Net.Mime
 {
-	internal class HeaderFieldParameterDecoder
+	internal class HeaderFieldBodyParameterDecoder
 	{
 		private readonly ArrayList<HeaderFieldParameter> _parameters = new ArrayList<HeaderFieldParameter> ();
 		private string _parameterName = null;
 		private Encoding _parameterEncoding = null;
 		private string _parameterValue = string.Empty;
 
-		internal HeaderFieldParameterDecoder ()
+		internal HeaderFieldBodyParameterDecoder ()
 		{
 		}
 

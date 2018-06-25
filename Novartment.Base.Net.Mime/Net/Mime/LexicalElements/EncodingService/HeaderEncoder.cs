@@ -2,6 +2,7 @@
 using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Novartment.Base.BinaryStreaming;
@@ -17,8 +18,6 @@ namespace Novartment.Base.Net.Mime
 	/// </summary>
 	internal static class HeaderEncoder
 	{
-		internal static readonly int MaxOneFieldSize = 10000;
-
 		/// <summary>
 		/// Максимально допустимая длина одной строки.
 		/// Определено в RFC 2822 часть 2.1.1.
@@ -64,10 +63,12 @@ namespace Novartment.Base.Net.Mime
 			if (text.Length > 0)
 			{
 				// текст рабивается на последовательности слов, которые удобно представить в одном виде (напрямую или в виде encoded-word)
-				var encoder = HeaderValueEncoder.Parse (text, TextSemantics.Unstructured);
+				var bytes = Encoding.UTF8.GetBytes (text);
+				var position = 0;
+				var prevSequenceIsWordEncoded = false;
 				while (true)
 				{
-					var wordStr = encoder.GetNextElement ();
+					var wordStr = HeaderFieldBodyEncoder.EncodeNextElement (bytes, TextSemantics.Unstructured, ref position, ref prevSequenceIsWordEncoded);
 					if (wordStr == null)
 					{
 						break;
@@ -169,10 +170,12 @@ namespace Novartment.Base.Net.Mime
 
 			Contract.EndContractBlock ();
 
-			var encoder = HeaderValueEncoder.Parse (text, TextSemantics.Phrase);
+			var bytes = Encoding.UTF8.GetBytes (text);
+			var position = 0;
+			var prevSequenceIsWordEncoded = false;
 			while (true)
 			{
-				var wordStr = encoder.GetNextElement ();
+				var wordStr = HeaderFieldBodyEncoder.EncodeNextElement (bytes, TextSemantics.Phrase, ref position, ref prevSequenceIsWordEncoded);
 				if (wordStr == null)
 				{
 					break;
@@ -210,7 +213,7 @@ namespace Novartment.Base.Net.Mime
 
 		internal static void EncodeHeaderFieldParameter (IAdjustableCollection<string> result, HeaderFieldParameter parameter)
 		{
-			var encoder = HeaderValueParameterEncoder.Parse (parameter.Name, parameter.Value);
+			var encoder = HeaderFieldBodyParameterEncoder.Parse (parameter.Name, parameter.Value);
 			while (true)
 			{
 				var element = encoder.GetNextSegment ();
@@ -230,7 +233,6 @@ namespace Novartment.Base.Net.Mime
 		/// <param name="destination">Получатель двоичных данных, в который будет записана указанная коллекция полей.</param>
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
 		/// <returns>Суммарное количество байтов, записанных в получатель двоичных данных.</returns>
-		/// <remarks>Значения полей будут записаны "как есть", без фолдинга.</remarks>
 		internal static Task<int> SaveHeaderAsync (
 			IReadOnlyCollection<HeaderFieldBuilder> fields,
 			IBinaryDestination destination,
@@ -255,29 +257,11 @@ namespace Novartment.Base.Net.Mime
 			async Task<int> SaveHeaderAsyncStateMachine ()
 			{
 				int totalSize = 0;
-				var bytes = ArrayPool<byte>.Shared.Rent (MaxOneFieldSize);
+				var bytes = ArrayPool<byte>.Shared.Rent (HeaderDecoder.MaximumHeaderFieldBodySize);
 				foreach (var fieldBuilder in fields)
 				{
 					cancellationToken.ThrowIfCancellationRequested ();
-					var field = fieldBuilder.ToHeaderField (HeaderEncoder.MaxLineLengthRecommended);
-					var name = HeaderFieldNameHelper.GetName (field.Name);
-					var size = name.Length;
-					AsciiCharSet.GetBytes (name.AsSpan (), bytes);
-					bytes[size++] = (byte)':';
-					var isEmpty = field.Body.Length < 1;
-					if (!isEmpty)
-					{
-						if ((field.Body.Span[0] != ' ') && (field.Body.Span[0] != '\t') && ((field.Body.Span[0] != '\r') || (field.Body.Length < 2) || (field.Body.Span[1] != '\n')))
-						{
-							bytes[size++] = (byte)' ';
-						}
-
-						field.Body.CopyTo (new Memory<byte> (bytes, size, bytes.Length - size));
-						size += field.Body.Length;
-					}
-
-					bytes[size++] = (byte)'\r';
-					bytes[size++] = (byte)'\n';
+					var size = fieldBuilder.CreateBinaryTransportRepresentation (bytes, HeaderEncoder.MaxLineLengthRecommended);
 					await destination.WriteAsync (bytes.AsMemory (0, size), cancellationToken).ConfigureAwait (false);
 					totalSize += size;
 				}
