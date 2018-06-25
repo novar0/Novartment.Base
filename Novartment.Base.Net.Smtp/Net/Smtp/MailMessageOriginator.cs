@@ -24,7 +24,7 @@ namespace Novartment.Base.Net.Smtp
 			this IMailMessage<AddrSpec> message,
 			TransactionHandlerFactory transactionHandlerFactory,
 #pragma warning disable CA1801 // Review unused parameters
-			CancellationToken cancellationToken)
+			CancellationToken cancellationToken = default)
 #pragma warning restore CA1801 // Review unused parameters
 		{
 			// TODO: предусмотреть отправку писем не подразумевающих ответ (уведомлений о доставке), то есть без указания returnPath
@@ -96,7 +96,7 @@ namespace Novartment.Base.Net.Smtp
 			{
 				// забираем записанные остатки даже если чтение отменено или прервалось с исключением,
 				// иначе чтение может оcтаться навечно заблокированной
-				await channel.SkipToEndAsync (CancellationToken.None).ConfigureAwait (false);
+				await channel.SkipToEndAsync (default).ConfigureAwait (false);
 			}
 		}
 	}

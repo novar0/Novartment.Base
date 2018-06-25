@@ -25,6 +25,6 @@ namespace Novartment.Base.BinaryStreaming
 		/// True если источник переключился на следующую часть,
 		/// либо False если источник исчерпался.
 		/// </returns>
-		Task<bool> TrySkipPartAsync (CancellationToken cancellationToken);
+		Task<bool> TrySkipPartAsync (CancellationToken cancellationToken = default);
 	}
 }

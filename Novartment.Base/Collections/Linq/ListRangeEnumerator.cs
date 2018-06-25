@@ -22,7 +22,7 @@ namespace Novartment.Base.Collections.Linq
 			_offset = offset;
 			_count = count;
 			_index = -1;
-			_current = default (TSource);
+			_current = default;
 		}
 
 		/// <summary>
@@ -64,7 +64,7 @@ namespace Novartment.Base.Collections.Linq
 			if (_index == _count)
 			{
 				_index = -2;
-				_current = default (TSource);
+				_current = default;
 				return false;
 			}
 
@@ -78,7 +78,7 @@ namespace Novartment.Base.Collections.Linq
 		public void Reset ()
 		{
 			_index = -1;
-			_current = default (TSource);
+			_current = default;
 		}
 
 #pragma warning disable CA1063 // Implement IDisposable Correctly
@@ -89,7 +89,7 @@ namespace Novartment.Base.Collections.Linq
 #pragma warning restore CA1063 // Implement IDisposable Correctly
 		{
 			_index = -2;
-			_current = default (TSource);
+			_current = default;
 		}
 	}
 }

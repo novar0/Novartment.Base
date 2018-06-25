@@ -23,6 +23,6 @@ namespace Novartment.Base.Net.Mime
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
 		/// <returns>Задача, результатом которой является количество байтов,
 		/// которое заняли данные в теле сущности в закодированном виде.</returns>
-		Task<int> SetDataAsync (IBufferedSource data, CancellationToken cancellationToken);
+		Task<int> SetDataAsync (IBufferedSource data, CancellationToken cancellationToken = default);
 	}
 }

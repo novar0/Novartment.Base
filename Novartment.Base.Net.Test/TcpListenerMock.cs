@@ -35,7 +35,7 @@ namespace Novartment.Base.Net.Test
 			_isStarted = false;
 		}
 
-		public async Task<ITcpConnection> AcceptTcpClientAsync (CancellationToken cancellationToken)
+		public async Task<ITcpConnection> AcceptTcpClientAsync (CancellationToken cancellationToken = default)
 		{
 			if (!_isStarted)
 			{
@@ -46,7 +46,7 @@ namespace Novartment.Base.Net.Test
 			return new TcpConnectionMock (
 					new IPHostEndPoint (_endpoint),
 					new IPHostEndPoint (remoteEndpoint),
-					default (ReadOnlyMemory<byte>));
+					default);
 		}
 
 		internal void SimulateIncomingConnection (IPEndPoint remoteEndpoint)

@@ -346,7 +346,7 @@ namespace Novartment.Base.Smtp.Test
 			cmd.SetSource (src);
 			Assert.NotNull (cmd.SourceData);
 			Assert.Equal (10, cmd.SourceData.Count);
-			cmd.SourceData.FillBufferAsync (CancellationToken.None).Wait ();
+			cmd.SourceData.FillBufferAsync ().Wait ();
 			Assert.True (cmd.SourceData.IsExhausted);
 
 			// размер источника меньше указанного
@@ -355,9 +355,9 @@ namespace Novartment.Base.Smtp.Test
 			cmd.SetSource (src);
 			Assert.NotNull (cmd.SourceData);
 			Assert.Equal (1, cmd.SourceData.Count);
-			cmd.SourceData.FillBufferAsync (CancellationToken.None).Wait ();
+			cmd.SourceData.FillBufferAsync ().Wait ();
 			cmd.SourceData.SkipBuffer (cmd.SourceData.Count);
-			Assert.ThrowsAsync<NotEnoughDataException> (() => cmd.SourceData.FillBufferAsync (CancellationToken.None));
+			Assert.ThrowsAsync<NotEnoughDataException> (() => cmd.SourceData.FillBufferAsync ());
 
 			// размер источника больше указанного
 			src = new ArrayBufferedSource (buf.Slice (15, 19));
@@ -365,7 +365,7 @@ namespace Novartment.Base.Smtp.Test
 			cmd.SetSource (src);
 			Assert.NotNull (cmd.SourceData);
 			Assert.Equal (8, cmd.SourceData.Count);
-			cmd.SourceData.FillBufferAsync (CancellationToken.None).Wait ();
+			cmd.SourceData.FillBufferAsync ().Wait ();
 			Assert.Equal (8, cmd.SourceData.UnusedSize);
 		}
 	}

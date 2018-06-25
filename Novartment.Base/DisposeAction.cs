@@ -94,7 +94,7 @@ namespace Novartment.Base
 				if (value != null)
 				{
 					value.Invoke (_state);
-					_state = default (TState);
+					_state = default;
 				}
 			}
 		}

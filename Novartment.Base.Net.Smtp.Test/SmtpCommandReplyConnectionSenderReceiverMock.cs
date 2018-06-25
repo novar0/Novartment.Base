@@ -26,19 +26,19 @@ namespace Novartment.Base.Smtp.Test
 
 		internal Queue<SmtpReply> SendedReplies { get; } = new Queue<SmtpReply> ();
 
-		public Task SendCommandAsync (SmtpCommand command, CancellationToken cancellationToken)
+		public Task SendCommandAsync (SmtpCommand command, CancellationToken cancellationToken = default)
 		{
 			this.SendedCommands.Enqueue (command);
 			return Task.CompletedTask;
 		}
 
-		public Task SendReplyAsync (SmtpReply reply, bool canBeGrouped, CancellationToken cancellationToken)
+		public Task SendReplyAsync (SmtpReply reply, bool canBeGrouped, CancellationToken cancellationToken = default)
 		{
 			this.SendedReplies.Enqueue (reply);
 			return Task.CompletedTask;
 		}
 
-		public async Task SendBinaryAsync (IBufferedSource source, CancellationToken cancellationToken)
+		public async Task SendBinaryAsync (IBufferedSource source, CancellationToken cancellationToken = default)
 		{
 			MemoryStream strm;
 			using (strm = new MemoryStream ())
@@ -47,7 +47,7 @@ namespace Novartment.Base.Smtp.Test
 				{
 					while (true)
 					{
-						await source.FillBufferAsync (CancellationToken.None).ConfigureAwait (false);
+						await source.FillBufferAsync ().ConfigureAwait (false);
 						if (source.Count <= 0)
 						{
 							break;
@@ -66,12 +66,12 @@ namespace Novartment.Base.Smtp.Test
 			}
 		}
 
-		public Task<SmtpReply> ReceiveReplyAsync (CancellationToken cancellationToken)
+		public Task<SmtpReply> ReceiveReplyAsync (CancellationToken cancellationToken = default)
 		{
 			return Task.FromResult (this.ReceivedReplies.Dequeue ());
 		}
 
-		public Task<SmtpCommand> ReceiveCommandAsync (SmtpCommand.ExpectedInputType expectedInputType, CancellationToken cancellationToken)
+		public Task<SmtpCommand> ReceiveCommandAsync (SmtpCommand.ExpectedInputType expectedInputType, CancellationToken cancellationToken = default)
 		{
 			return Task.FromResult (this.ReceivedCommands.Dequeue ());
 		}

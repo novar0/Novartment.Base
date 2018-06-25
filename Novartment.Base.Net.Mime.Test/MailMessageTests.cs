@@ -57,10 +57,7 @@ namespace Novartment.Base.Net.Mime.Test
 				"Mime-Version: (\"important \\(info\\)\" here) 3.(produced by MetaSend Vx.x)2\r\n\r\n";
 
 			var msg = new MailMessage ();
-			msg.LoadAsync (
-				new ArrayBufferedSource (Encoding.ASCII.GetBytes (template1)),
-				EntityBodyFactory.Create,
-				CancellationToken.None).Wait ();
+			msg.LoadAsync (new ArrayBufferedSource (Encoding.ASCII.GetBytes (template1)), EntityBodyFactory.Create).Wait ();
 
 			// Trace
 			Assert.Equal (3, msg.Trace.Count);
@@ -194,7 +191,7 @@ namespace Novartment.Base.Net.Mime.Test
 			using (var fs = new FileStream (@"test2.eml", FileMode.Open, FileAccess.Read))
 			{
 				msg = new MailMessage ();
-				msg.LoadAsync (fs.AsBufferedSource (new byte[1024]), EntityBodyFactory.Create, CancellationToken.None).Wait ();
+				msg.LoadAsync (fs.AsBufferedSource (new byte[1024]), EntityBodyFactory.Create).Wait ();
 				Assert.Equal (fs.Length, fs.Position); // Поток данных сообщения прочитан не полностью
 			}
 
@@ -247,7 +244,7 @@ namespace Novartment.Base.Net.Mime.Test
 			using (var fs = new FileStream (@"test1.eml", FileMode.Open, FileAccess.Read))
 			{
 				msg = new MailMessage ();
-				msg.LoadAsync (fs.AsBufferedSource (new byte[1024]), EntityBodyFactory.Create, CancellationToken.None).Wait ();
+				msg.LoadAsync (fs.AsBufferedSource (new byte[1024]), EntityBodyFactory.Create).Wait ();
 
 				// Assert.Equal (fs.Length, fs.Position, "Поток данных сообщения прочитан не полностью");
 			}
@@ -298,7 +295,7 @@ namespace Novartment.Base.Net.Mime.Test
 			Assert.Equal ("This document specifies an Internet standards track protocol for the функции and requests discussion and suggestions.txt", att.FileName);
 			Assert.Equal ("base64", att.TransferEncoding.GetName ());
 			byte[] hash;
-			var data = ((IDiscreteEntityBody)att.Body).GetDataSource ().ReadAllBytesAsync (CancellationToken.None).Result;
+			var data = ((IDiscreteEntityBody)att.Body).GetDataSource ().ReadAllBytesAsync ().Result;
 			Assert.Equal (70289, data.Length);
 #pragma warning disable CA5351 // Do not use insecure cryptographic algorithm MD5.
 			using (var prov = MD5.Create ())
@@ -320,7 +317,7 @@ namespace Novartment.Base.Net.Mime.Test
 			using (var fs = new FileStream (@"test3.eml", FileMode.Open, FileAccess.Read))
 			{
 				msg = new MailMessage ();
-				msg.LoadAsync (fs.AsBufferedSource (new byte[1024]), EntityBodyFactory.Create, CancellationToken.None).Wait ();
+				msg.LoadAsync (fs.AsBufferedSource (new byte[1024]), EntityBodyFactory.Create).Wait ();
 				Assert.Equal (fs.Length, fs.Position); // Поток данных сообщения прочитан не полностью
 			}
 
@@ -441,10 +438,10 @@ namespace Novartment.Base.Net.Mime.Test
 			msg.MailingList.SubscribeCommands.Add ("some currently unknown command");
 			msg.MailingList.SubscribeCommands.Add ("magnet:?xt=urn:tree:tiger:Z4URQ35KGEQW3YZZTIM7YXS3OLKLHFJ3M43DPHQ&xl=8539516502&dn=12.mkv");
 			msg.MailingList.ArchiveCommands.Add ("http://www.host.com/list/archive/");
-			((IDiscreteEntityBody)msg.Body).SetDataAsync (new ArrayBufferedSource (new byte[] { 48, 49, 50 }), CancellationToken.None).Wait ();
+			((IDiscreteEntityBody)msg.Body).SetDataAsync (new ArrayBufferedSource (new byte[] { 48, 49, 50 })).Wait ();
 
 			var bytes = new BinaryDestinationMock (8192);
-			msg.SaveAsync (bytes, CancellationToken.None).Wait ();
+			msg.SaveAsync (bytes).Wait ();
 			var rawData = Encoding.ASCII.GetString (bytes.Buffer.Slice (0, bytes.Count));
 
 			var elements = SplitToElements (rawData);
@@ -521,10 +518,10 @@ namespace Novartment.Base.Net.Mime.Test
 			msg.From.Add (new Mailbox ("noone@mailinator.com", "Сергей Пономарёв"));
 			msg.Subject = "тема сообщения";
 			msg.AddTextPart ("текст сообщения", Encoding.UTF8, TextMediaSubtypeNames.Plain, ContentTransferEncoding.Base64);
-			msg.AddAttachmentAsync (new FileInfo (@"test4.ico").OpenRead ().AsBufferedSource (new byte[1024]), "test4.ico", CancellationToken.None).Wait ();
+			msg.AddAttachmentAsync (new FileInfo (@"test4.ico").OpenRead ().AsBufferedSource (new byte[1024]), "test4.ico").Wait ();
 
 			var bytes = new BinaryDestinationMock (8192);
-			msg.SaveAsync (bytes, CancellationToken.None).Wait ();
+			msg.SaveAsync (bytes).Wait ();
 			var rawData = Encoding.ASCII.GetString (bytes.Buffer.Slice (0, bytes.Count));
 
 			Assert.IsType<CompositeEntityBody> (msg.Body);

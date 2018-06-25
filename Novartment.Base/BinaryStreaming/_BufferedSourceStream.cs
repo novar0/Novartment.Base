@@ -81,7 +81,7 @@ namespace Novartment.Base.BinaryStreaming
 				int resultSize = 0;
 				while (count > 0)
 				{
-					_source.FillBufferAsync (CancellationToken.None).Wait ();
+					_source.FillBufferAsync (default).Wait ();
 					if (_source.Count <= 0)
 					{
 						break;
@@ -106,7 +106,7 @@ namespace Novartment.Base.BinaryStreaming
 			{
 				if (_source.Count < 1)
 				{
-					_source.FillBufferAsync (CancellationToken.None).Wait ();
+					_source.FillBufferAsync (default).Wait ();
 					if (_source.Count < 1)
 					{
 						return -1;
@@ -118,7 +118,7 @@ namespace Novartment.Base.BinaryStreaming
 				return result;
 			}
 
-			public override Task<int> ReadAsync (byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+			public override Task<int> ReadAsync (byte[] buffer, int offset, int count, CancellationToken cancellationToken = default)
 			{
 				if (buffer == null)
 				{
@@ -180,7 +180,7 @@ namespace Novartment.Base.BinaryStreaming
 				}
 			}
 
-			public override Task CopyToAsync (Stream destination, int bufferSize, CancellationToken cancellationToken)
+			public override Task CopyToAsync (Stream destination, int bufferSize, CancellationToken cancellationToken = default)
 			{
 				return BufferedSourceExtensions.WriteToAsync (_source, destination.AsBinaryDestination (), cancellationToken);
 			}

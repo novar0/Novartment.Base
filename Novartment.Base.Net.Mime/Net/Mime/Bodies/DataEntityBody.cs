@@ -55,7 +55,7 @@ namespace Novartment.Base.Net.Mime
 		public Task LoadAsync (
 			IBufferedSource source,
 			Func<EssentialContentProperties, IEntityBody> subBodyFactory,
-			CancellationToken cancellationToken)
+			CancellationToken cancellationToken = default)
 		{
 			if (source == null)
 			{
@@ -81,7 +81,7 @@ namespace Novartment.Base.Net.Mime
 		/// <param name="destination">Получатель двоичных данных, в который будет сохранено тело сущности.</param>
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
 		/// <returns>Задача, представляющая операцию.</returns>
-		public Task SaveAsync (IBinaryDestination destination, CancellationToken cancellationToken)
+		public Task SaveAsync (IBinaryDestination destination, CancellationToken cancellationToken = default)
 		{
 			if (destination == null)
 			{
@@ -160,7 +160,7 @@ namespace Novartment.Base.Net.Mime
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
 		/// <returns>Задача, результатом которой является количество байтов,
 		/// которое заняли данные в теле сущности в закодированном виде.</returns>
-		public Task<int> SetDataAsync (IBufferedSource data, CancellationToken cancellationToken)
+		public Task<int> SetDataAsync (IBufferedSource data, CancellationToken cancellationToken = default)
 		{
 			if (data == null)
 			{

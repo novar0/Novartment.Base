@@ -206,7 +206,7 @@ namespace Novartment.Base.Net
 			// игнорируем исключения: никому не интересны проблемы в процессе "умирания" прослушивателей и протоколов
 			return globalWaitTask.ContinueWith (
 				t => { },
-				CancellationToken.None,
+				default,
 				TaskContinuationOptions.ExecuteSynchronously | TaskContinuationOptions.NotOnRanToCompletion,
 				TaskScheduler.Default);
 		}

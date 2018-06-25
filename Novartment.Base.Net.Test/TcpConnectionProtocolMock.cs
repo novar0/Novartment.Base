@@ -20,7 +20,7 @@ namespace Novartment.Base.Net.Test
 
 		internal EventWaitHandle StartedEvent => _startedEvent;
 
-		public Task StartAsync (ITcpConnection connection, CancellationToken cancellationToken)
+		public Task StartAsync (ITcpConnection connection, CancellationToken cancellationToken = default)
 		{
 			_connections.Add (connection);
 			var stopSignaler = new TaskCompletionSource<int> ();

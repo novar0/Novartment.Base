@@ -74,7 +74,7 @@ namespace Novartment.Base.Collections.Linq
 		/// <param name="defaultValue">Значение, возвращаемое в случае пустой коллекции.</param>
 		/// <returns>Коллекция, содержащая значение defaultValue, если коллекция source пуста;
 		/// в противном случае возвращается source.</returns>
-		public static IReadOnlyCollection<TSource> DefaultIfEmpty<TSource> (this IReadOnlyCollection<TSource> source, TSource defaultValue = default (TSource))
+		public static IReadOnlyCollection<TSource> DefaultIfEmpty<TSource> (this IReadOnlyCollection<TSource> source, TSource defaultValue = default)
 		{
 			if (source == null)
 			{

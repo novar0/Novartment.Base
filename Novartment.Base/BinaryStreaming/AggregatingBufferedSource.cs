@@ -88,7 +88,7 @@ namespace Novartment.Base.BinaryStreaming
 		/// <returns>Задача, представляющая операцию.
 		/// Если после завершения в Count будет ноль,
 		/// то источник исчерпан и доступных данных в буфере больше не будет.</returns>
-		public Task FillBufferAsync (CancellationToken cancellationToken)
+		public Task FillBufferAsync (CancellationToken cancellationToken = default)
 		{
 			Defragment ();
 
@@ -119,7 +119,7 @@ namespace Novartment.Base.BinaryStreaming
 		/// <param name="size">Требуемый размер данных в буфере.</param>
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
 		/// <returns>Задача, представляющая операцию.</returns>
-		public Task EnsureBufferAsync (int size, CancellationToken cancellationToken)
+		public Task EnsureBufferAsync (int size, CancellationToken cancellationToken = default)
 		{
 			if ((size < 0) || (size > this.BufferMemory.Length))
 			{
@@ -191,7 +191,7 @@ namespace Novartment.Base.BinaryStreaming
 		/// Может быть меньше, чем было указано, если источник исчерпался.
 		/// После завершения задачи, независимо от её результата, источник будет предоставлять данные, идущие сразу за пропущенными.
 		/// </returns>
-		public Task<long> TryFastSkipAsync (long size, CancellationToken cancellationToken)
+		public Task<long> TryFastSkipAsync (long size, CancellationToken cancellationToken = default)
 		{
 			if (size < 0L)
 			{
@@ -355,7 +355,7 @@ namespace Novartment.Base.BinaryStreaming
 				_enumerator = sources.GetEnumerator();
 			}
 
-			public Task<JobCompletionSource<IBufferedSource, int>> TakeJobAsync(CancellationToken cancellationToken)
+			public Task<JobCompletionSource<IBufferedSource, int>> TakeJobAsync(CancellationToken cancellationToken = default)
 			{
 				if (!_enumerationEnded)
 				{

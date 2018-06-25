@@ -19,7 +19,7 @@
 		internal class JobCompletionMarker<TItem, TResult> : JobCompletionSource<TItem, TResult>
 		{
 			internal JobCompletionMarker ()
-				: base (default (TItem))
+				: base (default)
 			{
 			}
 

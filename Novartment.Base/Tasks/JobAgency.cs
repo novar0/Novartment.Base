@@ -61,7 +61,7 @@ namespace Novartment.Base
 		/// Задача, представляющая получение задания.
 		/// Результатом задачи будет производитель выполнения полученного задания.
 		/// </returns>
-		public Task<JobCompletionSource<TItem, TResult>> TakeJobAsync (CancellationToken cancellationToken)
+		public Task<JobCompletionSource<TItem, TResult>> TakeJobAsync (CancellationToken cancellationToken = default)
 		{
 			lock (_producers)
 			{

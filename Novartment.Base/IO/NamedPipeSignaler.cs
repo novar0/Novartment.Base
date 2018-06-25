@@ -35,7 +35,7 @@ namespace Novartment.Base.IO
 		/// <summary>Запуск ожидания приёма сигнала.</summary>
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
 		/// <returns>Задача, представляющая собой процесс ожидания.</returns>
-		public async Task WaitForSignalAsync (CancellationToken cancellationToken)
+		public async Task WaitForSignalAsync (CancellationToken cancellationToken = default)
 		{
 			var oldValue = Interlocked.CompareExchange (ref _started, 1, 0);
 			if (oldValue != 0)
@@ -60,7 +60,7 @@ namespace Novartment.Base.IO
 		/// <param name="millisecondsTimeout">Максимальное время (в миллисекундах) отведённое на отсылку сигнала.</param>
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
 		/// <returns>Задача, представляющая операцию.</returns>
-		public async Task SendSignalAsync (int millisecondsTimeout, CancellationToken cancellationToken)
+		public async Task SendSignalAsync (int millisecondsTimeout, CancellationToken cancellationToken = default)
 		{
 			using (var client = new NamedPipeClientStream (".", _pipeName, PipeDirection.Out))
 			{

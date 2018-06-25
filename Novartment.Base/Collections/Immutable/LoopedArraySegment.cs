@@ -363,7 +363,7 @@ namespace Novartment.Base.Collections.Immutable
 			{
 				_data = data;
 				_index = -1;
-				_currentElement = default (T);
+				_currentElement = default;
 			}
 
 			/// <summary>
@@ -405,7 +405,7 @@ namespace Novartment.Base.Collections.Immutable
 				if (_index == _data._count)
 				{
 					_index = -2;
-					_currentElement = default (T);
+					_currentElement = default;
 					return false;
 				}
 
@@ -419,7 +419,7 @@ namespace Novartment.Base.Collections.Immutable
 			public void Reset ()
 			{
 				_index = -1;
-				_currentElement = default (T);
+				_currentElement = default;
 			}
 
 			/// <summary>
@@ -428,7 +428,7 @@ namespace Novartment.Base.Collections.Immutable
 			public void Dispose ()
 			{
 				_index = -2;
-				_currentElement = default (T);
+				_currentElement = default;
 			}
 		}
 	}

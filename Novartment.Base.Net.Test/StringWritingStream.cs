@@ -13,7 +13,7 @@ namespace Novartment.Base.Net.Test
 
 		internal Queue<string> Queue => _queue;
 
-		public Task WriteAsync (ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken)
+		public Task WriteAsync (ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default)
 		{
 			var str = Encoding.UTF8.GetString (buffer.Span);
 			_queue.Enqueue (str);

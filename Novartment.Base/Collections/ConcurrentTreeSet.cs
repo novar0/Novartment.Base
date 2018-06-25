@@ -80,7 +80,7 @@ namespace Novartment.Base.Collections
 		/// <param name="item">Элемент для добавления в множество.</param>
 		public void Add (T item)
 		{
-			var spinWait = default (SpinWait);
+			SpinWait spinWait = default;
 			while (true)
 			{
 				var oldState = _startNode;
@@ -110,7 +110,7 @@ namespace Novartment.Base.Collections
 		/// <param name="item">Значение элемента для удаления из множества.</param>
 		public void Remove (T item)
 		{
-			var spinWait = default (SpinWait);
+			SpinWait spinWait = default;
 			while (true)
 			{
 				var oldState = _startNode;

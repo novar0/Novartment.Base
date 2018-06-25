@@ -218,7 +218,7 @@ namespace Novartment.Base.Collections
 		{
 			if (_count < 1)
 			{
-				item = default (T);
+				item = default;
 				return false;
 			}
 
@@ -236,12 +236,12 @@ namespace Novartment.Base.Collections
 		{
 			if (_count < 1)
 			{
-				item = default (T);
+				item = default;
 				return false;
 			}
 
 			item = _items[_head];
-			_items[_head] = default (T);
+			_items[_head] = default;
 			_head++;
 			if (_head >= _items.Length)
 			{
@@ -267,7 +267,7 @@ namespace Novartment.Base.Collections
 		{
 			if (_count < 1)
 			{
-				item = default (T);
+				item = default;
 				return false;
 			}
 
@@ -291,7 +291,7 @@ namespace Novartment.Base.Collections
 		{
 			if (_count < 1)
 			{
-				item = default (T);
+				item = default;
 				return false;
 			}
 
@@ -302,7 +302,7 @@ namespace Novartment.Base.Collections
 			}
 
 			item = _items[index];
-			_items[index] = default (T);
+			_items[index] = default;
 			_count--;
 			if (_count < 1)
 			{
@@ -444,7 +444,7 @@ namespace Novartment.Base.Collections
 					CopyInternal (0, 1, index);
 				}
 
-				_items[_head] = default (T);
+				_items[_head] = default;
 				_head++;
 				if (_head >= _items.Length)
 				{
@@ -464,7 +464,7 @@ namespace Novartment.Base.Collections
 					idx -= _items.Length;
 				}
 
-				_items[idx] = default (T);
+				_items[idx] = default;
 			}
 
 			_count--;
@@ -956,7 +956,7 @@ namespace Novartment.Base.Collections
 			{
 				_data = data;
 				_index = -1;
-				_currentElement = default (T);
+				_currentElement = default;
 			}
 
 			/// <summary>
@@ -998,7 +998,7 @@ namespace Novartment.Base.Collections
 				if (_index >= _data._count)
 				{
 					_index = -2;
-					_currentElement = default (T);
+					_currentElement = default;
 					return false;
 				}
 
@@ -1018,7 +1018,7 @@ namespace Novartment.Base.Collections
 			public void Reset ()
 			{
 				_index = -1;
-				_currentElement = default (T);
+				_currentElement = default;
 			}
 
 			/// <summary>
@@ -1027,7 +1027,7 @@ namespace Novartment.Base.Collections
 			public void Dispose ()
 			{
 				_index = -2;
-				_currentElement = default (T);
+				_currentElement = default;
 			}
 		}
 	}

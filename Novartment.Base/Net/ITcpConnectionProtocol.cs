@@ -18,6 +18,6 @@ namespace Novartment.Base.Net
 		/// Происходит когда в протоколе возникла неустранимое противоречие, делающее его дальнейшую работу невозможным.
 		/// Настоятельно рекомендуется закрыть соединение.
 		/// </exception>
-		Task StartAsync (ITcpConnection connection, CancellationToken cancellationToken);
+		Task StartAsync (ITcpConnection connection, CancellationToken cancellationToken = default);
 	}
 }

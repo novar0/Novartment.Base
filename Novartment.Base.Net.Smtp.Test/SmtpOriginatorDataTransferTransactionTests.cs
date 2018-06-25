@@ -30,7 +30,7 @@ namespace Novartment.Base.Smtp.Test
 
 			// стартуем с неподходящим серверу return-path
 			sender.ReceivedReplies.Enqueue (SmtpReply.MailboxNotAllowed);
-			Assert.ThrowsAsync<UnacceptableSmtpMailboxException> (() => transaction.StartAsync (Mailbox0, CancellationToken.None));
+			Assert.ThrowsAsync<UnacceptableSmtpMailboxException> (() => transaction.StartAsync (Mailbox0));
 			Assert.Empty (sender.ReceivedReplies);
 			var cmd = sender.SendedCommands.Dequeue ();
 			Assert.Empty (sender.SendedCommands);
@@ -40,7 +40,7 @@ namespace Novartment.Base.Smtp.Test
 
 			// стартуем успешно
 			sender.ReceivedReplies.Enqueue (SmtpReply.OK);
-			transaction.StartAsync (Mailbox0, CancellationToken.None).Wait ();
+			transaction.StartAsync (Mailbox0).Wait ();
 			Assert.Empty (sender.ReceivedReplies);
 			cmd = sender.SendedCommands.Dequeue ();
 			Assert.Empty (sender.SendedCommands);
@@ -50,7 +50,7 @@ namespace Novartment.Base.Smtp.Test
 
 			// стартуем уже законченную
 			transaction.Dispose ();
-			Assert.ThrowsAsync<InvalidOperationException> (() => transaction.StartAsync (Mailbox0, CancellationToken.None));
+			Assert.ThrowsAsync<InvalidOperationException> (() => transaction.StartAsync (Mailbox0));
 			Assert.Empty (sender.SendedCommands);
 		}
 
@@ -65,17 +65,17 @@ namespace Novartment.Base.Smtp.Test
 				null);
 
 			// добавляем получаетелй в не начатую
-			Assert.ThrowsAsync<InvalidOperationException> (() => transaction.TryAddRecipientAsync (Mailbox1, CancellationToken.None));
+			Assert.ThrowsAsync<InvalidOperationException> (() => transaction.TryAddRecipientAsync (Mailbox1));
 			Assert.Empty (sender.SendedCommands);
 
 			// начинаем для дальнейших тестов
 			sender.ReceivedReplies.Enqueue (SmtpReply.OK);
-			transaction.StartAsync (Mailbox0, CancellationToken.None).Wait ();
+			transaction.StartAsync (Mailbox0).Wait ();
 			sender.SendedCommands.Clear ();
 
 			// добавляем получателя успешно
 			sender.ReceivedReplies.Enqueue (SmtpReply.OK);
-			Assert.Equal (RecipientAcceptanceState.Success, transaction.TryAddRecipientAsync (Mailbox1, CancellationToken.None).Result);
+			Assert.Equal (RecipientAcceptanceState.Success, transaction.TryAddRecipientAsync (Mailbox1).Result);
 			Assert.Empty (sender.ReceivedReplies);
 			var cmd = sender.SendedCommands.Dequeue ();
 			Assert.Empty (sender.SendedCommands);
@@ -85,7 +85,7 @@ namespace Novartment.Base.Smtp.Test
 
 			// добавляем получателя безуспешно
 			sender.ReceivedReplies.Enqueue (SmtpReply.MailboxUnavailable);
-			Assert.Equal (RecipientAcceptanceState.FailureMailboxUnavailable, transaction.TryAddRecipientAsync (Mailbox2, CancellationToken.None).Result);
+			Assert.Equal (RecipientAcceptanceState.FailureMailboxUnavailable, transaction.TryAddRecipientAsync (Mailbox2).Result);
 			Assert.Empty (sender.ReceivedReplies);
 			cmd = sender.SendedCommands.Dequeue ();
 			Assert.Empty (sender.SendedCommands);
@@ -108,7 +108,7 @@ namespace Novartment.Base.Smtp.Test
 
 			// передаём данные в не начатую
 			var src = new ArrayBufferedSource (Encoding.ASCII.GetBytes (MailBody));
-			Assert.ThrowsAsync<InvalidOperationException> (() => transaction.TransferDataAndFinishAsync (src,  -1, CancellationToken.None));
+			Assert.ThrowsAsync<InvalidOperationException> (() => transaction.TransferDataAndFinishAsync (src,  -1));
 			Assert.Empty (sender.SendedCommands);
 
 			// передаём данные не указав получателей
@@ -118,7 +118,7 @@ namespace Novartment.Base.Smtp.Test
 				ContentTransferEncoding.SevenBit,
 				null);
 			src = new ArrayBufferedSource (Encoding.ASCII.GetBytes (MailBody));
-			Assert.ThrowsAsync<InvalidOperationException> (() => transaction.TransferDataAndFinishAsync (src, -1, CancellationToken.None));
+			Assert.ThrowsAsync<InvalidOperationException> (() => transaction.TransferDataAndFinishAsync (src, -1));
 			Assert.Empty (sender.SendedCommands);
 
 			// передаем данные без поддержки CHUNKING
@@ -127,7 +127,7 @@ namespace Novartment.Base.Smtp.Test
 			sender.ReceivedReplies.Enqueue (SmtpReply.OK);
 			src = new ArrayBufferedSource (Encoding.ASCII.GetBytes (MailBody));
 			Assert.Empty (sender.SendedDataBlocks);
-			transaction.TransferDataAndFinishAsync (src, -1, CancellationToken.None).Wait ();
+			transaction.TransferDataAndFinishAsync (src, -1).Wait ();
 			Assert.Empty (sender.ReceivedReplies);
 			var cmd = sender.SendedCommands.Dequeue ();
 			Assert.Empty (sender.SendedCommands);
@@ -142,7 +142,7 @@ namespace Novartment.Base.Smtp.Test
 			transaction = PrepareSessionForDataTransfer (sender, extensionsSupported);
 			sender.ReceivedReplies.Enqueue (SmtpReply.DataStart);
 			src = new ArrayBufferedSource (Encoding.ASCII.GetBytes (InvalidMailBodyPart1 + InvalidMailBodyPart2));
-			Assert.ThrowsAsync<UnrecoverableProtocolException> (() => transaction.TransferDataAndFinishAsync (src,  -1, CancellationToken.None));
+			Assert.ThrowsAsync<UnrecoverableProtocolException> (() => transaction.TransferDataAndFinishAsync (src,  -1));
 			Assert.Empty (sender.ReceivedReplies);
 			cmd = sender.SendedCommands.Dequeue ();
 			Assert.Empty (sender.SendedCommands);
@@ -156,7 +156,7 @@ namespace Novartment.Base.Smtp.Test
 			transaction = PrepareSessionForDataTransfer (sender, extensionsSupported);
 			sender.ReceivedReplies.Enqueue (SmtpReply.OK);
 			src = new ArrayBufferedSource (Encoding.ASCII.GetBytes (MailBody));
-			transaction.TransferDataAndFinishAsync (src, MailBody.Length, CancellationToken.None).Wait ();
+			transaction.TransferDataAndFinishAsync (src, MailBody.Length).Wait ();
 			Assert.Empty (sender.ReceivedReplies);
 			cmd = sender.SendedCommands.Dequeue ();
 			Assert.Empty (sender.SendedCommands);
@@ -168,7 +168,7 @@ namespace Novartment.Base.Smtp.Test
 			// передаем данные с поддержкой CHUNKING источник предоставляет данных меньше чем указано, должно вызвать UnrecoverableProtocolException
 			transaction = PrepareSessionForDataTransfer (sender, extensionsSupported);
 			src = new ArrayBufferedSource (Encoding.ASCII.GetBytes (MailBody));
-			Assert.ThrowsAsync<UnrecoverableProtocolException> (() => transaction.TransferDataAndFinishAsync (src, MailBody.Length + 5, CancellationToken.None));
+			Assert.ThrowsAsync<UnrecoverableProtocolException> (() => transaction.TransferDataAndFinishAsync (src, MailBody.Length + 5));
 			cmd = sender.SendedCommands.Dequeue ();
 			Assert.Empty (sender.SendedCommands);
 			Assert.Equal (SmtpCommandType.Bdat, cmd.CommandType);
@@ -184,7 +184,7 @@ namespace Novartment.Base.Smtp.Test
 			var session = new SmtpOriginatorProtocolSession (sender, "test.localhost");
 			sender.ReceivedReplies.Enqueue (SmtpReply.CreateServiceReady ("test", new Version (0, 0)));
 			sender.ReceivedReplies.Enqueue (SmtpReply.CreateHelloResponse ("test.localhost", serverSupportedExtensions));
-			session.ReceiveGreetingAndStartAsync (CancellationToken.None).Wait ();
+			session.ReceiveGreetingAndStartAsync ().Wait ();
 
 			// создаём начатую для дальнейших тестов
 			var transaction = new SmtpSessionMailTransferTransactionHandler (
@@ -192,9 +192,9 @@ namespace Novartment.Base.Smtp.Test
 				ContentTransferEncoding.SevenBit,
 				null);
 			sender.ReceivedReplies.Enqueue (SmtpReply.OK);
-			transaction.StartAsync (Mailbox0, CancellationToken.None).Wait ();
+			transaction.StartAsync (Mailbox0).Wait ();
 			sender.ReceivedReplies.Enqueue (SmtpReply.OK);
-			transaction.TryAddRecipientAsync (Mailbox1, CancellationToken.None).Wait ();
+			transaction.TryAddRecipientAsync (Mailbox1).Wait ();
 			sender.SendedCommands.Clear ();
 			return transaction;
 		}

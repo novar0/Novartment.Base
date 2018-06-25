@@ -19,10 +19,10 @@ namespace Novartment.Base.Test
 			var data = Array.Empty<byte> ();
 			var strm = new MemoryStream (data);
 			var src = strm.AsBufferedSource (new byte[bufSize]);
-			src.FillBufferAsync (CancellationToken.None).Wait ();
+			src.FillBufferAsync (default).Wait ();
 			Assert.Equal (0, src.Count);
-			Assert.Equal (0, src.TryFastSkipAsync (1, CancellationToken.None).Result);
-			src.FillBufferAsync (CancellationToken.None).Wait ();
+			Assert.Equal (0, src.TryFastSkipAsync (1, default).Result);
+			src.FillBufferAsync (default).Wait ();
 			Assert.True (src.IsExhausted);
 			Assert.Equal (0, src.Count);
 		}
@@ -40,19 +40,19 @@ namespace Novartment.Base.Test
 			var strm = new MemoryStream (data);
 
 			var src = strm.AsBufferedSource (new byte[bufSize]);
-			src.EnsureBufferAsync (1, CancellationToken.None).Wait ();
+			src.EnsureBufferAsync (1, default).Wait ();
 			Assert.Equal (nnn, src.BufferMemory.Span[src.Offset]);
 			src.SkipBuffer (1);
-			src.FillBufferAsync (CancellationToken.None).Wait ();
+			src.FillBufferAsync (default).Wait ();
 			Assert.True (src.IsExhausted);
 			Assert.Equal (0, src.Count);
 
 			strm.Seek (0, SeekOrigin.Begin);
 			src = strm.AsBufferedSource (new byte[bufSize]);
-			src.FillBufferAsync (CancellationToken.None).Wait ();
+			src.FillBufferAsync (default).Wait ();
 			Assert.Equal (nnn, src.BufferMemory.Span[src.Offset]);
-			Assert.Equal (1, src.TryFastSkipAsync (bufSize, CancellationToken.None).Result);
-			src.FillBufferAsync (CancellationToken.None).Wait ();
+			Assert.Equal (1, src.TryFastSkipAsync (bufSize, default).Result);
+			src.FillBufferAsync (default).Wait ();
 			Assert.True (src.IsExhausted);
 			Assert.Equal (0, src.Count);
 		}
@@ -80,25 +80,25 @@ namespace Novartment.Base.Test
 		{
 			var strm = new BigStreamMock (dataSize, canSeek, FillFunction);
 			var src = strm.AsBufferedSource (new byte[bufSize]);
-			src.EnsureBufferAsync (3, CancellationToken.None).Wait ();
+			src.EnsureBufferAsync (3, default).Wait ();
 			Assert.Equal (FillFunction(0), src.BufferMemory.Span[src.Offset]);
 			Assert.Equal (FillFunction(1), src.BufferMemory.Span[src.Offset + 1]);
 			Assert.Equal (FillFunction(2), src.BufferMemory.Span[src.Offset + 2]);
-			Assert.Equal (skipOverall1, src.TryFastSkipAsync (skipOverall1, CancellationToken.None).Result);
-			src.EnsureBufferAsync (skipBuffer1, CancellationToken.None).Wait ();
+			Assert.Equal (skipOverall1, src.TryFastSkipAsync (skipOverall1, default).Result);
+			src.EnsureBufferAsync (skipBuffer1, default).Wait ();
 			src.SkipBuffer (skipBuffer1);
-			src.EnsureBufferAsync (3, CancellationToken.None).Wait ();
+			src.EnsureBufferAsync (3, default).Wait ();
 			Assert.Equal (FillFunction(skipOverall1 + skipBuffer1), src.BufferMemory.Span[src.Offset]);
 			Assert.Equal (FillFunction(skipOverall1 + skipBuffer1 + 1), src.BufferMemory.Span[src.Offset + 1]);
 			Assert.Equal (FillFunction(skipOverall1 + skipBuffer1 + 2), src.BufferMemory.Span[src.Offset + 2]);
-			Assert.Equal (skipOverall2, src.TryFastSkipAsync (skipOverall2, CancellationToken.None).Result);
-			src.EnsureBufferAsync (skipBuffer2, CancellationToken.None).Wait ();
+			Assert.Equal (skipOverall2, src.TryFastSkipAsync (skipOverall2, default).Result);
+			src.EnsureBufferAsync (skipBuffer2, default).Wait ();
 			src.SkipBuffer (skipBuffer2);
-			src.EnsureBufferAsync (3, CancellationToken.None).Wait ();
+			src.EnsureBufferAsync (3, default).Wait ();
 			Assert.Equal (FillFunction(skipOverall1 + skipOverall2 + skipBuffer1 + skipBuffer2), src.BufferMemory.Span[src.Offset]);
 			Assert.Equal (FillFunction(skipOverall1 + skipOverall2 + skipBuffer1 + skipBuffer2 + 1), src.BufferMemory.Span[src.Offset + 1]);
 			Assert.Equal (FillFunction(skipOverall1 + skipOverall2 + skipBuffer1 + skipBuffer2 + 2), src.BufferMemory.Span[src.Offset + 2]);
-			Assert.Equal (dataSize - skipOverall1 - skipOverall2 - skipBuffer1 - skipBuffer2, src.TryFastSkipAsync (skipOverEnd, CancellationToken.None).Result);
+			Assert.Equal (dataSize - skipOverall1 - skipOverall2 - skipBuffer1 - skipBuffer2, src.TryFastSkipAsync (skipOverEnd, default).Result);
 			Assert.True (src.IsExhausted);
 			Assert.Equal (0, src.Count);
 		}

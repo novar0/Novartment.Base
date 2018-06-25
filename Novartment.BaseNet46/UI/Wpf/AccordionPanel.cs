@@ -198,7 +198,7 @@ namespace Novartment.Base.UI.Wpf
 			}
 
 			var constraint = availableSize;
-			var panelSize = default (Size);
+			Size panelSize = default;
 			var isVertical = this.Orientation == Orientation.Vertical;
 
 			// даём пределы и меряем все элементы кроме распахнутого в надежде что они не попросят слишком много
@@ -250,11 +250,11 @@ namespace Novartment.Base.UI.Wpf
 		{
 			if (this.InternalChildren.Count < 1)
 			{
-				return default (Size);
+				return default;
 			}
 
 			var isVertical = this.Orientation == Orientation.Vertical;
-			var currentPos = default (Point);
+			Point currentPos = default;
 			double unexpandedTotalSize = 0;
 
 			// считаем суммарную высоту/ширину нераспахнутых элементов (оставшееся место потом отдадим распахнутому)

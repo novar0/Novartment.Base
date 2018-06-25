@@ -16,7 +16,7 @@ namespace Novartment.Base.UI
 		/// <param name="view">Представление-диалог которое надо активировать.</param>
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
 		/// <returns>True если пользователь подтвердил данные, False если отменил, null если результат неизвестен.</returns>
-		public static bool? ShowDialog<TResult> (this IDialogView<TResult> view, CancellationToken cancellationToken)
+		public static bool? ShowDialog<TResult> (this IDialogView<TResult> view, CancellationToken cancellationToken = default)
 		{
 			if (view == null)
 			{
@@ -55,7 +55,7 @@ namespace Novartment.Base.UI
 		/// <param name="successAction">Действие, которое будет выполнено в случае успешного подтверждения диалога пользователем.</param>
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
 		/// <returns>True если пользователь подтвердил данные, False если отменил, null если результат неизвестен.</returns>
-		public static bool? ShowDialog<TResult> (this IDialogView<TResult> view, Action<TResult> successAction, CancellationToken cancellationToken)
+		public static bool? ShowDialog<TResult> (this IDialogView<TResult> view, Action<TResult> successAction, CancellationToken cancellationToken = default)
 		{
 			if (view == null)
 			{

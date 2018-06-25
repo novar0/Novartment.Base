@@ -111,7 +111,7 @@ namespace Novartment.Base.IO
 		/// </summary>
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
 		/// <returns>Задача, представляющая асинхронную операцию очистки.</returns>
-		public override Task FlushAsync (CancellationToken cancellationToken)
+		public override Task FlushAsync (CancellationToken cancellationToken = default)
 		{
 			return _stream.FlushAsync (cancellationToken);
 		}
@@ -123,7 +123,7 @@ namespace Novartment.Base.IO
 		/// <param name="bufferSize">Размер (в байтах) буфера. Это значение должно быть больше нуля.</param>
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
 		/// <returns>Задача, представляющая асинхронную операцию копирования.</returns>
-		public override Task CopyToAsync (Stream destination, int bufferSize, CancellationToken cancellationToken)
+		public override Task CopyToAsync (Stream destination, int bufferSize, CancellationToken cancellationToken = default)
 		{
 			return _stream.CopyToAsync (destination, bufferSize, cancellationToken);
 		}
@@ -190,10 +190,10 @@ namespace Novartment.Base.IO
 		/// Значение результата может быть меньше запрошенного числа байтов,
 		/// если число доступных в данный момент байтов меньше запрошенного числа,
 		/// или результат может быть равен 0 (нулю), если был достигнут конец потока.</returns>
-		public override Task<int> ReadAsync (byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+		public override Task<int> ReadAsync (byte[] buffer, int offset, int count, CancellationToken cancellationToken = default)
 		{
 			var task = _stream.ReadAsync (buffer, offset, count, cancellationToken);
-			task.ContinueWith (this.ReportProgressInternal1, CancellationToken.None, TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
+			task.ContinueWith (this.ReportProgressInternal1, default, TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
 			return task;
 		}
 
@@ -230,10 +230,10 @@ namespace Novartment.Base.IO
 		/// <param name="count">Максимальное число байтов для записи.</param>
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
 		/// <returns>Задача, представляющая асинхронную операцию записи.</returns>
-		public override Task WriteAsync (byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+		public override Task WriteAsync (byte[] buffer, int offset, int count, CancellationToken cancellationToken = default)
 		{
 			var task = _stream.WriteAsync (buffer, offset, count, cancellationToken);
-			task.ContinueWith (this.ReportProgressInternal2, CancellationToken.None, TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
+			task.ContinueWith (this.ReportProgressInternal2, default, TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
 			return task;
 		}
 
@@ -252,7 +252,7 @@ namespace Novartment.Base.IO
 
 			Contract.EndContractBlock ();
 
-			var spinWait = default (SpinWait);
+			SpinWait spinWait = default;
 			while (true)
 			{
 				var state1 = _observers;
@@ -346,7 +346,7 @@ namespace Novartment.Base.IO
 
 		private void UnSubscribe (IObserver<FileStreamStatus> observer)
 		{
-			var spinWait = default (SpinWait);
+			SpinWait spinWait = default;
 			while (true)
 			{
 				var state1 = _observers;

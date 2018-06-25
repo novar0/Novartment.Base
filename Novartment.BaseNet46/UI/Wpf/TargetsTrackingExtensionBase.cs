@@ -210,7 +210,7 @@ namespace Novartment.Base.UI.Wpf
 			if (fullName != "System.Windows.SharedDp")
 			{
 				_targetProperty = provideValueTarget.TargetProperty;
-				var spinWait = default (SpinWait);
+				SpinWait spinWait = default;
 				var newRef = new WeakReference (target);
 				while (true)
 				{

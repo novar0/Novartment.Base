@@ -47,7 +47,7 @@ namespace Novartment.Base.BinaryStreaming
 		/// <returns>Задача, представляющая операцию.
 		/// Если после завершения в Count будет ноль,
 		/// то источник исчерпан и доступных данных в буфере больше не будет.</returns>
-		Task FillBufferAsync (CancellationToken cancellationToken);
+		Task FillBufferAsync (CancellationToken cancellationToken = default);
 
 		/// <summary>
 		/// Асинхронно запрашивает у источника указанное количество данных в буфере.
@@ -63,7 +63,7 @@ namespace Novartment.Base.BinaryStreaming
 		/// Происходит если источник не может предоставить указанного количества данных.
 		/// </exception>
 		/// <returns>Задача, представляющая операцию.</returns>
-		Task EnsureBufferAsync (int size, CancellationToken cancellationToken);
+		Task EnsureBufferAsync (int size, CancellationToken cancellationToken = default);
 
 		/// <summary>
 		/// Пропускает указанное количество данных из начала доступных данных буфера.
@@ -96,7 +96,7 @@ namespace Novartment.Base.BinaryStreaming
 
 		public bool IsExhausted => false;
 
-		public Task FillBufferAsync (CancellationToken cancellationToken)
+		public Task FillBufferAsync (CancellationToken cancellationToken = default)
 		{
 			Contract.Ensures (this.BufferMemory.Equals (Contract.OldValue (this.BufferMemory)));
 			Contract.Ensures ((this.Count > 0) || this.IsExhausted);
@@ -104,7 +104,7 @@ namespace Novartment.Base.BinaryStreaming
 			return Task.CompletedTask;
 		}
 
-		public Task EnsureBufferAsync (int size, CancellationToken cancellationToken)
+		public Task EnsureBufferAsync (int size, CancellationToken cancellationToken = default)
 		{
 			Contract.Requires (size >= 0);
 			Contract.Requires (size <= BufferMemory.Length);

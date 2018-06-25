@@ -117,7 +117,7 @@ namespace Novartment.Base
 					if (found)
 					{
 						reportEvent.Time = DateTime.Now;
-						reportEvent.Data = default (T);
+						reportEvent.Data = default;
 						reportEvent.IsDataPresent = false;
 					}
 					else
@@ -162,7 +162,7 @@ namespace Novartment.Base
 					{
 						// если уведомление было отложено давно, то отсылаем его
 						reportEvent.Time = DateTime.Now;
-						reportEvent.Data = default (T);
+						reportEvent.Data = default;
 						reportEvent.IsDataPresent = false;
 						needReport = true;
 					}

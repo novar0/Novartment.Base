@@ -12,7 +12,7 @@ namespace Novartment.Base.Net.Mime.Test
 		public void GetChildContentParts ()
 		{
 			var pkcs7Body = new DataEntityBody (ContentTransferEncoding.Base64);
-			pkcs7Body.SetDataAsync (new ArrayBufferedSource (new byte[] { 20, 21, 22 }), CancellationToken.None).Wait ();
+			pkcs7Body.SetDataAsync (new ArrayBufferedSource (new byte[] { 20, 21, 22 })).Wait ();
 
 			var compositeBody = new CompositeEntityBody ();
 			compositeBody.Parts.Add (new Entity (new TextEntityBody (Encoding.UTF8, ContentTransferEncoding.Binary), ContentMediaType.Text, "plain"));

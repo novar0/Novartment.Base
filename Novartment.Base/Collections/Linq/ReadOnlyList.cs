@@ -100,7 +100,7 @@ namespace Novartment.Base.Collections.Linq
 
 			Contract.EndContractBlock ();
 
-			return (source.Count > 0) ? source[0] : default (TSource);
+			return (source.Count > 0) ? source[0] : default;
 		}
 
 		/// <summary>
@@ -141,7 +141,7 @@ namespace Novartment.Base.Collections.Linq
 
 			Contract.EndContractBlock ();
 
-			return (source.Count > 0) ? source[source.Count - 1] : default (TSource);
+			return (source.Count > 0) ? source[source.Count - 1] : default;
 		}
 
 		/// <summary>
@@ -188,7 +188,7 @@ namespace Novartment.Base.Collections.Linq
 
 			if ((index < 0) || (index >= source.Count))
 			{
-				return default (TSource);
+				return default;
 			}
 
 			return source[index];
@@ -203,7 +203,7 @@ namespace Novartment.Base.Collections.Linq
 		/// <param name="defaultValue">Значение, возвращаемое в случае пустого списка.</param>
 		/// <returns>Список, содержащий значение defaultValue, если список source пуст;
 		/// в противном случае возвращается source.</returns>
-		public static IReadOnlyList<TSource> DefaultIfEmpty<TSource> (this IReadOnlyList<TSource> source, TSource defaultValue = default (TSource))
+		public static IReadOnlyList<TSource> DefaultIfEmpty<TSource> (this IReadOnlyList<TSource> source, TSource defaultValue = default)
 		{
 			if (source == null)
 			{

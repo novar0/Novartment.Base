@@ -27,7 +27,7 @@ namespace Novartment.Base.IO
 			this IncrementalHash hashAlgorithm,
 			string fileName,
 			IProgress<FileStreamStatus> progress,
-			CancellationToken cancellationToken)
+			CancellationToken cancellationToken = default)
 		{
 			if (hashAlgorithm == null)
 			{
@@ -106,7 +106,7 @@ namespace Novartment.Base.IO
 			string sourceFileName,
 			string destinationFileName,
 			IProgress<FileStreamStatus> progress,
-			CancellationToken cancellationToken)
+			CancellationToken cancellationToken = default)
 		{
 			if (hashAlgorithm == null)
 			{

@@ -100,7 +100,7 @@ namespace Novartment.Base.BinaryStreaming
 		/// <returns>Задача, представляющая операцию.
 		/// Если после завершения в Count будет ноль,
 		/// то источник исчерпан и доступных данных в буфере больше не будет.</returns>
-		public async Task FillBufferAsync (CancellationToken cancellationToken)
+		public async Task FillBufferAsync (CancellationToken cancellationToken = default)
 		{
 			if (!this.IsEndOfPartFound)
 			{
@@ -117,7 +117,7 @@ namespace Novartment.Base.BinaryStreaming
 		/// <param name="size">Требуемый размер данных в буфере.</param>
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
 		/// <returns>Задача, представляющая операцию.</returns>
-		public Task EnsureBufferAsync (int size, CancellationToken cancellationToken)
+		public Task EnsureBufferAsync (int size, CancellationToken cancellationToken = default)
 		{
 			if ((size < 0) || (size > this.BufferMemory.Length))
 			{
@@ -162,7 +162,7 @@ namespace Novartment.Base.BinaryStreaming
 		/// True если разделитель найден и пропущен,
 		/// либо False если источник исчерпался и разделитель не найден.
 		/// </returns>
-		public async Task<bool> TrySkipPartAsync (CancellationToken cancellationToken)
+		public async Task<bool> TrySkipPartAsync (CancellationToken cancellationToken = default)
 		{
 			if (_source.IsExhausted && (_source.Count < 1))
 			{

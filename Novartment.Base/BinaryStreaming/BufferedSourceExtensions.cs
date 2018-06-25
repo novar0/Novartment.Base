@@ -40,7 +40,7 @@ namespace Novartment.Base.BinaryStreaming
 		/// Может быть меньше, чем было указано, если источник исчерпался.
 		/// После завершения задачи, независимо от её результата, источник будет предоставлять данные, идущие сразу за пропущенными.
 		/// </returns>
-		public static Task<long> TrySkipAsync (this IBufferedSource source, long size, CancellationToken cancellationToken)
+		public static Task<long> TrySkipAsync (this IBufferedSource source, long size, CancellationToken cancellationToken = default)
 		{
 			if (source == null)
 			{
@@ -112,7 +112,7 @@ namespace Novartment.Base.BinaryStreaming
 		/// <returns>
 		/// Задача, результатом которой является количество пропущеных байтов данных.
 		/// </returns>
-		public static Task<long> SkipToEndAsync (this IBufferedSource source, CancellationToken cancellationToken)
+		public static Task<long> SkipToEndAsync (this IBufferedSource source, CancellationToken cancellationToken = default)
 		{
 			if (source == null)
 			{
@@ -171,7 +171,7 @@ namespace Novartment.Base.BinaryStreaming
 			this IBufferedSource source,
 			Memory<byte> buffer,
 #pragma warning disable CA1801 // Review unused parameters
-			CancellationToken cancellationToken)
+			CancellationToken cancellationToken = default)
 #pragma warning restore CA1801 // Review unused parameters
 		{
 			if (source == null)
@@ -244,7 +244,7 @@ namespace Novartment.Base.BinaryStreaming
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
 		/// <returns>Позиция первого нахождения указанного байта в буфере указанного источника данных,
 		/// либо -1 если указанный байт в буфере не найден.</returns>
-		public static Task<int> IndexOfAsync (this IBufferedSource source, byte value, CancellationToken cancellationToken)
+		public static Task<int> IndexOfAsync (this IBufferedSource source, byte value, CancellationToken cancellationToken = default)
 #pragma warning restore CA1801 // Review unused parameters
 		{
 			if (source == null)
@@ -313,7 +313,7 @@ namespace Novartment.Base.BinaryStreaming
 		/// Количество скопированных байтов источника до того, как встретился маркер.
 		/// Если маркер не встретился, то будут скопированы все данные источника.
 		/// </returns>
-		public static Task<int> CopyToBufferUntilMarkerAsync (this IBufferedSource source, byte marker, Memory<byte> buffer, CancellationToken cancellationToken)
+		public static Task<int> CopyToBufferUntilMarkerAsync (this IBufferedSource source, byte marker, Memory<byte> buffer, CancellationToken cancellationToken = default)
 		{
 			if (source == null)
 			{
@@ -395,7 +395,7 @@ namespace Novartment.Base.BinaryStreaming
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
 		/// <returns>Задача, результатом которой является массив байтов, считанный из источника.</returns>
 		/// <remarks>Возвращаемый массив является копией и не связан массивом-буфером источника.</remarks>
-		public static Task<ReadOnlyMemory<byte>> ReadAllBytesAsync (this IBufferedSource source, CancellationToken cancellationToken)
+		public static Task<ReadOnlyMemory<byte>> ReadAllBytesAsync (this IBufferedSource source, CancellationToken cancellationToken = default)
 #pragma warning restore CA1801 // Review unused parameters
 		{
 			if (source == null)
@@ -453,7 +453,7 @@ namespace Novartment.Base.BinaryStreaming
 		/// <param name="encoding">Кодировка, используемая для конвертации байтов в строку.</param>
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
 		/// <returns>Задача, результатом которой является строка, считанная из источника.</returns>
-		public static Task<string> ReadAllTextAsync (this IBufferedSource source, Encoding encoding, CancellationToken cancellationToken)
+		public static Task<string> ReadAllTextAsync (this IBufferedSource source, Encoding encoding, CancellationToken cancellationToken = default)
 		{
 			if (source == null)
 			{
@@ -495,7 +495,7 @@ namespace Novartment.Base.BinaryStreaming
 			this IBufferedSource source,
 			IBinaryDestination destination,
 #pragma warning disable CA1801 // Review unused parameters
-			CancellationToken cancellationToken)
+			CancellationToken cancellationToken = default)
 #pragma warning restore CA1801 // Review unused parameters
 		{
 			if (source == null)

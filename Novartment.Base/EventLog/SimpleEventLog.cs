@@ -165,7 +165,7 @@ namespace Novartment.Base
 
 			var newRegex = new Regex (pattern, RegexOptions.ExplicitCapture);
 
-			var spinWait = default (SpinWait);
+			SpinWait spinWait = default;
 			while (true)
 			{
 				var state1 = _templatesToHide;

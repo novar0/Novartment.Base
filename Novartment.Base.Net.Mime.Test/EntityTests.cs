@@ -41,12 +41,7 @@ namespace Novartment.Base.Net.Mime.Test
 			var srcText = string.Join ("\r\n", defaultTextTypeTemplate);
 			var src = new ArrayBufferedSource (Encoding.ASCII.GetBytes (srcText));
 			var entity = new Entity ();
-			entity.LoadAsync (
-				src,
-				EntityBodyFactory.Create,
-				Entity.DefaultType,
-				Entity.DefaultSubtype,
-				CancellationToken.None).Wait ();
+			entity.LoadAsync (src, EntityBodyFactory.Create, Entity.DefaultType, Entity.DefaultSubtype).Wait ();
 
 			Assert.Equal (ContentMediaType.Multipart, entity.MediaType);
 			Assert.IsAssignableFrom<ICompositeEntityBody> (entity.Body);
@@ -90,12 +85,7 @@ namespace Novartment.Base.Net.Mime.Test
 			srcText = string.Join ("\r\n", defaultMessagetTypeTemplate);
 			src = new ArrayBufferedSource (Encoding.ASCII.GetBytes (srcText));
 			entity = new Entity ();
-			entity.LoadAsync (
-				src,
-				EntityBodyFactory.Create,
-				Entity.DefaultType,
-				Entity.DefaultSubtype,
-				CancellationToken.None).Wait ();
+			entity.LoadAsync (src, EntityBodyFactory.Create, Entity.DefaultType, Entity.DefaultSubtype).Wait ();
 
 			Assert.Equal (ContentMediaType.Multipart, entity.MediaType);
 			Assert.IsAssignableFrom<ICompositeEntityBody> (entity.Body);
@@ -148,8 +138,7 @@ namespace Novartment.Base.Net.Mime.Test
 				new ArrayBufferedSource (Encoding.ASCII.GetBytes (template1)),
 				parameters => new TextEntityBody (Encoding.ASCII, parameters.TransferEncoding),
 				Entity.DefaultType,
-				Entity.DefaultSubtype,
-				CancellationToken.None).Wait ();
+				Entity.DefaultSubtype).Wait ();
 
 			Assert.Equal (ContentMediaType.Text, entity.MediaType);
 			Assert.Equal ("plain", entity.MediaSubtype);
@@ -218,7 +207,7 @@ namespace Novartment.Base.Net.Mime.Test
 		public void Save ()
 		{
 			var body = new TextEntityBody (Encoding.GetEncoding ("koi8-r"), ContentTransferEncoding.EightBit);
-			body.SetDataAsync (new ArrayBufferedSource (new byte[] { 48, 49, 50 }), CancellationToken.None).Wait ();
+			body.SetDataAsync (new ArrayBufferedSource (new byte[] { 48, 49, 50 })).Wait ();
 			var entity = new Entity (body, ContentMediaType.Text, "plain")
 			{
 				DispositionType = ContentDispositionType.Attachment,
@@ -241,7 +230,7 @@ namespace Novartment.Base.Net.Mime.Test
 			entity.Languages.Add ("fr");
 
 			var bytes = new BinaryDestinationMock (8192);
-			entity.SaveAsync (bytes, CancellationToken.None).Wait ();
+			entity.SaveAsync (bytes).Wait ();
 			var rawData = Encoding.ASCII.GetString (bytes.Buffer.Slice (0, bytes.Count));
 
 			var elements = SplitToElements (rawData);

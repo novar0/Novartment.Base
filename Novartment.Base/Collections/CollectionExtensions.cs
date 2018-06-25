@@ -643,7 +643,7 @@ namespace Novartment.Base.Collections
 				}
 			}
 
-			item = default (T);
+			item = default;
 			return false;
 		}
 
@@ -713,7 +713,7 @@ namespace Novartment.Base.Collections
 				}
 			}
 
-			item = default (T);
+			item = default;
 			return false;
 		}
 

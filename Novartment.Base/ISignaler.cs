@@ -11,12 +11,12 @@ namespace Novartment.Base
 		/// <summary>Ожидание приёма сигнала.</summary>
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены ожидания.</param>
 		/// <returns>Задача, представляющая собой процесс ожидания.</returns>
-		Task WaitForSignalAsync (CancellationToken cancellationToken);
+		Task WaitForSignalAsync (CancellationToken cancellationToken = default);
 
 		/// <summary>Посылка сигнала.</summary>
 		/// <param name="millisecondsTimeout">Максимальное время (в миллисекундах) отведённое на отсылку сигнала.</param>
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены ожидания.</param>
 		/// <returns>Задача, представляющая операцию.</returns>
-		Task SendSignalAsync (int millisecondsTimeout, CancellationToken cancellationToken);
+		Task SendSignalAsync (int millisecondsTimeout, CancellationToken cancellationToken = default);
 	}
 }

@@ -25,7 +25,7 @@ namespace Novartment.Base.Net.Mime
 			this MailMessage message,
 			IBufferedSource source,
 			Func<EssentialContentProperties, IEntityBody> bodyFactory,
-			CancellationToken cancellationToken)
+			CancellationToken cancellationToken = default)
 		{
 			if (message == null)
 			{

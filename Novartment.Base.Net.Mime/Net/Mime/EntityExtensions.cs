@@ -329,7 +329,7 @@ namespace Novartment.Base.Net.Mime
 			this Entity entity,
 			string imageType,
 			IBufferedSource data,
-			CancellationToken cancellationToken)
+			CancellationToken cancellationToken = default)
 		{
 			if (entity == null)
 			{
@@ -385,7 +385,7 @@ namespace Novartment.Base.Net.Mime
 			string applicationType,
 			IBufferedSource data,
 			ContentTransferEncoding transferEncoding,
-			CancellationToken cancellationToken)
+			CancellationToken cancellationToken = default)
 		{
 			if (entity == null)
 			{
@@ -445,7 +445,7 @@ namespace Novartment.Base.Net.Mime
 			this Entity entity,
 			IBufferedSource data,
 			string fileName,
-			CancellationToken cancellationToken)
+			CancellationToken cancellationToken = default)
 		{
 			if (entity == null)
 			{
@@ -500,7 +500,7 @@ namespace Novartment.Base.Net.Mime
 		/// <param name="fileName">Путь к файлу.</param>
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
 		/// <returns>Задача, результатом которой является созданная сущность.</returns>
-		public static Task<Entity> AddAttachmentAsync (this Entity entity, string fileName, CancellationToken cancellationToken)
+		public static Task<Entity> AddAttachmentAsync (this Entity entity, string fileName, CancellationToken cancellationToken = default)
 		{
 			if (entity == null)
 			{

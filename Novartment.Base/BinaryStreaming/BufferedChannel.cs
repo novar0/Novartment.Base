@@ -129,7 +129,7 @@ namespace Novartment.Base.BinaryStreaming
 		/// Может быть меньше, чем было указано, если канал исчерпан.
 		/// После завершения задачи, независимо от её результата, канал будет предоставлять данные, идущие сразу за пропущенными.
 		/// </returns>
-		public Task<long> TryFastSkipAsync (long size, CancellationToken cancellationToken)
+		public Task<long> TryFastSkipAsync (long size, CancellationToken cancellationToken = default)
 		{
 			if (size < 0L)
 			{
@@ -206,7 +206,7 @@ namespace Novartment.Base.BinaryStreaming
 		/// Будут объеденены и доступны как одна порция все записанные в канал данные,
 		/// для которых хватило места в буфере.
 		/// </remarks>
-		public async Task FillBufferAsync (CancellationToken cancellationToken)
+		public async Task FillBufferAsync (CancellationToken cancellationToken = default)
 		{
 			cancellationToken.ThrowIfCancellationRequested ();
 
@@ -228,7 +228,7 @@ namespace Novartment.Base.BinaryStreaming
 		/// Для отмены ожидания новых данных вызывайте метод SetComplete().
 		/// </param>
 		/// <returns>Задача, представляющая операцию.</returns>
-		public Task EnsureBufferAsync (int size, CancellationToken cancellationToken)
+		public Task EnsureBufferAsync (int size, CancellationToken cancellationToken = default)
 		{
 			if ((size < 0) || (size > this.BufferMemory.Length))
 			{

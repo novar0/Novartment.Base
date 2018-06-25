@@ -411,7 +411,7 @@ namespace Novartment.Base.Net.Mime.Test
 		public void LoadHeaderFields ()
 		{
 			var src = new ArrayBufferedSource (Encoding.ASCII.GetBytes (string.Empty));
-			var fields = HeaderDecoder.LoadHeaderAsync (src, CancellationToken.None).Result;
+			var fields = HeaderDecoder.LoadHeaderAsync (src).Result;
 			Assert.Equal (0, fields.Count);
 
 			src = new ArrayBufferedSource (Encoding.ASCII.GetBytes (
@@ -420,7 +420,7 @@ namespace Novartment.Base.Net.Mime.Test
 				"InvalidField\r\n" +
 				"Received:\r\n\tby server10.espc2.mechel.com (8.8.8/1.37)\r\n\tid CAA22933; Tue, 15 May 2012 02:49:22 +0100   \r\n" +
 				"Autoforwarded::Q2hlY2sgSW50ZWdyaXR5IQ=="));
-			fields = HeaderDecoder.LoadHeaderAsync (src, CancellationToken.None).Result;
+			fields = HeaderDecoder.LoadHeaderAsync (src).Result;
 			Assert.Equal (4, fields.Count);
 			Assert.Equal (HeaderFieldName.ContentType, fields[0].Name);
 			Assert.Equal (" text/plain;\r\n\tformat=flowed;\r\n\tcharset=\"koi8-r\";\r\n\treply-type=original", Encoding.ASCII.GetString (fields[0].Body.Span));

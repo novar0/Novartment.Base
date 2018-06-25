@@ -51,7 +51,7 @@ namespace Novartment.Base.BinaryStreaming
 				}
 			}
 
-			public Task<long> TryFastSkipAsync (long size, CancellationToken cancellationToken)
+			public Task<long> TryFastSkipAsync (long size, CancellationToken cancellationToken = default)
 			{
 				if (size < 0L)
 				{
@@ -136,7 +136,7 @@ namespace Novartment.Base.BinaryStreaming
 				}
 			}
 
-			public Task FillBufferAsync (CancellationToken cancellationToken)
+			public Task FillBufferAsync (CancellationToken cancellationToken = default)
 			{
 				if (_streamEnded || (_count >= _buffer.Length))
 				{
@@ -163,7 +163,7 @@ namespace Novartment.Base.BinaryStreaming
 				}
 			}
 
-			public Task EnsureBufferAsync (int size, CancellationToken cancellationToken)
+			public Task EnsureBufferAsync (int size, CancellationToken cancellationToken = default)
 			{
 				if ((size < 0) || (size > _buffer.Length))
 				{

@@ -24,7 +24,7 @@ namespace Novartment.Base.Net.Mime.Test
 		{
 			var body = new DeliveryStatusEntityBody ();
 			var src = new ArrayBufferedSource (Encoding.ASCII.GetBytes (Template1));
-			body.LoadAsync (src, null, CancellationToken.None).Wait ();
+			body.LoadAsync (src, null).Wait ();
 
 			Assert.Equal (NotificationFieldValueKind.Host, body.MailTransferAgent.Kind);
 			Assert.Equal ("itc-serv01.chmk.mechelgroup.ru", body.MailTransferAgent.Value);
@@ -56,7 +56,7 @@ namespace Novartment.Base.Net.Mime.Test
 			body.Recipients.Add (recipient);
 
 			var bytes = new BinaryDestinationMock (8192);
-			body.SaveAsync (bytes, CancellationToken.None).Wait ();
+			body.SaveAsync (bytes).Wait ();
 			var text = Encoding.UTF8.GetString (bytes.Buffer.Slice (0, bytes.Count));
 			var lines = text.Split (new string[] { "\r\n" }, StringSplitOptions.None);
 			Assert.Equal (9, lines.Length);

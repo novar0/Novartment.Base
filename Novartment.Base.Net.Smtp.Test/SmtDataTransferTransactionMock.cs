@@ -59,7 +59,7 @@ namespace Novartment.Base.Smtp.Test
 			_disposed = true;
 		}
 
-		public async Task StartAsync (AddrSpec returnPath, CancellationToken cancellationToken)
+		public async Task StartAsync (AddrSpec returnPath, CancellationToken cancellationToken = default)
 		{
 			if (_disposed || _completed)
 			{
@@ -90,7 +90,7 @@ namespace Novartment.Base.Smtp.Test
 			}
 		}
 
-		public async Task<RecipientAcceptanceState> TryAddRecipientAsync (AddrSpec recipient, CancellationToken cancellationToken)
+		public async Task<RecipientAcceptanceState> TryAddRecipientAsync (AddrSpec recipient, CancellationToken cancellationToken = default)
 		{
 			if (_disposed || _completed)
 			{
@@ -123,7 +123,7 @@ namespace Novartment.Base.Smtp.Test
 			return RecipientAcceptanceState.Success;
 		}
 
-		public async Task TransferDataAndFinishAsync (IBufferedSource source, long exactSize, CancellationToken cancellationToken)
+		public async Task TransferDataAndFinishAsync (IBufferedSource source, long exactSize, CancellationToken cancellationToken = default)
 		{
 			if (_disposed || _completed || (_readedData != null))
 			{

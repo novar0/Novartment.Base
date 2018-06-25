@@ -18,6 +18,6 @@ namespace Novartment.Base
 		/// Задача, представляющая получение задания.
 		/// Результатом задачи будет производитель выполнения полученного задания.
 		/// </returns>
-		Task<JobCompletionSource<TItem, TResult>> TakeJobAsync (CancellationToken cancellationToken);
+		Task<JobCompletionSource<TItem, TResult>> TakeJobAsync (CancellationToken cancellationToken = default);
 	}
 }

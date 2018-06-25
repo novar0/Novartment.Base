@@ -102,7 +102,7 @@ namespace Novartment.Base.Collections.Immutable
 
 			if (treeNode == null)
 			{
-				value = default (TValue);
+				value = default;
 				return false;
 			}
 
@@ -124,7 +124,7 @@ namespace Novartment.Base.Collections.Immutable
 				treeNode = (num < 0) ? intermediateNode.LeftSubtree : intermediateNode.RightSubtree;
 			}
 			while (treeNode != null);
-			value = default (TValue);
+			value = default;
 			return false;
 		}
 

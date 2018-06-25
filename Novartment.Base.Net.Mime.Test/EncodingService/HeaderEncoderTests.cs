@@ -269,7 +269,7 @@ namespace Novartment.Base.Net.Mime.Test
 		{
 			var src = Array.Empty<HeaderFieldBuilder> ();
 			var bytes = new BinaryDestinationMock (8192);
-			HeaderEncoder.SaveHeaderAsync (src, bytes, CancellationToken.None).Wait ();
+			HeaderEncoder.SaveHeaderAsync (src, bytes).Wait ();
 			Assert.Equal (0, bytes.Count);
 
 			src = new HeaderFieldBuilder[]
@@ -284,7 +284,7 @@ namespace Novartment.Base.Net.Mime.Test
 			src[0].AddParameter ("reply-type", "original");
 
 			bytes = new BinaryDestinationMock (8192);
-			HeaderEncoder.SaveHeaderAsync (src, bytes, CancellationToken.None).Wait ();
+			HeaderEncoder.SaveHeaderAsync (src, bytes).Wait ();
 
 			var template = "Content-Type: text/plain; format=flowed; charset=koi8-r; reply-type=original\r\n" +
 				"Conversion-With-Loss:\r\n" +

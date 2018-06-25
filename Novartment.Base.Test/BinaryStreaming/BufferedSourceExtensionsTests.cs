@@ -12,20 +12,20 @@ namespace Novartment.Base.Test
 		public void IsEmpty ()
 		{
 			var src = new BigBufferedSourceMock (0, 1, FillFunction);
-			src.FillBufferAsync (CancellationToken.None).Wait ();
+			src.FillBufferAsync ().Wait ();
 			Assert.True (BufferedSourceExtensions.IsEmpty (src));
 
 			src = new BigBufferedSourceMock (1, 1, FillFunction);
-			src.FillBufferAsync (CancellationToken.None).Wait ();
+			src.FillBufferAsync ().Wait ();
 			Assert.False (BufferedSourceExtensions.IsEmpty (src));
 			src.SkipBuffer (1);
 			Assert.True (BufferedSourceExtensions.IsEmpty (src));
 
 			src = new BigBufferedSourceMock (long.MaxValue, 32768, FillFunction);
-			src.FillBufferAsync (CancellationToken.None).Wait ();
+			src.FillBufferAsync ().Wait ();
 			Assert.False (BufferedSourceExtensions.IsEmpty (src));
-			src.TryFastSkipAsync (long.MaxValue - 1, CancellationToken.None).Wait ();
-			src.FillBufferAsync (CancellationToken.None).Wait ();
+			src.TryFastSkipAsync (long.MaxValue - 1).Wait ();
+			src.FillBufferAsync ().Wait ();
 			Assert.False (BufferedSourceExtensions.IsEmpty (src));
 			src.SkipBuffer (1);
 			Assert.True (BufferedSourceExtensions.IsEmpty (src));
@@ -38,20 +38,20 @@ namespace Novartment.Base.Test
 			int bufSize = 120;
 			int skipSize = 91;
 			var src = new BigBufferedSourceMock (long.MaxValue, bufSize, FillFunction);
-			src.FillBufferAsync (CancellationToken.None).Wait ();
-			Assert.Equal (0, BufferedSourceExtensions.IndexOfAsync (src, FillFunction(0), CancellationToken.None).Result);
-			Assert.Equal (1, BufferedSourceExtensions.IndexOfAsync (src, FillFunction (1), CancellationToken.None).Result);
-			Assert.Equal (bufSize - 1, BufferedSourceExtensions.IndexOfAsync (src, FillFunction (bufSize - 1), CancellationToken.None).Result);
-			Assert.Equal (-1, BufferedSourceExtensions.IndexOfAsync (src, FillFunction (bufSize), CancellationToken.None).Result);
-			Assert.Equal (-1, BufferedSourceExtensions.IndexOfAsync (src, FillFunction (bufSize + skipSize - 1), CancellationToken.None).Result);
-			Assert.Equal (-1, BufferedSourceExtensions.IndexOfAsync (src, FillFunction (bufSize + skipSize), CancellationToken.None).Result);
+			src.FillBufferAsync ().Wait ();
+			Assert.Equal (0, BufferedSourceExtensions.IndexOfAsync (src, FillFunction(0)).Result);
+			Assert.Equal (1, BufferedSourceExtensions.IndexOfAsync (src, FillFunction (1)).Result);
+			Assert.Equal (bufSize - 1, BufferedSourceExtensions.IndexOfAsync (src, FillFunction (bufSize - 1)).Result);
+			Assert.Equal (-1, BufferedSourceExtensions.IndexOfAsync (src, FillFunction (bufSize)).Result);
+			Assert.Equal (-1, BufferedSourceExtensions.IndexOfAsync (src, FillFunction (bufSize + skipSize - 1)).Result);
+			Assert.Equal (-1, BufferedSourceExtensions.IndexOfAsync (src, FillFunction (bufSize + skipSize)).Result);
 			src.SkipBuffer (skipSize);
-			Assert.Equal (-1, BufferedSourceExtensions.IndexOfAsync (src, FillFunction (0), CancellationToken.None).Result);
-			Assert.Equal (-1, BufferedSourceExtensions.IndexOfAsync (src, FillFunction (1), CancellationToken.None).Result);
-			Assert.Equal (bufSize - 1 - skipSize, BufferedSourceExtensions.IndexOfAsync (src, FillFunction (bufSize - 1), CancellationToken.None).Result);
-			Assert.Equal (bufSize - skipSize, BufferedSourceExtensions.IndexOfAsync (src, FillFunction (bufSize), CancellationToken.None).Result);
-			Assert.Equal (bufSize - 1, BufferedSourceExtensions.IndexOfAsync (src, FillFunction (bufSize + skipSize - 1), CancellationToken.None).Result);
-			Assert.Equal (-1, BufferedSourceExtensions.IndexOfAsync (src, FillFunction (bufSize + skipSize), CancellationToken.None).Result);
+			Assert.Equal (-1, BufferedSourceExtensions.IndexOfAsync (src, FillFunction (0)).Result);
+			Assert.Equal (-1, BufferedSourceExtensions.IndexOfAsync (src, FillFunction (1)).Result);
+			Assert.Equal (bufSize - 1 - skipSize, BufferedSourceExtensions.IndexOfAsync (src, FillFunction (bufSize - 1)).Result);
+			Assert.Equal (bufSize - skipSize, BufferedSourceExtensions.IndexOfAsync (src, FillFunction (bufSize)).Result);
+			Assert.Equal (bufSize - 1, BufferedSourceExtensions.IndexOfAsync (src, FillFunction (bufSize + skipSize - 1)).Result);
+			Assert.Equal (-1, BufferedSourceExtensions.IndexOfAsync (src, FillFunction (bufSize + skipSize)).Result);
 		}
 
 		[Fact]
@@ -64,7 +64,7 @@ namespace Novartment.Base.Test
 			// first byte in first buffer
 			Array.Fill<byte> (dest, 85);
 			var src = new BigBufferedSourceMock (long.MaxValue, bufSize, FillFunction);
-			var result = src.CopyToBufferUntilMarkerAsync (170, dest, CancellationToken.None).Result;
+			var result = src.CopyToBufferUntilMarkerAsync (170, dest).Result;
 			Assert.Equal (0, result); // no bytes copied
 			Assert.Equal (85, dest[0]); // destination untouched
 			Assert.Equal (170, src.BufferMemory.Span[src.Offset]); // marker in source at start
@@ -72,7 +72,7 @@ namespace Novartment.Base.Test
 			// not found with size less than buffer
 			Array.Fill<byte> (dest, 85);
 			src = new BigBufferedSourceMock (4, bufSize, FillFunction);
-			result = src.CopyToBufferUntilMarkerAsync (85, dest, CancellationToken.None).Result;
+			result = src.CopyToBufferUntilMarkerAsync (85, dest).Result;
 			Assert.Equal (4, result); // no bytes copied
 			Assert.Equal (170, dest[0]);
 			Assert.Equal (171, dest[1]);
@@ -85,7 +85,7 @@ namespace Novartment.Base.Test
 			// not found with size bigger than buffer
 			Array.Fill<byte> (dest, 85);
 			src = new BigBufferedSourceMock (7, bufSize, FillFunction);
-			result = src.CopyToBufferUntilMarkerAsync (85, dest, CancellationToken.None).Result;
+			result = src.CopyToBufferUntilMarkerAsync (85, dest).Result;
 			Assert.Equal (7, result); // no bytes copied
 			Assert.Equal (170, dest[0]);
 			Assert.Equal (171, dest[1]);
@@ -101,7 +101,7 @@ namespace Novartment.Base.Test
 			// last byte in first buffer
 			Array.Fill<byte> (dest, 85);
 			src = new BigBufferedSourceMock (long.MaxValue, bufSize, FillFunction);
-			result = src.CopyToBufferUntilMarkerAsync (174, dest, CancellationToken.None).Result;
+			result = src.CopyToBufferUntilMarkerAsync (174, dest).Result;
 			Assert.Equal (4, result);
 			Assert.Equal (170, dest[0]);
 			Assert.Equal (171, dest[1]);
@@ -113,7 +113,7 @@ namespace Novartment.Base.Test
 			// first byte in second buffer
 			Array.Fill<byte> (dest, 85);
 			src = new BigBufferedSourceMock (long.MaxValue, bufSize, FillFunction);
-			result = src.CopyToBufferUntilMarkerAsync (175, dest, CancellationToken.None).Result;
+			result = src.CopyToBufferUntilMarkerAsync (175, dest).Result;
 			Assert.Equal (5, result);
 			Assert.Equal (170, dest[0]);
 			Assert.Equal (171, dest[1]);
@@ -126,7 +126,7 @@ namespace Novartment.Base.Test
 			// last byte of source
 			Array.Fill<byte> (dest, 85);
 			src = new BigBufferedSourceMock (7, bufSize, FillFunction);
-			result = src.CopyToBufferUntilMarkerAsync (172, dest, CancellationToken.None).Result;
+			result = src.CopyToBufferUntilMarkerAsync (172, dest).Result;
 			Assert.Equal (6, result);
 			Assert.Equal (170, dest[0]);
 			Assert.Equal (171, dest[1]);
@@ -146,19 +146,19 @@ namespace Novartment.Base.Test
 			int srcBufSize = 32768;
 			int testSampleSize = 68;
 			var src = new BigBufferedSourceMock (long.MaxValue, srcBufSize, FillFunction);
-			src.FillBufferAsync (CancellationToken.None).Wait ();
+			src.FillBufferAsync ().Wait ();
 			var skip = srcBufSize - testSampleSize;
 			src.SkipBuffer (skip);
 			var buf = new byte[testSampleSize];
-			Assert.Equal (testSampleSize, BufferedSourceExtensions.ReadAsync (src, buf, CancellationToken.None).Result);
+			Assert.Equal (testSampleSize, BufferedSourceExtensions.ReadAsync (src, buf).Result);
 
 			for (int i = 0; i < testSampleSize; i++)
 			{
 				Assert.Equal (FillFunction ((long)(skip + i)), buf[i]);
 			}
 
-			src.TryFastSkipAsync (long.MaxValue - (long)srcBufSize - 3, CancellationToken.None).Wait ();
-			Assert.Equal (3, BufferedSourceExtensions.ReadAsync (src, buf, CancellationToken.None).Result);
+			src.TryFastSkipAsync (long.MaxValue - (long)srcBufSize - 3).Wait ();
+			Assert.Equal (3, BufferedSourceExtensions.ReadAsync (src, buf).Result);
 		}
 
 		[Theory]
@@ -171,8 +171,8 @@ namespace Novartment.Base.Test
 			long skipSize = long.MaxValue - (long)testSampleSize;
 
 			var src = new BigBufferedSourceMock (long.MaxValue, srcBufSize, FillFunction);
-			src.TryFastSkipAsync (skipSize, CancellationToken.None).Wait ();
-			var result = BufferedSourceExtensions.ReadAllBytesAsync (src, CancellationToken.None).Result;
+			src.TryFastSkipAsync (skipSize).Wait ();
+			var result = BufferedSourceExtensions.ReadAllBytesAsync (src).Result;
 			Assert.Equal (testSampleSize, result.Length);
 			for (int i = 0; i < testSampleSize; i++)
 			{
@@ -188,9 +188,9 @@ namespace Novartment.Base.Test
 			long skipSize = long.MaxValue - (long)testSampleSize;
 			int srcBufSize = testSampleSize / 3;
 			var src = new BigBufferedSourceMock (long.MaxValue, srcBufSize, FillFunction);
-			src.TryFastSkipAsync (skipSize, CancellationToken.None).Wait ();
+			src.TryFastSkipAsync (skipSize).Wait ();
 			var dst = new BinaryDestinationMock (8192);
-			Assert.Equal (testSampleSize, BufferedSourceExtensions.WriteToAsync (src, dst, CancellationToken.None).Result);
+			Assert.Equal (testSampleSize, BufferedSourceExtensions.WriteToAsync (src, dst).Result);
 
 			for (int i = 0; i < testSampleSize; i++)
 			{

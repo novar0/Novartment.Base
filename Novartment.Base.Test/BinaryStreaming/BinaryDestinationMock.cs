@@ -20,7 +20,7 @@ namespace Novartment.Base.Test
 
 		public int Count => _count;
 
-		public Task WriteAsync (ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken)
+		public Task WriteAsync (ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default)
 		{
 			if (_completed)
 			{

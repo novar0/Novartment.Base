@@ -18,10 +18,10 @@ namespace Novartment.Base.Test
 			int srcBufSize = 32768;
 			long limitingSize = srcBufSize + 4611686018427387904L;
 			var subSrc = new BigBufferedSourceMock (long.MaxValue, srcBufSize, FillFunction);
-			subSrc.TryFastSkipAsync (skipBeforeLimitingSize, CancellationToken.None).Wait ();
+			subSrc.TryFastSkipAsync (skipBeforeLimitingSize).Wait ();
 
 			var src = new SizeLimitedBufferedSource (subSrc, limitingSize);
-			src.EnsureBufferAsync (skipBufferSize + 3, CancellationToken.None).Wait ();
+			src.EnsureBufferAsync (skipBufferSize + 3).Wait ();
 			Assert.Equal (FillFunction (skipBeforeLimitingSize), src.BufferMemory.Span[src.Offset]);
 			Assert.Equal (FillFunction (skipBeforeLimitingSize + 1), src.BufferMemory.Span[src.Offset + 1]);
 			Assert.Equal (FillFunction (skipBeforeLimitingSize + 2), src.BufferMemory.Span[src.Offset + 2]);
@@ -29,21 +29,21 @@ namespace Novartment.Base.Test
 			Assert.Equal (FillFunction (skipBeforeLimitingSize + skipBufferSize), src.BufferMemory.Span[src.Offset]);
 			Assert.Equal (FillFunction (skipBeforeLimitingSize + skipBufferSize + 1), src.BufferMemory.Span[src.Offset + 1]);
 			Assert.Equal (FillFunction (skipBeforeLimitingSize + skipBufferSize + 2), src.BufferMemory.Span[src.Offset + 2]);
-			Assert.Equal (skipInsideLimitingSize, src.TryFastSkipAsync (skipInsideLimitingSize, CancellationToken.None).Result);
-			src.EnsureBufferAsync (3, CancellationToken.None).Wait ();
+			Assert.Equal (skipInsideLimitingSize, src.TryFastSkipAsync (skipInsideLimitingSize).Result);
+			src.EnsureBufferAsync (3).Wait ();
 			Assert.Equal (FillFunction (skipBeforeLimitingSize + skipBufferSize + skipInsideLimitingSize), src.BufferMemory.Span[src.Offset]);
 			Assert.Equal (FillFunction (skipBeforeLimitingSize + skipBufferSize + skipInsideLimitingSize + 1), src.BufferMemory.Span[src.Offset + 1]);
 			Assert.Equal (FillFunction (skipBeforeLimitingSize + skipBufferSize + skipInsideLimitingSize + 2), src.BufferMemory.Span[src.Offset + 2]);
-			Assert.Equal (limitingSize - skipBufferSize - skipInsideLimitingSize, src.TryFastSkipAsync (long.MaxValue, CancellationToken.None).Result);
+			Assert.Equal (limitingSize - skipBufferSize - skipInsideLimitingSize, src.TryFastSkipAsync (long.MaxValue).Result);
 
 			// ограничение меньше буфера
 			srcBufSize = 32767;
 			limitingSize = 1293L;
 			subSrc = new BigBufferedSourceMock (long.MaxValue, srcBufSize, FillFunction);
-			subSrc.TryFastSkipAsync (skipBeforeLimitingSize, CancellationToken.None).Wait ();
+			subSrc.TryFastSkipAsync (skipBeforeLimitingSize).Wait ();
 
 			src = new SizeLimitedBufferedSource (subSrc, limitingSize);
-			src.EnsureBufferAsync (skipBufferSize + 3, CancellationToken.None).Wait ();
+			src.EnsureBufferAsync (skipBufferSize + 3).Wait ();
 			Assert.Equal (FillFunction (skipBeforeLimitingSize), src.BufferMemory.Span[src.Offset]);
 			Assert.Equal (FillFunction (skipBeforeLimitingSize + 1), src.BufferMemory.Span[src.Offset + 1]);
 			Assert.Equal (FillFunction (skipBeforeLimitingSize + 2), src.BufferMemory.Span[src.Offset + 2]);
@@ -51,12 +51,12 @@ namespace Novartment.Base.Test
 			Assert.Equal (FillFunction (skipBeforeLimitingSize + skipBufferSize), src.BufferMemory.Span[src.Offset]);
 			Assert.Equal (FillFunction (skipBeforeLimitingSize + skipBufferSize + 1), src.BufferMemory.Span[src.Offset + 1]);
 			Assert.Equal (FillFunction (skipBeforeLimitingSize + skipBufferSize + 2), src.BufferMemory.Span[src.Offset + 2]);
-			Assert.Equal (skipBufferSize, src.TryFastSkipAsync (skipBufferSize, CancellationToken.None).Result);
-			src.EnsureBufferAsync (3, CancellationToken.None).Wait ();
+			Assert.Equal (skipBufferSize, src.TryFastSkipAsync (skipBufferSize).Result);
+			src.EnsureBufferAsync (3).Wait ();
 			Assert.Equal (FillFunction (skipBeforeLimitingSize + skipBufferSize + skipBufferSize), src.BufferMemory.Span[src.Offset]);
 			Assert.Equal (FillFunction (skipBeforeLimitingSize + skipBufferSize + skipBufferSize + 1), src.BufferMemory.Span[src.Offset + 1]);
 			Assert.Equal (FillFunction (skipBeforeLimitingSize + skipBufferSize + skipBufferSize + 2), src.BufferMemory.Span[src.Offset + 2]);
-			Assert.Equal (limitingSize - skipBufferSize - skipBufferSize, src.TryFastSkipAsync (long.MaxValue, CancellationToken.None).Result);
+			Assert.Equal (limitingSize - skipBufferSize - skipBufferSize, src.TryFastSkipAsync (long.MaxValue).Result);
 		}
 
 		private static byte FillFunction (long position)

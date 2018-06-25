@@ -61,7 +61,7 @@ namespace Novartment.Base.Net.Smtp
 			}
 
 			_logger?.LogTrace ("Starting TLS as client...");
-			var newConnection = await tlsCapableConnection.StartTlsClientAsync (clientCertificates, CancellationToken.None)
+			var newConnection = await tlsCapableConnection.StartTlsClientAsync (clientCertificates, default)
 				.ConfigureAwait (false);
 			if ((_logger != null) && _logger.IsEnabled (LogLevel.Information))
 			{
@@ -80,7 +80,7 @@ namespace Novartment.Base.Net.Smtp
 			}
 
 			_logger?.LogTrace ("Starting TLS as server...");
-			var newConnection = await tlsCapableConnection.StartTlsServerAsync (serverCertificate, clientCertificateRequired, CancellationToken.None)
+			var newConnection = await tlsCapableConnection.StartTlsServerAsync (serverCertificate, clientCertificateRequired, default)
 				.ConfigureAwait (false);
 			if ((_logger != null) && _logger.IsEnabled (LogLevel.Information))
 			{
@@ -91,7 +91,7 @@ namespace Novartment.Base.Net.Smtp
 			SetConnection (newConnection);
 		}
 
-		public Task<SmtpCommand> ReceiveCommandAsync (SmtpCommand.ExpectedInputType expectedInputType, CancellationToken cancellationToken)
+		public Task<SmtpCommand> ReceiveCommandAsync (SmtpCommand.ExpectedInputType expectedInputType, CancellationToken cancellationToken = default)
 		{
 			if (_reader.Count > 0)
 			{
@@ -206,7 +206,7 @@ namespace Novartment.Base.Net.Smtp
 			return command;
 		}
 
-		public async Task<SmtpReply> ReceiveReplyAsync (CancellationToken cancellationToken)
+		public async Task<SmtpReply> ReceiveReplyAsync (CancellationToken cancellationToken = default)
 		{
 			if (_reader.Count > 0)
 			{
@@ -222,7 +222,7 @@ namespace Novartment.Base.Net.Smtp
 			return SmtpReply.Parse (_reader, _logger);
 		}
 
-		public Task SendReplyAsync (SmtpReply reply, bool canBeGrouped, CancellationToken cancellationToken)
+		public Task SendReplyAsync (SmtpReply reply, bool canBeGrouped, CancellationToken cancellationToken = default)
 		{
 			var replyText = reply.ToString ();
 
@@ -243,13 +243,13 @@ namespace Novartment.Base.Net.Smtp
 			return Task.CompletedTask;
 		}
 
-		public Task SendCommandAsync (SmtpCommand command, CancellationToken cancellationToken)
+		public Task SendCommandAsync (SmtpCommand command, CancellationToken cancellationToken = default)
 		{
 			var commandText = command.ToString ();
 			return SendTextAsync (commandText, cancellationToken);
 		}
 
-		public Task SendBinaryAsync (IBufferedSource source, CancellationToken cancellationToken)
+		public Task SendBinaryAsync (IBufferedSource source, CancellationToken cancellationToken = default)
 		{
 			return source.WriteToAsync (_writer, cancellationToken);
 		}

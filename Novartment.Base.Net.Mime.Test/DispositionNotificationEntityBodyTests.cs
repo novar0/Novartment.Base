@@ -21,7 +21,7 @@ namespace Novartment.Base.Net.Mime.Test
 		public void Load ()
 		{
 			var body = new DispositionNotificationEntityBody ();
-			body.LoadAsync (new ArrayBufferedSource (Encoding.ASCII.GetBytes (Template1)), null, CancellationToken.None).Wait ();
+			body.LoadAsync (new ArrayBufferedSource (Encoding.ASCII.GetBytes (Template1)), null).Wait ();
 
 			Assert.Equal ("joes-pc.cs.example.com", body.ReportingUserAgentName);
 			Assert.Equal ("Foomail 97.1", body.ReportingUserAgentProduct);
@@ -53,7 +53,7 @@ namespace Novartment.Base.Net.Mime.Test
 				Disposition = MessageDispositionChangedAction.ManuallyDisplayed,
 			};
 			var bytes = new BinaryDestinationMock (8192);
-			body.SaveAsync (bytes, CancellationToken.None).Wait ();
+			body.SaveAsync (bytes).Wait ();
 			var text = Encoding.UTF8.GetString (bytes.Buffer.Slice (0, bytes.Count));
 			var lines = text.Split (new string[] { "\r\n" }, StringSplitOptions.None);
 			Assert.Equal (7, lines.Length);

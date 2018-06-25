@@ -81,7 +81,7 @@ namespace Novartment.Base.Sample
 				using (var fs = new FileStream (fileName, FileMode.Open, FileAccess.Read))
 				{
 					message = new MailMessage ();
-					await message.LoadAsync (fs.AsBufferedSource (msgLoadBuf), EntityBodyFactory.Create, CancellationToken.None)
+					await message.LoadAsync (fs.AsBufferedSource (msgLoadBuf), EntityBodyFactory.Create)
 						.ConfigureAwait (false);
 					var returnPath = (message.Sender ?? message.From[0]).Address;
 					foreach (var recipient in message.RecipientTo)

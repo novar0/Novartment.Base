@@ -74,7 +74,7 @@ namespace Novartment.Base.Media
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
 		/// <returns>true, если перечислитель был успешно перемещен к следующему элементу;
 		/// false, если перечислитель достиг конца.</returns>
-		public async Task<bool> MoveNextAsync (CancellationToken cancellationToken)
+		public async Task<bool> MoveNextAsync (CancellationToken cancellationToken = default)
 		{
 			// skip all data in current
 			if (_current != null)

@@ -34,7 +34,7 @@ namespace Novartment.Base.Collections
 	{
 		/*
 		для обеспечения конкурентного доступа, всё состояние хранится в одном поле _state, а любое его изменение выглядит так:
-		var spinWait = default (SpinWait);
+		var spinWait = default;
 		while (true)
 		{
 		  var state1 = _state;
@@ -184,7 +184,7 @@ namespace Novartment.Base.Collections
 		/// <param name="item">Элемент для добавления в список.</param>
 		public void Add (T item)
 		{
-			var spinWait = default (SpinWait);
+			SpinWait spinWait = default;
 			while (true)
 			{
 				var state1 = _state;
@@ -217,7 +217,7 @@ namespace Novartment.Base.Collections
 			var snapshot = _state;
 			if (snapshot.Count < 1)
 			{
-				item = default (T);
+				item = default;
 				return false;
 			}
 
@@ -233,18 +233,18 @@ namespace Novartment.Base.Collections
 		/// <returns>True если первый элемент списка успешно изъят, false если нет.</returns>
 		public bool TryTakeFirst (out T item)
 		{
-			var spinWait = default (SpinWait);
+			SpinWait spinWait = default;
 			while (true)
 			{
 				var state1 = _state;
 				if (state1.Count < 1)
 				{
-					item = default (T);
+					item = default;
 					return false;
 				}
 
 				item = state1[0];
-				state1[0] = default (T);
+				state1[0] = default;
 				var newOffset = state1.Offset + 1;
 				if (newOffset >= state1.Array.Length)
 				{
@@ -278,7 +278,7 @@ namespace Novartment.Base.Collections
 			var lastIndex = snapshot.Count - 1;
 			if (lastIndex < 0)
 			{
-				item = default (T);
+				item = default;
 				return false;
 			}
 
@@ -294,19 +294,19 @@ namespace Novartment.Base.Collections
 		/// <returns>True если последний элемент списка успешно изъят, false если нет.</returns>
 		public bool TryTakeLast (out T item)
 		{
-			var spinWait = default (SpinWait);
+			SpinWait spinWait = default;
 			while (true)
 			{
 				var state1 = _state;
 				var lastIndex = state1.Count - 1;
 				if (lastIndex < 0)
 				{
-					item = default (T);
+					item = default;
 					return false;
 				}
 
 				item = state1[lastIndex];
-				state1[lastIndex] = default (T);
+				state1[lastIndex] = default;
 				var newState = new LoopedArraySegment<T> (state1.Array, state1.Offset, lastIndex);
 
 				// заменяем состояние если оно не изменилось с момента вызова
@@ -336,7 +336,7 @@ namespace Novartment.Base.Collections
 
 			Contract.EndContractBlock ();
 
-			var spinWait = default (SpinWait);
+			SpinWait spinWait = default;
 			while (true)
 			{
 				var state1 = _state;
@@ -431,7 +431,7 @@ namespace Novartment.Base.Collections
 				return;
 			}
 
-			var spinWait = default (SpinWait);
+			SpinWait spinWait = default;
 			while (true)
 			{
 				var state1 = _state;
@@ -510,7 +510,7 @@ namespace Novartment.Base.Collections
 
 			Contract.EndContractBlock ();
 
-			var spinWait = default (SpinWait);
+			SpinWait spinWait = default;
 			while (true)
 			{
 				var state1 = _state;
@@ -537,7 +537,7 @@ namespace Novartment.Base.Collections
 							index);
 					}
 
-					newState[0] = default (T);
+					newState[0] = default;
 					var newOffset = newState.Offset + 1;
 					if (newOffset >= newState.Array.Length)
 					{
@@ -559,7 +559,7 @@ namespace Novartment.Base.Collections
 							count - index - 1);
 					}
 
-					_state[lastIndex] = default (T);
+					_state[lastIndex] = default;
 					newState = new LoopedArraySegment<T> (newState.Array, newState.Offset, count - 1);
 				}
 
@@ -606,7 +606,7 @@ namespace Novartment.Base.Collections
 				return;
 			}
 
-			var spinWait = default (SpinWait);
+			SpinWait spinWait = default;
 			while (true)
 			{
 				var state1 = _state;
@@ -697,7 +697,7 @@ namespace Novartment.Base.Collections
 
 			Contract.EndContractBlock ();
 
-			var spinWait = default (SpinWait);
+			SpinWait spinWait = default;
 			while (true)
 			{
 				var state1 = _state;
@@ -721,7 +721,7 @@ namespace Novartment.Base.Collections
 		/// </summary>
 		public void TrimExcess ()
 		{
-			var spinWait = default (SpinWait);
+			SpinWait spinWait = default;
 			while (true)
 			{
 				var state1 = _state;
@@ -860,7 +860,7 @@ namespace Novartment.Base.Collections
 
 			Contract.EndContractBlock ();
 
-			var spinWait = default (SpinWait);
+			SpinWait spinWait = default;
 			while (true)
 			{
 				var state1 = _state;

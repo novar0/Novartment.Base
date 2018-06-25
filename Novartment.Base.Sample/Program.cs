@@ -6,14 +6,14 @@ namespace Novartment.Base.Sample
 	{
 		public static void Main ()
 		{
-			SmtpSamples.SendOneMessageAsync (CancellationToken.None).Wait ();
+			SmtpSamples.SendOneMessageAsync (default).Wait ();
 			SmtpSamples.StartSmtpServer ().Wait ();
-			EbmlSamples.CreateChaptersFromMultipleMkvs (CancellationToken.None).Wait ();
-			RiffSamples.CreateChaptersFromMultipleAviAsync (CancellationToken.None).Wait ();
-			MimeSamples.MessageSaveAttachmentsAsync (CancellationToken.None).Wait ();
-			MimeSamples.MessageCreateSimpleAsync (CancellationToken.None).Wait ();
-			MimeSamples.MessageCreateCompositeAsync (CancellationToken.None).Wait ();
-			MimeSamples.MessageCreateReplyAsync (CancellationToken.None).Wait ();
+			EbmlSamples.CreateChaptersFromMultipleMkvs (default).Wait ();
+			RiffSamples.CreateChaptersFromMultipleAviAsync (default).Wait ();
+			MimeSamples.MessageSaveAttachmentsAsync (default).Wait ();
+			MimeSamples.MessageCreateSimpleAsync (default).Wait ();
+			MimeSamples.MessageCreateCompositeAsync (default).Wait ();
+			MimeSamples.MessageCreateReplyAsync (default).Wait ();
 		}
 	}
 }

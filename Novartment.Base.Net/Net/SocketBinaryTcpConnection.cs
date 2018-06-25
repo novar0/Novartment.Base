@@ -45,7 +45,7 @@ namespace Novartment.Base.Net
 			Uri remoteUri,
 #pragma warning disable CA1801 // Review unused parameters
 			AddressFamily addressFamily,
-			CancellationToken cancellationToken)
+			CancellationToken cancellationToken = default)
 #pragma warning restore CA1801 // Review unused parameters
 		{
 			if (remoteUri == null)
@@ -103,7 +103,7 @@ namespace Novartment.Base.Net
 		/// <param name="remoteEndpoint">Конечная точка, к которой будет создано подключение.</param>
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
 		/// <returns>Задача, результатом которой будет установленное TCP-подключение.</returns>
-		public static Task<ITcpConnection> CreateAsync (IPHostEndPoint remoteEndpoint, CancellationToken cancellationToken)
+		public static Task<ITcpConnection> CreateAsync (IPHostEndPoint remoteEndpoint, CancellationToken cancellationToken = default)
 		{
 			if (remoteEndpoint == null)
 			{
@@ -172,7 +172,7 @@ namespace Novartment.Base.Net
 		/// <param name="clientCertificates">The X509CertificateCollection that contains client certificates.</param>
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
 		/// <returns>Новое соединение, защищённое по протоколу TLS.</returns>
-		public Task<ITlsConnection> StartTlsClientAsync (X509CertificateCollection clientCertificates, CancellationToken cancellationToken)
+		public Task<ITlsConnection> StartTlsClientAsync (X509CertificateCollection clientCertificates, CancellationToken cancellationToken = default)
 		{
 			if (this.Writer is SslStream)
 			{
@@ -239,7 +239,7 @@ namespace Novartment.Base.Net
 		public Task<ITlsConnection> StartTlsServerAsync (
 			X509Certificate serverCertificate,
 			bool clientCertificateRequired,
-			CancellationToken cancellationToken)
+			CancellationToken cancellationToken = default)
 		{
 			if (serverCertificate == null)
 			{

@@ -85,7 +85,7 @@ namespace Novartment.Base.Net.Mime
 		public string GetText ()
 		{
 			var dataSrc = GetDataSource ();
-			return BufferedSourceExtensions.ReadAllTextAsync (dataSrc, this.Encoding, CancellationToken.None).Result;
+			return BufferedSourceExtensions.ReadAllTextAsync (dataSrc, this.Encoding, default).Result;
 		}
 
 		/// <summary>
@@ -103,7 +103,7 @@ namespace Novartment.Base.Net.Mime
 
 			var bytes = this.Encoding.GetBytes (value);
 			var dataSrc = new ArrayBufferedSource (bytes);
-			SetDataAsync (dataSrc, CancellationToken.None).Wait ();
+			SetDataAsync (dataSrc, default).Wait ();
 		}
 	}
 }

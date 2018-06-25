@@ -26,9 +26,9 @@ namespace Novartment.Base.Test
 
 			// части в середине источника
 			var subSrc = new BigBufferedSourceMock (long.MaxValue, srcBufSize, FillFunction);
-			subSrc.TryFastSkipAsync (skipBeforeLimitingSize, CancellationToken.None).Wait ();
+			subSrc.TryFastSkipAsync (skipBeforeLimitingSize).Wait ();
 			var src = new TemplateSeparatedBufferedSource (subSrc, separator, false);
-			src.EnsureBufferAsync (skipBufferSize + 3, CancellationToken.None).Wait ();
+			src.EnsureBufferAsync (skipBufferSize + 3).Wait ();
 			Assert.Equal (FillFunction (skipBeforeLimitingSize), src.BufferMemory.Span[src.Offset]);
 			Assert.Equal (FillFunction (skipBeforeLimitingSize + 1), src.BufferMemory.Span[src.Offset + 1]);
 			Assert.Equal (FillFunction (skipBeforeLimitingSize + 2), src.BufferMemory.Span[src.Offset + 2]);
@@ -36,8 +36,8 @@ namespace Novartment.Base.Test
 			Assert.Equal (FillFunction (skipBeforeLimitingSize + skipBufferSize), src.BufferMemory.Span[src.Offset]);
 			Assert.Equal (FillFunction (skipBeforeLimitingSize + skipBufferSize + 1), src.BufferMemory.Span[src.Offset + 1]);
 			Assert.Equal (FillFunction (skipBeforeLimitingSize + skipBufferSize + 2), src.BufferMemory.Span[src.Offset + 2]);
-			Assert.True (src.TrySkipPartAsync (CancellationToken.None).Result);
-			src.EnsureBufferAsync (3, CancellationToken.None).Wait ();
+			Assert.True (src.TrySkipPartAsync ().Result);
+			src.EnsureBufferAsync (3).Wait ();
 			Assert.Equal (FillFunction (secondPartPos), src.BufferMemory.Span[src.Offset]);
 			Assert.Equal (FillFunction (secondPartPos + 1), src.BufferMemory.Span[src.Offset + 1]);
 			Assert.Equal (FillFunction (secondPartPos + 2), src.BufferMemory.Span[src.Offset + 2]);
@@ -46,11 +46,11 @@ namespace Novartment.Base.Test
 			// части в конце источника
 			long size = 4611686018427387904L;
 			subSrc = new BigBufferedSourceMock (size, srcBufSize, FillFunction);
-			subSrc.TryFastSkipAsync (size - 256 - 256 - 20, CancellationToken.None).Wait (); // отступаем так чтобы осталось две части с хвостиком
+			subSrc.TryFastSkipAsync (size - 256 - 256 - 20).Wait (); // отступаем так чтобы осталось две части с хвостиком
 			src = new TemplateSeparatedBufferedSource (subSrc, separator, false);
-			Assert.True (src.TrySkipPartAsync (CancellationToken.None).Result);
-			Assert.True (src.TrySkipPartAsync (CancellationToken.None).Result);
-			Assert.False (src.TrySkipPartAsync (CancellationToken.None).Result);
+			Assert.True (src.TrySkipPartAsync ().Result);
+			Assert.True (src.TrySkipPartAsync ().Result);
+			Assert.False (src.TrySkipPartAsync ().Result);
 
 			// разделитель в конце источника
 			separator = new byte[]
@@ -61,10 +61,10 @@ namespace Novartment.Base.Test
 			};
 			subSrc = new BigBufferedSourceMock (768, srcBufSize, FillFunction);
 			src = new TemplateSeparatedBufferedSource (subSrc, separator, false);
-			Assert.True (src.TrySkipPartAsync (CancellationToken.None).Result);
-			Assert.True (src.TrySkipPartAsync (CancellationToken.None).Result);
-			Assert.True (src.TrySkipPartAsync (CancellationToken.None).Result);
-			Assert.False (src.TrySkipPartAsync (CancellationToken.None).Result);
+			Assert.True (src.TrySkipPartAsync ().Result);
+			Assert.True (src.TrySkipPartAsync ().Result);
+			Assert.True (src.TrySkipPartAsync ().Result);
+			Assert.False (src.TrySkipPartAsync ().Result);
 		}
 
 		private static void SkipToEnd (IBufferedSource source, int size)
@@ -76,7 +76,7 @@ namespace Novartment.Base.Test
 				source.SkipBuffer (available);
 				skipped += (long)available;
 
-				source.FillBufferAsync (CancellationToken.None).Wait ();
+				source.FillBufferAsync ().Wait ();
 			}
 
 			var remainder = source.Count;

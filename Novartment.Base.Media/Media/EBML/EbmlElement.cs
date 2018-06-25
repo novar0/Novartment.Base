@@ -77,7 +77,7 @@ namespace Novartment.Base.Media
 		public static Task<EbmlElement> ParseAsync (
 			IBufferedSource source,
 #pragma warning disable CA1801 // Review unused parameters
-			CancellationToken cancellationToken)
+			CancellationToken cancellationToken = default)
 #pragma warning restore CA1801 // Review unused parameters
 		{
 			if (source == null)
@@ -103,7 +103,7 @@ namespace Novartment.Base.Media
 		/// </summary>
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
 		/// <returns>Задача, представляющая операцию.</returns>
-		public async Task SkipAllAsync (CancellationToken cancellationToken)
+		public async Task SkipAllAsync (CancellationToken cancellationToken = default)
 		{
 			var toSkip = (long)_size - (long)_readed;
 			if (toSkip > 0)

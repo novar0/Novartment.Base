@@ -52,7 +52,7 @@ namespace Novartment.Base.Test
 			}
 		}
 
-		public Task FillBufferAsync (CancellationToken cancellationToken)
+		public Task FillBufferAsync (CancellationToken cancellationToken = default)
 		{
 			if (!_isExhausted)
 			{
@@ -87,7 +87,7 @@ namespace Novartment.Base.Test
 			return Task.CompletedTask;
 		}
 
-		public Task EnsureBufferAsync (int size, CancellationToken cancellationToken)
+		public Task EnsureBufferAsync (int size, CancellationToken cancellationToken = default)
 		{
 			if ((size < 0) || (size > this.BufferMemory.Length))
 			{
@@ -139,7 +139,7 @@ namespace Novartment.Base.Test
 			return Task.CompletedTask;
 		}
 
-		public Task<long> TryFastSkipAsync (long size, CancellationToken cancellationToken)
+		public Task<long> TryFastSkipAsync (long size, CancellationToken cancellationToken = default)
 		{
 			if (size < 0L)
 			{

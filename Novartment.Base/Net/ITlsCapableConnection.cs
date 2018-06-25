@@ -20,7 +20,7 @@ namespace Novartment.Base.Net
 		/// <param name="clientCertificates">The X509CertificateCollection that contains client certificates.</param>
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
 		/// <returns>Новое соединение, защищённое по протоколу TLS.</returns>
-		Task<ITlsConnection> StartTlsClientAsync (X509CertificateCollection clientCertificates, CancellationToken cancellationToken);
+		Task<ITlsConnection> StartTlsClientAsync (X509CertificateCollection clientCertificates, CancellationToken cancellationToken = default);
 
 		/// <summary>
 		/// Called to authenticate the server and optionally the client in
@@ -31,6 +31,6 @@ namespace Novartment.Base.Net
 		/// <param name="clientCertificateRequired">A Boolean value that specifies whether the client must supply a certificate for authentication.</param>
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
 		/// <returns>Новое соединение, защищённое по протоколу TLS.</returns>
-		Task<ITlsConnection> StartTlsServerAsync (X509Certificate serverCertificate, bool clientCertificateRequired, CancellationToken cancellationToken);
+		Task<ITlsConnection> StartTlsServerAsync (X509Certificate serverCertificate, bool clientCertificateRequired, CancellationToken cancellationToken = default);
 	}
 }

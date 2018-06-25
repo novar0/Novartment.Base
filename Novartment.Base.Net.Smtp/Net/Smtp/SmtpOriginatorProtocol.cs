@@ -76,7 +76,7 @@ namespace Novartment.Base.Net.Smtp
 		/// Происходит когда в протоколе возникла неустранимое противоречие, делающее его дальнейшую работу невозможным.
 		/// Настоятельно рекомендуется закрыть соединение.
 		/// </exception>
-		public Task StartAsync (ITcpConnection connection, CancellationToken cancellationToken)
+		public Task StartAsync (ITcpConnection connection, CancellationToken cancellationToken = default)
 		{
 			if (connection == null)
 			{
@@ -124,7 +124,7 @@ namespace Novartment.Base.Net.Smtp
 								_logger),
 							cancellationToken).ConfigureAwait (false);
 
-						await session.FinishAsync (CancellationToken.None).ConfigureAwait (false);
+						await session.FinishAsync (default).ConfigureAwait (false);
 					}
 					catch (OperationCanceledException)
 					{

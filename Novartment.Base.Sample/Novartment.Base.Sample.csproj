@@ -6,6 +6,7 @@
     <OutputType>Exe</OutputType>
 		<CodeAnalysisRuleSet>StyleCop.Analyzers.ruleset</CodeAnalysisRuleSet>
 		<Features>IOperation</Features>
+		<LangVersion>latest</LangVersion>
 	</PropertyGroup>
 
   <ItemGroup>

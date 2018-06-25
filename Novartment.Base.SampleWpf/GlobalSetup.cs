@@ -51,7 +51,7 @@ namespace Novartment.Base.SampleWpf
 					// посылаем сигнал ранее запущенному экземпляру чтобы он предстал перед пользователем взамен этого
 					try
 					{
-						listener.SendSignalAsync (_InstanceSearchTimeout, CancellationToken.None).Wait ();
+						listener.SendSignalAsync (_InstanceSearchTimeout).Wait ();
 					}
 					catch
 					{

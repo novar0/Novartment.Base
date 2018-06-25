@@ -14,7 +14,7 @@ namespace Novartment.Base.Media.Test
 			using (var fs = new FileStream (@"test.avi", FileMode.Open, FileAccess.Read))
 			{
 				IBufferedSource stream = fs.AsBufferedSource (new byte[1024]);
-				var aviInfo = AviInfo.ParseAsync (stream, CancellationToken.None).Result;
+				var aviInfo = AviInfo.ParseAsync (stream).Result;
 				Assert.NotNull (aviInfo);
 				Assert.Equal (8U, aviInfo.Width);
 				Assert.Equal (4U, aviInfo.Height);

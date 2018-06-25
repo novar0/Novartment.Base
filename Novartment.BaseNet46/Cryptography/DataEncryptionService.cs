@@ -29,12 +29,12 @@ namespace Novartment.Base
 			Contract.EndContractBlock ();
 
 			// Create BLOBs to hold data.
-			var plainTextBlob = default (CryptBlob);
-			var cipherTextBlob = default (CryptBlob);
-			var entropyBlob = default (CryptBlob);
+			CryptBlob plainTextBlob = default;
+			CryptBlob cipherTextBlob = default;
+			CryptBlob entropyBlob = default;
 
 			// We only need prompt structure because it is a required parameter.
-			var prompt = default (CryptProtectPromptParameters);
+			CryptProtectPromptParameters prompt = default;
 			InitPrompt (ref prompt);
 
 			try

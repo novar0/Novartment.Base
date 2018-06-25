@@ -92,7 +92,7 @@ namespace Novartment.Base.BinaryStreaming
 			}
 			else
 			{
-				_destination.WriteAsync (buffer.AsMemory (offset, count), CancellationToken.None).Wait ();
+				_destination.WriteAsync (buffer.AsMemory (offset, count), default).Wait ();
 			}
 		}
 
@@ -105,7 +105,7 @@ namespace Novartment.Base.BinaryStreaming
 		/// <param name="count">Максимальное число байтов для записи.</param>
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
 		/// <returns>Задача, представляющая асинхронную операцию записи.</returns>
-		public override Task WriteAsync (byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+		public override Task WriteAsync (byte[] buffer, int offset, int count, CancellationToken cancellationToken = default)
 		{
 			if (buffer == null)
 			{
@@ -145,7 +145,7 @@ namespace Novartment.Base.BinaryStreaming
 		/// </summary>
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
 		/// <returns>Задача, представляющая асинхронную операцию очистки.</returns>
-		public override Task FlushAsync (CancellationToken cancellationToken)
+		public override Task FlushAsync (CancellationToken cancellationToken = default)
 		{
 			return (_destination is StreamExtensions.StreamBinaryDestination streamBinaryDestination) ?
 				streamBinaryDestination.BaseStream.FlushAsync () :
@@ -195,7 +195,7 @@ namespace Novartment.Base.BinaryStreaming
 
 			while (count > 0)
 			{
-				_source.FillBufferAsync (CancellationToken.None).Wait ();
+				_source.FillBufferAsync (default).Wait ();
 				if (_source.Count <= 0)
 				{
 					break;
@@ -220,7 +220,7 @@ namespace Novartment.Base.BinaryStreaming
 		{
 			if (_source.Count < 1)
 			{
-				_source.FillBufferAsync (CancellationToken.None).Wait ();
+				_source.FillBufferAsync (default).Wait ();
 				if (_source.Count < 1)
 				{
 					return -1;
@@ -244,7 +244,7 @@ namespace Novartment.Base.BinaryStreaming
 		/// Значение результата может быть меньше запрошенного числа байтов,
 		/// если число доступных в данный момент байтов меньше запрошенного числа,
 		/// или результат может быть равен 0 (нулю), если был достигнут конец потока.</returns>
-		public override Task<int> ReadAsync (byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+		public override Task<int> ReadAsync (byte[] buffer, int offset, int count, CancellationToken cancellationToken = default)
 		{
 			if (buffer == null)
 			{
@@ -314,7 +314,7 @@ namespace Novartment.Base.BinaryStreaming
 		/// <param name="bufferSize">Размер (в байтах) буфера. Это значение должно быть больше нуля.</param>
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
 		/// <returns>Задача, представляющая асинхронную операцию копирования.</returns>
-		public override Task CopyToAsync (Stream destination, int bufferSize, CancellationToken cancellationToken)
+		public override Task CopyToAsync (Stream destination, int bufferSize, CancellationToken cancellationToken = default)
 		{
 			return BufferedSourceExtensions.WriteToAsync (_source, destination.AsBinaryDestination (), cancellationToken);
 		}

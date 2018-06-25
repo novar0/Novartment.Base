@@ -78,7 +78,7 @@ namespace Novartment.Base.Net
 		/// </summary>
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
 		/// <returns>Установленное TCP-подключение.</returns>
-		public Task<ITcpConnection> AcceptTcpClientAsync (CancellationToken cancellationToken)
+		public Task<ITcpConnection> AcceptTcpClientAsync (CancellationToken cancellationToken = default)
 		{
 			if (!_active)
 			{

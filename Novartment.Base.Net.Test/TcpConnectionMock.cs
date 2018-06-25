@@ -26,16 +26,6 @@ namespace Novartment.Base.Net.Test
 			_inData = new ArrayBufferedSource (inData);
 		}
 
-		internal TcpConnectionMock (
-			IPHostEndPoint localEndpoint,
-			IPHostEndPoint remoteEndpoint,
-			IBufferedSource inData)
-		{
-			_localEndpoint = localEndpoint;
-			_remoteEndpoint = remoteEndpoint;
-			_inData = inData;
-		}
-
 		public string RemoteHostName => null;
 
 		public IPHostEndPoint LocalEndPoint => _localEndpoint;

@@ -66,7 +66,7 @@ namespace Novartment.Base.Media
 		/// <param name="source">Буфер данных содержащий подробности аудио-формата потока AVI-файла.</param>
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
 		/// <returns>Подробности аудио-формата потока AVI-файла, считанные из указанного буфера.</returns>
-		public static Task<AviStreamInfoAudioFormat> ParseAsync (IBufferedSource source, CancellationToken cancellationToken)
+		public static Task<AviStreamInfoAudioFormat> ParseAsync (IBufferedSource source, CancellationToken cancellationToken = default)
 		{
 			if (source == null)
 			{

@@ -109,7 +109,7 @@ namespace Novartment.Base.Media
 		public static Task<MatroskaSegmentInfo> ParseAsync (
 			EbmlElementCollectionEnumerator source,
 #pragma warning disable CA1801 // Review unused parameters
-			CancellationToken cancellationToken)
+			CancellationToken cancellationToken = default)
 #pragma warning restore CA1801 // Review unused parameters
 		{
 			if (source == null)
@@ -194,7 +194,7 @@ namespace Novartment.Base.Media
 		private static async Task ProcessAttachmentsEntryAsync (
 			EbmlElementCollectionEnumerator reader,
 			ArrayList<MatroskaAttachedFileInfo> attachments,
-			CancellationToken cancellationToken)
+			CancellationToken cancellationToken = default)
 		{
 			while (true)
 			{
@@ -237,7 +237,7 @@ namespace Novartment.Base.Media
 		private static async Task ProcessTracksEntryAsync (
 			EbmlElementCollectionEnumerator reader,
 			IAdjustableCollection<MatroskaTrackInfo> tracks,
-			CancellationToken cancellationToken)
+			CancellationToken cancellationToken = default)
 		{
 			while (true)
 			{

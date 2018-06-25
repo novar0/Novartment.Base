@@ -52,7 +52,7 @@ namespace Novartment.Base.Collections.Linq
 		/// <param name="defaultValue">Значение, возвращаемое в случае пустого множества.</param>
 		/// <returns>Множество, содержащее значение defaultValue, если множество source пустое;
 		/// в противном случае возвращается source.</returns>
-		public static IReadOnlyFiniteSet<TSource> DefaultIfEmpty<TSource> (this IReadOnlyFiniteSet<TSource> source, TSource defaultValue = default (TSource))
+		public static IReadOnlyFiniteSet<TSource> DefaultIfEmpty<TSource> (this IReadOnlyFiniteSet<TSource> source, TSource defaultValue = default)
 		{
 			if (source == null)
 			{

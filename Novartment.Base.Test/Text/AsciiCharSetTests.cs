@@ -56,7 +56,7 @@ namespace Novartment.Base.Test
 		public void GetString ()
 		{
 			var buf = new byte[] { 123, 32, 33, 48, 57, 65, 122, 125, 126 };
-			Assert.Equal (string.Empty, AsciiCharSet.GetString (default (ReadOnlySpan<byte>)));
+			Assert.Equal (string.Empty, AsciiCharSet.GetString (default));
 			Assert.Equal ("{ !09Az}~", AsciiCharSet.GetString (buf.AsSpan ()));
 			Assert.Equal ("z}~", AsciiCharSet.GetString (buf.AsSpan (6, 3)));
 		}

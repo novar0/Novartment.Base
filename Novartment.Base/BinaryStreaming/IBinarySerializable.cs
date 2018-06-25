@@ -14,6 +14,6 @@ namespace Novartment.Base.BinaryStreaming
 		/// <param name="destination">Получатель двоичных данных, в который будет сохранена сущность.</param>
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
 		/// <returns>Задача, представляющая операцию сохранения.</returns>
-		Task SaveAsync (IBinaryDestination destination, CancellationToken cancellationToken);
+		Task SaveAsync (IBinaryDestination destination, CancellationToken cancellationToken = default);
 	}
 }

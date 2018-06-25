@@ -109,7 +109,7 @@ namespace Novartment.Base.Net
 		/// потому что чтение сокета вообще не поддерживает отмену.
 		/// Для отмены чтения используйте Socket.Close().
 		/// </remarks>
-		public Task FillBufferAsync (CancellationToken cancellationToken)
+		public Task FillBufferAsync (CancellationToken cancellationToken = default)
 		{
 			if (cancellationToken.IsCancellationRequested)
 			{
@@ -167,7 +167,7 @@ namespace Novartment.Base.Net
 		/// Для отмены чтения используйте Socket.Close().
 		/// </remarks>
 		/// <returns>Задача, представляющая операцию.</returns>
-		public Task EnsureBufferAsync (int size, CancellationToken cancellationToken)
+		public Task EnsureBufferAsync (int size, CancellationToken cancellationToken = default)
 		{
 			if ((size < 0) || (size > _buffer.Length))
 			{

@@ -16,13 +16,13 @@ namespace Novartment.Base.Test
 		{
 			// пропуск больше чем записано
 			var channel = new BufferedChannel (new byte[99]);
-			var skipTask = channel.TryFastSkipAsync (long.MaxValue, CancellationToken.None);
+			var skipTask = channel.TryFastSkipAsync (long.MaxValue);
 			Assert.False (skipTask.IsCompleted);
 			Memory<byte> buf = new byte[0x4000000];
-			var writeTask = channel.WriteAsync (buf, CancellationToken.None);
+			var writeTask = channel.WriteAsync (buf);
 			Assert.True (writeTask.IsCompleted);
 			Assert.False (skipTask.IsCompleted);
-			writeTask = channel.WriteAsync (buf.Slice (0x2000000, 0x1ffffff), CancellationToken.None);
+			writeTask = channel.WriteAsync (buf.Slice (0x2000000, 0x1ffffff));
 			Assert.True (writeTask.IsCompleted);
 			Assert.False (skipTask.IsCompleted);
 			channel.SetComplete ();
@@ -37,13 +37,13 @@ namespace Novartment.Base.Test
 		{
 			// пропуск больше чем 32битное число байтов через крохотный буфер
 			var channel = new BufferedChannel (new byte[9]);
-			var skipTask = channel.TryFastSkipAsync (0x100000000L, CancellationToken.None);
+			var skipTask = channel.TryFastSkipAsync (0x100000000L);
 			Assert.False (skipTask.IsCompleted);
 			Task writeTask;
 			var buf = new byte[0x4000000];
 			for (int i = 0; i < 64; i++)
 			{
-				writeTask = channel.WriteAsync (buf.AsMemory (0, 0x3FFFFFF), CancellationToken.None);
+				writeTask = channel.WriteAsync (buf.AsMemory (0, 0x3FFFFFF));
 				Assert.True (writeTask.IsCompleted);
 				Assert.False (skipTask.IsCompleted);
 			}
@@ -53,12 +53,12 @@ namespace Novartment.Base.Test
 				buf[i] = (byte)(i + 120);
 			}
 
-			writeTask = channel.WriteAsync (buf.AsMemory (0, 80), CancellationToken.None);
+			writeTask = channel.WriteAsync (buf.AsMemory (0, 80));
 			Thread.Sleep (50);
 			Assert.True (skipTask.IsCompleted);
 			Assert.Equal (0x100000000L, skipTask.Result);
 			Assert.False (writeTask.IsCompleted);
-			var ensureTask = channel.EnsureBufferAsync (9, CancellationToken.None);
+			var ensureTask = channel.EnsureBufferAsync (9);
 			Assert.True (ensureTask.IsCompleted);
 			Assert.Equal (9, channel.Count);
 			Assert.Equal (184, channel.BufferMemory.Span[0]);
@@ -72,7 +72,7 @@ namespace Novartment.Base.Test
 			Assert.Equal (192, channel.BufferMemory.Span[8]);
 			Assert.False (writeTask.IsCompleted);
 			channel.SkipBuffer (9);
-			skipTask = channel.TryFastSkipAsync (7L, CancellationToken.None);
+			skipTask = channel.TryFastSkipAsync (7L);
 			Assert.True (skipTask.IsCompleted);
 			Assert.Equal (7L, skipTask.Result);
 			Thread.Sleep (50);
@@ -100,7 +100,7 @@ namespace Novartment.Base.Test
 				var dstData = new MemoryStream ();
 				while (true)
 				{
-					channel.FillBufferAsync (CancellationToken.None).Wait ();
+					channel.FillBufferAsync ().Wait ();
 					if (channel.Count < 1)
 					{
 						break;
@@ -121,7 +121,7 @@ namespace Novartment.Base.Test
 			for (int cnt = 0; cnt < chunkCount; cnt++)
 			{
 				srcData.Write (src, 0, chunkSize);
-				channel.WriteAsync (src.AsMemory (0, chunkSize), CancellationToken.None).Wait ();
+				channel.WriteAsync (src.AsMemory (0, chunkSize)).Wait ();
 			}
 
 			channel.SetComplete ();
@@ -156,10 +156,10 @@ namespace Novartment.Base.Test
 			srcData[8] = 111;
 
 			// места в хвосте буфера достаточно для всех предоставляемых данных
-			var readTask = channel.FillBufferAsync (CancellationToken.None);
+			var readTask = channel.FillBufferAsync ();
 			Thread.Sleep (50);
 			Assert.False (readTask.IsCompleted);
-			var writeTask = channel.WriteAsync (srcData.AsMemory (0, 2), CancellationToken.None);
+			var writeTask = channel.WriteAsync (srcData.AsMemory (0, 2));
 			Assert.True (writeTask.IsCompleted); // ожидание не нужно, задача должна быть уже выполненной
 			Thread.Sleep (50);
 			Assert.True (readTask.IsCompleted);
@@ -171,10 +171,10 @@ namespace Novartment.Base.Test
 			Assert.Equal (92, channel.BufferMemory.Span[4]);
 			Assert.Equal (91, channel.BufferMemory.Span[5]);
 			Assert.Equal (90, channel.BufferMemory.Span[6]);
-			readTask = channel.FillBufferAsync (CancellationToken.None);
+			readTask = channel.FillBufferAsync ();
 			Thread.Sleep (50);
 			Assert.False (readTask.IsCompleted);
-			writeTask = channel.WriteAsync (srcData.AsMemory (4, 5), CancellationToken.None);
+			writeTask = channel.WriteAsync (srcData.AsMemory (4, 5));
 			Assert.True (writeTask.IsCompleted); // ожидание не нужно, задача должна быть уже выполненной
 			Thread.Sleep (50);
 			Assert.True (readTask.IsCompleted);
@@ -189,10 +189,10 @@ namespace Novartment.Base.Test
 
 			// места в хвосте буфера нет
 			channel.SkipBuffer (4); // 4 свободных байта окажутся в хвосте буфера после вызова ReserveTailSpace ()
-			readTask = channel.FillBufferAsync (CancellationToken.None);
+			readTask = channel.FillBufferAsync ();
 			Thread.Sleep (50);
 			Assert.False (readTask.IsCompleted);
-			writeTask = channel.WriteAsync (srcData.AsMemory (2, 2), CancellationToken.None);
+			writeTask = channel.WriteAsync (srcData.AsMemory (2, 2));
 			Thread.Sleep (50);
 			Assert.True (writeTask.IsCompleted);
 			Assert.True (readTask.IsCompleted);
@@ -205,10 +205,10 @@ namespace Novartment.Base.Test
 
 			// место в хвосте буфера есть но не хватает
 			channel.SkipBuffer (3);
-			readTask = channel.FillBufferAsync (CancellationToken.None);
+			readTask = channel.FillBufferAsync ();
 			Thread.Sleep (50);
 			Assert.False (readTask.IsCompleted);
-			writeTask = channel.WriteAsync (srcData.AsMemory (0, 3), CancellationToken.None);
+			writeTask = channel.WriteAsync (srcData.AsMemory (0, 3));
 			Thread.Sleep (50);
 			Assert.True (writeTask.IsCompleted);
 			Assert.True (readTask.IsCompleted);
@@ -220,16 +220,16 @@ namespace Novartment.Base.Test
 			Assert.Equal (205, channel.BufferMemory.Span[4]);
 
 			// завершение, которое должно разблокировать ожидание новых данных
-			readTask = channel.FillBufferAsync (CancellationToken.None);
+			readTask = channel.FillBufferAsync ();
 			Thread.Sleep (50);
 			Assert.False (readTask.IsCompleted);
 			channel.SetComplete ();
 			Thread.Sleep (50);
 			Assert.True (readTask.IsCompleted);
-			readTask = channel.FillBufferAsync (CancellationToken.None);
+			readTask = channel.FillBufferAsync ();
 			Assert.True (readTask.IsCompleted);
 			channel.SkipBuffer (channel.Count);
-			Assert.ThrowsAsync<NotEnoughDataException> (() => channel.EnsureBufferAsync (1, CancellationToken.None));
+			Assert.ThrowsAsync<NotEnoughDataException> (() => channel.EnsureBufferAsync (1));
 		}
 
 		[Fact]
@@ -249,9 +249,9 @@ namespace Novartment.Base.Test
 			srcData[8] = 111;
 
 			// пишем кусок меньше свободного хвоста буфера
-			var writeTask = channel.WriteAsync (srcData.AsMemory (6, 1), CancellationToken.None);
+			var writeTask = channel.WriteAsync (srcData.AsMemory (6, 1));
 			Assert.True (writeTask.IsCompleted); // ожидание не нужно, задача должна быть уже выполненной
-			var readTask = channel.FillBufferAsync (CancellationToken.None);
+			var readTask = channel.FillBufferAsync ();
 			Thread.Sleep (50);
 			Assert.True (readTask.IsCompleted);
 			Assert.Equal (1, channel.Count);
@@ -262,9 +262,9 @@ namespace Novartment.Base.Test
 			Assert.Equal (92, channel.BufferMemory.Span[4]);
 			Assert.Equal (91, channel.BufferMemory.Span[5]);
 			Assert.Equal (90, channel.BufferMemory.Span[6]);
-			writeTask = channel.WriteAsync (srcData.AsMemory (3, 6), CancellationToken.None);
+			writeTask = channel.WriteAsync (srcData.AsMemory (3, 6));
 			Assert.True (writeTask.IsCompleted); // ожидание не нужно, задача должна быть уже выполненной
-			readTask = channel.FillBufferAsync (CancellationToken.None);
+			readTask = channel.FillBufferAsync ();
 			Thread.Sleep (50);
 			Assert.True (readTask.IsCompleted);
 			Assert.Equal (7, channel.Count);
@@ -279,10 +279,10 @@ namespace Novartment.Base.Test
 			// пишем когда нет свободного места в хвосте буфера
 			// data.AcceptTail (4); // в хвосте нет свободных байтов
 			channel.SkipBuffer (5);
-			writeTask = channel.WriteAsync (srcData.AsMemory (3, 3), CancellationToken.None);
+			writeTask = channel.WriteAsync (srcData.AsMemory (3, 3));
 			Thread.Sleep (50);
 			Assert.False (writeTask.IsCompleted);
-			readTask = channel.FillBufferAsync (CancellationToken.None);
+			readTask = channel.FillBufferAsync ();
 			Thread.Sleep (50);
 			Assert.True (writeTask.IsCompleted);
 			Assert.True (readTask.IsCompleted);
@@ -295,10 +295,10 @@ namespace Novartment.Base.Test
 
 			// пишем когда свободное места в хвосте буфера есть, но недостаточно под все данные
 			channel.SkipBuffer (2);
-			writeTask = channel.WriteAsync (srcData.AsMemory (0, 3), CancellationToken.None);
+			writeTask = channel.WriteAsync (srcData.AsMemory (0, 3));
 			Thread.Sleep (50);
 			Assert.False (writeTask.IsCompleted);
-			readTask = channel.FillBufferAsync (CancellationToken.None);
+			readTask = channel.FillBufferAsync ();
 			Thread.Sleep (50);
 			Assert.True (writeTask.IsCompleted);
 			Assert.True (readTask.IsCompleted);
@@ -312,8 +312,8 @@ namespace Novartment.Base.Test
 
 			// завершение, после которого не должны приниматься новые данные
 			channel.SetComplete ();
-			Assert.ThrowsAsync<InvalidOperationException> (() => channel.WriteAsync (srcData.AsMemory (0, 3), CancellationToken.None));
-			Assert.ThrowsAsync<InvalidOperationException> (() => channel.WriteAsync (srcData.AsMemory (1, 1), CancellationToken.None));
+			Assert.ThrowsAsync<InvalidOperationException> (() => channel.WriteAsync (srcData.AsMemory (0, 3)));
+			Assert.ThrowsAsync<InvalidOperationException> (() => channel.WriteAsync (srcData.AsMemory (1, 1)));
 		}
 	}
 }

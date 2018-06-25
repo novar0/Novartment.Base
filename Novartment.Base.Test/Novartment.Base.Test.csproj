@@ -6,6 +6,7 @@
 		<CodeAnalysisRuleSet>StyleCop.Analyzers.ruleset</CodeAnalysisRuleSet>
 		<Features>IOperation</Features>
 		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+		<LangVersion>latest</LangVersion>
 	</PropertyGroup>
 
   <ItemGroup>

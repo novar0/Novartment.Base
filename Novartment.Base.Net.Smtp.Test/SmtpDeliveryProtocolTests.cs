@@ -57,7 +57,7 @@ namespace Novartment.Base.Smtp.Test
 				new ArrayBufferedSource (Encoding.ASCII.GetBytes (inData)));
 			var protocol = new SmtpDeliveryProtocol (transactionFactory, SmtpServerSecurityParameters.NoSecurity, null);
 
-			protocol.StartAsync (connection, CancellationToken.None).Wait ();
+			protocol.StartAsync (connection).Wait ();
 
 			// анализируем ответы протокола
 			var replies = connection.OutData.Queue.ToArray ();

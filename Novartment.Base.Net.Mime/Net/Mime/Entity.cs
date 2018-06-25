@@ -244,7 +244,7 @@ namespace Novartment.Base.Net.Mime
 #pragma warning disable CA1801 // Review unused parameters
 			ContentMediaType defaultMediaType,
 			string defaultMediaSubtype,
-			CancellationToken cancellationToken)
+			CancellationToken cancellationToken = default)
 #pragma warning restore CA1801 // Review unused parameters
 		{
 			if (source == null)
@@ -289,7 +289,7 @@ namespace Novartment.Base.Net.Mime
 		/// <param name="destination">Получатель двоичных данных, в который будет сохранена сущность.</param>
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
 		/// <returns>Задача, представляющая операцию.</returns>
-		public Task SaveAsync (IBinaryDestination destination, CancellationToken cancellationToken)
+		public Task SaveAsync (IBinaryDestination destination, CancellationToken cancellationToken = default)
 		{
 			if (destination == null)
 			{

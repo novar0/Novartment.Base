@@ -373,7 +373,7 @@ namespace Novartment.Base.Collections
 			{
 				_dictionary = dictionary;
 				_count = dictionary._count;
-				_current = default (KeyValuePair<TKey, TValue>);
+				_current = default;
 			}
 
 			/// <summary>
@@ -400,7 +400,7 @@ namespace Novartment.Base.Collections
 			public void Reset ()
 			{
 				_index = 0;
-				_current = default (KeyValuePair<TKey, TValue>);
+				_current = default;
 			}
 
 			/// <summary>
@@ -419,7 +419,7 @@ namespace Novartment.Base.Collections
 				}
 
 				_index = _count + 1;
-				_current = default (KeyValuePair<TKey, TValue>);
+				_current = default;
 				return false;
 			}
 
@@ -445,7 +445,7 @@ namespace Novartment.Base.Collections
 			{
 				_dictionary = dictionary;
 				_count = dictionary._count;
-				_currentKey = default (TKey);
+				_currentKey = default;
 			}
 
 			/// <summary>
@@ -491,14 +491,14 @@ namespace Novartment.Base.Collections
 				}
 
 				_index = _count + 1;
-				_currentKey = default (TKey);
+				_currentKey = default;
 				return false;
 			}
 
 			void IEnumerator.Reset ()
 			{
 				_index = 0;
-				_currentKey = default (TKey);
+				_currentKey = default;
 			}
 		}
 
@@ -513,7 +513,7 @@ namespace Novartment.Base.Collections
 			{
 				_dictionary = dictionary;
 				_count = dictionary._count;
-				_currentValue = default (TValue);
+				_currentValue = default;
 			}
 
 			/// <summary>
@@ -559,14 +559,14 @@ namespace Novartment.Base.Collections
 				}
 
 				_index = _count + 1;
-				_currentValue = default (TValue);
+				_currentValue = default;
 				return false;
 			}
 
 			void IEnumerator.Reset ()
 			{
 				_index = 0;
-				_currentValue = default (TValue);
+				_currentValue = default;
 			}
 		}
 

@@ -14,9 +14,9 @@ namespace Novartment.Base.Test
 			int srcBufSize = 20;
 			var src1 = new BigBufferedSourceMock (3L, srcBufSize, FillFunction);
 			var src2 = new BigBufferedSourceMock ((long)int.MaxValue + 56L, srcBufSize, FillFunction);
-			src2.TryFastSkipAsync (54, CancellationToken.None).Wait ();
+			src2.TryFastSkipAsync (54).Wait ();
 			var src3 = new BigBufferedSourceMock (24L, srcBufSize, FillFunction);
-			src3.TryFastSkipAsync (20, CancellationToken.None).Wait ();
+			src3.TryFastSkipAsync (20).Wait ();
 			var sources = new JobCompletionSource<IBufferedSource, int>[]
 			{
 				new JobCompletionSource<IBufferedSource, int> (src1),
@@ -33,7 +33,7 @@ namespace Novartment.Base.Test
 			Assert.False (sources[1].Task.IsCompleted);
 			Assert.False (sources[2].Task.IsCompleted);
 
-			src.EnsureBufferAsync (6, CancellationToken.None).Wait ();
+			src.EnsureBufferAsync (6).Wait ();
 			Assert.False (src.IsExhausted);
 			Assert.Equal (TaskStatus.RanToCompletion, sources[0].Task.Status);
 			Assert.False (sources[1].Task.IsCompleted);
@@ -46,13 +46,13 @@ namespace Novartment.Base.Test
 			Assert.Equal (FillFunction (56), src.BufferMemory.Span[src.Offset + 5]);
 			src.SkipBuffer (6);
 
-			Assert.Equal ((long)int.MaxValue, src.TryFastSkipAsync ((long)int.MaxValue, CancellationToken.None).Result);
+			Assert.Equal ((long)int.MaxValue, src.TryFastSkipAsync ((long)int.MaxValue).Result);
 			Assert.False (src.IsExhausted);
 			Assert.Equal (TaskStatus.RanToCompletion, sources[0].Task.Status);
 			Assert.Equal (TaskStatus.RanToCompletion, sources[1].Task.Status);
 			Assert.False (sources[2].Task.IsCompleted);
 
-			src.EnsureBufferAsync (3, CancellationToken.None).Wait ();
+			src.EnsureBufferAsync (3).Wait ();
 			Assert.Equal (TaskStatus.RanToCompletion, sources[0].Task.Status);
 			Assert.Equal (TaskStatus.RanToCompletion, sources[1].Task.Status);
 			Assert.Equal (TaskStatus.RanToCompletion, sources[2].Task.Status);
@@ -60,7 +60,7 @@ namespace Novartment.Base.Test
 			Assert.Equal (FillFunction (22), src.BufferMemory.Span[src.Offset + 1]);
 			Assert.Equal (FillFunction (23), src.BufferMemory.Span[src.Offset + 2]);
 			src.SkipBuffer (3);
-			src.FillBufferAsync (CancellationToken.None).Wait ();
+			src.FillBufferAsync ().Wait ();
 			Assert.True (src.IsExhausted);
 		}
 
@@ -79,7 +79,7 @@ namespace Novartment.Base.Test
 				_sources = sources;
 			}
 
-			public Task<JobCompletionSource<IBufferedSource, int>> TakeJobAsync (CancellationToken cancellationToken)
+			public Task<JobCompletionSource<IBufferedSource, int>> TakeJobAsync (CancellationToken cancellationToken = default)
 			{
 				return Task.FromResult (_sources[index++]);
 			}

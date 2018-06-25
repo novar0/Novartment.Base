@@ -135,7 +135,7 @@ namespace Novartment.Base.Tasks
 						var taskData = new CompletedTaskData (prevTask.Status, prevTask.Exception, state);
 						OnTaskEnded (new DataEventArgs<CompletedTaskData> (taskData));
 					},
-					CancellationToken.None,
+					default,
 					TaskContinuationOptions.None,
 					scheduler);
 			}

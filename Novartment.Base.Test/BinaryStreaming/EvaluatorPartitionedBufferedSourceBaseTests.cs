@@ -19,21 +19,21 @@ namespace Novartment.Base.Test
 
 			// части в середине источника
 			var subSrc = new BigBufferedSourceMock (long.MaxValue, srcBufSize, FillFunction);
-			subSrc.TryFastSkipAsync (skipBeforeLimitingSize, CancellationToken.None).Wait ();
+			subSrc.TryFastSkipAsync (skipBeforeLimitingSize).Wait ();
 			var src = new OneHundredEvaluatorBufferedSource (subSrc);
-			src.FillBufferAsync (CancellationToken.None).Wait ();
-			Assert.True (src.TrySkipPartAsync (CancellationToken.None).Result);
-			src.EnsureBufferAsync (3, CancellationToken.None).Wait ();
+			src.FillBufferAsync ().Wait ();
+			Assert.True (src.TrySkipPartAsync ().Result);
+			src.EnsureBufferAsync (3).Wait ();
 			Assert.Equal (FillFunction (firstPartPos), src.BufferMemory.Span[src.Offset]);
 			Assert.Equal (FillFunction (firstPartPos + 1), src.BufferMemory.Span[src.Offset + 1]);
 			Assert.Equal (FillFunction (firstPartPos + 2), src.BufferMemory.Span[src.Offset + 2]);
-			Assert.True (src.TrySkipPartAsync (CancellationToken.None).Result);
-			src.EnsureBufferAsync (3, CancellationToken.None).Wait ();
+			Assert.True (src.TrySkipPartAsync ().Result);
+			src.EnsureBufferAsync (3).Wait ();
 			Assert.Equal (FillFunction (secondPartPos), src.BufferMemory.Span[src.Offset]);
 			Assert.Equal (FillFunction (secondPartPos + 1), src.BufferMemory.Span[src.Offset + 1]);
 			Assert.Equal (FillFunction (secondPartPos + 2), src.BufferMemory.Span[src.Offset + 2]);
-			Assert.True (src.TrySkipPartAsync (CancellationToken.None).Result);
-			src.EnsureBufferAsync (3, CancellationToken.None).Wait ();
+			Assert.True (src.TrySkipPartAsync ().Result);
+			src.EnsureBufferAsync (3).Wait ();
 			Assert.Equal (FillFunction (thirdPartPos), src.BufferMemory.Span[src.Offset]);
 			Assert.Equal (FillFunction (thirdPartPos + 1), src.BufferMemory.Span[src.Offset + 1]);
 			Assert.Equal (FillFunction (thirdPartPos + 2), src.BufferMemory.Span[src.Offset + 2]);
@@ -41,11 +41,11 @@ namespace Novartment.Base.Test
 			// части в конце источника
 			long size = 0x4000000000000000L;
 			subSrc = new BigBufferedSourceMock (size, srcBufSize, FillFunction);
-			subSrc.TryFastSkipAsync (0x3fffffffffffffc0L, CancellationToken.None).Wait (); // отступаем так чтобы осталось две части с хвостиком
+			subSrc.TryFastSkipAsync (0x3fffffffffffffc0L).Wait (); // отступаем так чтобы осталось две части с хвостиком
 			src = new OneHundredEvaluatorBufferedSource (subSrc);
-			Assert.True (src.TrySkipPartAsync (CancellationToken.None).Result);
-			Assert.True (src.TrySkipPartAsync (CancellationToken.None).Result);
-			Assert.False (src.TrySkipPartAsync (CancellationToken.None).Result);
+			Assert.True (src.TrySkipPartAsync ().Result);
+			Assert.True (src.TrySkipPartAsync ().Result);
+			Assert.False (src.TrySkipPartAsync ().Result);
 		}
 
 		private static byte FillFunction (long position)

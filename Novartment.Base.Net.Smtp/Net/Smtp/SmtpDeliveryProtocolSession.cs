@@ -70,7 +70,7 @@ namespace Novartment.Base.Net.Smtp
 				// посылка прощального ответа необязательна, поэтому игнорируем исключения если связи уже нет
 				try
 				{
-					_transport.SendReplyAsync (SmtpReply.ServiceNotAvailable, false, CancellationToken.None).GetAwaiter ().GetResult ();
+					_transport.SendReplyAsync (SmtpReply.ServiceNotAvailable, false, default).GetAwaiter ().GetResult ();
 				}
 				catch (IOException)
 				{
@@ -96,7 +96,7 @@ namespace Novartment.Base.Net.Smtp
 			return _transport.SendReplyAsync (reply, false, cancellationToken);
 		}
 
-		internal async Task<bool> ReceiveCommandSendReplyAsync (CancellationToken cancellationToken)
+		internal async Task<bool> ReceiveCommandSendReplyAsync (CancellationToken cancellationToken = default)
 		{
 			var command = await _transport.ReceiveCommandAsync (_expectedInput, cancellationToken).ConfigureAwait (false);
 
@@ -537,7 +537,7 @@ namespace Novartment.Base.Net.Smtp
 					.SkipToEndAsync (cancellationToken) // пропускаем все данные (предотвратить их передачу невозможно)
 					.ContinueWith<SmtpReplyWithGroupingMark> (
 						notUsed => { throw new BadSequenceOfSmtpCommandsException (); },
-						CancellationToken.None,
+						default,
 						TaskContinuationOptions.DenyChildAttach | TaskContinuationOptions.ExecuteSynchronously,
 						TaskScheduler.Default);
 			}
@@ -550,7 +550,7 @@ namespace Novartment.Base.Net.Smtp
 					.SkipToEndAsync (cancellationToken) // пропускаем все данные (предотвратить их передачу невозможно)
 					.ContinueWith<SmtpReplyWithGroupingMark> (
 						notUsed => { throw new NoValidRecipientsException (); },
-						CancellationToken.None,
+						default,
 						TaskContinuationOptions.DenyChildAttach | TaskContinuationOptions.ExecuteSynchronously,
 						TaskScheduler.Default);
 			}
@@ -614,12 +614,12 @@ namespace Novartment.Base.Net.Smtp
 				var finalizer2 = new TwoTaskFinalizer (tcs, chunkCompletionTask);
 				var notUsed1 = chunkCompletionTask.ContinueWith (
 					finalizer1.TaskContinuation,
-					CancellationToken.None,
+					default,
 					TaskContinuationOptions.DenyChildAttach | TaskContinuationOptions.ExecuteSynchronously,
 					TaskScheduler.Default);
 				var notUsed2 = _chunkingDataTransferTask.ContinueWith (
 					finalizer2.TaskContinuation,
-					CancellationToken.None,
+					default,
 					TaskContinuationOptions.DenyChildAttach | TaskContinuationOptions.ExecuteSynchronously,
 					TaskScheduler.Default);
 				try

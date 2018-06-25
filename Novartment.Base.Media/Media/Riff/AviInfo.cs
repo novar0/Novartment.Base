@@ -76,7 +76,7 @@ namespace Novartment.Base.Media
 		public static Task<AviInfo> ParseAsync (
 			IBufferedSource source,
 #pragma warning disable CA1801 // Review unused parameters
-			CancellationToken cancellationToken)
+			CancellationToken cancellationToken = default)
 #pragma warning restore CA1801 // Review unused parameters
 		{
 			if (source == null)

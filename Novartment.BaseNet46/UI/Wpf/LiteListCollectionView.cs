@@ -204,7 +204,7 @@ namespace Novartment.Base.UI.Wpf
 					throw new InvalidOperationException ("Access to view denied while it needs refresh.");
 				}
 
-				var result = default (TItem);
+				TItem result = default;
 				if (this.AllowsCrossThreadChanges)
 				{
 					BindingOperations.AccessCollection (
@@ -309,7 +309,7 @@ namespace Novartment.Base.UI.Wpf
 				throw new InvalidOperationException ("Access to view denied while it needs refresh.");
 			}
 
-			var result = default (TItem);
+			TItem result = default;
 			if (this.AllowsCrossThreadChanges)
 			{
 				BindingOperations.AccessCollection (
@@ -400,7 +400,7 @@ namespace Novartment.Base.UI.Wpf
 			switch (args.Action)
 			{
 				case NotifyCollectionChangedAction.Reset:
-					_lastSearchedItem = default (TItem);
+					_lastSearchedItem = default;
 					_lastSearchedItemIndex = -1;
 					_source2view.Clear ();
 					_view2source.Clear ();
@@ -455,7 +455,7 @@ namespace Novartment.Base.UI.Wpf
 			// очищаем очередь задержанных уведомлений, потому что все изменения исходной коллекции будут учтены при пересоздании представления
 			ClearPendingChanges ();
 
-			_lastSearchedItem = default (TItem);
+			_lastSearchedItem = default;
 			_lastSearchedItemIndex = -1;
 
 			if (this.AllowsCrossThreadChanges)
@@ -852,14 +852,14 @@ namespace Novartment.Base.UI.Wpf
 			// если последний поиск был неудачным, то после замены тот же поиск может стать удачным, поэтому аннулируем последний поиск
 			if (_lastSearchedItemIndex < 0)
 			{
-				_lastSearchedItem = default (TItem);
+				_lastSearchedItem = default;
 			}
 			else
 			{
 				// если элемент заменяется в той позиции, которая была найдена в последнем поиске, то аннулируем последний поиск
 				if (viewIndex == _lastSearchedItemIndex)
 				{
-					_lastSearchedItem = default (TItem);
+					_lastSearchedItem = default;
 					_lastSearchedItemIndex = -1;
 				}
 			}
@@ -880,7 +880,7 @@ namespace Novartment.Base.UI.Wpf
 			// если последний поиск был неудачным, то после добавления тот же поиск может стать удачным, поэтому аннулируем последний поиск
 			if (_lastSearchedItemIndex < 0)
 			{
-				_lastSearchedItem = default (TItem);
+				_lastSearchedItem = default;
 			}
 			else
 			{
@@ -929,7 +929,7 @@ namespace Novartment.Base.UI.Wpf
 			// если элемент удаляется в той позиции, которая была найдена в последнем поиске, то аннулируем последний поиск
 			if (viewIndex == _lastSearchedItemIndex)
 			{
-				_lastSearchedItem = default (TItem);
+				_lastSearchedItem = default;
 				_lastSearchedItemIndex = -1;
 			}
 			else
@@ -966,7 +966,7 @@ namespace Novartment.Base.UI.Wpf
 					newPosition = _view2source.Count - 1;
 				}
 
-				SetCurrent ((newPosition >= 0) ? GetItemAt (newPosition) : default (TItem), newPosition);
+				SetCurrent ((newPosition >= 0) ? GetItemAt (newPosition) : default, newPosition);
 				OnCurrentChanged ();
 			}
 			else
@@ -1033,7 +1033,7 @@ namespace Novartment.Base.UI.Wpf
 			{
 				_source = source;
 				_index = -1;
-				_currentElement = default (TItem);
+				_currentElement = default;
 			}
 
 			/// <summary>
@@ -1078,7 +1078,7 @@ namespace Novartment.Base.UI.Wpf
 				if (_index == _source.Count)
 				{
 					_index = -2;
-					_currentElement = default (TItem);
+					_currentElement = default;
 					return false;
 				}
 
@@ -1092,7 +1092,7 @@ namespace Novartment.Base.UI.Wpf
 			public void Reset ()
 			{
 				_index = -1;
-				_currentElement = default (TItem);
+				_currentElement = default;
 			}
 
 			/// <summary>
@@ -1101,7 +1101,7 @@ namespace Novartment.Base.UI.Wpf
 			public void Dispose ()
 			{
 				_index = -2;
-				_currentElement = default (TItem);
+				_currentElement = default;
 			}
 		}
 	}

@@ -102,10 +102,7 @@ namespace Novartment.Base.Net.Mime.Test
 		{
 			var body = new CompositeEntityBody ("9B095B5ADSN=_01CD2A60C2F9F3000000298Ditc?serv01.chmk.");
 			var source = new ArrayBufferedSource (Encoding.ASCII.GetBytes (string.Join ("\r\n", _bodySample1)));
-			body.LoadAsync (
-				source,
-				parameters => new DataEntityBody (parameters.TransferEncoding),
-				CancellationToken.None).Wait ();
+			body.LoadAsync (source, parameters => new DataEntityBody (parameters.TransferEncoding)).Wait ();
 			Assert.Equal (4, body.Parts.Count);
 
 			Assert.Equal (ContentMediaType.Text, body.Parts[0].MediaType);
@@ -129,7 +126,7 @@ namespace Novartment.Base.Net.Mime.Test
 			var compositeEntityBody = new CompositeEntityBody ("NextPart=_2a1f80a0bc26469baafab5bbfb1dbdff");
 
 			var pkcs7Body = new DataEntityBody (ContentTransferEncoding.Base64);
-			pkcs7Body.SetDataAsync (new ArrayBufferedSource (new byte[] { 20, 21, 22 }), CancellationToken.None).Wait ();
+			pkcs7Body.SetDataAsync (new ArrayBufferedSource (new byte[] { 20, 21, 22 })).Wait ();
 			var pkcs7Entity = new Entity (pkcs7Body, ContentMediaType.Application, ApplicationMediaSubtypeNames.OctetStream);
 			compositeEntityBody.Parts.Add (pkcs7Entity);
 
@@ -159,12 +156,12 @@ namespace Novartment.Base.Net.Mime.Test
 			compositeEntityBody.Parts.Add (newEntity);
 
 			var singlePartBody = new DataEntityBody (ContentTransferEncoding.Base64);
-			singlePartBody.SetDataAsync (new ArrayBufferedSource (new byte[] { 65, 66, 67 }), CancellationToken.None).Wait ();
+			singlePartBody.SetDataAsync (new ArrayBufferedSource (new byte[] { 65, 66, 67 })).Wait ();
 			var singlePartEntity = new Entity (singlePartBody, ContentMediaType.Image, "png");
 			compositeEntityBody.Parts.Add (singlePartEntity);
 
 			var bytes = new BinaryDestinationMock (8192);
-			compositeEntityBody.SaveAsync (bytes, CancellationToken.None).Wait ();
+			compositeEntityBody.SaveAsync (bytes).Wait ();
 			var text = Encoding.UTF8.GetString (bytes.Buffer.Slice (0, bytes.Count));
 			var lines = text.Split (new string[] { "\r\n" }, StringSplitOptions.None);
 

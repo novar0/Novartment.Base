@@ -37,7 +37,7 @@ namespace Novartment.Base.Net.Smtp
 			{
 				try
 				{
-					_transport.SendCommandAsync (SmtpCommand.CachedCmdQuit, CancellationToken.None).Wait ();
+					_transport.SendCommandAsync (SmtpCommand.CachedCmdQuit, default).Wait ();
 				}
 				catch (ObjectDisposedException)
 				{
@@ -54,7 +54,7 @@ namespace Novartment.Base.Net.Smtp
 			}
 		}
 
-		internal async Task ReceiveGreetingAndStartAsync (CancellationToken cancellationToken)
+		internal async Task ReceiveGreetingAndStartAsync (CancellationToken cancellationToken = default)
 		{
 			// ждём приветствие сервера
 			var greeting = await ProcessCommandAsync (SmtpCommand.CachedCmdNoCommand, cancellationToken).ConfigureAwait (false);

@@ -29,6 +29,6 @@ namespace Novartment.Base.Net.Mime
 		Task LoadAsync (
 			IBufferedSource source,
 			Func<EssentialContentProperties, IEntityBody> subBodyFactory,
-			CancellationToken cancellationToken);
+			CancellationToken cancellationToken = default);
 	}
 }

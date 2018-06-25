@@ -17,7 +17,7 @@ namespace Novartment.Base
 		/// <param name="startInfo">Параметры запуска процесса.</param>
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
 		/// <returns>Задача, состояние которой отражает состояние запущенного процесса.</returns>
-		public static Task StartProcessAsync (this ProcessStartInfo startInfo, CancellationToken cancellationToken)
+		public static Task StartProcessAsync (this ProcessStartInfo startInfo, CancellationToken cancellationToken = default)
 		{
 			if (startInfo == null)
 			{
@@ -46,7 +46,7 @@ namespace Novartment.Base
 		/// <param name="completionMutexName">Имя мьютекса, создание которого запущенным процессом будет означать успешное завершение задачи.</param>
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
 		/// <returns>Задача, представляющаю собой запущенный процесс.</returns>
-		public static Task StartProcessAsync (this ProcessStartInfo startInfo, string completionMutexName, CancellationToken cancellationToken)
+		public static Task StartProcessAsync (this ProcessStartInfo startInfo, string completionMutexName, CancellationToken cancellationToken = default)
 		{
 			if (startInfo == null)
 			{

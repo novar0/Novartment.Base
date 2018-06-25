@@ -53,7 +53,7 @@ namespace Novartment.Base.Media
 		/// <param name="source">Буфер данных содержащий RIFF-порцию.</param>
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
 		/// <returns>RIFF-порция, считанный из указанного буфера.</returns>
-		public static Task<RiffChunk> ParseAsync (IBufferedSource source, CancellationToken cancellationToken)
+		public static Task<RiffChunk> ParseAsync (IBufferedSource source, CancellationToken cancellationToken = default)
 		{
 			if (source == null)
 			{

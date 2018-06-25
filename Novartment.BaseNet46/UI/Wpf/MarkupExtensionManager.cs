@@ -92,7 +92,7 @@ namespace Novartment.Base.UI.Wpf
 				_cleanupCount = 0;
 			}
 
-			var spinWait = default (SpinWait);
+			SpinWait spinWait = default;
 			while (true)
 			{
 				var state1 = _extensions;

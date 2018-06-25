@@ -103,7 +103,7 @@ namespace Novartment.Base.BinaryStreaming
 		/// Источник будет предоставлять данные, идущие сразу за пропущенными.
 		/// </returns>
 		/// <exception cref="System.ArgumentOutOfRangeException">Происходит если size меньше нуля.</exception>
-		public Task<long> TryFastSkipAsync (long size, CancellationToken cancellationToken)
+		public Task<long> TryFastSkipAsync (long size, CancellationToken cancellationToken = default)
 		{
 			if (size < 0L)
 			{
@@ -138,7 +138,7 @@ namespace Novartment.Base.BinaryStreaming
 		/// <returns>Задача, представляющая операцию.
 		/// Если после завершения в Count будет ноль,
 		/// то источник исчерпан и доступных данных в буфере больше не будет.</returns>
-		public Task FillBufferAsync (CancellationToken cancellationToken)
+		public Task FillBufferAsync (CancellationToken cancellationToken = default)
 		{
 			if (_countRemainder <= 0)
 			{
@@ -171,7 +171,7 @@ namespace Novartment.Base.BinaryStreaming
 		/// <param name="size">Требуемый размер данных в буфере.</param>
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
 		/// <returns>Задача, представляющая операцию.</returns>
-		public Task EnsureBufferAsync (int size, CancellationToken cancellationToken)
+		public Task EnsureBufferAsync (int size, CancellationToken cancellationToken = default)
 		{
 			if ((size < 0) || (size > this.BufferMemory.Length))
 			{

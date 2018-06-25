@@ -92,7 +92,7 @@ namespace Novartment.Base
 		/// <param name="process">Созданный, но не запущенный процесс.</param>
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
 		/// <returns>Задача, состояние которой отражает состояние запущенного процесса.</returns>
-		public static Task StartAsync (this Process process, CancellationToken cancellationToken)
+		public static Task StartAsync (this Process process, CancellationToken cancellationToken = default)
 		{
 			if (process == null)
 			{
@@ -119,7 +119,7 @@ namespace Novartment.Base
 		/// <param name="completionMutexName">Имя мьютекса, создание которого запущенным процессом будет означать успешное завершение задачи.</param>
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
 		/// <returns>Задача, состояние которой отражает состояние запущенного процесса.</returns>
-		public static Task StartAsync (this Process process, string completionMutexName, CancellationToken cancellationToken)
+		public static Task StartAsync (this Process process, string completionMutexName, CancellationToken cancellationToken = default)
 		{
 			if (process == null)
 			{
@@ -148,7 +148,7 @@ namespace Novartment.Base
 			private readonly string _mutexName;
 			private readonly Process _process;
 
-			internal ProcessTaskCompletionSourceWrapper (Process process, CancellationToken cancellationToken)
+			internal ProcessTaskCompletionSourceWrapper (Process process, CancellationToken cancellationToken = default)
 				: this (process, null, cancellationToken)
 			{
 			}

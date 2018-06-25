@@ -56,7 +56,7 @@ namespace Novartment.Base.Net.Smtp
 			_logger?.LogTrace ("Data transfer transaction disposed.");
 		}
 
-		public Task StartAsync (AddrSpec returnPath, CancellationToken cancellationToken)
+		public Task StartAsync (AddrSpec returnPath, CancellationToken cancellationToken = default)
 		{
 			if (_status != TransactionStatus.NotStarted)
 			{
@@ -83,7 +83,7 @@ namespace Novartment.Base.Net.Smtp
 			}
 		}
 
-		public Task<RecipientAcceptanceState> TryAddRecipientAsync (AddrSpec recipient, CancellationToken cancellationToken)
+		public Task<RecipientAcceptanceState> TryAddRecipientAsync (AddrSpec recipient, CancellationToken cancellationToken = default)
 		{
 			if (recipient == null)
 			{
@@ -129,7 +129,7 @@ namespace Novartment.Base.Net.Smtp
 			}
 		}
 
-		public Task TransferDataAndFinishAsync (IBufferedSource data, long exactSize, CancellationToken cancellationToken)
+		public Task TransferDataAndFinishAsync (IBufferedSource data, long exactSize, CancellationToken cancellationToken = default)
 		{
 			if (data == null)
 			{
