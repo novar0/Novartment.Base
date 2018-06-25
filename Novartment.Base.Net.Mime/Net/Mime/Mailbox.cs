@@ -120,7 +120,7 @@ namespace Novartment.Base.Net.Mime
 			*/
 
 			var parserPos = 0;
-			var element1 = StructuredValueParser.GetNextElementDotAtom (source, ref parserPos);
+			var element1 = StructuredHeaderFieldLexicalToken.ParseDotAtom (source, ref parserPos);
 
 			if (!element1.IsValid)
 			{
@@ -128,26 +128,26 @@ namespace Novartment.Base.Net.Mime
 			}
 
 			// один элемент
-			var element2 = StructuredValueParser.GetNextElementDotAtom (source, ref parserPos);
+			var element2 = StructuredHeaderFieldLexicalToken.ParseDotAtom (source, ref parserPos);
 			if (element1.IsValid && !element2.IsValid)
 			{
-				if ((element1.ElementType == StructuredValueElementType.AngleBracketedValue) || // angle-addr
-					(element1.ElementType == StructuredValueElementType.QuotedValue))
+				if ((element1.TokenType == StructuredHeaderFieldLexicalTokenType.AngleBracketedValue) || // angle-addr
+					(element1.TokenType == StructuredHeaderFieldLexicalTokenType.QuotedValue))
 				{
 					// non-standard form of addr-spec: "addrs@server.com"
-					return new Mailbox (AddrSpec.Parse (source.Slice (element1.StartPosition, element1.Length)), null);
+					return new Mailbox (AddrSpec.Parse (source.Slice (element1.Position, element1.Length)), null);
 				}
 
 				throw new FormatException ("Value does not conform to format 'mailbox'.");
 			}
 
 			// три элемента
-			var element3 = StructuredValueParser.GetNextElementDotAtom (source, ref parserPos);
-			var element4 = StructuredValueParser.GetNextElementDotAtom (source, ref parserPos);
+			var element3 = StructuredHeaderFieldLexicalToken.ParseDotAtom (source, ref parserPos);
+			var element4 = StructuredHeaderFieldLexicalToken.ParseDotAtom (source, ref parserPos);
 			if (!element4.IsValid &&
-				((element1.ElementType == StructuredValueElementType.Value) || (element1.ElementType == StructuredValueElementType.QuotedValue)) &&
-				(element2.ElementType == StructuredValueElementType.Separator) && (element2.Length == 1) && (source[element2.StartPosition] == '@') &&
-				((element3.ElementType == StructuredValueElementType.Value) || (element3.ElementType == StructuredValueElementType.SquareBracketedValue)))
+				((element1.TokenType == StructuredHeaderFieldLexicalTokenType.Value) || (element1.TokenType == StructuredHeaderFieldLexicalTokenType.QuotedValue)) &&
+				(element2.TokenType == StructuredHeaderFieldLexicalTokenType.Separator) && (source[element2.Position] == '@') &&
+				((element3.TokenType == StructuredHeaderFieldLexicalTokenType.Value) || (element3.TokenType == StructuredHeaderFieldLexicalTokenType.SquareBracketedValue)))
 			{
 				// addr-spec
 				var localPart = element1.Decode (source);
@@ -158,12 +158,12 @@ namespace Novartment.Base.Net.Mime
 
 			// более трёх элементов
 			parserPos = 0; // сбрасываем декодирование на начало
-			var decoder = new StructuredValuePhraseDecoder ();
+			var decoder = new StructuredHeaderFieldDecoder ();
 			bool isEmpty = true;
-			var lastElement = StructuredValueElement.Invalid;
+			StructuredHeaderFieldLexicalToken lastElement = default;
 			while (true)
 			{
-				var element = StructuredValueParser.GetNextElementDotAtom (source, ref parserPos);
+				var element = StructuredHeaderFieldLexicalToken.ParseDotAtom (source, ref parserPos);
 				if (!element.IsValid)
 				{
 					if (isEmpty)
@@ -184,14 +184,14 @@ namespace Novartment.Base.Net.Mime
 				lastElement = element;
 			}
 
-			if (lastElement.ElementType != StructuredValueElementType.AngleBracketedValue)
+			if (lastElement.TokenType != StructuredHeaderFieldLexicalTokenType.AngleBracketedValue)
 			{
 				throw new FormatException ("Value does not conform to format 'mailbox'.");
 			}
 
 			// [display-name] angle-addr
 			var displayName = decoder.GetResult ();
-			var addr2 = AddrSpec.Parse (source.Slice (lastElement.StartPosition, lastElement.Length));
+			var addr2 = AddrSpec.Parse (source.Slice (lastElement.Position, lastElement.Length));
 			return new Mailbox (addr2, displayName);
 		}
 

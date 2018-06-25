@@ -84,14 +84,14 @@ namespace Novartment.Base.Net.Mime
 		{
 			// удаление комментариев и пробельного пространства
 			var pos = 0;
-			var element1 = StructuredValueParser.GetNextElementToken (source, ref pos);
-			var element2 = StructuredValueParser.GetNextElementToken (source, ref pos);
-			if (element2.IsValid || (element1.ElementType != StructuredValueElementType.Value))
+			var element1 = StructuredHeaderFieldLexicalToken.ParseToken (source, ref pos);
+			var element2 = StructuredHeaderFieldLexicalToken.ParseToken (source, ref pos);
+			if (element2.IsValid || (element1.TokenType != StructuredHeaderFieldLexicalTokenType.Value))
 			{
 				throw new FormatException ("Invalid value for type 'atom'.");
 			}
 
-			return source.Slice (element1.StartPosition, element1.Length);
+			return source.Slice (element1.Position, element1.Length);
 		}
 
 		/// <summary>
@@ -209,11 +209,11 @@ namespace Novartment.Base.Net.Mime
 		internal static string DecodePhrase (ReadOnlySpan<char> source)
 		{
 			var parserPos = 0;
-			var decoder = new StructuredValuePhraseDecoder ();
+			var decoder = new StructuredHeaderFieldDecoder ();
 			var isEmpty = true;
 			while (true)
 			{
-				var element = StructuredValueParser.GetNextElementDotAtom (source, ref parserPos);
+				var element = StructuredHeaderFieldLexicalToken.ParseDotAtom (source, ref parserPos);
 				if (!element.IsValid)
 				{
 					if (isEmpty)
@@ -243,13 +243,13 @@ namespace Novartment.Base.Net.Mime
 			var lastItemIsSeparator = true;
 			while (true)
 			{
-				var item = StructuredValueParser.GetNextElementToken (source, ref parserPos);
+				var item = StructuredHeaderFieldLexicalToken.ParseToken (source, ref parserPos);
 				if (!item.IsValid)
 				{
 					break;
 				}
 
-				var isSeparator = (item.ElementType == StructuredValueElementType.Separator) && (item.Length == 1) && (source[item.StartPosition] == ',');
+				var isSeparator = (item.TokenType == StructuredHeaderFieldLexicalTokenType.Separator) && (source[item.Position] == ',');
 				if (isSeparator)
 				{
 					if (lastItemIsSeparator)
@@ -261,7 +261,7 @@ namespace Novartment.Base.Net.Mime
 				}
 				else
 				{
-					if (!lastItemIsSeparator || (item.ElementType != StructuredValueElementType.Value))
+					if (!lastItemIsSeparator || (item.TokenType != StructuredHeaderFieldLexicalTokenType.Value))
 					{
 						throw new FormatException ("Value does not conform to format 'comma-separated atoms'.");
 					}
@@ -269,9 +269,9 @@ namespace Novartment.Base.Net.Mime
 					lastItemIsSeparator = false;
 
 #if NETCOREAPP2_1
-					var str = new string (source.Slice (item.StartPosition, item.Length));
+					var str = new string (source.Slice (item.Position, item.Length));
 #else
-					var str = new string (source.Slice (item.StartPosition, item.Length).ToArray ());
+					var str = new string (source.Slice (item.Position, item.Length).ToArray ());
 #endif
 					result.Add (str);
 				}
@@ -293,7 +293,7 @@ namespace Novartment.Base.Net.Mime
 			}
 
 			var parserPos = 0;
-			var typeElement = StructuredValueParser.GetNextElementAtom (source, ref parserPos);
+			var typeElement = StructuredHeaderFieldLexicalToken.ParseAtom (source, ref parserPos);
 			if (!typeElement.IsValid)
 			{
 				throw new FormatException ("Value does not conform to format 'type;value'.");
@@ -312,13 +312,13 @@ namespace Novartment.Base.Net.Mime
 				throw new FormatException ("Value does not conform to format 'type;value'.");
 			}
 
-			var separatorElement = StructuredValueParser.GetNextElementAtom (source, ref parserPos);
-			if ((separatorElement.ElementType != StructuredValueElementType.Separator) || (separatorElement.Length != 1) || (source[separatorElement.StartPosition] != ';'))
+			var separatorElement = StructuredHeaderFieldLexicalToken.ParseAtom (source, ref parserPos);
+			if ((separatorElement.TokenType != StructuredHeaderFieldLexicalTokenType.Separator) || (source[separatorElement.Position] != ';'))
 			{
 				throw new FormatException ("Value does not conform to format 'type;value'.");
 			}
 
-			var value = source.Slice (separatorElement.StartPosition + separatorElement.Length);
+			var value = source.Slice (separatorElement.Position + separatorElement.Length);
 			var valueStr = DecodeUnstructured (value).Trim ();
 
 			return new NotificationFieldValue (valueType, valueStr);
@@ -378,12 +378,12 @@ namespace Novartment.Base.Net.Mime
 		internal static TwoStrings DecodePhraseAndId (ReadOnlySpan<char> source)
 		{
 			var parserPos = 0;
-			StructuredValuePhraseDecoder decoder = null;
+			StructuredHeaderFieldDecoder decoder = null;
 			bool isEmpty = true;
-			var lastElement = StructuredValueElement.Invalid;
+			StructuredHeaderFieldLexicalToken lastElement = default;
 			while (true)
 			{
-				var element = StructuredValueParser.GetNextElementDotAtom (source, ref parserPos);
+				var element = StructuredHeaderFieldLexicalToken.ParseDotAtom (source, ref parserPos);
 				if (!element.IsValid)
 				{
 					if (isEmpty)
@@ -400,7 +400,7 @@ namespace Novartment.Base.Net.Mime
 				{
 					if (decoder == null)
 					{
-						decoder = new StructuredValuePhraseDecoder ();
+						decoder = new StructuredHeaderFieldDecoder ();
 					}
 
 					decoder.AddElement (source, lastElement);
@@ -409,16 +409,16 @@ namespace Novartment.Base.Net.Mime
 				lastElement = element;
 			}
 
-			if (lastElement.ElementType != StructuredValueElementType.AngleBracketedValue)
+			if (lastElement.TokenType != StructuredHeaderFieldLexicalTokenType.AngleBracketedValue)
 			{
 				throw new FormatException ("Value does not conform format 'phrase' + <id>.");
 			}
 
 			string text = decoder?.GetResult ();
 #if NETCOREAPP2_1
-			var id = new string (source.Slice (lastElement.StartPosition, lastElement.Length));
+			var id = new string (source.Slice (lastElement.Position, lastElement.Length));
 #else
-			var id = new string (source.Slice (lastElement.StartPosition, lastElement.Length).ToArray ());
+			var id = new string (source.Slice (lastElement.Position, lastElement.Length).ToArray ());
 #endif
 			return new TwoStrings () { Value1 = text, Value2 = id };
 		}
@@ -431,18 +431,18 @@ namespace Novartment.Base.Net.Mime
 		internal static IReadOnlyList<string> DecodePhraseList (ReadOnlySpan<char> source)
 		{
 			var parserPos = 0;
-			StructuredValuePhraseDecoder decoder = null;
+			StructuredHeaderFieldDecoder decoder = null;
 			bool isDecoderEmpty = true;
 			var result = new ArrayList<string> ();
 			while (true)
 			{
-				var item = StructuredValueParser.GetNextElementAtom (source, ref parserPos);
+				var item = StructuredHeaderFieldLexicalToken.ParseAtom (source, ref parserPos);
 				if (!item.IsValid)
 				{
 					break;
 				}
 
-				var isSeparator = (item.ElementType == StructuredValueElementType.Separator) && (item.Length == 1) && (source[item.StartPosition] == ',');
+				var isSeparator = (item.TokenType == StructuredHeaderFieldLexicalTokenType.Separator) && (source[item.Position] == ',');
 				if (isSeparator)
 				{
 					if (!isDecoderEmpty)
@@ -455,7 +455,7 @@ namespace Novartment.Base.Net.Mime
 				{
 					if (isDecoderEmpty)
 					{
-						decoder = new StructuredValuePhraseDecoder ();
+						decoder = new StructuredHeaderFieldDecoder ();
 					}
 
 					decoder.AddElement (source, item);
@@ -481,8 +481,8 @@ namespace Novartment.Base.Net.Mime
 		{
 			// non-compilant server may specify single address without angle brackets
 			var pos = 0;
-			var firstElement = StructuredValueParser.GetNextElementDotAtom (source, ref pos);
-			if (firstElement.IsValid && (firstElement.ElementType != StructuredValueElementType.AngleBracketedValue))
+			var firstElement = StructuredHeaderFieldLexicalToken.ParseDotAtom (source, ref pos);
+			if (firstElement.IsValid && (firstElement.TokenType != StructuredHeaderFieldLexicalTokenType.AngleBracketedValue))
 			{
 				var addr = AddrSpec.Parse (source);
 				return ReadOnlyList.Repeat (addr, 1);
@@ -492,31 +492,31 @@ namespace Novartment.Base.Net.Mime
 			var result = new ArrayList<AddrSpec> ();
 			while (true)
 			{
-				var token = StructuredValueParser.GetNextElementDotAtom (source, ref parserPos);
+				var token = StructuredHeaderFieldLexicalToken.ParseDotAtom (source, ref parserPos);
 				if (!token.IsValid)
 				{
 					break;
 				}
 
-				if (token.ElementType != StructuredValueElementType.AngleBracketedValue)
+				if (token.TokenType != StructuredHeaderFieldLexicalTokenType.AngleBracketedValue)
 				{
 					throw new FormatException ("Value does not conform to list of 'angle-addr' format.");
 				}
 
-				var subSource = source.Slice (token.StartPosition, token.Length);
+				var subSource = source.Slice (token.Position, token.Length);
 				if (enableEmptyAddrSpec)
 				{
 					var isComment = true;
 					var subParserPos = 0;
 					while (true)
 					{
-						var subToken = StructuredValueParser.GetNextElementDotAtom (subSource, ref subParserPos);
+						var subToken = StructuredHeaderFieldLexicalToken.ParseDotAtom (subSource, ref subParserPos);
 						if (!subToken.IsValid)
 						{
 							break;
 						}
 
-						if (subToken.ElementType != StructuredValueElementType.RoundBracketedValue)
+						if (subToken.TokenType != StructuredHeaderFieldLexicalTokenType.RoundBracketedValue)
 						{
 							isComment = false;
 							break;
@@ -550,13 +550,13 @@ namespace Novartment.Base.Net.Mime
 			while (true)
 			{
 				var pos = parserPos;
-				var item = StructuredValueParser.GetNextElementDotAtom (source, ref parserPos);
+				var item = StructuredHeaderFieldLexicalToken.ParseDotAtom (source, ref parserPos);
 				if (!item.IsValid)
 				{
 					break;
 				}
 
-				var isSeparator = (item.ElementType == StructuredValueElementType.Separator) && (item.Length == 1) && (source[item.StartPosition] == ',');
+				var isSeparator = (item.TokenType == StructuredHeaderFieldLexicalTokenType.Separator) && (source[item.Position] == ',');
 				if (isSeparator)
 				{
 					if (elementsEndPosition > elementsStartPosition)
@@ -609,13 +609,13 @@ namespace Novartment.Base.Net.Mime
 			var lastItemIsSeparator = true;
 			while (true)
 			{
-				var item = StructuredValueParser.GetNextElementAtom (source, ref parserPos);
+				var item = StructuredHeaderFieldLexicalToken.ParseAtom (source, ref parserPos);
 				if (!item.IsValid)
 				{
 					break;
 				}
 
-				var isSeparator = (item.ElementType == StructuredValueElementType.Separator) && (item.Length == 1) && (source[item.StartPosition] == ',');
+				var isSeparator = (item.TokenType == StructuredHeaderFieldLexicalTokenType.Separator) && (source[item.Position] == ',');
 				if (isSeparator)
 				{
 					if (lastItemIsSeparator)
@@ -627,7 +627,7 @@ namespace Novartment.Base.Net.Mime
 				}
 				else
 				{
-					if (!lastItemIsSeparator || (item.ElementType != StructuredValueElementType.AngleBracketedValue))
+					if (!lastItemIsSeparator || (item.TokenType != StructuredHeaderFieldLexicalTokenType.AngleBracketedValue))
 					{
 						break;
 					}
@@ -635,9 +635,9 @@ namespace Novartment.Base.Net.Mime
 					lastItemIsSeparator = false;
 
 #if NETCOREAPP2_1
-					var str = new string (source.Slice (item.StartPosition, item.Length));
+					var str = new string (source.Slice (item.Position, item.Length));
 #else
-					var str = new string (source.Slice (item.StartPosition, item.Length).ToArray ());
+					var str = new string (source.Slice (item.Position, item.Length).ToArray ());
 #endif
 					result.Add (str);
 				}
@@ -655,18 +655,18 @@ namespace Novartment.Base.Net.Mime
 		{
 			// Content-Type and Content-Disposition fields
 			var parserPos = 0;
-			var valueElement = StructuredValueParser.GetNextElementAtom (source, ref parserPos);
+			var valueElement = StructuredHeaderFieldLexicalToken.ParseAtom (source, ref parserPos);
 
 			var parameterDecoder = new HeaderFieldParameterDecoder ();
 			while (true)
 			{
-				var item = StructuredValueParser.GetNextElementToken (source, ref parserPos);
+				var item = StructuredHeaderFieldLexicalToken.ParseToken (source, ref parserPos);
 				if (!item.IsValid)
 				{
 					break;
 				}
 
-				var isSeparator = (item.ElementType == StructuredValueElementType.Separator) && (item.Length == 1) && (source[item.StartPosition] == ';');
+				var isSeparator = (item.TokenType == StructuredHeaderFieldLexicalTokenType.Separator) && (item.Length == 1) && (source[item.Position] == ';');
 				if (!isSeparator)
 				{
 					throw new FormatException ("Value does not conform to 'atom *(; parameter)' format.");
@@ -677,24 +677,24 @@ namespace Novartment.Base.Net.Mime
 				parameterDecoder.AddPart (part);
 			}
 
-			return new StringAndParameters (source.Slice (valueElement.StartPosition, valueElement.Length), parameterDecoder.GetResult ());
+			return new StringAndParameters (source.Slice (valueElement.Position, valueElement.Length), parameterDecoder.GetResult ());
 		}
 
 		internal static ThreeStringsAndList DecodeDispositionAction (ReadOnlySpan<char> source)
 		{
 			var parserPos = 0;
-			var element1 = StructuredValueParser.GetNextElementToken (source, ref parserPos);
-			var element2 = StructuredValueParser.GetNextElementToken (source, ref parserPos);
-			var element3 = StructuredValueParser.GetNextElementToken (source, ref parserPos);
-			var element4 = StructuredValueParser.GetNextElementToken (source, ref parserPos);
-			var element5 = StructuredValueParser.GetNextElementToken (source, ref parserPos);
-			var element6 = StructuredValueParser.GetNextElementToken (source, ref parserPos);
+			var element1 = StructuredHeaderFieldLexicalToken.ParseToken (source, ref parserPos);
+			var element2 = StructuredHeaderFieldLexicalToken.ParseToken (source, ref parserPos);
+			var element3 = StructuredHeaderFieldLexicalToken.ParseToken (source, ref parserPos);
+			var element4 = StructuredHeaderFieldLexicalToken.ParseToken (source, ref parserPos);
+			var element5 = StructuredHeaderFieldLexicalToken.ParseToken (source, ref parserPos);
+			var element6 = StructuredHeaderFieldLexicalToken.ParseToken (source, ref parserPos);
 			if (
-				(element1.ElementType != StructuredValueElementType.Value) ||
-				(element2.ElementType != StructuredValueElementType.Separator) || (element2.Length != 1) || (source[element2.StartPosition] != '/') ||
-				(element3.ElementType != StructuredValueElementType.Value) ||
-				(element4.ElementType != StructuredValueElementType.Separator) || (element4.Length != 1) || (source[element4.StartPosition] != ';') ||
-				(element5.ElementType != StructuredValueElementType.Value))
+				(element1.TokenType != StructuredHeaderFieldLexicalTokenType.Value) ||
+				(element2.TokenType != StructuredHeaderFieldLexicalTokenType.Separator) || (source[element2.Position] != '/') ||
+				(element3.TokenType != StructuredHeaderFieldLexicalTokenType.Value) ||
+				(element4.TokenType != StructuredHeaderFieldLexicalTokenType.Separator) || (source[element4.Position] != ';') ||
+				(element5.TokenType != StructuredHeaderFieldLexicalTokenType.Value))
 			{
 				throw new FormatException ("Specified value does not represent valid 'disposition-action'.");
 			}
@@ -704,7 +704,7 @@ namespace Novartment.Base.Net.Mime
 			var dispositionType = element5.Decode (source);
 			if (element6.IsValid)
 			{
-				var isSlashSeparator = (element6.ElementType == StructuredValueElementType.Separator) && (element6.Length == 1) && (source[element6.StartPosition] == '/');
+				var isSlashSeparator = (element6.TokenType == StructuredHeaderFieldLexicalTokenType.Separator) && (source[element6.Position] == '/');
 				if (!isSlashSeparator)
 				{
 					throw new FormatException ("Specified value does not represent valid 'disposition-action'.");
@@ -715,13 +715,13 @@ namespace Novartment.Base.Net.Mime
 			var modifiers = new ArrayList<string> ();
 			while (true)
 			{
-				var item = StructuredValueParser.GetNextElementToken (source, ref parserPos);
+				var item = StructuredHeaderFieldLexicalToken.ParseToken (source, ref parserPos);
 				if (!item.IsValid)
 				{
 					break;
 				}
 
-				var isSeparator = (item.ElementType == StructuredValueElementType.Separator) && (item.Length == 1) && (source[item.StartPosition] == ',');
+				var isSeparator = (item.TokenType == StructuredHeaderFieldLexicalTokenType.Separator) && (source[item.Position] == ',');
 				if (isSeparator)
 				{
 					if (lastItemIsSeparator)
@@ -733,7 +733,7 @@ namespace Novartment.Base.Net.Mime
 				}
 				else
 				{
-					if (!lastItemIsSeparator || (item.ElementType != StructuredValueElementType.Value))
+					if (!lastItemIsSeparator || (item.TokenType != StructuredHeaderFieldLexicalTokenType.Value))
 					{
 						throw new FormatException ("Value does not conform to format 'comma-separated atoms'.");
 					}
@@ -773,31 +773,31 @@ namespace Novartment.Base.Net.Mime
 
 			while (true)
 			{
-				var attributeElement = StructuredValueParser.GetNextElementToken (source, ref parserPos);
+				var attributeElement = StructuredHeaderFieldLexicalToken.ParseToken (source, ref parserPos);
 				if (!attributeElement.IsValid)
 				{
 					break;
 				}
 
-				var equalityElement = StructuredValueParser.GetNextElementToken (source, ref parserPos);
-				var importanceElement = StructuredValueParser.GetNextElementToken (source, ref parserPos);
+				var equalityElement = StructuredHeaderFieldLexicalToken.ParseToken (source, ref parserPos);
+				var importanceElement = StructuredHeaderFieldLexicalToken.ParseToken (source, ref parserPos);
 
 				if (
-					(attributeElement.ElementType != StructuredValueElementType.Value) ||
-					(equalityElement.ElementType != StructuredValueElementType.Separator) || (equalityElement.Length != 1) || (source[equalityElement.StartPosition] != '=') ||
-					(importanceElement.ElementType != StructuredValueElementType.Value))
+					(attributeElement.TokenType != StructuredHeaderFieldLexicalTokenType.Value) ||
+					(equalityElement.TokenType != StructuredHeaderFieldLexicalTokenType.Separator) || (source[equalityElement.Position] != '=') ||
+					(importanceElement.TokenType != StructuredHeaderFieldLexicalTokenType.Value))
 				{
 					throw new FormatException ("Invalid value of 'disposition-notification' parameter.");
 				}
 
 #if NETCOREAPP2_1
-				var name = new string (source.Slice (attributeElement.StartPosition, attributeElement.Length));
+				var name = new string (source.Slice (attributeElement.Position, attributeElement.Length));
 #else
-				var name = new string (source.Slice (attributeElement.StartPosition, attributeElement.Length).ToArray ());
+				var name = new string (source.Slice (attributeElement.Position, attributeElement.Length).ToArray ());
 #endif
 
 				var importance = DispositionNotificationParameterImportance.Unspecified;
-				var isValidParameterImportance = ParameterImportanceHelper.TryParse (source.Slice (importanceElement.StartPosition, importanceElement.Length), out importance);
+				var isValidParameterImportance = ParameterImportanceHelper.TryParse (source.Slice (importanceElement.Position, importanceElement.Length), out importance);
 				if (!isValidParameterImportance)
 				{
 					throw new FormatException ("Invalid value of 'disposition-notification' parameter.");
@@ -807,23 +807,23 @@ namespace Novartment.Base.Net.Mime
 				var values = new ArrayList<string> ();
 				while (true)
 				{
-					var separatorElement = StructuredValueParser.GetNextElementToken (source, ref parserPos);
+					var separatorElement = StructuredHeaderFieldLexicalToken.ParseToken (source, ref parserPos);
 
 					// точка-с-запятой означает начало нового параметра если она после элемента значения
 					if (!separatorElement.IsValid ||
-						((values.Count > 0) && (separatorElement.ElementType == StructuredValueElementType.Separator) && (separatorElement.Length == 1) && (source[separatorElement.StartPosition] == ';')))
+						((values.Count > 0) && (separatorElement.TokenType == StructuredHeaderFieldLexicalTokenType.Separator) && (source[separatorElement.Position] == ';')))
 					{
 						break;
 					}
 
-					if ((separatorElement.ElementType != StructuredValueElementType.Separator) || (separatorElement.Length != 1) || (source[separatorElement.StartPosition] != ','))
+					if ((separatorElement.TokenType != StructuredHeaderFieldLexicalTokenType.Separator) || (source[separatorElement.Position] != ','))
 					{
 						throw new FormatException ("Invalid value of 'disposition-notification' parameter.");
 					}
 
-					var valueElement = StructuredValueParser.GetNextElementToken (source, ref parserPos);
+					var valueElement = StructuredHeaderFieldLexicalToken.ParseToken (source, ref parserPos);
 
-					if ((valueElement.ElementType != StructuredValueElementType.Value) && (valueElement.ElementType != StructuredValueElementType.QuotedValue))
+					if ((valueElement.TokenType != StructuredHeaderFieldLexicalTokenType.Value) && (valueElement.TokenType != StructuredHeaderFieldLexicalTokenType.QuotedValue))
 					{
 						throw new FormatException ("Invalid value of 'disposition-notification' parameter.");
 					}
@@ -858,13 +858,13 @@ namespace Novartment.Base.Net.Mime
 				result.Add (DecodeQualityValueParameter (source, defaultQuality, ref parserPos));
 				defaultQuality -= 0.01m;
 
-				var separatorElement = StructuredValueParser.GetNextElementToken (source, ref parserPos);
+				var separatorElement = StructuredHeaderFieldLexicalToken.ParseToken (source, ref parserPos);
 				if (!separatorElement.IsValid)
 				{
 					break;
 				}
 
-				if ((separatorElement.ElementType != StructuredValueElementType.Separator) || (separatorElement.Length != 1) || (source[separatorElement.StartPosition] != ','))
+				if ((separatorElement.TokenType != StructuredHeaderFieldLexicalTokenType.Separator) || (source[separatorElement.Position] != ','))
 				{
 					throw new FormatException ("Invalid value of QualityValue parameter list.");
 				}
@@ -881,15 +881,15 @@ namespace Novartment.Base.Net.Mime
 		internal static Version DecodeVersion (ReadOnlySpan<char> source)
 		{
 			var parserPos = 0;
-			var element1 = StructuredValueParser.GetNextElementAtom (source, ref parserPos);
-			var element2 = StructuredValueParser.GetNextElementAtom (source, ref parserPos);
-			var element3 = StructuredValueParser.GetNextElementAtom (source, ref parserPos);
-			var element4 = StructuredValueParser.GetNextElementAtom (source, ref parserPos);
+			var element1 = StructuredHeaderFieldLexicalToken.ParseAtom (source, ref parserPos);
+			var element2 = StructuredHeaderFieldLexicalToken.ParseAtom (source, ref parserPos);
+			var element3 = StructuredHeaderFieldLexicalToken.ParseAtom (source, ref parserPos);
+			var element4 = StructuredHeaderFieldLexicalToken.ParseAtom (source, ref parserPos);
 
 			if (element4.IsValid ||
-				(element1.ElementType != StructuredValueElementType.Value) ||
-				(element2.ElementType != StructuredValueElementType.Separator) || (element2.Length != 1) || (source[element2.StartPosition] != '.') ||
-				(element3.ElementType != StructuredValueElementType.Value))
+				(element1.TokenType != StructuredHeaderFieldLexicalTokenType.Value) ||
+				(element2.TokenType != StructuredHeaderFieldLexicalTokenType.Separator) || (source[element2.Position] != '.') ||
+				(element3.TokenType != StructuredHeaderFieldLexicalTokenType.Value))
 			{
 				throw new FormatException ("Value does not conform to format 'version'.");
 			}
@@ -919,7 +919,7 @@ namespace Novartment.Base.Net.Mime
 		/// A field name MUST be composed of printable US-ASCII characters (i.e., characters that have values between 33 and 126, inclusive), except colon.
 		/// A field body may be composed of any US-ASCII characters, except for CR and LF.
 		/// </remarks>
-		internal static Task<IReadOnlyList<HeaderField>> LoadHeaderAsync (IBufferedSource headerSource, CancellationToken cancellationToken)
+		internal static Task<IReadOnlyList<HeaderField>> LoadHeaderAsync (IBufferedSource headerSource, CancellationToken cancellationToken = default)
 		{
 			if (headerSource == null)
 			{
@@ -1109,45 +1109,45 @@ namespace Novartment.Base.Net.Mime
 			value      = ( "0" [ "." 0*3DIGIT ] ) / ( "1" [ "." 0*3("0") ] )
 			*/
 
-			var valueElement = StructuredValueParser.GetNextElementToken (source, ref parserPos);
-			if (valueElement.ElementType != StructuredValueElementType.Value)
+			var valueElement = StructuredHeaderFieldLexicalToken.ParseToken (source, ref parserPos);
+			if (valueElement.TokenType != StructuredHeaderFieldLexicalTokenType.Value)
 			{
 				throw new FormatException ("Value does not conform to format 'language-q'. First item is not 'atom'.");
 			}
 
 #if NETCOREAPP2_1
-			var value = new string (source.Slice (valueElement.StartPosition, valueElement.Length));
+			var value = new string (source.Slice (valueElement.Position, valueElement.Length));
 #else
-			var value = new string (source.Slice (valueElement.StartPosition, valueElement.Length).ToArray ());
+			var value = new string (source.Slice (valueElement.Position, valueElement.Length).ToArray ());
 #endif
 			var quality = defaultQuality;
 
 			var subParserPos = parserPos;
-			var separatorElement = StructuredValueParser.GetNextElementToken (source, ref subParserPos);
-			var isSemicolon = (separatorElement.ElementType == StructuredValueElementType.Separator) && (separatorElement.Length == 1) && (source[separatorElement.StartPosition] == ';');
+			var separatorElement = StructuredHeaderFieldLexicalToken.ParseToken (source, ref subParserPos);
+			var isSemicolon = (separatorElement.TokenType == StructuredHeaderFieldLexicalTokenType.Separator) && (source[separatorElement.Position] == ';');
 			if (isSemicolon)
 			{
 				parserPos = subParserPos;
-				var separatorElement1 = StructuredValueParser.GetNextElementToken (source, ref parserPos);
-				var separatorElement2 = StructuredValueParser.GetNextElementToken (source, ref parserPos);
-				var qualityElement = StructuredValueParser.GetNextElementToken (source, ref parserPos);
+				var separatorElement1 = StructuredHeaderFieldLexicalToken.ParseToken (source, ref parserPos);
+				var separatorElement2 = StructuredHeaderFieldLexicalToken.ParseToken (source, ref parserPos);
+				var qualityElement = StructuredHeaderFieldLexicalToken.ParseToken (source, ref parserPos);
 				if (
-					(separatorElement1.ElementType != StructuredValueElementType.Value) || (separatorElement1.Length != 1) || ((source[separatorElement1.StartPosition] != 'q') && (source[separatorElement1.StartPosition] != 'Q')) ||
-					(separatorElement2.ElementType != StructuredValueElementType.Separator) || (separatorElement2.Length != 1) || (source[separatorElement2.StartPosition] != '=') ||
-					(qualityElement.ElementType != StructuredValueElementType.Value))
+					(separatorElement1.TokenType != StructuredHeaderFieldLexicalTokenType.Value) || ((source[separatorElement1.Position] != 'q') && (source[separatorElement1.Position] != 'Q')) ||
+					(separatorElement2.TokenType != StructuredHeaderFieldLexicalTokenType.Separator) || (source[separatorElement2.Position] != '=') ||
+					(qualityElement.TokenType != StructuredHeaderFieldLexicalTokenType.Value))
 				{
 					throw new FormatException ("Value does not conform to format 'language-q'.");
 				}
 
 #if NETCOREAPP2_1
 				var isValidNumber = decimal.TryParse (
-					source.Slice (qualityElement.StartPosition, qualityElement.Length),
+					source.Slice (qualityElement.Position, qualityElement.Length),
 					NumberStyles.AllowDecimalPoint,
 					_numberFormatDot,
 					out quality);
 #else
 				var isValidNumber = decimal.TryParse (
-					new string (source.Slice (qualityElement.StartPosition, qualityElement.Length).ToArray ()),
+					new string (source.Slice (qualityElement.Position, qualityElement.Length).ToArray ()),
 					NumberStyles.AllowDecimalPoint,
 					_numberFormatDot,
 					out quality);

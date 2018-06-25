@@ -6,7 +6,7 @@ namespace Novartment.Base.Text
 	/// <summary>
 	/// Декодер значения-фразы из его отдельных элементов.
 	/// </summary>
-	public class StructuredValuePhraseDecoder
+	public class StructuredHeaderFieldDecoder
 	{
 		/*
 		Фраза (phrase) это display-name в mailbox, элемент списка в keywords, описание в list-id.
@@ -22,7 +22,7 @@ namespace Novartment.Base.Text
 		/// <summary>
 		/// Инициализирует новый экземпляр класса StructuredValueDecoder.
 		/// </summary>
-		public StructuredValuePhraseDecoder ()
+		public StructuredHeaderFieldDecoder ()
 		{
 		}
 
@@ -31,21 +31,21 @@ namespace Novartment.Base.Text
 		/// </summary>
 		/// <param name="source">Исходное ASCII-строковое значение.</param>
 		/// <param name="element">Элемент для добавления в декодированный результат.</param>
-		public void AddElement (ReadOnlySpan<char> source, StructuredValueElement element)
+		public void AddElement (ReadOnlySpan<char> source, StructuredHeaderFieldLexicalToken element)
 		{
-			if ((element.ElementType != StructuredValueElementType.Separator) &&
-				(element.ElementType != StructuredValueElementType.Value) &&
-				(element.ElementType != StructuredValueElementType.QuotedValue))
+			if ((element.TokenType != StructuredHeaderFieldLexicalTokenType.Separator) &&
+				(element.TokenType != StructuredHeaderFieldLexicalTokenType.Value) &&
+				(element.TokenType != StructuredHeaderFieldLexicalTokenType.QuotedValue))
 			{
 				throw new FormatException (FormattableString.Invariant (
-					$"Element of type '{element.ElementType}' is complex and can not be decoded into discrete value."));
+					$"Element of type '{element.TokenType}' is complex and can not be decoded into discrete value."));
 			}
 
 			var isWordEncoded = (element.Length > 8) &&
-				(source[element.StartPosition] == '=') &&
-				(source[element.StartPosition + 1] == '?') &&
-				(source[element.StartPosition + element.Length - 2] == '?') &&
-				(source[element.StartPosition + element.Length - 1] == '=');
+				(source[element.Position] == '=') &&
+				(source[element.Position + 1] == '?') &&
+				(source[element.Position + element.Length - 2] == '?') &&
+				(source[element.Position + element.Length - 1] == '=');
 			var decodedValue = element.Decode (source);
 
 			// RFC 2047 часть 6.2:

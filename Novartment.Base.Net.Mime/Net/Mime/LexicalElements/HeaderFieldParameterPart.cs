@@ -65,60 +65,60 @@ namespace Novartment.Base.Net.Mime
 			other-sections         := "*" ("1" / "2" / "3" / "4" / "5" / "6" / "7" / "8" / "9") *DIGIT)
 			*/
 
-			var nameElement = StructuredValueParser.GetNextElementToken (source, ref parserPos);
-			var separatorElement = StructuredValueParser.GetNextElementToken (source, ref parserPos);
+			var nameElement = StructuredHeaderFieldLexicalToken.ParseToken (source, ref parserPos);
+			var separatorElement = StructuredHeaderFieldLexicalToken.ParseToken (source, ref parserPos);
 
 			if (
-				(nameElement.ElementType != StructuredValueElementType.Value) ||
-				(separatorElement.ElementType != StructuredValueElementType.Separator) || (separatorElement.Length != 1))
+				(nameElement.TokenType != StructuredHeaderFieldLexicalTokenType.Value) ||
+				(separatorElement.TokenType != StructuredHeaderFieldLexicalTokenType.Separator))
 			{
 				throw new FormatException ("Invalid format of header field parameter.");
 			}
 
 #if NETCOREAPP2_1
-			var parameterName = new string (source.Slice (nameElement.StartPosition, nameElement.Length));
+			var parameterName = new string (source.Slice (nameElement.Position, nameElement.Length));
 #else
-			var parameterName = new string (source.Slice (nameElement.StartPosition, nameElement.Length).ToArray ());
+			var parameterName = new string (source.Slice (nameElement.Position, nameElement.Length).ToArray ());
 #endif
 			var section = 0;
 			string encoding = null;
 			var isExtendedValue = false;
 
-			if (source[separatorElement.StartPosition] == '*')
+			if (source[separatorElement.Position] == '*')
 			{
-				var sectionElement = StructuredValueParser.GetNextElementToken (source, ref parserPos);
-				if (sectionElement.ElementType != StructuredValueElementType.Value)
+				var sectionElement = StructuredHeaderFieldLexicalToken.ParseToken (source, ref parserPos);
+				if (sectionElement.TokenType != StructuredHeaderFieldLexicalTokenType.Value)
 				{
 					throw new FormatException ("Invalid format of header field parameter.");
 				}
 
 #if NETCOREAPP2_1
 				section = int.Parse (
-					source.Slice (sectionElement.StartPosition, sectionElement.Length),
+					source.Slice (sectionElement.Position, sectionElement.Length),
 					NumberStyles.AllowLeadingWhite | NumberStyles.AllowTrailingWhite,
 					CultureInfo.InvariantCulture);
 #else
 				section = int.Parse (
-					new string (source.Slice (sectionElement.StartPosition, sectionElement.Length).ToArray ()),
+					new string (source.Slice (sectionElement.Position, sectionElement.Length).ToArray ()),
 					NumberStyles.AllowLeadingWhite | NumberStyles.AllowTrailingWhite,
 					CultureInfo.InvariantCulture);
 #endif
-				separatorElement = StructuredValueParser.GetNextElementToken (source, ref parserPos);
-				if (separatorElement.ElementType != StructuredValueElementType.Separator)
+				separatorElement = StructuredHeaderFieldLexicalToken.ParseToken (source, ref parserPos);
+				if (separatorElement.TokenType != StructuredHeaderFieldLexicalTokenType.Separator)
 				{
 					throw new FormatException ("Invalid format of header field parameter.");
 				}
 			}
 
-			var isStarSeparator = (separatorElement.ElementType == StructuredValueElementType.Separator) && (separatorElement.Length == 1) && (source[separatorElement.StartPosition] == '*');
+			var isStarSeparator = (separatorElement.TokenType == StructuredHeaderFieldLexicalTokenType.Separator) && (source[separatorElement.Position] == '*');
 			if (isStarSeparator)
 			{
 				isExtendedValue = true;
-				separatorElement = StructuredValueParser.GetNextElementToken (source, ref parserPos);
+				separatorElement = StructuredHeaderFieldLexicalToken.ParseToken (source, ref parserPos);
 			}
 			else
 			{
-				var isEqualitySign = (separatorElement.ElementType == StructuredValueElementType.Separator) && (separatorElement.Length == 1) && (source[separatorElement.StartPosition] == '=');
+				var isEqualitySign = (separatorElement.TokenType == StructuredHeaderFieldLexicalTokenType.Separator) && (source[separatorElement.Position] == '=');
 				if (!isEqualitySign)
 				{
 					throw new FormatException ("Invalid format of header field parameter.");
@@ -126,71 +126,71 @@ namespace Novartment.Base.Net.Mime
 			}
 
 			var isExtendedInitialValue = isExtendedValue && (section == 0);
-			var item = StructuredValueParser.GetNextElementToken (source, ref parserPos);
+			var item = StructuredHeaderFieldLexicalToken.ParseToken (source, ref parserPos);
 			if (isExtendedInitialValue)
 			{
 				string language = null;
-				if (item.ElementType == StructuredValueElementType.Value)
+				if (item.TokenType == StructuredHeaderFieldLexicalTokenType.Value)
 				{ // charset
 #if NETCOREAPP2_1
-					encoding = new string (source.Slice (item.StartPosition, item.Length));
+					encoding = new string (source.Slice (item.Position, item.Length));
 #else
-					encoding = new string (source.Slice (item.StartPosition, item.Length).ToArray ());
+					encoding = new string (source.Slice (item.Position, item.Length).ToArray ());
 #endif
-					item = StructuredValueParser.GetNextElementToken (source, ref parserPos);
+					item = StructuredHeaderFieldLexicalToken.ParseToken (source, ref parserPos);
 				}
 
-				if ((item.ElementType != StructuredValueElementType.Separator) || (item.Length != 1) || (source[item.StartPosition] != '\''))
+				if ((item.TokenType != StructuredHeaderFieldLexicalTokenType.Separator) || (source[item.Position] != '\''))
 				{
 					throw new FormatException ("Invalid format of header field parameter.");
 				}
 
-				item = StructuredValueParser.GetNextElementToken (source, ref parserPos);
-				if (item.ElementType == StructuredValueElementType.Value)
+				item = StructuredHeaderFieldLexicalToken.ParseToken (source, ref parserPos);
+				if (item.TokenType == StructuredHeaderFieldLexicalTokenType.Value)
 				{ // language
 #if NETCOREAPP2_1
-					language = new string (source.Slice (item.StartPosition, item.Length));
+					language = new string (source.Slice (item.Position, item.Length));
 #else
-					language = new string (source.Slice (item.StartPosition, item.Length).ToArray ());
+					language = new string (source.Slice (item.Position, item.Length).ToArray ());
 #endif
-					item = StructuredValueParser.GetNextElementToken (source, ref parserPos);
+					item = StructuredHeaderFieldLexicalToken.ParseToken (source, ref parserPos);
 				}
 
-				if ((item.ElementType != StructuredValueElementType.Separator) || (item.Length != 1) || (source[item.StartPosition] != '\''))
+				if ((item.TokenType != StructuredHeaderFieldLexicalTokenType.Separator) || (source[item.Position] != '\''))
 				{
 					throw new FormatException ("Invalid format of header field parameter.");
 				}
 
-				item = StructuredValueParser.GetNextElementToken (source, ref parserPos);
-				if (item.ElementType != StructuredValueElementType.Value)
+				item = StructuredHeaderFieldLexicalToken.ParseToken (source, ref parserPos);
+				if (item.TokenType != StructuredHeaderFieldLexicalTokenType.Value)
 				{
 					throw new FormatException ("Invalid format of header field parameter.");
 				}
 
 #if NETCOREAPP2_1
-				var valueStr = new string (source.Slice (item.StartPosition, item.Length));
+				var valueStr = new string (source.Slice (item.Position, item.Length));
 #else
-				var valueStr = new string (source.Slice (item.StartPosition, item.Length).ToArray ());
+				var valueStr = new string (source.Slice (item.Position, item.Length).ToArray ());
 #endif
 				return new HeaderFieldParameterPart (parameterName, valueStr, encoding, language);
 			}
 
 			if (isExtendedValue)
 			{
-				if (item.ElementType != StructuredValueElementType.Value)
+				if (item.TokenType != StructuredHeaderFieldLexicalTokenType.Value)
 				{
 					throw new FormatException ("Invalid format of header field parameter.");
 				}
 
 #if NETCOREAPP2_1
-				var valueStr = new string (source.Slice (item.StartPosition, item.Length));
+				var valueStr = new string (source.Slice (item.Position, item.Length));
 #else
-				var valueStr = new string (source.Slice (item.StartPosition, item.Length).ToArray ());
+				var valueStr = new string (source.Slice (item.Position, item.Length).ToArray ());
 #endif
 				return new HeaderFieldParameterPart (parameterName, valueStr, section, true);
 			}
 
-			if ((item.ElementType != StructuredValueElementType.Value) && (item.ElementType != StructuredValueElementType.QuotedValue))
+			if ((item.TokenType != StructuredHeaderFieldLexicalTokenType.Value) && (item.TokenType != StructuredHeaderFieldLexicalTokenType.QuotedValue))
 			{
 				throw new FormatException ("Invalid format of header field parameter.");
 			}

@@ -22,33 +22,34 @@ namespace Novartment.Base.Net.Smtp
 			/*
 			RFC 4954:
 			"AUTH" SP sasl-mech [SP initial-response] *(CRLF [base64]) [CRLF cancel-response] CRLF
+			sasl-mech    = 1*(UPPER-ALPHA / DIGIT / HYPHEN / UNDERSCORE)
 			initial-response= base64 / "="
 
 			*(CRLF [base64]) [CRLF cancel-response] тут не рассматривается, он придёт как отдельная команда
 			*/
 
 			var pos = 0;
-			var saslMechElement = StructuredValueParser.GetNextElement (value, ref pos, AsciiCharClasses.Visible, false);
-			if (saslMechElement.ElementType != StructuredValueElementType.Value)
+			var saslMechElement = StructuredHeaderFieldLexicalToken.ParseToken (value, ref pos);
+			if (saslMechElement.TokenType != StructuredHeaderFieldLexicalTokenType.Value)
 			{
 				return new SmtpInvalidSyntaxCommand (SmtpCommandType.Auth, "Unrecognized 'AUTH' mechanism parameter.");
 			}
 
 #if NETCOREAPP2_1
-			var mechanism = new string (value.Slice (saslMechElement.StartPosition, saslMechElement.Length));
+			var mechanism = new string (value.Slice (saslMechElement.Position, saslMechElement.Length));
 #else
-			var mechanism = new string (value.Slice (saslMechElement.StartPosition, saslMechElement.Length).ToArray ());
+			var mechanism = new string (value.Slice (saslMechElement.Position, saslMechElement.Length).ToArray ());
 #endif
 
-			var initialEesponseElement = StructuredValueParser.GetNextElement (value, ref pos, AsciiCharClasses.Visible, false);
-			if (!initialEesponseElement.IsValid || ((initialEesponseElement.Length == 1) && (value[initialEesponseElement.StartPosition] == '=')))
+			var initialEesponseElement = StructuredHeaderFieldLexicalToken.Parse (value, ref pos, AsciiCharClasses.Visible, false);
+			if (!initialEesponseElement.IsValid || ((initialEesponseElement.Length == 1) && (value[initialEesponseElement.Position] == '=')))
 			{
 				return new SmtpAuthCommand (mechanism, default);
 			}
 
 			byte[] initialResponse;
 			int responseSize;
-			var initialResponseBase64 = value.Slice (initialEesponseElement.StartPosition, initialEesponseElement.Length);
+			var initialResponseBase64 = value.Slice (initialEesponseElement.Position, initialEesponseElement.Length);
 #if NETCOREAPP2_1
 			initialResponse = new byte[(initialResponseBase64.Length / 4 * 3) + 2];
 			if (!Convert.TryFromBase64Chars (initialResponseBase64, initialResponse, out responseSize))

@@ -40,13 +40,13 @@ namespace Novartment.Base.Net.Smtp
 			*/
 
 			var pos = 0;
-			var sizeElement = StructuredValueParser.GetNextElement (value, ref pos, AsciiCharClasses.Digit, false);
-			if (sizeElement.ElementType != StructuredValueElementType.Value)
+			var sizeElement = StructuredHeaderFieldLexicalToken.Parse (value, ref pos, AsciiCharClasses.Digit, false);
+			if (sizeElement.TokenType != StructuredHeaderFieldLexicalTokenType.Value)
 			{
 				return new SmtpInvalidSyntaxCommand (SmtpCommandType.Bdat, "Unrecognized size parameter in 'BDAT' command.");
 			}
 
-			var sizeStr = value.Slice (sizeElement.StartPosition, sizeElement.Length);
+			var sizeStr = value.Slice (sizeElement.Position, sizeElement.Length);
 			long size;
 			bool isLast;
 			try
@@ -64,7 +64,7 @@ namespace Novartment.Base.Net.Smtp
 #endif
 
 				// любые непробельные символы после размера считаем индикатором последней части
-				isLast = StructuredValueParser.GetNextElement (value, ref pos, AsciiCharClasses.Visible, false).IsValid;
+				isLast = StructuredHeaderFieldLexicalToken.Parse (value, ref pos, AsciiCharClasses.Visible, false).IsValid;
 			}
 			catch (FormatException excpt)
 			{

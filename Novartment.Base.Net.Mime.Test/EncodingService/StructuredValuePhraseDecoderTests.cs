@@ -19,17 +19,17 @@ namespace Novartment.Base.Net.Mime.Test
 				"i\\\\jkl",
 			};
 			var src = string.Join (' ', strs);
-			var elements = new StructuredValueElement[]
+			var elements = new StructuredHeaderFieldLexicalToken[]
 			{
-				new StructuredValueElement (StructuredValueElementType.Value, 0, strs[0].Length),
-				new StructuredValueElement (StructuredValueElementType.Separator, strs[0].Length + 1, strs[1].Length),
-				new StructuredValueElement (StructuredValueElementType.Value, strs[0].Length + 1 + strs[1].Length + 1, strs[2].Length),
-				new StructuredValueElement (StructuredValueElementType.Value, strs[0].Length + 1 + strs[1].Length + 1 + strs[2].Length + 1, strs[3].Length),
-				new StructuredValueElement (StructuredValueElementType.Separator, strs[0].Length + 1 + strs[1].Length + 1 + strs[2].Length + 1 + strs[3].Length + 1, strs[4].Length),
-				new StructuredValueElement (StructuredValueElementType.QuotedValue, strs[0].Length + 1 + strs[1].Length + 1 + strs[2].Length + 1 + strs[3].Length + 1 + strs[4].Length + 1, strs[5].Length),
+				new StructuredHeaderFieldLexicalToken (StructuredHeaderFieldLexicalTokenType.Value, 0, strs[0].Length),
+				new StructuredHeaderFieldLexicalToken (StructuredHeaderFieldLexicalTokenType.Separator, strs[0].Length + 1, strs[1].Length),
+				new StructuredHeaderFieldLexicalToken (StructuredHeaderFieldLexicalTokenType.Value, strs[0].Length + 1 + strs[1].Length + 1, strs[2].Length),
+				new StructuredHeaderFieldLexicalToken (StructuredHeaderFieldLexicalTokenType.Value, strs[0].Length + 1 + strs[1].Length + 1 + strs[2].Length + 1, strs[3].Length),
+				new StructuredHeaderFieldLexicalToken (StructuredHeaderFieldLexicalTokenType.Separator, strs[0].Length + 1 + strs[1].Length + 1 + strs[2].Length + 1 + strs[3].Length + 1, strs[4].Length),
+				new StructuredHeaderFieldLexicalToken (StructuredHeaderFieldLexicalTokenType.QuotedValue, strs[0].Length + 1 + strs[1].Length + 1 + strs[2].Length + 1 + strs[3].Length + 1 + strs[4].Length + 1, strs[5].Length),
 			};
 
-			var decoder = new StructuredValuePhraseDecoder ();
+			var decoder = new StructuredHeaderFieldDecoder ();
 			foreach (var element in elements)
 			{
 				decoder.AddElement (src, element);

@@ -3,7 +3,7 @@
 	/// <summary>
 	/// Тип элемента структурированного значения.
 	/// </summary>
-	public enum StructuredValueElementType : byte
+	public enum StructuredHeaderFieldLexicalTokenType : byte
 	{
 		/// <summary>Тип не указан.</summary>
 		Unspecified = 0,
