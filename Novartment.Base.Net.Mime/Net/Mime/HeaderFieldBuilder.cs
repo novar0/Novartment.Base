@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
+using System.Text;
 using Novartment.Base.Collections;
 using Novartment.Base.Collections.Linq;
 using Novartment.Base.Text;
@@ -583,13 +584,15 @@ namespace Novartment.Base.Net.Mime
 				var parameter = _parameters[idx];
 
 				// кодируем все сегменты параметра
-				var segmentEncoder = HeaderFieldBodyParameterEncoder.Parse (parameter.Name, parameter.Value);
-				while (!segmentEncoder.IsExhausted)
+				var parameterValueBytes = Encoding.UTF8.GetBytes (parameter.Value);
+				var segments = EstimatingEncoder.CutBySize (parameter.Name, parameterValueBytes);
+				var segmentIdx = 0;
+				while (segmentIdx < segments.Length)
 				{
-					var element = segmentEncoder.GetNextSegment ();
+					var element = HeaderFieldBodyParameterEncoder.GetNextSegment (parameter.Name, parameterValueBytes, segments, ref segmentIdx);
 
 					// дополняем знаком ';' все части всех параметров кроме последней
-					var extraSemicolon = segmentEncoder.IsExhausted && (idx != (_parameters.Count - 1));
+					var extraSemicolon = (segmentIdx >= segments.Length) && (idx != (_parameters.Count - 1));
 					CreatePart (element, extraSemicolon, buf, maxLineLength, ref outPos, ref lineLen);
 				}
 			}

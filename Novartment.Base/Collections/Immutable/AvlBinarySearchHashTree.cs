@@ -368,7 +368,7 @@ namespace Novartment.Base.Collections.Immutable
 				if (!_started)
 				{
 					_started = true;
-					_nodesToExplore = Flatten (new SingleLinkedListNode<AvlBinarySearchHashTreeNode<T>> (_startingNode, null));
+					_nodesToExplore = Flatten (new SingleLinkedListNode<AvlBinarySearchHashTreeNode<T>> (_startingNode));
 				}
 				else
 				{
