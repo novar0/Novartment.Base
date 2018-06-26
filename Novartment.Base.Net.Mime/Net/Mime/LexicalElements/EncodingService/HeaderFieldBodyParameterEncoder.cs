@@ -27,6 +27,8 @@ namespace Novartment.Base.Net.Mime
 			_extendedParameterEncoder = extendedParameterEncoder;
 		}
 
+		internal bool IsExhausted => _currentSegmentNumber >= _valueSegments.Length;
+
 		/// <summary>
 		/// Разбирает указанный текст на отдельные слова.
 		/// Каждое слово содержит хотя бы один непробельный символ.

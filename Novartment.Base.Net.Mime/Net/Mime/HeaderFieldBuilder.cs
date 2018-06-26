@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using Novartment.Base.Collections;
@@ -545,12 +544,13 @@ namespace Novartment.Base.Net.Mime
 		}
 
 		/// <summary>
-		/// Генерирует двоичное представление поле заголовка для передачи по протоколу с фолдингом по указанной длине строки.
+		/// Генерирует двоичное представление поле заголовка для передачи по протоколу.
+		/// Производится фолдинг по указанной длине строки.
 		/// </summary>
 		/// <param name="buf">Буфер куда будет сгнерировано тело.</param>
 		/// <param name="maxLineLength">Максимальная длина строки, по которой будет производиться фолдинг значения поля заголовка.</param>
 		/// <returns>Количество байт, записанных в буфер.</returns>
-		public int CreateBinaryTransportRepresentation (Span<byte> buf, int maxLineLength)
+		public int EncodeToBinaryTransportRepresentation (Span<byte> buf, int maxLineLength)
 		{
 			// RFC 5322:
 			// 1) FWS (the folding white space token) indicates a place where folding may take place.
@@ -558,65 +558,39 @@ namespace Novartment.Base.Net.Mime
 			// 2) a CarriageReturnLinefeed may be inserted before any WSP in FWS or CFWS.
 			// 3) CarriageReturnLinefeed MUST NOT be inserted in such a way that any line of a folded header field is made up entirely of WSP characters and nothing else.
 
-			// создаем общую коллекцию, содержащую части значения и все параметры
-			var parts = _valueParts.DuplicateToList ();
-
-			// если есть параметры то последнюю часть значения дополняем знаком ';'
-			if (_parameters.Count > 0)
-			{
-				parts[parts.Count - 1] = parts[parts.Count - 1] + ';';
-			}
-
-			// для каждого параметра добавляем его части в общую коллекцию
-			for (var i = 0; i < _parameters.Count; i++)
-			{
-				HeaderEncoder.EncodeHeaderFieldParameter (parts, _parameters[i]);
-				var isLastParameter = i == (_parameters.Count - 1);
-
-				// если часть не последняя, то дополняем знаком ';'
-				if (!isLastParameter)
-				{
-					parts[parts.Count - 1] = parts[parts.Count - 1] + ';';
-				}
-			}
-
 			// формируем склеенную из частей строку вставляя где надо переводы строки и пробелы
 			var name = HeaderFieldNameHelper.GetName (_name);
 			var lineLen = name.Length;
 			AsciiCharSet.GetBytes (name.AsSpan (), buf);
 			buf[lineLen++] = (byte)':';
-
 			var outPos = lineLen;
-			foreach (var part in parts)
+
+			// кодируем все части значения тела
+			for (var idx = 0; idx < _valueParts.Count; idx++)
 			{
-				var partLength = part?.Length ?? 0;
-				if (partLength > 0)
+				// если есть параметры то последнюю часть значения дополняем знаком ';'
+				var extraSemicolon = (_parameters.Count > 0) && (idx == (_valueParts.Count - 1));
+				var part = _valueParts[idx];
+				if (part != null)
 				{
-					var needWhiteSpace = (part[0] != ' ') && (part[0] != '\t');
-					if (needWhiteSpace)
-					{
-						partLength++;
-					}
+					CreatePart (part, extraSemicolon, buf, maxLineLength, ref outPos, ref lineLen);
+				}
+			}
 
-					lineLen += partLength;
-					if (lineLen > maxLineLength)
-					{
-						lineLen = partLength + 1; // плюс пробел
-						buf[outPos++] = (byte)'\r';
-						buf[outPos++] = (byte)'\n';
-					}
+			// кодируем все параметры
+			for (var idx = 0; idx < _parameters.Count; idx++)
+			{
+				var parameter = _parameters[idx];
 
-					if (needWhiteSpace)
-					{
-						buf[outPos++] = (byte)' ';
-					}
+				// кодируем все сегменты параметра
+				var segmentEncoder = HeaderFieldBodyParameterEncoder.Parse (parameter.Name, parameter.Value);
+				while (!segmentEncoder.IsExhausted)
+				{
+					var element = segmentEncoder.GetNextSegment ();
 
-#if NETCOREAPP2_1
-					AsciiCharSet.GetBytes (part, buf.Slice (outPos));
-#else
-					AsciiCharSet.GetBytes (part.AsSpan (), buf.Slice (outPos));
-#endif
-					outPos += part.Length;
+					// дополняем знаком ';' все части всех параметров кроме последней
+					var extraSemicolon = segmentEncoder.IsExhausted && (idx != (_parameters.Count - 1));
+					CreatePart (element, extraSemicolon, buf, maxLineLength, ref outPos, ref lineLen);
 				}
 			}
 
@@ -624,6 +598,47 @@ namespace Novartment.Base.Net.Mime
 			buf[outPos++] = (byte)'\n';
 
 			return outPos;
+		}
+
+		private void CreatePart (string part, bool extraSemicolon, Span<byte> buf, int maxLineLength, ref int outPos, ref int lineLen)
+		{
+			var partLength = part.Length + (extraSemicolon ? 1 : 0);
+			if (part.Length < 1)
+			{
+				return;
+			}
+
+			var needWhiteSpace = (part[0] != ' ') && (part[0] != '\t');
+			if (needWhiteSpace)
+			{
+				partLength++;
+			}
+
+			lineLen += partLength;
+			if (lineLen > maxLineLength)
+			{
+				// если накопленная строка с добавлением новой части превысит maxLineLength, то перед новой частью добавляем перевод строки
+				lineLen = partLength + 1; // плюс пробел
+				buf[outPos++] = (byte)'\r';
+				buf[outPos++] = (byte)'\n';
+			}
+
+			if (needWhiteSpace)
+			{
+				buf[outPos++] = (byte)' ';
+			}
+
+#if NETCOREAPP2_1
+			AsciiCharSet.GetBytes (part, buf.Slice (outPos));
+#else
+			AsciiCharSet.GetBytes (part.AsSpan (), buf.Slice (outPos));
+#endif
+			outPos += part.Length;
+
+			if (extraSemicolon)
+			{
+				buf[outPos++] = (byte)';';
+			}
 		}
 	}
 }

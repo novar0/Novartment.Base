@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text;
 using System.Collections.Generic;
 using Xunit;
 
@@ -244,50 +245,62 @@ namespace Novartment.Base.Net.Mime.Test
 
 		[Fact]
 		[Trait ("Category", "Mime.HeaderEncoder")]
-		public void CreateBinaryTransportRepresentation ()
+		public void EncodeToBinaryTransportRepresentation ()
 		{
-			/*
+			var buf = new byte[1000];
+
+			var builder = HeaderFieldBuilder.CreateExactValue (HeaderFieldName.ContentDisposition, "attachment");
+			builder.AddParameter ("filename", "This document specifies an Internet standards track protocol for the функции and requests discussion and suggestions.txt");
+			builder.AddParameter ("modification-date", "24 Nov 2011 09:48:27 +0600");
+			builder.AddParameter ("creation-date", "10 Jul 2012 10:01:06 +0600");
+			builder.AddParameter ("read-date", "11 Jul 2012 10:40:13 +0600");
+			builder.AddParameter ("size", "318");
+			var size = builder.EncodeToBinaryTransportRepresentation (buf, 78);
+			Assert.Equal (
+				"Content-Disposition: attachment;\r\n" +
+				" filename*0*=utf-8''This%20document%20specifies%20an%20Internet%20standards;\r\n" +
+				" filename*1=\" track protocol for the \";\r\n" +
+				" filename*2*=%D1%84%D1%83%D0%BD%D0%BA%D1%86%D0%B8%D0%B8;\r\n" +
+				" filename*3=\" and requests discussion and suggestions.txt\";\r\n" +
+				" modification-date=\"24 Nov 2011 09:48:27 +0600\";\r\n" +
+				" creation-date=\"10 Jul 2012 10:01:06 +0600\";\r\n" +
+				" read-date=\"11 Jul 2012 10:40:13 +0600\"; size=318\r\n",
+				Encoding.ASCII.GetString (buf, 0, size));
+
 			// one parameter
-			var builder = HeaderFieldBuilder.CreateExactValue (HeaderFieldName.Supersedes, "short.value");
+			builder = HeaderFieldBuilder.CreateExactValue (HeaderFieldName.Supersedes, "short.value");
 			builder.AddParameter ("charset", "koi8-r");
-			Assert.Equal (HeaderFieldName.Supersedes, builder.Name);
-			Assert.Equal (1, builder.ValueParts.Count);
-			Assert.Equal ("short.value; charset=koi8-r", builder.ValueParts[0]);
-			Assert.Equal (1, builder.Count);
+			size = builder.EncodeToBinaryTransportRepresentation (buf, 78);
+			Assert.Equal ("Supersedes: short.value; charset=koi8-r\r\n", Encoding.ASCII.GetString (buf, 0, size));
 
 			builder = HeaderFieldBuilder.CreateExactValue (HeaderFieldName.Supersedes, "short.value");
 			builder.AddParameter ("charset", "koi8 r");
-			Assert.Equal (HeaderFieldName.Supersedes, builder.Name);
-			Assert.Equal (0, builder.ValueParts.Count);
-			Assert.Equal ("short.value; charset=\"koi8 r\"", builder.ValueParts[0]);
+			size = builder.EncodeToBinaryTransportRepresentation (buf, 78);
+			Assert.Equal ("Supersedes: short.value; charset=\"koi8 r\"\r\n", Encoding.ASCII.GetString (buf, 0, size));
 
 			builder = HeaderFieldBuilder.CreateExactValue (HeaderFieldName.Supersedes, "short.value");
 			builder.AddParameter ("charset", "функции");
-			Assert.Equal (HeaderFieldName.Supersedes, builder.Name);
-			Assert.Equal (0, builder.ValueParts.Count);
-			Assert.Equal ("short.value; charset*0*=utf-8''%D1%84%D1%83%D0%BD%D0%BA%D1%86%D0%B8%D0%B8", builder.ValueParts[0]);
+			size = builder.EncodeToBinaryTransportRepresentation (buf, 78);
+			Assert.Equal ("Supersedes: short.value;\r\n charset*0*=utf-8''%D1%84%D1%83%D0%BD%D0%BA%D1%86%D0%B8%D0%B8\r\n", Encoding.ASCII.GetString (buf, 0, size));
 
 			// many parameters
 			builder = HeaderFieldBuilder.CreateExactValue (HeaderFieldName.Supersedes, "short.value");
 			builder.AddParameter ("name1", "value1");
 			builder.AddParameter ("charset", "koi8-r");
 			builder.AddParameter ("name2", "value2");
-			Assert.Equal (HeaderFieldName.Supersedes, builder.Name);
-			Assert.Equal (0, builder.ValueParts.Count);
-			Assert.Equal ("short.value; name1=value1; charset=koi8-r; name2=value2", builder.ValueParts[0]);
+			size = builder.EncodeToBinaryTransportRepresentation (buf, 78);
+			Assert.Equal ("Supersedes: short.value; name1=value1; charset=koi8-r; name2=value2\r\n", Encoding.ASCII.GetString (buf, 0, size));
 
 			// оптимальное кодирования длинного значения параметра
 			builder = HeaderFieldBuilder.CreateExactValue (HeaderFieldName.Supersedes, "value");
 			builder.AddParameter ("filename", "This document specifies an Internet standards track protocol for the функции and requests discussion and suggestions.txt");
-			Assert.Equal (HeaderFieldName.Supersedes, builder.Name);
-			Assert.Equal (0, builder.ValueParts.Count);
+			size = builder.EncodeToBinaryTransportRepresentation (buf, 78);
 			Assert.Equal (
-				"value;\r\n filename*0*=utf-8''This%20document%20specifies%20an%20Internet%20standards;\r\n" +
+				"Supersedes: value;\r\n filename*0*=utf-8''This%20document%20specifies%20an%20Internet%20standards;\r\n" +
 				" filename*1=\" track protocol for the \";\r\n" +
 				" filename*2*=%D1%84%D1%83%D0%BD%D0%BA%D1%86%D0%B8%D0%B8;\r\n" +
-				" filename*3=\" and requests discussion and suggestions.txt\"",
-				builder.ValueParts[0]);
-			*/
+				" filename*3=\" and requests discussion and suggestions.txt\"\r\n",
+				Encoding.ASCII.GetString (buf, 0, size));
 		}
 	}
 }

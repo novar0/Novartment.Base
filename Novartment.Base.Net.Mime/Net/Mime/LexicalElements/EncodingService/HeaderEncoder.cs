@@ -211,21 +211,6 @@ namespace Novartment.Base.Net.Mime
 			result.Add (mailbox.Address.ToAngleString ());
 		}
 
-		internal static void EncodeHeaderFieldParameter (IAdjustableCollection<string> result, HeaderFieldParameter parameter)
-		{
-			var encoder = HeaderFieldBodyParameterEncoder.Parse (parameter.Name, parameter.Value);
-			while (true)
-			{
-				var element = encoder.GetNextSegment ();
-				if (element == null)
-				{
-					break;
-				}
-
-				result.Add (element);
-			}
-		}
-
 		/// <summary>
 		/// Записывает коллекцию полей в указанный получатель двоичных данных.
 		/// </summary>
@@ -261,7 +246,7 @@ namespace Novartment.Base.Net.Mime
 				foreach (var fieldBuilder in fields)
 				{
 					cancellationToken.ThrowIfCancellationRequested ();
-					var size = fieldBuilder.CreateBinaryTransportRepresentation (bytes, HeaderEncoder.MaxLineLengthRecommended);
+					var size = fieldBuilder.EncodeToBinaryTransportRepresentation (bytes, HeaderEncoder.MaxLineLengthRecommended);
 					await destination.WriteAsync (bytes.AsMemory (0, size), cancellationToken).ConfigureAwait (false);
 					totalSize += size;
 				}
