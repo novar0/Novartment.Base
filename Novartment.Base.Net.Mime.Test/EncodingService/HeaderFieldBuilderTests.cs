@@ -249,7 +249,7 @@ namespace Novartment.Base.Net.Mime.Test
 		{
 			var buf = new byte[1000];
 
-			// one parameter
+			// один параметр
 			var builder = HeaderFieldBuilder.CreateExactValue (HeaderFieldName.Supersedes, "short.value");
 			builder.AddParameter ("charset", "koi8-r");
 			var size = builder.EncodeToBinaryTransportRepresentation (buf, 78);
@@ -265,7 +265,7 @@ namespace Novartment.Base.Net.Mime.Test
 			size = builder.EncodeToBinaryTransportRepresentation (buf, 78);
 			Assert.Equal ("Supersedes: short.value;\r\n charset*0*=utf-8''%D1%84%D1%83%D0%BD%D0%BA%D1%86%D0%B8%D0%B8\r\n", Encoding.ASCII.GetString (buf, 0, size));
 
-			// many parameters
+			// несколько параметров
 			builder = HeaderFieldBuilder.CreateExactValue (HeaderFieldName.Supersedes, "short.value");
 			builder.AddParameter ("name1", "value1");
 			builder.AddParameter ("charset", "koi8-r");
@@ -278,12 +278,14 @@ namespace Novartment.Base.Net.Mime.Test
 			builder.AddParameter ("filename", "This document specifies an Internet standards track protocol for the функции and requests discussion and suggestions.txt");
 			size = builder.EncodeToBinaryTransportRepresentation (buf, 78);
 			Assert.Equal (
-				"Supersedes: value;\r\n filename*0*=utf-8''This%20document%20specifies%20an%20Internet%20standards;\r\n" +
-				" filename*1=\" track protocol for the \";\r\n" +
-				" filename*2*=%D1%84%D1%83%D0%BD%D0%BA%D1%86%D0%B8%D0%B8;\r\n" +
-				" filename*3=\" and requests discussion and suggestions.txt\"\r\n",
+				"Supersedes: value;\r\n" +
+				" filename*0*=utf-8''This%20document%20specifies%20an%20Internet%20standards;\r\n" +
+				" filename*1*=%20track%20protocol%20for%20the%20%D1%84%D1%83%D0%BD%D0%BA%D1%86;\r\n" +
+				" filename*2*=%D0%B8%D0%B8%20and%20requests%20discussion%20and%20suggestions.t;\r\n" +
+				" filename*3=xt\r\n",
 				Encoding.ASCII.GetString (buf, 0, size));
 
+			// всё вместе
 			builder = HeaderFieldBuilder.CreateExactValue (HeaderFieldName.ContentDisposition, "attachment");
 			builder.AddParameter ("filename", "This document specifies an Internet standards track protocol for the функции and requests discussion and suggestions.txt");
 			builder.AddParameter ("modification-date", "24 Nov 2011 09:48:27 +0600");
@@ -294,10 +296,9 @@ namespace Novartment.Base.Net.Mime.Test
 			Assert.Equal (
 				"Content-Disposition: attachment;\r\n" +
 				" filename*0*=utf-8''This%20document%20specifies%20an%20Internet%20standards;\r\n" +
-				" filename*1=\" track protocol for the \";\r\n" +
-				" filename*2*=%D1%84%D1%83%D0%BD%D0%BA%D1%86%D0%B8%D0%B8;\r\n" +
-				" filename*3=\" and requests discussion and suggestions.txt\";\r\n" +
-				" modification-date=\"24 Nov 2011 09:48:27 +0600\";\r\n" +
+				" filename*1*=%20track%20protocol%20for%20the%20%D1%84%D1%83%D0%BD%D0%BA%D1%86;\r\n" +
+				" filename*2*=%D0%B8%D0%B8%20and%20requests%20discussion%20and%20suggestions.t;\r\n" +
+				" filename*3=xt; modification-date=\"24 Nov 2011 09:48:27 +0600\";\r\n" +
 				" creation-date=\"10 Jul 2012 10:01:06 +0600\";\r\n" +
 				" read-date=\"11 Jul 2012 10:40:13 +0600\"; size=318\r\n",
 				Encoding.ASCII.GetString (buf, 0, size));

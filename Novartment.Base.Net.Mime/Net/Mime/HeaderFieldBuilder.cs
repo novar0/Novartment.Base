@@ -585,14 +585,22 @@ namespace Novartment.Base.Net.Mime
 
 				// кодируем все сегменты параметра
 				var parameterValueBytes = Encoding.UTF8.GetBytes (parameter.Value);
-				var segments = EstimatingEncoder.CutBySize (parameter.Name, parameterValueBytes);
+
+				var pos = 0;
 				var segmentIdx = 0;
-				while (segmentIdx < segments.Length)
+				while (true)
 				{
-					var element = HeaderFieldBodyParameterEncoder.GetNextSegment (parameter.Name, parameterValueBytes, segments, ref segmentIdx);
+					var element = HeaderFieldBodyParameterEncoder.GetNextSegment (parameter.Name, parameterValueBytes, segmentIdx, ref pos);
+					segmentIdx++;
+					if (element == null)
+					{
+						break;
+					}
+
+					var isLastSegment = pos >= parameterValueBytes.Length;
 
 					// дополняем знаком ';' все части всех параметров кроме последней
-					var extraSemicolon = (segmentIdx >= segments.Length) && (idx != (_parameters.Count - 1));
+					var extraSemicolon = isLastSegment && (idx != (_parameters.Count - 1));
 					CreatePart (element, extraSemicolon, buf, maxLineLength, ref outPos, ref lineLen);
 				}
 			}

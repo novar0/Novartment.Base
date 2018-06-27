@@ -109,8 +109,8 @@ namespace Novartment.Base.Net.Mime
 
 			while ((srcPos < count) && (dstPos < maxOutCount))
 			{
-				var c = source[offset + srcPos];
-				var isToken = (c != '%') && AsciiCharSet.IsCharOfClass ((char)c, AsciiCharClasses.Token);
+				var octet = source[offset + srcPos];
+				var isToken = (octet != '%') && (octet < AsciiCharSet.Classes.Count) && ((AsciiCharSet.Classes[octet] & (short)AsciiCharClasses.Token) != 0);
 				if (!isToken)
 				{
 					if ((dstPos + 3) > maxOutCount)
@@ -204,8 +204,8 @@ namespace Novartment.Base.Net.Mime
 			int srcPos = 0;
 			while ((srcPos < count) && ((outOffset - outStartOffset) < maxOutCount))
 			{
-				var c = source[offset + srcPos];
-				var isToken = (c != '%') && AsciiCharSet.IsCharOfClass ((char)c, AsciiCharClasses.Token);
+				var octet = source[offset + srcPos];
+				var isToken = (octet != '%') && (octet < AsciiCharSet.Classes.Count) && ((AsciiCharSet.Classes[octet] & (short)AsciiCharClasses.Token) != 0);
 				if (!isToken)
 				{
 					// знак процента вместо символа, потом два шест.знака
@@ -215,13 +215,13 @@ namespace Novartment.Base.Net.Mime
 					}
 
 					destination[outOffset++] = (byte)'%';
-					var hex = Hex.OctetsUpper[c];
+					var hex = Hex.OctetsUpper[octet];
 					destination[outOffset++] = (byte)hex[0];
 					destination[outOffset++] = (byte)hex[1];
 				}
 				else
 				{
-					destination[outOffset++] = c;
+					destination[outOffset++] = octet;
 				}
 
 				srcPos++;
