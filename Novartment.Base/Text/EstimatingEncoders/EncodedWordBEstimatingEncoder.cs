@@ -46,43 +46,14 @@ namespace Novartment.Base.Text
 		public int EpilogSize => 2;
 
 		/// <summary>
-		/// В указанном массиве байтов ищет ближайшую позицию данных,
-		/// подходящих для кодировщика.
+		/// Оценивает потенциальный результат кодирования диапазона байтов.
 		/// </summary>
-		/// <param name="source">Исходный массив байтов.</param>
-		/// <param name="offset">Позиция начала исходных данных в массиве.</param>
-		/// <param name="count">Количество байтов исходных данных в массиве.</param>
-		/// <returns>Ближайшая позиция данных, подходящих для кодировщика,
-		/// либо -1 если подходящих данных не найдено.</returns>
-		public int FindValid (byte[] source, int offset, int count)
-		{
-			if (source == null)
-			{
-				throw new ArgumentNullException (nameof (source));
-			}
-
-			if ((offset < 0) || (offset > source.Length) || ((offset == source.Length) && (count > 0)))
-			{
-				throw new ArgumentOutOfRangeException (nameof (offset));
-			}
-
-			Contract.EndContractBlock ();
-
-			return offset;
-		}
-
-		/// <summary>
-		/// Оценивает потенциальный результат кодирования указанной порции массива байтов.
-		/// </summary>
-		/// <param name="source">source не используется.</param>
-		/// <param name="offset">offset не используется.</param>
-		/// <param name="count">Количество байтов в порции исходных данных.</param>
+		/// <param name="source">Диапазон байтов исходных данных.</param>
 		/// <param name="maxOutCount">Максимальное количество байтов, которое может содержать результат кодирования.</param>
-		/// <param name="segmentNumber">segmentNumber не используется.</param>
-		/// <param name="isLastSegment">isLastSegment не используется.</param>
-		/// <returns>Кортеж из количества байтов, необходимых для результата кодирования и
-		/// количества байтов источника, которое было использовано для кодирования.</returns>
-		public EncodingBalance Estimate (byte[] source, int offset, int count, int maxOutCount, int segmentNumber, bool isLastSegment)
+		/// <param name="segmentNumber">Номер порции с результирующими данными.</param>
+		/// <param name="isLastSegment">Признак того, что указанный диапазон исходных данных является последним.</param>
+		/// <returns>Баланс потенциальной операции кодирования.</returns>
+		public EncodingBalance Estimate (ReadOnlySpan<byte> source, int maxOutCount, int segmentNumber, bool isLastSegment)
 		{
 			if (maxOutCount < 0)
 			{
@@ -98,96 +69,53 @@ namespace Novartment.Base.Text
 				return new EncodingBalance (0, 0);
 			}
 
-			var groupsRequested = (int)Math.Ceiling ((double)count / 3.0D);
+			var groupsRequested = (int)Math.Ceiling ((double)source.Length / 3.0D);
 			var groups = Math.Min (groupsRequested, maxGroups);
 			return new EncodingBalance (
 				this.PrologSize + this.EpilogSize + (groups * 4),
-				Math.Min (count, groups * 3));
+				Math.Min (source.Length, groups * 3));
 		}
 
 		/// <summary>
-		/// Кодирует указанную порцию массива байтов.
+		/// Кодирует указанную порцию диапазона байтов.
 		/// </summary>
-		/// <param name="source">Массив байтов, содержащий порцию исходных данных.</param>
-		/// <param name="offset">Позиция начала порции исходных данных.</param>
-		/// <param name="count">Количество байтов в порции исходных данных.</param>
-		/// <param name="destination">Массив байтов, куда будет записываться результат кодирования.</param>
-		/// <param name="outOffset">Позиция в destination куда будет записываться результат кодирования.</param>
-		/// <param name="maxOutCount">Максимальное количество байтов, которое может содержать результат кодирования.</param>
-		/// <param name="segmentNumber">segmentNumber не используется.</param>
-		/// <param name="isLastSegment">isLastSegment не используется.</param>
-		/// <returns>Кортеж из количества байтов, записанных в массив для результата кодирования и
-		/// количества байтов источника, которое было использовано для кодирования.</returns>
-		public EncodingBalance Encode (
-			byte[] source,
-			int offset,
-			int count,
-			byte[] destination,
-			int outOffset,
-			int maxOutCount,
-			int segmentNumber,
-			bool isLastSegment)
+		/// <param name="source">Диапазон байтов, содержащий порцию исходных данных.</param>
+		/// <param name="destination">Диапазон байтов, куда будет записываться результат кодирования.</param>
+		/// <param name="segmentNumber">Номер порции с результирующими данными.</param>
+		/// <param name="isLastSegment">Признако того, что указанный диапазон исходных данных является последним.</param>
+		/// <returns>Баланс операции кодирования.</returns>
+		public EncodingBalance Encode (ReadOnlySpan<byte> source, Span<byte> destination, int segmentNumber, bool isLastSegment)
 		{
-			if (source == null)
-			{
-				throw new ArgumentNullException (nameof (source));
-			}
-
-			if ((offset < 0) || (offset > source.Length) || ((offset == source.Length) && (count > 0)))
-			{
-				throw new ArgumentOutOfRangeException (nameof (offset));
-			}
-
-			if ((count < 0) || (count > source.Length))
-			{
-				throw new ArgumentOutOfRangeException (nameof (count));
-			}
-
-			if (destination == null)
-			{
-				throw new ArgumentNullException (nameof (destination));
-			}
-
-			if ((outOffset < 0) || (outOffset > destination.Length) || ((outOffset == destination.Length) && (maxOutCount > 0)))
-			{
-				throw new ArgumentOutOfRangeException (nameof (outOffset));
-			}
-
-			if ((maxOutCount < 0) || (maxOutCount > destination.Length))
-			{
-				throw new ArgumentOutOfRangeException (nameof (maxOutCount));
-			}
-
-			Contract.EndContractBlock ();
-
-			var outStartOffset = outOffset;
+			var outOffset = 0;
 			destination[outOffset++] = (byte)'=';
 			destination[outOffset++] = (byte)'?';
-			AsciiCharSet.GetBytes (_encoding.WebName.AsSpan (), destination.AsSpan (outOffset));
+			AsciiCharSet.GetBytes (_encoding.WebName.AsSpan (), destination.Slice (outOffset));
 			outOffset += _encoding.WebName.Length;
 			destination[outOffset++] = (byte)'?';
 			destination[outOffset++] = (byte)'B';
 			destination[outOffset++] = (byte)'?';
-			maxOutCount -= 2; // уменьшаем лимит на размер эпилога
-			var maxGroups = (maxOutCount - (outOffset - outStartOffset)) / 4;
+			var maxGroups = (destination.Length - outOffset - 2) / 4;  // уменьшаем лимит на размер эпилога
 			if (maxGroups < 1)
 			{ // ничего кроме пролога не влезет
 				return new EncodingBalance (0, 0);
 			}
 
-			var groupsRequested = (int)Math.Ceiling (count / 3.0);
+			var groupsRequested = (int)Math.Ceiling (source.Length / 3.0);
 			var groups = Math.Min (groupsRequested, maxGroups);
-			var sourceCount = Math.Min (count, groups * 3);
-			ConvertToBase64Array (source, offset, sourceCount, destination, ref outOffset);
+			var sourceCount = Math.Min (source.Length, groups * 3);
+			var size = ConvertToBase64Array (source.Slice (0, sourceCount), destination.Slice (outOffset));
+			outOffset += size;
 			destination[outOffset++] = (byte)'?'; // эпилог
 			destination[outOffset++] = (byte)'=';
-			return new EncodingBalance (outOffset - outStartOffset, sourceCount);
+			return new EncodingBalance (outOffset, sourceCount);
 		}
 
-		private static void ConvertToBase64Array (byte[] inData, int offset, int length, byte[] outData, ref int outOffset)
+		private static int ConvertToBase64Array (ReadOnlySpan<byte> inData, Span<byte> outData)
 		{
-			var tail = length % 3;
-			var tailPos = offset + (length - tail);
+			var tail = inData.Length % 3;
+			var tailPos = inData.Length - tail;
+			var offset = 0;
+			var outOffset = 0;
 			while (offset < tailPos)
 			{
 				outData[outOffset++] = _base64Table[(inData[offset] & 0xfc) >> 2];
@@ -214,6 +142,8 @@ namespace Novartment.Base.Text
 					outOffset += 4;
 					break;
 			}
+
+			return outOffset;
 		}
 	}
 }

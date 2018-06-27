@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System;
+using System.Text;
 using Xunit;
 
 namespace Novartment.Base.Net.Mime.Test
@@ -22,34 +23,34 @@ namespace Novartment.Base.Net.Mime.Test
 			var encodedBuf = new byte[999];
 
 			// полная строка, неподходящие начинаются с середины, первый кусок
-			var tuple = encoder.Estimate (buf, 0, buf.Length, encodedBuf.Length, 0, false);
+			var tuple = encoder.Estimate (buf, encodedBuf.Length, 0, false);
 			Assert.Equal (TemplateResultEncodedSection0Prolog.Length + TemplateResultEncoded.Length, tuple.BytesProduced);
 			Assert.Equal (buf.Length, tuple.BytesConsumed);
-			tuple = encoder.Encode (buf, 0, buf.Length, encodedBuf, 0, encodedBuf.Length, 0, false);
+			tuple = encoder.Encode (buf, encodedBuf, 0, false);
 			Assert.Equal (TemplateResultEncodedSection0Prolog + TemplateResultEncoded, Encoding.ASCII.GetString (encodedBuf, 0, tuple.BytesProduced));
 			Assert.Equal (buf.Length, tuple.BytesConsumed);
 
 			// полная строка, неподходящие начинаются с середины, последующие куски
-			tuple = encoder.Estimate (buf, 0, buf.Length, encodedBuf.Length, 1, false);
+			tuple = encoder.Estimate (buf, encodedBuf.Length, 1, false);
 			Assert.Equal (TemplateResultEncoded.Length, tuple.BytesProduced);
 			Assert.Equal (buf.Length, tuple.BytesConsumed);
-			tuple = encoder.Encode (buf, 0, buf.Length, encodedBuf, 0, encodedBuf.Length, 1, false);
+			tuple = encoder.Encode (buf, encodedBuf, 1, false);
 			Assert.Equal (TemplateResultEncoded, Encoding.ASCII.GetString (encodedBuf, 0, tuple.BytesProduced));
 			Assert.Equal (buf.Length, tuple.BytesConsumed);
 
 			// ограничение по размеру входа
-			tuple = encoder.Estimate (buf, 0, 7, encodedBuf.Length, 0, false);
+			tuple = encoder.Estimate (buf.AsSpan (0, 7), encodedBuf.Length, 0, false);
 			Assert.Equal (14, tuple.BytesProduced);
 			Assert.Equal (7, tuple.BytesConsumed);
-			tuple = encoder.Encode (buf, 0, 7, encodedBuf, 0, encodedBuf.Length, 0, false);
+			tuple = encoder.Encode (buf.AsSpan (0, 7), encodedBuf, 0, false);
 			Assert.Equal ((TemplateResultEncodedSection0Prolog + TemplateResultEncoded).Substring (0, 14), Encoding.ASCII.GetString (encodedBuf, 0, tuple.BytesProduced));
 			Assert.Equal (7, tuple.BytesConsumed);
 
 			// ограничение по размеру выхода
-			tuple = encoder.Estimate (buf, Template1.Length + Template2.Length, buf.Length, 11, 0, false);
+			tuple = encoder.Estimate (buf.AsSpan (Template1.Length + Template2.Length), 11, 0, false);
 			Assert.Equal (10, tuple.BytesProduced);
 			Assert.Equal (1, tuple.BytesConsumed);
-			tuple = encoder.Encode (buf, Template1.Length + Template2.Length, buf.Length, encodedBuf, 0, 11, 0, false);
+			tuple = encoder.Encode (buf.AsSpan (Template1.Length + Template2.Length), encodedBuf.AsSpan (0, 11), 0, false);
 			Assert.Equal ("utf-8''%20", Encoding.ASCII.GetString (encodedBuf, 0, tuple.BytesProduced));
 			Assert.Equal (1, tuple.BytesConsumed);
 		}

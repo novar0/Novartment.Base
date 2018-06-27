@@ -31,76 +31,15 @@ namespace Novartment.Base.Text
 		public int EpilogSize => 0;
 
 		/// <summary>
-		/// В указанном массиве байтов ищет ближайшую позицию данных,
-		/// подходящих для кодировщика.
+		/// Оценивает потенциальный результат кодирования диапазона байтов.
 		/// </summary>
-		/// <param name="source">Исходный массив байтов.</param>
-		/// <param name="offset">Позиция начала исходных данных в массиве.</param>
-		/// <param name="count">Количество байтов исходных данных в массиве.</param>
-		/// <returns>Ближайшая позиция данных, подходящих для кодировщика,
-		/// либо -1 если подходящих данных не найдено.</returns>
-		public int FindValid (byte[] source, int offset, int count)
-		{
-			if (source == null)
-			{
-				throw new ArgumentNullException (nameof (source));
-			}
-
-			if ((offset < 0) || (offset > source.Length) || ((offset == source.Length) && (count > 0)))
-			{
-				throw new ArgumentOutOfRangeException (nameof (offset));
-			}
-
-			if ((count < 0) || (count > source.Length))
-			{
-				throw new ArgumentOutOfRangeException (nameof (count));
-			}
-
-			Contract.EndContractBlock ();
-
-			int pos = 0;
-			while (pos < count)
-			{
-				var isEnabledClass = AsciiCharSet.IsCharOfClass ((char)source[offset + pos], _enabledClass);
-				if (isEnabledClass)
-				{
-					return offset + pos;
-				}
-
-				pos++;
-			}
-
-			return -1;
-		}
-
-		/// <summary>
-		/// Оценивает потенциальный результат кодирования указанной порции массива байтов.
-		/// </summary>
-		/// <param name="source">Массив байтов, содержащий порцию исходных данных.</param>
-		/// <param name="offset">Позиция начала порции исходных данных.</param>
-		/// <param name="count">Количество байтов в порции исходных данных.</param>
+		/// <param name="source">Диапазон байтов исходных данных.</param>
 		/// <param name="maxOutCount">Максимальное количество байтов, которое может содержать результат кодирования.</param>
-		/// <param name="segmentNumber">segmentNumber не используется.</param>
-		/// <param name="isLastSegment">isLastSegment не используется.</param>
-		/// <returns>Кортеж из количества байтов, необходимых для результата кодирования и
-		/// количества байтов источника, которое было использовано для кодирования.</returns>
-		public EncodingBalance Estimate (byte[] source, int offset, int count, int maxOutCount, int segmentNumber, bool isLastSegment)
+		/// <param name="segmentNumber">Номер порции с результирующими данными.</param>
+		/// <param name="isLastSegment">Признак того, что указанный диапазон исходных данных является последним.</param>
+		/// <returns>Баланс потенциальной операции кодирования.</returns>
+		public EncodingBalance Estimate (ReadOnlySpan<byte> source, int maxOutCount, int segmentNumber, bool isLastSegment)
 		{
-			if (source == null)
-			{
-				throw new ArgumentNullException (nameof (source));
-			}
-
-			if ((offset < 0) || (offset > source.Length) || ((offset == source.Length) && (count > 0)))
-			{
-				throw new ArgumentOutOfRangeException (nameof (offset));
-			}
-
-			if ((count < 0) || (count > source.Length))
-			{
-				throw new ArgumentOutOfRangeException (nameof (count));
-			}
-
 			if (maxOutCount < 0)
 			{
 				throw new ArgumentOutOfRangeException (nameof (maxOutCount));
@@ -109,7 +48,7 @@ namespace Novartment.Base.Text
 			Contract.EndContractBlock ();
 
 			int pos = 0;
-			while ((pos < count) && (pos < maxOutCount) && AsciiCharSet.IsCharOfClass ((char)source[offset + pos], _enabledClass))
+			while ((pos < source.Length) && (pos < maxOutCount) && (source[pos] < AsciiCharSet.Classes.Count) && ((AsciiCharSet.Classes[source[pos]] & (short)_enabledClass) != 0))
 			{
 				pos++;
 			}
@@ -118,76 +57,30 @@ namespace Novartment.Base.Text
 		}
 
 		/// <summary>
-		/// Кодирует указанную порцию массива байтов.
+		/// Кодирует указанную порцию диапазона байтов.
 		/// </summary>
-		/// <param name="source">Массив байтов, содержащий порцию исходных данных.</param>
-		/// <param name="offset">Позиция начала порции исходных данных.</param>
-		/// <param name="count">Количество байтов в порции исходных данных.</param>
-		/// <param name="destination">Массив байтов, куда будет записываться результат кодирования.</param>
-		/// <param name="outOffset">Позиция в destination куда будет записываться результат кодирования.</param>
-		/// <param name="maxOutCount">Максимальное количество байтов, которое может содержать результат кодирования.</param>
-		/// <param name="segmentNumber">segmentNumber не используется.</param>
-		/// <param name="isLastSegment">isLastSegment не используется.</param>
-		/// <returns>Кортеж из количества байтов, записанных в массив для результата кодирования и
-		/// количества байтов источника, которое было использовано для кодирования.</returns>
-		public EncodingBalance Encode (
-			byte[] source,
-			int offset,
-			int count,
-			byte[] destination,
-			int outOffset,
-			int maxOutCount,
-			int segmentNumber,
-			bool isLastSegment)
+		/// <param name="source">Диапазон байтов, содержащий порцию исходных данных.</param>
+		/// <param name="destination">Диапазон байтов, куда будет записываться результат кодирования.</param>
+		/// <param name="segmentNumber">Номер порции с результирующими данными.</param>
+		/// <param name="isLastSegment">Признако того, что указанный диапазон исходных данных является последним.</param>
+		/// <returns>Баланс операции кодирования.</returns>
+		public EncodingBalance Encode (ReadOnlySpan<byte> source, Span<byte> destination, int segmentNumber, bool isLastSegment)
 		{
-			if (source == null)
+			var pos = 0;
+			var outOffset = 0;
+			while ((pos < source.Length) && (pos < destination.Length))
 			{
-				throw new ArgumentNullException (nameof (source));
-			}
-
-			if ((offset < 0) || (offset > source.Length) || ((offset == source.Length) && (count > 0)))
-			{
-				throw new ArgumentOutOfRangeException (nameof (offset));
-			}
-
-			if ((count < 0) || (count > source.Length))
-			{
-				throw new ArgumentOutOfRangeException (nameof (count));
-			}
-
-			if (destination == null)
-			{
-				throw new ArgumentNullException (nameof (destination));
-			}
-
-			if ((outOffset < 0) || (outOffset > destination.Length) || ((outOffset == destination.Length) && (maxOutCount > 0)))
-			{
-				throw new ArgumentOutOfRangeException (nameof (outOffset));
-			}
-
-			if ((maxOutCount < 0) || (maxOutCount > destination.Length))
-			{
-				throw new ArgumentOutOfRangeException (nameof (maxOutCount));
-			}
-
-			Contract.EndContractBlock ();
-
-			var outStartOffset = outOffset;
-			int pos = 0;
-			while ((pos < count) && (pos < maxOutCount))
-			{
-				var c = source[offset + pos];
-				var isEnabledClass = AsciiCharSet.IsCharOfClass ((char)c, _enabledClass);
-				if (!isEnabledClass)
+				var octet = source[ pos];
+				if ((octet >= AsciiCharSet.Classes.Count) || ((AsciiCharSet.Classes[octet] & (short)_enabledClass) == 0))
 				{
 					break;
 				}
 
-				destination[outOffset++] = c;
+				destination[outOffset++] = octet;
 				pos++;
 			}
 
-			return new EncodingBalance (outOffset - outStartOffset, pos);
+			return new EncodingBalance (outOffset, pos);
 		}
 	}
 }

@@ -58,12 +58,8 @@ namespace Novartment.Base.Net.Mime
 				// значение из одной части не требующей кодирования (возможно квотирование)
 				outBytes[outBytesPos++] = (byte)'=';
 				(bytesProduced, _) = segment.Encoder.Encode (
-					source: value,
-					offset: segment.Offset,
-					count: segment.Count,
-					destination: outBytes,
-					outOffset: outBytesPos,
-					maxOutCount: outBytesRequiredCapacity - outBytesPos,
+					source: value.AsSpan (segment.Offset, segment.Count),
+					destination: outBytes.AsSpan (outBytesPos, outBytesRequiredCapacity - outBytesPos),
 					segmentNumber: 0,
 					isLastSegment: false);
 				outBytesPos += bytesProduced;
@@ -82,12 +78,8 @@ namespace Novartment.Base.Net.Mime
 
 				outBytes[outBytesPos++] = (byte)'=';
 				(bytesProduced, _) = segment.Encoder.Encode (
-					source: value,
-					offset: segment.Offset,
-					count: segment.Count,
-					destination: outBytes,
-					outOffset: outBytesPos,
-					maxOutCount: outBytesRequiredCapacity - outBytesPos,
+					source: value.AsSpan (segment.Offset, segment.Count),
+					destination: outBytes.AsSpan (outBytesPos, outBytesRequiredCapacity - outBytesPos),
 					segmentNumber: segmentNumber,
 					isLastSegment: isLastSegment);
 				outBytesPos += bytesProduced;
@@ -126,7 +118,7 @@ namespace Novartment.Base.Net.Mime
 					{
 						// значение, требующее кодирования или первый сегмент многосегментного значения
 						// должны использовать только ExtendedParameterEncoder
-						var (_, bytesConsumed) = encoder3.Estimate (source, pos, source.Length - pos, maxOutCount - 1, segmentNumber, true);
+						var (_, bytesConsumed) = encoder3.Estimate (source.AsSpan (pos, source.Length - pos), maxOutCount - 1, segmentNumber, true);
 						result = new EstimatingEncoderChunk (encoder3, pos, bytesConsumed);
 						pos += bytesConsumed;
 						return result;
@@ -136,9 +128,9 @@ namespace Novartment.Base.Net.Mime
 				}
 			}
 
-			var (_, bytesConsumed1) = encoder1.Estimate (source, pos, source.Length - pos, maxOutCount, segmentNumber, true);
-			var (_, bytesConsumed2) = encoder2.Estimate (source, pos, source.Length - pos, maxOutCount, segmentNumber, true);
-			var (_, bytesConsumed3) = encoder3.Estimate (source, pos, source.Length - pos, maxOutCount - 1, segmentNumber, true);
+			var (_, bytesConsumed1) = encoder1.Estimate (source.AsSpan (pos, source.Length - pos), maxOutCount, segmentNumber, true);
+			var (_, bytesConsumed2) = encoder2.Estimate (source.AsSpan (pos, source.Length - pos), maxOutCount, segmentNumber, true);
+			var (_, bytesConsumed3) = encoder3.Estimate (source.AsSpan (pos, source.Length - pos), maxOutCount - 1, segmentNumber, true);
 
 			if (bytesConsumed2 >= bytesConsumed3)
 			{

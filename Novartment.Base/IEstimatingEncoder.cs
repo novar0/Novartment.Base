@@ -3,7 +3,7 @@
 namespace Novartment.Base
 {
 	/// <summary>
-	/// Кодировщик порций массива байтов в другой формат,
+	/// Кодировщик диапазона байтов в другой формат,
 	/// позволяющий заранее оценить валидность исходных данных и размер результата.
 	/// </summary>
 	public interface IEstimatingEncoder
@@ -19,55 +19,24 @@ namespace Novartment.Base
 		int EpilogSize { get; }
 
 		/// <summary>
-		/// В указанном массиве байтов ищет ближайшую позицию данных,
-		/// подходящих для кодировщика.
+		/// Оценивает потенциальный результат кодирования диапазона байтов.
 		/// </summary>
-		/// <param name="source">Исходный массив байтов.</param>
-		/// <param name="offset">Позиция начала исходных данных в массиве.</param>
-		/// <param name="count">Количество байтов исходных данных в массиве.</param>
-		/// <returns>Ближайшая позиция данных, подходящих для кодировщика,
-		/// либо -1 если подходящих данных не найдено.</returns>
-		int FindValid (byte[] source, int offset, int count);
-
-		/// <summary>
-		/// Оценивает потенциальный результат кодирования указанной порции массива байтов.
-		/// </summary>
-		/// <param name="source">Массив байтов, содержащий порцию исходных данных.</param>
-		/// <param name="offset">Позиция начала порции исходных данных.</param>
-		/// <param name="count">Количество байтов в порции исходных данных.</param>
+		/// <param name="source">Диапазон байтов исходных данных.</param>
 		/// <param name="maxOutCount">Максимальное количество байтов, которое может содержать результат кодирования.</param>
 		/// <param name="segmentNumber">Номер порции с результирующими данными.</param>
-		/// <param name="isLastSegment">Признако того, что указанная порция исходных данных является последней.</param>
+		/// <param name="isLastSegment">Признак того, что указанный диапазон исходных данных является последним.</param>
 		/// <returns>Баланс потенциальной операции кодирования.</returns>
-		EncodingBalance Estimate (
-			byte[] source,
-			int offset,
-			int count,
-			int maxOutCount,
-			int segmentNumber,
-			bool isLastSegment);
+		EncodingBalance Estimate (ReadOnlySpan<byte> source, int maxOutCount, int segmentNumber, bool isLastSegment);
 
 		/// <summary>
-		/// Кодирует указанную порцию массива байтов.
+		/// Кодирует указанную порцию диапазона байтов.
 		/// </summary>
-		/// <param name="source">Массив байтов, содержащий порцию исходных данных.</param>
-		/// <param name="offset">Позиция начала порции исходных данных.</param>
-		/// <param name="count">Количество байтов в порции исходных данных.</param>
-		/// <param name="destination">Массив байтов, куда будет записываться результат кодирования.</param>
-		/// <param name="outOffset">Позиция в destination куда будет записываться результат кодирования.</param>
-		/// <param name="maxOutCount">Максимальное количество байтов, которое может содержать результат кодирования.</param>
+		/// <param name="source">Диапазон байтов, содержащий порцию исходных данных.</param>
+		/// <param name="destination">Диапазон байтов, куда будет записываться результат кодирования.</param>
 		/// <param name="segmentNumber">Номер порции с результирующими данными.</param>
-		/// <param name="isLastSegment">Признако того, что указанная порция исходных данных является последней.</param>
+		/// <param name="isLastSegment">Признако того, что указанный диапазон исходных данных является последним.</param>
 		/// <returns>Баланс операции кодирования.</returns>
-		EncodingBalance Encode (
-			byte[] source,
-			int offset,
-			int count,
-			byte[] destination,
-			int outOffset,
-			int maxOutCount,
-			int segmentNumber,
-			bool isLastSegment);
+		EncodingBalance Encode (ReadOnlySpan<byte> source, Span<byte> destination, int segmentNumber, bool isLastSegment);
 	}
 
 #pragma warning disable CA1815 // Override equals and operator equals on value types

@@ -207,7 +207,7 @@ namespace Novartment.Base.Net.Mime
 				}
 			}
 
-			var (bytesProduced, bytesConsumed) = encoder.Encode (source, byteIndex, byteCount, outBuf, outPos, outBuf.Length - outPos, 0, true);
+			var (bytesProduced, bytesConsumed) = encoder.Encode (source.AsSpan (byteIndex, byteCount), outBuf.AsSpan (outPos, outBuf.Length - outPos), 0, true);
 			outPos += bytesProduced;
 			var result = Encoding.UTF8.GetString (outBuf, 0, outPos);
 
