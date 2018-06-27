@@ -74,17 +74,32 @@ namespace Novartment.Base.Test
 		public void Quote ()
 		{
 			Assert.Equal ("\"source\"", AsciiCharSet.Quote ("source"));
+
 			Assert.Equal (
 				"\"\t !#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[]^_`abcdefghijklmnopqrstuvwxyz{|}~\"",
 				AsciiCharSet.Quote ("\t !#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[]^_`abcdefghijklmnopqrstuvwxyz{|}~"));
 			Assert.Equal ("\"source\taa\\\\bb \\\"net\\\"\"", AsciiCharSet.Quote ("source\taa\\bb \"net\""));
+
+			Assert.Throws<FormatException> (() => AsciiCharSet.Quote ("sourceЖ"));
 		}
 
 		[Fact]
 		[Trait ("Category", "Text.AsciiCharSet")]
-		public void Quote_Exception ()
+		public void QuoteSpan ()
 		{
-			Assert.Throws<FormatException> (() => AsciiCharSet.Quote ("sourceЖ"));
+			var buf = new char[1000];
+			var size = AsciiCharSet.Quote ("source", buf);
+			Assert.Equal ("\"source\"", new string (buf.AsSpan (0, size)));
+
+			size = AsciiCharSet.Quote ("\t !#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[]^_`abcdefghijklmnopqrstuvwxyz{|}~", buf);
+			Assert.Equal (
+				"\"\t !#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[]^_`abcdefghijklmnopqrstuvwxyz{|}~\"",
+				new string (buf.AsSpan (0, size)));
+
+			size = AsciiCharSet.Quote ("source\taa\\bb \"net\"", buf);
+			Assert.Equal ("\"source\taa\\\\bb \\\"net\\\"\"", new string (buf.AsSpan (0, size)));
+
+			Assert.Throws<FormatException> (() => AsciiCharSet.Quote ("sourceЖ", buf));
 		}
 
 		[Fact]

@@ -60,6 +60,24 @@ namespace Novartment.Base.Net.Test
 
 		[Fact]
 		[Trait ("Category", "Net")]
+		public void ToStringSpan ()
+		{
+			var buf = new char[100];
+			var size = new AddrSpec ("someone", "someserver.ru").ToString (buf);
+			Assert.Equal ("someone@someserver.ru", new string (buf.AsSpan (0, size)));
+
+			size = new AddrSpec ("real(addr)", "someserver.ru").ToString (buf);
+			Assert.Equal ("\"real(addr)\"@someserver.ru", new string (buf.AsSpan (0, size)));
+
+			size = new AddrSpec ("someone", "some literal domain").ToString (buf);
+			Assert.Equal ("someone@[some literal domain]", new string (buf.AsSpan (0, size)));
+
+			size = new AddrSpec ("real(addr)", "some literal domain").ToString (buf);
+			Assert.Equal ("\"real(addr)\"@[some literal domain]", new string (buf.AsSpan (0, size)));
+		}
+
+		[Fact]
+		[Trait ("Category", "Net")]
 		public void Equals_ ()
 		{
 			Assert.True (new AddrSpec ("someone", "someserver.ru").Equals (new AddrSpec ("someone", "someserver.ru")));

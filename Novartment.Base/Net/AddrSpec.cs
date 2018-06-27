@@ -184,6 +184,42 @@ namespace Novartment.Base.Net
 		}
 
 		/// <summary>
+		/// Преобразовывает значение объекта в эквивалентное ему строковое представление.
+		/// </summary>
+		/// <param name="buf">Буфер, куда будет записано строковое представление значения объекта.</param>
+		/// <returns>Количество знаков, записанных в буфер.</returns>
+		public int ToString (Span<char> buf)
+		{
+			var pos = 0;
+			var isValidLocalPart = AsciiCharSet.IsValidInternetDomainName (this.LocalPart);
+			if (isValidLocalPart)
+			{
+				this.LocalPart.AsSpan ().CopyTo (buf.Slice (pos));
+				pos += this.LocalPart.Length;
+			}
+			else
+			{
+				pos += AsciiCharSet.Quote (this.LocalPart.AsSpan (), buf.Slice (pos));
+			}
+
+			buf[pos++] = '@';
+			var isValidDomain = AsciiCharSet.IsValidInternetDomainName (this.Domain);
+			if (!isValidDomain)
+			{
+				buf[pos++] = '[';
+			}
+
+			this.Domain.AsSpan ().CopyTo (buf.Slice (pos));
+			pos += this.Domain.Length;
+			if (!isValidDomain)
+			{
+				buf[pos++] = ']';
+			}
+
+			return pos;
+		}
+
+		/// <summary>
 		/// Преобразовывает значение объекта в эквивалентное ему строковое представление, окруженное треугольными скобками.
 		/// </summary>
 		/// <returns>Строковое представление значения объекта, окруженное треугольными скобками.</returns>
@@ -193,6 +229,20 @@ namespace Novartment.Base.Net
 			return AsciiCharSet.IsValidInternetDomainName (this.Domain) ?
 				"<" + localPart + "@" + this.Domain + ">" :
 				"<" + localPart + "@[" + this.Domain + "]>";
+		}
+
+		/// <summary>
+		/// Преобразовывает значение объекта в эквивалентное ему строковое представление, окруженное треугольными скобками.
+		/// </summary>
+		/// <param name="buf">Буфер, куда будет записано строковое представление значения объекта.</param>
+		/// <returns>Количество знаков, записанных в буфер.</returns>
+		public int ToAngleString (Span<char> buf)
+		{
+			var pos = 0;
+			buf[pos++] = '<';
+			pos += ToString (buf.Slice (pos));
+			buf[pos++] = '>';
+			return pos;
 		}
 
 		/// <summary>
