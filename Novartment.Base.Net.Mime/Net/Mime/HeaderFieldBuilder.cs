@@ -12,34 +12,15 @@ namespace Novartment.Base.Net.Mime
 	/// <summary>
 	/// Построитель поля заголовка из отдельных частей значения и параметров.
 	/// </summary>
-	public class HeaderFieldBuilder
+	public abstract class HeaderFieldBuilder
 	{
-		private readonly HeaderFieldName _name;
 		private readonly IAdjustableList<HeaderFieldParameter> _parameters = new ArrayList<HeaderFieldParameter> ();
-		private readonly IReadOnlyList<string> _valueParts;
 
 		/// <summary>
 		/// Инициализирует новый экземпляр класса HeaderFieldBuilder с указанным именем и набором частей значения поля.
 		/// </summary>
 		/// <param name="name">Имя поля заголовка.</param>
-		/// <param name="valueParts">Набор частей значения поля заголовка.</param>
-		private HeaderFieldBuilder (HeaderFieldName name, IReadOnlyList<string> valueParts)
-		{
-			_name = name;
-			_valueParts = valueParts;
-		}
-
-		public HeaderFieldName Name => _name;
-
-		public IReadOnlyList<string> ValueParts => _valueParts;
-
-		/// <summary>
-		/// Создает поле заголовка из указанного значения.
-		/// </summary>
-		/// <param name="name">Имя поля заголовка.</param>
-		/// <param name="value">Значение поля заголовка.</param>
-		/// <returns>Поле заголовка.</returns>
-		public static HeaderFieldBuilder CreateExactValue (HeaderFieldName name, string value)
+		protected HeaderFieldBuilder (HeaderFieldName name)
 		{
 			if (name == HeaderFieldName.Unspecified)
 			{
@@ -48,491 +29,12 @@ namespace Novartment.Base.Net.Mime
 
 			Contract.EndContractBlock ();
 
-			return new HeaderFieldBuilder (name, ReadOnlyList.Repeat (value, 1));
+			this.Name = name;
 		}
 
-		/// <summary>
-		/// Создает поле заголовка из указанной коллекции значений-идентификаторов языка.
-		/// </summary>
-		/// <param name="name">Имя поля заголовка.</param>
-		/// <param name="languages">Коллекция значений-идентификаторов языка.</param>
-		/// <returns>Поле заголовка.</returns>
-		public static HeaderFieldBuilder CreateLanguageList (HeaderFieldName name, IReadOnlyCollection<string> languages)
-		{
-			if (name == HeaderFieldName.Unspecified)
-			{
-				throw new ArgumentOutOfRangeException (nameof (name));
-			}
+		public HeaderFieldName Name { get; }
 
-			if (languages == null)
-			{
-				throw new ArgumentNullException (nameof (languages));
-			}
-
-			Contract.EndContractBlock ();
-
-			return new HeaderFieldBuilder (name, languages.AppendSeparator (','));
-		}
-
-		/// <summary>
-		/// Создает поле заголовка из указанной коллекции интернет-идентификаторов.
-		/// </summary>
-		/// <param name="name">Имя поля заголовка.</param>
-		/// <param name="addrSpecs">Коллекция языков в формате интернет-идентификаторов.</param>
-		/// <returns>Поле заголовка.</returns>
-		public static HeaderFieldBuilder CreateAddrSpecList (HeaderFieldName name, IReadOnlyCollection<AddrSpec> addrSpecs)
-		{
-			if (name == HeaderFieldName.Unspecified)
-			{
-				throw new ArgumentOutOfRangeException (nameof (name));
-			}
-
-			if (addrSpecs == null)
-			{
-				throw new ArgumentNullException (nameof (addrSpecs));
-			}
-
-			Contract.EndContractBlock ();
-
-			return new HeaderFieldBuilder (name, addrSpecs.Select (item => item.ToAngleString ()).ToList ());
-		}
-
-		/// <summary>
-		/// Создает поле заголовка из указанного значения типа 'unstructured'.
-		/// </summary>
-		/// <param name="name">Имя поля заголовка.</param>
-		/// <param name="text">Значение, которое надо представить в ограничениях типа 'unstructured'.</param>
-		/// <returns>Поле заголовка.</returns>
-		public static HeaderFieldBuilder CreateUnstructured (HeaderFieldName name, string text)
-		{
-			if (name == HeaderFieldName.Unspecified)
-			{
-				throw new ArgumentOutOfRangeException (nameof (name));
-			}
-
-			if (text == null)
-			{
-				throw new ArgumentNullException (nameof (text));
-			}
-
-			Contract.EndContractBlock ();
-
-			var result = new ArrayList<string> ();
-			HeaderEncoder.EncodeUnstructured (result, text);
-			return new HeaderFieldBuilder (name, result);
-		}
-
-		/// <summary>
-		/// Создает поле заголовка из указанного значения типа 'phrase'.
-		/// </summary>
-		/// <param name="name">Имя поля заголовка.</param>
-		/// <param name="text">Значение, которое надо представить в ограничениях типа 'phrase'.</param>
-		/// <returns>Поле заголовка.</returns>
-		public static HeaderFieldBuilder CreatePhrase (HeaderFieldName name, string text)
-		{
-			if (name == HeaderFieldName.Unspecified)
-			{
-				throw new ArgumentOutOfRangeException (nameof (name));
-			}
-
-			if (text == null)
-			{
-				throw new ArgumentNullException (nameof (text));
-			}
-
-			Contract.EndContractBlock ();
-
-			var result = new ArrayList<string> ();
-			HeaderEncoder.EncodePhrase (result, text);
-			return new HeaderFieldBuilder (name, result);
-		}
-
-		/// <summary>
-		/// Создает поле заголовка из типа и 'unstructured'-значения.
-		/// </summary>
-		/// <param name="name">Имя поля заголовка.</param>
-		/// <param name="type">Тип (значение типа 'atom').</param>
-		/// <param name="value">'unstructured' значение.</param>
-		/// <returns>Поле заголовка.</returns>
-		public static HeaderFieldBuilder CreateAtomAndUnstructured (HeaderFieldName name, string type, string value)
-		{
-			if (name == HeaderFieldName.Unspecified)
-			{
-				throw new ArgumentOutOfRangeException (nameof (name));
-			}
-
-			if (type == null)
-			{
-				throw new ArgumentNullException (nameof (type));
-			}
-
-			var isValidAtom = AsciiCharSet.IsAllOfClass (type, AsciiCharClasses.Atom);
-			if (!isValidAtom)
-			{
-				throw new ArgumentOutOfRangeException (nameof (type));
-			}
-
-			Contract.EndContractBlock ();
-
-			var result = new ArrayList<string>
-			{
-				type + ";",
-			};
-			if (value != null)
-			{
-				HeaderEncoder.EncodeUnstructured (result, value);
-			}
-
-			return new HeaderFieldBuilder (name, result);
-		}
-
-		/// <summary>
-		/// Создает поле заголовка из двух 'unstructured' значений.
-		/// </summary>
-		/// <param name="name">Имя поля заголовка.</param>
-		/// <param name="value1">Обязательное 'unstructured' значение 1.</param>
-		/// <param name="value2">Необязательное 'unstructured' значение 2.</param>
-		/// <returns>Поле заголовка.</returns>
-		public static HeaderFieldBuilder CreateUnstructuredPair (HeaderFieldName name, string value1, string value2)
-		{
-			if (name == HeaderFieldName.Unspecified)
-			{
-				throw new ArgumentOutOfRangeException (nameof (name));
-			}
-
-			if (value1 == null)
-			{
-				throw new ArgumentNullException (nameof (value1));
-			}
-
-			Contract.EndContractBlock ();
-
-			var result = new ArrayList<string> ();
-			HeaderEncoder.EncodeUnstructured (result, value1);
-			var isValue2Empty = string.IsNullOrEmpty (value2);
-			if (isValue2Empty)
-			{
-				return new HeaderFieldBuilder (name, result);
-			}
-
-			result[result.Count - 1] += ';';
-
-			HeaderEncoder.EncodeUnstructured (result, value2);
-
-			return new HeaderFieldBuilder (name, result);
-		}
-
-		/// <summary>
-		/// Создает поле заголовка из '*tokens' значения и даты.
-		/// </summary>
-		/// <param name="name">Имя поля заголовка.</param>
-		/// <param name="value">'*tokens' значение.</param>
-		/// <param name="dateTimeOffset">Дата.</param>
-		/// <returns>Поле заголовка.</returns>
-		public static HeaderFieldBuilder CreateTokensAndDate (HeaderFieldName name, string value, DateTimeOffset dateTimeOffset)
-		{
-			if (name == HeaderFieldName.Unspecified)
-			{
-				throw new ArgumentOutOfRangeException (nameof (name));
-			}
-
-			Contract.EndContractBlock ();
-
-			var tokens = new ArrayList<string> ();
-			HeaderEncoder.EncodeTokens (tokens, value);
-			if (tokens.Count > 0)
-			{
-				tokens[tokens.Count - 1] += ';';
-			}
-			else
-			{
-				tokens.Add (";");
-			}
-
-			tokens.Add (dateTimeOffset.ToInternetString ());
-			return new HeaderFieldBuilder (name, tokens);
-		}
-
-		/// <summary>
-		/// Создает поле заголовка из идентификатора и 'phrase'.
-		/// </summary>
-		/// <param name="name">Имя поля заголовка.</param>
-		/// <param name="id">Идентификатор (значение типа 'dot-atom-text').</param>
-		/// <param name="phrase">Произвольная 'phrase'.</param>
-		/// <returns>Поле заголовка.</returns>
-		public static HeaderFieldBuilder CreatePhraseAndId (HeaderFieldName name, string id, string phrase = null)
-		{
-			if (name == HeaderFieldName.Unspecified)
-			{
-				throw new ArgumentOutOfRangeException (nameof (name));
-			}
-
-			if (id == null)
-			{
-				throw new ArgumentNullException (nameof (id));
-			}
-
-			Contract.EndContractBlock ();
-
-			var isValidName = AsciiCharSet.IsValidInternetDomainName (id);
-			if (!isValidName)
-			{
-				throw new ArgumentOutOfRangeException (nameof (id), FormattableString.Invariant ($"Invalid value for type 'atom': \"{id}\"."));
-			}
-
-			var valueParts = new ArrayList<string> ();
-			if (phrase != null)
-			{
-				HeaderEncoder.EncodePhrase (valueParts, phrase);
-			}
-
-			valueParts.Add ("<" + id + ">");
-
-			return new HeaderFieldBuilder (name, valueParts);
-		}
-
-		/// <summary>
-		/// Создает поле заголовка из коллекции 'phrase'.
-		/// </summary>
-		/// <param name="name">Имя поля заголовка.</param>
-		/// <param name="values">Коллекция 'phrase'.</param>
-		/// <returns>Поле заголовка.</returns>
-		public static HeaderFieldBuilder CreatePhraseList (HeaderFieldName name, IReadOnlyList<string> values)
-		{
-			if (name == HeaderFieldName.Unspecified)
-			{
-				throw new ArgumentOutOfRangeException (nameof (name));
-			}
-
-			if (values == null)
-			{
-				throw new ArgumentNullException (nameof (values));
-			}
-
-			Contract.EndContractBlock ();
-
-			var result = new ArrayList<string> ();
-			for (var idx = 0; idx < values.Count; idx++)
-			{
-				HeaderEncoder.EncodePhrase (result, values[idx]);
-				if (idx < (values.Count - 1))
-				{
-					result[result.Count - 1] += ',';
-				}
-			}
-
-			return new HeaderFieldBuilder (name, result);
-		}
-
-		/// <summary>
-		/// Создает поле заголовка из Mailbox.
-		/// </summary>
-		/// <param name="name">Имя поля заголовка.</param>
-		/// <param name="mailbox">Mailbox.</param>
-		/// <returns>Поле заголовка.</returns>
-		public static HeaderFieldBuilder CreateMailbox (HeaderFieldName name, Mailbox mailbox)
-		{
-			if (name == HeaderFieldName.Unspecified)
-			{
-				throw new ArgumentOutOfRangeException (nameof (name));
-			}
-
-			if (mailbox == null)
-			{
-				throw new ArgumentNullException (nameof (mailbox));
-			}
-
-			Contract.EndContractBlock ();
-
-			var result = new ArrayList<string> ();
-			HeaderEncoder.EncodeMailbox (result, mailbox);
-			return new HeaderFieldBuilder (name, result);
-		}
-
-		/// <summary>
-		/// Создает поле заголовка из коллекции Mailbox.
-		/// </summary>
-		/// <param name="name">Имя поля заголовка.</param>
-		/// <param name="mailboxes">Коллекция Mailbox.</param>
-		/// <returns>Поле заголовка.</returns>
-		public static HeaderFieldBuilder CreateMailboxList (HeaderFieldName name, IReadOnlyList<Mailbox> mailboxes)
-		{
-			if (name == HeaderFieldName.Unspecified)
-			{
-				throw new ArgumentOutOfRangeException (nameof (name));
-			}
-
-			if (mailboxes == null)
-			{
-				throw new ArgumentNullException (nameof (mailboxes));
-			}
-
-			Contract.EndContractBlock ();
-
-			var result = new ArrayList<string> ();
-			for (var idx = 0; idx < mailboxes.Count; idx++)
-			{
-				HeaderEncoder.EncodeMailbox (result, mailboxes[idx]);
-				if (idx < (mailboxes.Count - 1))
-				{
-					result[result.Count - 1] += ',';
-				}
-			}
-
-			return new HeaderFieldBuilder (name, result);
-		}
-
-		/// <summary>
-		/// Создает поле заголовка из коллекции url-значений.
-		/// </summary>
-		/// <param name="name">Имя поля заголовка.</param>
-		/// <param name="urls">Коллекция url-значений.</param>
-		/// <returns>Поле заголовка.</returns>
-		public static HeaderFieldBuilder CreateAngleBracketedList (HeaderFieldName name, IReadOnlyList<string> urls)
-		{
-			if (name == HeaderFieldName.Unspecified)
-			{
-				throw new ArgumentOutOfRangeException (nameof (name));
-			}
-
-			if (urls == null)
-			{
-				throw new ArgumentNullException (nameof (urls));
-			}
-
-			Contract.EndContractBlock ();
-
-			// TODO: добавить валидацию каждого значения в urls
-			var result = new ArrayList<string> ();
-			for (var idx = 0; idx < urls.Count; idx++)
-			{
-				if (idx < (urls.Count - 1))
-				{
-					result.Add ("<" + urls[idx] + ">,");
-				}
-				else
-				{
-					result.Add ("<" + urls[idx] + ">");
-				}
-			}
-
-			return new HeaderFieldBuilder (name, result);
-		}
-
-		/// <summary>
-		/// Создает поле заголовка из трех атомов плюс опциональной коллекции атомов
-		/// в формате 'actionMode/sendingMode; type/4_1,4_2,4_3,4_4 ...'.
-		/// </summary>
-		/// <param name="name">Имя поля заголовка.</param>
-		/// <param name="actionMode">Обязательное значение 1.</param>
-		/// <param name="sendingMode">Обязательное значение 2.</param>
-		/// <param name="type">Обязательное значение 3.</param>
-		/// <param name="modifiers">Необязательная коллекция значений.</param>
-		/// <returns>Поле заголовка.</returns>
-		public static HeaderFieldBuilder CreateDisposition (
-			HeaderFieldName name,
-			string actionMode,
-			string sendingMode,
-			string type,
-			IReadOnlyCollection<string> modifiers)
-		{
-			if (name == HeaderFieldName.Unspecified)
-			{
-				throw new ArgumentOutOfRangeException (nameof (name));
-			}
-
-			if (actionMode == null)
-			{
-				throw new ArgumentNullException (nameof (actionMode));
-			}
-
-			if (sendingMode == null)
-			{
-				throw new ArgumentNullException (nameof (sendingMode));
-			}
-
-			if (type == null)
-			{
-				throw new ArgumentNullException (nameof (type));
-			}
-
-			var isAtom = AsciiCharSet.IsAllOfClass (actionMode, AsciiCharClasses.Atom);
-			if (!isAtom)
-			{
-				throw new ArgumentOutOfRangeException (nameof (actionMode));
-			}
-
-			isAtom = AsciiCharSet.IsAllOfClass (sendingMode, AsciiCharClasses.Atom);
-			if (!isAtom)
-			{
-				throw new ArgumentOutOfRangeException (nameof (sendingMode));
-			}
-
-			isAtom = AsciiCharSet.IsAllOfClass (type, AsciiCharClasses.Atom);
-			if (!isAtom)
-			{
-				throw new ArgumentOutOfRangeException (nameof (type));
-			}
-
-			Contract.EndContractBlock ();
-
-			if (modifiers?.Count > 0)
-			{
-				foreach (var modifier in modifiers)
-				{
-					isAtom = AsciiCharSet.IsAllOfClass (modifier, AsciiCharClasses.Atom);
-					if (!isAtom)
-					{
-						throw new FormatException (FormattableString.Invariant ($"Invalid value for type 'atom': \"{modifier}\"."));
-					}
-				}
-
-				type += "/" + string.Join (",", modifiers);
-			}
-
-			return new HeaderFieldBuilder (
-				name,
-				new ArrayList<string> (2) { actionMode + "/" + sendingMode + ";", type });
-		}
-
-		/// <summary>
-		/// Создает поле заголовка из указанной коллекции DispositionNotificationParameter.
-		/// </summary>
-		/// <param name="name">Имя поля заголовка.</param>
-		/// <param name="parameters">Коллекция DispositionNotificationParameter.</param>
-		/// <returns>Поле заголовка.</returns>
-		public static HeaderFieldBuilder CreateDispositionNotificationParameterList (
-			HeaderFieldName name,
-			IReadOnlyList<DispositionNotificationParameter> parameters)
-		{
-			if (name == HeaderFieldName.Unspecified)
-			{
-				throw new ArgumentOutOfRangeException (nameof (name));
-			}
-
-			if (parameters == null)
-			{
-				throw new ArgumentNullException (nameof (parameters));
-			}
-
-			Contract.EndContractBlock ();
-
-			// TODO: добавить валидацию каждого значения в parameters
-			var result = new ArrayList<string> ();
-			for (var idx = 0; idx < parameters.Count; idx++)
-			{
-				if (idx < (parameters.Count - 1))
-				{
-					result.Add (parameters[idx].ToString () + ";");
-				}
-				else
-				{
-					result.Add (parameters[idx].ToString ());
-				}
-			}
-
-			return new HeaderFieldBuilder (name, result);
-		}
+		internal abstract IReadOnlyList<string> GetParts ();
 
 		/// <summary>
 		/// Добавляет параметр с указанным именем и значением.
@@ -560,18 +62,19 @@ namespace Novartment.Base.Net.Mime
 			// 3) CarriageReturnLinefeed MUST NOT be inserted in such a way that any line of a folded header field is made up entirely of WSP characters and nothing else.
 
 			// формируем склеенную из частей строку вставляя где надо переводы строки и пробелы
-			var name = HeaderFieldNameHelper.GetName (_name);
+			var name = HeaderFieldNameHelper.GetName (this.Name);
 			var lineLen = name.Length;
 			AsciiCharSet.GetBytes (name.AsSpan (), buf);
 			buf[lineLen++] = (byte)':';
 			var outPos = lineLen;
 
 			// кодируем все части значения тела
-			for (var idx = 0; idx < _valueParts.Count; idx++)
+			var valueParts = GetParts ();
+			for (var idx = 0; idx < valueParts.Count; idx++)
 			{
 				// если есть параметры то последнюю часть значения дополняем знаком ';'
-				var extraSemicolon = (_parameters.Count > 0) && (idx == (_valueParts.Count - 1));
-				var part = _valueParts[idx];
+				var extraSemicolon = (_parameters.Count > 0) && (idx == (valueParts.Count - 1));
+				var part = valueParts[idx];
 				if (part != null)
 				{
 					CreatePart (part, extraSemicolon, buf, maxLineLength, ref outPos, ref lineLen);
@@ -650,6 +153,603 @@ namespace Novartment.Base.Net.Mime
 			{
 				buf[outPos++] = (byte)';';
 			}
+		}
+	}
+
+	public class HeaderFieldBuilderExactValue : HeaderFieldBuilder
+	{
+		private readonly string _value;
+
+		/// <summary>
+		/// Создает поле заголовка из указанного значения.
+		/// </summary>
+		/// <param name="name">Имя поля заголовка.</param>
+		/// <param name="value">Значение поля заголовка.</param>
+		/// <returns>Поле заголовка.</returns>
+		public HeaderFieldBuilderExactValue (HeaderFieldName name, string value)
+			: base (name)
+		{
+			_value = value;
+		}
+
+		internal override IReadOnlyList<string> GetParts ()
+		{
+			return ReadOnlyList.Repeat (_value, 1);
+		}
+	}
+
+	public class HeaderFieldBuilderUnstructured : HeaderFieldBuilder
+	{
+		private readonly string _text;
+
+		/// <summary>
+		/// Создает поле заголовка из указанного значения типа 'unstructured'.
+		/// </summary>
+		/// <param name="name">Имя поля заголовка.</param>
+		/// <param name="text">Значение, которое надо представить в ограничениях типа 'unstructured'.</param>
+		/// <returns>Поле заголовка.</returns>
+		public HeaderFieldBuilderUnstructured (HeaderFieldName name, string text)
+			: base (name)
+		{
+			if (text == null)
+			{
+				throw new ArgumentNullException (nameof (text));
+			}
+
+			Contract.EndContractBlock ();
+
+			_text = text;
+		}
+
+		internal override IReadOnlyList<string> GetParts ()
+		{
+			var result = new ArrayList<string> ();
+			HeaderEncoder.EncodeUnstructured (result, _text);
+			return result;
+		}
+	}
+
+	public class HeaderFieldBuilderPhrase : HeaderFieldBuilder
+	{
+		private readonly string _text;
+
+		/// <summary>
+		/// Создает поле заголовка из указанного значения типа 'phrase'.
+		/// </summary>
+		/// <param name="name">Имя поля заголовка.</param>
+		/// <param name="text">Значение, которое надо представить в ограничениях типа 'phrase'.</param>
+		/// <returns>Поле заголовка.</returns>
+		public HeaderFieldBuilderPhrase (HeaderFieldName name, string text)
+			: base (name)
+		{
+			if (text == null)
+			{
+				throw new ArgumentNullException (nameof (text));
+			}
+
+			Contract.EndContractBlock ();
+
+			_text = text;
+		}
+
+		internal override IReadOnlyList<string> GetParts ()
+		{
+			var result = new ArrayList<string> ();
+			HeaderEncoder.EncodePhrase (result, _text);
+			return result;
+		}
+	}
+
+	public class HeaderFieldBuilderMailbox : HeaderFieldBuilder
+	{
+		private readonly Mailbox _mailbox;
+
+		/// <summary>
+		/// Создает поле заголовка из Mailbox.
+		/// </summary>
+		/// <param name="name">Имя поля заголовка.</param>
+		/// <param name="mailbox">Mailbox.</param>
+		/// <returns>Поле заголовка.</returns>
+		public HeaderFieldBuilderMailbox (HeaderFieldName name, Mailbox mailbox)
+			: base (name)
+		{
+			if (mailbox == null)
+			{
+				throw new ArgumentNullException (nameof (mailbox));
+			}
+
+			Contract.EndContractBlock ();
+
+			_mailbox = mailbox;
+		}
+
+		internal override IReadOnlyList<string> GetParts ()
+		{
+			var result = new ArrayList<string> ();
+			HeaderEncoder.EncodeMailbox (result, _mailbox);
+			return result;
+		}
+	}
+
+	public class HeaderFieldBuilderLanguageList : HeaderFieldBuilder
+	{
+		private readonly IReadOnlyCollection<string> _languages;
+
+		/// <summary>
+		/// Создает поле заголовка из указанной коллекции значений-идентификаторов языка.
+		/// </summary>
+		/// <param name="name">Имя поля заголовка.</param>
+		/// <param name="languages">Коллекция значений-идентификаторов языка.</param>
+		/// <returns>Поле заголовка.</returns>
+		public HeaderFieldBuilderLanguageList (HeaderFieldName name, IReadOnlyCollection<string> languages)
+			: base (name)
+		{
+			if (languages == null)
+			{
+				throw new ArgumentNullException (nameof (languages));
+			}
+
+			Contract.EndContractBlock ();
+
+			_languages = languages;
+		}
+
+		internal override IReadOnlyList<string> GetParts ()
+		{
+			return _languages.AppendSeparator (',');
+		}
+	}
+
+	public class HeaderFieldBuilderAddrSpecList : HeaderFieldBuilder
+	{
+		private readonly IReadOnlyCollection<AddrSpec> _addrSpecs;
+
+		/// <summary>
+		/// Создает поле заголовка из указанной коллекции интернет-идентификаторов.
+		/// </summary>
+		/// <param name="name">Имя поля заголовка.</param>
+		/// <param name="addrSpecs">Коллекция языков в формате интернет-идентификаторов.</param>
+		/// <returns>Поле заголовка.</returns>
+		public HeaderFieldBuilderAddrSpecList (HeaderFieldName name, IReadOnlyCollection<AddrSpec> addrSpecs)
+			: base (name)
+		{
+			if (addrSpecs == null)
+			{
+				throw new ArgumentNullException (nameof (addrSpecs));
+			}
+
+			Contract.EndContractBlock ();
+
+			_addrSpecs = addrSpecs;
+		}
+
+		internal override IReadOnlyList<string> GetParts ()
+		{
+			return _addrSpecs.Select (item => item.ToAngleString ()).ToList ();
+		}
+	}
+
+	public class HeaderFieldBuilderAtomAndUnstructured : HeaderFieldBuilder
+	{
+		private readonly string _type;
+		private readonly string _value;
+
+		/// <summary>
+		/// Создает поле заголовка из типа и 'unstructured'-значения.
+		/// </summary>
+		/// <param name="name">Имя поля заголовка.</param>
+		/// <param name="type">Тип (значение типа 'atom').</param>
+		/// <param name="value">'unstructured' значение.</param>
+		/// <returns>Поле заголовка.</returns>
+		public HeaderFieldBuilderAtomAndUnstructured (HeaderFieldName name, string type, string value)
+			: base (name)
+		{
+			if (type == null)
+			{
+				throw new ArgumentNullException (nameof (type));
+			}
+
+			var isValidAtom = AsciiCharSet.IsAllOfClass (type, AsciiCharClasses.Atom);
+			if (!isValidAtom)
+			{
+				throw new ArgumentOutOfRangeException (nameof (type));
+			}
+
+			Contract.EndContractBlock ();
+
+			_type = type;
+			_value = value;
+		}
+
+		internal override IReadOnlyList<string> GetParts ()
+		{
+			var result = new ArrayList<string>
+			{
+				_type + ";",
+			};
+			if (_value != null)
+			{
+				HeaderEncoder.EncodeUnstructured (result, _value);
+			}
+
+			return result;
+		}
+	}
+
+	public class HeaderFieldBuilderUnstructuredPair : HeaderFieldBuilder
+	{
+		private readonly string _value1;
+		private readonly string _value2;
+
+		/// <summary>
+		/// Создает поле заголовка из двух 'unstructured' значений.
+		/// </summary>
+		/// <param name="name">Имя поля заголовка.</param>
+		/// <param name="value1">Обязательное 'unstructured' значение 1.</param>
+		/// <param name="value2">Необязательное 'unstructured' значение 2.</param>
+		/// <returns>Поле заголовка.</returns>
+		public HeaderFieldBuilderUnstructuredPair (HeaderFieldName name, string value1, string value2)
+			: base (name)
+		{
+			if (value1 == null)
+			{
+				throw new ArgumentNullException (nameof (value1));
+			}
+
+			Contract.EndContractBlock ();
+
+			_value1 = value1;
+			_value2 = value2;
+		}
+
+		internal override IReadOnlyList<string> GetParts ()
+		{
+			var result = new ArrayList<string> ();
+			HeaderEncoder.EncodeUnstructured (result, _value1);
+			var isValue2Empty = string.IsNullOrEmpty (_value2);
+			if (isValue2Empty)
+			{
+				return result;
+			}
+
+			result[result.Count - 1] += ';';
+
+			HeaderEncoder.EncodeUnstructured (result, _value2);
+
+			return result;
+		}
+	}
+
+	public class HeaderFieldBuilderTokensAndDate : HeaderFieldBuilder
+	{
+		private readonly string _value;
+		private readonly DateTimeOffset _dateTimeOffset;
+
+		/// <summary>
+		/// Создает поле заголовка из '*tokens' значения и даты.
+		/// </summary>
+		/// <param name="name">Имя поля заголовка.</param>
+		/// <param name="value">'*tokens' значение.</param>
+		/// <param name="dateTimeOffset">Дата.</param>
+		/// <returns>Поле заголовка.</returns>
+		public HeaderFieldBuilderTokensAndDate (HeaderFieldName name, string value, DateTimeOffset dateTimeOffset)
+			: base (name)
+		{
+			_value = value;
+			_dateTimeOffset = dateTimeOffset;
+		}
+
+		internal override IReadOnlyList<string> GetParts ()
+		{
+			var tokens = new ArrayList<string> ();
+			HeaderEncoder.EncodeTokens (tokens, _value);
+			if (tokens.Count > 0)
+			{
+				tokens[tokens.Count - 1] += ';';
+			}
+			else
+			{
+				tokens.Add (";");
+			}
+
+			tokens.Add (_dateTimeOffset.ToInternetString ());
+			return tokens;
+		}
+	}
+
+	public class HeaderFieldBuilderPhraseAndId : HeaderFieldBuilder
+	{
+		private readonly string _id;
+		private readonly string _phrase;
+
+		/// <summary>
+		/// Создает поле заголовка из идентификатора и 'phrase'.
+		/// </summary>
+		/// <param name="name">Имя поля заголовка.</param>
+		/// <param name="id">Идентификатор (значение типа 'dot-atom-text').</param>
+		/// <param name="phrase">Произвольная 'phrase'.</param>
+		/// <returns>Поле заголовка.</returns>
+		public HeaderFieldBuilderPhraseAndId (HeaderFieldName name, string id, string phrase = null)
+			: base (name)
+		{
+			if (id == null)
+			{
+				throw new ArgumentNullException (nameof (id));
+			}
+
+			if (!AsciiCharSet.IsValidInternetDomainName (id))
+			{
+				throw new ArgumentOutOfRangeException (nameof (id), FormattableString.Invariant ($"Invalid value for type 'atom': \"{id}\"."));
+			}
+
+			Contract.EndContractBlock ();
+
+			_id = id;
+			_phrase = phrase;
+		}
+
+		internal override IReadOnlyList<string> GetParts ()
+		{
+			var valueParts = new ArrayList<string> ();
+			if (_phrase != null)
+			{
+				HeaderEncoder.EncodePhrase (valueParts, _phrase);
+			}
+
+			valueParts.Add ("<" + _id + ">");
+
+			return valueParts;
+		}
+	}
+
+	public class HeaderFieldBuilderPhraseList : HeaderFieldBuilder
+	{
+		private readonly IReadOnlyList<string> _values;
+
+		/// <summary>
+		/// Создает поле заголовка из коллекции 'phrase'.
+		/// </summary>
+		/// <param name="name">Имя поля заголовка.</param>
+		/// <param name="values">Коллекция 'phrase'.</param>
+		/// <returns>Поле заголовка.</returns>
+		public HeaderFieldBuilderPhraseList (HeaderFieldName name, IReadOnlyList<string> values)
+			: base (name)
+		{
+			if (values == null)
+			{
+				throw new ArgumentNullException (nameof (values));
+			}
+
+			Contract.EndContractBlock ();
+
+			_values = values;
+		}
+
+		internal override IReadOnlyList<string> GetParts ()
+		{
+			var result = new ArrayList<string> ();
+			for (var idx = 0; idx < _values.Count; idx++)
+			{
+				HeaderEncoder.EncodePhrase (result, _values[idx]);
+				if (idx < (_values.Count - 1))
+				{
+					result[result.Count - 1] += ',';
+				}
+			}
+
+			return result;
+		}
+	}
+
+	public class HeaderFieldBuilderMailboxList : HeaderFieldBuilder
+	{
+		private readonly IReadOnlyList<Mailbox> _mailboxes;
+
+		/// <summary>
+		/// Создает поле заголовка из коллекции Mailbox.
+		/// </summary>
+		/// <param name="name">Имя поля заголовка.</param>
+		/// <param name="mailboxes">Коллекция Mailbox.</param>
+		/// <returns>Поле заголовка.</returns>
+		public HeaderFieldBuilderMailboxList (HeaderFieldName name, IReadOnlyList<Mailbox> mailboxes)
+			: base (name)
+		{
+			if (mailboxes == null)
+			{
+				throw new ArgumentNullException (nameof (mailboxes));
+			}
+
+			Contract.EndContractBlock ();
+
+			_mailboxes = mailboxes;
+		}
+
+		internal override IReadOnlyList<string> GetParts ()
+		{
+			var result = new ArrayList<string> ();
+			for (var idx = 0; idx < _mailboxes.Count; idx++)
+			{
+				HeaderEncoder.EncodeMailbox (result, _mailboxes[idx]);
+				if (idx < (_mailboxes.Count - 1))
+				{
+					result[result.Count - 1] += ',';
+				}
+			}
+
+			return result;
+		}
+	}
+
+	public class HeaderFieldBuilderAngleBracketedList : HeaderFieldBuilder
+	{
+		private readonly IReadOnlyList<string> _urls;
+
+		/// <summary>
+		/// Создает поле заголовка из коллекции url-значений.
+		/// </summary>
+		/// <param name="name">Имя поля заголовка.</param>
+		/// <param name="urls">Коллекция url-значений.</param>
+		/// <returns>Поле заголовка.</returns>
+		public HeaderFieldBuilderAngleBracketedList (HeaderFieldName name, IReadOnlyList<string> urls)
+			: base (name)
+		{
+			if (urls == null)
+			{
+				throw new ArgumentNullException (nameof (urls));
+			}
+
+			Contract.EndContractBlock ();
+
+			// TODO: добавить валидацию каждого значения в urls
+			_urls = urls;
+		}
+
+		internal override IReadOnlyList<string> GetParts ()
+		{
+			var result = new ArrayList<string> ();
+			for (var idx = 0; idx < _urls.Count; idx++)
+			{
+				if (idx < (_urls.Count - 1))
+				{
+					result.Add ("<" + _urls[idx] + ">,");
+				}
+				else
+				{
+					result.Add ("<" + _urls[idx] + ">");
+				}
+			}
+
+			return result;
+		}
+	}
+
+	public class HeaderFieldBuilderDisposition : HeaderFieldBuilder
+	{
+		private readonly string _actionMode;
+		private readonly string _sendingMode;
+		private readonly string _type;
+		private readonly IReadOnlyCollection<string> _modifiers;
+
+		/// <summary>
+		/// Создает поле заголовка из трех атомов плюс опциональной коллекции атомов
+		/// в формате 'actionMode/sendingMode; type/4_1,4_2,4_3,4_4 ...'.
+		/// </summary>
+		/// <param name="name">Имя поля заголовка.</param>
+		/// <param name="actionMode">Обязательное значение 1.</param>
+		/// <param name="sendingMode">Обязательное значение 2.</param>
+		/// <param name="type">Обязательное значение 3.</param>
+		/// <param name="modifiers">Необязательная коллекция значений.</param>
+		/// <returns>Поле заголовка.</returns>
+		public HeaderFieldBuilderDisposition (HeaderFieldName name, string actionMode, string sendingMode, string type, IReadOnlyCollection<string> modifiers)
+			: base (name)
+		{
+			if (actionMode == null)
+			{
+				throw new ArgumentNullException (nameof (actionMode));
+			}
+
+			if (sendingMode == null)
+			{
+				throw new ArgumentNullException (nameof (sendingMode));
+			}
+
+			if (type == null)
+			{
+				throw new ArgumentNullException (nameof (type));
+			}
+
+			var isAtom = AsciiCharSet.IsAllOfClass (actionMode, AsciiCharClasses.Atom);
+			if (!isAtom)
+			{
+				throw new ArgumentOutOfRangeException (nameof (actionMode));
+			}
+
+			isAtom = AsciiCharSet.IsAllOfClass (sendingMode, AsciiCharClasses.Atom);
+			if (!isAtom)
+			{
+				throw new ArgumentOutOfRangeException (nameof (sendingMode));
+			}
+
+			isAtom = AsciiCharSet.IsAllOfClass (type, AsciiCharClasses.Atom);
+			if (!isAtom)
+			{
+				throw new ArgumentOutOfRangeException (nameof (type));
+			}
+
+			Contract.EndContractBlock ();
+
+			_actionMode = actionMode;
+			_sendingMode = sendingMode;
+			_type = type;
+			_modifiers = modifiers;
+		}
+
+		internal override IReadOnlyList<string> GetParts ()
+		{
+			var type = _type;
+			if (_modifiers?.Count > 0)
+			{
+				foreach (var modifier in _modifiers)
+				{
+					var isAtom = AsciiCharSet.IsAllOfClass (modifier, AsciiCharClasses.Atom);
+					if (!isAtom)
+					{
+						throw new FormatException (FormattableString.Invariant ($"Invalid value for type 'atom': \"{modifier}\"."));
+					}
+				}
+
+				type += "/" + string.Join (",", _modifiers);
+			}
+
+			return new ArrayList<string> (2) { _actionMode + "/" + _sendingMode + ";", type };
+		}
+	}
+
+	public class HeaderFieldBuilderDispositionNotificationParameterList : HeaderFieldBuilder
+	{
+		private readonly IReadOnlyList<DispositionNotificationParameter> _parameters;
+
+		/// <summary>
+		/// Создает поле заголовка из указанной коллекции DispositionNotificationParameter.
+		/// </summary>
+		/// <param name="name">Имя поля заголовка.</param>
+		/// <param name="parameters">Коллекция DispositionNotificationParameter.</param>
+		/// <returns>Поле заголовка.</returns>
+		public HeaderFieldBuilderDispositionNotificationParameterList (HeaderFieldName name, IReadOnlyList<DispositionNotificationParameter> parameters)
+			: base (name)
+		{
+			if (name == HeaderFieldName.Unspecified)
+			{
+				throw new ArgumentOutOfRangeException (nameof (name));
+			}
+
+			if (parameters == null)
+			{
+				throw new ArgumentNullException (nameof (parameters));
+			}
+
+			Contract.EndContractBlock ();
+
+			_parameters = parameters;
+		}
+
+		internal override IReadOnlyList<string> GetParts ()
+		{
+			// TODO: добавить валидацию каждого значения в parameters
+			var result = new ArrayList<string> ();
+			for (var idx = 0; idx < _parameters.Count; idx++)
+			{
+				if (idx < (_parameters.Count - 1))
+				{
+					result.Add (_parameters[idx].ToString () + ";");
+				}
+				else
+				{
+					result.Add (_parameters[idx].ToString ());
+				}
+			}
+
+			return result;
 		}
 	}
 }

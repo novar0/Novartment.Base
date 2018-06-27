@@ -317,7 +317,7 @@ namespace Novartment.Base.Net.Mime
 			// Reporting-UA
 			if (this.ReportingUserAgentName != null)
 			{
-				header.Add (HeaderFieldBuilder.CreateUnstructuredPair (
+				header.Add (new HeaderFieldBuilderUnstructuredPair (
 					HeaderFieldName.ReportingUA,
 					this.ReportingUserAgentName,
 					this.ReportingUserAgentProduct));
@@ -326,7 +326,7 @@ namespace Novartment.Base.Net.Mime
 			// MDN-Gateway
 			if (this.Gateway != null)
 			{
-				header.Add (HeaderFieldBuilder.CreateAtomAndUnstructured (
+				header.Add (new HeaderFieldBuilderAtomAndUnstructured (
 					HeaderFieldName.MdnGateway,
 					this.Gateway.Kind.GetName (),
 					this.Gateway.Value));
@@ -335,14 +335,14 @@ namespace Novartment.Base.Net.Mime
 			// Original-Recipient
 			if (this.OriginalRecipient != null)
 			{
-				header.Add (HeaderFieldBuilder.CreateAtomAndUnstructured (
+				header.Add (new HeaderFieldBuilderAtomAndUnstructured (
 					HeaderFieldName.OriginalRecipient,
 					this.OriginalRecipient.Kind.GetName (),
 					this.OriginalRecipient.Value));
 			}
 
 			// Final-Recipient
-			header.Add (HeaderFieldBuilder.CreateAtomAndUnstructured (
+			header.Add (new HeaderFieldBuilderAtomAndUnstructured (
 				HeaderFieldName.FinalRecipient,
 				this.FinalRecipient.Kind.GetName (),
 				this.FinalRecipient.Value));
@@ -350,7 +350,7 @@ namespace Novartment.Base.Net.Mime
 			// Original-Message-ID
 			if (this.OriginalMessageId != null)
 			{
-				header.Add (HeaderFieldBuilder.CreateExactValue (
+				header.Add (new HeaderFieldBuilderExactValue (
 					HeaderFieldName.OriginalMessageId,
 					this.OriginalMessageId.ToAngleString ()));
 			}
@@ -361,7 +361,7 @@ namespace Novartment.Base.Net.Mime
 			var sendingMode = MdnSendingModeNames.MdnSentAutomatically;
 			var dispositionType = (this.Disposition == MessageDispositionChangedAction.ManuallyDisplayed) || (this.Disposition == MessageDispositionChangedAction.AutomaticallyDisplayed) ?
 				MdnDispositionTypeNames.Displayed : MdnDispositionTypeNames.Deleted;
-			header.Add (HeaderFieldBuilder.CreateDisposition (
+			header.Add (new HeaderFieldBuilderDisposition (
 				HeaderFieldName.Disposition,
 				actionMode,
 				sendingMode,
@@ -371,19 +371,19 @@ namespace Novartment.Base.Net.Mime
 			// Failure
 			foreach (var info in this.FailureInfo)
 			{
-				header.Add (HeaderFieldBuilder.CreateUnstructured (HeaderFieldName.Failure, info));
+				header.Add (new HeaderFieldBuilderUnstructured (HeaderFieldName.Failure, info));
 			}
 
 			// Error
 			foreach (var info in this.ErrorInfo)
 			{
-				header.Add (HeaderFieldBuilder.CreateUnstructured (HeaderFieldName.Error, info));
+				header.Add (new HeaderFieldBuilderUnstructured (HeaderFieldName.Error, info));
 			}
 
 			// Warning
 			foreach (var info in this.WarningInfo)
 			{
-				header.Add (HeaderFieldBuilder.CreateUnstructured (HeaderFieldName.Warning, info));
+				header.Add (new HeaderFieldBuilderUnstructured (HeaderFieldName.Warning, info));
 			}
 		}
 	}

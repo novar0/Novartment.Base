@@ -307,7 +307,7 @@ namespace Novartment.Base.Net.Mime
 			SavePropertiesToHeader (header);
 			foreach (var field in this.ExtraFields)
 			{
-				header.Add (HeaderFieldBuilder.CreateExactValue (field.Name, AsciiCharSet.GetString (field.Body.Span)));
+				header.Add (new HeaderFieldBuilderExactValue (field.Name, AsciiCharSet.GetString (field.Body.Span)));
 			}
 
 			return SaveAsyncStateMachine ();
@@ -354,7 +354,7 @@ namespace Novartment.Base.Net.Mime
 			// Content-Transfer-Encoding
 			if ((_body != null) && (_body.TransferEncoding != ContentTransferEncoding.Unspecified))
 			{
-				header.Add (HeaderFieldBuilder.CreateExactValue (
+				header.Add (new HeaderFieldBuilderExactValue (
 					HeaderFieldName.ContentTransferEncoding,
 					_body.TransferEncoding.GetName ()));
 			}
@@ -362,7 +362,7 @@ namespace Novartment.Base.Net.Mime
 			// Content-ID
 			if (this.Id != null)
 			{
-				header.Add (HeaderFieldBuilder.CreateExactValue (
+				header.Add (new HeaderFieldBuilderExactValue (
 					HeaderFieldName.ContentId,
 					this.Id.ToAngleString ()));
 			}
@@ -370,7 +370,7 @@ namespace Novartment.Base.Net.Mime
 			// Content-Description
 			if (this.Description != null)
 			{
-				header.Add (HeaderFieldBuilder.CreateUnstructured (
+				header.Add (new HeaderFieldBuilderUnstructured (
 					HeaderFieldName.ContentDescription,
 					this.Description));
 			}
@@ -384,25 +384,25 @@ namespace Novartment.Base.Net.Mime
 			// Content-Base
 			if (this.Base != null)
 			{
-				header.Add (HeaderFieldBuilder.CreateExactValue (HeaderFieldName.ContentBase, this.Base));
+				header.Add (new HeaderFieldBuilderExactValue (HeaderFieldName.ContentBase, this.Base));
 			}
 
 			// Content-Location
 			if (this.Location != null)
 			{
-				header.Add (HeaderFieldBuilder.CreateExactValue (HeaderFieldName.ContentLocation, this.Location));
+				header.Add (new HeaderFieldBuilderExactValue (HeaderFieldName.ContentLocation, this.Location));
 			}
 
 			// Content-Language
 			if (this.Languages.Count > 0)
 			{
-				header.Add (HeaderFieldBuilder.CreateLanguageList (HeaderFieldName.ContentLanguage, this.Languages));
+				header.Add (new HeaderFieldBuilderLanguageList (HeaderFieldName.ContentLanguage, this.Languages));
 			}
 
 			// Content-Features
 			if (this.Features != null)
 			{
-				header.Add (HeaderFieldBuilder.CreateUnstructured (
+				header.Add (new HeaderFieldBuilderUnstructured (
 					HeaderFieldName.ContentFeatures,
 					this.Features));
 			}
@@ -412,7 +412,7 @@ namespace Novartment.Base.Net.Mime
 			{
 				foreach (var item in this.Alternatives)
 				{
-					header.Add (HeaderFieldBuilder.CreateUnstructured (
+					header.Add (new HeaderFieldBuilderUnstructured (
 						HeaderFieldName.ContentAlternative,
 						item));
 				}
@@ -427,13 +427,13 @@ namespace Novartment.Base.Net.Mime
 #else
 				var tempBufSize = Convert.ToBase64CharArray (_md5.ToArray (), 0, _md5.Length, tempBuf, 0);
 #endif
-				header.Add (HeaderFieldBuilder.CreateExactValue (HeaderFieldName.ContentMD5, new string (tempBuf, 0, tempBufSize)));
+				header.Add (new HeaderFieldBuilderExactValue (HeaderFieldName.ContentMD5, new string (tempBuf, 0, tempBufSize)));
 			}
 
 			// Content-Duration
 			if (_duration.HasValue)
 			{
-				header.Add (HeaderFieldBuilder.CreateExactValue (
+				header.Add (new HeaderFieldBuilderExactValue (
 					HeaderFieldName.ContentDuration,
 					((int)_duration.Value.TotalSeconds).ToString (CultureInfo.InvariantCulture)));
 			}
@@ -848,7 +848,7 @@ namespace Novartment.Base.Net.Mime
 		private HeaderFieldBuilder CreateContentTypeField ()
 		{
 			// content := "Content-Type" ":" type "/" subtype *(";" parameter)
-			var field = HeaderFieldBuilder.CreateExactValue (HeaderFieldName.ContentType, _type.GetName () + "/" + _subtype);
+			var field = new HeaderFieldBuilderExactValue (HeaderFieldName.ContentType, _type.GetName () + "/" + _subtype);
 
 			if (_body is TextEntityBody textEntityBody)
 			{
@@ -873,7 +873,7 @@ namespace Novartment.Base.Net.Mime
 		private HeaderFieldBuilder CreateContentDispositionField ()
 		{
 			// disposition := "Content-Disposition" ":" disposition-type *(";" disposition-parm)
-			var field = HeaderFieldBuilder.CreateExactValue (HeaderFieldName.ContentDisposition, _dispositionType.GetName ());
+			var field = new HeaderFieldBuilderExactValue (HeaderFieldName.ContentDisposition, _dispositionType.GetName ());
 			if (this.FileName != null)
 			{
 				field.AddParameter (DispositionParameterNames.Filename, this.FileName);

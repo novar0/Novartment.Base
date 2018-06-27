@@ -105,10 +105,10 @@ namespace Novartment.Base.Net.Mime.Test
 
 			src = new HeaderFieldBuilder[]
 			{
-				HeaderFieldBuilder.CreateExactValue (HeaderFieldName.ContentType, "text/plain"),
-				HeaderFieldBuilder.CreateExactValue (HeaderFieldName.ConversionWithLoss, null),
-				HeaderFieldBuilder.CreateUnstructured (HeaderFieldName.Received, "by server10.espc2.mechel.com (8.8.8/1.37) id CAA22933; Tue, 15 May 2012 02:49:22 +0100"),
-				HeaderFieldBuilder.CreateExactValue (HeaderFieldName.ContentMD5, ":Q2hlY2sgSW50ZWdyaXR5IQ=="),
+				new HeaderFieldBuilderExactValue (HeaderFieldName.ContentType, "text/plain"),
+				new HeaderFieldBuilderExactValue (HeaderFieldName.ConversionWithLoss, null),
+				new HeaderFieldBuilderUnstructured (HeaderFieldName.Received, "by server10.espc2.mechel.com (8.8.8/1.37) id CAA22933; Tue, 15 May 2012 02:49:22 +0100"),
+				new HeaderFieldBuilderExactValue (HeaderFieldName.ContentMD5, ":Q2hlY2sgSW50ZWdyaXR5IQ=="),
 			};
 			src[0].AddParameter ("format", "flowed");
 			src[0].AddParameter ("charset", "koi8-r");

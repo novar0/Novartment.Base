@@ -541,7 +541,7 @@ namespace Novartment.Base.Net.Mime
 			// RFC 5321 part 4.4: A message-originating SMTP system SHOULD NOT send a message that already contains a Return-path header field.
 
 			// Date
-			header.Add (HeaderFieldBuilder.CreateExactValue (HeaderFieldName.Date, this.OriginationDate.Value.ToInternetString ()));
+			header.Add (new HeaderFieldBuilderExactValue (HeaderFieldName.Date, this.OriginationDate.Value.ToInternetString ()));
 
 			// From, Sender, Reply-To, To, CC
 			// Bcc не "светим" для соблюдения приватности
@@ -556,7 +556,7 @@ namespace Novartment.Base.Net.Mime
 			// MIME-Version
 			if (this.MimeVersion != null)
 			{
-				header.Add (HeaderFieldBuilder.CreateExactValue (HeaderFieldName.MimeVersion, this.MimeVersion.ToString (2)));
+				header.Add (new HeaderFieldBuilderExactValue (HeaderFieldName.MimeVersion, this.MimeVersion.ToString (2)));
 			}
 
 			// Disposition-Notification-To, Disposition-Notification-Options
@@ -565,7 +565,7 @@ namespace Novartment.Base.Net.Mime
 			// Accept-Language
 			if (this.AcceptLanguages.Count > 0)
 			{
-				header.Add (HeaderFieldBuilder.CreateLanguageList (
+				header.Add (new HeaderFieldBuilderLanguageList (
 					HeaderFieldName.AcceptLanguage,
 					this.AcceptLanguages
 					.OrderByDescending (item => item.Importance)
@@ -733,19 +733,19 @@ namespace Novartment.Base.Net.Mime
 			// Subject
 			if (subject != null)
 			{
-				header.Add (HeaderFieldBuilder.CreateUnstructured (HeaderFieldName.Subject, subject));
+				header.Add (new HeaderFieldBuilderUnstructured (HeaderFieldName.Subject, subject));
 			}
 
 			// Comments
 			if (comments != null)
 			{
-				header.Add (HeaderFieldBuilder.CreateUnstructured (HeaderFieldName.Comments, comments));
+				header.Add (new HeaderFieldBuilderUnstructured (HeaderFieldName.Comments, comments));
 			}
 
 			// Keywords
 			if (keywords.Count > 0)
 			{
-				header.Add (HeaderFieldBuilder.CreatePhraseList (HeaderFieldName.Keywords, keywords));
+				header.Add (new HeaderFieldBuilderPhraseList (HeaderFieldName.Keywords, keywords));
 			}
 		}
 
@@ -759,7 +759,7 @@ namespace Novartment.Base.Net.Mime
 			// Message-ID
 			if (messageId != null)
 			{
-				header.Add (HeaderFieldBuilder.CreateExactValue (
+				header.Add (new HeaderFieldBuilderExactValue (
 					HeaderFieldName.MessageId,
 					messageId.ToAngleString ()));
 			}
@@ -767,7 +767,7 @@ namespace Novartment.Base.Net.Mime
 			// In-Reply-To
 			if (inReplyTo.Count > 0)
 			{
-				header.Add (HeaderFieldBuilder.CreateAddrSpecList (
+				header.Add (new HeaderFieldBuilderAddrSpecList (
 					HeaderFieldName.InReplyTo,
 					inReplyTo.WhereNotNull ().ToArray ()));
 			}
@@ -775,7 +775,7 @@ namespace Novartment.Base.Net.Mime
 			// References
 			if (references.Count > 0)
 			{
-				header.Add (HeaderFieldBuilder.CreateAddrSpecList (
+				header.Add (new HeaderFieldBuilderAddrSpecList (
 					HeaderFieldName.References,
 					references.WhereNotNull ().ToArray ()));
 			}
@@ -783,7 +783,7 @@ namespace Novartment.Base.Net.Mime
 			// Original-Message-ID
 			if (originalMessageId != null)
 			{
-				header.Add (HeaderFieldBuilder.CreateExactValue (
+				header.Add (new HeaderFieldBuilderExactValue (
 					HeaderFieldName.OriginalMessageId,
 					originalMessageId.ToAngleString ()));
 			}
@@ -798,7 +798,7 @@ namespace Novartment.Base.Net.Mime
 			IReadOnlyList<Mailbox> cc)
 		{
 			// From
-			header.Add (HeaderFieldBuilder.CreateMailboxList (HeaderFieldName.From, from));
+			header.Add (new HeaderFieldBuilderMailboxList (HeaderFieldName.From, from));
 
 			// Sender
 			// If the originator of the message can be indicated by a single mailbox and the author and transmitter are identical,
@@ -806,25 +806,25 @@ namespace Novartment.Base.Net.Mime
 			var isSenderRequired = (sender != null) && ((from.Count != 1) || !from[0].Equals (sender));
 			if (isSenderRequired)
 			{
-				header.Add (HeaderFieldBuilder.CreateMailbox (HeaderFieldName.Sender, sender));
+				header.Add (new HeaderFieldBuilderMailbox (HeaderFieldName.Sender, sender));
 			}
 
 			// Reply-To
 			if (replyTo.Count > 0)
 			{
-				header.Add (HeaderFieldBuilder.CreateMailboxList (HeaderFieldName.ReplyTo, replyTo));
+				header.Add (new HeaderFieldBuilderMailboxList (HeaderFieldName.ReplyTo, replyTo));
 			}
 
 			// To
 			if (to.Count > 0)
 			{
-				header.Add (HeaderFieldBuilder.CreateMailboxList (HeaderFieldName.To, to));
+				header.Add (new HeaderFieldBuilderMailboxList (HeaderFieldName.To, to));
 			}
 
 			// CC
 			if (cc.Count > 0)
 			{
-				header.Add (HeaderFieldBuilder.CreateMailboxList (HeaderFieldName.CC, cc));
+				header.Add (new HeaderFieldBuilderMailboxList (HeaderFieldName.CC, cc));
 			}
 		}
 
@@ -836,7 +836,7 @@ namespace Novartment.Base.Net.Mime
 			// Disposition-Notification-To
 			if (dispositionNotificationTo.Count > 0)
 			{
-				header.Add (HeaderFieldBuilder.CreateMailboxList (
+				header.Add (new HeaderFieldBuilderMailboxList (
 					HeaderFieldName.DispositionNotificationTo,
 					dispositionNotificationTo));
 			}
@@ -844,7 +844,7 @@ namespace Novartment.Base.Net.Mime
 			// Disposition-Notification-Options
 			if (dispositionNotificationOptions.Count > 0)
 			{
-				header.Add (HeaderFieldBuilder.CreateDispositionNotificationParameterList (
+				header.Add (new HeaderFieldBuilderDispositionNotificationParameterList (
 					HeaderFieldName.DispositionNotificationOptions,
 					dispositionNotificationOptions));
 			}
@@ -855,7 +855,7 @@ namespace Novartment.Base.Net.Mime
 			MailingList mailingList)
 		{
 			// List-ID
-			header.Add (HeaderFieldBuilder.CreatePhraseAndId (
+			header.Add (new HeaderFieldBuilderPhraseAndId (
 				HeaderFieldName.ListId,
 				mailingList.Id,
 				mailingList.Description));
@@ -863,7 +863,7 @@ namespace Novartment.Base.Net.Mime
 			// List-Archive
 			if (mailingList.ArchiveCommands.Count > 0)
 			{
-				header.Add (HeaderFieldBuilder.CreateAngleBracketedList (
+				header.Add (new HeaderFieldBuilderAngleBracketedList (
 					HeaderFieldName.ListArchive,
 					mailingList.ArchiveCommands));
 			}
@@ -871,7 +871,7 @@ namespace Novartment.Base.Net.Mime
 			// List-Help
 			if (mailingList.HelpCommands.Count > 0)
 			{
-				header.Add (HeaderFieldBuilder.CreateAngleBracketedList (
+				header.Add (new HeaderFieldBuilderAngleBracketedList (
 					HeaderFieldName.ListHelp,
 					mailingList.HelpCommands));
 			}
@@ -879,7 +879,7 @@ namespace Novartment.Base.Net.Mime
 			// List-Owner
 			if (mailingList.OwnerCommands.Count > 0)
 			{
-				header.Add (HeaderFieldBuilder.CreateAngleBracketedList (
+				header.Add (new HeaderFieldBuilderAngleBracketedList (
 					HeaderFieldName.ListOwner,
 					mailingList.OwnerCommands));
 			}
@@ -887,7 +887,7 @@ namespace Novartment.Base.Net.Mime
 			// List-Post
 			if (mailingList.PostCommands.Count > 0)
 			{
-				header.Add (HeaderFieldBuilder.CreateAngleBracketedList (
+				header.Add (new HeaderFieldBuilderAngleBracketedList (
 					HeaderFieldName.ListPost,
 					mailingList.PostCommands));
 			}
@@ -895,7 +895,7 @@ namespace Novartment.Base.Net.Mime
 			// List-Subscribe
 			if (mailingList.SubscribeCommands.Count > 0)
 			{
-				header.Add (HeaderFieldBuilder.CreateAngleBracketedList (
+				header.Add (new HeaderFieldBuilderAngleBracketedList (
 					HeaderFieldName.ListSubscribe,
 					mailingList.SubscribeCommands));
 			}
@@ -903,7 +903,7 @@ namespace Novartment.Base.Net.Mime
 			// List-Unsubscribe
 			if (mailingList.UnsubscribeCommands.Count > 0)
 			{
-				header.Add (HeaderFieldBuilder.CreateAngleBracketedList (
+				header.Add (new HeaderFieldBuilderAngleBracketedList (
 					HeaderFieldName.ListUnsubscribe,
 					mailingList.UnsubscribeCommands));
 			}

@@ -341,20 +341,20 @@ namespace Novartment.Base.Net.Mime
 			// Original-Recipient
 			if (recipient.OriginalRecipient != null)
 			{
-				fields.Add (HeaderFieldBuilder.CreateAtomAndUnstructured (
+				fields.Add (new HeaderFieldBuilderAtomAndUnstructured (
 					HeaderFieldName.OriginalRecipient,
 					recipient.OriginalRecipient.Kind.GetName (),
 					recipient.OriginalRecipient.Value));
 			}
 
 			// Final-Recipient
-			fields.Add (HeaderFieldBuilder.CreateAtomAndUnstructured (
+			fields.Add (new HeaderFieldBuilderAtomAndUnstructured (
 				HeaderFieldName.FinalRecipient,
 				recipient.FinalRecipient.Kind.GetName (),
 				recipient.FinalRecipient.Value));
 
 			// Action
-			fields.Add (HeaderFieldBuilder.CreateExactValue (
+			fields.Add (new HeaderFieldBuilderExactValue (
 				HeaderFieldName.Action,
 				recipient.Action.GetName ()));
 
@@ -365,14 +365,14 @@ namespace Novartment.Base.Net.Mime
 				throw new FormatException ("Ivalid 'dot-atom' identificator: '" + recipient.Status + "'.");
 			}
 
-			fields.Add (HeaderFieldBuilder.CreateExactValue (
+			fields.Add (new HeaderFieldBuilderExactValue (
 				HeaderFieldName.Status,
 				recipient.Status));
 
 			// Remote-MTA
 			if (recipient.RemoteMailTransferAgent != null)
 			{
-				fields.Add (HeaderFieldBuilder.CreateAtomAndUnstructured (
+				fields.Add (new HeaderFieldBuilderAtomAndUnstructured (
 					HeaderFieldName.RemoteMailTransferAgent,
 					recipient.RemoteMailTransferAgent.Kind.GetName (),
 					recipient.RemoteMailTransferAgent.Value));
@@ -381,7 +381,7 @@ namespace Novartment.Base.Net.Mime
 			// Diagnostic-Code
 			if (recipient.DiagnosticCode != null)
 			{
-				fields.Add (HeaderFieldBuilder.CreateAtomAndUnstructured (
+				fields.Add (new HeaderFieldBuilderAtomAndUnstructured (
 					HeaderFieldName.DiagnosticCode,
 					recipient.DiagnosticCode.Kind.GetName (),
 					recipient.DiagnosticCode.Value));
@@ -390,7 +390,7 @@ namespace Novartment.Base.Net.Mime
 			// Last-Attempt-Date
 			if (recipient.LastAttemptDate.HasValue)
 			{
-				fields.Add (HeaderFieldBuilder.CreateExactValue (
+				fields.Add (new HeaderFieldBuilderExactValue (
 					HeaderFieldName.LastAttemptDate,
 					recipient.LastAttemptDate.Value.ToInternetString ()));
 			}
@@ -398,7 +398,7 @@ namespace Novartment.Base.Net.Mime
 			// Final-Log-ID
 			if (recipient.FinalLogId != null)
 			{
-				fields.Add (HeaderFieldBuilder.CreateUnstructured (
+				fields.Add (new HeaderFieldBuilderUnstructured (
 					HeaderFieldName.FinalLogId,
 					recipient.FinalLogId));
 			}
@@ -406,7 +406,7 @@ namespace Novartment.Base.Net.Mime
 			// Will-Retry-Until
 			if (recipient.WillRetryUntil.HasValue)
 			{
-				fields.Add (HeaderFieldBuilder.CreateExactValue (
+				fields.Add (new HeaderFieldBuilderExactValue (
 					HeaderFieldName.WillRetryUntil,
 					recipient.WillRetryUntil.Value.ToInternetString ()));
 			}
@@ -498,7 +498,7 @@ namespace Novartment.Base.Net.Mime
 			// Original-Envelope-Id
 			if (this.OriginalEnvelopeId != null)
 			{
-				fields.Add (HeaderFieldBuilder.CreateUnstructured (
+				fields.Add (new HeaderFieldBuilderUnstructured (
 					HeaderFieldName.OriginalEnvelopeId,
 					this.OriginalEnvelopeId));
 			}
@@ -506,7 +506,7 @@ namespace Novartment.Base.Net.Mime
 			// Reporting-MTA
 			if (this.MailTransferAgent != null)
 			{
-				fields.Add (HeaderFieldBuilder.CreateAtomAndUnstructured (
+				fields.Add (new HeaderFieldBuilderAtomAndUnstructured (
 					HeaderFieldName.MailTransferAgent,
 					this.MailTransferAgent.Kind.GetName (),
 					this.MailTransferAgent.Value));
@@ -515,7 +515,7 @@ namespace Novartment.Base.Net.Mime
 			// DSN-Gateway
 			if (this.Gateway != null)
 			{
-				fields.Add (HeaderFieldBuilder.CreateAtomAndUnstructured (
+				fields.Add (new HeaderFieldBuilderAtomAndUnstructured (
 					HeaderFieldName.DsnGateway,
 					this.Gateway.Kind.GetName (),
 					this.Gateway.Value));
@@ -524,7 +524,7 @@ namespace Novartment.Base.Net.Mime
 			// Received-From-Mta
 			if (this.ReceivedFromMailTransferAgent != null)
 			{
-				fields.Add (HeaderFieldBuilder.CreateAtomAndUnstructured (
+				fields.Add (new HeaderFieldBuilderAtomAndUnstructured (
 					HeaderFieldName.ReceivedFromMailTransferAgent,
 					this.ReceivedFromMailTransferAgent.Kind.GetName (),
 					this.ReceivedFromMailTransferAgent.Value));
@@ -533,7 +533,7 @@ namespace Novartment.Base.Net.Mime
 			// Arrival-Date
 			if (this.ArrivalDate.HasValue)
 			{
-				fields.Add (HeaderFieldBuilder.CreateExactValue (
+				fields.Add (new HeaderFieldBuilderExactValue (
 					HeaderFieldName.ArrivalDate,
 					this.ArrivalDate.Value.ToInternetString ()));
 			}
