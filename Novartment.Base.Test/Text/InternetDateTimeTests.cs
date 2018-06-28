@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text;
 using Novartment.Base.Text;
 using Xunit;
 
@@ -48,6 +49,32 @@ namespace Novartment.Base.Test
 			Assert.Equal (
 				"15 May 2012 07:49:22 +0000",
 				new DateTimeOffset (2012, 5, 15, 7, 49, 22, TimeSpan.Zero).ToInternetString ());
+		}
+
+		[Fact]
+		[Trait ("Category", "Text.InternetDateTime")]
+		public void ToInternetStringSpan ()
+		{
+			var buf = new char[100];
+
+			var size = new DateTimeOffset (2012, 5, 15, 7, 49, 22, new TimeSpan (6, 0, 0)).ToInternetString (buf);
+			Assert.Equal ("15 May 2012 07:49:22 +0600", new string (buf, 0, size));
+
+			size = new DateTimeOffset (2012, 5, 15, 7, 49, 22, TimeSpan.Zero).ToInternetString (buf);
+			Assert.Equal ("15 May 2012 07:49:22 +0000", new string (buf, 0, size));
+		}
+
+		[Fact]
+		[Trait ("Category", "Text.InternetDateTime")]
+		public void ToInternetUtf8String ()
+		{
+			var buf = new byte[100];
+
+			var size = new DateTimeOffset (2012, 5, 15, 7, 49, 22, new TimeSpan (6, 0, 0)).ToInternetUtf8String (buf);
+			Assert.Equal ("15 May 2012 07:49:22 +0600", Encoding.UTF8.GetString (buf, 0, size));
+
+			size = new DateTimeOffset (2012, 5, 15, 7, 49, 22, TimeSpan.Zero).ToInternetUtf8String (buf);
+			Assert.Equal ("15 May 2012 07:49:22 +0000", Encoding.UTF8.GetString (buf, 0, size));
 		}
 	}
 }

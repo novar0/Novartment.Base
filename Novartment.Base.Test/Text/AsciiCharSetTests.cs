@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text;
 using Novartment.Base.Text;
 using Xunit;
 
@@ -100,6 +101,25 @@ namespace Novartment.Base.Test
 			Assert.Equal ("\"source\taa\\\\bb \\\"net\\\"\"", new string (buf.AsSpan (0, size)));
 
 			Assert.Throws<FormatException> (() => AsciiCharSet.Quote ("sourceЖ", buf));
+		}
+
+		[Fact]
+		[Trait ("Category", "Text.AsciiCharSet")]
+		public void QuoteToUtf8 ()
+		{
+			var buf = new byte[1000];
+			var size = AsciiCharSet.QuoteToUtf8 ("source", buf);
+			Assert.Equal ("\"source\"", Encoding.ASCII.GetString (buf.AsSpan (0, size)));
+
+			size = AsciiCharSet.QuoteToUtf8 ("\t !#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[]^_`abcdefghijklmnopqrstuvwxyz{|}~", buf);
+			Assert.Equal (
+				"\"\t !#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[]^_`abcdefghijklmnopqrstuvwxyz{|}~\"",
+				Encoding.ASCII.GetString (buf.AsSpan (0, size)));
+
+			size = AsciiCharSet.QuoteToUtf8 ("source\taa\\bb \"net\"", buf);
+			Assert.Equal ("\"source\taa\\\\bb \\\"net\\\"\"", Encoding.ASCII.GetString (buf.AsSpan (0, size)));
+
+			Assert.Throws<FormatException> (() => AsciiCharSet.QuoteToUtf8 ("sourceЖ", buf));
 		}
 
 		[Fact]

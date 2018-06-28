@@ -9,6 +9,22 @@ namespace Novartment.Base.Text
 	/// </summary>
 	public static class InternetDateTime
 	{
+		private static readonly uint[] _monthAbbreviations = new uint[]
+		{
+			'J' + ('a' << 8) + ('n' << 16),
+			'F' + ('e' << 8) + ('b' << 16),
+			'M' + ('a' << 8) + ('r' << 16),
+			'A' + ('p' << 8) + ('r' << 16),
+			'M' + ('a' << 8) + ('y' << 16),
+			'J' + ('u' << 8) + ('n' << 16),
+			'J' + ('u' << 8) + ('l' << 16),
+			'A' + ('u' << 8) + ('g' << 16),
+			'S' + ('e' << 8) + ('p' << 16),
+			'O' + ('c' << 8) + ('t' << 16),
+			'N' + ('o' << 8) + ('v' << 16),
+			'D' + ('e' << 8) + ('c' << 16),
+		};
+
 		/// <summary>
 		/// Конвертирует RFC 2822 строковое представление времени в объект типа DateTimeOffset.
 		/// </summary>
@@ -199,6 +215,135 @@ namespace Novartment.Base.Text
 			var str2 = dateTime.Offset.TotalHours.ToString ("+00;-00", CultureInfo.InvariantCulture);
 			var str3 = Math.Abs (dateTime.Offset.Minutes).ToString ("00", CultureInfo.InvariantCulture);
 			return str1 + str2 + str3;
+		}
+
+		/// <summary>
+		/// Конвертирует DateTimeOffset в RFC 2822 строковое представление времени.
+		/// </summary>
+		/// <param name="dateTime">DateTimeOffset для конвертирования в строковое представление.</param>
+		/// <param name="buf">Буфер, куда будет записано строковое представление.</param>
+		/// <returns>Количество знаков, записанных в буфер.</returns>
+		public static int ToInternetString (this DateTimeOffset dateTime, Span<char> buf)
+		{
+			if (((int)dateTime.Offset.TotalHours < -12) || ((int)dateTime.Offset.TotalHours) > 12)
+			{
+				throw new ArgumentOutOfRangeException (nameof (dateTime));
+			}
+
+			Contract.EndContractBlock ();
+
+			var outPos = 0;
+			int charsWritten;
+#if NETCOREAPP2_1
+			dateTime.TryFormat (buf, out charsWritten, "dd MMM yyyy HH':'mm':'ss", DateTimeFormatInfo.InvariantInfo);
+#else
+			var tempStr = dateTime.ToString ("dd MMM yyyy HH':'mm':'ss", DateTimeFormatInfo.InvariantInfo);
+			tempStr.AsSpan ().CopyTo (buf);
+			charsWritten = tempStr.Length;
+#endif
+			outPos += charsWritten;
+			buf[outPos++] = ' ';
+#if NETCOREAPP2_1
+			dateTime.Offset.TotalHours.TryFormat (buf.Slice (outPos), out charsWritten, "+00;-00", CultureInfo.InvariantCulture);
+#else
+			var tempStr2 = dateTime.Offset.TotalHours.ToString ("+00;-00", CultureInfo.InvariantCulture);
+			tempStr2.AsSpan ().CopyTo (buf.Slice (outPos));
+			charsWritten = tempStr2.Length;
+#endif
+			outPos += charsWritten;
+#if NETCOREAPP2_1
+			Math.Abs (dateTime.Offset.Minutes).TryFormat (buf.Slice (outPos), out charsWritten, "00", CultureInfo.InvariantCulture);
+#else
+			var tempStr3 = Math.Abs (dateTime.Offset.Minutes).ToString ("00", CultureInfo.InvariantCulture);
+			tempStr3.AsSpan ().CopyTo (buf.Slice (outPos));
+			charsWritten = tempStr3.Length;
+#endif
+			outPos += charsWritten;
+			return outPos;
+		}
+
+		/// <summary>
+		/// Конвертирует DateTimeOffset в RFC 2822 строковое представление времени.
+		/// </summary>
+		/// <param name="dateTime">DateTimeOffset для конвертирования в строковое представление.</param>
+		/// <param name="buf">Буфер, куда будет записано строковое представление.</param>
+		/// <returns>Количество знаков, записанных в буфер.</returns>
+		public static int ToInternetUtf8String (this DateTimeOffset dateTime, Span<byte> buf)
+		{
+			if (((int)dateTime.Offset.TotalHours < -12) || ((int)dateTime.Offset.TotalHours) > 12)
+			{
+				throw new ArgumentOutOfRangeException (nameof (dateTime));
+			}
+
+			Contract.EndContractBlock ();
+
+			var value = dateTime.DateTime;
+			var offset = dateTime.Offset;
+
+			DateTimeKind kind = DateTimeKind.Local;
+
+			WriteTwoDecimalDigits ((uint)value.Day, buf, 0);
+			buf[2] = (byte)' ';
+
+			uint monthAbbrev = _monthAbbreviations[value.Month - 1];
+			buf[3] = (byte)monthAbbrev;
+			monthAbbrev >>= 8;
+			buf[4] = (byte)monthAbbrev;
+			monthAbbrev >>= 8;
+			buf[5] = (byte)monthAbbrev;
+			buf[6] = (byte)' ';
+
+			WriteFourDecimalDigits ((uint)value.Year, buf, 7);
+			buf[11] = (byte)' ';
+
+			WriteTwoDecimalDigits ((uint)value.Hour, buf, 12);
+			buf[14] = (byte)':';
+
+			WriteTwoDecimalDigits ((uint)value.Minute, buf, 15);
+			buf[17] = (byte)':';
+
+			WriteTwoDecimalDigits ((uint)value.Second, buf, 18);
+			buf[20] = (byte)' ';
+
+			byte sign;
+
+			if (offset < default (TimeSpan))
+			{
+				sign = (byte)'-';
+				offset = TimeSpan.FromTicks (-offset.Ticks);
+			}
+			else
+			{
+				sign = (byte)'+';
+			}
+
+			buf[21] = sign;
+			WriteTwoDecimalDigits ((uint)offset.Hours, buf, 22);
+			WriteTwoDecimalDigits ((uint)offset.Minutes, buf, 24);
+
+			return 26;
+		}
+
+		private static void WriteTwoDecimalDigits (uint value, Span<byte> buf, int pos)
+		{
+			uint temp = '0' + value;
+			value /= 10;
+			buf[pos + 1] = (byte)(temp - (value * 10));
+			buf[pos] = (byte)('0' + value);
+		}
+
+		private static void WriteFourDecimalDigits (uint value, Span<byte> buf, int pos)
+		{
+			uint temp = '0' + value;
+			value /= 10;
+			buf[pos + 3] = (byte)(temp - (value * 10));
+			temp = '0' + value;
+			value /= 10;
+			buf[pos + 2] = (byte)(temp - (value * 10));
+			temp = '0' + value;
+			value /= 10;
+			buf[pos + 1] = (byte)(temp - (value * 10));
+			buf[pos] = (byte)('0' + value);
 		}
 
 		/// <summary>

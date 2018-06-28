@@ -435,6 +435,42 @@ namespace Novartment.Base.Text
 		}
 
 		/// <summary>
+		/// Преобразует указанную строку в вид 'quoted-string'.
+		/// В результирующей строке в начале и конце будут вставлены кавычки,
+		/// а перед кавычками и знаками косой черты в исходной строке будут вставлены дополнительные знаки косой черты.
+		/// </summary>
+		/// <param name="text">Значение, которое надо представить в виде 'quoted-string'.</param>
+		/// <param name="buf">Буфер, куда будет записано значение, преобразованное в вид 'quoted-string'.</param>
+		/// <returns>Количество знаков, записанных в буфер.</returns>
+		/// <exception cref="System.FormatException">Происходит когда во входных данных встречается символ, не входящий в набор ASCII.</exception>
+		public static int QuoteToUtf8 (ReadOnlySpan<char> text, Span<byte> buf)
+		{
+			var outPos = 0;
+			buf[outPos++] = (byte)'"'; // начальная кавычка
+			for (var srcPos = 0; srcPos < text.Length; srcPos++)
+			{
+				var character = text[srcPos];
+				var isVisibleOrWS = AsciiCharSet.IsCharOfClass (character, AsciiCharClasses.Visible | AsciiCharClasses.WhiteSpace);
+				if (!isVisibleOrWS)
+				{
+					throw new FormatException (FormattableString.Invariant (
+						$"Value contains invalid for 'quoted-sting' character U+{character:x}. Expected characters are U+0009 and U+0020...U+007E."));
+				}
+
+				if ((character == '\"') || (character == '\\'))
+				{
+					// кавычка либо косая черта предваряется косой чертой
+					buf[outPos++] = (byte)'\\';
+				}
+
+				buf[outPos++] = (byte)character;
+			}
+
+			buf[outPos++] = (byte)'"'; // конечная кавычка
+			return outPos;
+		}
+
+		/// <summary>
 		/// Проверяет, является ли указанная строка корректным доменным именем в Интернете.
 		/// </summary>
 		/// <param name="name">Строка для проверки соответсвия формату доменного имени Интернета.</param>

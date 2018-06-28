@@ -220,6 +220,51 @@ namespace Novartment.Base.Net
 		}
 
 		/// <summary>
+		/// Преобразовывает значение объекта в эквивалентное ему строковое представление.
+		/// </summary>
+		/// <param name="buf">Буфер, куда будет записано строковое представление значения объекта.</param>
+		/// <returns>Количество знаков, записанных в буфер.</returns>
+		public int ToUtf8String (Span<byte> buf)
+		{
+			var localPart = this.LocalPart;
+			var domain = this.Domain;
+			var isValidLocalPart = AsciiCharSet.IsValidInternetDomainName (localPart);
+			int pos = 0;
+			if (isValidLocalPart)
+			{
+				while (pos < localPart.Length)
+				{
+					buf[pos] = (byte)localPart[pos];
+					pos++;
+				}
+			}
+			else
+			{
+				pos += AsciiCharSet.QuoteToUtf8 (localPart.AsSpan (), buf.Slice (pos));
+			}
+
+			buf[pos++] = (byte)'@';
+			var isValidDomain = AsciiCharSet.IsValidInternetDomainName (this.Domain);
+			if (!isValidDomain)
+			{
+				buf[pos++] = (byte)'[';
+			}
+
+			var idx = 0;
+			while (idx < domain.Length)
+			{
+				buf[pos++] = (byte)domain[idx++];
+			}
+
+			if (!isValidDomain)
+			{
+				buf[pos++] = (byte)']';
+			}
+
+			return pos;
+		}
+
+		/// <summary>
 		/// Преобразовывает значение объекта в эквивалентное ему строковое представление, окруженное треугольными скобками.
 		/// </summary>
 		/// <returns>Строковое представление значения объекта, окруженное треугольными скобками.</returns>
@@ -242,6 +287,20 @@ namespace Novartment.Base.Net
 			buf[pos++] = '<';
 			pos += ToString (buf.Slice (pos));
 			buf[pos++] = '>';
+			return pos;
+		}
+
+		/// <summary>
+		/// Преобразовывает значение объекта в эквивалентное ему строковое представление, окруженное треугольными скобками.
+		/// </summary>
+		/// <param name="buf">Буфер, куда будет записано строковое представление значения объекта.</param>
+		/// <returns>Количество знаков, записанных в буфер.</returns>
+		public int ToAngleUtf8String (Span<byte> buf)
+		{
+			var pos = 0;
+			buf[pos++] = (byte)'<';
+			pos += ToUtf8String (buf.Slice (pos));
+			buf[pos++] = (byte)'>';
 			return pos;
 		}
 
