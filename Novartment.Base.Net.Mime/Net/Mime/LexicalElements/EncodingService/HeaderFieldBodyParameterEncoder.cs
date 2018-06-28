@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Buffers;
 using System.Globalization;
 using System.Text;
 using Novartment.Base.Text;
@@ -9,7 +8,7 @@ namespace Novartment.Base.Net.Mime
 	/// <summary>
 	/// Строковое значение, позволяющее получать информацию об отдельных сегментах, разделённых пробелами.
 	/// </summary>
-	internal class HeaderFieldBodyParameterEncoder
+	internal static class HeaderFieldBodyParameterEncoder
 	{
 		/*
 		RFC 2231 часть 4.1:
@@ -32,11 +31,11 @@ namespace Novartment.Base.Net.Mime
 		/// 2. Имеет суммарную длину не более HeaderEncoder.MaxLineLengthRequired (для читабельности результата).
 		/// </summary>
 		/// <returns>Следующий сегмент из последовательности, образующей исходную строку. Если вся исходная строка уже выдана, то null.</returns>
-		internal static string GetNextSegment (string name, byte[] value, int segmentNumber, ref int pos)
+		internal static int GetNextSegment (string name, ReadOnlySpan<byte> value, Span<byte> buf, int segmentNumber, ref int pos)
 		{
 			if (pos >= value.Length)
 			{
-				return null;
+				return 0;
 			}
 
 			var segment = GetNextChunk (name.Length, value, segmentNumber, ref pos);
@@ -46,20 +45,18 @@ namespace Novartment.Base.Net.Mime
 			var outBytesRequiredCapacity = isSingleUnencodedPart ?
 					name.Length + 2 + (segment.Count * 2) :
 					name.Length + 4 + ((segmentNumber == 0) ? 1 : (1 + (int)Math.Log10 (segmentNumber))) + (segment.Count * 4);
-			var outBytes = ArrayPool<byte>.Shared.Rent (outBytesRequiredCapacity);
 
-			AsciiCharSet.GetBytes (name.AsSpan (), outBytes);
+			AsciiCharSet.GetBytes (name.AsSpan (), buf);
 			var outBytesPos = name.Length;
 			int bytesProduced;
-			string result;
 
 			if (isSingleUnencodedPart)
 			{
 				// значение из одной части не требующей кодирования (возможно квотирование)
-				outBytes[outBytesPos++] = (byte)'=';
+				buf[outBytesPos++] = (byte)'=';
 				(bytesProduced, _) = segment.Encoder.Encode (
-					source: value.AsSpan (segment.Offset, segment.Count),
-					destination: outBytes.AsSpan (outBytesPos, outBytesRequiredCapacity - outBytesPos),
+					source: value.Slice (segment.Offset, segment.Count),
+					destination: buf.Slice (outBytesPos, outBytesRequiredCapacity - outBytesPos),
 					segmentNumber: 0,
 					isLastSegment: false);
 				outBytesPos += bytesProduced;
@@ -67,39 +64,37 @@ namespace Novartment.Base.Net.Mime
 			else
 			{
 				// значение из многих частей либо требует кодирования
-				outBytes[outBytesPos++] = (byte)'*';
+				buf[outBytesPos++] = (byte)'*';
 				var idxStr = segmentNumber.ToString (CultureInfo.InvariantCulture);
-				AsciiCharSet.GetBytes (idxStr.AsSpan (), outBytes.AsSpan (outBytesPos));
+				AsciiCharSet.GetBytes (idxStr.AsSpan (), buf.Slice (outBytesPos));
 				outBytesPos += idxStr.Length;
 				if (segment.Encoder is HeaderFieldBodyExtendedParameterValueEstimatingEncoder)
 				{
-					outBytes[outBytesPos++] = (byte)'*';
+					buf[outBytesPos++] = (byte)'*';
 				}
 
-				outBytes[outBytesPos++] = (byte)'=';
+				buf[outBytesPos++] = (byte)'=';
 				(bytesProduced, _) = segment.Encoder.Encode (
-					source: value.AsSpan (segment.Offset, segment.Count),
-					destination: outBytes.AsSpan (outBytesPos, outBytesRequiredCapacity - outBytesPos),
+					source: value.Slice (segment.Offset, segment.Count),
+					destination: buf.Slice (outBytesPos, outBytesRequiredCapacity - outBytesPos),
 					segmentNumber: segmentNumber,
 					isLastSegment: isLastSegment);
 				outBytesPos += bytesProduced;
 				if (!isLastSegment)
 				{
-					outBytes[outBytesPos++] = (byte)';';
+					buf[outBytesPos++] = (byte)';';
 				}
 			}
 
 			segmentNumber++;
-			result = AsciiCharSet.GetString (outBytes.AsSpan (0, outBytesPos));
-			ArrayPool<byte>.Shared.Return (outBytes);
-			return result;
+			return outBytesPos;
 		}
 
-		private static EstimatingEncoderChunk GetNextChunk (int nameLength, byte[] source, int segmentNumber, ref int pos)
+		private static EstimatingEncoderChunk GetNextChunk (int nameLength, ReadOnlySpan<byte> source, int segmentNumber, ref int pos)
 		{
 			// TODO: реализовать поддержку смещения и кол-ва в source
 			var segmentNumberChars = (segmentNumber == 0) ? 1 : (1 + (int)Math.Log10 (segmentNumber));
-			var maxOutCount = HeaderEncoder.MaxLineLengthRecommended - nameLength - " *=;".Length - segmentNumberChars;
+			var maxOutCount = HeaderFieldBuilder.MaxLineLengthRecommended - nameLength - " *=;".Length - segmentNumberChars;
 
 			EstimatingEncoderChunk result;
 
@@ -118,7 +113,7 @@ namespace Novartment.Base.Net.Mime
 					{
 						// значение, требующее кодирования или первый сегмент многосегментного значения
 						// должны использовать только ExtendedParameterEncoder
-						var (_, bytesConsumed) = encoder3.Estimate (source.AsSpan (pos, source.Length - pos), maxOutCount - 1, segmentNumber, true);
+						var (_, bytesConsumed) = encoder3.Estimate (source.Slice (pos, source.Length - pos), maxOutCount - 1, segmentNumber, true);
 						result = new EstimatingEncoderChunk (encoder3, pos, bytesConsumed);
 						pos += bytesConsumed;
 						return result;
@@ -128,9 +123,10 @@ namespace Novartment.Base.Net.Mime
 				}
 			}
 
-			var (_, bytesConsumed1) = encoder1.Estimate (source.AsSpan (pos, source.Length - pos), maxOutCount, segmentNumber, true);
-			var (_, bytesConsumed2) = encoder2.Estimate (source.AsSpan (pos, source.Length - pos), maxOutCount, segmentNumber, true);
-			var (_, bytesConsumed3) = encoder3.Estimate (source.AsSpan (pos, source.Length - pos), maxOutCount - 1, segmentNumber, true);
+			var slice = source.Slice (pos, source.Length - pos);
+			var (_, bytesConsumed1) = encoder1.Estimate (slice, maxOutCount, segmentNumber, true);
+			var (_, bytesConsumed2) = encoder2.Estimate (slice, maxOutCount, segmentNumber, true);
+			var (_, bytesConsumed3) = encoder3.Estimate (slice, maxOutCount - 1, segmentNumber, true);
 
 			if (bytesConsumed2 >= bytesConsumed3)
 			{

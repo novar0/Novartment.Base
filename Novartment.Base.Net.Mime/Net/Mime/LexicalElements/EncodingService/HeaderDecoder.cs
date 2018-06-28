@@ -1008,7 +1008,7 @@ namespace Novartment.Base.Net.Mime
 			return buffer.Slice (0, dstPos);
 		}
 
-		private static async Task<HeaderField> LoadHeaderFieldAsync (IBufferedSource fieldSource, byte[] buffer, CancellationToken cancellationToken)
+		private static async Task<HeaderField> LoadHeaderFieldAsync (IBufferedSource fieldSource, Memory<byte> buffer, CancellationToken cancellationToken)
 		{
 			// загружаем имя поля
 			var nameSize = await fieldSource.CopyToBufferUntilMarkerAsync ((byte)':', buffer, cancellationToken).ConfigureAwait (false);
@@ -1017,7 +1017,7 @@ namespace Novartment.Base.Net.Mime
 				throw new FormatException ("Not found name of header field.");
 			}
 
-			var name = AsciiCharSet.GetString (buffer.AsSpan (0, nameSize));
+			var name = AsciiCharSet.GetString (buffer.Span.Slice (0, nameSize));
 			var isKnown = HeaderFieldNameHelper.TryParse (name, out HeaderFieldName knownName);
 			if (!isKnown)
 			{
@@ -1045,8 +1045,8 @@ namespace Novartment.Base.Net.Mime
 			}
 
 			var field = isKnown ?
-				new HeaderField (knownName, buffer.AsSpan (0, valueSize)) :
-				new ExtensionHeaderField (name, buffer.AsSpan (0, valueSize));
+				new HeaderField (knownName, buffer.Span.Slice (0, valueSize)) :
+				new ExtensionHeaderField (name, buffer.Span.Slice (0, valueSize));
 
 			return field;
 		}

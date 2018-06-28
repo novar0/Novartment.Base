@@ -165,14 +165,14 @@ namespace Novartment.Base.Net.Mime
 
 			async Task SaveAsyncStateMachine ()
 			{
-				await HeaderEncoder.SaveHeaderAsync (header, destination, cancellationToken)
+				await HeaderFieldBuilder.SaveHeaderAsync (header, destination, cancellationToken)
 					.ConfigureAwait (false);
 				await destination.WriteAsync (HeaderDecoder.CarriageReturnLinefeed, cancellationToken)
 					.ConfigureAwait (false);
 				foreach (var recipientBlock in this.Recipients)
 				{
 					var headerFields = CreateHeaderRecipient (recipientBlock);
-					await HeaderEncoder.SaveHeaderAsync (headerFields, destination, cancellationToken)
+					await HeaderFieldBuilder.SaveHeaderAsync (headerFields, destination, cancellationToken)
 						.ConfigureAwait (false);
 					await destination.WriteAsync (HeaderDecoder.CarriageReturnLinefeed, cancellationToken)
 						.ConfigureAwait (false);

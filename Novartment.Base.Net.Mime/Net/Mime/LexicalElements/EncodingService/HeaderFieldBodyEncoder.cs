@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Buffers;
 using System.Text;
 using Novartment.Base.Text;
 
@@ -36,13 +35,13 @@ namespace Novartment.Base.Net.Mime
 		/// 2. Имеет суммарную длину не более HeaderEncoder.MaxLineLengthRecommended (для читабельности результата).
 		/// </summary>
 		/// <returns>Следующий элемент из последовательности, образующей исходную строку. Если вся исходная строка уже выдана, то null.</returns>
-		internal static string EncodeNextElement (byte[] source, TextSemantics semantics, ref int startPos, ref bool prevSequenceIsWordEncoded)
+		internal static int EncodeNextElement (ReadOnlySpan<byte> source, Span<byte> buf, TextSemantics semantics, ref int startPos, ref bool prevSequenceIsWordEncoded)
 		{
 			var pos = startPos;
 
 			if (pos >= source.Length)
 			{
-				return null;
+				return 0;
 			}
 
 			var mustEncode = ScanIfNextTokenMustBeEncoded (source, semantics, ref pos);
@@ -54,25 +53,26 @@ namespace Novartment.Base.Net.Mime
 			if (!mustEncode)
 			{
 				prevSequenceIsWordEncoded = false;
+				var size = pos - startPos;
 				if (semantics != TextSemantics.Phrase)
 				{
-					var result2 = Encoding.UTF8.GetString (source, startPos, pos - startPos);
+					source.Slice (startPos, size).CopyTo (buf);
 					startPos = pos;
-					return result2;
+					return size;
 				}
 
 				// семантика 'phrase' предоставляет дополнительный способ представления 'Quoted Strings'
 				var toQuoteCount = GetToQuoteCount (source, startPos, pos);
 				if (toQuoteCount < 1)
 				{
-					var result2 = Encoding.UTF8.GetString (source, startPos, pos - startPos);
+					source.Slice (startPos, size).CopyTo (buf);
 					startPos = pos;
-					return result2;
+					return size;
 				}
 
 				// ищем последнее слово для квотирования
 				encoder = new QuotedStringEstimatingEncoder (AsciiCharClasses.Visible | AsciiCharClasses.WhiteSpace);
-				var maxSequenceLength = HeaderEncoder.MaxLineLengthRecommended - (encoder.PrologSize + encoder.EpilogSize);
+				var maxSequenceLength = HeaderFieldBuilder.MaxLineLengthRecommended - (encoder.PrologSize + encoder.EpilogSize);
 				var stopSearch = false;
 				while (true)
 				{
@@ -127,7 +127,7 @@ namespace Novartment.Base.Net.Mime
 			{
 				// ищем последнее слово для кодирования
 				encoder = new EncodedWordBEstimatingEncoder (Encoding.UTF8);
-				var maxSequenceLength = HeaderEncoder.MaxEncodedWordLength - (encoder.PrologSize + encoder.EpilogSize);
+				var maxSequenceLength = HeaderFieldBuilder.MaxEncodedWordLength - (encoder.PrologSize + encoder.EpilogSize);
 				var stopSearch = false;
 				while (true)
 				{
@@ -175,13 +175,12 @@ namespace Novartment.Base.Net.Mime
 
 			// каждый символ кроме разделяющих слова может быть закодирован, итого может быть закодировано (byteCount - wordCount + 1) символов
 			var maxSizeOfEncodedSequence = encoder.PrologSize + ((byteCount - wordCount + 1) * maxEndocdedBytesForOneSourceByte) + encoder.EpilogSize;
-			var outBuf = ArrayPool<byte>.Shared.Rent (maxSizeOfEncodedSequence);
 
 			int outPos = 0;
 			if (prevSequenceIsWordEncoded && mustEncode)
 			{
 				// добавляем лишний пробел, который при декодировании будет проигнорирован между кодированными словами
-				outBuf[outPos++] = (byte)' ';
+				buf[outPos++] = (byte)' ';
 			}
 			else
 			{
@@ -190,7 +189,7 @@ namespace Novartment.Base.Net.Mime
 					// напрямую копируем в результат не требующее кодирования пробельное пространство
 					while (source[byteIndex] == ' ' || source[byteIndex] == '\t')
 					{
-						outBuf[outPos++] = source[byteIndex++];
+						buf[outPos++] = source[byteIndex++];
 						byteCount--;
 					}
 				}
@@ -201,22 +200,19 @@ namespace Novartment.Base.Net.Mime
 						// для всех слов кроме первого
 						// напрямую копируем в результат не требующее кодирования пробельное пространство
 						// (для phrase это единственный пробел)
-						outBuf[outPos++] = source[byteIndex++];
+						buf[outPos++] = source[byteIndex++];
 						byteCount--;
 					}
 				}
 			}
 
-			var (bytesProduced, bytesConsumed) = encoder.Encode (source.AsSpan (byteIndex, byteCount), outBuf.AsSpan (outPos, outBuf.Length - outPos), 0, true);
+			var (bytesProduced, bytesConsumed) = encoder.Encode (source.Slice (byteIndex, byteCount), buf.Slice (outPos, buf.Length - outPos), 0, true);
 			outPos += bytesProduced;
-			var result = Encoding.UTF8.GetString (outBuf, 0, outPos);
-
-			ArrayPool<byte>.Shared.Return (outBuf);
 
 			prevSequenceIsWordEncoded = mustEncode;
 			startPos = sequenceEndPos;
 
-			return result;
+			return outPos;
 		}
 
 		/// <summary>

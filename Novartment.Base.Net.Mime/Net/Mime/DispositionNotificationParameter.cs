@@ -133,5 +133,35 @@ namespace Novartment.Base.Net.Mime
 			var values = string.Join (",", _values);
 			return FormattableString.Invariant ($"{this.Name}={this.Importance.GetName ()},{values}");
 		}
+
+		/// <summary>
+		/// Получает строковое представление объекта.
+		/// </summary>
+		/// <param name="buf">Буфер, куда будет записано строковое представление объекта.</param>
+		/// <returns>Количество знаков, записанных в буфер.</returns>
+		public int ToUtf8String (Span<byte> buf)
+		{
+			AsciiCharSet.GetBytes (this.Name.AsSpan (), buf);
+			var outPos = this.Name.Length;
+			buf[outPos++] = (byte)'=';
+			var importanceStr = this.Importance.GetName ();
+			AsciiCharSet.GetBytes (importanceStr.AsSpan (), buf.Slice (outPos));
+			outPos += importanceStr.Length;
+			buf[outPos++] = (byte)',';
+
+			for (var idx = 0; idx < _values.Count; idx++)
+			{
+				var value = _values[idx];
+				AsciiCharSet.GetBytes (value.AsSpan (), buf.Slice (outPos));
+				outPos += value.Length;
+
+				if (idx != (_values.Count - 1))
+				{
+					buf[outPos++] = (byte)',';
+				}
+			}
+
+			return outPos;
+		}
 	}
 }

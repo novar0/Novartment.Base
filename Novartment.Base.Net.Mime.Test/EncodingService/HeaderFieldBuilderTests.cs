@@ -1,231 +1,791 @@
 ﻿using System;
-using System.Text;
 using System.Collections.Generic;
+using System.Text;
 using Xunit;
 
 namespace Novartment.Base.Net.Mime.Test
 {
+	#region класс-обёртки чтобы получить доступ к protected-методу GetNextPart()
+
+	internal class ExposedHeaderFieldBuilderUnstructured : HeaderFieldBuilderUnstructured
+	{
+		internal ExposedHeaderFieldBuilderUnstructured (HeaderFieldName name, string text) : base (name, text) { }
+		internal int GetNextPartExposed (Span<byte> buf, out bool isLast) => base.GetNextPart (buf, out isLast);
+	}
+
+	internal class ExposedHeaderFieldBuilderPhrase : HeaderFieldBuilderPhrase
+	{
+		internal ExposedHeaderFieldBuilderPhrase (HeaderFieldName name, string text) : base (name, text) { }
+		internal int GetNextPartExposed (Span<byte> buf, out bool isLast) => base.GetNextPart (buf, out isLast);
+	}
+
+	internal class ExposedHeaderFieldBuilderMailbox : HeaderFieldBuilderMailbox
+	{
+		internal ExposedHeaderFieldBuilderMailbox (HeaderFieldName name, Mailbox mailbox) : base (name, mailbox) { }
+		internal int GetNextPartExposed (Span<byte> buf, out bool isLast) => base.GetNextPart (buf, out isLast);
+	}
+
+
+	internal class ExposedHeaderFieldBuilderLanguageList : HeaderFieldBuilderLanguageList
+	{
+		internal ExposedHeaderFieldBuilderLanguageList (HeaderFieldName name, IReadOnlyList<string> languages) : base (name, languages) { }
+		internal int GetNextPartExposed (Span<byte> buf, out bool isLast) => base.GetNextPart (buf, out isLast);
+	}
+
+	internal class ExposedHeaderFieldBuilderAddrSpecList : HeaderFieldBuilderAddrSpecList
+	{
+		internal ExposedHeaderFieldBuilderAddrSpecList (HeaderFieldName name, IReadOnlyList<AddrSpec> addrSpecs) : base (name, addrSpecs) { }
+		internal int GetNextPartExposed (Span<byte> buf, out bool isLast) => base.GetNextPart (buf, out isLast);
+	}
+
+	internal class ExposedHeaderFieldBuilderAtomAndUnstructured : HeaderFieldBuilderAtomAndUnstructured
+	{
+		internal ExposedHeaderFieldBuilderAtomAndUnstructured (HeaderFieldName name, string type, string value) : base (name, type, value) { }
+		internal int GetNextPartExposed (Span<byte> buf, out bool isLast) => base.GetNextPart (buf, out isLast);
+	}
+
+	internal class ExposedHeaderFieldBuilderUnstructuredPair : HeaderFieldBuilderUnstructuredPair
+	{
+		internal ExposedHeaderFieldBuilderUnstructuredPair (HeaderFieldName name, string value1, string value2) : base (name, value1, value2) { }
+		internal int GetNextPartExposed (Span<byte> buf, out bool isLast) => base.GetNextPart (buf, out isLast);
+	}
+
+	internal class ExposedHeaderFieldBuilderTokensAndDate : HeaderFieldBuilderTokensAndDate
+	{
+		internal ExposedHeaderFieldBuilderTokensAndDate (HeaderFieldName name, string value, DateTimeOffset dateTimeOffset) : base (name, value, dateTimeOffset) { }
+		internal int GetNextPartExposed (Span<byte> buf, out bool isLast) => base.GetNextPart (buf, out isLast);
+	}
+
+	internal class ExposedHeaderFieldBuilderPhraseAndId : HeaderFieldBuilderPhraseAndId
+	{
+		internal ExposedHeaderFieldBuilderPhraseAndId (HeaderFieldName name, string id, string phrase) : base (name, id, phrase) { }
+		internal int GetNextPartExposed (Span<byte> buf, out bool isLast) => base.GetNextPart (buf, out isLast);
+	}
+
+	internal class ExposedHeaderFieldBuilderPhraseList : HeaderFieldBuilderPhraseList
+	{
+		internal ExposedHeaderFieldBuilderPhraseList (HeaderFieldName name, IReadOnlyList<string> values) : base (name, values) { }
+		internal int GetNextPartExposed (Span<byte> buf, out bool isLast) => base.GetNextPart (buf, out isLast);
+	}
+
+	internal class ExposedHeaderFieldBuilderMailboxList : HeaderFieldBuilderMailboxList
+	{
+		internal ExposedHeaderFieldBuilderMailboxList (HeaderFieldName name, IReadOnlyList<Mailbox> mailboxes) : base (name, mailboxes) { }
+		internal int GetNextPartExposed (Span<byte> buf, out bool isLast) => base.GetNextPart (buf, out isLast);
+	}
+
+	internal class ExposedHeaderFieldBuilderAngleBracketedList : HeaderFieldBuilderAngleBracketedList
+	{
+		internal ExposedHeaderFieldBuilderAngleBracketedList (HeaderFieldName name, IReadOnlyList<string> urls) : base (name, urls) { }
+		internal int GetNextPartExposed (Span<byte> buf, out bool isLast) => base.GetNextPart (buf, out isLast);
+	}
+
+	internal class ExposedHeaderFieldBuilderDispositionNotificationParameterList : HeaderFieldBuilderDispositionNotificationParameterList
+	{
+		internal ExposedHeaderFieldBuilderDispositionNotificationParameterList (HeaderFieldName name, IReadOnlyList<DispositionNotificationParameter> parameters) : base (name, parameters) { }
+		internal int GetNextPartExposed (Span<byte> buf, out bool isLast) => base.GetNextPart (buf, out isLast);
+	}
+
+	internal class ExposedHeaderFieldBuilderDisposition : HeaderFieldBuilderDisposition
+	{
+		internal ExposedHeaderFieldBuilderDisposition (HeaderFieldName name, string actionMode, string sendingMode, string type, IReadOnlyList<string> modifiers) : base (name, actionMode, sendingMode, type, modifiers) { }
+		internal int GetNextPartExposed (Span<byte> buf, out bool isLast) => base.GetNextPart (buf, out isLast);
+	}
+
+	#endregion
+
 	public class HeaderFieldBuilderTests
 	{
-		// нет смысла тестировать тривиальные HeaderFieldBuilderExactValue, HeaderFieldBuilderUnstructured, HeaderFieldBuilderPhrase, HeaderFieldBuilderMailbox
+		// добавить тестирование HeaderFieldBuilderExactValue
+
+		[Fact]
+		[Trait ("Category", "Mime.HeaderEncoder")]
+		public void CreateUnstructured ()
+		{
+			var buf = new byte[100];
+			bool isLast;
+
+			var builder = new ExposedHeaderFieldBuilderUnstructured (HeaderFieldName.Supersedes, string.Empty);
+			var size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.True (true);
+			Assert.Equal (0, size);
+
+			builder = new ExposedHeaderFieldBuilderUnstructured (HeaderFieldName.Supersedes, "An 'encoded-word' may, appear: in a message; values or \"body part\" values according слово to the снова rules valuerulesvaluerulesvaluerulesvaluerulesvaluerulesvaluerulesvaluerulesvaluerules again");
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.False (isLast);
+			Assert.Equal ("An", Encoding.ASCII.GetString (buf, 0, size));
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.False (isLast);
+			Assert.Equal (" 'encoded-word'", Encoding.ASCII.GetString (buf, 0, size));
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.False (isLast);
+			Assert.Equal (" may,", Encoding.ASCII.GetString (buf, 0, size));
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.False (isLast);
+			Assert.Equal (" appear:", Encoding.ASCII.GetString (buf, 0, size));
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.False (isLast);
+			Assert.Equal (" in", Encoding.ASCII.GetString (buf, 0, size));
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.False (isLast);
+			Assert.Equal (" a", Encoding.ASCII.GetString (buf, 0, size));
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.False (isLast);
+			Assert.Equal (" message;", Encoding.ASCII.GetString (buf, 0, size));
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.False (isLast);
+			Assert.Equal (" values", Encoding.ASCII.GetString (buf, 0, size));
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.False (isLast);
+			Assert.Equal (" or", Encoding.ASCII.GetString (buf, 0, size));
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.False (isLast);
+			Assert.Equal (" \"body", Encoding.ASCII.GetString (buf, 0, size));
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.False (isLast);
+			Assert.Equal (" part\"", Encoding.ASCII.GetString (buf, 0, size));
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.False (isLast);
+			Assert.Equal (" values", Encoding.ASCII.GetString (buf, 0, size));
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.False (isLast);
+			Assert.Equal (" according", Encoding.ASCII.GetString (buf, 0, size));
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.False (isLast);
+			Assert.Equal (" =?utf-8?B?0YHQu9C+0LLQviB0byB0aGUg0YHQvdC+0LLQsA==?=", Encoding.ASCII.GetString (buf, 0, size));
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.False (isLast);
+			Assert.Equal (" rules", Encoding.ASCII.GetString (buf, 0, size));
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.False (isLast);
+			Assert.Equal (" valuerulesvaluerulesvaluerulesvaluerulesvaluerulesvaluerulesvaluerulesvaluerules", Encoding.ASCII.GetString (buf, 0, size));
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.True (isLast);
+			Assert.Equal (" again", Encoding.ASCII.GetString (buf, 0, size));
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.True (true);
+			Assert.Equal (0, size);
+		}
+
+		[Fact]
+		[Trait ("Category", "Mime.HeaderEncoder")]
+		public void CreatePhrase ()
+		{
+			var buf = new byte[100];
+			bool isLast;
+			var builder = new ExposedHeaderFieldBuilderPhrase (HeaderFieldName.Supersedes, "An 'encoded-word' may, appear: in a message; values or \"body part\" values according слово to the снова rules valuerulesvaluerulesvaluerulesvaluerulesvaluerulesvaluerulesvaluerulesvaluerules again");
+
+			var size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.False (isLast);
+			Assert.Equal ("An", Encoding.ASCII.GetString (buf, 0, size));
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.False (isLast);
+			Assert.Equal (" 'encoded-word'", Encoding.ASCII.GetString (buf, 0, size));
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.False (isLast);
+			Assert.Equal (" \"may, appear: in a message; values or \\\"body part\\\"\"", Encoding.ASCII.GetString (buf, 0, size));
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.False (isLast);
+			Assert.Equal (" values", Encoding.ASCII.GetString (buf, 0, size));
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.False (isLast);
+			Assert.Equal (" according", Encoding.ASCII.GetString (buf, 0, size));
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.False (isLast);
+			Assert.Equal (" =?utf-8?B?0YHQu9C+0LLQviB0byB0aGUg0YHQvdC+0LLQsA==?=", Encoding.ASCII.GetString (buf, 0, size));
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.False (isLast);
+			Assert.Equal (" rules", Encoding.ASCII.GetString (buf, 0, size));
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.False (isLast);
+			Assert.Equal (" valuerulesvaluerulesvaluerulesvaluerulesvaluerulesvaluerulesvaluerulesvaluerules", Encoding.ASCII.GetString (buf, 0, size));
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.True (isLast);
+			Assert.Equal (" again", Encoding.ASCII.GetString (buf, 0, size));
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.True (true);
+			Assert.Equal (0, size);
+		}
+
+		[Fact]
+		[Trait ("Category", "Mime.HeaderEncoder")]
+		public void CreateMailbox ()
+		{
+			var buf = new byte[100];
+			bool isLast;
+			var builder = new ExposedHeaderFieldBuilderMailbox (HeaderFieldName.Supersedes, new Mailbox (new AddrSpec ("someone", "server.com"), null));
+
+			var size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.True (isLast);
+			Assert.Equal ("<someone@server.com>", Encoding.ASCII.GetString (buf, 0, size));
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.True (true);
+			Assert.Equal (0, size);
+
+			builder = new ExposedHeaderFieldBuilderMailbox (HeaderFieldName.Supersedes, new Mailbox (new AddrSpec ("someone", "server.com"), "Dear"));
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.False (isLast);
+			Assert.Equal ("Dear", Encoding.ASCII.GetString (buf, 0, size));
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.True (isLast);
+			Assert.Equal ("<someone@server.com>", Encoding.ASCII.GetString (buf, 0, size));
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.True (true);
+			Assert.Equal (0, size);
+
+			builder = new ExposedHeaderFieldBuilderMailbox (HeaderFieldName.Supersedes, new Mailbox (
+				new AddrSpec ("really-long-address(for.one.line)", "some literal domain"),
+				"Henry Abdula Rabi Ж  (the Third King of the Mooon)"));
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.False (isLast);
+			Assert.Equal ("Henry", Encoding.ASCII.GetString (buf, 0, size));
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.False (isLast);
+			Assert.Equal (" Abdula", Encoding.ASCII.GetString (buf, 0, size));
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.False (isLast);
+			Assert.Equal (" Rabi", Encoding.ASCII.GetString (buf, 0, size));
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.False (isLast);
+			Assert.Equal (" =?utf-8?B?0JY=?=", Encoding.ASCII.GetString (buf, 0, size));
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.False (isLast);
+			Assert.Equal (" \" (the Third King of the Mooon)\"", Encoding.ASCII.GetString (buf, 0, size));
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.True (isLast);
+			Assert.Equal ("<\"really-long-address(for.one.line)\"@[some literal domain]>", Encoding.ASCII.GetString (buf, 0, size));
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.True (true);
+			Assert.Equal (0, size);
+		}
 
 		[Fact]
 		[Trait ("Category", "Mime.HeaderEncoder")]
 		public void CreateLanguageList ()
 		{
-			var builder = new HeaderFieldBuilderLanguageList (HeaderFieldName.Supersedes, new string[] { "one", "two2", "three-en" });
-			var parts = builder.GetParts ();
-			Assert.Equal (HeaderFieldName.Supersedes, builder.Name);
-			Assert.Equal (3, parts.Count);
-			Assert.Equal ("one,", parts[0]);
-			Assert.Equal ("two2,", parts[1]);
-			Assert.Equal ("three-en", parts[2]);
+			var buf = new byte[100];
+			bool isLast;
+			var builder = new ExposedHeaderFieldBuilderLanguageList (HeaderFieldName.Supersedes, new string[] { "one", "two2", "three-en" });
+
+			var size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.False (isLast);
+			Assert.Equal ("one,", Encoding.ASCII.GetString (buf, 0, size));
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.False (isLast);
+			Assert.Equal ("two2,", Encoding.ASCII.GetString (buf, 0, size));
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.True (isLast);
+			Assert.Equal ("three-en", Encoding.ASCII.GetString (buf, 0, size));
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.True (true);
+			Assert.Equal (0, size);
 		}
 
 		[Fact]
 		[Trait ("Category", "Mime.HeaderEncoder")]
 		public void CreateAddrSpecList ()
 		{
-			var builder = new HeaderFieldBuilderAddrSpecList (HeaderFieldName.Supersedes, new AddrSpec[] { AddrSpec.Parse ("someone@someserver.ru"), AddrSpec.Parse ("\"real(addr)\"@someserver.ru"), AddrSpec.Parse ("\"real(addr)\"@[some literal domain]") });
-			var parts = builder.GetParts ();
-			Assert.Equal (HeaderFieldName.Supersedes, builder.Name);
-			Assert.Equal (3, parts.Count);
-			Assert.Equal ("<someone@someserver.ru>", parts[0]);
-			Assert.Equal ("<\"real(addr)\"@someserver.ru>", parts[1]);
-			Assert.Equal ("<\"real(addr)\"@[some literal domain]>", parts[2]);
+			var buf = new byte[100];
+			bool isLast;
+
+			var builder = new ExposedHeaderFieldBuilderAddrSpecList (HeaderFieldName.Supersedes, new AddrSpec[] { AddrSpec.Parse ("someone@someserver.ru"), AddrSpec.Parse ("\"real(addr)\"@someserver.ru"), AddrSpec.Parse ("\"real(addr)\"@[some literal domain]") });
+
+			var size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.False (isLast);
+			Assert.Equal ("<someone@someserver.ru>", Encoding.ASCII.GetString (buf, 0, size));
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.False (isLast);
+			Assert.Equal ("<\"real(addr)\"@someserver.ru>", Encoding.ASCII.GetString (buf, 0, size));
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.True (isLast);
+			Assert.Equal ("<\"real(addr)\"@[some literal domain]>", Encoding.ASCII.GetString (buf, 0, size));
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.True (true);
+			Assert.Equal (0, size);
 		}
 
 		[Fact]
 		[Trait ("Category", "Mime.HeaderEncoder")]
 		public void CreateAtomAndUnstructured ()
 		{
-			var builder = new HeaderFieldBuilderAtomAndUnstructured (HeaderFieldName.Supersedes, "type", "value");
-			var parts = builder.GetParts ();
-			Assert.Equal (2, parts.Count);
-			Assert.Equal ("type;", parts[0]);
-			Assert.Equal ("value", parts[1]);
+			var buf = new byte[100];
+			bool isLast;
+			var builder = new ExposedHeaderFieldBuilderAtomAndUnstructured (HeaderFieldName.Supersedes, "type", "value");
 
-			builder = new HeaderFieldBuilderAtomAndUnstructured (HeaderFieldName.Supersedes, "dns", "2000 Адресат Один");
-			parts = builder.GetParts ();
-			Assert.Equal (3, parts.Count);
-			Assert.Equal ("dns;", parts[0]);
-			Assert.Equal ("2000", parts[1]);
-			Assert.Equal (" =?utf-8?B?0JDQtNGA0LXRgdCw0YIg0J7QtNC40L0=?=", parts[2]);
+			var size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.False (isLast);
+			Assert.Equal ("type;", Encoding.ASCII.GetString (buf, 0, size));
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.True (isLast);
+			Assert.Equal ("value", Encoding.ASCII.GetString (buf, 0, size));
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.True (true);
+			Assert.Equal (0, size);
+
+			builder = new ExposedHeaderFieldBuilderAtomAndUnstructured (HeaderFieldName.Supersedes, "dns", "2000 Адресат Один");
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.False (isLast);
+			Assert.Equal ("dns;", Encoding.ASCII.GetString (buf, 0, size));
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.False (isLast);
+			Assert.Equal ("2000", Encoding.ASCII.GetString (buf, 0, size));
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.True (true);
+			Assert.Equal (" =?utf-8?B?0JDQtNGA0LXRgdCw0YIg0J7QtNC40L0=?=", Encoding.ASCII.GetString (buf, 0, size));
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.True (true);
+			Assert.Equal (0, size);
 		}
 
 		[Fact]
 		[Trait ("Category", "Mime.HeaderEncoder")]
 		public void CreateUnstructuredPair ()
 		{
-			var builder = new HeaderFieldBuilderUnstructuredPair (HeaderFieldName.Supersedes, "value", null);
-			var parts = builder.GetParts ();
-			Assert.Equal (1, parts.Count);
-			Assert.Equal ("value", parts[0]);
+			var buf = new byte[100];
+			bool isLast;
 
-			builder = new HeaderFieldBuilderUnstructuredPair (HeaderFieldName.Supersedes, "Lena's Personal <Joke> List", "слово to the снова");
-			parts = builder.GetParts ();
-			Assert.Equal (5, parts.Count);
-			Assert.Equal ("Lena's", parts[0]);
-			Assert.Equal (" Personal", parts[1]);
-			Assert.Equal (" <Joke>", parts[2]);
-			Assert.Equal (" List;", parts[3]);
-			Assert.Equal ("=?utf-8?B?0YHQu9C+0LLQviB0byB0aGUg0YHQvdC+0LLQsA==?=", parts[4]);
+			var builder = new ExposedHeaderFieldBuilderUnstructuredPair (HeaderFieldName.Supersedes, "value", null);
+
+			var size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.True (isLast);
+			Assert.Equal ("value", Encoding.ASCII.GetString (buf, 0, size));
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.True (true);
+			Assert.Equal (0, size);
+
+			builder = new ExposedHeaderFieldBuilderUnstructuredPair (HeaderFieldName.Supersedes, "Lena's Personal <Joke> List", "слово to the снова");
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.False (isLast);
+			Assert.Equal ("Lena's", Encoding.ASCII.GetString (buf, 0, size));
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.False (isLast);
+			Assert.Equal (" Personal", Encoding.ASCII.GetString (buf, 0, size));
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.False (isLast);
+			Assert.Equal (" <Joke>", Encoding.ASCII.GetString (buf, 0, size));
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.False (isLast);
+			Assert.Equal (" List;", Encoding.ASCII.GetString (buf, 0, size));
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.True (isLast);
+			Assert.Equal ("=?utf-8?B?0YHQu9C+0LLQviB0byB0aGUg0YHQvdC+0LLQsA==?=", Encoding.ASCII.GetString (buf, 0, size));
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.True (true);
+			Assert.Equal (0, size);
 		}
 
 		[Fact]
 		[Trait ("Category", "Mime.HeaderEncoder")]
 		public void CreateTokensAndDate ()
 		{
+			var buf = new byte[100];
+			bool isLast;
+
 			var dt = new DateTimeOffset (634726649620000000L, TimeSpan.FromHours (3));
-			var builder = new HeaderFieldBuilderTokensAndDate (HeaderFieldName.Supersedes, null, dt);
-			var parts = builder.GetParts ();
-			Assert.Equal (2, parts.Count);
-			Assert.Equal (";", parts[0]);
-			Assert.Equal ("15 May 2012 07:49:22 +0300", parts[1]);
+			var builder = new ExposedHeaderFieldBuilderTokensAndDate (HeaderFieldName.Supersedes, null, dt);
+
+			var size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.False (isLast);
+			Assert.Equal (";", Encoding.ASCII.GetString (buf, 0, size));
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.True (isLast);
+			Assert.Equal ("15 May 2012 07:49:22 +0300", Encoding.ASCII.GetString (buf, 0, size));
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.True (true);
+			Assert.Equal (0, size);
 
 			dt = new DateTimeOffset (634726649620000000L, TimeSpan.FromHours (1));
-			builder = new HeaderFieldBuilderTokensAndDate (HeaderFieldName.Supersedes, "CAA22933", dt);
-			parts = builder.GetParts ();
-			Assert.Equal (2, parts.Count);
-			Assert.Equal ("CAA22933;", parts[0]);
-			Assert.Equal ("15 May 2012 07:49:22 +0100", parts[1]);
+			builder = new ExposedHeaderFieldBuilderTokensAndDate (HeaderFieldName.Supersedes, "CAA22933", dt);
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.False (isLast);
+			Assert.Equal ("CAA22933;", Encoding.ASCII.GetString (buf, 0, size));
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.True (true);
+			Assert.Equal ("15 May 2012 07:49:22 +0100", Encoding.ASCII.GetString (buf, 0, size));
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.True (true);
+			Assert.Equal (0, size);
 
 			dt = new DateTimeOffset (634726649620000000L, TimeSpan.FromHours (-6));
-			builder = new HeaderFieldBuilderTokensAndDate (HeaderFieldName.Supersedes, " CMK-SLNS06.chmk.mechelgroup.ru   CAA22933\t", dt);
-			parts = builder.GetParts ();
-			Assert.Equal (3, parts.Count);
-			Assert.Equal ("CMK-SLNS06.chmk.mechelgroup.ru", parts[0]);
-			Assert.Equal ("CAA22933;", parts[1]);
-			Assert.Equal ("15 May 2012 07:49:22 -0600", parts[2]);
+			builder = new ExposedHeaderFieldBuilderTokensAndDate (HeaderFieldName.Supersedes, " CMK-SLNS06.chmk.mechelgroup.ru   CAA22933\t", dt);
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.False (isLast);
+			Assert.Equal ("CMK-SLNS06.chmk.mechelgroup.ru", Encoding.ASCII.GetString (buf, 0, size));
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.False (isLast);
+			Assert.Equal ("CAA22933;", Encoding.ASCII.GetString (buf, 0, size));
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.True (isLast);
+			Assert.Equal ("15 May 2012 07:49:22 -0600", Encoding.ASCII.GetString (buf, 0, size));
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.True (true);
+			Assert.Equal (0, size);
 
 			dt = new DateTimeOffset (634726649620000000L, TimeSpan.FromHours (10));
-			builder = new HeaderFieldBuilderTokensAndDate (HeaderFieldName.Supersedes, "by server10.espc2.mechel.com id CAA22933", dt);
-			parts = builder.GetParts ();
-			Assert.Equal (5, parts.Count);
-			Assert.Equal ("by", parts[0]);
-			Assert.Equal ("server10.espc2.mechel.com", parts[1]);
-			Assert.Equal ("id", parts[2]);
-			Assert.Equal ("CAA22933;", parts[3]);
-			Assert.Equal ("15 May 2012 07:49:22 +1000", parts[4]);
+			builder = new ExposedHeaderFieldBuilderTokensAndDate (HeaderFieldName.Supersedes, "by server10.espc2.mechel.com id CAA22933", dt);
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.False (isLast);
+			Assert.Equal ("by", Encoding.ASCII.GetString (buf, 0, size));
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.False (isLast);
+			Assert.Equal ("server10.espc2.mechel.com", Encoding.ASCII.GetString (buf, 0, size));
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.False (isLast);
+			Assert.Equal ("id", Encoding.ASCII.GetString (buf, 0, size));
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.False (isLast);
+			Assert.Equal ("CAA22933;", Encoding.ASCII.GetString (buf, 0, size));
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.True (isLast);
+			Assert.Equal ("15 May 2012 07:49:22 +1000", Encoding.ASCII.GetString (buf, 0, size));
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.True (true);
+			Assert.Equal (0, size);
 
 			dt = new DateTimeOffset (634726649670000000L, TimeSpan.FromHours (0));
-			builder = new HeaderFieldBuilderTokensAndDate (HeaderFieldName.Supersedes, "by CMK-SLNS06.chmk.mechelgroup.ru from server10.espc2.mechel.com ([10.2.21.210])\r\n\twith ESMTP id 2012051507492777-49847", dt);
-			parts = builder.GetParts ();
-			Assert.Equal (10, parts.Count);
-			Assert.Equal ("by", parts[0]);
-			Assert.Equal ("CMK-SLNS06.chmk.mechelgroup.ru", parts[1]);
-			Assert.Equal ("from", parts[2]);
-			Assert.Equal ("server10.espc2.mechel.com", parts[3]);
-			Assert.Equal ("([10.2.21.210])", parts[4]);
-			Assert.Equal ("with", parts[5]);
-			Assert.Equal ("ESMTP", parts[6]);
-			Assert.Equal ("id", parts[7]);
-			Assert.Equal ("2012051507492777-49847;", parts[8]);
-			Assert.Equal ("15 May 2012 07:49:27 +0000", parts[9]);
+			builder = new ExposedHeaderFieldBuilderTokensAndDate (HeaderFieldName.Supersedes, "by CMK-SLNS06.chmk.mechelgroup.ru from server10.espc2.mechel.com ([10.2.21.210])\r\n\twith ESMTP id 2012051507492777-49847", dt);
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.False (isLast);
+			Assert.Equal ("by", Encoding.ASCII.GetString (buf, 0, size));
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.False (isLast);
+			Assert.Equal ("CMK-SLNS06.chmk.mechelgroup.ru", Encoding.ASCII.GetString (buf, 0, size));
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.False (isLast);
+			Assert.Equal ("from", Encoding.ASCII.GetString (buf, 0, size));
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.False (isLast);
+			Assert.Equal ("server10.espc2.mechel.com", Encoding.ASCII.GetString (buf, 0, size));
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.False (isLast);
+			Assert.Equal ("([10.2.21.210])", Encoding.ASCII.GetString (buf, 0, size));
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.False (isLast);
+			Assert.Equal ("with", Encoding.ASCII.GetString (buf, 0, size));
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.False (isLast);
+			Assert.Equal ("ESMTP", Encoding.ASCII.GetString (buf, 0, size));
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.False (isLast);
+			Assert.Equal ("id", Encoding.ASCII.GetString (buf, 0, size));
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.False (isLast);
+			Assert.Equal ("2012051507492777-49847;", Encoding.ASCII.GetString (buf, 0, size));
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.True (isLast);
+			Assert.Equal ("15 May 2012 07:49:27 +0000", Encoding.ASCII.GetString (buf, 0, size));
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.True (true);
+			Assert.Equal (0, size);
 		}
 
 		[Fact]
 		[Trait ("Category", "Mime.HeaderEncoder")]
 		public void CreatePhraseAndId ()
 		{
-			var builder = new HeaderFieldBuilderPhraseAndId (HeaderFieldName.Supersedes, "lenas-jokes.da39efc25c530ad145d41b86f7420c3b.021999.localhost", null);
-			var parts = builder.GetParts ();
-			Assert.Equal (1, parts.Count);
-			Assert.Equal ("<lenas-jokes.da39efc25c530ad145d41b86f7420c3b.021999.localhost>", parts[0]);
+			var buf = new byte[100];
+			bool isLast;
 
-			builder = new HeaderFieldBuilderPhraseAndId (HeaderFieldName.Supersedes, "lenas-jokes.da39efc25c530ad145d41b86f7420c3b.021999.localhost", "Lena's Personal <Joke> List");
-			parts = builder.GetParts ();
-			Assert.Equal (5, parts.Count);
-			Assert.Equal ("Lena's", parts[0]);
-			Assert.Equal (" Personal", parts[1]);
-			Assert.Equal (" \"<Joke>\"", parts[2]);
-			Assert.Equal (" List", parts[3]);
-			Assert.Equal ("<lenas-jokes.da39efc25c530ad145d41b86f7420c3b.021999.localhost>", parts[4]);
+			var builder = new ExposedHeaderFieldBuilderPhraseAndId (HeaderFieldName.Supersedes, "lenas-jokes.da39efc25c530ad145d41b86f7420c3b.021999.localhost", null);
+
+			var size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.True (isLast);
+			Assert.Equal ("<lenas-jokes.da39efc25c530ad145d41b86f7420c3b.021999.localhost>", Encoding.ASCII.GetString (buf, 0, size));
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.True (true);
+			Assert.Equal (0, size);
+
+			builder = new ExposedHeaderFieldBuilderPhraseAndId (HeaderFieldName.Supersedes, "lenas-jokes.da39efc25c530ad145d41b86f7420c3b.021999.localhost", "Lena's Personal <Joke> List");
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.False (isLast);
+			Assert.Equal ("Lena's", Encoding.ASCII.GetString (buf, 0, size));
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.False (isLast);
+			Assert.Equal (" Personal", Encoding.ASCII.GetString (buf, 0, size));
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.False (isLast);
+			Assert.Equal (" \"<Joke>\"", Encoding.ASCII.GetString (buf, 0, size));
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.False (isLast);
+			Assert.Equal (" List", Encoding.ASCII.GetString (buf, 0, size));
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.True (isLast);
+			Assert.Equal ("<lenas-jokes.da39efc25c530ad145d41b86f7420c3b.021999.localhost>", Encoding.ASCII.GetString (buf, 0, size));
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.True (true);
+			Assert.Equal (0, size);
 		}
 
 		[Fact]
 		[Trait ("Category", "Mime.HeaderEncoder")]
 		public void CreatePhraseList ()
 		{
-			var builder = new HeaderFieldBuilderPhraseList (HeaderFieldName.Supersedes, Array.Empty<string> ());
-			var parts = builder.GetParts ();
-			Assert.Equal (0, parts.Count);
+			var buf = new byte[100];
+			bool isLast;
 
-			builder = new HeaderFieldBuilderPhraseList (HeaderFieldName.Supersedes, new string[] { "keyword" });
-			parts = builder.GetParts ();
-			Assert.Equal (1, parts.Count);
-			Assert.Equal ("keyword", parts[0]);
+			var builder = new ExposedHeaderFieldBuilderPhraseList (HeaderFieldName.Supersedes, Array.Empty<string> ());
+			var size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.True (true);
+			Assert.Equal (0, size);
 
-			builder = new HeaderFieldBuilderPhraseList (HeaderFieldName.Supersedes, new string[] { "keyword", "KEY WORD", "Richard H. Nixon", "ключслово" });
-			parts = builder.GetParts ();
-			Assert.Equal (7, parts.Count);
-			Assert.Equal ("keyword,", parts[0]);
-			Assert.Equal ("KEY", parts[1]);
-			Assert.Equal (" WORD,", parts[2]);
-			Assert.Equal ("Richard", parts[3]);
-			Assert.Equal (" \"H.\"", parts[4]);
-			Assert.Equal (" Nixon,", parts[5]);
-			Assert.Equal ("=?utf-8?B?0LrQu9GO0YfRgdC70L7QstC+?=", parts[6]);
+			builder = new ExposedHeaderFieldBuilderPhraseList (HeaderFieldName.Supersedes, new string[] { "keyword" });
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.True (isLast);
+			Assert.Equal ("keyword", Encoding.ASCII.GetString (buf, 0, size));
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.True (true);
+			Assert.Equal (0, size);
+
+			builder = new ExposedHeaderFieldBuilderPhraseList (HeaderFieldName.Supersedes, new string[] { "keyword", "KEY WORD", "Richard H. Nixon", "ключслово" });
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.False (isLast);
+			Assert.Equal ("keyword,", Encoding.ASCII.GetString (buf, 0, size));
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.False (isLast);
+			Assert.Equal ("KEY", Encoding.ASCII.GetString (buf, 0, size));
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.False (isLast);
+			Assert.Equal (" WORD,", Encoding.ASCII.GetString (buf, 0, size));
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.False (isLast);
+			Assert.Equal ("Richard", Encoding.ASCII.GetString (buf, 0, size));
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.False (isLast);
+			Assert.Equal (" \"H.\"", Encoding.ASCII.GetString (buf, 0, size));
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.False (isLast);
+			Assert.Equal (" Nixon,", Encoding.ASCII.GetString (buf, 0, size));
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.True (isLast);
+			Assert.Equal ("=?utf-8?B?0LrQu9GO0YfRgdC70L7QstC+?=", Encoding.ASCII.GetString (buf, 0, size));
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.True (true);
+			Assert.Equal (0, size);
 		}
 
 		[Fact]
 		[Trait ("Category", "Mime.HeaderEncoder")]
 		public void CreateMailboxList ()
 		{
+			var buf = new byte[100];
+			bool isLast;
+
 			var mailboxes = new List<Mailbox> ();
-			var builder = new HeaderFieldBuilderMailboxList (HeaderFieldName.Supersedes, mailboxes);
-			var parts = builder.GetParts ();
-			Assert.Equal (0, parts.Count);
+			var builder = new ExposedHeaderFieldBuilderMailboxList (HeaderFieldName.Supersedes, mailboxes);
+			var size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.True (true);
+			Assert.Equal (0, size);
 
 			mailboxes.Add (new Mailbox ("one@mail.ru", "one man"));
+			builder = new ExposedHeaderFieldBuilderMailboxList (HeaderFieldName.Supersedes, mailboxes);
 
-			builder = new HeaderFieldBuilderMailboxList (HeaderFieldName.Supersedes, mailboxes);
-			parts = builder.GetParts ();
-			Assert.Equal (3, parts.Count);
-			Assert.Equal ("one", parts[0]);
-			Assert.Equal (" man", parts[1]);
-			Assert.Equal ("<one@mail.ru>", parts[2]);
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.False (isLast);
+			Assert.Equal ("one", Encoding.ASCII.GetString (buf, 0, size));
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.False (isLast);
+			Assert.Equal (" man", Encoding.ASCII.GetString (buf, 0, size));
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.True (isLast);
+			Assert.Equal ("<one@mail.ru>", Encoding.ASCII.GetString (buf, 0, size));
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.True (true);
+			Assert.Equal (0, size);
 
 			mailboxes.Add (new Mailbox ("two@gmail.ru", "man 2"));
 			mailboxes.Add (new Mailbox ("three@hotmail.com"));
-			builder = new HeaderFieldBuilderMailboxList (HeaderFieldName.Supersedes, mailboxes);
-			parts = builder.GetParts ();
-			Assert.Equal (7, parts.Count);
-			Assert.Equal ("one", parts[0]);
-			Assert.Equal (" man", parts[1]);
-			Assert.Equal ("<one@mail.ru>,", parts[2]);
-			Assert.Equal ("man", parts[3]);
-			Assert.Equal (" 2", parts[4]);
-			Assert.Equal ("<two@gmail.ru>,", parts[5]);
-			Assert.Equal ("<three@hotmail.com>", parts[6]);
+			builder = new ExposedHeaderFieldBuilderMailboxList (HeaderFieldName.Supersedes, mailboxes);
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.False (isLast);
+			Assert.Equal ("one", Encoding.ASCII.GetString (buf, 0, size));
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.False (isLast);
+			Assert.Equal (" man", Encoding.ASCII.GetString (buf, 0, size));
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.False (isLast);
+			Assert.Equal ("<one@mail.ru>,", Encoding.ASCII.GetString (buf, 0, size));
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.False (isLast);
+			Assert.Equal ("man", Encoding.ASCII.GetString (buf, 0, size));
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.False (isLast);
+			Assert.Equal (" 2", Encoding.ASCII.GetString (buf, 0, size));
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.False (isLast);
+			Assert.Equal ("<two@gmail.ru>,", Encoding.ASCII.GetString (buf, 0, size));
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.True (isLast);
+			Assert.Equal ("<three@hotmail.com>", Encoding.ASCII.GetString (buf, 0, size));
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.True (true);
+			Assert.Equal (0, size);
 
 			mailboxes.Clear ();
 			mailboxes.Add (new Mailbox ("sp1@mailinator.com", "Адресат Один"));
 			mailboxes.Add (new Mailbox ("sp2@mailinator.com", "Адресат Два"));
 			mailboxes.Add (new Mailbox ("sp3@mailinator.com", "Адресат Три"));
-			builder = new HeaderFieldBuilderMailboxList (HeaderFieldName.Supersedes, mailboxes);
-			parts = builder.GetParts ();
-			Assert.Equal (6, parts.Count);
-			Assert.Equal ("=?utf-8?B?0JDQtNGA0LXRgdCw0YIg0J7QtNC40L0=?=", parts[0]);
-			Assert.Equal ("<sp1@mailinator.com>,", parts[1]);
-			Assert.Equal ("=?utf-8?B?0JDQtNGA0LXRgdCw0YIg0JTQstCw?=", parts[2]);
-			Assert.Equal ("<sp2@mailinator.com>,", parts[3]);
-			Assert.Equal ("=?utf-8?B?0JDQtNGA0LXRgdCw0YIg0KLRgNC4?=", parts[4]);
-			Assert.Equal ("<sp3@mailinator.com>", parts[5]);
+			builder = new ExposedHeaderFieldBuilderMailboxList (HeaderFieldName.Supersedes, mailboxes);
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.False (isLast);
+			Assert.Equal ("=?utf-8?B?0JDQtNGA0LXRgdCw0YIg0J7QtNC40L0=?=", Encoding.ASCII.GetString (buf, 0, size));
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.False (isLast);
+			Assert.Equal ("<sp1@mailinator.com>,", Encoding.ASCII.GetString (buf, 0, size));
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.False (isLast);
+			Assert.Equal ("=?utf-8?B?0JDQtNGA0LXRgdCw0YIg0JTQstCw?=", Encoding.ASCII.GetString (buf, 0, size));
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.False (isLast);
+			Assert.Equal ("<sp2@mailinator.com>,", Encoding.ASCII.GetString (buf, 0, size));
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.False (isLast);
+			Assert.Equal ("=?utf-8?B?0JDQtNGA0LXRgdCw0YIg0KLRgNC4?=", Encoding.ASCII.GetString (buf, 0, size));
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.True (isLast);
+			Assert.Equal ("<sp3@mailinator.com>", Encoding.ASCII.GetString (buf, 0, size));
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.True (true);
+			Assert.Equal (0, size);
 		}
 
 		[Fact]
 		[Trait ("Category", "Mime.HeaderEncoder")]
 		public void CreateAngleBracketedList ()
 		{
-			var builder = new HeaderFieldBuilderAngleBracketedList (HeaderFieldName.Supersedes, Array.Empty<string> ());
-			var parts = builder.GetParts ();
-			Assert.Equal (0, parts.Count);
-	
-			builder = new HeaderFieldBuilderAngleBracketedList (HeaderFieldName.Supersedes, new string[] { "mailto:list@host.com?subject=help" });
-			parts = builder.GetParts ();
-			Assert.Equal (1, parts.Count);
-			Assert.Equal ("<mailto:list@host.com?subject=help>", parts[0]);
+			var buf = new byte[100];
+			bool isLast;
+
+			var builder = new ExposedHeaderFieldBuilderAngleBracketedList (HeaderFieldName.Supersedes, Array.Empty<string> ());
+			var size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.True (true);
+			Assert.Equal (0, size);
+
+			builder = new ExposedHeaderFieldBuilderAngleBracketedList (HeaderFieldName.Supersedes, new string[] { "mailto:list@host.com?subject=help" });
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.True (isLast);
+			Assert.Equal ("<mailto:list@host.com?subject=help>", Encoding.ASCII.GetString (buf, 0, size));
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.True (true);
+			Assert.Equal (0, size);
 
 			var data = new string[]
 			{
@@ -234,55 +794,104 @@ namespace Novartment.Base.Net.Mime.Test
 				"magnet:?xt=urn:tree:tiger:Z4URQ35KGEQW3YZZTIM7YXS3OLKLHFJ3M43DPHQ&xl=8539516502&dn=12.mkv",
 				"some currently unknown command",
 			};
-			builder = new HeaderFieldBuilderAngleBracketedList (HeaderFieldName.Supersedes, data);
-			parts = builder.GetParts ();
-			Assert.Equal (4, parts.Count);
-			Assert.Equal ("<mailto:list@host.com?subject=help>,", parts[0]);
-			Assert.Equal ("<ftp://ftp.host.com/list.txt>,", parts[1]);
-			Assert.Equal ("<magnet:?xt=urn:tree:tiger:Z4URQ35KGEQW3YZZTIM7YXS3OLKLHFJ3M43DPHQ&xl=8539516502&dn=12.mkv>,", parts[2]);
-			Assert.Equal ("<some currently unknown command>", parts[3]);
+			builder = new ExposedHeaderFieldBuilderAngleBracketedList (HeaderFieldName.Supersedes, data);
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.False (isLast);
+			Assert.Equal ("<mailto:list@host.com?subject=help>,", Encoding.ASCII.GetString (buf, 0, size));
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.False (isLast);
+			Assert.Equal ("<ftp://ftp.host.com/list.txt>,", Encoding.ASCII.GetString (buf, 0, size));
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.False (isLast);
+			Assert.Equal ("<magnet:?xt=urn:tree:tiger:Z4URQ35KGEQW3YZZTIM7YXS3OLKLHFJ3M43DPHQ&xl=8539516502&dn=12.mkv>,", Encoding.ASCII.GetString (buf, 0, size));
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.True (isLast);
+			Assert.Equal ("<some currently unknown command>", Encoding.ASCII.GetString (buf, 0, size));
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.True (true);
+			Assert.Equal (0, size);
 		}
 
 		[Fact]
 		[Trait ("Category", "Mime.HeaderEncoder")]
 		public void CreateDispositionNotificationParameterList ()
 		{
+			var buf = new byte[100];
+			bool isLast;
+
 			var parameters = new DispositionNotificationParameter[]
 			{
 				new DispositionNotificationParameter ("signed-receipt", DispositionNotificationParameterImportance.Optional, "pkcs7-signature"),
 			};
-			var builder = new HeaderFieldBuilderDispositionNotificationParameterList (HeaderFieldName.Supersedes, parameters);
-			var parts = builder.GetParts ();
-			Assert.Equal (1, parts.Count);
-			Assert.Equal ("signed-receipt=optional,pkcs7-signature", parts[0]);
+			var builder = new ExposedHeaderFieldBuilderDispositionNotificationParameterList (HeaderFieldName.Supersedes, parameters);
+
+			var size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.True (isLast);
+			Assert.Equal ("signed-receipt=optional,pkcs7-signature", Encoding.ASCII.GetString (buf, 0, size));
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.True (true);
+			Assert.Equal (0, size);
 
 			parameters = new DispositionNotificationParameter[]
 			{
 				new DispositionNotificationParameter ("signed-receipt", DispositionNotificationParameterImportance.Optional, "pkcs7-signature"),
 				new DispositionNotificationParameter ("signed-receipt-micalg", DispositionNotificationParameterImportance.Required, "sha1").AddValue ("md5"),
 			};
-			builder = new HeaderFieldBuilderDispositionNotificationParameterList (HeaderFieldName.Supersedes, parameters);
-			parts = builder.GetParts ();
-			Assert.Equal (2, parts.Count);
-			Assert.Equal ("signed-receipt=optional,pkcs7-signature;", parts[0]);
-			Assert.Equal ("signed-receipt-micalg=required,sha1,md5", parts[1]);
+			builder = new ExposedHeaderFieldBuilderDispositionNotificationParameterList (HeaderFieldName.Supersedes, parameters);
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.False (isLast);
+			Assert.Equal ("signed-receipt=optional,pkcs7-signature;", Encoding.ASCII.GetString (buf, 0, size));
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.True (isLast);
+			Assert.Equal ("signed-receipt-micalg=required,sha1,md5", Encoding.ASCII.GetString (buf, 0, size));
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.True (true);
+			Assert.Equal (0, size);
 		}
 
 		[Fact]
 		[Trait ("Category", "Mime.HeaderEncoder")]
 		public void CreateDisposition ()
 		{
-			var builder = new HeaderFieldBuilderDisposition (HeaderFieldName.Supersedes, "value1", "value2", "value3", Array.Empty<string> ());
-			var parts = builder.GetParts ();
-			Assert.Equal (2, parts.Count);
-			Assert.Equal ("value1/value2;", parts[0]);
-			Assert.Equal ("value3", parts[1]);
+			var buf = new byte[100];
+			bool isLast;
 
-			builder = new HeaderFieldBuilderDisposition (HeaderFieldName.Supersedes, "manual-action", "MDN-sent-manually", "displayed", new string[] { "value1", "value2", "value3" });
-			parts = builder.GetParts ();
-			Assert.Equal (2, parts.Count);
-			Assert.Equal ("manual-action/MDN-sent-manually;", parts[0]);
-			Assert.Equal ("displayed/value1,value2,value3", parts[1]);
+			var builder = new ExposedHeaderFieldBuilderDisposition (HeaderFieldName.Supersedes, "value1", "value2", "value3", Array.Empty<string> ());
+
+			var size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.False (isLast);
+			Assert.Equal ("value1/value2;", Encoding.ASCII.GetString (buf, 0, size));
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.True (isLast);
+			Assert.Equal ("value3", Encoding.ASCII.GetString (buf, 0, size));
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.True (true);
+			Assert.Equal (0, size);
+
+			builder = new ExposedHeaderFieldBuilderDisposition (HeaderFieldName.Supersedes, "manual-action", "MDN-sent-manually", "displayed", new string[] { "value1", "value2", "value3" });
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.False (isLast);
+			Assert.Equal ("manual-action/MDN-sent-manually;", Encoding.ASCII.GetString (buf, 0, size));
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.True (isLast);
+			Assert.Equal ("displayed/value1,value2,value3", Encoding.ASCII.GetString (buf, 0, size));
+
+			size = builder.GetNextPartExposed (buf, out isLast);
+			Assert.True (true);
+			Assert.Equal (0, size);
 		}
 
 		[Fact]
@@ -344,6 +953,36 @@ namespace Novartment.Base.Net.Mime.Test
 				" creation-date=\"10 Jul 2012 10:01:06 +0600\";\r\n" +
 				" read-date=\"11 Jul 2012 10:40:13 +0600\"; size=318\r\n",
 				Encoding.ASCII.GetString (buf, 0, size));
+		}
+
+		[Fact]
+		[Trait ("Category", "Mime.HeaderEncoder")]
+		public void SaveHeader ()
+		{
+			var src = Array.Empty<HeaderFieldBuilder> ();
+			var bytes = new BinaryDestinationMock (8192);
+			HeaderFieldBuilder.SaveHeaderAsync (src, bytes).Wait ();
+			Assert.Equal (0, bytes.Count);
+
+			src = new HeaderFieldBuilder[]
+			{
+				new HeaderFieldBuilderExactValue (HeaderFieldName.ContentType, "text/plain"),
+				new HeaderFieldBuilderExactValue (HeaderFieldName.ConversionWithLoss, null),
+				new HeaderFieldBuilderUnstructured (HeaderFieldName.Received, "by server10.espc2.mechel.com (8.8.8/1.37) id CAA22933; Tue, 15 May 2012 02:49:22 +0100"),
+				new HeaderFieldBuilderExactValue (HeaderFieldName.ContentMD5, ":Q2hlY2sgSW50ZWdyaXR5IQ=="),
+			};
+			src[0].AddParameter ("format", "flowed");
+			src[0].AddParameter ("charset", "koi8-r");
+			src[0].AddParameter ("reply-type", "original");
+
+			bytes = new BinaryDestinationMock (8192);
+			HeaderFieldBuilder.SaveHeaderAsync (src, bytes).Wait ();
+
+			var template = "Content-Type: text/plain; format=flowed; charset=koi8-r; reply-type=original\r\n" +
+				"Conversion-With-Loss:\r\n" +
+				"Received: by server10.espc2.mechel.com (8.8.8/1.37) id CAA22933; Tue, 15 May\r\n 2012 02:49:22 +0100\r\n" +
+				"Content-MD5: :Q2hlY2sgSW50ZWdyaXR5IQ==\r\n";
+			Assert.Equal (template, Encoding.ASCII.GetString (bytes.Buffer.Slice (0, bytes.Count)));
 		}
 	}
 }
