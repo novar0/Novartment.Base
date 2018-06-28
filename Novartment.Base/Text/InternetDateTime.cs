@@ -211,10 +211,9 @@ namespace Novartment.Base.Text
 
 			Contract.EndContractBlock ();
 
-			var str1 = dateTime.ToString ("dd MMM yyyy HH':'mm':'ss ", DateTimeFormatInfo.InvariantInfo);
-			var str2 = dateTime.Offset.TotalHours.ToString ("+00;-00", CultureInfo.InvariantCulture);
-			var str3 = Math.Abs (dateTime.Offset.Minutes).ToString ("00", CultureInfo.InvariantCulture);
-			return str1 + str2 + str3;
+			var buf = new char[26];
+			ToInternetString (dateTime, buf.AsSpan ());
+			return new string (buf);
 		}
 
 		/// <summary>
@@ -232,34 +231,49 @@ namespace Novartment.Base.Text
 
 			Contract.EndContractBlock ();
 
-			var outPos = 0;
-			int charsWritten;
-#if NETCOREAPP2_1
-			dateTime.TryFormat (buf, out charsWritten, "dd MMM yyyy HH':'mm':'ss", DateTimeFormatInfo.InvariantInfo);
-#else
-			var tempStr = dateTime.ToString ("dd MMM yyyy HH':'mm':'ss", DateTimeFormatInfo.InvariantInfo);
-			tempStr.AsSpan ().CopyTo (buf);
-			charsWritten = tempStr.Length;
-#endif
-			outPos += charsWritten;
-			buf[outPos++] = ' ';
-#if NETCOREAPP2_1
-			dateTime.Offset.TotalHours.TryFormat (buf.Slice (outPos), out charsWritten, "+00;-00", CultureInfo.InvariantCulture);
-#else
-			var tempStr2 = dateTime.Offset.TotalHours.ToString ("+00;-00", CultureInfo.InvariantCulture);
-			tempStr2.AsSpan ().CopyTo (buf.Slice (outPos));
-			charsWritten = tempStr2.Length;
-#endif
-			outPos += charsWritten;
-#if NETCOREAPP2_1
-			Math.Abs (dateTime.Offset.Minutes).TryFormat (buf.Slice (outPos), out charsWritten, "00", CultureInfo.InvariantCulture);
-#else
-			var tempStr3 = Math.Abs (dateTime.Offset.Minutes).ToString ("00", CultureInfo.InvariantCulture);
-			tempStr3.AsSpan ().CopyTo (buf.Slice (outPos));
-			charsWritten = tempStr3.Length;
-#endif
-			outPos += charsWritten;
-			return outPos;
+			var value = dateTime.DateTime;
+			var offset = dateTime.Offset;
+
+			WriteTwoDecimalDigits ((uint)value.Day, buf, 0);
+			buf[2] = ' ';
+
+			uint monthAbbrev = _monthAbbreviations[value.Month - 1];
+			buf[3] = (char)(byte)monthAbbrev;
+			monthAbbrev >>= 8;
+			buf[4] = (char)(byte)monthAbbrev;
+			monthAbbrev >>= 8;
+			buf[5] = (char)(byte)monthAbbrev;
+			buf[6] = ' ';
+
+			WriteFourDecimalDigits ((uint)value.Year, buf, 7);
+			buf[11] = ' ';
+
+			WriteTwoDecimalDigits ((uint)value.Hour, buf, 12);
+			buf[14] = ':';
+
+			WriteTwoDecimalDigits ((uint)value.Minute, buf, 15);
+			buf[17] = ':';
+
+			WriteTwoDecimalDigits ((uint)value.Second, buf, 18);
+			buf[20] = ' ';
+
+			char sign;
+
+			if (offset < default (TimeSpan))
+			{
+				sign = '-';
+				offset = TimeSpan.FromTicks (-offset.Ticks);
+			}
+			else
+			{
+				sign = '+';
+			}
+
+			buf[21] = sign;
+			WriteTwoDecimalDigits ((uint)offset.Hours, buf, 22);
+			WriteTwoDecimalDigits ((uint)offset.Minutes, buf, 24);
+
+			return 26;
 		}
 
 		/// <summary>
@@ -279,8 +293,6 @@ namespace Novartment.Base.Text
 
 			var value = dateTime.DateTime;
 			var offset = dateTime.Offset;
-
-			DateTimeKind kind = DateTimeKind.Local;
 
 			WriteTwoDecimalDigits ((uint)value.Day, buf, 0);
 			buf[2] = (byte)' ';
@@ -332,6 +344,14 @@ namespace Novartment.Base.Text
 			buf[pos] = (byte)('0' + value);
 		}
 
+		private static void WriteTwoDecimalDigits (uint value, Span<char> buf, int pos)
+		{
+			uint temp = '0' + value;
+			value /= 10;
+			buf[pos + 1] = (char)(byte)(temp - (value * 10));
+			buf[pos] = (char)(byte)('0' + value);
+		}
+
 		private static void WriteFourDecimalDigits (uint value, Span<byte> buf, int pos)
 		{
 			uint temp = '0' + value;
@@ -344,6 +364,20 @@ namespace Novartment.Base.Text
 			value /= 10;
 			buf[pos + 1] = (byte)(temp - (value * 10));
 			buf[pos] = (byte)('0' + value);
+		}
+
+		private static void WriteFourDecimalDigits (uint value, Span<char> buf, int pos)
+		{
+			uint temp = '0' + value;
+			value /= 10;
+			buf[pos + 3] = (char)(byte)(temp - (value * 10));
+			temp = '0' + value;
+			value /= 10;
+			buf[pos + 2] = (char)(byte)(temp - (value * 10));
+			temp = '0' + value;
+			value /= 10;
+			buf[pos + 1] = (char)(byte)(temp - (value * 10));
+			buf[pos] = (char)(byte)('0' + value);
 		}
 
 		/// <summary>
