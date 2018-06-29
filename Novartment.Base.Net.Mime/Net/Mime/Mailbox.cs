@@ -48,7 +48,7 @@ namespace Novartment.Base.Net.Mime
 
 			Contract.EndContractBlock ();
 
-			this.Address = AddrSpec.Parse (address);
+			this.Address = AddrSpec.Parse (address.AsSpan ());
 			this.Name = displayName;
 		}
 
@@ -86,23 +86,6 @@ namespace Novartment.Base.Net.Mime
 			return !(first is null ?
 				second is null :
 				first.Equals (second));
-		}
-
-		/// <summary>
-		/// Создаёт почтовый ящик из указанной коллекции элементов значения.
-		/// </summary>
-		/// <param name="source">Исходное ASCII-строковое значение.</param>
-		/// <returns>Почтовый ящик, созданный из коллекции элементов значения.</returns>
-		public static Mailbox Parse (string source)
-		{
-			if (source == null)
-			{
-				throw new ArgumentNullException (nameof (source));
-			}
-
-			Contract.EndContractBlock ();
-
-			return Parse (source.AsSpan ());
 		}
 
 		/// <summary>

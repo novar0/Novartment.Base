@@ -110,23 +110,6 @@ namespace Novartment.Base.Net
 		/// </summary>
 		/// <param name="source">Строковое представление интернет-идентификатора.</param>
 		/// <returns>Интернет-идентификатор, созданный из строкового представления.</returns>
-		public static AddrSpec Parse (string source)
-		{
-			if (source == null)
-			{
-				throw new ArgumentNullException (nameof (source));
-			}
-
-			Contract.EndContractBlock ();
-
-			return Parse (source.AsSpan ());
-		}
-
-		/// <summary>
-		/// Создаёт интернет-идентификатор из указанного строкового представления.
-		/// </summary>
-		/// <param name="source">Строковое представление интернет-идентификатора.</param>
-		/// <returns>Интернет-идентификатор, созданный из строкового представления.</returns>
 		public static AddrSpec Parse (ReadOnlySpan<char> source)
 		{
 			/*

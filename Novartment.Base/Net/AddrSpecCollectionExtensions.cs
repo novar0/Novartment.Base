@@ -29,7 +29,7 @@ namespace Novartment.Base.Net
 
 			Contract.EndContractBlock ();
 
-			var addrSpec = AddrSpec.Parse (address);
+			var addrSpec = AddrSpec.Parse (address.AsSpan ());
 			collection.Add (addrSpec);
 
 			return addrSpec;
