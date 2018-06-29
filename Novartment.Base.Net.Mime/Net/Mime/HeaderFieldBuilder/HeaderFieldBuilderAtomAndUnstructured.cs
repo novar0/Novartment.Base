@@ -10,6 +10,7 @@ namespace Novartment.Base.Net.Mime
 		private readonly string _type;
 		private readonly string _value;
 		private byte[] _valueBytes;
+		private int _valueBytesSize;
 		private int _pos = -1;
 		private bool _prevSequenceIsWordEncoded = false;
 
@@ -40,7 +41,27 @@ namespace Novartment.Base.Net.Mime
 			_value = value;
 		}
 
-		protected override int GetNextPart (Span<byte> buf, out bool isLast)
+		/// <summary>
+		/// Подготавливает поле заголовка для вывода в двоичное представление.
+		/// </summary>
+		/// <param name="oneLineBuffer">Буфер для временного сохранения одной строки (максимально MaxLineLengthRequired байт).</param>
+		protected override void PrepareToEncode (byte[] oneLineBuffer)
+		{
+			_pos = -1;
+			_prevSequenceIsWordEncoded = false;
+			_valueBytes = oneLineBuffer;
+			_valueBytesSize = Encoding.UTF8.GetBytes (_value, 0, _value.Length, _valueBytes, 0);
+		}
+
+		/// <summary>
+		/// Создаёт в указанном буфере очередную часть тела поля заголовка в двоичном представлении.
+		/// Возвращает 0 если частей больше нет.
+		/// Тело разбивается на части так, чтобы они были пригодны для фолдинга.
+		/// </summary>
+		/// <param name="buf">Буфер, куда будет записана чать.</param>
+		/// <param name="isLast">Получает признак того, что полученная часть является последней.</param>
+		/// <returns>Количество байтов, записанный в буфер.</returns>
+		protected override int EncodeNextPart (Span<byte> buf, out bool isLast)
 		{
 			if (_pos < 0)
 			{
@@ -48,19 +69,23 @@ namespace Novartment.Base.Net.Mime
 				_pos = 0;
 				isLast = false;
 				buf[_type.Length] = (byte)';';
-				_valueBytes = Encoding.UTF8.GetBytes (_value);
 				return _type.Length + 1;
 			}
 
-			if (_pos >= _valueBytes.Length)
+			if (_pos >= _valueBytesSize)
 			{
 				isLast = true;
 				return 0;
 			}
 
 			// текст рабивается на последовательности слов, которые удобно представить в одном виде (напрямую или в виде encoded-word)
-			var size = HeaderFieldBodyEncoder.EncodeNextElement (_valueBytes, buf, TextSemantics.Unstructured, ref _pos, ref _prevSequenceIsWordEncoded);
-			isLast = _pos >= _valueBytes.Length;
+			var size = HeaderFieldBodyEncoder.EncodeNextElement (
+				_valueBytes.AsSpan (0, _valueBytesSize),
+				buf,
+				TextSemantics.Unstructured,
+				ref _pos,
+				ref _prevSequenceIsWordEncoded);
+			isLast = _pos >= _valueBytesSize;
 			return size;
 		}
 	}

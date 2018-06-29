@@ -56,7 +56,7 @@ namespace Novartment.Base.Net.Smtp
 
 		public override string ToString ()
 		{
-			return FormattableString.Invariant ($"RCPT TO:{this.Recipient.ToAngleString ()}\r\n");
+			return FormattableString.Invariant ($"RCPT TO:<{this.Recipient}>\r\n");
 		}
 	}
 }

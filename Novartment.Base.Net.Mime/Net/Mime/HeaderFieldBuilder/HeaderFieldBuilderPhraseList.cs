@@ -11,7 +11,8 @@ namespace Novartment.Base.Net.Mime
 		private int _idx = -1;
 		private int _pos;
 		private bool _prevSequenceIsWordEncoded;
-		private byte[] _value = null;
+		private byte[] _valueBytes;
+		private int _valueBytesSize;
 
 		/// <summary>
 		/// Создает поле заголовка из коллекции 'phrase'.
@@ -32,9 +33,28 @@ namespace Novartment.Base.Net.Mime
 			_values = values;
 		}
 
-		protected override int GetNextPart (Span<byte> buf, out bool isLast)
+		/// <summary>
+		/// Подготавливает поле заголовка для вывода в двоичное представление.
+		/// </summary>
+		/// <param name="oneLineBuffer">Буфер для временного сохранения одной строки (максимально MaxLineLengthRequired байт).</param>
+		protected override void PrepareToEncode (byte[] oneLineBuffer)
 		{
-			if (_value == null)
+			_idx = -1;
+			_valueBytes = oneLineBuffer;
+			_valueBytesSize = -1;
+		}
+
+		/// <summary>
+		/// Создаёт в указанном буфере очередную часть тела поля заголовка в двоичном представлении.
+		/// Возвращает 0 если частей больше нет.
+		/// Тело разбивается на части так, чтобы они были пригодны для фолдинга.
+		/// </summary>
+		/// <param name="buf">Буфер, куда будет записана чать.</param>
+		/// <param name="isLast">Получает признак того, что полученная часть является последней.</param>
+		/// <returns>Количество байтов, записанный в буфер.</returns>
+		protected override int EncodeNextPart (Span<byte> buf, out bool isLast)
+		{
+			if (_valueBytesSize < 0)
 			{
 				_idx++;
 				if (_idx >= _values.Count)
@@ -43,21 +63,23 @@ namespace Novartment.Base.Net.Mime
 					return 0;
 				}
 
-				_value = Encoding.UTF8.GetBytes (_values[_idx]);
+				var value = _values[_idx];
+				_valueBytesSize = Encoding.UTF8.GetBytes (value, 0, value.Length, _valueBytes, 0);
 				_pos = 0;
 				_prevSequenceIsWordEncoded = false;
 			}
 
-			if (_pos >= _value.Length)
-			{
-			}
-
 			// текст рабивается на последовательности слов, которые удобно представить в одном виде (напрямую или в виде encoded-word)
-			var size = HeaderFieldBodyEncoder.EncodeNextElement (_value.AsSpan (), buf, TextSemantics.Phrase, ref _pos, ref _prevSequenceIsWordEncoded);
-			var valueOver = _pos >= _value.Length;
+			var size = HeaderFieldBodyEncoder.EncodeNextElement (
+				_valueBytes.AsSpan (0, _valueBytesSize),
+				buf,
+				TextSemantics.Phrase,
+				ref _pos,
+				ref _prevSequenceIsWordEncoded);
+			var valueOver = _pos >= _valueBytesSize;
 			if (valueOver)
 			{
-				_value = null;
+				_valueBytesSize = -1;
 				isLast = _idx == (_values.Count - 1);
 				if (!isLast)
 				{

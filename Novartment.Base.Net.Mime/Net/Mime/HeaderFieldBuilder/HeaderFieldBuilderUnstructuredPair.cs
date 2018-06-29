@@ -8,8 +8,9 @@ namespace Novartment.Base.Net.Mime
 	{
 		private readonly string _value1;
 		private readonly string _value2 = null;
-		private byte[] _bytes1 = null;
-		private byte[] _bytes2 = null;
+		private byte[] _valueBytes;
+		private int _valueBytesSize1;
+		private int _valueBytesSize2 = 0;
 		private int _pos1 = 0;
 		private int _pos2 = -1;
 		private bool _prevSequenceIsWordEncoded1 = false;
@@ -36,25 +37,51 @@ namespace Novartment.Base.Net.Mime
 			_value2 = value2;
 		}
 
-		protected override int GetNextPart (Span<byte> buf, out bool isLast)
+		/// <summary>
+		/// Подготавливает поле заголовка для вывода в двоичное представление.
+		/// </summary>
+		/// <param name="oneLineBuffer">Буфер для временного сохранения одной строки (максимально MaxLineLengthRequired байт).</param>
+		protected override void PrepareToEncode (byte[] oneLineBuffer)
+		{
+			_pos1 = 0;
+			_pos2 = -1;
+			_prevSequenceIsWordEncoded1 = false;
+			_prevSequenceIsWordEncoded2 = false;
+			_valueBytes = oneLineBuffer;
+			_valueBytesSize1 = Encoding.UTF8.GetBytes (_value1, 0, _value1.Length, _valueBytes, 0);
+			if (_value2 != null)
+			{
+				_valueBytesSize2 = Encoding.UTF8.GetBytes (_value2, 0, _value2.Length, _valueBytes, _valueBytesSize1);
+			}
+		}
+
+		/// <summary>
+		/// Создаёт в указанном буфере очередную часть тела поля заголовка в двоичном представлении.
+		/// Возвращает 0 если частей больше нет.
+		/// Тело разбивается на части так, чтобы они были пригодны для фолдинга.
+		/// </summary>
+		/// <param name="buf">Буфер, куда будет записана чать.</param>
+		/// <param name="isLast">Получает признак того, что полученная часть является последней.</param>
+		/// <returns>Количество байтов, записанный в буфер.</returns>
+		protected override int EncodeNextPart (Span<byte> buf, out bool isLast)
 		{
 			if (_pos2 < 0)
 			{
-				if (_bytes1 == null)
-				{
-					_bytes1 = Encoding.UTF8.GetBytes (_value1);
-				}
-
-				if (_pos1 < _value1.Length)
+				if (_pos1 < _valueBytesSize1)
 				{
 					// текст рабивается на последовательности слов, которые удобно представить в одном виде (напрямую или в виде encoded-word)
-					var outPos = HeaderFieldBodyEncoder.EncodeNextElement (_bytes1, buf, TextSemantics.Unstructured, ref _pos1, ref _prevSequenceIsWordEncoded1);
-					if ((_pos1 >= _bytes1.Length) && (_value2 != null))
+					var outPos = HeaderFieldBodyEncoder.EncodeNextElement (
+						_valueBytes.AsSpan (0, _valueBytesSize1),
+						buf,
+						TextSemantics.Unstructured,
+						ref _pos1,
+						ref _prevSequenceIsWordEncoded1);
+					if ((_pos1 >= _valueBytesSize1) && (_value2 != null))
 					{
 						buf[outPos++] = (byte)';';
 					}
 
-					isLast = (_pos1 >= _bytes1.Length) && (_value2 == null);
+					isLast = (_pos1 >= _valueBytesSize1) && (_value2 == null);
 					return outPos;
 				}
 
@@ -67,20 +94,20 @@ namespace Novartment.Base.Net.Mime
 				return 0;
 			}
 
-			if (_bytes2 == null)
-			{
-				_bytes2 = Encoding.UTF8.GetBytes (_value2);
-			}
-
-			if (_pos2 >= _bytes2.Length)
+			if (_pos2 >= _valueBytesSize2)
 			{
 				isLast = true;
 				return 0;
 			}
 
 			// текст рабивается на последовательности слов, которые удобно представить в одном виде (напрямую или в виде encoded-word)
-			var size = HeaderFieldBodyEncoder.EncodeNextElement (_bytes2, buf, TextSemantics.Unstructured, ref _pos2, ref _prevSequenceIsWordEncoded2);
-			isLast = _pos2 >= _bytes2.Length;
+			var size = HeaderFieldBodyEncoder.EncodeNextElement (
+				_valueBytes.AsSpan (_valueBytesSize1, _valueBytesSize2),
+				buf,
+				TextSemantics.Unstructured,
+				ref _pos2,
+				ref _prevSequenceIsWordEncoded2);
+			isLast = _pos2 >= _valueBytesSize2;
 			return size;
 		}
 	}

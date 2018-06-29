@@ -237,7 +237,7 @@ namespace Novartment.Base.Sample
 						// RFC 5321 part 4.4:
 						// When the delivery SMTP server makes the "final delivery" of a message,
 						// it inserts a return-path line at the beginning of the mail data.
-						var returnPath = "Return-Path:" + _returnPath.ToAngleString () + "\r\n";
+						var returnPath = "Return-Path:<" + _returnPath + ">\r\n";
 						var buf = Encoding.ASCII.GetBytes (returnPath);
 						await destination.WriteAsync (buf.AsMemory (), cancellationToken).ConfigureAwait (false);
 					}

@@ -364,7 +364,7 @@ namespace Novartment.Base.Net.Mime
 			{
 				header.Add (new HeaderFieldBuilderExactValue (
 					HeaderFieldName.ContentId,
-					this.Id.ToAngleString ()));
+					"<" + this.Id + ">"));
 			}
 
 			// Content-Description

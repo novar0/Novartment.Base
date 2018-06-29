@@ -166,25 +166,25 @@ namespace Novartment.Base.Net.Smtp
 
 		public override string ToString ()
 		{
-			var pathStr = this.ReturnPath?.ToAngleString () ?? "<>";
+			var pathStr = this.ReturnPath?.ToString () ?? string.Empty;
 			string result;
 			switch (_requestedContentTransferEncoding)
 			{
 				case ContentTransferEncoding.EightBit:
-					result = FormattableString.Invariant ($"MAIL FROM:{pathStr} BODY=8BITMIME");
+					result = FormattableString.Invariant ($"MAIL FROM:<{pathStr}> BODY=8BITMIME");
 					break;
 				case ContentTransferEncoding.Binary:
-					result = FormattableString.Invariant ($"MAIL FROM:{pathStr} BODY=BINARYMIME");
+					result = FormattableString.Invariant ($"MAIL FROM:<{pathStr}> BODY=BINARYMIME");
 					break;
 				default:
-					result = FormattableString.Invariant ($"MAIL FROM:{pathStr}");
+					result = FormattableString.Invariant ($"MAIL FROM:<{pathStr}>");
 					break;
 			}
 
 			if (this.AssociatedMailbox != null)
 			{
 				result += " AUTH=" + ((this.AssociatedMailbox != EmptyAddrSpec) ?
-					this.AssociatedMailbox.ToAngleString () :
+					"<" + this.AssociatedMailbox + ">" :
 					"<>");
 			}
 

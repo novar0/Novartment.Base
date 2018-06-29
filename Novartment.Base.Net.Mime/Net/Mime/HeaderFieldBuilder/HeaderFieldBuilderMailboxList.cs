@@ -8,9 +8,10 @@ namespace Novartment.Base.Net.Mime
 	public class HeaderFieldBuilderMailboxList : HeaderFieldBuilder
 	{
 		private readonly IReadOnlyList<Mailbox> _mailboxes;
-		private int _idx = 0;
-		private byte[] _mailboxName;
-		private AddrSpec _mailboxAddr = null;
+		private int _idx;
+		private byte[] _mailboxNameBytes;
+		private int _mailboxNameBytesSize;
+		private AddrSpec _mailboxAddr;
 		private int _pos;
 		private bool _prevSequenceIsWordEncoded;
 
@@ -33,7 +34,28 @@ namespace Novartment.Base.Net.Mime
 			_mailboxes = mailboxes;
 		}
 
-		protected override int GetNextPart (Span<byte> buf, out bool isLast)
+		/// <summary>
+		/// Подготавливает поле заголовка для вывода в двоичное представление.
+		/// </summary>
+		/// <param name="oneLineBuffer">Буфер для временного сохранения одной строки (максимально MaxLineLengthRequired байт).</param>
+		protected override void PrepareToEncode (byte[] oneLineBuffer)
+		{
+			_idx = 0;
+			_mailboxAddr = null;
+			_pos = 0;
+			_prevSequenceIsWordEncoded = false;
+			_mailboxNameBytes = oneLineBuffer;
+		}
+
+		/// <summary>
+		/// Создаёт в указанном буфере очередную часть тела поля заголовка в двоичном представлении.
+		/// Возвращает 0 если частей больше нет.
+		/// Тело разбивается на части так, чтобы они были пригодны для фолдинга.
+		/// </summary>
+		/// <param name="buf">Буфер, куда будет записана чать.</param>
+		/// <param name="isLast">Получает признак того, что полученная часть является последней.</param>
+		/// <returns>Количество байтов, записанный в буфер.</returns>
+		protected override int EncodeNextPart (Span<byte> buf, out bool isLast)
 		{
 			if (_idx >= _mailboxes.Count)
 			{
@@ -44,9 +66,11 @@ namespace Novartment.Base.Net.Mime
 			if (_mailboxAddr == null)
 			{
 				var mailbox = _mailboxes[_idx];
-				_mailboxName = string.IsNullOrEmpty (mailbox.Name) ?
-					null :
-					_mailboxName = Encoding.UTF8.GetBytes (mailbox.Name);
+				_mailboxNameBytesSize = 0;
+				if (!string.IsNullOrEmpty (mailbox.Name))
+				{
+					_mailboxNameBytesSize = Encoding.UTF8.GetBytes (mailbox.Name, 0, mailbox.Name.Length, _mailboxNameBytes, 0);
+				}
 
 				_mailboxAddr = mailbox.Address;
 				_pos = 0;
@@ -55,15 +79,22 @@ namespace Novartment.Base.Net.Mime
 
 			var size = 0;
 			isLast = false;
-			if ((_mailboxName != null) && (_pos < _mailboxName.Length))
+			if (_pos < _mailboxNameBytesSize)
 			{
 				// текст рабивается на последовательности слов, которые удобно представить в одном виде (напрямую или в виде encoded-word)
-				size = HeaderFieldBodyEncoder.EncodeNextElement (_mailboxName, buf, TextSemantics.Phrase, ref _pos, ref _prevSequenceIsWordEncoded);
+				size = HeaderFieldBodyEncoder.EncodeNextElement (
+					_mailboxNameBytes.AsSpan (0, _mailboxNameBytesSize),
+					buf,
+					TextSemantics.Phrase,
+					ref _pos,
+					ref _prevSequenceIsWordEncoded);
 			}
 
 			if (size < 1)
 			{
-				size = _mailboxAddr.ToAngleUtf8String (buf);
+				buf[size++] = (byte)'<';
+				size += _mailboxAddr.ToUtf8String (buf.Slice (size));
+				buf[size++] = (byte)'>';
 				isLast = _idx == (_mailboxes.Count - 1);
 				if (!isLast)
 				{

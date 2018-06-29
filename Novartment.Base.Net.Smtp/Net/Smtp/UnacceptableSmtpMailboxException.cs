@@ -66,10 +66,5 @@ namespace Novartment.Base.Net.Smtp
 
 		/// <summary>Получает почтовый ящик, вызвавший исключение.</summary>
 		public AddrSpec Mailbox { get; }
-
-		private static string MailboxToAngleString (AddrSpec mailbox)
-		{
-			return mailbox?.ToAngleString () ?? "<null>";
-		}
 	}
 }

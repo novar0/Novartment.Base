@@ -68,10 +68,11 @@ namespace Novartment.Base.Net.Mime
 		/// Генерирует двоичное представление поле заголовка для передачи по протоколу.
 		/// Производится фолдинг по указанной длине строки.
 		/// </summary>
-		/// <param name="buf">Буфер куда будет сгнерировано тело.</param>
+		/// <param name="destination">Буфер куда будет сгнерировано тело.</param>
+		/// <param name="oneLineBuffer">Буфер для временного сохранения одной строки (максимально MaxLineLengthRequired байт).</param>
 		/// <param name="maxLineLength">Максимальная длина строки, по которой будет производиться фолдинг значения поля заголовка.</param>
 		/// <returns>Количество байт, записанных в буфер.</returns>
-		public int EncodeToBinaryTransportRepresentation (Span<byte> buf, int maxLineLength)
+		public int EncodeToBinaryTransportRepresentation (Span<byte> destination, byte[] oneLineBuffer, int maxLineLength)
 		{
 			// RFC 5322:
 			// 1) FWS (the folding white space token) indicates a place where folding may take place.
@@ -82,18 +83,19 @@ namespace Novartment.Base.Net.Mime
 			// формируем склеенную из частей строку вставляя где надо переводы строки и пробелы
 			var name = HeaderFieldNameHelper.GetName (_name);
 			var lineLen = name.Length;
-			AsciiCharSet.GetBytes (name.AsSpan (), buf);
-			buf[lineLen++] = (byte)':';
+			AsciiCharSet.GetBytes (name.AsSpan (), destination);
+			destination[lineLen++] = (byte)':';
 			var outPos = lineLen;
 
 			// кодируем все части значения тела
+			PrepareToEncode (oneLineBuffer);
 			bool isLast;
 			do
 			{
-				var bufSlice = buf.Slice (outPos);
+				var bufSlice = destination.Slice (outPos);
 
 				// тут наследованные классы вернут все содержащиеся в них части
-				var partSize = GetNextPart (bufSlice, out isLast);
+				var partSize = EncodeNextPart (bufSlice, out isLast);
 
 				if (partSize > 0)
 				{
@@ -114,21 +116,21 @@ namespace Novartment.Base.Net.Mime
 				var parameter = _parameters[idx];
 
 				// кодируем все сегменты параметра
-				var parameterValueBytes = Encoding.UTF8.GetBytes (parameter.Value);
+				var oneLineBufferSize = Encoding.UTF8.GetBytes (parameter.Value, 0, parameter.Value.Length, oneLineBuffer, 0);
 
 				var segmentPos = 0;
 				var segmentIdx = 0;
 				while (true)
 				{
-					var bufSlice = buf.Slice (outPos);
-					var partSize = HeaderFieldBodyParameterEncoder.GetNextSegment (parameter.Name, parameterValueBytes, bufSlice, segmentIdx, ref segmentPos);
+					var bufSlice = destination.Slice (outPos);
+					var partSize = HeaderFieldBodyParameterEncoder.GetNextSegment (parameter.Name, oneLineBuffer.AsSpan (0, oneLineBufferSize), bufSlice, segmentIdx, ref segmentPos);
 					segmentIdx++;
 					if (partSize < 1)
 					{
 						break;
 					}
 
-					var isLastSegment = segmentPos >= parameterValueBytes.Length;
+					var isLastSegment = segmentPos >= oneLineBufferSize;
 
 					// дополняем знаком ';' все сегменты всех параметров кроме последнего
 					if (isLastSegment && (idx != (_parameters.Count - 1)))
@@ -141,8 +143,8 @@ namespace Novartment.Base.Net.Mime
 				}
 			}
 
-			buf[outPos++] = (byte)'\r';
-			buf[outPos++] = (byte)'\n';
+			destination[outPos++] = (byte)'\r';
+			destination[outPos++] = (byte)'\n';
 
 			return outPos;
 		}
@@ -174,29 +176,45 @@ namespace Novartment.Base.Net.Mime
 			async Task<int> SaveHeaderAsyncStateMachine ()
 			{
 				int totalSize = 0;
-				var bytes = ArrayPool<byte>.Shared.Rent (HeaderDecoder.MaximumHeaderFieldBodySize);
+				var fieldBuffer = ArrayPool<byte>.Shared.Rent (HeaderDecoder.MaximumHeaderFieldBodySize);
+				var oneLineBuffer = ArrayPool<byte>.Shared.Rent (MaxLineLengthRequired);
 				try
 				{
 					foreach (var fieldBuilder in fields)
 					{
 						cancellationToken.ThrowIfCancellationRequested ();
-						var size = fieldBuilder.EncodeToBinaryTransportRepresentation (bytes, HeaderFieldBuilder.MaxLineLengthRecommended);
-						await destination.WriteAsync (bytes.AsMemory (0, size), cancellationToken).ConfigureAwait (false);
+						var size = fieldBuilder.EncodeToBinaryTransportRepresentation (fieldBuffer, oneLineBuffer, HeaderFieldBuilder.MaxLineLengthRecommended);
+						await destination.WriteAsync (fieldBuffer.AsMemory (0, size), cancellationToken).ConfigureAwait (false);
 						totalSize += size;
 					}
 				}
 				finally
 				{
-					ArrayPool<byte>.Shared.Return (bytes);
+					ArrayPool<byte>.Shared.Return (oneLineBuffer);
+					ArrayPool<byte>.Shared.Return (fieldBuffer);
 				}
 
 				return totalSize;
 			}
 		}
 
-		// Метод получения очередной части тела поля заголовка, возвращает 0 если частей больше нет
-		// тело разбивается на части так, чтобы они были пригодны для фолдинга
-		protected abstract int GetNextPart (Span<byte> buf, out bool isLast);
+		/// <summary>
+		/// Подготавливает поле заголовка для вывода в двоичное представление.
+		/// </summary>
+		/// <param name="oneLineBuffer">Буфер для временного сохранения одной строки (максимально MaxLineLengthRequired байт).</param>
+		protected virtual void PrepareToEncode (byte[] oneLineBuffer)
+		{
+		}
+
+		/// <summary>
+		/// Создаёт в указанном буфере очередную часть тела поля заголовка в двоичном представлении.
+		/// Возвращает 0 если частей больше нет.
+		/// Тело разбивается на части так, чтобы они были пригодны для фолдинга.
+		/// </summary>
+		/// <param name="buf">Буфер, куда будет записана чать.</param>
+		/// <param name="isLast">Получает признак того, что полученная часть является последней.</param>
+		/// <returns>Количество байтов, записанный в буфер.</returns>
+		protected abstract int EncodeNextPart (Span<byte> buf, out bool isLast);
 
 		// вставляет пробелы и переводы строки по мере фолдинга по указанной длине
 		private static int FoldPartByLength (Span<byte> part, int partLength, int maxLineLength, ref int lineLen)

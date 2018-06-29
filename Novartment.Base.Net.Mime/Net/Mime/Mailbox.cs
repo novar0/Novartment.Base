@@ -202,8 +202,8 @@ namespace Novartment.Base.Net.Mime
 		public override string ToString ()
 		{
 			return (this.Name == null) ?
-				this.Address.ToAngleString () :
-				this.Name + " " + this.Address.ToAngleString ();
+				"<" + this.Address + ">" :
+				this.Name + " <" + this.Address + ">";
 		}
 
 		/// <summary>

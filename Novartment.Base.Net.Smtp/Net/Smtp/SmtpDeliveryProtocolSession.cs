@@ -116,7 +116,7 @@ namespace Novartment.Base.Net.Smtp
 			catch (UnacceptableSmtpMailboxException excpt)
 			{
 				// 553  Requested action not taken: mailbox name not allowed
-				_logger?.LogWarning ("Not acceptable mailbox " + excpt.Mailbox.ToAngleString ());
+				_logger?.LogWarning ($"Not acceptable mailbox <{excpt.Mailbox}>.");
 				reply = SmtpReply.MailboxNotAllowed;
 			}
 			catch (BadSequenceOfSmtpCommandsException)

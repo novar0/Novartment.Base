@@ -78,7 +78,7 @@ namespace Novartment.Base.Net.Smtp
 						new InvalidOperationException (string.Join ("\r\n", reply.Text));
 				}
 
-				_startingReturnPath = returnPath?.ToAngleString () ?? "<>";
+				_startingReturnPath = "<" + returnPath?.ToString () ?? string.Empty + ">";
 				_status = TransactionStatus.Started;
 			}
 		}

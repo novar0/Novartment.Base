@@ -5,91 +5,105 @@ using Xunit;
 
 namespace Novartment.Base.Net.Mime.Test
 {
-	#region класс-обёртки чтобы получить доступ к protected-методу GetNextPart()
+	#region класс-обёртки чтобы получить доступ к protected-методам PrepareToEncode() и EncodeNextPart()
 
 	internal class ExposedHeaderFieldBuilderUnstructured : HeaderFieldBuilderUnstructured
 	{
 		internal ExposedHeaderFieldBuilderUnstructured (HeaderFieldName name, string text) : base (name, text) { }
-		internal int GetNextPartExposed (Span<byte> buf, out bool isLast) => base.GetNextPart (buf, out isLast);
+		internal void PrepareToEncodeExposed (byte[] oneLineBuffer) => base.PrepareToEncode (oneLineBuffer);
+		internal int GetNextPartExposed (Span<byte> buf, out bool isLast) => base.EncodeNextPart (buf, out isLast);
 	}
 
 	internal class ExposedHeaderFieldBuilderPhrase : HeaderFieldBuilderPhrase
 	{
 		internal ExposedHeaderFieldBuilderPhrase (HeaderFieldName name, string text) : base (name, text) { }
-		internal int GetNextPartExposed (Span<byte> buf, out bool isLast) => base.GetNextPart (buf, out isLast);
+		internal void PrepareToEncodeExposed (byte[] oneLineBuffer) => base.PrepareToEncode (oneLineBuffer);
+		internal int GetNextPartExposed (Span<byte> buf, out bool isLast) => base.EncodeNextPart (buf, out isLast);
 	}
 
 	internal class ExposedHeaderFieldBuilderMailbox : HeaderFieldBuilderMailbox
 	{
 		internal ExposedHeaderFieldBuilderMailbox (HeaderFieldName name, Mailbox mailbox) : base (name, mailbox) { }
-		internal int GetNextPartExposed (Span<byte> buf, out bool isLast) => base.GetNextPart (buf, out isLast);
+		internal void PrepareToEncodeExposed (byte[] oneLineBuffer) => base.PrepareToEncode (oneLineBuffer);
+		internal int GetNextPartExposed (Span<byte> buf, out bool isLast) => base.EncodeNextPart (buf, out isLast);
 	}
 
 
 	internal class ExposedHeaderFieldBuilderLanguageList : HeaderFieldBuilderLanguageList
 	{
 		internal ExposedHeaderFieldBuilderLanguageList (HeaderFieldName name, IReadOnlyList<string> languages) : base (name, languages) { }
-		internal int GetNextPartExposed (Span<byte> buf, out bool isLast) => base.GetNextPart (buf, out isLast);
+		internal void PrepareToEncodeExposed (byte[] oneLineBuffer) => base.PrepareToEncode (oneLineBuffer);
+		internal int GetNextPartExposed (Span<byte> buf, out bool isLast) => base.EncodeNextPart (buf, out isLast);
 	}
 
 	internal class ExposedHeaderFieldBuilderAddrSpecList : HeaderFieldBuilderAddrSpecList
 	{
 		internal ExposedHeaderFieldBuilderAddrSpecList (HeaderFieldName name, IReadOnlyList<AddrSpec> addrSpecs) : base (name, addrSpecs) { }
-		internal int GetNextPartExposed (Span<byte> buf, out bool isLast) => base.GetNextPart (buf, out isLast);
+		internal void PrepareToEncodeExposed (byte[] oneLineBuffer) => base.PrepareToEncode (oneLineBuffer);
+		internal int GetNextPartExposed (Span<byte> buf, out bool isLast) => base.EncodeNextPart (buf, out isLast);
 	}
 
 	internal class ExposedHeaderFieldBuilderAtomAndUnstructured : HeaderFieldBuilderAtomAndUnstructured
 	{
 		internal ExposedHeaderFieldBuilderAtomAndUnstructured (HeaderFieldName name, string type, string value) : base (name, type, value) { }
-		internal int GetNextPartExposed (Span<byte> buf, out bool isLast) => base.GetNextPart (buf, out isLast);
+		internal void PrepareToEncodeExposed (byte[] oneLineBuffer) => base.PrepareToEncode (oneLineBuffer);
+		internal int GetNextPartExposed (Span<byte> buf, out bool isLast) => base.EncodeNextPart (buf, out isLast);
 	}
 
 	internal class ExposedHeaderFieldBuilderUnstructuredPair : HeaderFieldBuilderUnstructuredPair
 	{
 		internal ExposedHeaderFieldBuilderUnstructuredPair (HeaderFieldName name, string value1, string value2) : base (name, value1, value2) { }
-		internal int GetNextPartExposed (Span<byte> buf, out bool isLast) => base.GetNextPart (buf, out isLast);
+		internal void PrepareToEncodeExposed (byte[] oneLineBuffer) => base.PrepareToEncode (oneLineBuffer);
+		internal int GetNextPartExposed (Span<byte> buf, out bool isLast) => base.EncodeNextPart (buf, out isLast);
 	}
 
 	internal class ExposedHeaderFieldBuilderTokensAndDate : HeaderFieldBuilderTokensAndDate
 	{
 		internal ExposedHeaderFieldBuilderTokensAndDate (HeaderFieldName name, string value, DateTimeOffset dateTimeOffset) : base (name, value, dateTimeOffset) { }
-		internal int GetNextPartExposed (Span<byte> buf, out bool isLast) => base.GetNextPart (buf, out isLast);
+		internal void PrepareToEncodeExposed (byte[] oneLineBuffer) => base.PrepareToEncode (oneLineBuffer);
+		internal int GetNextPartExposed (Span<byte> buf, out bool isLast) => base.EncodeNextPart (buf, out isLast);
 	}
 
 	internal class ExposedHeaderFieldBuilderPhraseAndId : HeaderFieldBuilderPhraseAndId
 	{
 		internal ExposedHeaderFieldBuilderPhraseAndId (HeaderFieldName name, string id, string phrase) : base (name, id, phrase) { }
-		internal int GetNextPartExposed (Span<byte> buf, out bool isLast) => base.GetNextPart (buf, out isLast);
+		internal void PrepareToEncodeExposed (byte[] oneLineBuffer) => base.PrepareToEncode (oneLineBuffer);
+		internal int GetNextPartExposed (Span<byte> buf, out bool isLast) => base.EncodeNextPart (buf, out isLast);
 	}
 
 	internal class ExposedHeaderFieldBuilderPhraseList : HeaderFieldBuilderPhraseList
 	{
 		internal ExposedHeaderFieldBuilderPhraseList (HeaderFieldName name, IReadOnlyList<string> values) : base (name, values) { }
-		internal int GetNextPartExposed (Span<byte> buf, out bool isLast) => base.GetNextPart (buf, out isLast);
+		internal void PrepareToEncodeExposed (byte[] oneLineBuffer) => base.PrepareToEncode (oneLineBuffer);
+		internal int GetNextPartExposed (Span<byte> buf, out bool isLast) => base.EncodeNextPart (buf, out isLast);
 	}
 
 	internal class ExposedHeaderFieldBuilderMailboxList : HeaderFieldBuilderMailboxList
 	{
 		internal ExposedHeaderFieldBuilderMailboxList (HeaderFieldName name, IReadOnlyList<Mailbox> mailboxes) : base (name, mailboxes) { }
-		internal int GetNextPartExposed (Span<byte> buf, out bool isLast) => base.GetNextPart (buf, out isLast);
+		internal void PrepareToEncodeExposed (byte[] oneLineBuffer) => base.PrepareToEncode (oneLineBuffer);
+		internal int GetNextPartExposed (Span<byte> buf, out bool isLast) => base.EncodeNextPart (buf, out isLast);
 	}
 
 	internal class ExposedHeaderFieldBuilderAngleBracketedList : HeaderFieldBuilderAngleBracketedList
 	{
 		internal ExposedHeaderFieldBuilderAngleBracketedList (HeaderFieldName name, IReadOnlyList<string> urls) : base (name, urls) { }
-		internal int GetNextPartExposed (Span<byte> buf, out bool isLast) => base.GetNextPart (buf, out isLast);
+		internal void PrepareToEncodeExposed (byte[] oneLineBuffer) => base.PrepareToEncode (oneLineBuffer);
+		internal int GetNextPartExposed (Span<byte> buf, out bool isLast) => base.EncodeNextPart (buf, out isLast);
 	}
 
 	internal class ExposedHeaderFieldBuilderDispositionNotificationParameterList : HeaderFieldBuilderDispositionNotificationParameterList
 	{
 		internal ExposedHeaderFieldBuilderDispositionNotificationParameterList (HeaderFieldName name, IReadOnlyList<DispositionNotificationParameter> parameters) : base (name, parameters) { }
-		internal int GetNextPartExposed (Span<byte> buf, out bool isLast) => base.GetNextPart (buf, out isLast);
+		internal void PrepareToEncodeExposed (byte[] oneLineBuffer) => base.PrepareToEncode (oneLineBuffer);
+		internal int GetNextPartExposed (Span<byte> buf, out bool isLast) => base.EncodeNextPart (buf, out isLast);
 	}
 
 	internal class ExposedHeaderFieldBuilderDisposition : HeaderFieldBuilderDisposition
 	{
 		internal ExposedHeaderFieldBuilderDisposition (HeaderFieldName name, string actionMode, string sendingMode, string type, IReadOnlyList<string> modifiers) : base (name, actionMode, sendingMode, type, modifiers) { }
-		internal int GetNextPartExposed (Span<byte> buf, out bool isLast) => base.GetNextPart (buf, out isLast);
+		internal void PrepareToEncodeExposed (byte[] oneLineBuffer) => base.PrepareToEncode (oneLineBuffer);
+		internal int GetNextPartExposed (Span<byte> buf, out bool isLast) => base.EncodeNextPart (buf, out isLast);
 	}
 
 	#endregion
@@ -103,14 +117,17 @@ namespace Novartment.Base.Net.Mime.Test
 		public void CreateUnstructured ()
 		{
 			var buf = new byte[100];
+			var lineBuf = new byte[1000];
 			bool isLast;
 
 			var builder = new ExposedHeaderFieldBuilderUnstructured (HeaderFieldName.Supersedes, string.Empty);
+			builder.PrepareToEncodeExposed (lineBuf);
 			var size = builder.GetNextPartExposed (buf, out isLast);
 			Assert.True (true);
 			Assert.Equal (0, size);
 
 			builder = new ExposedHeaderFieldBuilderUnstructured (HeaderFieldName.Supersedes, "An 'encoded-word' may, appear: in a message; values or \"body part\" values according слово to the снова rules valuerulesvaluerulesvaluerulesvaluerulesvaluerulesvaluerulesvaluerulesvaluerules again");
+			builder.PrepareToEncodeExposed (lineBuf);
 			size = builder.GetNextPartExposed (buf, out isLast);
 			Assert.False (isLast);
 			Assert.Equal ("An", Encoding.ASCII.GetString (buf, 0, size));
@@ -189,8 +206,10 @@ namespace Novartment.Base.Net.Mime.Test
 		public void CreatePhrase ()
 		{
 			var buf = new byte[100];
+			var lineBuf = new byte[1000];
 			bool isLast;
 			var builder = new ExposedHeaderFieldBuilderPhrase (HeaderFieldName.Supersedes, "An 'encoded-word' may, appear: in a message; values or \"body part\" values according слово to the снова rules valuerulesvaluerulesvaluerulesvaluerulesvaluerulesvaluerulesvaluerulesvaluerules again");
+			builder.PrepareToEncodeExposed (lineBuf);
 
 			var size = builder.GetNextPartExposed (buf, out isLast);
 			Assert.False (isLast);
@@ -238,8 +257,10 @@ namespace Novartment.Base.Net.Mime.Test
 		public void CreateMailbox ()
 		{
 			var buf = new byte[100];
+			var lineBuf = new byte[1000];
 			bool isLast;
 			var builder = new ExposedHeaderFieldBuilderMailbox (HeaderFieldName.Supersedes, new Mailbox (new AddrSpec ("someone", "server.com"), null));
+			builder.PrepareToEncodeExposed (lineBuf);
 
 			var size = builder.GetNextPartExposed (buf, out isLast);
 			Assert.True (isLast);
@@ -250,6 +271,7 @@ namespace Novartment.Base.Net.Mime.Test
 			Assert.Equal (0, size);
 
 			builder = new ExposedHeaderFieldBuilderMailbox (HeaderFieldName.Supersedes, new Mailbox (new AddrSpec ("someone", "server.com"), "Dear"));
+			builder.PrepareToEncodeExposed (lineBuf);
 
 			size = builder.GetNextPartExposed (buf, out isLast);
 			Assert.False (isLast);
@@ -266,6 +288,7 @@ namespace Novartment.Base.Net.Mime.Test
 			builder = new ExposedHeaderFieldBuilderMailbox (HeaderFieldName.Supersedes, new Mailbox (
 				new AddrSpec ("really-long-address(for.one.line)", "some literal domain"),
 				"Henry Abdula Rabi Ж  (the Third King of the Mooon)"));
+			builder.PrepareToEncodeExposed (lineBuf);
 
 			size = builder.GetNextPartExposed (buf, out isLast);
 			Assert.False (isLast);
@@ -301,8 +324,10 @@ namespace Novartment.Base.Net.Mime.Test
 		public void CreateLanguageList ()
 		{
 			var buf = new byte[100];
+			var lineBuf = new byte[1000];
 			bool isLast;
 			var builder = new ExposedHeaderFieldBuilderLanguageList (HeaderFieldName.Supersedes, new string[] { "one", "two2", "three-en" });
+			builder.PrepareToEncodeExposed (lineBuf);
 
 			var size = builder.GetNextPartExposed (buf, out isLast);
 			Assert.False (isLast);
@@ -326,9 +351,11 @@ namespace Novartment.Base.Net.Mime.Test
 		public void CreateAddrSpecList ()
 		{
 			var buf = new byte[100];
+			var lineBuf = new byte[1000];
 			bool isLast;
 
 			var builder = new ExposedHeaderFieldBuilderAddrSpecList (HeaderFieldName.Supersedes, new AddrSpec[] { AddrSpec.Parse ("someone@someserver.ru"), AddrSpec.Parse ("\"real(addr)\"@someserver.ru"), AddrSpec.Parse ("\"real(addr)\"@[some literal domain]") });
+			builder.PrepareToEncodeExposed (lineBuf);
 
 			var size = builder.GetNextPartExposed (buf, out isLast);
 			Assert.False (isLast);
@@ -352,8 +379,10 @@ namespace Novartment.Base.Net.Mime.Test
 		public void CreateAtomAndUnstructured ()
 		{
 			var buf = new byte[100];
+			var lineBuf = new byte[1000];
 			bool isLast;
 			var builder = new ExposedHeaderFieldBuilderAtomAndUnstructured (HeaderFieldName.Supersedes, "type", "value");
+			builder.PrepareToEncodeExposed (lineBuf);
 
 			var size = builder.GetNextPartExposed (buf, out isLast);
 			Assert.False (isLast);
@@ -368,6 +397,7 @@ namespace Novartment.Base.Net.Mime.Test
 			Assert.Equal (0, size);
 
 			builder = new ExposedHeaderFieldBuilderAtomAndUnstructured (HeaderFieldName.Supersedes, "dns", "2000 Адресат Один");
+			builder.PrepareToEncodeExposed (lineBuf);
 
 			size = builder.GetNextPartExposed (buf, out isLast);
 			Assert.False (isLast);
@@ -391,9 +421,11 @@ namespace Novartment.Base.Net.Mime.Test
 		public void CreateUnstructuredPair ()
 		{
 			var buf = new byte[100];
+			var lineBuf = new byte[1000];
 			bool isLast;
 
 			var builder = new ExposedHeaderFieldBuilderUnstructuredPair (HeaderFieldName.Supersedes, "value", null);
+			builder.PrepareToEncodeExposed (lineBuf);
 
 			var size = builder.GetNextPartExposed (buf, out isLast);
 			Assert.True (isLast);
@@ -404,6 +436,7 @@ namespace Novartment.Base.Net.Mime.Test
 			Assert.Equal (0, size);
 
 			builder = new ExposedHeaderFieldBuilderUnstructuredPair (HeaderFieldName.Supersedes, "Lena's Personal <Joke> List", "слово to the снова");
+			builder.PrepareToEncodeExposed (lineBuf);
 
 			size = builder.GetNextPartExposed (buf, out isLast);
 			Assert.False (isLast);
@@ -435,10 +468,12 @@ namespace Novartment.Base.Net.Mime.Test
 		public void CreateTokensAndDate ()
 		{
 			var buf = new byte[100];
+			var lineBuf = new byte[1000];
 			bool isLast;
 
 			var dt = new DateTimeOffset (634726649620000000L, TimeSpan.FromHours (3));
 			var builder = new ExposedHeaderFieldBuilderTokensAndDate (HeaderFieldName.Supersedes, null, dt);
+			builder.PrepareToEncodeExposed (lineBuf);
 
 			var size = builder.GetNextPartExposed (buf, out isLast);
 			Assert.False (isLast);
@@ -454,6 +489,7 @@ namespace Novartment.Base.Net.Mime.Test
 
 			dt = new DateTimeOffset (634726649620000000L, TimeSpan.FromHours (1));
 			builder = new ExposedHeaderFieldBuilderTokensAndDate (HeaderFieldName.Supersedes, "CAA22933", dt);
+			builder.PrepareToEncodeExposed (lineBuf);
 
 			size = builder.GetNextPartExposed (buf, out isLast);
 			Assert.False (isLast);
@@ -469,6 +505,7 @@ namespace Novartment.Base.Net.Mime.Test
 
 			dt = new DateTimeOffset (634726649620000000L, TimeSpan.FromHours (-6));
 			builder = new ExposedHeaderFieldBuilderTokensAndDate (HeaderFieldName.Supersedes, " CMK-SLNS06.chmk.mechelgroup.ru   CAA22933\t", dt);
+			builder.PrepareToEncodeExposed (lineBuf);
 
 			size = builder.GetNextPartExposed (buf, out isLast);
 			Assert.False (isLast);
@@ -488,6 +525,7 @@ namespace Novartment.Base.Net.Mime.Test
 
 			dt = new DateTimeOffset (634726649620000000L, TimeSpan.FromHours (10));
 			builder = new ExposedHeaderFieldBuilderTokensAndDate (HeaderFieldName.Supersedes, "by server10.espc2.mechel.com id CAA22933", dt);
+			builder.PrepareToEncodeExposed (lineBuf);
 
 			size = builder.GetNextPartExposed (buf, out isLast);
 			Assert.False (isLast);
@@ -515,6 +553,7 @@ namespace Novartment.Base.Net.Mime.Test
 
 			dt = new DateTimeOffset (634726649670000000L, TimeSpan.FromHours (0));
 			builder = new ExposedHeaderFieldBuilderTokensAndDate (HeaderFieldName.Supersedes, "by CMK-SLNS06.chmk.mechelgroup.ru from server10.espc2.mechel.com ([10.2.21.210])\r\n\twith ESMTP id 2012051507492777-49847", dt);
+			builder.PrepareToEncodeExposed (lineBuf);
 
 			size = builder.GetNextPartExposed (buf, out isLast);
 			Assert.False (isLast);
@@ -566,9 +605,11 @@ namespace Novartment.Base.Net.Mime.Test
 		public void CreatePhraseAndId ()
 		{
 			var buf = new byte[100];
+			var lineBuf = new byte[1000];
 			bool isLast;
 
 			var builder = new ExposedHeaderFieldBuilderPhraseAndId (HeaderFieldName.Supersedes, "lenas-jokes.da39efc25c530ad145d41b86f7420c3b.021999.localhost", null);
+			builder.PrepareToEncodeExposed (lineBuf);
 
 			var size = builder.GetNextPartExposed (buf, out isLast);
 			Assert.True (isLast);
@@ -579,6 +620,7 @@ namespace Novartment.Base.Net.Mime.Test
 			Assert.Equal (0, size);
 
 			builder = new ExposedHeaderFieldBuilderPhraseAndId (HeaderFieldName.Supersedes, "lenas-jokes.da39efc25c530ad145d41b86f7420c3b.021999.localhost", "Lena's Personal <Joke> List");
+			builder.PrepareToEncodeExposed (lineBuf);
 
 			size = builder.GetNextPartExposed (buf, out isLast);
 			Assert.False (isLast);
@@ -610,14 +652,17 @@ namespace Novartment.Base.Net.Mime.Test
 		public void CreatePhraseList ()
 		{
 			var buf = new byte[100];
+			var lineBuf = new byte[1000];
 			bool isLast;
 
 			var builder = new ExposedHeaderFieldBuilderPhraseList (HeaderFieldName.Supersedes, Array.Empty<string> ());
+			builder.PrepareToEncodeExposed (lineBuf);
 			var size = builder.GetNextPartExposed (buf, out isLast);
 			Assert.True (true);
 			Assert.Equal (0, size);
 
 			builder = new ExposedHeaderFieldBuilderPhraseList (HeaderFieldName.Supersedes, new string[] { "keyword" });
+			builder.PrepareToEncodeExposed (lineBuf);
 
 			size = builder.GetNextPartExposed (buf, out isLast);
 			Assert.True (isLast);
@@ -628,6 +673,7 @@ namespace Novartment.Base.Net.Mime.Test
 			Assert.Equal (0, size);
 
 			builder = new ExposedHeaderFieldBuilderPhraseList (HeaderFieldName.Supersedes, new string[] { "keyword", "KEY WORD", "Richard H. Nixon", "ключслово" });
+			builder.PrepareToEncodeExposed (lineBuf);
 
 			size = builder.GetNextPartExposed (buf, out isLast);
 			Assert.False (isLast);
@@ -667,16 +713,19 @@ namespace Novartment.Base.Net.Mime.Test
 		public void CreateMailboxList ()
 		{
 			var buf = new byte[100];
+			var lineBuf = new byte[1000];
 			bool isLast;
 
 			var mailboxes = new List<Mailbox> ();
 			var builder = new ExposedHeaderFieldBuilderMailboxList (HeaderFieldName.Supersedes, mailboxes);
+			builder.PrepareToEncodeExposed (lineBuf);
 			var size = builder.GetNextPartExposed (buf, out isLast);
 			Assert.True (true);
 			Assert.Equal (0, size);
 
 			mailboxes.Add (new Mailbox ("one@mail.ru", "one man"));
 			builder = new ExposedHeaderFieldBuilderMailboxList (HeaderFieldName.Supersedes, mailboxes);
+			builder.PrepareToEncodeExposed (lineBuf);
 
 			size = builder.GetNextPartExposed (buf, out isLast);
 			Assert.False (isLast);
@@ -697,6 +746,7 @@ namespace Novartment.Base.Net.Mime.Test
 			mailboxes.Add (new Mailbox ("two@gmail.ru", "man 2"));
 			mailboxes.Add (new Mailbox ("three@hotmail.com"));
 			builder = new ExposedHeaderFieldBuilderMailboxList (HeaderFieldName.Supersedes, mailboxes);
+			builder.PrepareToEncodeExposed (lineBuf);
 
 			size = builder.GetNextPartExposed (buf, out isLast);
 			Assert.False (isLast);
@@ -735,6 +785,7 @@ namespace Novartment.Base.Net.Mime.Test
 			mailboxes.Add (new Mailbox ("sp2@mailinator.com", "Адресат Два"));
 			mailboxes.Add (new Mailbox ("sp3@mailinator.com", "Адресат Три"));
 			builder = new ExposedHeaderFieldBuilderMailboxList (HeaderFieldName.Supersedes, mailboxes);
+			builder.PrepareToEncodeExposed (lineBuf);
 
 			size = builder.GetNextPartExposed (buf, out isLast);
 			Assert.False (isLast);
@@ -770,14 +821,17 @@ namespace Novartment.Base.Net.Mime.Test
 		public void CreateAngleBracketedList ()
 		{
 			var buf = new byte[100];
+			var lineBuf = new byte[1000];
 			bool isLast;
 
 			var builder = new ExposedHeaderFieldBuilderAngleBracketedList (HeaderFieldName.Supersedes, Array.Empty<string> ());
+			builder.PrepareToEncodeExposed (lineBuf);
 			var size = builder.GetNextPartExposed (buf, out isLast);
 			Assert.True (true);
 			Assert.Equal (0, size);
 
 			builder = new ExposedHeaderFieldBuilderAngleBracketedList (HeaderFieldName.Supersedes, new string[] { "mailto:list@host.com?subject=help" });
+			builder.PrepareToEncodeExposed (lineBuf);
 
 			size = builder.GetNextPartExposed (buf, out isLast);
 			Assert.True (isLast);
@@ -795,6 +849,7 @@ namespace Novartment.Base.Net.Mime.Test
 				"some currently unknown command",
 			};
 			builder = new ExposedHeaderFieldBuilderAngleBracketedList (HeaderFieldName.Supersedes, data);
+			builder.PrepareToEncodeExposed (lineBuf);
 
 			size = builder.GetNextPartExposed (buf, out isLast);
 			Assert.False (isLast);
@@ -822,6 +877,7 @@ namespace Novartment.Base.Net.Mime.Test
 		public void CreateDispositionNotificationParameterList ()
 		{
 			var buf = new byte[100];
+			var lineBuf = new byte[1000];
 			bool isLast;
 
 			var parameters = new DispositionNotificationParameter[]
@@ -829,6 +885,7 @@ namespace Novartment.Base.Net.Mime.Test
 				new DispositionNotificationParameter ("signed-receipt", DispositionNotificationParameterImportance.Optional, "pkcs7-signature"),
 			};
 			var builder = new ExposedHeaderFieldBuilderDispositionNotificationParameterList (HeaderFieldName.Supersedes, parameters);
+			builder.PrepareToEncodeExposed (lineBuf);
 
 			var size = builder.GetNextPartExposed (buf, out isLast);
 			Assert.True (isLast);
@@ -844,6 +901,7 @@ namespace Novartment.Base.Net.Mime.Test
 				new DispositionNotificationParameter ("signed-receipt-micalg", DispositionNotificationParameterImportance.Required, "sha1").AddValue ("md5"),
 			};
 			builder = new ExposedHeaderFieldBuilderDispositionNotificationParameterList (HeaderFieldName.Supersedes, parameters);
+			builder.PrepareToEncodeExposed (lineBuf);
 
 			size = builder.GetNextPartExposed (buf, out isLast);
 			Assert.False (isLast);
@@ -863,9 +921,11 @@ namespace Novartment.Base.Net.Mime.Test
 		public void CreateDisposition ()
 		{
 			var buf = new byte[100];
+			var lineBuf = new byte[1000];
 			bool isLast;
 
 			var builder = new ExposedHeaderFieldBuilderDisposition (HeaderFieldName.Supersedes, "value1", "value2", "value3", Array.Empty<string> ());
+			builder.PrepareToEncodeExposed (lineBuf);
 
 			var size = builder.GetNextPartExposed (buf, out isLast);
 			Assert.False (isLast);
@@ -880,6 +940,7 @@ namespace Novartment.Base.Net.Mime.Test
 			Assert.Equal (0, size);
 
 			builder = new ExposedHeaderFieldBuilderDisposition (HeaderFieldName.Supersedes, "manual-action", "MDN-sent-manually", "displayed", new string[] { "value1", "value2", "value3" });
+			builder.PrepareToEncodeExposed (lineBuf);
 
 			size = builder.GetNextPartExposed (buf, out isLast);
 			Assert.False (isLast);
@@ -899,21 +960,22 @@ namespace Novartment.Base.Net.Mime.Test
 		public void EncodeToBinaryTransportRepresentation ()
 		{
 			var buf = new byte[1000];
+			var lineBuf = new byte[1000];
 
 			// один параметр
 			var builder = new HeaderFieldBuilderExactValue (HeaderFieldName.Supersedes, "short.value");
 			builder.AddParameter ("charset", "koi8-r");
-			var size = builder.EncodeToBinaryTransportRepresentation (buf, 78);
+			var size = builder.EncodeToBinaryTransportRepresentation (buf, lineBuf, 78);
 			Assert.Equal ("Supersedes: short.value; charset=koi8-r\r\n", Encoding.ASCII.GetString (buf, 0, size));
 
 			builder = new HeaderFieldBuilderExactValue (HeaderFieldName.Supersedes, "short.value");
 			builder.AddParameter ("charset", "koi8 r");
-			size = builder.EncodeToBinaryTransportRepresentation (buf, 78);
+			size = builder.EncodeToBinaryTransportRepresentation (buf, lineBuf, 78);
 			Assert.Equal ("Supersedes: short.value; charset=\"koi8 r\"\r\n", Encoding.ASCII.GetString (buf, 0, size));
 
 			builder = new HeaderFieldBuilderExactValue (HeaderFieldName.Supersedes, "short.value");
 			builder.AddParameter ("charset", "функции");
-			size = builder.EncodeToBinaryTransportRepresentation (buf, 78);
+			size = builder.EncodeToBinaryTransportRepresentation (buf, lineBuf, 78);
 			Assert.Equal ("Supersedes: short.value;\r\n charset*0*=utf-8''%D1%84%D1%83%D0%BD%D0%BA%D1%86%D0%B8%D0%B8\r\n", Encoding.ASCII.GetString (buf, 0, size));
 
 			// несколько параметров
@@ -921,13 +983,13 @@ namespace Novartment.Base.Net.Mime.Test
 			builder.AddParameter ("name1", "value1");
 			builder.AddParameter ("charset", "koi8-r");
 			builder.AddParameter ("name2", "value2");
-			size = builder.EncodeToBinaryTransportRepresentation (buf, 78);
+			size = builder.EncodeToBinaryTransportRepresentation (buf, lineBuf, 78);
 			Assert.Equal ("Supersedes: short.value; name1=value1; charset=koi8-r; name2=value2\r\n", Encoding.ASCII.GetString (buf, 0, size));
 
 			// оптимальное кодирования длинного значения параметра
 			builder = new HeaderFieldBuilderExactValue (HeaderFieldName.Supersedes, "value");
 			builder.AddParameter ("filename", "This document specifies an Internet standards track protocol for the функции and requests discussion and suggestions.txt");
-			size = builder.EncodeToBinaryTransportRepresentation (buf, 78);
+			size = builder.EncodeToBinaryTransportRepresentation (buf, lineBuf, 78);
 			Assert.Equal (
 				"Supersedes: value;\r\n" +
 				" filename*0*=utf-8''This%20document%20specifies%20an%20Internet%20standards;\r\n" +
@@ -943,7 +1005,7 @@ namespace Novartment.Base.Net.Mime.Test
 			builder.AddParameter ("creation-date", "10 Jul 2012 10:01:06 +0600");
 			builder.AddParameter ("read-date", "11 Jul 2012 10:40:13 +0600");
 			builder.AddParameter ("size", "318");
-			size = builder.EncodeToBinaryTransportRepresentation (buf, 78);
+			size = builder.EncodeToBinaryTransportRepresentation (buf, lineBuf, 78);
 			Assert.Equal (
 				"Content-Disposition: attachment;\r\n" +
 				" filename*0*=utf-8''This%20document%20specifies%20an%20Internet%20standards;\r\n" +

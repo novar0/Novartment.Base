@@ -761,7 +761,7 @@ namespace Novartment.Base.Net.Mime
 			{
 				header.Add (new HeaderFieldBuilderExactValue (
 					HeaderFieldName.MessageId,
-					messageId.ToAngleString ()));
+					"<" + messageId + ">"));
 			}
 
 			// In-Reply-To
@@ -785,7 +785,7 @@ namespace Novartment.Base.Net.Mime
 			{
 				header.Add (new HeaderFieldBuilderExactValue (
 					HeaderFieldName.OriginalMessageId,
-					originalMessageId.ToAngleString ()));
+					"<" + originalMessageId + ">"));
 			}
 		}
 

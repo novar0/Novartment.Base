@@ -24,16 +24,16 @@ namespace Novartment.Base.Smtp.Test
 
 				// точка синхронизации, тут сервер должен послать все накопившиеся ответы
 				"MAIL FROM:<mrose@dbc.mtview.ca.us>\r\n" +
-				"RCPT TO:" + allowedRecipient1.ToAngleString () + "\r\n" +
-				"RCPT TO:" + allowedRecipient2.ToAngleString () + "\r\n" +
-				"RCPT TO:" + allowedRecipient3.ToAngleString () + "\r\n" +
+				"RCPT TO:<" + allowedRecipient1 + ">\r\n" +
+				"RCPT TO:<" + allowedRecipient2 + ">\r\n" +
+				"RCPT TO:<" + allowedRecipient3 + ">\r\n" +
 				"DATA\r\n" +
 
 				// точка синхронизации, тут сервер должен послать все накопившиеся ответы
 				"22 sample\r\n\r\ndata 22\r\n.\r\n" +
 				"MAIL FROM:<mrose@dbc.mtview.ca.us>\r\n" +
-				"RCPT TO:" + disallowedRecipient.ToAngleString () + "\r\n" +
-				"RCPT TO:" + disallowedRecipient.ToAngleString () + "\r\n" +
+				"RCPT TO:<" + disallowedRecipient + ">\r\n" +
+				"RCPT TO:<" + disallowedRecipient + ">\r\n" +
 				"BDAT 5\r\n12345" + // две BDAT команды не принимаются сервером (нет получателей) но должны быть корректно пропущены
 
 				// точка синхронизации, тут сервер должен послать все накопившиеся ответы
@@ -42,7 +42,7 @@ namespace Novartment.Base.Smtp.Test
 				// точка синхронизации, тут сервер должен послать все накопившиеся ответы
 				"RSET\r\n" +
 				"MAIL FROM:<mrose@dbc.mtview.ca.us>\r\n" +
-				"RCPT TO:" + allowedRecipient1.ToAngleString () + "\r\n" +
+				"RCPT TO:<" + allowedRecipient1 + ">\r\n" +
 				"DATA\r\n" +
 
 				// точка синхронизации, тут сервер должен послать все накопившиеся ответы

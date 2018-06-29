@@ -265,46 +265,6 @@ namespace Novartment.Base.Net
 		}
 
 		/// <summary>
-		/// Преобразовывает значение объекта в эквивалентное ему строковое представление, окруженное треугольными скобками.
-		/// </summary>
-		/// <returns>Строковое представление значения объекта, окруженное треугольными скобками.</returns>
-		public string ToAngleString ()
-		{
-			var localPart = AsciiCharSet.IsValidInternetDomainName (this.LocalPart) ? this.LocalPart : AsciiCharSet.Quote (this.LocalPart);
-			return AsciiCharSet.IsValidInternetDomainName (this.Domain) ?
-				"<" + localPart + "@" + this.Domain + ">" :
-				"<" + localPart + "@[" + this.Domain + "]>";
-		}
-
-		/// <summary>
-		/// Преобразовывает значение объекта в эквивалентное ему строковое представление, окруженное треугольными скобками.
-		/// </summary>
-		/// <param name="buf">Буфер, куда будет записано строковое представление значения объекта.</param>
-		/// <returns>Количество знаков, записанных в буфер.</returns>
-		public int ToAngleString (Span<char> buf)
-		{
-			var pos = 0;
-			buf[pos++] = '<';
-			pos += ToString (buf.Slice (pos));
-			buf[pos++] = '>';
-			return pos;
-		}
-
-		/// <summary>
-		/// Преобразовывает значение объекта в эквивалентное ему строковое представление, окруженное треугольными скобками.
-		/// </summary>
-		/// <param name="buf">Буфер, куда будет записано строковое представление значения объекта.</param>
-		/// <returns>Количество знаков, записанных в буфер.</returns>
-		public int ToAngleUtf8String (Span<byte> buf)
-		{
-			var pos = 0;
-			buf[pos++] = (byte)'<';
-			pos += ToUtf8String (buf.Slice (pos));
-			buf[pos++] = (byte)'>';
-			return pos;
-		}
-
-		/// <summary>
 		/// Вычисляет хэш-функцию объекта.
 		/// </summary>
 		/// <returns>Хэш-код для текущего объекта.</returns>

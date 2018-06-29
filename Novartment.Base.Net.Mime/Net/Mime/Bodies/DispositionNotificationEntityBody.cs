@@ -352,7 +352,7 @@ namespace Novartment.Base.Net.Mime
 			{
 				header.Add (new HeaderFieldBuilderExactValue (
 					HeaderFieldName.OriginalMessageId,
-					this.OriginalMessageId.ToAngleString ()));
+					"<" + this.OriginalMessageId + ">"));
 			}
 
 			// Disposition

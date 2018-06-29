@@ -321,10 +321,10 @@ namespace Novartment.Base.Smtp.Test
 			Assert.Equal ("MAIL FROM:<> BODY=8BITMIME\r\n", str);
 			var mailbox = new AddrSpec ("user", "server.net");
 			str = new SmtpMailFromCommand (mailbox, ContentTransferEncoding.Binary, null).ToString ();
-			Assert.Equal ("MAIL FROM:" + mailbox.ToAngleString () + " BODY=BINARYMIME\r\n", str);
+			Assert.Equal ("MAIL FROM:<" + mailbox + "> BODY=BINARYMIME\r\n", str);
 
 			str = new SmtpRcptToCommand (mailbox).ToString ();
-			Assert.Equal ("RCPT TO:" + mailbox.ToAngleString () + "\r\n", str);
+			Assert.Equal ("RCPT TO:<" + mailbox + ">\r\n", str);
 
 			str = new SmtpVrfyCommand (id).ToString ();
 			Assert.Equal ("VRFY " + id + "\r\n", str);
