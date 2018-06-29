@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Buffers;
 using System.Diagnostics.Contracts;
+using System.Text;
 
 namespace Novartment.Base.Text
 {
@@ -308,16 +309,18 @@ namespace Novartment.Base.Text
 			return isWordEncoded ? Rfc2047EncodedWord.Parse (valueSpan) : valueStr;
 		}
 
-#if NETCOREAPP2_1
-
 		/// <summary>
 		/// Декодирует значение токена в соответствии с его типом.
 		/// </summary>
 		/// <param name="source">Строка типа RFC 5322 'Structured Header Field Body', в которой выделен токен.</param>
-		/// <param name="buffer">Буфер, куда будет записано декодировенное значение токена.</param>
+		/// <param name="destination">Буфер, куда будет записано декодировенное значение токена.</param>
 		/// <returns>Количество знаков, записанных в buffer.</returns>
-		public int Decode (ReadOnlySpan<char> source, Span<char> buffer)
+		public int Decode (ReadOnlySpan<char> source, Span<char> destination)
 		{
+			// TODO: избавиться от двух ArrayPool.Shared.Rent()
+			// требуется два промежуточных буфера
+			// 1. в один исходная строка деквотируется
+			// 2. в другой помещается двоичное представление декодированного Encoded-Word (которое потом декодируется в результирующую строку)
 			switch (this.TokenType)
 			{
 				case StructuredHeaderFieldLexicalTokenType.SquareBracketedValue:
@@ -334,11 +337,11 @@ namespace Novartment.Base.Text
 							(bufferTemp[size - 1] == '=');
 						if (isWordEncodedQ)
 						{
-							return Rfc2047EncodedWord.Parse (bufferTemp.AsSpan (0, size), buffer);
+							return DecodeEncodedWord (bufferTemp.AsSpan (0, size), destination);
 						}
 						else
 						{
-							bufferTemp.AsSpan (0, size).CopyTo (buffer);
+							bufferTemp.AsSpan (0, size).CopyTo (destination);
 							return size;
 						}
 					}
@@ -351,7 +354,7 @@ namespace Novartment.Base.Text
 					}
 
 				case StructuredHeaderFieldLexicalTokenType.Separator:
-					source.Slice (this.Position, this.Length).CopyTo (buffer);
+					source.Slice (this.Position, this.Length).CopyTo (destination);
 					return this.Length;
 
 				case StructuredHeaderFieldLexicalTokenType.Value:
@@ -363,16 +366,39 @@ namespace Novartment.Base.Text
 						(src[src.Length - 1] == '=');
 					if (isWordEncoded)
 					{
-						return Rfc2047EncodedWord.Parse (src, buffer);
+						return DecodeEncodedWord (src, destination);
 					}
 
-					src.CopyTo (buffer);
+					src.CopyTo (destination);
 					return src.Length;
 
 				default:
 					throw new InvalidOperationException (FormattableString.Invariant (
 						$"Element of type '{this.TokenType}' is complex and can not be decoded to discrete value."));
 			}
+		}
+
+		private static int DecodeEncodedWord (ReadOnlySpan<char> src, Span<char> destination)
+		{
+			var buf = ArrayPool<byte>.Shared.Rent (src.Length);
+			int resultSize;
+			try
+			{
+				var size = Rfc2047EncodedWord.Parse (src, buf, out Encoding encoding);
+#if NETCOREAPP2_1
+				resultSize = encoding.GetChars (buf.AsSpan (0, size), destination);
+#else
+				var tempBuf = encoding.GetChars (buf, 0, size);
+				resultSize = tempBuf.Length;
+				tempBuf.AsSpan ().CopyTo (destination);
+#endif
+			}
+			finally
+			{
+				ArrayPool<byte>.Shared.Return (buf);
+			}
+
+			return resultSize;
 		}
 
 		private static int UnquoteString (ReadOnlySpan<char> value, Span<char> result)
@@ -390,8 +416,6 @@ namespace Novartment.Base.Text
 
 			return idx;
 		}
-
-#endif
 
 		/// <summary>
 		/// Выделяет в указанном диапазоне байтов поддиапазон, отвечающий указанному ограничению.

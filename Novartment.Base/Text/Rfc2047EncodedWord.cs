@@ -13,23 +13,6 @@ namespace Novartment.Base.Text
 		/// <summary>
 		/// Декодирует RFC 2047 'encoded-word'.
 		/// </summary>
-		/// <param name="value">Значение, закодированное в формате RFC 2047 'encoded-word'.</param>
-		/// <returns>Декодированное значение.</returns>
-		public static string Parse (string value)
-		{
-			if (value == null)
-			{
-				throw new ArgumentNullException (nameof (value));
-			}
-
-			Contract.EndContractBlock ();
-
-			return Parse (value.AsSpan ());
-		}
-
-		/// <summary>
-		/// Декодирует RFC 2047 'encoded-word'.
-		/// </summary>
 		/// <param name="source">Значение, закодированное в формате RFC 2047 'encoded-word'.</param>
 		/// <returns>Декодированное значение.</returns>
 		public static string Parse (ReadOnlySpan<char> source)
@@ -63,62 +46,21 @@ namespace Novartment.Base.Text
 			}
 		}
 
-#if NETCOREAPP2_1
-
 		/// <summary>
 		/// Декодирует RFC 2047 'encoded-word'.
 		/// </summary>
 		/// <param name="source">Значение, закодированное в формате RFC 2047 'encoded-word'.</param>
-		/// <param name="buffer">Буфер, в который будет помещено декодированное значение.</param>
+		/// <param name="destination">Буфер, в который будет помещено декодированное значение.</param>
+		/// <param name="encoding">Текстовая кодировка, в которой представлено декодированное значение.</param>
 		/// <returns>Количество знаков, записанных в buffer.</returns>
-		public static int Parse (ReadOnlySpan<char> source, Span<char> buffer)
+		public static int Parse (ReadOnlySpan<char> source, Span<byte> destination, out Encoding encoding)
 		{
 			var (textEncoding, binaryEncoding, valuePos, valueSize) = SplitParts (source);
+			encoding = textEncoding;
 			var value = source.Slice (valuePos, valueSize);
-			int resultSize;
-			byte[] bufferTemp = null;
-			try
-			{
-				if (binaryEncoding)
-				{
-					bufferTemp = ArrayPool<byte>.Shared.Rent (((source.Length / 4) * 3) + 2);
-					resultSize = ParseBString (value, bufferTemp);
-				}
-				else
-				{
-					bufferTemp = ArrayPool<byte>.Shared.Rent (source.Length);
-					resultSize = ParseQString (value, bufferTemp);
-				}
-
-				resultSize = textEncoding.GetChars (bufferTemp.AsSpan (0, resultSize), buffer);
-				return resultSize;
-			}
-			finally
-			{
-				if (bufferTemp != null)
-				{
-					ArrayPool<byte>.Shared.Return (bufferTemp);
-				}
-			}
-		}
-
-#endif
-
-		/// <summary>
-		/// Проверяет строку на соответствие формату RFC 2047 'encoded-word'.
-		/// </summary>
-		/// <param name="value">Строка для проверки.</param>
-		/// <returns>True если строка соответствует формату RFC 2047 'encoded-word'.</returns>
-		public static bool IsValid (string value)
-		{
-			if (value == null)
-			{
-				throw new ArgumentNullException (nameof (value));
-			}
-
-			Contract.EndContractBlock ();
-
-			return IsValid (value.AsSpan ());
+			return binaryEncoding ?
+				ParseBString (value, destination) :
+				ParseQString (value, destination);
 		}
 
 		/// <summary>
