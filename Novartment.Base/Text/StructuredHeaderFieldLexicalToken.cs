@@ -287,7 +287,13 @@ namespace Novartment.Base.Text
 					$"Element of type '{this.TokenType}' is complex and can not be decoded to discrete value."));
 			}
 
-			var valueSpan = ((this.TokenType == StructuredHeaderFieldLexicalTokenType.SquareBracketedValue) || (this.TokenType == StructuredHeaderFieldLexicalTokenType.QuotedValue)) ?
+			if (this.TokenType == StructuredHeaderFieldLexicalTokenType.Separator)
+			{
+				return new string (src[0], 1);
+			}
+
+			var needUnquote = (this.TokenType == StructuredHeaderFieldLexicalTokenType.SquareBracketedValue) || (this.TokenType == StructuredHeaderFieldLexicalTokenType.QuotedValue);
+			var valueSpan = needUnquote ?
 				UnquoteString (src) :
 				src;
 #if NETCOREAPP2_1
@@ -295,12 +301,9 @@ namespace Novartment.Base.Text
 #else
 			var valueStr = new string (valueSpan.ToArray ());
 #endif
-			if (this.TokenType == StructuredHeaderFieldLexicalTokenType.Separator)
-			{
-				return valueStr;
-			}
 
-			var isWordEncoded = (valueSpan.Length > 8) &&
+			var isWordEncoded = (this.TokenType == StructuredHeaderFieldLexicalTokenType.Value) &&
+				(valueSpan.Length > 8) &&
 				(valueSpan[0] == '=') &&
 				(valueSpan[1] == '?') &&
 				(valueSpan[valueSpan.Length - 2] == '?') &&
@@ -335,15 +338,8 @@ namespace Novartment.Base.Text
 							(bufferTemp[1] == '?') &&
 							(bufferTemp[size - 2] == '?') &&
 							(bufferTemp[size - 1] == '=');
-						if (isWordEncodedQ)
-						{
-							return DecodeEncodedWord (bufferTemp.AsSpan (0, size), destination);
-						}
-						else
-						{
-							bufferTemp.AsSpan (0, size).CopyTo (destination);
-							return size;
-						}
+						bufferTemp.AsSpan (0, size).CopyTo (destination);
+						return size;
 					}
 					finally
 					{
@@ -364,41 +360,37 @@ namespace Novartment.Base.Text
 						(src[1] == '?') &&
 						(src[src.Length - 2] == '?') &&
 						(src[src.Length - 1] == '=');
-					if (isWordEncoded)
+					if (!isWordEncoded)
 					{
-						return DecodeEncodedWord (src, destination);
+						src.CopyTo (destination);
+						return src.Length;
 					}
 
-					src.CopyTo (destination);
-					return src.Length;
+					// декодируем 'encoded-word'
+					var buf = ArrayPool<byte>.Shared.Rent (src.Length);
+					int resultSize;
+					try
+					{
+						var size = Rfc2047EncodedWord.Parse (src, buf, out Encoding encoding);
+#if NETCOREAPP2_1
+						resultSize = encoding.GetChars (buf.AsSpan (0, size), destination);
+#else
+						var tempBuf = encoding.GetChars (buf, 0, size);
+						resultSize = tempBuf.Length;
+						tempBuf.AsSpan ().CopyTo (destination);
+#endif
+					}
+					finally
+					{
+						ArrayPool<byte>.Shared.Return (buf);
+					}
+
+					return resultSize;
 
 				default:
 					throw new InvalidOperationException (FormattableString.Invariant (
 						$"Element of type '{this.TokenType}' is complex and can not be decoded to discrete value."));
 			}
-		}
-
-		private static int DecodeEncodedWord (ReadOnlySpan<char> src, Span<char> destination)
-		{
-			var buf = ArrayPool<byte>.Shared.Rent (src.Length);
-			int resultSize;
-			try
-			{
-				var size = Rfc2047EncodedWord.Parse (src, buf, out Encoding encoding);
-#if NETCOREAPP2_1
-				resultSize = encoding.GetChars (buf.AsSpan (0, size), destination);
-#else
-				var tempBuf = encoding.GetChars (buf, 0, size);
-				resultSize = tempBuf.Length;
-				tempBuf.AsSpan ().CopyTo (destination);
-#endif
-			}
-			finally
-			{
-				ArrayPool<byte>.Shared.Return (buf);
-			}
-
-			return resultSize;
 		}
 
 		private static int UnquoteString (ReadOnlySpan<char> value, Span<char> result)

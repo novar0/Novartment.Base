@@ -159,7 +159,7 @@ namespace Novartment.Base.Test
 			Assert.Equal ("тема сообщения текст сообщения", item.Decode (src));
 
 			src = "=?utf-8*ru-ru?B?0YLQtdC80LAg0YHQvtC+0LHRidC10L3QuNGPINGC0LXQutGB0YIg0YHQvtC+0LHRidC10L3QuNGP?=";
-			item = new StructuredHeaderFieldLexicalToken (StructuredHeaderFieldLexicalTokenType.QuotedValue, 0, src.Length);
+			item = new StructuredHeaderFieldLexicalToken (StructuredHeaderFieldLexicalTokenType.Value, 0, src.Length);
 			Assert.Equal ("тема сообщения текст сообщения", item.Decode (src));
 		}
 
@@ -200,7 +200,7 @@ namespace Novartment.Base.Test
 			Assert.Equal ("тема сообщения текст сообщения", new string (buf, 0, size));
 
 			src = "=?utf-8*ru-ru?B?0YLQtdC80LAg0YHQvtC+0LHRidC10L3QuNGPINGC0LXQutGB0YIg0YHQvtC+0LHRidC10L3QuNGP?=";
-			item = new StructuredHeaderFieldLexicalToken (StructuredHeaderFieldLexicalTokenType.QuotedValue, 0, src.Length);
+			item = new StructuredHeaderFieldLexicalToken (StructuredHeaderFieldLexicalTokenType.Value, 0, src.Length);
 			size = item.Decode (src, buf);
 			Assert.Equal ("тема сообщения текст сообщения", new string (buf, 0, size));
 		}
