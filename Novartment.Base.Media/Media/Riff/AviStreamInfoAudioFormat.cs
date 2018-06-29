@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Buffers.Binary;
 using System.Diagnostics;
 using System.Diagnostics.Contracts;
 using System.Threading;
@@ -116,30 +117,13 @@ namespace Novartment.Base.Media
 					WORD	cbSize;
 				*/
 
-				// TODO: сделать проще, без использования BitConverter
 				var sourceBuf = source.BufferMemory;
-#if NETCOREAPP2_1
-				var formatTag = BitConverter.ToUInt16 (sourceBuf.Span.Slice (source.Offset));
-				var channels = BitConverter.ToUInt16 (sourceBuf.Span.Slice (source.Offset + 2));
-				var samplesPerSec = BitConverter.ToUInt32 (sourceBuf.Span.Slice (source.Offset + 4));
-				var averageBytesPerSecond = BitConverter.ToUInt32 (sourceBuf.Span.Slice (source.Offset + 8));
-				var blockAlign = BitConverter.ToUInt16 (sourceBuf.Span.Slice (source.Offset + 12));
-				var bitsPerSample = BitConverter.ToUInt16 (sourceBuf.Span.Slice (source.Offset + 14));
-#else
-				var tempBuf = new byte[4];
-				sourceBuf.Slice (source.Offset, 2).CopyTo (tempBuf);
-				var formatTag = BitConverter.ToUInt16 (tempBuf, 0);
-				sourceBuf.Slice (source.Offset + 2, 2).CopyTo (tempBuf);
-				var channels = BitConverter.ToUInt16 (tempBuf, 0);
-				sourceBuf.Slice (source.Offset + 4, 4).CopyTo (tempBuf);
-				var samplesPerSec = BitConverter.ToUInt32 (tempBuf, 0);
-				sourceBuf.Slice (source.Offset + 8, 4).CopyTo (tempBuf);
-				var averageBytesPerSecond = BitConverter.ToUInt32 (tempBuf, 0);
-				sourceBuf.Slice (source.Offset + 12, 2).CopyTo (tempBuf);
-				var blockAlign = BitConverter.ToUInt16 (tempBuf, 0);
-				sourceBuf.Slice (source.Offset + 14, 2).CopyTo (tempBuf);
-				var bitsPerSample = BitConverter.ToUInt16 (tempBuf, 0);
-#endif
+				var formatTag = BinaryPrimitives.ReadUInt16LittleEndian (sourceBuf.Span.Slice (source.Offset));
+				var channels = BinaryPrimitives.ReadUInt16LittleEndian (sourceBuf.Span.Slice (source.Offset + 2));
+				var samplesPerSec = BinaryPrimitives.ReadUInt32LittleEndian (sourceBuf.Span.Slice (source.Offset + 4));
+				var averageBytesPerSecond = BinaryPrimitives.ReadUInt32LittleEndian (sourceBuf.Span.Slice (source.Offset + 8));
+				var blockAlign = BinaryPrimitives.ReadUInt16LittleEndian (sourceBuf.Span.Slice (source.Offset + 12));
+				var bitsPerSample = BinaryPrimitives.ReadUInt16LittleEndian (sourceBuf.Span.Slice (source.Offset + 14));
 
 				return new AviStreamInfoAudioFormat (
 					formatTag,

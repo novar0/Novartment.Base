@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Buffers.Binary;
 using System.Diagnostics;
 using System.Diagnostics.Contracts;
 using System.Threading;
@@ -92,14 +93,7 @@ namespace Novartment.Base.Media
 
 				var id = AsciiCharSet.GetString (source.BufferMemory.Span.Slice (source.Offset, 4));
 
-				// TODO: сделать проще, без использования BitConverter
-#if NETCOREAPP2_1
-				var size = (long)BitConverter.ToUInt32 (source.BufferMemory.Span.Slice (source.Offset + 4));
-#else
-				var tempBuf = new byte[4];
-				source.BufferMemory.Slice (source.Offset + 4, 4).CopyTo (tempBuf);
-				var size = (long)BitConverter.ToUInt32 (tempBuf, 0);
-#endif
+				var size = (long)BinaryPrimitives.ReadUInt32LittleEndian (source.BufferMemory.Span.Slice (source.Offset + 4));
 				source.SkipBuffer (8);
 
 				var data = new SizeLimitedBufferedSource (source, size);

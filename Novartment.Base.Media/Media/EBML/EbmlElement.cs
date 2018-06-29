@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Buffers.Binary;
 using System.Diagnostics;
 using System.Diagnostics.Contracts;
 using System.Text;
@@ -286,16 +287,26 @@ namespace Novartment.Base.Media
 				throw new FormatException (FormattableString.Invariant ($"Ivalid size ({_size}) of data of type Float. Expected 4 or 8 bytes."));
 			}
 
-			var buf = new byte[_size];
-			_source.BufferMemory.Slice (_source.Offset, (int)_size).CopyTo (buf.AsMemory ());
-			if (BitConverter.IsLittleEndian)
+			double result;
+			var span = _source.BufferMemory.Slice (_source.Offset, (int)_size).Span;
+			if (_size == 4)
 			{
-				Array.Reverse (buf);
+#if NETCOREAPP2_1
+				result = BitConverter.Int32BitsToSingle (BinaryPrimitives.ReadInt32BigEndian (span));
+#else
+				var buf = new byte[4];
+				buf[0] = span[3];
+				buf[1] = span[2];
+				buf[2] = span[1];
+				buf[3] = span[0];
+				result = BitConverter.ToSingle (buf, 0);
+#endif
+			}
+			else
+			{
+				result = BitConverter.Int64BitsToDouble (BinaryPrimitives.ReadInt64BigEndian (span));
 			}
 
-			double result = (_size == 4) ?
-				BitConverter.ToSingle (buf, 0) :
-				BitConverter.ToDouble (buf, 0);
 			_source.SkipBuffer ((int)_size);
 			_readed += _size;
 			return result;

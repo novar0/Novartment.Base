@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Buffers.Binary;
 using System.Diagnostics;
 using System.Diagnostics.Contracts;
 using System.Globalization;
@@ -122,30 +123,13 @@ namespace Novartment.Base.Media
 					DWORD	biClrImportant;
 				*/
 
-				// TODO: сделать проще, без использования BitConverter
 				var sourceBuf = source.BufferMemory;
-#if NETCOREAPP2_1
-				var compressionNumber = BitConverter.ToUInt32 (sourceBuf.Span.Slice (source.Offset + 16));
-				var width = BitConverter.ToUInt32 (sourceBuf.Span.Slice (source.Offset + 4));
-				var height = BitConverter.ToUInt32 (sourceBuf.Span.Slice (source.Offset + 8));
-				var planes = BitConverter.ToUInt32 (sourceBuf.Span.Slice (source.Offset + 12));
-				var bitCount = BitConverter.ToUInt32 (sourceBuf.Span.Slice (source.Offset + 14));
-				var sizeImage = BitConverter.ToUInt32 (sourceBuf.Span.Slice (source.Offset + 20));
-#else
-				var tempBuf = new byte[4];
-				sourceBuf.Slice (source.Offset + 16, 4).CopyTo (tempBuf);
-				var compressionNumber = BitConverter.ToUInt32 (tempBuf, 0);
-				sourceBuf.Slice (source.Offset + 4, 4).CopyTo (tempBuf);
-				var width = BitConverter.ToUInt32 (tempBuf, 0);
-				sourceBuf.Slice (source.Offset + 8, 4).CopyTo (tempBuf);
-				var height = BitConverter.ToUInt32 (tempBuf, 0);
-				sourceBuf.Slice (source.Offset + 12, 4).CopyTo (tempBuf);
-				var planes = BitConverter.ToUInt32 (tempBuf, 0);
-				sourceBuf.Slice (source.Offset + 14, 4).CopyTo (tempBuf);
-				var bitCount = BitConverter.ToUInt32 (tempBuf, 0);
-				sourceBuf.Slice (source.Offset + 20, 4).CopyTo (tempBuf);
-				var sizeImage = BitConverter.ToUInt32 (tempBuf, 0);
-#endif
+				var compressionNumber = BinaryPrimitives.ReadUInt32LittleEndian (sourceBuf.Span.Slice (source.Offset + 16));
+				var width = BinaryPrimitives.ReadUInt32LittleEndian (sourceBuf.Span.Slice (source.Offset + 4));
+				var height = BinaryPrimitives.ReadUInt32LittleEndian (sourceBuf.Span.Slice (source.Offset + 8));
+				var planes = BinaryPrimitives.ReadUInt32LittleEndian (sourceBuf.Span.Slice (source.Offset + 12));
+				var bitCount = BinaryPrimitives.ReadUInt32LittleEndian (sourceBuf.Span.Slice (source.Offset + 14));
+				var sizeImage = BinaryPrimitives.ReadUInt32LittleEndian (sourceBuf.Span.Slice (source.Offset + 20));
 				var codecId = (compressionNumber >= 0x20202020) ?
 					AsciiCharSet.GetString (source.BufferMemory.Span.Slice (source.Offset + 16, 4)) :
 					compressionNumber.ToString (CultureInfo.InvariantCulture);
