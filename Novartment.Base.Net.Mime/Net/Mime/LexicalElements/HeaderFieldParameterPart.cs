@@ -64,26 +64,26 @@ namespace Novartment.Base.Net.Mime
 			other-sections         := "*" ("1" / "2" / "3" / "4" / "5" / "6" / "7" / "8" / "9") *DIGIT)
 			*/
 
-			var nameElement = StructuredHeaderFieldLexicalToken.ParseToken (source, ref parserPos);
-			var separatorElement = StructuredHeaderFieldLexicalToken.ParseToken (source, ref parserPos);
+			var nameToken = StructuredHeaderFieldLexicalToken.ParseToken (source, ref parserPos);
+			var separatorToken = StructuredHeaderFieldLexicalToken.ParseToken (source, ref parserPos);
 
 			if (
-				(nameElement.TokenType != StructuredHeaderFieldLexicalTokenType.Value) ||
-				(separatorElement.TokenType != StructuredHeaderFieldLexicalTokenType.Separator))
+				(nameToken.TokenType != StructuredHeaderFieldLexicalTokenType.Value) ||
+				(separatorToken.TokenType != StructuredHeaderFieldLexicalTokenType.Separator))
 			{
 				throw new FormatException ("Invalid format of header field parameter.");
 			}
 
 #if NETCOREAPP2_1
-			var parameterName = new string (source.Slice (nameElement.Position, nameElement.Length));
+			var parameterName = new string (source.Slice (nameToken.Position, nameToken.Length));
 #else
-			var parameterName = new string (source.Slice (nameElement.Position, nameElement.Length).ToArray ());
+			var parameterName = new string (source.Slice (nameToken.Position, nameToken.Length).ToArray ());
 #endif
 			var section = 0;
 			string encoding = null;
 			var isExtendedValue = false;
 
-			if (source[separatorElement.Position] == '*')
+			if (source[separatorToken.Position] == '*')
 			{
 				var sectionElement = StructuredHeaderFieldLexicalToken.ParseToken (source, ref parserPos);
 				if (sectionElement.TokenType != StructuredHeaderFieldLexicalTokenType.Value)
@@ -102,22 +102,22 @@ namespace Novartment.Base.Net.Mime
 					NumberStyles.AllowLeadingWhite | NumberStyles.AllowTrailingWhite,
 					CultureInfo.InvariantCulture);
 #endif
-				separatorElement = StructuredHeaderFieldLexicalToken.ParseToken (source, ref parserPos);
-				if (separatorElement.TokenType != StructuredHeaderFieldLexicalTokenType.Separator)
+				separatorToken = StructuredHeaderFieldLexicalToken.ParseToken (source, ref parserPos);
+				if (separatorToken.TokenType != StructuredHeaderFieldLexicalTokenType.Separator)
 				{
 					throw new FormatException ("Invalid format of header field parameter.");
 				}
 			}
 
-			var isStarSeparator = (separatorElement.TokenType == StructuredHeaderFieldLexicalTokenType.Separator) && (source[separatorElement.Position] == '*');
+			var isStarSeparator = (separatorToken.TokenType == StructuredHeaderFieldLexicalTokenType.Separator) && (source[separatorToken.Position] == '*');
 			if (isStarSeparator)
 			{
 				isExtendedValue = true;
-				separatorElement = StructuredHeaderFieldLexicalToken.ParseToken (source, ref parserPos);
+				separatorToken = StructuredHeaderFieldLexicalToken.ParseToken (source, ref parserPos);
 			}
 			else
 			{
-				var isEqualitySign = (separatorElement.TokenType == StructuredHeaderFieldLexicalTokenType.Separator) && (source[separatorElement.Position] == '=');
+				var isEqualitySign = (separatorToken.TokenType == StructuredHeaderFieldLexicalTokenType.Separator) && (source[separatorToken.Position] == '=');
 				if (!isEqualitySign)
 				{
 					throw new FormatException ("Invalid format of header field parameter.");
@@ -125,78 +125,78 @@ namespace Novartment.Base.Net.Mime
 			}
 
 			var isExtendedInitialValue = isExtendedValue && (section == 0);
-			var item = StructuredHeaderFieldLexicalToken.ParseToken (source, ref parserPos);
+			var token = StructuredHeaderFieldLexicalToken.ParseToken (source, ref parserPos);
 			if (isExtendedInitialValue)
 			{
 				string language = null;
-				if (item.TokenType == StructuredHeaderFieldLexicalTokenType.Value)
+				if (token.TokenType == StructuredHeaderFieldLexicalTokenType.Value)
 				{ // charset
 #if NETCOREAPP2_1
-					encoding = new string (source.Slice (item.Position, item.Length));
+					encoding = new string (source.Slice (token.Position, token.Length));
 #else
-					encoding = new string (source.Slice (item.Position, item.Length).ToArray ());
+					encoding = new string (source.Slice (token.Position, token.Length).ToArray ());
 #endif
-					item = StructuredHeaderFieldLexicalToken.ParseToken (source, ref parserPos);
+					token = StructuredHeaderFieldLexicalToken.ParseToken (source, ref parserPos);
 				}
 
-				if ((item.TokenType != StructuredHeaderFieldLexicalTokenType.Separator) || (source[item.Position] != '\''))
+				if ((token.TokenType != StructuredHeaderFieldLexicalTokenType.Separator) || (source[token.Position] != '\''))
 				{
 					throw new FormatException ("Invalid format of header field parameter.");
 				}
 
-				item = StructuredHeaderFieldLexicalToken.ParseToken (source, ref parserPos);
-				if (item.TokenType == StructuredHeaderFieldLexicalTokenType.Value)
+				token = StructuredHeaderFieldLexicalToken.ParseToken (source, ref parserPos);
+				if (token.TokenType == StructuredHeaderFieldLexicalTokenType.Value)
 				{ // language
 #if NETCOREAPP2_1
-					language = new string (source.Slice (item.Position, item.Length));
+					language = new string (source.Slice (token.Position, token.Length));
 #else
-					language = new string (source.Slice (item.Position, item.Length).ToArray ());
+					language = new string (source.Slice (token.Position, token.Length).ToArray ());
 #endif
-					item = StructuredHeaderFieldLexicalToken.ParseToken (source, ref parserPos);
+					token = StructuredHeaderFieldLexicalToken.ParseToken (source, ref parserPos);
 				}
 
-				if ((item.TokenType != StructuredHeaderFieldLexicalTokenType.Separator) || (source[item.Position] != '\''))
+				if ((token.TokenType != StructuredHeaderFieldLexicalTokenType.Separator) || (source[token.Position] != '\''))
 				{
 					throw new FormatException ("Invalid format of header field parameter.");
 				}
 
-				item = StructuredHeaderFieldLexicalToken.ParseToken (source, ref parserPos);
-				if (item.TokenType != StructuredHeaderFieldLexicalTokenType.Value)
+				token = StructuredHeaderFieldLexicalToken.ParseToken (source, ref parserPos);
+				if (token.TokenType != StructuredHeaderFieldLexicalTokenType.Value)
 				{
 					throw new FormatException ("Invalid format of header field parameter.");
 				}
 
 #if NETCOREAPP2_1
-				var valueStr = new string (source.Slice (item.Position, item.Length));
+				var valueStr = new string (source.Slice (token.Position, token.Length));
 #else
-				var valueStr = new string (source.Slice (item.Position, item.Length).ToArray ());
+				var valueStr = new string (source.Slice (token.Position, token.Length).ToArray ());
 #endif
 				return new HeaderFieldParameterPart (parameterName, valueStr, encoding, language);
 			}
 
 			if (isExtendedValue)
 			{
-				if (item.TokenType != StructuredHeaderFieldLexicalTokenType.Value)
+				if (token.TokenType != StructuredHeaderFieldLexicalTokenType.Value)
 				{
 					throw new FormatException ("Invalid format of header field parameter.");
 				}
 
 #if NETCOREAPP2_1
-				var valueStr = new string (source.Slice (item.Position, item.Length));
+				var valueStr = new string (source.Slice (token.Position, token.Length));
 #else
-				var valueStr = new string (source.Slice (item.Position, item.Length).ToArray ());
+				var valueStr = new string (source.Slice (token.Position, token.Length).ToArray ());
 #endif
 				return new HeaderFieldParameterPart (parameterName, valueStr, section, true);
 			}
 
-			if ((item.TokenType != StructuredHeaderFieldLexicalTokenType.Value) && (item.TokenType != StructuredHeaderFieldLexicalTokenType.QuotedValue))
+			if ((token.TokenType != StructuredHeaderFieldLexicalTokenType.Value) && (token.TokenType != StructuredHeaderFieldLexicalTokenType.QuotedValue))
 			{
 				throw new FormatException ("Invalid format of header field parameter.");
 			}
 
 			return new HeaderFieldParameterPart (
 				parameterName,
-				item.Decode (source),
+				token.Decode (source),
 				section,
 				false);
 		}

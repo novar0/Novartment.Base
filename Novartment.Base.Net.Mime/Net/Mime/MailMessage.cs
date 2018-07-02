@@ -591,7 +591,7 @@ namespace Novartment.Base.Net.Mime
 
 			// received       = "Received:" *received-token ";" date-time
 			// received-token = word / angle-addr / addr-spec / domain
-			var data = HeaderDecoder.DecodeUnstructuredAndDate (body);
+			var data = HeaderDecoder.DecodeTokensAndDate (body);
 			traceBlock.ReceivedParameters = data.Text.Trim ();
 			traceBlock.ReceivedTime = data.Time;
 			return true;

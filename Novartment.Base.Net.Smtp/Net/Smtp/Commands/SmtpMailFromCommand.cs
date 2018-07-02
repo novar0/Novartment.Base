@@ -41,14 +41,14 @@ namespace Novartment.Base.Net.Smtp
 			*/
 
 			var pos = 0;
-			var pathEelement = StructuredHeaderFieldLexicalToken.ParseDotAtom (value, ref pos);
-			if (pathEelement.TokenType != StructuredHeaderFieldLexicalTokenType.AngleBracketedValue)
+			var pathToken = StructuredHeaderFieldLexicalToken.ParseDotAtom (value, ref pos);
+			if (pathToken.TokenType != StructuredHeaderFieldLexicalTokenType.AngleBracketedValue)
 			{
 				return new SmtpInvalidSyntaxCommand (SmtpCommandType.MailFrom, "Unrecognized 'MAIL FROM' parameter.");
 			}
 
-			var returnPath = pathEelement.Length > 0 ?
-				AddrSpec.Parse (value.Slice (pathEelement.Position, pathEelement.Length)) :
+			var returnPath = pathToken.Length > 0 ?
+				AddrSpec.Parse (value.Slice (pathToken.Position, pathToken.Length)) :
 				null;
 
 			/*

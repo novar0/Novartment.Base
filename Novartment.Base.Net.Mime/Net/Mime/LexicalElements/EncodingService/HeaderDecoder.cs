@@ -3,7 +3,6 @@ using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Globalization;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Novartment.Base.BinaryStreaming;
@@ -84,14 +83,14 @@ namespace Novartment.Base.Net.Mime
 		{
 			// удаление комментариев и пробельного пространства
 			var pos = 0;
-			var element1 = StructuredHeaderFieldLexicalToken.ParseToken (source, ref pos);
-			var element2 = StructuredHeaderFieldLexicalToken.ParseToken (source, ref pos);
-			if (element2.IsValid || (element1.TokenType != StructuredHeaderFieldLexicalTokenType.Value))
+			var token1 = StructuredHeaderFieldLexicalToken.ParseToken (source, ref pos);
+			var token2 = StructuredHeaderFieldLexicalToken.ParseToken (source, ref pos);
+			if (token2.IsValid || (token1.TokenType != StructuredHeaderFieldLexicalTokenType.Value))
 			{
 				throw new FormatException ("Invalid value for type 'atom'.");
 			}
 
-			return source.Slice (element1.Position, element1.Length);
+			return source.Slice (token1.Position, token1.Length);
 		}
 
 		/// <summary>
@@ -101,7 +100,9 @@ namespace Novartment.Base.Net.Mime
 		/// <returns>Decoded string value.</returns>
 		internal static string DecodeUnstructured (ReadOnlySpan<char> source)
 		{
-			var result = new StringBuilder ();
+			var outBuf = new char[MaximumHeaderFieldBodySize];
+			var byteBuf = new byte[HeaderFieldBuilder.MaxLineLengthRequired];
+			var outPos = 0;
 			var prevIsWordEncoded = false;
 			var lastWhiteSpacePos = 0;
 			var lastWhiteSpaceLength = 0;
@@ -163,25 +164,20 @@ namespace Novartment.Base.Net.Mime
 					// any 'linear-white-space' that separates a pair of adjacent 'encoded-word's is ignored
 					if ((!prevIsWordEncoded || !isWordEncoded) && (lastWhiteSpaceLength > 0))
 					{
-#if NETCOREAPP2_1
-						result.Append (source.Slice (lastWhiteSpacePos, lastWhiteSpaceLength));
-#else
-						result.Append (source.Slice (lastWhiteSpacePos, lastWhiteSpaceLength).ToArray ());
-#endif
+						source.Slice (lastWhiteSpacePos, lastWhiteSpaceLength).CopyTo (outBuf.AsSpan (outPos));
+						outPos += lastWhiteSpaceLength;
 					}
 
 					prevIsWordEncoded = isWordEncoded;
 					if (isWordEncoded)
 					{
-						result.Append (Rfc2047EncodedWord.Parse (source.Slice (valuePos, valueLength)));
+						var size = Rfc2047EncodedWord.Parse (source.Slice (valuePos, valueLength), byteBuf, out var encoding);
+						outPos += encoding.GetChars (byteBuf, 0, size, outBuf, outPos);
 					}
 					else
 					{
-#if NETCOREAPP2_1
-						result.Append (source.Slice (valuePos, valueLength));
-#else
-						result.Append (source.Slice (valuePos, valueLength).ToArray ());
-#endif
+						source.Slice (valuePos, valueLength).CopyTo (outBuf.AsSpan (outPos));
+						outPos += valueLength;
 					}
 
 					lastWhiteSpacePos = lastWhiteSpaceLength = 0;
@@ -190,33 +186,36 @@ namespace Novartment.Base.Net.Mime
 
 			if (lastWhiteSpaceLength > 0)
 			{
-#if NETCOREAPP2_1
-				result.Append (source.Slice (lastWhiteSpacePos, lastWhiteSpaceLength));
-#else
-				result.Append (source.Slice (lastWhiteSpacePos, lastWhiteSpaceLength).ToArray ());
-#endif
+				source.Slice (lastWhiteSpacePos, lastWhiteSpaceLength).CopyTo (outBuf.AsSpan (outPos));
+				outPos += lastWhiteSpaceLength;
 			}
 
-			return result.ToString ();
+#if NETCOREAPP2_1
+			return new string (outBuf.AsSpan (0, outPos));
+#else
+			return new string (outBuf, 0, outPos);
+#endif
 		}
 
 		/// <summary>
 		/// Decodes 'phrase' into resulting string.
-		/// Only supports elements of type Separator, Atom and Quoted.
+		/// Only supports tokens of type Separator, Atom and Quoted.
 		/// </summary>
 		/// <param name="source">String in 'phrase' format.</param>
 		/// <returns>Decoded phrase.</returns>
 		internal static string DecodePhrase (ReadOnlySpan<char> source)
 		{
 			var parserPos = 0;
-			var decoder = new StructuredHeaderFieldDecoder ();
-			var isEmpty = true;
+			var outBuf = new char[MaximumHeaderFieldBodySize];
+			var byteBuf = new byte[HeaderFieldBuilder.MaxLineLengthRequired];
+			var outPos = 0;
+			var prevIsWordEncoded = false;
 			while (true)
 			{
-				var element = StructuredHeaderFieldLexicalToken.ParseDotAtom (source, ref parserPos);
-				if (!element.IsValid)
+				var token = StructuredHeaderFieldLexicalToken.ParseDotAtom (source, ref parserPos);
+				if (!token.IsValid)
 				{
-					if (isEmpty)
+					if (outPos < 1)
 					{
 						throw new FormatException ("Empty value is invalid for format 'phrase'.");
 					}
@@ -224,11 +223,27 @@ namespace Novartment.Base.Net.Mime
 					break;
 				}
 
-				isEmpty = false;
-				decoder.AddElement (source, element);
+				// RFC 2047 часть 6.2:
+				// When displaying a particular header field that contains multiple 'encoded-word's,
+				// any 'linear-white-space' that separates a pair of adjacent 'encoded-word's is ignored
+				var isWordEncoded = token.IsWordEncoded (source);
+				if ((outPos > 0) && (!prevIsWordEncoded || !isWordEncoded))
+				{
+					// RFC 5322 часть 3.2.2:
+					// Runs of FWS, comment, or CFWS that occur between lexical tokens in a structured header field
+					// are semantically interpreted as a single space character.
+					outBuf[outPos++] = ' ';
+				}
+
+				outPos += token.Decode (source, outBuf.AsSpan (outPos), byteBuf);
+				prevIsWordEncoded = isWordEncoded;
 			}
 
-			return decoder.GetResult ();
+#if NETCOREAPP2_1
+			return new string (outBuf.AsSpan (0, outPos));
+#else
+			return new string (outBuf, 0, outPos);
+#endif
 		}
 
 		/// <summary>
@@ -243,13 +258,13 @@ namespace Novartment.Base.Net.Mime
 			var lastItemIsSeparator = true;
 			while (true)
 			{
-				var item = StructuredHeaderFieldLexicalToken.ParseToken (source, ref parserPos);
-				if (!item.IsValid)
+				var token = StructuredHeaderFieldLexicalToken.ParseToken (source, ref parserPos);
+				if (!token.IsValid)
 				{
 					break;
 				}
 
-				var isSeparator = (item.TokenType == StructuredHeaderFieldLexicalTokenType.Separator) && (source[item.Position] == ',');
+				var isSeparator = (token.TokenType == StructuredHeaderFieldLexicalTokenType.Separator) && (source[token.Position] == ',');
 				if (isSeparator)
 				{
 					if (lastItemIsSeparator)
@@ -261,7 +276,7 @@ namespace Novartment.Base.Net.Mime
 				}
 				else
 				{
-					if (!lastItemIsSeparator || (item.TokenType != StructuredHeaderFieldLexicalTokenType.Value))
+					if (!lastItemIsSeparator || (token.TokenType != StructuredHeaderFieldLexicalTokenType.Value))
 					{
 						throw new FormatException ("Value does not conform to format 'comma-separated atoms'.");
 					}
@@ -269,9 +284,9 @@ namespace Novartment.Base.Net.Mime
 					lastItemIsSeparator = false;
 
 #if NETCOREAPP2_1
-					var str = new string (source.Slice (item.Position, item.Length));
+					var str = new string (source.Slice (token.Position, token.Length));
 #else
-					var str = new string (source.Slice (item.Position, item.Length).ToArray ());
+					var str = new string (source.Slice (token.Position, token.Length).ToArray ());
 #endif
 					result.Add (str);
 				}
@@ -293,33 +308,26 @@ namespace Novartment.Base.Net.Mime
 			}
 
 			var parserPos = 0;
-			var typeElement = StructuredHeaderFieldLexicalToken.ParseAtom (source, ref parserPos);
-			if (!typeElement.IsValid)
+			var typeToken = StructuredHeaderFieldLexicalToken.ParseAtom (source, ref parserPos);
+			if (!typeToken.IsValid)
 			{
 				throw new FormatException ("Value does not conform to format 'type;value'.");
 			}
 
-#if NETCOREAPP2_1
-			Span<char> buf = new char[20];
-			var typeSize = typeElement.Decode (source, buf);
-			var isValidNotificationFieldValue = NotificationFieldValueTypeHelper.TryParse (buf.Slice (0, typeSize), out NotificationFieldValueKind valueType);
-#else
-			var typeStr = typeElement.Decode (source).AsSpan ();
-			var isValidNotificationFieldValue = NotificationFieldValueTypeHelper.TryParse (typeStr, out NotificationFieldValueKind valueType);
-#endif
+			var typeSpan = source.Slice (typeToken.Position, typeToken.Length);
+			var isValidNotificationFieldValue = NotificationFieldValueTypeHelper.TryParse (typeSpan, out NotificationFieldValueKind valueType);
 			if (!isValidNotificationFieldValue)
 			{
 				throw new FormatException ("Value does not conform to format 'type;value'.");
 			}
 
-			var separatorElement = StructuredHeaderFieldLexicalToken.ParseAtom (source, ref parserPos);
-			if ((separatorElement.TokenType != StructuredHeaderFieldLexicalTokenType.Separator) || (source[separatorElement.Position] != ';'))
+			var separatorToken = StructuredHeaderFieldLexicalToken.ParseAtom (source, ref parserPos);
+			if ((separatorToken.TokenType != StructuredHeaderFieldLexicalTokenType.Separator) || (source[separatorToken.Position] != ';'))
 			{
 				throw new FormatException ("Value does not conform to format 'type;value'.");
 			}
 
-			var value = source.Slice (separatorElement.Position + separatorElement.Length);
-			var valueStr = DecodeUnstructured (value).Trim ();
+			var valueStr = DecodeUnstructured (source.Slice (separatorToken.Position + 1));
 
 			return new NotificationFieldValue (valueType, valueStr);
 		}
@@ -345,7 +353,7 @@ namespace Novartment.Base.Net.Mime
 		/// </summary>
 		/// <param name="source">Source encoded value and date.</param>
 		/// <returns>Decoded string value and date.</returns>
-		internal static TextAndTime DecodeUnstructuredAndDate (ReadOnlySpan<char> source)
+		internal static TextAndTime DecodeTokensAndDate (ReadOnlySpan<char> source)
 		{
 			/*
 			received       = "Received:" *received-token ";" date-time CRLF
@@ -359,13 +367,13 @@ namespace Novartment.Base.Net.Mime
 
 			Contract.EndContractBlock ();
 
-			var parametersPos = FindPositionAfterSemicolon (source);
+			var parametersPos = FindPositionOfSemicolonSkippingQuotedValues (source);
 #if NETCOREAPP2_1
 			var str = new string (source.Slice (0, parametersPos - 1));
 #else
 			var str = new string (source.Slice (0, parametersPos - 1).ToArray ());
 #endif
-			var date = InternetDateTime.Parse (source.Slice (parametersPos)); // TODO: предусмотреть вариант наличия коментов до или после даты
+			var date = InternetDateTime.Parse (source.Slice (parametersPos));
 
 			return new TextAndTime () { Text = str, Time = date };
 		}
@@ -378,15 +386,17 @@ namespace Novartment.Base.Net.Mime
 		internal static TwoStrings DecodePhraseAndId (ReadOnlySpan<char> source)
 		{
 			var parserPos = 0;
-			StructuredHeaderFieldDecoder decoder = null;
-			bool isEmpty = true;
-			StructuredHeaderFieldLexicalToken lastElement = default;
+			var outBuf = new char[MaximumHeaderFieldBodySize];
+			var byteBuf = new byte[HeaderFieldBuilder.MaxLineLengthRequired];
+			var outPos = 0;
+			var prevIsWordEncoded = false;
+			StructuredHeaderFieldLexicalToken lastToken = default;
 			while (true)
 			{
-				var element = StructuredHeaderFieldLexicalToken.ParseDotAtom (source, ref parserPos);
-				if (!element.IsValid)
+				var token = StructuredHeaderFieldLexicalToken.ParseDotAtom (source, ref parserPos);
+				if (!token.IsValid)
 				{
-					if (isEmpty)
+					if ((outPos < 1) && !lastToken.IsValid)
 					{
 						throw new FormatException ("Value does not conform format 'phrase' + <id>.");
 					}
@@ -394,31 +404,47 @@ namespace Novartment.Base.Net.Mime
 					break;
 				}
 
-				isEmpty = false;
-
-				if (lastElement.IsValid)
+				if (lastToken.IsValid)
 				{
-					if (decoder == null)
+					if (outBuf == null)
 					{
-						decoder = new StructuredHeaderFieldDecoder ();
+						outBuf = new char[MaximumHeaderFieldBodySize];
 					}
 
-					decoder.AddElement (source, lastElement);
+					// RFC 2047 часть 6.2:
+					// When displaying a particular header field that contains multiple 'encoded-word's,
+					// any 'linear-white-space' that separates a pair of adjacent 'encoded-word's is ignored
+					var isWordEncoded = lastToken.IsWordEncoded (source);
+					if ((outPos > 0) && (!prevIsWordEncoded || !isWordEncoded))
+					{
+						// RFC 5322 часть 3.2.2:
+						// Runs of FWS, comment, or CFWS that occur between lexical tokens in a structured header field
+						// are semantically interpreted as a single space character.
+						outBuf[outPos++] = ' ';
+					}
+
+					outPos += lastToken.Decode (source, outBuf.AsSpan (outPos), byteBuf);
+					prevIsWordEncoded = isWordEncoded;
 				}
 
-				lastElement = element;
+				lastToken = token;
 			}
 
-			if (lastElement.TokenType != StructuredHeaderFieldLexicalTokenType.AngleBracketedValue)
+			if (lastToken.TokenType != StructuredHeaderFieldLexicalTokenType.AngleBracketedValue)
 			{
 				throw new FormatException ("Value does not conform format 'phrase' + <id>.");
 			}
 
-			string text = decoder?.GetResult ();
 #if NETCOREAPP2_1
-			var id = new string (source.Slice (lastElement.Position, lastElement.Length));
 #else
-			var id = new string (source.Slice (lastElement.Position, lastElement.Length).ToArray ());
+#endif
+
+#if NETCOREAPP2_1
+			var text = (outPos > 0) ? new string (outBuf.AsSpan (0, outPos)) : null;
+			var id = new string (source.Slice (lastToken.Position, lastToken.Length));
+#else
+			var text = (outPos > 0) ? new string (outBuf, 0, outPos) : null;
+			var id = new string (source.Slice (lastToken.Position, lastToken.Length).ToArray ());
 #endif
 			return new TwoStrings () { Value1 = text, Value2 = id };
 		}
@@ -431,41 +457,60 @@ namespace Novartment.Base.Net.Mime
 		internal static IReadOnlyList<string> DecodePhraseList (ReadOnlySpan<char> source)
 		{
 			var parserPos = 0;
-			StructuredHeaderFieldDecoder decoder = null;
-			bool isDecoderEmpty = true;
 			var result = new ArrayList<string> ();
+			var outBuf = new char[MaximumHeaderFieldBodySize];
+			var byteBuf = new byte[HeaderFieldBuilder.MaxLineLengthRequired];
+			var outPos = 0;
+			var prevIsWordEncoded = false;
 			while (true)
 			{
-				var item = StructuredHeaderFieldLexicalToken.ParseAtom (source, ref parserPos);
-				if (!item.IsValid)
+				var token = StructuredHeaderFieldLexicalToken.ParseAtom (source, ref parserPos);
+				if (!token.IsValid)
 				{
 					break;
 				}
 
-				var isSeparator = (item.TokenType == StructuredHeaderFieldLexicalTokenType.Separator) && (source[item.Position] == ',');
+				var isSeparator = (token.TokenType == StructuredHeaderFieldLexicalTokenType.Separator) && (source[token.Position] == ',');
 				if (isSeparator)
 				{
-					if (!isDecoderEmpty)
+					if (outPos > 0)
 					{
-						result.Add (decoder.GetResult ());
-						isDecoderEmpty = true;
+#if NETCOREAPP2_1
+						var str = new string (outBuf.AsSpan (0, outPos));
+#else
+						var str = new string (outBuf, 0, outPos);
+#endif
+						result.Add (str);
+						outPos = 0;
 					}
 				}
 				else
 				{
-					if (isDecoderEmpty)
+					// RFC 2047 часть 6.2:
+					// When displaying a particular header field that contains multiple 'encoded-word's,
+					// any 'linear-white-space' that separates a pair of adjacent 'encoded-word's is ignored
+					var isWordEncoded = token.IsWordEncoded (source);
+					if ((outPos > 0) && (!prevIsWordEncoded || !isWordEncoded))
 					{
-						decoder = new StructuredHeaderFieldDecoder ();
+						// RFC 5322 часть 3.2.2:
+						// Runs of FWS, comment, or CFWS that occur between lexical tokens in a structured header field
+						// are semantically interpreted as a single space character.
+						outBuf[outPos++] = ' ';
 					}
 
-					decoder.AddElement (source, item);
-					isDecoderEmpty = false;
+					outPos += token.Decode (source, outBuf.AsSpan (outPos), byteBuf);
+					prevIsWordEncoded = isWordEncoded;
 				}
 			}
 
-			if (!isDecoderEmpty)
+			if (outPos > 0)
 			{
-				result.Add (decoder.GetResult ());
+#if NETCOREAPP2_1
+				var str = new string (outBuf.AsSpan (0, outPos));
+#else
+				var str = new string (outBuf, 0, outPos);
+#endif
+				result.Add (str);
 			}
 
 			return result;
@@ -481,8 +526,8 @@ namespace Novartment.Base.Net.Mime
 		{
 			// non-compilant server may specify single address without angle brackets
 			var pos = 0;
-			var firstElement = StructuredHeaderFieldLexicalToken.ParseDotAtom (source, ref pos);
-			if (firstElement.IsValid && (firstElement.TokenType != StructuredHeaderFieldLexicalTokenType.AngleBracketedValue))
+			var firstToken = StructuredHeaderFieldLexicalToken.ParseDotAtom (source, ref pos);
+			if (firstToken.IsValid && (firstToken.TokenType != StructuredHeaderFieldLexicalTokenType.AngleBracketedValue))
 			{
 				var addr = AddrSpec.Parse (source);
 				return ReadOnlyList.Repeat (addr, 1);
@@ -545,40 +590,40 @@ namespace Novartment.Base.Net.Mime
 		{
 			var parserPos = 0;
 			var result = new ArrayList<Mailbox> ();
-			var elementsStartPosition = -1;
-			var elementsEndPosition = -1;
+			var tokensStartPosition = -1;
+			var tokensEndPosition = -1;
 			while (true)
 			{
 				var pos = parserPos;
-				var item = StructuredHeaderFieldLexicalToken.ParseDotAtom (source, ref parserPos);
-				if (!item.IsValid)
+				var token = StructuredHeaderFieldLexicalToken.ParseDotAtom (source, ref parserPos);
+				if (!token.IsValid)
 				{
 					break;
 				}
 
-				var isSeparator = (item.TokenType == StructuredHeaderFieldLexicalTokenType.Separator) && (source[item.Position] == ',');
+				var isSeparator = (token.TokenType == StructuredHeaderFieldLexicalTokenType.Separator) && (source[token.Position] == ',');
 				if (isSeparator)
 				{
-					if (elementsEndPosition > elementsStartPosition)
+					if (tokensEndPosition > tokensStartPosition)
 					{
-						result.Add (Mailbox.Parse (source.Slice (elementsStartPosition, elementsEndPosition - elementsStartPosition)));
-						elementsStartPosition = elementsEndPosition = -1;
+						result.Add (Mailbox.Parse (source.Slice (tokensStartPosition, tokensEndPosition - tokensStartPosition)));
+						tokensStartPosition = tokensEndPosition = -1;
 					}
 				}
 				else
 				{
-					if (elementsStartPosition < 0)
+					if (tokensStartPosition < 0)
 					{
-						elementsStartPosition = pos;
+						tokensStartPosition = pos;
 					}
 
-					elementsEndPosition = parserPos;
+					tokensEndPosition = parserPos;
 				}
 			}
 
-			if (elementsEndPosition > elementsStartPosition)
+			if (tokensEndPosition > tokensStartPosition)
 			{
-				result.Add (Mailbox.Parse (source.Slice (elementsStartPosition, elementsEndPosition - elementsStartPosition)));
+				result.Add (Mailbox.Parse (source.Slice (tokensStartPosition, tokensEndPosition - tokensStartPosition)));
 			}
 
 			return result;
@@ -609,13 +654,13 @@ namespace Novartment.Base.Net.Mime
 			var lastItemIsSeparator = true;
 			while (true)
 			{
-				var item = StructuredHeaderFieldLexicalToken.ParseAtom (source, ref parserPos);
-				if (!item.IsValid)
+				var token = StructuredHeaderFieldLexicalToken.ParseAtom (source, ref parserPos);
+				if (!token.IsValid)
 				{
 					break;
 				}
 
-				var isSeparator = (item.TokenType == StructuredHeaderFieldLexicalTokenType.Separator) && (source[item.Position] == ',');
+				var isSeparator = (token.TokenType == StructuredHeaderFieldLexicalTokenType.Separator) && (source[token.Position] == ',');
 				if (isSeparator)
 				{
 					if (lastItemIsSeparator)
@@ -627,7 +672,7 @@ namespace Novartment.Base.Net.Mime
 				}
 				else
 				{
-					if (!lastItemIsSeparator || (item.TokenType != StructuredHeaderFieldLexicalTokenType.AngleBracketedValue))
+					if (!lastItemIsSeparator || (token.TokenType != StructuredHeaderFieldLexicalTokenType.AngleBracketedValue))
 					{
 						break;
 					}
@@ -635,9 +680,9 @@ namespace Novartment.Base.Net.Mime
 					lastItemIsSeparator = false;
 
 #if NETCOREAPP2_1
-					var str = new string (source.Slice (item.Position, item.Length));
+					var str = new string (source.Slice (token.Position, token.Length));
 #else
-					var str = new string (source.Slice (item.Position, item.Length).ToArray ());
+					var str = new string (source.Slice (token.Position, token.Length).ToArray ());
 #endif
 					result.Add (str);
 				}
@@ -655,18 +700,18 @@ namespace Novartment.Base.Net.Mime
 		{
 			// Content-Type and Content-Disposition fields
 			var parserPos = 0;
-			var valueElement = StructuredHeaderFieldLexicalToken.ParseAtom (source, ref parserPos);
+			var valueToken = StructuredHeaderFieldLexicalToken.ParseAtom (source, ref parserPos);
 
 			var parameterDecoder = new HeaderFieldBodyParameterDecoder ();
 			while (true)
 			{
-				var item = StructuredHeaderFieldLexicalToken.ParseToken (source, ref parserPos);
-				if (!item.IsValid)
+				var token = StructuredHeaderFieldLexicalToken.ParseToken (source, ref parserPos);
+				if (!token.IsValid)
 				{
 					break;
 				}
 
-				var isSeparator = (item.TokenType == StructuredHeaderFieldLexicalTokenType.Separator) && (item.Length == 1) && (source[item.Position] == ';');
+				var isSeparator = (token.TokenType == StructuredHeaderFieldLexicalTokenType.Separator) && (source[token.Position] == ';');
 				if (!isSeparator)
 				{
 					throw new FormatException ("Value does not conform to 'atom *(; parameter)' format.");
@@ -677,34 +722,43 @@ namespace Novartment.Base.Net.Mime
 				parameterDecoder.AddPart (part);
 			}
 
-			return new StringAndParameters (source.Slice (valueElement.Position, valueElement.Length), parameterDecoder.GetResult ());
+			return new StringAndParameters (source.Slice (valueToken.Position, valueToken.Length), parameterDecoder.GetResult ());
 		}
 
 		internal static ThreeStringsAndList DecodeDispositionAction (ReadOnlySpan<char> source)
 		{
 			var parserPos = 0;
-			var element1 = StructuredHeaderFieldLexicalToken.ParseToken (source, ref parserPos);
-			var element2 = StructuredHeaderFieldLexicalToken.ParseToken (source, ref parserPos);
-			var element3 = StructuredHeaderFieldLexicalToken.ParseToken (source, ref parserPos);
-			var element4 = StructuredHeaderFieldLexicalToken.ParseToken (source, ref parserPos);
-			var element5 = StructuredHeaderFieldLexicalToken.ParseToken (source, ref parserPos);
-			var element6 = StructuredHeaderFieldLexicalToken.ParseToken (source, ref parserPos);
+			var actionModeToken = StructuredHeaderFieldLexicalToken.ParseToken (source, ref parserPos);
+			var separatorSlashToken1 = StructuredHeaderFieldLexicalToken.ParseToken (source, ref parserPos);
+			var sendingModeToken = StructuredHeaderFieldLexicalToken.ParseToken (source, ref parserPos);
+			var separatorSemicolonToken = StructuredHeaderFieldLexicalToken.ParseToken (source, ref parserPos);
+			var dispositionTypeToken = StructuredHeaderFieldLexicalToken.ParseToken (source, ref parserPos);
+			var separatorSlashToken2 = StructuredHeaderFieldLexicalToken.ParseToken (source, ref parserPos);
 			if (
-				(element1.TokenType != StructuredHeaderFieldLexicalTokenType.Value) ||
-				(element2.TokenType != StructuredHeaderFieldLexicalTokenType.Separator) || (source[element2.Position] != '/') ||
-				(element3.TokenType != StructuredHeaderFieldLexicalTokenType.Value) ||
-				(element4.TokenType != StructuredHeaderFieldLexicalTokenType.Separator) || (source[element4.Position] != ';') ||
-				(element5.TokenType != StructuredHeaderFieldLexicalTokenType.Value))
+				(actionModeToken.TokenType != StructuredHeaderFieldLexicalTokenType.Value) ||
+				(separatorSlashToken1.TokenType != StructuredHeaderFieldLexicalTokenType.Separator) || (source[separatorSlashToken1.Position] != '/') ||
+				(sendingModeToken.TokenType != StructuredHeaderFieldLexicalTokenType.Value) ||
+				(separatorSemicolonToken.TokenType != StructuredHeaderFieldLexicalTokenType.Separator) || (source[separatorSemicolonToken.Position] != ';') ||
+				(dispositionTypeToken.TokenType != StructuredHeaderFieldLexicalTokenType.Value))
 			{
 				throw new FormatException ("Specified value does not represent valid 'disposition-action'.");
 			}
 
-			var actionMode = element1.Decode (source);
-			var sendingMode = element3.Decode (source);
-			var dispositionType = element5.Decode (source);
-			if (element6.IsValid)
+			var outBuf = new char[HeaderFieldBuilder.MaxLineLengthRequired];
+			var byteBuf = new byte[HeaderFieldBuilder.MaxLineLengthRequired];
+
+#if NETCOREAPP2_1
+			var actionMode = new string (source.Slice (actionModeToken.Position, actionModeToken.Length));
+			var sendingMode = new string (source.Slice (sendingModeToken.Position, sendingModeToken.Length));
+			var dispositionType = new string (source.Slice (dispositionTypeToken.Position, dispositionTypeToken.Length));
+#else
+			var actionMode = new string (source.Slice (actionModeToken.Position, actionModeToken.Length).ToArray ());
+			var sendingMode = new string (source.Slice (sendingModeToken.Position, sendingModeToken.Length).ToArray ());
+			var dispositionType = new string (source.Slice (dispositionTypeToken.Position, dispositionTypeToken.Length).ToArray ());
+#endif
+			if (separatorSlashToken2.IsValid)
 			{
-				var isSlashSeparator = (element6.TokenType == StructuredHeaderFieldLexicalTokenType.Separator) && (source[element6.Position] == '/');
+				var isSlashSeparator = (separatorSlashToken2.TokenType == StructuredHeaderFieldLexicalTokenType.Separator) && (source[separatorSlashToken2.Position] == '/');
 				if (!isSlashSeparator)
 				{
 					throw new FormatException ("Specified value does not represent valid 'disposition-action'.");
@@ -715,13 +769,13 @@ namespace Novartment.Base.Net.Mime
 			var modifiers = new ArrayList<string> ();
 			while (true)
 			{
-				var item = StructuredHeaderFieldLexicalToken.ParseToken (source, ref parserPos);
-				if (!item.IsValid)
+				var token = StructuredHeaderFieldLexicalToken.ParseToken (source, ref parserPos);
+				if (!token.IsValid)
 				{
 					break;
 				}
 
-				var isSeparator = (item.TokenType == StructuredHeaderFieldLexicalTokenType.Separator) && (source[item.Position] == ',');
+				var isSeparator = (token.TokenType == StructuredHeaderFieldLexicalTokenType.Separator) && (source[token.Position] == ',');
 				if (isSeparator)
 				{
 					if (lastItemIsSeparator)
@@ -733,14 +787,18 @@ namespace Novartment.Base.Net.Mime
 				}
 				else
 				{
-					if (!lastItemIsSeparator || (item.TokenType != StructuredHeaderFieldLexicalTokenType.Value))
+					if (!lastItemIsSeparator || (token.TokenType != StructuredHeaderFieldLexicalTokenType.Value))
 					{
 						throw new FormatException ("Value does not conform to format 'comma-separated atoms'.");
 					}
 
 					lastItemIsSeparator = false;
 
-					modifiers.Add (item.Decode (source));
+#if NETCOREAPP2_1
+					modifiers.Add (new string (source.Slice (token.Position, token.Length)));
+#else
+					modifiers.Add (new string (source.Slice (token.Position, token.Length).ToArray ()));
+#endif
 				}
 			}
 
@@ -768,36 +826,39 @@ namespace Novartment.Base.Net.Mime
 			value = atom / quoted-string
 			*/
 
+			var outBuf = new char[HeaderFieldBuilder.MaxLineLengthRequired];
+			var byteBuf = new byte[HeaderFieldBuilder.MaxLineLengthRequired];
+
 			var parserPos = 0;
 			var result = new ArrayList<DispositionNotificationParameter> ();
 
 			while (true)
 			{
-				var attributeElement = StructuredHeaderFieldLexicalToken.ParseToken (source, ref parserPos);
-				if (!attributeElement.IsValid)
+				var attributeToken = StructuredHeaderFieldLexicalToken.ParseToken (source, ref parserPos);
+				if (!attributeToken.IsValid)
 				{
 					break;
 				}
 
-				var equalityElement = StructuredHeaderFieldLexicalToken.ParseToken (source, ref parserPos);
-				var importanceElement = StructuredHeaderFieldLexicalToken.ParseToken (source, ref parserPos);
+				var equalityToken = StructuredHeaderFieldLexicalToken.ParseToken (source, ref parserPos);
+				var importanceToken = StructuredHeaderFieldLexicalToken.ParseToken (source, ref parserPos);
 
 				if (
-					(attributeElement.TokenType != StructuredHeaderFieldLexicalTokenType.Value) ||
-					(equalityElement.TokenType != StructuredHeaderFieldLexicalTokenType.Separator) || (source[equalityElement.Position] != '=') ||
-					(importanceElement.TokenType != StructuredHeaderFieldLexicalTokenType.Value))
+					(attributeToken.TokenType != StructuredHeaderFieldLexicalTokenType.Value) ||
+					(equalityToken.TokenType != StructuredHeaderFieldLexicalTokenType.Separator) || (source[equalityToken.Position] != '=') ||
+					(importanceToken.TokenType != StructuredHeaderFieldLexicalTokenType.Value))
 				{
 					throw new FormatException ("Invalid value of 'disposition-notification' parameter.");
 				}
 
 #if NETCOREAPP2_1
-				var name = new string (source.Slice (attributeElement.Position, attributeElement.Length));
+				var name = new string (source.Slice (attributeToken.Position, attributeToken.Length));
 #else
-				var name = new string (source.Slice (attributeElement.Position, attributeElement.Length).ToArray ());
+				var name = new string (source.Slice (attributeToken.Position, attributeToken.Length).ToArray ());
 #endif
 
 				var importance = DispositionNotificationParameterImportance.Unspecified;
-				var isValidParameterImportance = ParameterImportanceHelper.TryParse (source.Slice (importanceElement.Position, importanceElement.Length), out importance);
+				var isValidParameterImportance = ParameterImportanceHelper.TryParse (source.Slice (importanceToken.Position, importanceToken.Length), out importance);
 				if (!isValidParameterImportance)
 				{
 					throw new FormatException ("Invalid value of 'disposition-notification' parameter.");
@@ -807,28 +868,32 @@ namespace Novartment.Base.Net.Mime
 				var values = new ArrayList<string> ();
 				while (true)
 				{
-					var separatorElement = StructuredHeaderFieldLexicalToken.ParseToken (source, ref parserPos);
+					var separatorToken = StructuredHeaderFieldLexicalToken.ParseToken (source, ref parserPos);
 
 					// точка-с-запятой означает начало нового параметра если она после элемента значения
-					if (!separatorElement.IsValid ||
-						((values.Count > 0) && (separatorElement.TokenType == StructuredHeaderFieldLexicalTokenType.Separator) && (source[separatorElement.Position] == ';')))
+					if (!separatorToken.IsValid ||
+						((values.Count > 0) && (separatorToken.TokenType == StructuredHeaderFieldLexicalTokenType.Separator) && (source[separatorToken.Position] == ';')))
 					{
 						break;
 					}
 
-					if ((separatorElement.TokenType != StructuredHeaderFieldLexicalTokenType.Separator) || (source[separatorElement.Position] != ','))
+					if ((separatorToken.TokenType != StructuredHeaderFieldLexicalTokenType.Separator) || (source[separatorToken.Position] != ','))
 					{
 						throw new FormatException ("Invalid value of 'disposition-notification' parameter.");
 					}
 
-					var valueElement = StructuredHeaderFieldLexicalToken.ParseToken (source, ref parserPos);
+					var valueToken = StructuredHeaderFieldLexicalToken.ParseToken (source, ref parserPos);
 
-					if ((valueElement.TokenType != StructuredHeaderFieldLexicalTokenType.Value) && (valueElement.TokenType != StructuredHeaderFieldLexicalTokenType.QuotedValue))
+					if ((valueToken.TokenType != StructuredHeaderFieldLexicalTokenType.Value) && (valueToken.TokenType != StructuredHeaderFieldLexicalTokenType.QuotedValue))
 					{
 						throw new FormatException ("Invalid value of 'disposition-notification' parameter.");
 					}
 
-					var valueSrc = valueElement.Decode (source);
+#if NETCOREAPP2_1
+					var valueSrc = new string (source.Slice (valueToken.Position, valueToken.Length));
+#else
+					var valueSrc = new string (source.Slice (valueToken.Position, valueToken.Length).ToArray ());
+#endif
 					values.Add (valueSrc);
 				}
 
@@ -858,13 +923,13 @@ namespace Novartment.Base.Net.Mime
 				result.Add (DecodeQualityValueParameter (source, defaultQuality, ref parserPos));
 				defaultQuality -= 0.01m;
 
-				var separatorElement = StructuredHeaderFieldLexicalToken.ParseToken (source, ref parserPos);
-				if (!separatorElement.IsValid)
+				var separatorToken = StructuredHeaderFieldLexicalToken.ParseToken (source, ref parserPos);
+				if (!separatorToken.IsValid)
 				{
 					break;
 				}
 
-				if ((separatorElement.TokenType != StructuredHeaderFieldLexicalTokenType.Separator) || (source[separatorElement.Position] != ','))
+				if ((separatorToken.TokenType != StructuredHeaderFieldLexicalTokenType.Separator) || (source[separatorToken.Position] != ','))
 				{
 					throw new FormatException ("Invalid value of QualityValue parameter list.");
 				}
@@ -881,29 +946,28 @@ namespace Novartment.Base.Net.Mime
 		internal static Version DecodeVersion (ReadOnlySpan<char> source)
 		{
 			var parserPos = 0;
-			var element1 = StructuredHeaderFieldLexicalToken.ParseAtom (source, ref parserPos);
-			var element2 = StructuredHeaderFieldLexicalToken.ParseAtom (source, ref parserPos);
-			var element3 = StructuredHeaderFieldLexicalToken.ParseAtom (source, ref parserPos);
-			var element4 = StructuredHeaderFieldLexicalToken.ParseAtom (source, ref parserPos);
+			var numberToken1 = StructuredHeaderFieldLexicalToken.Parse (source, ref parserPos, AsciiCharClasses.Digit, false, StructuredHeaderFieldLexicalTokenType.RoundBracketedValue);
+			var separatorDotToken = StructuredHeaderFieldLexicalToken.ParseAtom (source, ref parserPos);
+			var numberToken2 = StructuredHeaderFieldLexicalToken.Parse (source, ref parserPos, AsciiCharClasses.Digit, false, StructuredHeaderFieldLexicalTokenType.RoundBracketedValue);
+			var excessToken = StructuredHeaderFieldLexicalToken.ParseAtom (source, ref parserPos);
 
-			if (element4.IsValid ||
-				(element1.TokenType != StructuredHeaderFieldLexicalTokenType.Value) ||
-				(element2.TokenType != StructuredHeaderFieldLexicalTokenType.Separator) || (source[element2.Position] != '.') ||
-				(element3.TokenType != StructuredHeaderFieldLexicalTokenType.Value))
+			if (excessToken.IsValid ||
+				(numberToken1.TokenType != StructuredHeaderFieldLexicalTokenType.Value) ||
+				(separatorDotToken.TokenType != StructuredHeaderFieldLexicalTokenType.Separator) || (source[separatorDotToken.Position] != '.') ||
+				(numberToken2.TokenType != StructuredHeaderFieldLexicalTokenType.Value))
 			{
 				throw new FormatException ("Value does not conform to format 'version'.");
 			}
 
-			var n1Str = element1.Decode (source);
-			var n2Str = element3.Decode (source);
-			var n1 = int.Parse (
-					n1Str,
-					NumberStyles.AllowLeadingWhite | NumberStyles.AllowTrailingWhite,
-					CultureInfo.InvariantCulture);
-			var n2 = int.Parse (
-					n2Str,
-					NumberStyles.AllowLeadingWhite | NumberStyles.AllowTrailingWhite,
-					CultureInfo.InvariantCulture);
+			var n1Str = source.Slice (numberToken1.Position, numberToken1.Length);
+			var n2Str = source.Slice (numberToken2.Position, numberToken2.Length);
+#if NETCOREAPP2_1
+			var n1 = int.Parse (n1Str, NumberStyles.AllowLeadingWhite | NumberStyles.AllowTrailingWhite, CultureInfo.InvariantCulture);
+			var n2 = int.Parse (n2Str, NumberStyles.AllowLeadingWhite | NumberStyles.AllowTrailingWhite, CultureInfo.InvariantCulture);
+#else
+			var n1 = int.Parse (new string (n1Str.ToArray ()), NumberStyles.AllowLeadingWhite | NumberStyles.AllowTrailingWhite, CultureInfo.InvariantCulture);
+			var n2 = int.Parse (new string (n2Str.ToArray ()), NumberStyles.AllowLeadingWhite | NumberStyles.AllowTrailingWhite, CultureInfo.InvariantCulture);
+#endif
 			return new Version (n1, n2);
 		}
 
@@ -1052,7 +1116,7 @@ namespace Novartment.Base.Net.Mime
 		}
 
 		// находит позицию символа ';' пропуская значения в кавычках
-		private static int FindPositionAfterSemicolon (this ReadOnlySpan<char> source)
+		private static int FindPositionOfSemicolonSkippingQuotedValues (this ReadOnlySpan<char> source)
 		{
 			var pos = 0;
 
@@ -1076,7 +1140,7 @@ namespace Novartment.Base.Net.Mime
 							pos += 2;
 							if (pos >= source.Length)
 							{
-								throw new FormatException ("Unexpected end of quoted element.");
+								throw new FormatException ("Unexpected end of quoted token.");
 							}
 						}
 						else
@@ -1109,45 +1173,45 @@ namespace Novartment.Base.Net.Mime
 			value      = ( "0" [ "." 0*3DIGIT ] ) / ( "1" [ "." 0*3("0") ] )
 			*/
 
-			var valueElement = StructuredHeaderFieldLexicalToken.ParseToken (source, ref parserPos);
-			if (valueElement.TokenType != StructuredHeaderFieldLexicalTokenType.Value)
+			var valueToken = StructuredHeaderFieldLexicalToken.ParseToken (source, ref parserPos);
+			if (valueToken.TokenType != StructuredHeaderFieldLexicalTokenType.Value)
 			{
 				throw new FormatException ("Value does not conform to format 'language-q'. First item is not 'atom'.");
 			}
 
 #if NETCOREAPP2_1
-			var value = new string (source.Slice (valueElement.Position, valueElement.Length));
+			var value = new string (source.Slice (valueToken.Position, valueToken.Length));
 #else
-			var value = new string (source.Slice (valueElement.Position, valueElement.Length).ToArray ());
+			var value = new string (source.Slice (valueToken.Position, valueToken.Length).ToArray ());
 #endif
 			var quality = defaultQuality;
 
 			var subParserPos = parserPos;
-			var separatorElement = StructuredHeaderFieldLexicalToken.ParseToken (source, ref subParserPos);
-			var isSemicolon = (separatorElement.TokenType == StructuredHeaderFieldLexicalTokenType.Separator) && (source[separatorElement.Position] == ';');
+			var separatorToken = StructuredHeaderFieldLexicalToken.ParseToken (source, ref subParserPos);
+			var isSemicolon = (separatorToken.TokenType == StructuredHeaderFieldLexicalTokenType.Separator) && (source[separatorToken.Position] == ';');
 			if (isSemicolon)
 			{
 				parserPos = subParserPos;
-				var separatorElement1 = StructuredHeaderFieldLexicalToken.ParseToken (source, ref parserPos);
-				var separatorElement2 = StructuredHeaderFieldLexicalToken.ParseToken (source, ref parserPos);
-				var qualityElement = StructuredHeaderFieldLexicalToken.ParseToken (source, ref parserPos);
+				var separatorToken1 = StructuredHeaderFieldLexicalToken.ParseToken (source, ref parserPos);
+				var separatorToken2 = StructuredHeaderFieldLexicalToken.ParseToken (source, ref parserPos);
+				var qualityToken = StructuredHeaderFieldLexicalToken.ParseToken (source, ref parserPos);
 				if (
-					(separatorElement1.TokenType != StructuredHeaderFieldLexicalTokenType.Value) || ((source[separatorElement1.Position] != 'q') && (source[separatorElement1.Position] != 'Q')) ||
-					(separatorElement2.TokenType != StructuredHeaderFieldLexicalTokenType.Separator) || (source[separatorElement2.Position] != '=') ||
-					(qualityElement.TokenType != StructuredHeaderFieldLexicalTokenType.Value))
+					(separatorToken1.TokenType != StructuredHeaderFieldLexicalTokenType.Value) || ((source[separatorToken1.Position] != 'q') && (source[separatorToken1.Position] != 'Q')) ||
+					(separatorToken2.TokenType != StructuredHeaderFieldLexicalTokenType.Separator) || (source[separatorToken2.Position] != '=') ||
+					(qualityToken.TokenType != StructuredHeaderFieldLexicalTokenType.Value))
 				{
 					throw new FormatException ("Value does not conform to format 'language-q'.");
 				}
 
 #if NETCOREAPP2_1
 				var isValidNumber = decimal.TryParse (
-					source.Slice (qualityElement.Position, qualityElement.Length),
+					source.Slice (qualityToken.Position, qualityToken.Length),
 					NumberStyles.AllowDecimalPoint,
 					_numberFormatDot,
 					out quality);
 #else
 				var isValidNumber = decimal.TryParse (
-					new string (source.Slice (qualityElement.Position, qualityElement.Length).ToArray ()),
+					new string (source.Slice (qualityToken.Position, qualityToken.Length).ToArray ()),
 					NumberStyles.AllowDecimalPoint,
 					_numberFormatDot,
 					out quality);

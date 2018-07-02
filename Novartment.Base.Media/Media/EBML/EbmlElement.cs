@@ -288,7 +288,7 @@ namespace Novartment.Base.Media
 			}
 
 			double result;
-			var span = _source.BufferMemory.Slice (_source.Offset, (int)_size).Span;
+			var span = _source.BufferMemory.Span.Slice (_source.Offset, (int)_size);
 			if (_size == 4)
 			{
 #if NETCOREAPP2_1

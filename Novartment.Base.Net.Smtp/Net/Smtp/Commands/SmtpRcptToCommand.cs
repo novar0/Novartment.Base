@@ -17,8 +17,8 @@ namespace Novartment.Base.Net.Smtp
 		{
 			// RCPT TO:<forward-path> [ SP <rcpt-parameters> ] <CRLF> ; Forward-path   = "<" Mailbox ">"
 			var pos = 0;
-			var pathEelement = StructuredHeaderFieldLexicalToken.ParseDotAtom (value, ref pos);
-			if (pathEelement.TokenType != StructuredHeaderFieldLexicalTokenType.AngleBracketedValue)
+			var pathToken = StructuredHeaderFieldLexicalToken.ParseDotAtom (value, ref pos);
+			if (pathToken.TokenType != StructuredHeaderFieldLexicalTokenType.AngleBracketedValue)
 			{
 				return new SmtpInvalidSyntaxCommand (SmtpCommandType.RcptTo, "Unrecognized 'RCPT TO' parameter.");
 			}
@@ -26,7 +26,7 @@ namespace Novartment.Base.Net.Smtp
 			AddrSpec recepient;
 			try
 			{
-				recepient = AddrSpec.Parse (value.Slice (pathEelement.Position, pathEelement.Length));
+				recepient = AddrSpec.Parse (value.Slice (pathToken.Position, pathToken.Length));
 			}
 			catch (FormatException excpt)
 			{

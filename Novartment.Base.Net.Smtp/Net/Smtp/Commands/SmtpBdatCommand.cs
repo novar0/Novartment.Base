@@ -40,13 +40,13 @@ namespace Novartment.Base.Net.Smtp
 			*/
 
 			var pos = 0;
-			var sizeElement = StructuredHeaderFieldLexicalToken.Parse (value, ref pos, AsciiCharClasses.Digit, false);
-			if (sizeElement.TokenType != StructuredHeaderFieldLexicalTokenType.Value)
+			var sizeTone = StructuredHeaderFieldLexicalToken.Parse (value, ref pos, AsciiCharClasses.Digit, false);
+			if (sizeTone.TokenType != StructuredHeaderFieldLexicalTokenType.Value)
 			{
 				return new SmtpInvalidSyntaxCommand (SmtpCommandType.Bdat, "Unrecognized size parameter in 'BDAT' command.");
 			}
 
-			var sizeStr = value.Slice (sizeElement.Position, sizeElement.Length);
+			var sizeStr = value.Slice (sizeTone.Position, sizeTone.Length);
 			long size;
 			bool isLast;
 			try

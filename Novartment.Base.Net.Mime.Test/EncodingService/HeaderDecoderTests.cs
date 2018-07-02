@@ -143,15 +143,20 @@ namespace Novartment.Base.Net.Mime.Test
 		[Trait ("Category", "Mime.HeaderDecoder")]
 		public void DecodeUnstructuredAndDate ()
 		{
-			var data = HeaderDecoder.DecodeUnstructuredAndDate ("\t Simple  < not addr >  Text ; Tue, 15 May 2012 02:49:22 +0100  ");
+			var data = HeaderDecoder.DecodeTokensAndDate ("\t Simple  < not addr >  Text ; Tue, 15 May 2012 02:49:22 +0100  ");
 			Assert.Equal ("\t Simple  < not addr >  Text ", data.Text);
 			Assert.Equal (new DateTimeOffset (2012, 5, 15, 2, 49, 22, new TimeSpan (1, 0, 0)), data.Time);
 
-			data = HeaderDecoder.DecodeUnstructuredAndDate ("Simple Text ; Tue, 15 May 2012 02:49:22 +0100");
+			data = HeaderDecoder.DecodeTokensAndDate ("Simple Text ; Tue, 15 May 2012 02:49:22 +0100");
 			Assert.Equal ("Simple Text ", data.Text);
 			Assert.Equal (new DateTimeOffset (2012, 5, 15, 2, 49, 22, new TimeSpan (1, 0, 0)), data.Time);
 
-			Assert.Throws<FormatException> (() => HeaderDecoder.DecodeUnstructuredAndDate ("Tue, 15 May 2012 02:49:22 + 0100"));
+			// точка запятой внутри коментов, не является разделителем перед датой
+			data = HeaderDecoder.DecodeTokensAndDate ("Simple Text ; Tue, 15 May 2012 02:49:22 +0100");
+			Assert.Equal ("Simple Text ", data.Text);
+			Assert.Equal (new DateTimeOffset (2012, 5, 15, 2, 49, 22, new TimeSpan (1, 0, 0)), data.Time);
+
+			Assert.Throws<FormatException> (() => HeaderDecoder.DecodeTokensAndDate ("Tue, 15 May 2012 02:49:22 + 0100"));
 		}
 
 		[Fact]

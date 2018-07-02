@@ -29,27 +29,27 @@ namespace Novartment.Base.Net.Smtp
 			*/
 
 			var pos = 0;
-			var saslMechElement = StructuredHeaderFieldLexicalToken.ParseToken (value, ref pos);
-			if (saslMechElement.TokenType != StructuredHeaderFieldLexicalTokenType.Value)
+			var saslMechToken = StructuredHeaderFieldLexicalToken.ParseToken (value, ref pos);
+			if (saslMechToken.TokenType != StructuredHeaderFieldLexicalTokenType.Value)
 			{
 				return new SmtpInvalidSyntaxCommand (SmtpCommandType.Auth, "Unrecognized 'AUTH' mechanism parameter.");
 			}
 
 #if NETCOREAPP2_1
-			var mechanism = new string (value.Slice (saslMechElement.Position, saslMechElement.Length));
+			var mechanism = new string (value.Slice (saslMechToken.Position, saslMechToken.Length));
 #else
-			var mechanism = new string (value.Slice (saslMechElement.Position, saslMechElement.Length).ToArray ());
+			var mechanism = new string (value.Slice (saslMechToken.Position, saslMechToken.Length).ToArray ());
 #endif
 
-			var initialEesponseElement = StructuredHeaderFieldLexicalToken.Parse (value, ref pos, AsciiCharClasses.Visible, false);
-			if (!initialEesponseElement.IsValid || ((initialEesponseElement.Length == 1) && (value[initialEesponseElement.Position] == '=')))
+			var initialEesponseToken = StructuredHeaderFieldLexicalToken.Parse (value, ref pos, AsciiCharClasses.Visible, false);
+			if (!initialEesponseToken.IsValid || ((initialEesponseToken.Length == 1) && (value[initialEesponseToken.Position] == '=')))
 			{
 				return new SmtpAuthCommand (mechanism, default);
 			}
 
 			byte[] initialResponse;
 			int responseSize;
-			var initialResponseBase64 = value.Slice (initialEesponseElement.Position, initialEesponseElement.Length);
+			var initialResponseBase64 = value.Slice (initialEesponseToken.Position, initialEesponseToken.Length);
 #if NETCOREAPP2_1
 			initialResponse = new byte[(initialResponseBase64.Length / 4 * 3) + 2];
 			if (!Convert.TryFromBase64Chars (initialResponseBase64, initialResponse, out responseSize))

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Buffers;
 using System.Diagnostics.Contracts;
 using Novartment.Base.Text;
 
@@ -103,78 +104,110 @@ namespace Novartment.Base.Net.Mime
 			*/
 
 			var parserPos = 0;
-			var element1 = StructuredHeaderFieldLexicalToken.ParseDotAtom (source, ref parserPos);
+			var token1 = StructuredHeaderFieldLexicalToken.ParseDotAtom (source, ref parserPos);
 
-			if (!element1.IsValid)
+			if (!token1.IsValid)
 			{
 				throw new FormatException ("Value does not conform to format 'mailbox'.");
 			}
 
 			// один элемент
-			var element2 = StructuredHeaderFieldLexicalToken.ParseDotAtom (source, ref parserPos);
-			if (element1.IsValid && !element2.IsValid)
+			var token2 = StructuredHeaderFieldLexicalToken.ParseDotAtom (source, ref parserPos);
+			if (token1.IsValid && !token2.IsValid)
 			{
-				if ((element1.TokenType == StructuredHeaderFieldLexicalTokenType.AngleBracketedValue) || // angle-addr
-					(element1.TokenType == StructuredHeaderFieldLexicalTokenType.QuotedValue))
+				if ((token1.TokenType == StructuredHeaderFieldLexicalTokenType.AngleBracketedValue) || // angle-addr
+					(token1.TokenType == StructuredHeaderFieldLexicalTokenType.QuotedValue))
 				{
 					// non-standard form of addr-spec: "addrs@server.com"
-					return new Mailbox (AddrSpec.Parse (source.Slice (element1.Position, element1.Length)), null);
+					return new Mailbox (AddrSpec.Parse (source.Slice (token1.Position, token1.Length)), null);
 				}
 
 				throw new FormatException ("Value does not conform to format 'mailbox'.");
 			}
 
 			// три элемента
-			var element3 = StructuredHeaderFieldLexicalToken.ParseDotAtom (source, ref parserPos);
-			var element4 = StructuredHeaderFieldLexicalToken.ParseDotAtom (source, ref parserPos);
-			if (!element4.IsValid &&
-				((element1.TokenType == StructuredHeaderFieldLexicalTokenType.Value) || (element1.TokenType == StructuredHeaderFieldLexicalTokenType.QuotedValue)) &&
-				(element2.TokenType == StructuredHeaderFieldLexicalTokenType.Separator) && (source[element2.Position] == '@') &&
-				((element3.TokenType == StructuredHeaderFieldLexicalTokenType.Value) || (element3.TokenType == StructuredHeaderFieldLexicalTokenType.SquareBracketedValue)))
+			var token3 = StructuredHeaderFieldLexicalToken.ParseDotAtom (source, ref parserPos);
+			var token4 = StructuredHeaderFieldLexicalToken.ParseDotAtom (source, ref parserPos);
+			if (!token4.IsValid &&
+				((token1.TokenType == StructuredHeaderFieldLexicalTokenType.Value) || (token1.TokenType == StructuredHeaderFieldLexicalTokenType.QuotedValue)) &&
+				(token2.TokenType == StructuredHeaderFieldLexicalTokenType.Separator) && (source[token2.Position] == '@') &&
+				((token3.TokenType == StructuredHeaderFieldLexicalTokenType.Value) || (token3.TokenType == StructuredHeaderFieldLexicalTokenType.SquareBracketedValue)))
 			{
 				// addr-spec
-				var localPart = element1.Decode (source);
-				var domain = element3.Decode (source);
+				var localPart = token1.Decode (source);
+				var domain = token3.Decode (source);
 				var addr = new AddrSpec (localPart, domain);
 				return new Mailbox (addr);
 			}
 
-			// более трёх элементов
+			// более трёх элементов. считываем как фразу, последний токен которой будет адресом
 			parserPos = 0; // сбрасываем декодирование на начало
-			var decoder = new StructuredHeaderFieldDecoder ();
-			bool isEmpty = true;
-			StructuredHeaderFieldLexicalToken lastElement = default;
-			while (true)
+
+			string displayName;
+			var outPos = 0;
+			var prevIsWordEncoded = false;
+			StructuredHeaderFieldLexicalToken lastToken = default;
+			var outBuf = ArrayPool<char>.Shared.Rent (HeaderDecoder.MaximumHeaderFieldBodySize);
+			var byteBuf = ArrayPool<byte>.Shared.Rent (HeaderFieldBuilder.MaxLineLengthRequired);
+			try
 			{
-				var element = StructuredHeaderFieldLexicalToken.ParseDotAtom (source, ref parserPos);
-				if (!element.IsValid)
+				while (true)
 				{
-					if (isEmpty)
+					var token = StructuredHeaderFieldLexicalToken.ParseDotAtom (source, ref parserPos);
+					if (!token.IsValid)
 					{
-						throw new FormatException ("Value does not conform format 'phrase' + <id>.");
+						if (outPos < 1)
+						{
+							throw new FormatException ("Value does not conform format 'phrase' + <id>.");
+						}
+
+						break;
 					}
 
-					break;
+					if (lastToken.IsValid)
+					{
+						if ((lastToken.TokenType != StructuredHeaderFieldLexicalTokenType.QuotedValue) && (lastToken.TokenType != StructuredHeaderFieldLexicalTokenType.Value))
+						{
+							throw new FormatException ("Value does not conform to format 'mailbox'.");
+						}
+
+						// RFC 2047 часть 6.2:
+						// When displaying a particular header field that contains multiple 'encoded-word's,
+						// any 'linear-white-space' that separates a pair of adjacent 'encoded-word's is ignored
+						var isWordEncoded = lastToken.IsWordEncoded (source);
+						if ((outPos > 0) && (!prevIsWordEncoded || !isWordEncoded))
+						{
+							// RFC 5322 часть 3.2.2:
+							// Runs of FWS, comment, or CFWS that occur between lexical elements in a structured header field
+							// are semantically interpreted as a single space character.
+							outBuf[outPos++] = ' ';
+						}
+
+						outPos += lastToken.Decode (source, outBuf.AsSpan (outPos), byteBuf);
+						prevIsWordEncoded = isWordEncoded;
+					}
+
+					lastToken = token;
 				}
 
-				isEmpty = false;
-
-				if (lastElement.IsValid)
-				{
-					decoder.AddElement (source, lastElement);
-				}
-
-				lastElement = element;
+#if NETCOREAPP2_1
+				displayName = new string (outBuf.AsSpan (0, outPos));
+#else
+				displayName = new string (outBuf, 0, outPos);
+#endif
+			}
+			finally
+			{
+				ArrayPool<byte>.Shared.Return (byteBuf);
+				ArrayPool<char>.Shared.Return (outBuf);
 			}
 
-			if (lastElement.TokenType != StructuredHeaderFieldLexicalTokenType.AngleBracketedValue)
+			if (lastToken.TokenType != StructuredHeaderFieldLexicalTokenType.AngleBracketedValue)
 			{
 				throw new FormatException ("Value does not conform to format 'mailbox'.");
 			}
 
-			// [display-name] angle-addr
-			var displayName = decoder.GetResult ();
-			var addr2 = AddrSpec.Parse (source.Slice (lastElement.Position, lastElement.Length));
+			var addr2 = AddrSpec.Parse (source.Slice (lastToken.Position, lastToken.Length));
 			return new Mailbox (addr2, displayName);
 		}
 

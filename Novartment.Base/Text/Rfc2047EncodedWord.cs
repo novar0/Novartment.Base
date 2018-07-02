@@ -150,11 +150,12 @@ namespace Novartment.Base.Text
 			}
 
 			var textEncodingChar = source[charsetAndLangStrLength + 1];
-			var binaryEncoding = false;
+			bool binaryEncoding;
 			switch (textEncodingChar)
 			{
 				case 'q':
 				case 'Q':
+					binaryEncoding = false;
 					break;
 				case 'b':
 				case 'B':

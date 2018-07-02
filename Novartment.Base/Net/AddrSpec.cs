@@ -123,32 +123,32 @@ namespace Novartment.Base.Net
 			string domain;
 
 			var parserPos = 0;
-			var element1 = StructuredHeaderFieldLexicalToken.ParseDotAtom (source, ref parserPos);
-			var element2 = StructuredHeaderFieldLexicalToken.ParseDotAtom (source, ref parserPos);
-			if (element1.IsValid && !element2.IsValid)
+			var token1 = StructuredHeaderFieldLexicalToken.ParseDotAtom (source, ref parserPos);
+			var token2 = StructuredHeaderFieldLexicalToken.ParseDotAtom (source, ref parserPos);
+			if (token1.IsValid && !token2.IsValid)
 			{
 				// особый случай для совместимости со старыми реализациями
 #if NETCOREAPP2_1
-				localPart = new string (source.Slice (element1.Position, element1.Length));
+				localPart = new string (source.Slice (token1.Position, token1.Length));
 #else
-				localPart = new string (source.Slice (element1.Position, element1.Length).ToArray ());
+				localPart = new string (source.Slice (token1.Position, token1.Length).ToArray ());
 #endif
 				domain = "localhost";
 			}
 			else
 			{
-				var element3 = StructuredHeaderFieldLexicalToken.ParseDotAtom (source, ref parserPos);
-				var element4 = StructuredHeaderFieldLexicalToken.ParseDotAtom (source, ref parserPos);
-				if (element4.IsValid ||
-					((element1.TokenType != StructuredHeaderFieldLexicalTokenType.Value) && (element1.TokenType != StructuredHeaderFieldLexicalTokenType.QuotedValue)) ||
-					(element2.TokenType != StructuredHeaderFieldLexicalTokenType.Separator) || (element2.Length != 1) || (source[element2.Position] != (byte)'@') ||
-					((element3.TokenType != StructuredHeaderFieldLexicalTokenType.Value) && (element3.TokenType != StructuredHeaderFieldLexicalTokenType.SquareBracketedValue)))
+				var token3 = StructuredHeaderFieldLexicalToken.ParseDotAtom (source, ref parserPos);
+				var token4 = StructuredHeaderFieldLexicalToken.ParseDotAtom (source, ref parserPos);
+				if (token4.IsValid ||
+					((token1.TokenType != StructuredHeaderFieldLexicalTokenType.Value) && (token1.TokenType != StructuredHeaderFieldLexicalTokenType.QuotedValue)) ||
+					(token2.TokenType != StructuredHeaderFieldLexicalTokenType.Separator) || (token2.Length != 1) || (source[token2.Position] != (byte)'@') ||
+					((token3.TokenType != StructuredHeaderFieldLexicalTokenType.Value) && (token3.TokenType != StructuredHeaderFieldLexicalTokenType.SquareBracketedValue)))
 				{
 					throw new FormatException ("Value does not conform to format 'addr-spec'.");
 				}
 
-				localPart = element1.Decode (source);
-				domain = element3.Decode (source);
+				localPart = token1.Decode (source);
+				domain = token3.Decode (source);
 			}
 
 			return new AddrSpec (localPart, domain);
