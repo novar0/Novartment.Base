@@ -571,7 +571,7 @@ namespace Novartment.Base.Net.Mime
 			}
 
 			return contentProperties;
-			}
+		}
 
 		private bool ParseContentTypeField (ReadOnlySpan<char> body, EssentialContentProperties contentProperties)
 		{

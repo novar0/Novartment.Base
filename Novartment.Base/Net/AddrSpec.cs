@@ -17,7 +17,7 @@ namespace Novartment.Base.Net
 		/// </summary>
 		/// <param name="localPart">Локальная часть интернет-идентификатора.</param>
 		/// <param name="domain">Домен интернет-идентификатора.</param>
-		public AddrSpec(string localPart, string domain)
+		public AddrSpec (string localPart, string domain)
 		{
 			/*
 			RFC 5322 часть 3.4.1:
@@ -33,36 +33,36 @@ namespace Novartment.Base.Net
 
 			if (localPart == null)
 			{
-				throw new ArgumentNullException(nameof(localPart));
+				throw new ArgumentNullException (nameof (localPart));
 			}
 
 			if (localPart.Length < 1)
 			{
-				throw new ArgumentOutOfRangeException(nameof(localPart));
+				throw new ArgumentOutOfRangeException (nameof (localPart));
 			}
 
 			if (domain == null)
 			{
-				throw new ArgumentNullException(nameof(domain));
+				throw new ArgumentNullException (nameof (domain));
 			}
 
 			if (domain.Length < 1)
 			{
-				throw new ArgumentOutOfRangeException(nameof(domain));
+				throw new ArgumentOutOfRangeException (nameof (domain));
 			}
 
-			Contract.EndContractBlock();
+			Contract.EndContractBlock ();
 
-			var isLocalPartValidChars = AsciiCharSet.IsAllOfClass(localPart, AsciiCharClasses.Visible | AsciiCharClasses.WhiteSpace);
+			var isLocalPartValidChars = AsciiCharSet.IsAllOfClass (localPart, AsciiCharClasses.Visible | AsciiCharClasses.WhiteSpace);
 			if (!isLocalPartValidChars)
 			{
-				throw new ArgumentOutOfRangeException(nameof(localPart));
+				throw new ArgumentOutOfRangeException (nameof (localPart));
 			}
 
-			var isDomainValidChars = AsciiCharSet.IsAllOfClass(domain, AsciiCharClasses.Domain | AsciiCharClasses.WhiteSpace);
+			var isDomainValidChars = AsciiCharSet.IsAllOfClass (domain, AsciiCharClasses.Domain | AsciiCharClasses.WhiteSpace);
 			if (!isDomainValidChars)
 			{
-				throw new ArgumentOutOfRangeException(nameof(domain));
+				throw new ArgumentOutOfRangeException (nameof (domain));
 			}
 
 			this.LocalPart = localPart;
@@ -85,11 +85,11 @@ namespace Novartment.Base.Net
 		/// <param name="first">Первый объект для сравнения.</param>
 		/// <param name="second">Второй объект для сравнения.</param>
 		/// <returns>True если значение параметра first равно second; в противном случае — False.</returns>
-		public static bool operator ==(AddrSpec first, AddrSpec second)
+		public static bool operator == (AddrSpec first, AddrSpec second)
 		{
 			return first is null ?
 				second is null :
-				first.Equals(second);
+				first.Equals (second);
 		}
 
 		/// <summary>
@@ -98,11 +98,11 @@ namespace Novartment.Base.Net
 		/// <param name="first">Первый объект для сравнения.</param>
 		/// <param name="second">Второй объект для сравнения.</param>
 		/// <returns>True если значение параметра first не равно second; в противном случае — False.</returns>
-		public static bool operator !=(AddrSpec first, AddrSpec second)
+		public static bool operator != (AddrSpec first, AddrSpec second)
 		{
 			return !(first is null ?
 				second is null :
-				first.Equals(second));
+				first.Equals (second));
 		}
 
 		/// <summary>
@@ -117,6 +117,10 @@ namespace Novartment.Base.Net
 			local-part      =  dot-atom / quoted-string
 			domain          =  dot-atom / domain-literal
 			domain-literal  =  [CFWS] "[" *([FWS] dtext) [FWS] "]" [CFWS]
+			*/
+
+			/*
+			An 'encoded-word' MUST NOT appear in any portion of an 'addr-spec'.
 			*/
 
 			string localPart;

@@ -305,11 +305,7 @@ namespace Novartment.Base.Text
 						result[idx++] = ch;
 					}
 
-#if NETCOREAPP2_1
-					return new string (result.AsSpan (0, idx));
-#else
 					return new string (result, 0, idx);
-#endif
 				case StructuredHeaderFieldLexicalTokenType.Separator:
 					return new string (source[this.Position], 1);
 
