@@ -148,7 +148,6 @@ namespace Novartment.Base.Net.Mime
 			var prevIsWordEncoded = false;
 			StructuredHeaderFieldLexicalToken lastToken = default;
 			var outBuf = ArrayPool<char>.Shared.Rent (HeaderDecoder.MaximumHeaderFieldBodySize);
-			var byteBuf = ArrayPool<byte>.Shared.Rent (HeaderFieldBuilder.MaxLineLengthRequired);
 			try
 			{
 				while (true)
@@ -183,7 +182,7 @@ namespace Novartment.Base.Net.Mime
 							outBuf[outPos++] = ' ';
 						}
 
-						outPos += lastToken.Decode (source, outBuf.AsSpan (outPos), byteBuf);
+						outPos += lastToken.Decode (source, outBuf.AsSpan (outPos));
 						prevIsWordEncoded = isWordEncoded;
 					}
 
@@ -198,7 +197,6 @@ namespace Novartment.Base.Net.Mime
 			}
 			finally
 			{
-				ArrayPool<byte>.Shared.Return (byteBuf);
 				ArrayPool<char>.Shared.Return (outBuf);
 			}
 

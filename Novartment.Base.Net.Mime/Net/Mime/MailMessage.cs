@@ -1096,7 +1096,7 @@ namespace Novartment.Base.Net.Mime
 			}
 
 			// subject = "Subject:" unstructured
-			this.Subject = HeaderDecoder.DecodeUnstructured (body).Trim ();
+			this.Subject = HeaderDecoder.DecodeUnstructured (body, true);
 			return true;
 		}
 
@@ -1105,7 +1105,7 @@ namespace Novartment.Base.Net.Mime
 			var prevComments = (this.Comments != null) ? (this.Comments + "\r\n") : string.Empty;
 
 			// comments = "Comments:" unstructured
-			this.Comments = prevComments + HeaderDecoder.DecodeUnstructured (body).Trim ();
+			this.Comments = prevComments + HeaderDecoder.DecodeUnstructured (body, true);
 			return true;
 		}
 

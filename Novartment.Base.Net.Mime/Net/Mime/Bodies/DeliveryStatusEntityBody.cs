@@ -278,7 +278,7 @@ namespace Novartment.Base.Net.Mime
 						}
 
 						unfoldedBody = HeaderDecoder.UnfoldFieldBody (field.Body.Span, buffer);
-						finalLogId = HeaderDecoder.DecodeUnstructured (unfoldedBody).Trim ();
+						finalLogId = HeaderDecoder.DecodeUnstructured (unfoldedBody, true);
 						break;
 					case HeaderFieldName.WillRetryUntil:
 						if (willRetryUntil.HasValue)
@@ -436,7 +436,7 @@ namespace Novartment.Base.Net.Mime
 						}
 
 						unfoldedBody = HeaderDecoder.UnfoldFieldBody (field.Body.Span, buffer);
-						originalEnvelopeId = HeaderDecoder.DecodeUnstructured (unfoldedBody).Trim ();
+						originalEnvelopeId = HeaderDecoder.DecodeUnstructured (unfoldedBody, true);
 						break;
 					case HeaderFieldName.MailTransferAgent:
 						if (reportingMailTransferAgent != null)

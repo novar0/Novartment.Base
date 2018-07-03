@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Buffers;
 using System.Diagnostics;
 using System.Diagnostics.Contracts;
 using System.Text;
@@ -341,12 +342,8 @@ namespace Novartment.Base.Text
 		/// </summary>
 		/// <param name="source">Строка типа RFC 5322 'Structured Header Field Body', в которой выделен токен.</param>
 		/// <param name="destination">Буфер, куда будет записано декодировенное значение токена.</param>
-		/// <param name="encodedWordBuffer">
-		/// Буфер, куда временно будет декодироваться "encoded-word".
-		/// Максимальный размер HeaderFieldBuilder.MaxLineLengthRequired.
-		/// </param>
 		/// <returns>Количество знаков, записанных в buffer.</returns>
-		public int Decode (ReadOnlySpan<char> source, Span<char> destination, byte[] encodedWordBuffer)
+		public int Decode (ReadOnlySpan<char> source, Span<char> destination)
 		{
 			switch (this.TokenType)
 			{
@@ -387,14 +384,22 @@ namespace Novartment.Base.Text
 
 					// декодируем 'encoded-word'
 					int resultSize;
-					var size = Rfc2047EncodedWord.Parse (src, encodedWordBuffer, out Encoding encoding);
+					var encodedWordBuffer = ArrayPool<byte>.Shared.Rent (Rfc2047EncodedWord.MaxBinaryLenght);
+					try
+					{
+						var size = Rfc2047EncodedWord.Parse (src, encodedWordBuffer, out Encoding encoding);
 #if NETCOREAPP2_1
-					resultSize = encoding.GetChars (encodedWordBuffer.AsSpan (0, size), destination);
+						resultSize = encoding.GetChars (encodedWordBuffer.AsSpan (0, size), destination);
 #else
-					var tempBuf = encoding.GetChars (encodedWordBuffer, 0, size);
-					resultSize = tempBuf.Length;
-					tempBuf.AsSpan ().CopyTo (destination);
+						var tempBuf = encoding.GetChars (encodedWordBuffer, 0, size);
+						resultSize = tempBuf.Length;
+						tempBuf.AsSpan ().CopyTo (destination);
 #endif
+					}
+					finally
+					{
+						ArrayPool<byte>.Shared.Return (encodedWordBuffer);
+					}
 
 					return resultSize;
 

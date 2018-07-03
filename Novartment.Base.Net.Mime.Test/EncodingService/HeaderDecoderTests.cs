@@ -29,46 +29,48 @@ namespace Novartment.Base.Net.Mime.Test
 		public void DecodeUnstructured ()
 		{
 			// проверяем что не корректно декодируется пустое значение
-			Assert.Equal (string.Empty, HeaderDecoder.DecodeUnstructured (Array.Empty<char> ()));
+			Assert.Equal (string.Empty, HeaderDecoder.DecodeUnstructured (Array.Empty<char> (), true));
 
 			// проверяем что не корректно декодируется значение только из пробельных символов
-			Assert.Equal ("\t  \t", HeaderDecoder.DecodeUnstructured ("\t  \t"));
-			Assert.Equal ("Simple", HeaderDecoder.DecodeUnstructured ("Simple"));
+			Assert.Equal ("\t  \t", HeaderDecoder.DecodeUnstructured ("\t  \t", false));
+			Assert.Equal (0, HeaderDecoder.DecodeUnstructured ("\t  \t", true).Length);
+			Assert.Equal ("Simple", HeaderDecoder.DecodeUnstructured ("Simple", false));
 
 			// проверяем что не теряются пробельные символы
-			Assert.Equal ("\t Simple  \" no\\t \\ quoted \"  Text\" ", HeaderDecoder.DecodeUnstructured ("\t Simple  \" no\\t \\ quoted \"  Text\" "));
+			Assert.Equal ("\t Simple  \" no\\t \\ quoted \"  Text\" ", HeaderDecoder.DecodeUnstructured ("\t Simple  \" no\\t \\ quoted \"  Text\" ", false));
+			Assert.Equal ("Simple  \" no\\t \\ quoted \"  Text\"", HeaderDecoder.DecodeUnstructured ("\t Simple  \" no\\t \\ quoted \"  Text\" ", true));
 
 			// проверяем что НЕ распознаются треугольные кавычки
-			Assert.Equal ("\t Simple  < not addr >  Text ", HeaderDecoder.DecodeUnstructured ("\t Simple  < not addr >  Text "));
+			Assert.Equal ("\t Simple  < not addr >  Text ", HeaderDecoder.DecodeUnstructured ("\t Simple  < not addr >  Text ", false));
 
 			// проверяем что НЕ распознаются круглые кавычки
-			Assert.Equal ("\t Simple  (not\tcomment)  ;Text ", HeaderDecoder.DecodeUnstructured ("\t Simple  (not\tcomment)  ;Text "));
+			Assert.Equal ("\t Simple  (not\tcomment)  ;Text ", HeaderDecoder.DecodeUnstructured ("\t Simple  (not\tcomment)  ;Text ", false));
 
 			// проверяем что распознаются кодированные слова отделённые пробелом
-			Assert.Equal ("aa 123;abc", HeaderDecoder.DecodeUnstructured ("aa =?utf-8?Q?123;abc?="));
+			Assert.Equal ("aa 123;abc", HeaderDecoder.DecodeUnstructured ("aa =?utf-8?Q?123;abc?=", false));
 
 			// проверяем что НЕ распознаются кодированные слова НЕ отделённые пробелом
-			Assert.Equal ("aa=?utf-8?Q?123;abc?=", HeaderDecoder.DecodeUnstructured ("aa=?utf-8?Q?123;abc?="));
-			Assert.Equal ("\t Simple  (not\tcomment)  Text ", HeaderDecoder.DecodeUnstructured ("=?koi8-r?Q?=09_Simple__(not=09comment)__Text_?="));
+			Assert.Equal ("aa=?utf-8?Q?123;abc?=", HeaderDecoder.DecodeUnstructured ("aa=?utf-8?Q?123;abc?=", false));
+			Assert.Equal ("\t Simple  (not\tcomment)  Text ", HeaderDecoder.DecodeUnstructured ("=?koi8-r?Q?=09_Simple__(not=09comment)__Text_?=", false));
 
 			// проверяем что НЕ соседние кодированные слова склеиваются корректно (с сохранением пробелов)
-			Assert.Equal ("123;abc aa\t\t456;def", HeaderDecoder.DecodeUnstructured ("=?utf-8?Q?123;abc?= aa\t\t=?utf-8?Q?456;def?="));
+			Assert.Equal ("123;abc aa\t\t456;def", HeaderDecoder.DecodeUnstructured ("=?utf-8?Q?123;abc?= aa\t\t=?utf-8?Q?456;def?=", false));
 
 			// проверяем что соседние (разделённые пробелами) кодированные слова склеиваются корректно (без пробелов)
 			Assert.Equal (
 				"Идея состоит в томКонстантин Теличко",
-				HeaderDecoder.DecodeUnstructured ("=?windows-1251?Q?=C8=E4=E5=FF_=F1=EE=F1=F2=EE=E8=F2_=E2_=F2=EE=EC?=\t  =?koi8-r?B?68/O09TBztTJziD0xczJ3svP?="));
+				HeaderDecoder.DecodeUnstructured ("=?windows-1251?Q?=C8=E4=E5=FF_=F1=EE=F1=F2=EE=E8=F2_=E2_=F2=EE=EC?=\t  =?koi8-r?B?68/O09TBztTJziD0xczJ3svP?=", false));
 			Assert.Equal (
 				"Simple=?windows-1251?Q?=C8=E4=E5=FF_=F1=EE=F1=F2=EE=E8=F2_=E2_=F2=EE=EC?=\t  Константин Теличко",
-				HeaderDecoder.DecodeUnstructured ("Simple=?windows-1251?Q?=C8=E4=E5=FF_=F1=EE=F1=F2=EE=E8=F2_=E2_=F2=EE=EC?=\t  =?koi8-r?B?68/O09TBztTJziD0xczJ3svP?="));
+				HeaderDecoder.DecodeUnstructured ("Simple=?windows-1251?Q?=C8=E4=E5=FF_=F1=EE=F1=F2=EE=E8=F2_=E2_=F2=EE=EC?=\t  =?koi8-r?B?68/O09TBztTJziD0xczJ3svP?=", false));
 			Assert.Equal (
 				"Simple Идея состоит в томКонстантин Теличко",
-				HeaderDecoder.DecodeUnstructured ("Simple =?windows-1251?Q?=C8=E4=E5=FF_=F1=EE=F1=F2=EE=E8=F2_=E2_=F2=EE=EC?=\t  =?koi8-r?B?68/O09TBztTJziD0xczJ3svP?="));
+				HeaderDecoder.DecodeUnstructured ("Simple =?windows-1251?Q?=C8=E4=E5=FF_=F1=EE=F1=F2=EE=E8=F2_=E2_=F2=EE=EC?=\t  =?koi8-r?B?68/O09TBztTJziD0xczJ3svP?=", false));
 			Assert.Equal ("\tПри 2012г усиленных мерах безопасности", HeaderDecoder.DecodeUnstructured (
 				"\t=?utf-8?B?0J/RgNC4?= =?utf-8?Q?_2012=D0=B3?=" +
 				"\t=?utf-8?B?INGD0YHQuNC70LXQvdC90YvRhQ==?= =?utf-8?B?INC80LXRgNCw0YU=?=" +
-				"\t=?utf-8?B?INCx0LXQt9C+0L/QsNGB0L3QvtGB0YLQuA==?="));
-			Assert.Throws<FormatException> (() => HeaderDecoder.DecodeUnstructured ("Simp\u00d7le"));
+				"\t=?utf-8?B?INCx0LXQt9C+0L/QsNGB0L3QvtGB0YLQuA==?=", false));
+			Assert.Throws<FormatException> (() => HeaderDecoder.DecodeUnstructured ("Simp\u00d7le", false));
 		}
 
 		[Fact]
@@ -131,12 +133,12 @@ namespace Novartment.Base.Net.Mime.Test
 		public void DecodeUnstructuredPair ()
 		{
 			var data = HeaderDecoder.DecodeUnstructuredPair ("\t Simple  < not addr >  Text ");
-			Assert.Equal ("\t Simple  < not addr >  Text ", data.Value1);
+			Assert.Equal ("Simple  < not addr >  Text", data.Value1);
 			Assert.Null (data.Value2);
 
 			data = HeaderDecoder.DecodeUnstructuredPair ("\t Simple  < not addr >  Text ; \t=?utf-8?B?0J/RgNC4?= =?utf-8?Q?_2012=D0=B3?=\t ");
-			Assert.Equal ("\t Simple  < not addr >  Text ", data.Value1);
-			Assert.Equal (" \tПри 2012г\t ", data.Value2);
+			Assert.Equal ("Simple  < not addr >  Text", data.Value1);
+			Assert.Equal ("При 2012г", data.Value2);
 		}
 
 		[Fact]

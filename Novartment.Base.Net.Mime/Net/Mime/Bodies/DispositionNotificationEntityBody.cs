@@ -230,15 +230,15 @@ namespace Novartment.Base.Net.Mime
 							break;
 						case HeaderFieldName.Failure:
 							unfoldedBody = HeaderDecoder.UnfoldFieldBody (field.Body.Span, buffer);
-							this.FailureInfo.Add (HeaderDecoder.DecodeUnstructured (unfoldedBody).Trim ());
+							this.FailureInfo.Add (HeaderDecoder.DecodeUnstructured (unfoldedBody, true));
 							break;
 						case HeaderFieldName.Error:
 							unfoldedBody = HeaderDecoder.UnfoldFieldBody (field.Body.Span, buffer);
-							this.ErrorInfo.Add (HeaderDecoder.DecodeUnstructured (unfoldedBody).Trim ());
+							this.ErrorInfo.Add (HeaderDecoder.DecodeUnstructured (unfoldedBody, true));
 							break;
 						case HeaderFieldName.Warning:
 							unfoldedBody = HeaderDecoder.UnfoldFieldBody (field.Body.Span, buffer);
-							this.WarningInfo.Add (HeaderDecoder.DecodeUnstructured (unfoldedBody).Trim ());
+							this.WarningInfo.Add (HeaderDecoder.DecodeUnstructured (unfoldedBody, true));
 							break;
 					}
 				}

@@ -168,41 +168,40 @@ namespace Novartment.Base.Test
 		public void DecodeElementSpan ()
 		{
 			var buf = new char[500];
-			var byteBuf = new byte[500];
 
 			var src = "=?aa?bb?cc?".AsSpan ();
 			var item = new StructuredHeaderFieldLexicalToken (StructuredHeaderFieldLexicalTokenType.Value, 0, src.Length);
-			var size = item.Decode (src, buf, byteBuf);
+			var size = item.Decode (src, buf);
 			Assert.Equal ("=?aa?bb?cc?", new string (buf, 0, size));
 
 			src = "=?aa?bb?cc?";
 			item = new StructuredHeaderFieldLexicalToken (StructuredHeaderFieldLexicalTokenType.QuotedValue, 0, src.Length);
-			size = item.Decode (src, buf, byteBuf);
+			size = item.Decode (src, buf);
 			Assert.Equal ("=?aa?bb?cc?", new string (buf, 0, size));
 
 			src = "=?aa?bb?cc?";
 			item = new StructuredHeaderFieldLexicalToken (StructuredHeaderFieldLexicalTokenType.SquareBracketedValue, 0, src.Length);
-			size = item.Decode (src, buf, byteBuf);
+			size = item.Decode (src, buf);
 			Assert.Equal ("=?aa?bb?cc?", new string (buf, 0, size));
 
 			src = "some   \\\"one\\\"";
 			item = new StructuredHeaderFieldLexicalToken (StructuredHeaderFieldLexicalTokenType.SquareBracketedValue, 0, src.Length);
-			size = item.Decode (src, buf, byteBuf);
+			size = item.Decode (src, buf);
 			Assert.Equal ("some   \"one\"", new string (buf, 0, size));
 
 			src = "some   \\\"one\\\"";
 			item = new StructuredHeaderFieldLexicalToken (StructuredHeaderFieldLexicalTokenType.QuotedValue, 0, src.Length);
-			size = item.Decode (src, buf, byteBuf);
+			size = item.Decode (src, buf);
 			Assert.Equal ("some   \"one\"", new string (buf, 0, size));
 
 			src = "=?utf-8*ru-ru?B?0YLQtdC80LAg0YHQvtC+0LHRidC10L3QuNGPINGC0LXQutGB0YIg0YHQvtC+0LHRidC10L3QuNGP?=";
 			item = new StructuredHeaderFieldLexicalToken (StructuredHeaderFieldLexicalTokenType.Value, 0, src.Length);
-			size = item.Decode (src, buf, byteBuf);
+			size = item.Decode (src, buf);
 			Assert.Equal ("тема сообщения текст сообщения", new string (buf, 0, size));
 
 			src = "=?utf-8*ru-ru?B?0YLQtdC80LAg0YHQvtC+0LHRidC10L3QuNGPINGC0LXQutGB0YIg0YHQvtC+0LHRidC10L3QuNGP?=";
 			item = new StructuredHeaderFieldLexicalToken (StructuredHeaderFieldLexicalTokenType.Value, 0, src.Length);
-			size = item.Decode (src, buf, byteBuf);
+			size = item.Decode (src, buf);
 			Assert.Equal ("тема сообщения текст сообщения", new string (buf, 0, size));
 		}
 	}

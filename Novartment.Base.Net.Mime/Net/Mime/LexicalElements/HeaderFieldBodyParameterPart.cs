@@ -1,46 +1,42 @@
 ﻿using System;
 using System.Buffers;
-using System.Globalization;
 using System.Text;
 using Novartment.Base.Text;
 
 namespace Novartment.Base.Net.Mime
 {
-	internal class HeaderFieldParameterPart
+	internal struct HeaderFieldBodyParameterPart
 	{
-		private readonly string _value;
+		private readonly StructuredHeaderFieldLexicalToken _value;
+		private readonly bool _isExtendedValue;
 
 		// для параметров regular-parameter и extended-other-parameter
-		internal HeaderFieldParameterPart (string name, string value, int section, bool isExtendedValue)
+		internal HeaderFieldBodyParameterPart (StructuredHeaderFieldLexicalToken name, StructuredHeaderFieldLexicalToken value, bool isFirstSection, bool isExtendedValue)
 		{
 			this.Name = name;
 			_value = value;
-			this.Section = section;
-			this.IsExtendedValue = isExtendedValue;
+			this.IsFirstSection = isFirstSection;
+			this.Encoding = null;
+			_isExtendedValue = isExtendedValue;
 		}
 
 		// для параметров extended-initial-parameter
-		internal HeaderFieldParameterPart (string name, string value, string encoding, string language)
+		internal HeaderFieldBodyParameterPart (StructuredHeaderFieldLexicalToken name, StructuredHeaderFieldLexicalToken value, string encoding)
 		{
 			this.Name = name;
 			_value = value;
-			this.Section = 0;
+			this.IsFirstSection = true;
 			this.Encoding = encoding;
-			this.Language = language;
-			this.IsExtendedValue = true;
+			_isExtendedValue = true;
 		}
 
-		internal string Name { get; }
+		internal StructuredHeaderFieldLexicalToken Name { get; }
 
-		internal int Section { get; }
+		internal bool IsFirstSection { get; }
 
 		internal string Encoding { get; }
 
-		internal string Language { get; }
-
-		internal bool IsExtendedValue { get; }
-
-		internal static HeaderFieldParameterPart Parse (ReadOnlySpan<char> source, ref int parserPos)
+		internal static HeaderFieldBodyParameterPart Parse (ReadOnlySpan<char> source, ref int parserPos)
 		{
 			/*
 			RFC 2184 part 7:
@@ -67,41 +63,24 @@ namespace Novartment.Base.Net.Mime
 			var nameToken = StructuredHeaderFieldLexicalToken.ParseToken (source, ref parserPos);
 			var separatorToken = StructuredHeaderFieldLexicalToken.ParseToken (source, ref parserPos);
 
-			if (
-				(nameToken.TokenType != StructuredHeaderFieldLexicalTokenType.Value) ||
+			if ((nameToken.TokenType != StructuredHeaderFieldLexicalTokenType.Value) ||
 				(separatorToken.TokenType != StructuredHeaderFieldLexicalTokenType.Separator))
 			{
 				throw new FormatException ("Invalid format of header field parameter.");
 			}
 
-#if NETCOREAPP2_1
-			var parameterName = new string (source.Slice (nameToken.Position, nameToken.Length));
-#else
-			var parameterName = new string (source.Slice (nameToken.Position, nameToken.Length).ToArray ());
-#endif
-			var section = 0;
-			string encoding = null;
+			bool isZeroSection = true;
 			var isExtendedValue = false;
-
 			if (source[separatorToken.Position] == '*')
 			{
-				var sectionElement = StructuredHeaderFieldLexicalToken.ParseToken (source, ref parserPos);
-				if (sectionElement.TokenType != StructuredHeaderFieldLexicalTokenType.Value)
+				var sectionToken = StructuredHeaderFieldLexicalToken.ParseToken (source, ref parserPos);
+				if (sectionToken.TokenType != StructuredHeaderFieldLexicalTokenType.Value)
 				{
 					throw new FormatException ("Invalid format of header field parameter.");
 				}
 
-#if NETCOREAPP2_1
-				section = int.Parse (
-					source.Slice (sectionElement.Position, sectionElement.Length),
-					NumberStyles.AllowLeadingWhite | NumberStyles.AllowTrailingWhite,
-					CultureInfo.InvariantCulture);
-#else
-				section = int.Parse (
-					new string (source.Slice (sectionElement.Position, sectionElement.Length).ToArray ()),
-					NumberStyles.AllowLeadingWhite | NumberStyles.AllowTrailingWhite,
-					CultureInfo.InvariantCulture);
-#endif
+				isZeroSection = ((sectionToken.Length == 1) && (source[sectionToken.Position] == '0')) ||
+					((sectionToken.Length == 2) && (source[sectionToken.Position] == '0') && (source[sectionToken.Position + 1] == '0'));
 				separatorToken = StructuredHeaderFieldLexicalToken.ParseToken (source, ref parserPos);
 				if (separatorToken.TokenType != StructuredHeaderFieldLexicalTokenType.Separator)
 				{
@@ -109,28 +88,27 @@ namespace Novartment.Base.Net.Mime
 				}
 			}
 
-			var isStarSeparator = (separatorToken.TokenType == StructuredHeaderFieldLexicalTokenType.Separator) && (source[separatorToken.Position] == '*');
-			if (isStarSeparator)
+			if ((separatorToken.TokenType == StructuredHeaderFieldLexicalTokenType.Separator) && (source[separatorToken.Position] == '*'))
 			{
 				isExtendedValue = true;
-				separatorToken = StructuredHeaderFieldLexicalToken.ParseToken (source, ref parserPos);
+				parserPos++;
 			}
 			else
 			{
-				var isEqualitySign = (separatorToken.TokenType == StructuredHeaderFieldLexicalTokenType.Separator) && (source[separatorToken.Position] == '=');
-				if (!isEqualitySign)
+				if ((separatorToken.TokenType != StructuredHeaderFieldLexicalTokenType.Separator) || (source[separatorToken.Position] != '='))
 				{
 					throw new FormatException ("Invalid format of header field parameter.");
 				}
 			}
 
-			var isExtendedInitialValue = isExtendedValue && (section == 0);
+			var isExtendedInitialValue = isExtendedValue && isZeroSection;
 			var token = StructuredHeaderFieldLexicalToken.ParseToken (source, ref parserPos);
 			if (isExtendedInitialValue)
 			{
-				string language = null;
+				string encoding = null;
 				if (token.TokenType == StructuredHeaderFieldLexicalTokenType.Value)
-				{ // charset
+				{
+					// charset
 #if NETCOREAPP2_1
 					encoding = new string (source.Slice (token.Position, token.Length));
 #else
@@ -146,12 +124,8 @@ namespace Novartment.Base.Net.Mime
 
 				token = StructuredHeaderFieldLexicalToken.ParseToken (source, ref parserPos);
 				if (token.TokenType == StructuredHeaderFieldLexicalTokenType.Value)
-				{ // language
-#if NETCOREAPP2_1
-					language = new string (source.Slice (token.Position, token.Length));
-#else
-					language = new string (source.Slice (token.Position, token.Length).ToArray ());
-#endif
+				{
+					// skip language
 					token = StructuredHeaderFieldLexicalToken.ParseToken (source, ref parserPos);
 				}
 
@@ -166,12 +140,7 @@ namespace Novartment.Base.Net.Mime
 					throw new FormatException ("Invalid format of header field parameter.");
 				}
 
-#if NETCOREAPP2_1
-				var valueStr = new string (source.Slice (token.Position, token.Length));
-#else
-				var valueStr = new string (source.Slice (token.Position, token.Length).ToArray ());
-#endif
-				return new HeaderFieldParameterPart (parameterName, valueStr, encoding, language);
+				return new HeaderFieldBodyParameterPart (nameToken, token, encoding);
 			}
 
 			if (isExtendedValue)
@@ -181,12 +150,7 @@ namespace Novartment.Base.Net.Mime
 					throw new FormatException ("Invalid format of header field parameter.");
 				}
 
-#if NETCOREAPP2_1
-				var valueStr = new string (source.Slice (token.Position, token.Length));
-#else
-				var valueStr = new string (source.Slice (token.Position, token.Length).ToArray ());
-#endif
-				return new HeaderFieldParameterPart (parameterName, valueStr, section, true);
+				return new HeaderFieldBodyParameterPart (nameToken, token, isZeroSection, true);
 			}
 
 			if ((token.TokenType != StructuredHeaderFieldLexicalTokenType.Value) && (token.TokenType != StructuredHeaderFieldLexicalTokenType.QuotedValue))
@@ -194,38 +158,42 @@ namespace Novartment.Base.Net.Mime
 				throw new FormatException ("Invalid format of header field parameter.");
 			}
 
-			return new HeaderFieldParameterPart (
-				parameterName,
-				token.Decode (source),
-				section,
-				false);
+			// regular-parameter
+			return new HeaderFieldBodyParameterPart (nameToken, token, isZeroSection, false);
 		}
 
-		internal string GetValue (Encoding encoding)
+		// нельзя пользоваться this.Encoding, потому что кодировка указывается только для первой части параметра
+		internal int GetValue (ReadOnlySpan<char> source, Encoding encoding, char[] destination, int destinationPos)
 		{
-			if (!this.IsExtendedValue)
+			if (!_isExtendedValue)
 			{
-				return _value;
+				return _value.Decode (source, destination.AsSpan (destinationPos));
 			}
 
 			int offset = 0;
 			var decodedBuffer = ArrayPool<byte>.Shared.Rent (_value.Length);
-			for (var i = 0; i < _value.Length; i++)
+			try
 			{
-				if (_value[i] != '%')
+				for (var i = 0; i < _value.Length; i++)
 				{
-					decodedBuffer[offset++] = (byte)_value[i];
+					if (source[_value.Position + i] != '%')
+					{
+						decodedBuffer[offset++] = (byte)source[_value.Position + i];
+					}
+					else
+					{
+						decodedBuffer[offset++] = Hex.ParseByte (source[_value.Position + i + 1], source[_value.Position + i + 2]);
+						i += 2;
+					}
 				}
-				else
-				{
-					decodedBuffer[offset++] = Hex.ParseByte (_value, i + 1);
-					i += 2;
-				}
-			}
 
-			var result = encoding.GetString (decodedBuffer, 0, offset);
-			ArrayPool<byte>.Shared.Return (decodedBuffer);
-			return result;
+				var size = encoding.GetChars (decodedBuffer, 0, offset, destination, destinationPos);
+				return size;
+			}
+			finally
+			{
+				ArrayPool<byte>.Shared.Return (decodedBuffer);
+			}
 		}
 	}
 }

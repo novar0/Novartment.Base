@@ -30,9 +30,12 @@ namespace Novartment.Base.Net.Mime
 		public static readonly int MaxLineLengthRecommended = 78;
 
 		/// <summary>
-		/// Максимально допустимая длина 'encoded-word'.
+		/// Максимально рекомендуемая длина 'encoded-word'.
 		/// Определено в RFC 2047 часть 2.
 		/// </summary>
+		/// <remarks>
+		/// An 'encoded-word' may not be more than 75 characters long, including 'charset', 'encoding', 'encoded-text', and delimiters.
+		/// </remarks>
 		public static readonly int MaxEncodedWordLength = 75;
 
 		private readonly IAdjustableList<HeaderFieldParameter> _parameters = new ArrayList<HeaderFieldParameter> ();

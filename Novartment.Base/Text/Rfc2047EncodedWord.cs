@@ -1,15 +1,20 @@
 ﻿using System;
 using System.Buffers;
-using System.Diagnostics.Contracts;
 using System.Text;
 
 namespace Novartment.Base.Text
 {
 	/// <summary>
-	/// Операции для конвертирования строк в форму "encoded-word" и обратно согласно RFC 2047.
+	/// Операции для декодирования строк из формы "encoded-word" согласно RFC 2047.
 	/// </summary>
 	public static class Rfc2047EncodedWord
 	{
+		/// <summary>
+		/// Максимально допустимый размер декодированного двоичного значения "encoded-word".
+		/// Зависит от указанной в RFC 5322 часть 2.1.1 максимальной длины строки.
+		/// </summary>
+		public static readonly int MaxBinaryLenght = 990;
+
 		/// <summary>
 		/// Декодирует RFC 2047 'encoded-word'.
 		/// </summary>
@@ -50,7 +55,10 @@ namespace Novartment.Base.Text
 		/// Декодирует RFC 2047 'encoded-word'.
 		/// </summary>
 		/// <param name="source">Значение, закодированное в формате RFC 2047 'encoded-word'.</param>
-		/// <param name="destination">Буфер, в который будет помещено декодированное значение.</param>
+		/// <param name="destination">
+		/// Буфер, в который будет помещено декодированное значение.
+		/// Максимальный размер буфера, который может понадобится, указан в свойстве MaxBinaryLenght.
+		/// </param>
 		/// <param name="encoding">Текстовая кодировка, в которой представлено декодированное значение.</param>
 		/// <returns>Количество знаков, записанных в buffer.</returns>
 		public static int Parse (ReadOnlySpan<char> source, Span<byte> destination, out Encoding encoding)

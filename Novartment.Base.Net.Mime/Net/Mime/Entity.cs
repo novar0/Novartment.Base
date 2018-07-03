@@ -736,7 +736,7 @@ namespace Novartment.Base.Net.Mime
 				throw new FormatException ("More than one '" + HeaderFieldNameHelper.GetName (HeaderFieldName.ContentDescription) + "' field.");
 			}
 
-			this.Description = HeaderDecoder.DecodeUnstructured (body).Trim ();
+			this.Description = HeaderDecoder.DecodeUnstructured (body, true);
 			return true;
 		}
 
@@ -777,7 +777,7 @@ namespace Novartment.Base.Net.Mime
 				throw new FormatException ("More than one '" + HeaderFieldNameHelper.GetName (HeaderFieldName.ContentFeatures) + "' field.");
 			}
 
-			this.Features = HeaderDecoder.DecodeUnstructured (body).Trim ();
+			this.Features = HeaderDecoder.DecodeUnstructured (body, true);
 			return true;
 		}
 
@@ -795,7 +795,7 @@ namespace Novartment.Base.Net.Mime
 
 		private bool ParseContentAlternativeField (ReadOnlySpan<char> body)
 		{
-			this.Alternatives.Add (HeaderDecoder.DecodeUnstructured (body).Trim ());
+			this.Alternatives.Add (HeaderDecoder.DecodeUnstructured (body, true));
 			return true;
 		}
 

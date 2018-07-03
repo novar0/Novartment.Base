@@ -53,7 +53,7 @@ namespace Novartment.Base.Text
 		/// <param name="segmentNumber">Номер порции с результирующими данными.</param>
 		/// <param name="isLastSegment">Признак того, что указанный диапазон исходных данных является последним.</param>
 		/// <returns>Баланс потенциальной операции кодирования.</returns>
-		public EncodingBalance Estimate (ReadOnlySpan<byte> source, int maxOutCount, int segmentNumber, bool isLastSegment)
+		public EncodingBalance Estimate (ReadOnlySpan<byte> source, int maxOutCount, int segmentNumber = 0, bool isLastSegment = false)
 		{
 			if (maxOutCount < 0)
 			{
@@ -84,7 +84,7 @@ namespace Novartment.Base.Text
 		/// <param name="segmentNumber">Номер порции с результирующими данными.</param>
 		/// <param name="isLastSegment">Признако того, что указанный диапазон исходных данных является последним.</param>
 		/// <returns>Баланс операции кодирования.</returns>
-		public EncodingBalance Encode (ReadOnlySpan<byte> source, Span<byte> destination, int segmentNumber, bool isLastSegment)
+		public EncodingBalance Encode (ReadOnlySpan<byte> source, Span<byte> destination, int segmentNumber = 0, bool isLastSegment = false)
 		{
 			var outOffset = 0;
 			destination[outOffset++] = (byte)'=';

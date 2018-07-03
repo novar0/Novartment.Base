@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text;
 using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
@@ -98,103 +99,114 @@ namespace Novartment.Base.Net.Mime
 		/// </summary>
 		/// <param name="source">Source encoded value.</param>
 		/// <returns>Decoded string value.</returns>
-		internal static string DecodeUnstructured (ReadOnlySpan<char> source)
+		internal static string DecodeUnstructured (ReadOnlySpan<char> source, bool trim)
 		{
 			var outBuf = new char[MaximumHeaderFieldBodySize];
-			var byteBuf = new byte[HeaderFieldBuilder.MaxLineLengthRequired];
+			byte[] byteBuf = null;
 			var outPos = 0;
 			var prevIsWordEncoded = false;
 			var lastWhiteSpacePos = 0;
 			var lastWhiteSpaceLength = 0;
 			var pos = 0;
-			while (pos < source.Length)
+			try
 			{
-				// выделяем отдельно группы пробельных символов, потому что их надо пропускать если они между 'encoded-word'
-				var octet = source[pos];
-				if ((octet == ' ') || (octet == '\t'))
+				while (pos < source.Length)
 				{
-					lastWhiteSpacePos = pos;
-					while (pos < source.Length)
+					var octet = source[pos];
+					if ((octet == ' ') || (octet == '\t'))
 					{
-						octet = source[pos];
-						if ((octet >= AsciiCharSet.Classes.Count) || ((AsciiCharSet.Classes[octet] & (short)AsciiCharClasses.WhiteSpace) == 0))
+						// выделяем отдельно группы пробельных символов, потому что их надо пропукать если они между 'encoded-word'
+						lastWhiteSpacePos = pos;
+						while (pos < source.Length)
 						{
-							break;
+							octet = source[pos];
+							if ((octet != ' ') && (octet != '\t'))
+							{
+								break;
+							}
+
+							pos++;
 						}
 
-						pos++;
-					}
-
-					lastWhiteSpaceLength = pos - lastWhiteSpacePos;
-				}
-				else
-				{
-					var valuePos = pos;
-					while (pos < source.Length)
-					{
-						octet = source[pos];
-						if ((octet >= AsciiCharSet.Classes.Count) || ((AsciiCharSet.Classes[octet] & (short)AsciiCharClasses.Visible) == 0))
-						{
-							break;
-						}
-
-						pos++;
-					}
-
-					var valueLength = pos - valuePos;
-
-					if (valueLength < 1)
-					{
-						octet = source[pos];
-						if (octet > AsciiCharSet.MaxCharValue)
-						{
-							throw new FormatException (FormattableString.Invariant (
-								$"Value contains invalid for 'unstructured' character U+{octet:x}. Expected characters are U+0009 and U+0020...U+007E."));
-						}
-					}
-
-					var isWordEncoded = (valueLength > 8) &&
-						(source[valuePos] == '=') &&
-						(source[valuePos + 1] == '?') &&
-						(source[pos - 2] == '?') &&
-						(source[pos - 1] == '=');
-
-					// RFC 2047 часть 6.2:
-					// When displaying a particular header field that contains multiple 'encoded-word's,
-					// any 'linear-white-space' that separates a pair of adjacent 'encoded-word's is ignored
-					if ((!prevIsWordEncoded || !isWordEncoded) && (lastWhiteSpaceLength > 0))
-					{
-						source.Slice (lastWhiteSpacePos, lastWhiteSpaceLength).CopyTo (outBuf.AsSpan (outPos));
-						outPos += lastWhiteSpaceLength;
-					}
-
-					prevIsWordEncoded = isWordEncoded;
-					if (isWordEncoded)
-					{
-						var size = Rfc2047EncodedWord.Parse (source.Slice (valuePos, valueLength), byteBuf, out var encoding);
-						outPos += encoding.GetChars (byteBuf, 0, size, outBuf, outPos);
+						lastWhiteSpaceLength = pos - lastWhiteSpacePos;
 					}
 					else
 					{
-						source.Slice (valuePos, valueLength).CopyTo (outBuf.AsSpan (outPos));
-						outPos += valueLength;
-					}
+						var valuePos = pos;
+						while (pos < source.Length)
+						{
+							octet = source[pos];
+							if ((octet >= AsciiCharSet.Classes.Count) || ((AsciiCharSet.Classes[octet] & (short)AsciiCharClasses.Visible) == 0))
+							{
+								break;
+							}
 
-					lastWhiteSpacePos = lastWhiteSpaceLength = 0;
+							pos++;
+						}
+
+						var valueLength = pos - valuePos;
+
+						if (valueLength < 1)
+						{
+							octet = source[pos];
+							if (octet > AsciiCharSet.MaxCharValue)
+							{
+								throw new FormatException (FormattableString.Invariant (
+									$"Value contains invalid for 'unstructured' character U+{octet:x}. Expected characters are U+0009 and U+0020...U+007E."));
+							}
+						}
+
+						var isWordEncoded = (valueLength > 8) &&
+							(source[valuePos] == '=') &&
+							(source[valuePos + 1] == '?') &&
+							(source[pos - 2] == '?') &&
+							(source[pos - 1] == '=');
+
+						// RFC 2047 часть 6.2:
+						// When displaying a particular header field that contains multiple 'encoded-word's,
+						// any 'linear-white-space' that separates a pair of adjacent 'encoded-word's is ignored
+						if ((!prevIsWordEncoded || !isWordEncoded) && (lastWhiteSpaceLength > 0) && (!trim || (outPos > 0)))
+						{
+							source.Slice (lastWhiteSpacePos, lastWhiteSpaceLength).CopyTo (outBuf.AsSpan (outPos));
+							outPos += lastWhiteSpaceLength;
+						}
+
+						prevIsWordEncoded = isWordEncoded;
+						if (isWordEncoded)
+						{
+							if (byteBuf == null)
+							{
+								byteBuf = ArrayPool<byte>.Shared.Rent (Rfc2047EncodedWord.MaxBinaryLenght);
+							}
+
+							var size = Rfc2047EncodedWord.Parse (source.Slice (valuePos, valueLength), byteBuf, out var encoding);
+							outPos += encoding.GetChars (byteBuf, 0, size, outBuf, outPos);
+						}
+						else
+						{
+							source.Slice (valuePos, valueLength).CopyTo (outBuf.AsSpan (outPos));
+							outPos += valueLength;
+						}
+
+						lastWhiteSpacePos = lastWhiteSpaceLength = 0;
+					}
+				}
+			}
+			finally
+			{
+				if (byteBuf != null)
+				{
+					ArrayPool<byte>.Shared.Return (byteBuf);
 				}
 			}
 
-			if (lastWhiteSpaceLength > 0)
+			if (!trim && (lastWhiteSpaceLength > 0))
 			{
 				source.Slice (lastWhiteSpacePos, lastWhiteSpaceLength).CopyTo (outBuf.AsSpan (outPos));
 				outPos += lastWhiteSpaceLength;
 			}
 
-#if NETCOREAPP2_1
-			return new string (outBuf.AsSpan (0, outPos));
-#else
 			return new string (outBuf, 0, outPos);
-#endif
 		}
 
 		/// <summary>
@@ -207,7 +219,6 @@ namespace Novartment.Base.Net.Mime
 		{
 			var parserPos = 0;
 			var outBuf = new char[MaximumHeaderFieldBodySize];
-			var byteBuf = new byte[HeaderFieldBuilder.MaxLineLengthRequired];
 			var outPos = 0;
 			var prevIsWordEncoded = false;
 			while (true)
@@ -235,15 +246,11 @@ namespace Novartment.Base.Net.Mime
 					outBuf[outPos++] = ' ';
 				}
 
-				outPos += token.Decode (source, outBuf.AsSpan (outPos), byteBuf);
+				outPos += token.Decode (source, outBuf.AsSpan (outPos));
 				prevIsWordEncoded = isWordEncoded;
 			}
 
-#if NETCOREAPP2_1
-			return new string (outBuf.AsSpan (0, outPos));
-#else
 			return new string (outBuf, 0, outPos);
-#endif
 		}
 
 		/// <summary>
@@ -327,7 +334,7 @@ namespace Novartment.Base.Net.Mime
 				throw new FormatException ("Value does not conform to format 'type;value'.");
 			}
 
-			var valueStr = DecodeUnstructured (source.Slice (separatorToken.Position + 1));
+			var valueStr = DecodeUnstructured (source.Slice (separatorToken.Position + 1), true);
 
 			return new NotificationFieldValue (valueType, valueStr);
 		}
@@ -341,8 +348,8 @@ namespace Novartment.Base.Net.Mime
 		{
 			// коменты не распознаются. допускаем что в кодированных словах нет ';'
 			var idx = source.IndexOf (';');
-			var text1 = (idx >= 0) ? DecodeUnstructured (source.Slice (0, idx)) : DecodeUnstructured (source);
-			var text2 = (idx >= 0) ? DecodeUnstructured (source.Slice (idx + 1)) : null;
+			var text1 = (idx >= 0) ? DecodeUnstructured (source.Slice (0, idx), true) : DecodeUnstructured (source, true);
+			var text2 = (idx >= 0) ? DecodeUnstructured (source.Slice (idx + 1), true) : null;
 
 			return new TwoStrings () { Value1 = text1, Value2 = text2 };
 		}
@@ -386,8 +393,7 @@ namespace Novartment.Base.Net.Mime
 		internal static TwoStrings DecodePhraseAndId (ReadOnlySpan<char> source)
 		{
 			var parserPos = 0;
-			var outBuf = new char[MaximumHeaderFieldBodySize];
-			var byteBuf = new byte[HeaderFieldBuilder.MaxLineLengthRequired];
+			char[] outBuf = null;
 			var outPos = 0;
 			var prevIsWordEncoded = false;
 			StructuredHeaderFieldLexicalToken lastToken = default;
@@ -423,7 +429,7 @@ namespace Novartment.Base.Net.Mime
 						outBuf[outPos++] = ' ';
 					}
 
-					outPos += lastToken.Decode (source, outBuf.AsSpan (outPos), byteBuf);
+					outPos += lastToken.Decode (source, outBuf.AsSpan (outPos));
 					prevIsWordEncoded = isWordEncoded;
 				}
 
@@ -435,15 +441,10 @@ namespace Novartment.Base.Net.Mime
 				throw new FormatException ("Value does not conform format 'phrase' + <id>.");
 			}
 
+			var text = (outPos > 0) ? new string (outBuf, 0, outPos) : null;
 #if NETCOREAPP2_1
-#else
-#endif
-
-#if NETCOREAPP2_1
-			var text = (outPos > 0) ? new string (outBuf.AsSpan (0, outPos)) : null;
 			var id = new string (source.Slice (lastToken.Position, lastToken.Length));
 #else
-			var text = (outPos > 0) ? new string (outBuf, 0, outPos) : null;
 			var id = new string (source.Slice (lastToken.Position, lastToken.Length).ToArray ());
 #endif
 			return new TwoStrings () { Value1 = text, Value2 = id };
@@ -459,7 +460,6 @@ namespace Novartment.Base.Net.Mime
 			var parserPos = 0;
 			var result = new ArrayList<string> ();
 			var outBuf = new char[MaximumHeaderFieldBodySize];
-			var byteBuf = new byte[HeaderFieldBuilder.MaxLineLengthRequired];
 			var outPos = 0;
 			var prevIsWordEncoded = false;
 			while (true)
@@ -475,11 +475,7 @@ namespace Novartment.Base.Net.Mime
 				{
 					if (outPos > 0)
 					{
-#if NETCOREAPP2_1
-						var str = new string (outBuf.AsSpan (0, outPos));
-#else
 						var str = new string (outBuf, 0, outPos);
-#endif
 						result.Add (str);
 						outPos = 0;
 					}
@@ -498,18 +494,14 @@ namespace Novartment.Base.Net.Mime
 						outBuf[outPos++] = ' ';
 					}
 
-					outPos += token.Decode (source, outBuf.AsSpan (outPos), byteBuf);
+					outPos += token.Decode (source, outBuf.AsSpan (outPos));
 					prevIsWordEncoded = isWordEncoded;
 				}
 			}
 
 			if (outPos > 0)
 			{
-#if NETCOREAPP2_1
-				var str = new string (outBuf.AsSpan (0, outPos));
-#else
 				var str = new string (outBuf, 0, outPos);
-#endif
 				result.Add (str);
 			}
 
@@ -702,7 +694,11 @@ namespace Novartment.Base.Net.Mime
 			var parserPos = 0;
 			var valueToken = StructuredHeaderFieldLexicalToken.ParseAtom (source, ref parserPos);
 
-			var parameterDecoder = new HeaderFieldBodyParameterDecoder ();
+			var result = new ArrayList<HeaderFieldParameter> ();
+			string parameterName = null;
+			var outBuf = new char[MaximumHeaderFieldBodySize];
+			var outPos = 0;
+			Encoding encoding = null;
 			while (true)
 			{
 				var token = StructuredHeaderFieldLexicalToken.ParseToken (source, ref parserPos);
@@ -717,12 +713,43 @@ namespace Novartment.Base.Net.Mime
 					throw new FormatException ("Value does not conform to 'atom *(; parameter)' format.");
 				}
 
-				var part = HeaderFieldParameterPart.Parse (source, ref parserPos);
+				var part = HeaderFieldBodyParameterPart.Parse (source, ref parserPos);
+				if (part.IsFirstSection)
+				{
+					// начался новый параметр
+					// возвращаем предыдущий параметр если был
+					if (parameterName != null)
+					{
+						result.Add (new HeaderFieldParameter (parameterName, new string (outBuf, 0, outPos)));
+					}
 
-				parameterDecoder.AddPart (part);
+#if NETCOREAPP2_1
+					parameterName = new string (source.Slice (part.Name.Position, part.Name.Length));
+#else
+					parameterName = new string (source.Slice (part.Name.Position, part.Name.Length).ToArray ());
+#endif
+					outPos = 0;
+					try
+					{
+						encoding = part.Encoding != null ? Encoding.GetEncoding (part.Encoding) : Encoding.ASCII;
+					}
+					catch (ArgumentException excpt)
+					{
+						throw new FormatException (
+							FormattableString.Invariant ($"'{part.Encoding}' is not valid code page name."),
+							excpt);
+					}
+				}
+
+				outPos += part.GetValue (source, encoding, outBuf, outPos);
 			}
 
-			return new StringAndParameters (source.Slice (valueToken.Position, valueToken.Length), parameterDecoder.GetResult ());
+			if (parameterName != null)
+			{
+				result.Add (new HeaderFieldParameter (parameterName, new string (outBuf, 0, outPos)));
+			}
+
+			return new StringAndParameters (source.Slice (valueToken.Position, valueToken.Length), result);
 		}
 
 		internal static ThreeStringsAndList DecodeDispositionAction (ReadOnlySpan<char> source)
@@ -743,9 +770,6 @@ namespace Novartment.Base.Net.Mime
 			{
 				throw new FormatException ("Specified value does not represent valid 'disposition-action'.");
 			}
-
-			var outBuf = new char[HeaderFieldBuilder.MaxLineLengthRequired];
-			var byteBuf = new byte[HeaderFieldBuilder.MaxLineLengthRequired];
 
 #if NETCOREAPP2_1
 			var actionMode = new string (source.Slice (actionModeToken.Position, actionModeToken.Length));
@@ -825,9 +849,6 @@ namespace Novartment.Base.Net.Mime
 			attribute = Atom
 			value = atom / quoted-string
 			*/
-
-			var outBuf = new char[HeaderFieldBuilder.MaxLineLengthRequired];
-			var byteBuf = new byte[HeaderFieldBuilder.MaxLineLengthRequired];
 
 			var parserPos = 0;
 			var result = new ArrayList<DispositionNotificationParameter> ();
