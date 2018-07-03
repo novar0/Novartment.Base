@@ -29,66 +29,68 @@ namespace Novartment.Base.Net.Mime.Test
 		public void DecodeUnstructured ()
 		{
 			// проверяем что не корректно декодируется пустое значение
-			Assert.Equal (string.Empty, HeaderDecoder.DecodeUnstructured (Array.Empty<char> (), true));
+			var buf = new char[1000];
+			Assert.Equal (0, HeaderDecoder.DecodeUnstructured (Array.Empty<char> (), true, buf).Length);
 
 			// проверяем что не корректно декодируется значение только из пробельных символов
-			Assert.Equal ("\t  \t", HeaderDecoder.DecodeUnstructured ("\t  \t", false));
-			Assert.Equal (0, HeaderDecoder.DecodeUnstructured ("\t  \t", true).Length);
-			Assert.Equal ("Simple", HeaderDecoder.DecodeUnstructured ("Simple", false));
+			Assert.Equal ("\t  \t", HeaderDecoder.DecodeUnstructured ("\t  \t", false, buf));
+			Assert.Equal (0, HeaderDecoder.DecodeUnstructured ("\t  \t", true, buf).Length);
+			Assert.Equal ("Simple", HeaderDecoder.DecodeUnstructured ("Simple", false, buf));
 
 			// проверяем что не теряются пробельные символы
-			Assert.Equal ("\t Simple  \" no\\t \\ quoted \"  Text\" ", HeaderDecoder.DecodeUnstructured ("\t Simple  \" no\\t \\ quoted \"  Text\" ", false));
-			Assert.Equal ("Simple  \" no\\t \\ quoted \"  Text\"", HeaderDecoder.DecodeUnstructured ("\t Simple  \" no\\t \\ quoted \"  Text\" ", true));
+			Assert.Equal ("\t Simple  \" no\\t \\ quoted \"  Text\" ", HeaderDecoder.DecodeUnstructured ("\t Simple  \" no\\t \\ quoted \"  Text\" ", false, buf));
+			Assert.Equal ("Simple  \" no\\t \\ quoted \"  Text\"", HeaderDecoder.DecodeUnstructured ("\t Simple  \" no\\t \\ quoted \"  Text\" ", true, buf));
 
 			// проверяем что НЕ распознаются треугольные кавычки
-			Assert.Equal ("\t Simple  < not addr >  Text ", HeaderDecoder.DecodeUnstructured ("\t Simple  < not addr >  Text ", false));
+			Assert.Equal ("\t Simple  < not addr >  Text ", HeaderDecoder.DecodeUnstructured ("\t Simple  < not addr >  Text ", false, buf));
 
 			// проверяем что НЕ распознаются круглые кавычки
-			Assert.Equal ("\t Simple  (not\tcomment)  ;Text ", HeaderDecoder.DecodeUnstructured ("\t Simple  (not\tcomment)  ;Text ", false));
+			Assert.Equal ("\t Simple  (not\tcomment)  ;Text ", HeaderDecoder.DecodeUnstructured ("\t Simple  (not\tcomment)  ;Text ", false, buf));
 
 			// проверяем что распознаются кодированные слова отделённые пробелом
-			Assert.Equal ("aa 123;abc", HeaderDecoder.DecodeUnstructured ("aa =?utf-8?Q?123;abc?=", false));
+			Assert.Equal ("aa 123;abc", HeaderDecoder.DecodeUnstructured ("aa =?utf-8?Q?123;abc?=", false, buf));
 
 			// проверяем что НЕ распознаются кодированные слова НЕ отделённые пробелом
-			Assert.Equal ("aa=?utf-8?Q?123;abc?=", HeaderDecoder.DecodeUnstructured ("aa=?utf-8?Q?123;abc?=", false));
-			Assert.Equal ("\t Simple  (not\tcomment)  Text ", HeaderDecoder.DecodeUnstructured ("=?koi8-r?Q?=09_Simple__(not=09comment)__Text_?=", false));
+			Assert.Equal ("aa=?utf-8?Q?123;abc?=", HeaderDecoder.DecodeUnstructured ("aa=?utf-8?Q?123;abc?=", false, buf));
+			Assert.Equal ("\t Simple  (not\tcomment)  Text ", HeaderDecoder.DecodeUnstructured ("=?koi8-r?Q?=09_Simple__(not=09comment)__Text_?=", false, buf));
 
 			// проверяем что НЕ соседние кодированные слова склеиваются корректно (с сохранением пробелов)
-			Assert.Equal ("123;abc aa\t\t456;def", HeaderDecoder.DecodeUnstructured ("=?utf-8?Q?123;abc?= aa\t\t=?utf-8?Q?456;def?=", false));
+			Assert.Equal ("123;abc aa\t\t456;def", HeaderDecoder.DecodeUnstructured ("=?utf-8?Q?123;abc?= aa\t\t=?utf-8?Q?456;def?=", false, buf));
 
 			// проверяем что соседние (разделённые пробелами) кодированные слова склеиваются корректно (без пробелов)
 			Assert.Equal (
 				"Идея состоит в томКонстантин Теличко",
-				HeaderDecoder.DecodeUnstructured ("=?windows-1251?Q?=C8=E4=E5=FF_=F1=EE=F1=F2=EE=E8=F2_=E2_=F2=EE=EC?=\t  =?koi8-r?B?68/O09TBztTJziD0xczJ3svP?=", false));
+				HeaderDecoder.DecodeUnstructured ("=?windows-1251?Q?=C8=E4=E5=FF_=F1=EE=F1=F2=EE=E8=F2_=E2_=F2=EE=EC?=\t  =?koi8-r?B?68/O09TBztTJziD0xczJ3svP?=", false, buf));
 			Assert.Equal (
 				"Simple=?windows-1251?Q?=C8=E4=E5=FF_=F1=EE=F1=F2=EE=E8=F2_=E2_=F2=EE=EC?=\t  Константин Теличко",
-				HeaderDecoder.DecodeUnstructured ("Simple=?windows-1251?Q?=C8=E4=E5=FF_=F1=EE=F1=F2=EE=E8=F2_=E2_=F2=EE=EC?=\t  =?koi8-r?B?68/O09TBztTJziD0xczJ3svP?=", false));
+				HeaderDecoder.DecodeUnstructured ("Simple=?windows-1251?Q?=C8=E4=E5=FF_=F1=EE=F1=F2=EE=E8=F2_=E2_=F2=EE=EC?=\t  =?koi8-r?B?68/O09TBztTJziD0xczJ3svP?=", false, buf));
 			Assert.Equal (
 				"Simple Идея состоит в томКонстантин Теличко",
-				HeaderDecoder.DecodeUnstructured ("Simple =?windows-1251?Q?=C8=E4=E5=FF_=F1=EE=F1=F2=EE=E8=F2_=E2_=F2=EE=EC?=\t  =?koi8-r?B?68/O09TBztTJziD0xczJ3svP?=", false));
+				HeaderDecoder.DecodeUnstructured ("Simple =?windows-1251?Q?=C8=E4=E5=FF_=F1=EE=F1=F2=EE=E8=F2_=E2_=F2=EE=EC?=\t  =?koi8-r?B?68/O09TBztTJziD0xczJ3svP?=", false, buf));
 			Assert.Equal ("\tПри 2012г усиленных мерах безопасности", HeaderDecoder.DecodeUnstructured (
 				"\t=?utf-8?B?0J/RgNC4?= =?utf-8?Q?_2012=D0=B3?=" +
 				"\t=?utf-8?B?INGD0YHQuNC70LXQvdC90YvRhQ==?= =?utf-8?B?INC80LXRgNCw0YU=?=" +
-				"\t=?utf-8?B?INCx0LXQt9C+0L/QsNGB0L3QvtGB0YLQuA==?=", false));
-			Assert.Throws<FormatException> (() => HeaderDecoder.DecodeUnstructured ("Simp\u00d7le", false));
+				"\t=?utf-8?B?INCx0LXQt9C+0L/QsNGB0L3QvtGB0YLQuA==?=", false, buf));
+			Assert.Throws<FormatException> (() => HeaderDecoder.DecodeUnstructured ("Simp\u00d7le", false, buf));
 		}
 
 		[Fact]
 		[Trait ("Category", "Mime.HeaderDecoder")]
 		public void DecodePhrase ()
 		{
-			Assert.Equal ("source", HeaderDecoder.DecodePhrase ("source"));
-			Assert.Equal ("source one", HeaderDecoder.DecodePhrase ("source one"));
-			Assert.Equal ("source one", HeaderDecoder.DecodePhrase ("source  one"));
-			Assert.Equal ("source one", HeaderDecoder.DecodePhrase (" source \t one  "));
-			Assert.Equal ("source source.net Один", HeaderDecoder.DecodePhrase ("source (dd klk 2012) source.net =?utf-8?B?0J7QtNC40L0=?="));
+			var buf = new char[1000];
+			Assert.Equal ("source", HeaderDecoder.DecodePhrase ("source", buf));
+			Assert.Equal ("source one", HeaderDecoder.DecodePhrase ("source one", buf));
+			Assert.Equal ("source one", HeaderDecoder.DecodePhrase ("source  one", buf));
+			Assert.Equal ("source one", HeaderDecoder.DecodePhrase (" source \t one  ", buf));
+			Assert.Equal ("source source.net Один", HeaderDecoder.DecodePhrase ("source (dd klk 2012) source.net =?utf-8?B?0J7QtNC40L0=?=", buf));
 			Assert.Equal (
 				"Join your peers at Eloqua Experience 2013 при best practices and road-tested дисплеем с разрешением порядка",
 				HeaderDecoder.DecodePhrase (
 					"Join your peers at Eloqua Experience 2013 =?utf-8?B?0L/RgNC4?= best practices " +
 					"and road-tested (strategies (that) get results) " +
 					"=?utf-8?B?0LTQuNGB0L/Qu9C10LXQvA==?= =?utf-8?B?INGB?= " +
-					"=?utf-8?B?INGA0LDQt9GA0LXRiNC10L3QuNC10Lw=?= =?utf-8?B?INC/0L7RgNGP0LTQutCw?="));
+					"=?utf-8?B?INGA0LDQt9GA0LXRiNC10L3QuNC10Lw=?= =?utf-8?B?INC/0L7RgNGP0LTQutCw?=", buf));
 		}
 
 		[Fact]
@@ -114,29 +116,31 @@ namespace Novartment.Base.Net.Mime.Test
 		[Trait ("Category", "Mime.HeaderDecoder")]
 		public void DecodeNotificationFieldValue ()
 		{
-			var value = HeaderDecoder.DecodeNotificationFieldValue ("\trfc822 (mail-addres) ; louisl@larry.slip.umd.edu");
+			var buf = new char[1000];
+			var value = HeaderDecoder.DecodeNotificationFieldValue ("\trfc822 (mail-addres) ; louisl@larry.slip.umd.edu", buf);
 			Assert.Equal (NotificationFieldValueKind.Mailbox, value.Kind);
 			Assert.Equal ("louisl@larry.slip.umd.edu", value.Value);
 
-			value = HeaderDecoder.DecodeNotificationFieldValue (" smtp ; =?utf-8?B?0LrRgtC+LdGC0L4=?=  2012 ");
+			value = HeaderDecoder.DecodeNotificationFieldValue (" smtp ; =?utf-8?B?0LrRgtC+LdGC0L4=?=  2012 ", buf);
 			Assert.Equal (NotificationFieldValueKind.Status, value.Kind);
 			Assert.Equal ("кто-то  2012", value.Value);
 
-			Assert.Throws<FormatException> (() => HeaderDecoder.DecodeNotificationFieldValue ("atom;"));
-			Assert.Throws<FormatException> (() => HeaderDecoder.DecodeNotificationFieldValue (";"));
-			Assert.Throws<FormatException> (() => HeaderDecoder.DecodeNotificationFieldValue ("type=id;"));
-			Assert.Throws<FormatException> (() => HeaderDecoder.DecodeNotificationFieldValue ("esmtp;value"));
+			Assert.Throws<FormatException> (() => HeaderDecoder.DecodeNotificationFieldValue ("atom;", buf));
+			Assert.Throws<FormatException> (() => HeaderDecoder.DecodeNotificationFieldValue (";", buf));
+			Assert.Throws<FormatException> (() => HeaderDecoder.DecodeNotificationFieldValue ("type=id;", buf));
+			Assert.Throws<FormatException> (() => HeaderDecoder.DecodeNotificationFieldValue ("esmtp;value", buf));
 		}
 
 		[Fact]
 		[Trait ("Category", "Mime.HeaderDecoder")]
 		public void DecodeUnstructuredPair ()
 		{
-			var data = HeaderDecoder.DecodeUnstructuredPair ("\t Simple  < not addr >  Text ");
+			var buf = new char[1000];
+			var data = HeaderDecoder.DecodeUnstructuredPair ("\t Simple  < not addr >  Text ", buf);
 			Assert.Equal ("Simple  < not addr >  Text", data.Value1);
 			Assert.Null (data.Value2);
 
-			data = HeaderDecoder.DecodeUnstructuredPair ("\t Simple  < not addr >  Text ; \t=?utf-8?B?0J/RgNC4?= =?utf-8?Q?_2012=D0=B3?=\t ");
+			data = HeaderDecoder.DecodeUnstructuredPair ("\t Simple  < not addr >  Text ; \t=?utf-8?B?0J/RgNC4?= =?utf-8?Q?_2012=D0=B3?=\t ", buf);
 			Assert.Equal ("Simple  < not addr >  Text", data.Value1);
 			Assert.Equal ("При 2012г", data.Value2);
 		}
@@ -165,31 +169,33 @@ namespace Novartment.Base.Net.Mime.Test
 		[Trait ("Category", "Mime")]
 		public void DecodePhraseAndId ()
 		{
-			var data = HeaderDecoder.DecodePhraseAndId (" ( comment here )    <some.id@someserver.com> ");
+			var buf = new char[1000];
+			var data = HeaderDecoder.DecodePhraseAndId (" ( comment here )    <some.id@someserver.com> ", buf);
 			Assert.Null (data.Value1);
 			Assert.Equal ("some.id@someserver.com", data.Value2);
 
-			data = HeaderDecoder.DecodePhraseAndId ("\t Simple  (not\tcomment)  Text     <some.id@someserver.com>");
+			data = HeaderDecoder.DecodePhraseAndId ("\t Simple  (not\tcomment)  Text     <some.id@someserver.com>", buf);
 			Assert.Equal ("Simple Text", data.Value1);
 			Assert.Equal ("some.id@someserver.com", data.Value2);
 
-			data = HeaderDecoder.DecodePhraseAndId ("\t=?utf-8?B?0J/RgNC4?= =?utf-8?Q?_2012=D0=B3?=\t<some.id@someserver.com> ");
+			data = HeaderDecoder.DecodePhraseAndId ("\t=?utf-8?B?0J/RgNC4?= =?utf-8?Q?_2012=D0=B3?=\t<some.id@someserver.com> ", buf);
 			Assert.Equal ("При 2012г", data.Value1);
 			Assert.Equal ("some.id@someserver.com", data.Value2);
 
-			Assert.Throws<FormatException> (() => HeaderDecoder.DecodePhraseAndId (Array.Empty<char> ()));
-			Assert.Throws<FormatException> (() => HeaderDecoder.DecodePhraseAndId ("Some Text postmaser@someserver.com"));
+			Assert.Throws<FormatException> (() => HeaderDecoder.DecodePhraseAndId (Array.Empty<char> (), buf));
+			Assert.Throws<FormatException> (() => HeaderDecoder.DecodePhraseAndId ("Some Text postmaser@someserver.com", buf));
 		}
 
 		[Fact]
 		[Trait ("Category", "Mime.HeaderDecoder")]
 		public void DecodePhraseList ()
 		{
-			var arr = HeaderDecoder.DecodePhraseList ("ru-ru");
+			var buf = new char[1000];
+			var arr = HeaderDecoder.DecodePhraseList ("ru-ru", buf);
 			Assert.Equal (1, arr.Count);
 			Assert.Equal ("ru-ru", arr[0]);
 
-			arr = HeaderDecoder.DecodePhraseList (" ru-ru,\t Simple  (not\tcomment)  Text,\t=?utf-8?B?0J/RgNC4?= =?utf-8?Q?_2012=D0=B3?= ");
+			arr = HeaderDecoder.DecodePhraseList (" ru-ru,\t Simple  (not\tcomment)  Text,\t=?utf-8?B?0J/RgNC4?= =?utf-8?Q?_2012=D0=B3?= ", buf);
 			Assert.Equal (3, arr.Count);
 			Assert.Equal ("ru-ru", arr[0]);
 			Assert.Equal ("Simple Text", arr[1]);
@@ -335,13 +341,14 @@ namespace Novartment.Base.Net.Mime.Test
 		[Trait ("Category", "Mime.HeaderDecoder")]
 		public void DecodeAtomAndParameterList ()
 		{
-			var data = HeaderDecoder.DecodeAtomAndParameterList ("text/plain");
+			var buf = new char[100];
+			var data = HeaderDecoder.DecodeAtomAndParameterList ("text/plain", buf);
 			Assert.Equal ("text/plain", new string (data.Text));
 			var arr = data.Parameters;
 			Assert.Equal (0, arr.Count);
 
 			data = HeaderDecoder.DecodeAtomAndParameterList (
-				" text/plain\t;\t   format = flowed (obsolette) ;\t   charset= \"koi8-r\"  ; reply-type = original  ");
+				" text/plain\t;\t   format = flowed (obsolette) ;\t   charset= \"koi8-r\"  ; reply-type = original  ", buf);
 			Assert.Equal ("text/plain", new string (data.Text));
 			arr = data.Parameters;
 			Assert.Equal (3, arr.Count);
@@ -445,25 +452,22 @@ namespace Novartment.Base.Net.Mime.Test
 		{
 			var buffer = new char[100];
 
-			var result = new string (HeaderDecoder.UnfoldFieldBody (Array.Empty<byte> (), buffer));
-			Assert.Equal (string.Empty, result);
+			var resultSize = HeaderDecoder.CopyWithUnfold (Array.Empty<byte> (), buffer);
+			Assert.Equal (0, resultSize);
 
 			var src = Encoding.ASCII.GetBytes ("\r\n\r\n");
-			result = new string (HeaderDecoder.UnfoldFieldBody (src, buffer));
-			Assert.Equal (string.Empty, result);
+			resultSize = HeaderDecoder.CopyWithUnfold (src, buffer);
+			Assert.Equal (0, resultSize);
 
 			src = Encoding.ASCII.GetBytes ("x");
-			result = new string (HeaderDecoder.UnfoldFieldBody (src, buffer));
-			Assert.Equal ("x", result);
+			resultSize = HeaderDecoder.CopyWithUnfold (src, buffer);
+			Assert.Equal (1, resultSize);
+			Assert.Equal ('x', buffer[0]);
 
 			src = Encoding.ASCII.GetBytes (
 				"  \r\n   text/plain;\r\n\t\t\t\tformat=flowed;\r\n\t\tcharset=\"koi8-r\";\r\n\treply-type=original  \t \t");
-			result = new string (HeaderDecoder.UnfoldFieldBody (src, buffer));
-			Assert.Equal ("     text/plain;\t\t\t\tformat=flowed;\t\tcharset=\"koi8-r\";\treply-type=original  \t \t", result);
-
-			src = new byte[101];
-			Array.Fill<byte> (src, 85);
-			Assert.Throws<InvalidOperationException> (() => HeaderDecoder.UnfoldFieldBody (src, buffer));
+			resultSize = HeaderDecoder.CopyWithUnfold (src, buffer);
+			Assert.Equal ("     text/plain;\t\t\t\tformat=flowed;\t\tcharset=\"koi8-r\";\treply-type=original  \t \t", new string (buffer.AsSpan (0, resultSize)));
 		}
 	}
 }

@@ -482,10 +482,11 @@ namespace Novartment.Base.Net.Mime
 			// будет принудительно использован Content-Type: application/octet-stream независимо от фактически указанного.
 			var contentProperties = new EssentialContentProperties ();
 
-			var buffer = ArrayPool<char>.Shared.Rent (HeaderDecoder.MaximumHeaderFieldBodySize);
+			var fieldBodyBuffer = ArrayPool<char>.Shared.Rent (HeaderDecoder.MaximumHeaderFieldBodySize);
+			var fieldBodyElementBuffer = ArrayPool<char>.Shared.Rent (HeaderDecoder.MaximumHeaderFieldBodySize);
 			try
 			{
-				ReadOnlySpan<char> unfoldedBody;
+				int unfoldedBodySize;
 				foreach (var fieldEntry in header.Where (item => !item.IsMarked))
 				{
 					try
@@ -493,52 +494,52 @@ namespace Novartment.Base.Net.Mime
 						switch (fieldEntry.Field.Name)
 						{
 							case HeaderFieldName.ContentType:
-								unfoldedBody = HeaderDecoder.UnfoldFieldBody (fieldEntry.Field.Body.Span, buffer);
-								fieldEntry.IsMarked = ParseContentTypeField (unfoldedBody, contentProperties);
+								unfoldedBodySize = HeaderDecoder.CopyWithUnfold (fieldEntry.Field.Body.Span, fieldBodyBuffer);
+								fieldEntry.IsMarked = ParseContentTypeField (fieldBodyBuffer.AsSpan (0, unfoldedBodySize), contentProperties, fieldBodyElementBuffer);
 								break;
 							case HeaderFieldName.ContentDisposition:
-								unfoldedBody = HeaderDecoder.UnfoldFieldBody (fieldEntry.Field.Body.Span, buffer);
-								fieldEntry.IsMarked = ParseContentDispositionField (unfoldedBody);
+								unfoldedBodySize = HeaderDecoder.CopyWithUnfold (fieldEntry.Field.Body.Span, fieldBodyBuffer);
+								fieldEntry.IsMarked = ParseContentDispositionField (fieldBodyBuffer.AsSpan (0, unfoldedBodySize), fieldBodyElementBuffer);
 								break;
 							case HeaderFieldName.ContentTransferEncoding:
-								unfoldedBody = HeaderDecoder.UnfoldFieldBody (fieldEntry.Field.Body.Span, buffer);
-								fieldEntry.IsMarked = ParseContentTransferEncodingField (unfoldedBody, contentProperties, ref transferEncoding);
+								unfoldedBodySize = HeaderDecoder.CopyWithUnfold (fieldEntry.Field.Body.Span, fieldBodyBuffer);
+								fieldEntry.IsMarked = ParseContentTransferEncodingField (fieldBodyBuffer.AsSpan (0, unfoldedBodySize), contentProperties, ref transferEncoding);
 								break;
 							case HeaderFieldName.ContentId:
-								unfoldedBody = HeaderDecoder.UnfoldFieldBody (fieldEntry.Field.Body.Span, buffer);
-								fieldEntry.IsMarked = ParseContentIdField (unfoldedBody);
+								unfoldedBodySize = HeaderDecoder.CopyWithUnfold (fieldEntry.Field.Body.Span, fieldBodyBuffer);
+								fieldEntry.IsMarked = ParseContentIdField (fieldBodyBuffer.AsSpan (0, unfoldedBodySize));
 								break;
 							case HeaderFieldName.ContentDescription:
-								unfoldedBody = HeaderDecoder.UnfoldFieldBody (fieldEntry.Field.Body.Span, buffer);
-								fieldEntry.IsMarked = ParseContentDescriptionField (unfoldedBody);
+								unfoldedBodySize = HeaderDecoder.CopyWithUnfold (fieldEntry.Field.Body.Span, fieldBodyBuffer);
+								fieldEntry.IsMarked = ParseContentDescriptionField (fieldBodyBuffer.AsSpan (0, unfoldedBodySize), fieldBodyElementBuffer);
 								break;
 							case HeaderFieldName.ContentBase:
-								unfoldedBody = HeaderDecoder.UnfoldFieldBody (fieldEntry.Field.Body.Span, buffer);
-								fieldEntry.IsMarked = ParseContentBaseField (unfoldedBody);
+								unfoldedBodySize = HeaderDecoder.CopyWithUnfold (fieldEntry.Field.Body.Span, fieldBodyBuffer);
+								fieldEntry.IsMarked = ParseContentBaseField (fieldBodyBuffer.AsSpan (0, unfoldedBodySize));
 								break;
 							case HeaderFieldName.ContentLocation:
-								unfoldedBody = HeaderDecoder.UnfoldFieldBody (fieldEntry.Field.Body.Span, buffer);
-								fieldEntry.IsMarked = ParseContentLocationField (unfoldedBody);
+								unfoldedBodySize = HeaderDecoder.CopyWithUnfold (fieldEntry.Field.Body.Span, fieldBodyBuffer);
+								fieldEntry.IsMarked = ParseContentLocationField (fieldBodyBuffer.AsSpan (0, unfoldedBodySize));
 								break;
 							case HeaderFieldName.ContentFeatures:
-								unfoldedBody = HeaderDecoder.UnfoldFieldBody (fieldEntry.Field.Body.Span, buffer);
-								fieldEntry.IsMarked = ParseContentFeaturesField (unfoldedBody);
+								unfoldedBodySize = HeaderDecoder.CopyWithUnfold (fieldEntry.Field.Body.Span, fieldBodyBuffer);
+								fieldEntry.IsMarked = ParseContentFeaturesField (fieldBodyBuffer.AsSpan (0, unfoldedBodySize), fieldBodyElementBuffer);
 								break;
 							case HeaderFieldName.ContentLanguage:
-								unfoldedBody = HeaderDecoder.UnfoldFieldBody (fieldEntry.Field.Body.Span, buffer);
-								fieldEntry.IsMarked = ParseContentLanguageField (unfoldedBody);
+								unfoldedBodySize = HeaderDecoder.CopyWithUnfold (fieldEntry.Field.Body.Span, fieldBodyBuffer);
+								fieldEntry.IsMarked = ParseContentLanguageField (fieldBodyBuffer.AsSpan (0, unfoldedBodySize));
 								break;
 							case HeaderFieldName.ContentAlternative:
-								unfoldedBody = HeaderDecoder.UnfoldFieldBody (fieldEntry.Field.Body.Span, buffer);
-								fieldEntry.IsMarked = ParseContentAlternativeField (unfoldedBody);
+								unfoldedBodySize = HeaderDecoder.CopyWithUnfold (fieldEntry.Field.Body.Span, fieldBodyBuffer);
+								fieldEntry.IsMarked = ParseContentAlternativeField (fieldBodyBuffer.AsSpan (0, unfoldedBodySize), fieldBodyElementBuffer);
 								break;
 							case HeaderFieldName.ContentMD5:
-								unfoldedBody = HeaderDecoder.UnfoldFieldBody (fieldEntry.Field.Body.Span, buffer);
-								fieldEntry.IsMarked = ParseContentMD5Field (unfoldedBody);
+								unfoldedBodySize = HeaderDecoder.CopyWithUnfold (fieldEntry.Field.Body.Span, fieldBodyBuffer);
+								fieldEntry.IsMarked = ParseContentMD5Field (fieldBodyBuffer.AsSpan (0, unfoldedBodySize));
 								break;
 							case HeaderFieldName.ContentDuration:
-								unfoldedBody = HeaderDecoder.UnfoldFieldBody (fieldEntry.Field.Body.Span, buffer);
-								fieldEntry.IsMarked = ParseContentDurationField (unfoldedBody);
+								unfoldedBodySize = HeaderDecoder.CopyWithUnfold (fieldEntry.Field.Body.Span, fieldBodyBuffer);
+								fieldEntry.IsMarked = ParseContentDurationField (fieldBodyBuffer.AsSpan (0, unfoldedBodySize));
 								break;
 						}
 					}
@@ -550,7 +551,8 @@ namespace Novartment.Base.Net.Mime
 			}
 			finally
 			{
-				ArrayPool<char>.Shared.Return (buffer);
+				ArrayPool<char>.Shared.Return (fieldBodyElementBuffer);
+				ArrayPool<char>.Shared.Return (fieldBodyBuffer);
 			}
 
 			// RFC 2045 part 5.2:
@@ -573,7 +575,7 @@ namespace Novartment.Base.Net.Mime
 			return contentProperties;
 		}
 
-		private bool ParseContentTypeField (ReadOnlySpan<char> body, EssentialContentProperties contentProperties)
+		private bool ParseContentTypeField (ReadOnlySpan<char> body, EssentialContentProperties contentProperties, char[] fieldBodyElementBuffer)
 		{
 			if ((_type != ContentMediaType.Unspecified) || (_subtype != null))
 			{
@@ -594,7 +596,7 @@ namespace Novartment.Base.Net.Mime
 			*/
 			try
 			{
-				var data = HeaderDecoder.DecodeAtomAndParameterList (body);
+				var data = HeaderDecoder.DecodeAtomAndParameterList (body, fieldBodyElementBuffer);
 				var idx = data.Text.IndexOf ('/');
 				if ((idx < 1) || (idx > (data.Text.Length - 2)))
 				{
@@ -653,7 +655,7 @@ namespace Novartment.Base.Net.Mime
 			}
 		}
 
-		private bool ParseContentDispositionField (ReadOnlySpan<char> body)
+		private bool ParseContentDispositionField (ReadOnlySpan<char> body, char[] fieldBodyElementBuffer)
 		{
 			if (_dispositionType != ContentDispositionType.Unspecified)
 			{
@@ -663,7 +665,7 @@ namespace Novartment.Base.Net.Mime
 			// disposition := "Content-Disposition" ":" disposition-type *(";" disposition-parm)
 			// disposition-type := "inline" / "attachment" / extension-token
 			// disposition-parm := filename-parm / creation-date-parm / modification-date-parm / read-date-parm / size-parm / parameter
-			var data = HeaderDecoder.DecodeAtomAndParameterList (body);
+			var data = HeaderDecoder.DecodeAtomAndParameterList (body, fieldBodyElementBuffer);
 			var isValidDispositionType = DispositionTypeHelper.TryParse (data.Text, out ContentDispositionType dtype);
 			if (isValidDispositionType)
 			{
@@ -729,14 +731,14 @@ namespace Novartment.Base.Net.Mime
 			return true;
 		}
 
-		private bool ParseContentDescriptionField (ReadOnlySpan<char> body)
+		private bool ParseContentDescriptionField (ReadOnlySpan<char> body, char[] fieldBodyElementBuffer)
 		{
 			if (this.Description != null)
 			{
 				throw new FormatException ("More than one '" + HeaderFieldNameHelper.GetName (HeaderFieldName.ContentDescription) + "' field.");
 			}
 
-			this.Description = HeaderDecoder.DecodeUnstructured (body, true);
+			this.Description = HeaderDecoder.DecodeUnstructured (body, true, fieldBodyElementBuffer);
 			return true;
 		}
 
@@ -770,14 +772,14 @@ namespace Novartment.Base.Net.Mime
 			return true;
 		}
 
-		private bool ParseContentFeaturesField (ReadOnlySpan<char> body)
+		private bool ParseContentFeaturesField (ReadOnlySpan<char> body, char[] fieldBodyElementBuffer)
 		{
 			if (this.Features != null)
 			{
 				throw new FormatException ("More than one '" + HeaderFieldNameHelper.GetName (HeaderFieldName.ContentFeatures) + "' field.");
 			}
 
-			this.Features = HeaderDecoder.DecodeUnstructured (body, true);
+			this.Features = HeaderDecoder.DecodeUnstructured (body, true, fieldBodyElementBuffer);
 			return true;
 		}
 
@@ -793,9 +795,9 @@ namespace Novartment.Base.Net.Mime
 			return true;
 		}
 
-		private bool ParseContentAlternativeField (ReadOnlySpan<char> body)
+		private bool ParseContentAlternativeField (ReadOnlySpan<char> body, char[] fieldBodyElementBuffer)
 		{
-			this.Alternatives.Add (HeaderDecoder.DecodeUnstructured (body, true));
+			this.Alternatives.Add (HeaderDecoder.DecodeUnstructured (body, true, fieldBodyElementBuffer));
 			return true;
 		}
 

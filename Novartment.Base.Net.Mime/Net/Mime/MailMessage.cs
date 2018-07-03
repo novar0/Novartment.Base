@@ -390,82 +390,84 @@ namespace Novartment.Base.Net.Mime
 
 			var mailingList = new MailingList ();
 
-			var buffer = ArrayPool<char>.Shared.Rent (HeaderDecoder.MaximumHeaderFieldBodySize);
+			var fieldBodyBuffer = ArrayPool<char>.Shared.Rent (HeaderDecoder.MaximumHeaderFieldBodySize);
+			var fieldBodyElementBuffer = ArrayPool<char>.Shared.Rent (HeaderDecoder.MaximumHeaderFieldBodySize);
 			try
 			{
 				foreach (var fieldEntry in header.Where (item => !item.IsMarked))
 				{
 					try
 					{
-						ReadOnlySpan<char> unfoldedBody;
+						int unfoldedBodySize;
 						switch (fieldEntry.Field.Name)
 						{
 							// trace fields
 							case HeaderFieldName.ReturnPath:
-								unfoldedBody = HeaderDecoder.UnfoldFieldBody (fieldEntry.Field.Body.Span, buffer);
-								fieldEntry.IsMarked = ParseReturnPathField (unfoldedBody);
+								unfoldedBodySize = HeaderDecoder.CopyWithUnfold (fieldEntry.Field.Body.Span, fieldBodyBuffer);
+								fieldEntry.IsMarked = ParseReturnPathField (fieldBodyBuffer.AsSpan (0, unfoldedBodySize));
 								break;
 							case HeaderFieldName.Received:
-								unfoldedBody = HeaderDecoder.UnfoldFieldBody (fieldEntry.Field.Body.Span, buffer);
-								fieldEntry.IsMarked = ParseReceivedField (unfoldedBody, trace, ref traceBlock);
+								unfoldedBodySize = HeaderDecoder.CopyWithUnfold (fieldEntry.Field.Body.Span, fieldBodyBuffer);
+								fieldEntry.IsMarked = ParseReceivedField (fieldBodyBuffer.AsSpan (0, unfoldedBodySize), trace, ref traceBlock);
 								break;
 
 							// common fields
 							case HeaderFieldName.MimeVersion:
-								unfoldedBody = HeaderDecoder.UnfoldFieldBody (fieldEntry.Field.Body.Span, buffer);
-								fieldEntry.IsMarked = ParseMimeVersionField (unfoldedBody);
+								unfoldedBodySize = HeaderDecoder.CopyWithUnfold (fieldEntry.Field.Body.Span, fieldBodyBuffer);
+								fieldEntry.IsMarked = ParseMimeVersionField (fieldBodyBuffer.AsSpan (0, unfoldedBodySize));
 								break;
 							case HeaderFieldName.Date:
-								unfoldedBody = HeaderDecoder.UnfoldFieldBody (fieldEntry.Field.Body.Span, buffer);
-								fieldEntry.IsMarked = ParseDateField (unfoldedBody);
+								unfoldedBodySize = HeaderDecoder.CopyWithUnfold (fieldEntry.Field.Body.Span, fieldBodyBuffer);
+								fieldEntry.IsMarked = ParseDateField (fieldBodyBuffer.AsSpan (0, unfoldedBodySize));
 								break;
 							case HeaderFieldName.MessageId:
-								unfoldedBody = HeaderDecoder.UnfoldFieldBody (fieldEntry.Field.Body.Span, buffer);
-								fieldEntry.IsMarked = ParseMessageIdField (unfoldedBody);
+								unfoldedBodySize = HeaderDecoder.CopyWithUnfold (fieldEntry.Field.Body.Span, fieldBodyBuffer);
+								fieldEntry.IsMarked = ParseMessageIdField (fieldBodyBuffer.AsSpan (0, unfoldedBodySize));
 								break;
 							case HeaderFieldName.InReplyTo:
-								unfoldedBody = HeaderDecoder.UnfoldFieldBody (fieldEntry.Field.Body.Span, buffer);
-								fieldEntry.IsMarked = ParseInReplyToField (unfoldedBody);
+								unfoldedBodySize = HeaderDecoder.CopyWithUnfold (fieldEntry.Field.Body.Span, fieldBodyBuffer);
+								fieldEntry.IsMarked = ParseInReplyToField (fieldBodyBuffer.AsSpan (0, unfoldedBodySize));
 								break;
 							case HeaderFieldName.References:
-								unfoldedBody = HeaderDecoder.UnfoldFieldBody (fieldEntry.Field.Body.Span, buffer);
-								fieldEntry.IsMarked = ParseReferencesField (unfoldedBody);
+								unfoldedBodySize = HeaderDecoder.CopyWithUnfold (fieldEntry.Field.Body.Span, fieldBodyBuffer);
+								fieldEntry.IsMarked = ParseReferencesField (fieldBodyBuffer.AsSpan (0, unfoldedBodySize));
 								break;
 							case HeaderFieldName.Subject:
-								unfoldedBody = HeaderDecoder.UnfoldFieldBody (fieldEntry.Field.Body.Span, buffer);
-								fieldEntry.IsMarked = ParseSubjectField (unfoldedBody);
+								unfoldedBodySize = HeaderDecoder.CopyWithUnfold (fieldEntry.Field.Body.Span, fieldBodyBuffer);
+								fieldEntry.IsMarked = ParseSubjectField (fieldBodyBuffer.AsSpan (0, unfoldedBodySize), fieldBodyElementBuffer);
 								break;
 							case HeaderFieldName.Comments:
-								unfoldedBody = HeaderDecoder.UnfoldFieldBody (fieldEntry.Field.Body.Span, buffer);
-								fieldEntry.IsMarked = ParseCommentsField (unfoldedBody);
+								unfoldedBodySize = HeaderDecoder.CopyWithUnfold (fieldEntry.Field.Body.Span, fieldBodyBuffer);
+								fieldEntry.IsMarked = ParseCommentsField (fieldBodyBuffer.AsSpan (0, unfoldedBodySize), fieldBodyElementBuffer);
 								break;
 							case HeaderFieldName.Keywords:
-								unfoldedBody = HeaderDecoder.UnfoldFieldBody (fieldEntry.Field.Body.Span, buffer);
-								fieldEntry.IsMarked = ParseKeywordsField (unfoldedBody);
+								unfoldedBodySize = HeaderDecoder.CopyWithUnfold (fieldEntry.Field.Body.Span, fieldBodyBuffer);
+								fieldEntry.IsMarked = ParseKeywordsField (fieldBodyBuffer.AsSpan (0, unfoldedBodySize), fieldBodyElementBuffer);
 								break;
 
 							// optional fields
 							case HeaderFieldName.DispositionNotificationTo:
-								unfoldedBody = HeaderDecoder.UnfoldFieldBody (fieldEntry.Field.Body.Span, buffer);
-								fieldEntry.IsMarked = ParseDispositionNotificationToField (unfoldedBody);
+								unfoldedBodySize = HeaderDecoder.CopyWithUnfold (fieldEntry.Field.Body.Span, fieldBodyBuffer);
+								fieldEntry.IsMarked = ParseDispositionNotificationToField (fieldBodyBuffer.AsSpan (0, unfoldedBodySize));
 								break;
 							case HeaderFieldName.DispositionNotificationOptions:
-								unfoldedBody = HeaderDecoder.UnfoldFieldBody (fieldEntry.Field.Body.Span, buffer);
-								fieldEntry.IsMarked = ParseDispositionNotificationOptionsField (unfoldedBody);
+								unfoldedBodySize = HeaderDecoder.CopyWithUnfold (fieldEntry.Field.Body.Span, fieldBodyBuffer);
+								fieldEntry.IsMarked = ParseDispositionNotificationOptionsField (fieldBodyBuffer.AsSpan (0, unfoldedBodySize));
 								break;
 							case HeaderFieldName.AcceptLanguage:
-								unfoldedBody = HeaderDecoder.UnfoldFieldBody (fieldEntry.Field.Body.Span, buffer);
-								fieldEntry.IsMarked = ParseAcceptLanguageField (unfoldedBody);
+								unfoldedBodySize = HeaderDecoder.CopyWithUnfold (fieldEntry.Field.Body.Span, fieldBodyBuffer);
+								fieldEntry.IsMarked = ParseAcceptLanguageField (fieldBodyBuffer.AsSpan (0, unfoldedBodySize));
 								break;
 							case HeaderFieldName.OriginalMessageId:
-								unfoldedBody = HeaderDecoder.UnfoldFieldBody (fieldEntry.Field.Body.Span, buffer);
-								ParseOriginalMessageIdField (unfoldedBody);
+								unfoldedBodySize = HeaderDecoder.CopyWithUnfold (fieldEntry.Field.Body.Span, fieldBodyBuffer);
+								ParseOriginalMessageIdField (fieldBodyBuffer.AsSpan (0, unfoldedBodySize));
 								break;
 							default:
-								unfoldedBody = HeaderDecoder.UnfoldFieldBody (fieldEntry.Field.Body.Span, buffer);
-								var isMarked = ParseResentFields (fieldEntry.Field.Name, unfoldedBody, traceBlock);
-								isMarked = isMarked || ParsePersonalFields (fieldEntry.Field.Name, unfoldedBody);
-								isMarked = isMarked || ParseMailingListFields (fieldEntry.Field.Name, unfoldedBody, mailingList);
+								unfoldedBodySize = HeaderDecoder.CopyWithUnfold (fieldEntry.Field.Body.Span, fieldBodyBuffer);
+								var fieldBodySpan = fieldBodyBuffer.AsSpan (0, unfoldedBodySize);
+								var isMarked = ParseResentFields (fieldEntry.Field.Name, fieldBodySpan, traceBlock);
+								isMarked = isMarked || ParsePersonalFields (fieldEntry.Field.Name, fieldBodySpan);
+								isMarked = isMarked || ParseMailingListFields (fieldEntry.Field.Name, fieldBodySpan, mailingList, fieldBodyElementBuffer);
 								fieldEntry.IsMarked = isMarked;
 								break;
 						}
@@ -477,7 +479,8 @@ namespace Novartment.Base.Net.Mime
 			}
 			finally
 			{
-				ArrayPool<char>.Shared.Return (buffer);
+				ArrayPool<char>.Shared.Return (fieldBodyElementBuffer);
+				ArrayPool<char>.Shared.Return (fieldBodyBuffer);
 			}
 
 			if (traceBlock.ReceivedParameters != null)
@@ -645,7 +648,7 @@ namespace Novartment.Base.Net.Mime
 			return false;
 		}
 
-		private static bool ParseMailingListFields (HeaderFieldName name, ReadOnlySpan<char> body, MailingList list)
+		private static bool ParseMailingListFields (HeaderFieldName name, ReadOnlySpan<char> body, MailingList list, char[] fieldBodyElementBuffer)
 		{
 			switch (name)
 			{
@@ -661,7 +664,7 @@ namespace Novartment.Base.Net.Mime
 					// list-id-namespace = domain-name / unmanaged-list-id-namespace
 					// domain-name       = dot-atom-text
 					// unmanaged-list-id-namespace = "localhost"
-					var data = HeaderDecoder.DecodePhraseAndId (body);
+					var data = HeaderDecoder.DecodePhraseAndId (body, fieldBodyElementBuffer);
 					list.Description = data.Value1;
 					list.Id = data.Value2;
 					return true;
@@ -1088,7 +1091,7 @@ namespace Novartment.Base.Net.Mime
 			return true;
 		}
 
-		private bool ParseSubjectField (ReadOnlySpan<char> body)
+		private bool ParseSubjectField (ReadOnlySpan<char> body, char[] fieldBodyElementBuffer)
 		{
 			if (this.Subject != null)
 			{
@@ -1096,23 +1099,23 @@ namespace Novartment.Base.Net.Mime
 			}
 
 			// subject = "Subject:" unstructured
-			this.Subject = HeaderDecoder.DecodeUnstructured (body, true);
+			this.Subject = HeaderDecoder.DecodeUnstructured (body, true, fieldBodyElementBuffer);
 			return true;
 		}
 
-		private bool ParseCommentsField (ReadOnlySpan<char> body)
+		private bool ParseCommentsField (ReadOnlySpan<char> body, char[] fieldBodyElementBuffer)
 		{
 			var prevComments = (this.Comments != null) ? (this.Comments + "\r\n") : string.Empty;
 
 			// comments = "Comments:" unstructured
-			this.Comments = prevComments + HeaderDecoder.DecodeUnstructured (body, true);
+			this.Comments = prevComments + HeaderDecoder.DecodeUnstructured (body, true, fieldBodyElementBuffer);
 			return true;
 		}
 
-		private bool ParseKeywordsField (ReadOnlySpan<char> body)
+		private bool ParseKeywordsField (ReadOnlySpan<char> body, char[] fieldBodyElementBuffer)
 		{
 			// keywords = "Keywords:" phrase *("," phrase)
-			this.Keywords.AddRange (HeaderDecoder.DecodePhraseList (body));
+			this.Keywords.AddRange (HeaderDecoder.DecodePhraseList (body, fieldBodyElementBuffer));
 			return true;
 		}
 

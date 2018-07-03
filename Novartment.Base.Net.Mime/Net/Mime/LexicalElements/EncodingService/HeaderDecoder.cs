@@ -99,9 +99,8 @@ namespace Novartment.Base.Net.Mime
 		/// </summary>
 		/// <param name="source">Source encoded value.</param>
 		/// <returns>Decoded string value.</returns>
-		internal static string DecodeUnstructured (ReadOnlySpan<char> source, bool trim)
+		internal static string DecodeUnstructured (ReadOnlySpan<char> source, bool trim, char[] outBuf)
 		{
-			var outBuf = new char[MaximumHeaderFieldBodySize];
 			byte[] byteBuf = null;
 			var outPos = 0;
 			var prevIsWordEncoded = false;
@@ -115,7 +114,7 @@ namespace Novartment.Base.Net.Mime
 					var octet = source[pos];
 					if ((octet == ' ') || (octet == '\t'))
 					{
-						// выделяем отдельно группы пробельных символов, потому что их надо пропукать если они между 'encoded-word'
+						// выделяем отдельно группы пробельных символов, потому что их надо пропускать если они между 'encoded-word'
 						lastWhiteSpacePos = pos;
 						while (pos < source.Length)
 						{
@@ -215,10 +214,9 @@ namespace Novartment.Base.Net.Mime
 		/// </summary>
 		/// <param name="source">String in 'phrase' format.</param>
 		/// <returns>Decoded phrase.</returns>
-		internal static string DecodePhrase (ReadOnlySpan<char> source)
+		internal static string DecodePhrase (ReadOnlySpan<char> source, char[] outBuf)
 		{
 			var parserPos = 0;
-			var outBuf = new char[MaximumHeaderFieldBodySize];
 			var outPos = 0;
 			var prevIsWordEncoded = false;
 			while (true)
@@ -307,7 +305,7 @@ namespace Novartment.Base.Net.Mime
 		/// </summary>
 		/// <param name="source">String representation of NotificationFieldValue.</param>
 		/// <returns>New NotificationFieldValue, created from specified string representation.</returns>
-		internal static NotificationFieldValue DecodeNotificationFieldValue (ReadOnlySpan<char> source)
+		internal static NotificationFieldValue DecodeNotificationFieldValue (ReadOnlySpan<char> source, char[] outBuf)
 		{
 			if (source.Length < 3)
 			{
@@ -334,7 +332,7 @@ namespace Novartment.Base.Net.Mime
 				throw new FormatException ("Value does not conform to format 'type;value'.");
 			}
 
-			var valueStr = DecodeUnstructured (source.Slice (separatorToken.Position + 1), true);
+			var valueStr = DecodeUnstructured (source.Slice (separatorToken.Position + 1), true, outBuf);
 
 			return new NotificationFieldValue (valueType, valueStr);
 		}
@@ -344,12 +342,12 @@ namespace Novartment.Base.Net.Mime
 		/// </summary>
 		/// <param name="source">Two encoded 'unstructured' values separated by semicolon.</param>
 		/// <returns>Two decoded values.</returns>
-		internal static TwoStrings DecodeUnstructuredPair (ReadOnlySpan<char> source)
+		internal static TwoStrings DecodeUnstructuredPair (ReadOnlySpan<char> source, char[] outBuf)
 		{
 			// коменты не распознаются. допускаем что в кодированных словах нет ';'
 			var idx = source.IndexOf (';');
-			var text1 = (idx >= 0) ? DecodeUnstructured (source.Slice (0, idx), true) : DecodeUnstructured (source, true);
-			var text2 = (idx >= 0) ? DecodeUnstructured (source.Slice (idx + 1), true) : null;
+			var text1 = (idx >= 0) ? DecodeUnstructured (source.Slice (0, idx), true, outBuf) : DecodeUnstructured (source, true, outBuf);
+			var text2 = (idx >= 0) ? DecodeUnstructured (source.Slice (idx + 1), true, outBuf) : null;
 
 			return new TwoStrings () { Value1 = text1, Value2 = text2 };
 		}
@@ -390,10 +388,9 @@ namespace Novartment.Base.Net.Mime
 		/// </summary>
 		/// <param name="source">Source encoded value and id.</param>
 		/// <returns>Decoded string value and id.</returns>
-		internal static TwoStrings DecodePhraseAndId (ReadOnlySpan<char> source)
+		internal static TwoStrings DecodePhraseAndId (ReadOnlySpan<char> source, char[] outBuf)
 		{
 			var parserPos = 0;
-			char[] outBuf = null;
 			var outPos = 0;
 			var prevIsWordEncoded = false;
 			StructuredHeaderFieldLexicalToken lastToken = default;
@@ -412,11 +409,6 @@ namespace Novartment.Base.Net.Mime
 
 				if (lastToken.IsValid)
 				{
-					if (outBuf == null)
-					{
-						outBuf = new char[MaximumHeaderFieldBodySize];
-					}
-
 					// RFC 2047 часть 6.2:
 					// When displaying a particular header field that contains multiple 'encoded-word's,
 					// any 'linear-white-space' that separates a pair of adjacent 'encoded-word's is ignored
@@ -455,11 +447,10 @@ namespace Novartment.Base.Net.Mime
 		/// </summary>
 		/// <param name="source">String representation of collection of 'phrase's.</param>
 		/// <returns>Collection of 'phrase's.</returns>
-		internal static IReadOnlyList<string> DecodePhraseList (ReadOnlySpan<char> source)
+		internal static IReadOnlyList<string> DecodePhraseList (ReadOnlySpan<char> source, char[] outBuf)
 		{
 			var parserPos = 0;
 			var result = new ArrayList<string> ();
-			var outBuf = new char[MaximumHeaderFieldBodySize];
 			var outPos = 0;
 			var prevIsWordEncoded = false;
 			while (true)
@@ -688,7 +679,7 @@ namespace Novartment.Base.Net.Mime
 		/// </summary>
 		/// <param name="source">Source encoded atom value and collection of field parameters.</param>
 		/// <returns>Decoded atom value and collection of HeaderFieldParameter.</returns>
-		internal static StringAndParameters DecodeAtomAndParameterList (ReadOnlySpan<char> source)
+		internal static StringAndParameters DecodeAtomAndParameterList (ReadOnlySpan<char> source, char[] outBuf)
 		{
 			// Content-Type and Content-Disposition fields
 			var parserPos = 0;
@@ -696,7 +687,6 @@ namespace Novartment.Base.Net.Mime
 
 			var result = new ArrayList<HeaderFieldParameter> ();
 			string parameterName = null;
-			var outBuf = new char[MaximumHeaderFieldBodySize];
 			var outPos = 0;
 			Encoding encoding = null;
 			while (true)
@@ -1057,7 +1047,7 @@ namespace Novartment.Base.Net.Mime
 			}
 		}
 
-		internal static ReadOnlySpan<char> UnfoldFieldBody (ReadOnlySpan<byte> body, Span<char> buffer)
+		internal static int CopyWithUnfold (ReadOnlySpan<byte> body, Span<char> buffer)
 		{
 			/*
 			RFC 5322
@@ -1081,16 +1071,11 @@ namespace Novartment.Base.Net.Mime
 				}
 				else
 				{
-					if (dstPos >= buffer.Length)
-					{
-						throw new InvalidOperationException (FormattableString.Invariant ($"Insufficient buffer size ({buffer.Length}) for unfolding field body."));
-					}
-
 					buffer[dstPos++] = (char)octet1;
 				}
 			}
 
-			return buffer.Slice (0, dstPos);
+			return dstPos;
 		}
 
 		private static async Task<HeaderField> LoadHeaderFieldAsync (IBufferedSource fieldSource, Memory<byte> buffer, CancellationToken cancellationToken)

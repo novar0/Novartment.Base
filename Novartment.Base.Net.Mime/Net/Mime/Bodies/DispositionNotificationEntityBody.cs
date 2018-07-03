@@ -176,17 +176,18 @@ namespace Novartment.Base.Net.Mime
 				"displayed" / "deleted"
 			*/
 
-			var buffer = ArrayPool<char>.Shared.Rent (HeaderDecoder.MaximumHeaderFieldBodySize);
+			var fieldBodyBuffer = ArrayPool<char>.Shared.Rent (HeaderDecoder.MaximumHeaderFieldBodySize);
+			var fieldBodyElementBuffer = ArrayPool<char>.Shared.Rent (HeaderDecoder.MaximumHeaderFieldBodySize);
 			try
 			{
-				ReadOnlySpan<char> unfoldedBody;
+				int unfoldedBodySize;
 				foreach (var field in fields)
 				{
 					switch (field.Name)
 					{
 						case HeaderFieldName.ReportingUA:
-							unfoldedBody = HeaderDecoder.UnfoldFieldBody (field.Body.Span, buffer);
-							ParseReportingUAField (unfoldedBody);
+							unfoldedBodySize = HeaderDecoder.CopyWithUnfold (field.Body.Span, fieldBodyBuffer);
+							ParseReportingUAField (fieldBodyBuffer.AsSpan (0, unfoldedBodySize), fieldBodyElementBuffer);
 							break;
 						case HeaderFieldName.MdnGateway:
 							if (this.Gateway != null)
@@ -194,8 +195,8 @@ namespace Novartment.Base.Net.Mime
 								throw new FormatException ("More than one '" + HeaderFieldNameHelper.GetName (HeaderFieldName.MdnGateway) + "' field.");
 							}
 
-							unfoldedBody = HeaderDecoder.UnfoldFieldBody (field.Body.Span, buffer);
-							this.Gateway = HeaderDecoder.DecodeNotificationFieldValue (unfoldedBody);
+							unfoldedBodySize = HeaderDecoder.CopyWithUnfold (field.Body.Span, fieldBodyBuffer);
+							this.Gateway = HeaderDecoder.DecodeNotificationFieldValue (fieldBodyBuffer.AsSpan (0, unfoldedBodySize), fieldBodyElementBuffer);
 							break;
 						case HeaderFieldName.OriginalRecipient:
 							if (this.OriginalRecipient != null)
@@ -203,8 +204,8 @@ namespace Novartment.Base.Net.Mime
 								throw new FormatException ("More than one '" + HeaderFieldNameHelper.GetName (HeaderFieldName.OriginalRecipient) + "' field.");
 							}
 
-							unfoldedBody = HeaderDecoder.UnfoldFieldBody (field.Body.Span, buffer);
-							this.OriginalRecipient = HeaderDecoder.DecodeNotificationFieldValue (unfoldedBody);
+							unfoldedBodySize = HeaderDecoder.CopyWithUnfold (field.Body.Span, fieldBodyBuffer);
+							this.OriginalRecipient = HeaderDecoder.DecodeNotificationFieldValue (fieldBodyBuffer.AsSpan (0, unfoldedBodySize), fieldBodyElementBuffer);
 							break;
 						case HeaderFieldName.FinalRecipient:
 							if (this.FinalRecipient != null)
@@ -212,8 +213,8 @@ namespace Novartment.Base.Net.Mime
 								throw new FormatException ("More than one '" + HeaderFieldNameHelper.GetName (HeaderFieldName.FinalRecipient) + "' field.");
 							}
 
-							unfoldedBody = HeaderDecoder.UnfoldFieldBody (field.Body.Span, buffer);
-							this.FinalRecipient = HeaderDecoder.DecodeNotificationFieldValue (unfoldedBody);
+							unfoldedBodySize = HeaderDecoder.CopyWithUnfold (field.Body.Span, fieldBodyBuffer);
+							this.FinalRecipient = HeaderDecoder.DecodeNotificationFieldValue (fieldBodyBuffer.AsSpan (0, unfoldedBodySize), fieldBodyElementBuffer);
 							break;
 						case HeaderFieldName.OriginalMessageId:
 							if (this.OriginalMessageId != null)
@@ -221,31 +222,32 @@ namespace Novartment.Base.Net.Mime
 								throw new FormatException ("More than one '" + HeaderFieldNameHelper.GetName (HeaderFieldName.OriginalMessageId) + "' field.");
 							}
 
-							unfoldedBody = HeaderDecoder.UnfoldFieldBody (field.Body.Span, buffer);
-							this.OriginalMessageId = HeaderDecoder.DecodeAddrSpecList (unfoldedBody).Single ();
+							unfoldedBodySize = HeaderDecoder.CopyWithUnfold (field.Body.Span, fieldBodyBuffer);
+							this.OriginalMessageId = HeaderDecoder.DecodeAddrSpecList (fieldBodyBuffer.AsSpan (0, unfoldedBodySize)).Single ();
 							break;
 						case HeaderFieldName.Disposition:
-							unfoldedBody = HeaderDecoder.UnfoldFieldBody (field.Body.Span, buffer);
-							ParseDispositionField (unfoldedBody);
+							unfoldedBodySize = HeaderDecoder.CopyWithUnfold (field.Body.Span, fieldBodyBuffer);
+							ParseDispositionField (fieldBodyBuffer.AsSpan (0, unfoldedBodySize));
 							break;
 						case HeaderFieldName.Failure:
-							unfoldedBody = HeaderDecoder.UnfoldFieldBody (field.Body.Span, buffer);
-							this.FailureInfo.Add (HeaderDecoder.DecodeUnstructured (unfoldedBody, true));
+							unfoldedBodySize = HeaderDecoder.CopyWithUnfold (field.Body.Span, fieldBodyBuffer);
+							this.FailureInfo.Add (HeaderDecoder.DecodeUnstructured (fieldBodyBuffer.AsSpan (0, unfoldedBodySize), true, fieldBodyElementBuffer));
 							break;
 						case HeaderFieldName.Error:
-							unfoldedBody = HeaderDecoder.UnfoldFieldBody (field.Body.Span, buffer);
-							this.ErrorInfo.Add (HeaderDecoder.DecodeUnstructured (unfoldedBody, true));
+							unfoldedBodySize = HeaderDecoder.CopyWithUnfold (field.Body.Span, fieldBodyBuffer);
+							this.ErrorInfo.Add (HeaderDecoder.DecodeUnstructured (fieldBodyBuffer.AsSpan (0, unfoldedBodySize), true, fieldBodyElementBuffer));
 							break;
 						case HeaderFieldName.Warning:
-							unfoldedBody = HeaderDecoder.UnfoldFieldBody (field.Body.Span, buffer);
-							this.WarningInfo.Add (HeaderDecoder.DecodeUnstructured (unfoldedBody, true));
+							unfoldedBodySize = HeaderDecoder.CopyWithUnfold (field.Body.Span, fieldBodyBuffer);
+							this.WarningInfo.Add (HeaderDecoder.DecodeUnstructured (fieldBodyBuffer.AsSpan (0, unfoldedBodySize), true, fieldBodyElementBuffer));
 							break;
 					}
 				}
 			}
 			finally
 			{
-				ArrayPool<char>.Shared.Return (buffer);
+				ArrayPool<char>.Shared.Return (fieldBodyElementBuffer);
+				ArrayPool<char>.Shared.Return (fieldBodyBuffer);
 			}
 
 			if (this.FinalRecipient == null)
@@ -259,14 +261,14 @@ namespace Novartment.Base.Net.Mime
 			}
 		}
 
-		private void ParseReportingUAField (ReadOnlySpan<char> value)
+		private void ParseReportingUAField (ReadOnlySpan<char> value, char[] fieldBodyElementBuffer)
 		{
 			if (this.ReportingUserAgentName != null)
 			{
 				throw new FormatException ("More than one '" + HeaderFieldNameHelper.GetName (HeaderFieldName.ReportingUA) + "' field.");
 			}
 
-			var data = HeaderDecoder.DecodeUnstructuredPair (value);
+			var data = HeaderDecoder.DecodeUnstructuredPair (value, fieldBodyElementBuffer);
 			this.ReportingUserAgentName = data.Value1.Trim ();
 			var isReportingUserAgentProductEmpty = string.IsNullOrWhiteSpace (data.Value2);
 			if (!isReportingUserAgentProductEmpty)
