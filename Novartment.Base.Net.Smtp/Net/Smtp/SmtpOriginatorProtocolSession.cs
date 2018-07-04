@@ -120,9 +120,7 @@ namespace Novartment.Base.Net.Smtp
 			idx += Encoding.UTF8.GetBytes (login, 0, login.Length, buf, idx);
 			buf[idx++] = 0;
 			idx += Encoding.UTF8.GetBytes (password, 0, password.Length, buf, idx);
-			var bufExact = new byte[idx];
-			Array.Copy (buf, 0, bufExact, 0, idx);
-			var cmd = new SmtpAuthCommand ("PLAIN", bufExact);
+			var cmd = new SmtpAuthCommand ("PLAIN", buf.AsSpan (0, idx));
 			var reply = await ProcessCommandAsync (cmd, cancellationToken).ConfigureAwait (false);
 			if (!reply.IsPositive)
 			{
@@ -222,7 +220,7 @@ namespace Novartment.Base.Net.Smtp
 					}
 
 					var endMarker = new byte[] { 0x0d, 0x0a, (byte)'.', 0x0d, 0x0a };
-					var endMarkerSrc = new ArrayBufferedSource (endMarker);
+					var endMarkerSrc = new MemoryBufferedSource (endMarker);
 					await _transport.SendBinaryAsync (endMarkerSrc, cancellationToken).ConfigureAwait (false);
 					break;
 				default:

@@ -568,7 +568,7 @@ namespace Novartment.Base.Net.Mime
 			// Accept-Language
 			if (this.AcceptLanguages.Count > 0)
 			{
-				header.Add (new HeaderFieldBuilderLanguageList (
+				header.Add (new HeaderFieldBuilderLanguageCollection (
 					HeaderFieldName.AcceptLanguage,
 					this.AcceptLanguages
 					.OrderByDescending (item => item.Importance)
@@ -736,19 +736,19 @@ namespace Novartment.Base.Net.Mime
 			// Subject
 			if (subject != null)
 			{
-				header.Add (new HeaderFieldBuilderUnstructured (HeaderFieldName.Subject, subject));
+				header.Add (new HeaderFieldBuilderUnstructuredValue (HeaderFieldName.Subject, subject));
 			}
 
 			// Comments
 			if (comments != null)
 			{
-				header.Add (new HeaderFieldBuilderUnstructured (HeaderFieldName.Comments, comments));
+				header.Add (new HeaderFieldBuilderUnstructuredValue (HeaderFieldName.Comments, comments));
 			}
 
 			// Keywords
 			if (keywords.Count > 0)
 			{
-				header.Add (new HeaderFieldBuilderPhraseList (HeaderFieldName.Keywords, keywords));
+				header.Add (new HeaderFieldBuilderStructuredValueCollection (HeaderFieldName.Keywords, keywords));
 			}
 		}
 
@@ -770,7 +770,7 @@ namespace Novartment.Base.Net.Mime
 			// In-Reply-To
 			if (inReplyTo.Count > 0)
 			{
-				header.Add (new HeaderFieldBuilderAddrSpecList (
+				header.Add (new HeaderFieldBuilderAddrSpecCollection (
 					HeaderFieldName.InReplyTo,
 					inReplyTo.WhereNotNull ().ToArray ()));
 			}
@@ -778,7 +778,7 @@ namespace Novartment.Base.Net.Mime
 			// References
 			if (references.Count > 0)
 			{
-				header.Add (new HeaderFieldBuilderAddrSpecList (
+				header.Add (new HeaderFieldBuilderAddrSpecCollection (
 					HeaderFieldName.References,
 					references.WhereNotNull ().ToArray ()));
 			}
@@ -801,7 +801,7 @@ namespace Novartment.Base.Net.Mime
 			IReadOnlyList<Mailbox> cc)
 		{
 			// From
-			header.Add (new HeaderFieldBuilderMailboxList (HeaderFieldName.From, from));
+			header.Add (new HeaderFieldBuilderMailboxCollection (HeaderFieldName.From, from));
 
 			// Sender
 			// If the originator of the message can be indicated by a single mailbox and the author and transmitter are identical,
@@ -815,19 +815,19 @@ namespace Novartment.Base.Net.Mime
 			// Reply-To
 			if (replyTo.Count > 0)
 			{
-				header.Add (new HeaderFieldBuilderMailboxList (HeaderFieldName.ReplyTo, replyTo));
+				header.Add (new HeaderFieldBuilderMailboxCollection (HeaderFieldName.ReplyTo, replyTo));
 			}
 
 			// To
 			if (to.Count > 0)
 			{
-				header.Add (new HeaderFieldBuilderMailboxList (HeaderFieldName.To, to));
+				header.Add (new HeaderFieldBuilderMailboxCollection (HeaderFieldName.To, to));
 			}
 
 			// CC
 			if (cc.Count > 0)
 			{
-				header.Add (new HeaderFieldBuilderMailboxList (HeaderFieldName.CC, cc));
+				header.Add (new HeaderFieldBuilderMailboxCollection (HeaderFieldName.CC, cc));
 			}
 		}
 
@@ -839,7 +839,7 @@ namespace Novartment.Base.Net.Mime
 			// Disposition-Notification-To
 			if (dispositionNotificationTo.Count > 0)
 			{
-				header.Add (new HeaderFieldBuilderMailboxList (
+				header.Add (new HeaderFieldBuilderMailboxCollection (
 					HeaderFieldName.DispositionNotificationTo,
 					dispositionNotificationTo));
 			}
@@ -847,7 +847,7 @@ namespace Novartment.Base.Net.Mime
 			// Disposition-Notification-Options
 			if (dispositionNotificationOptions.Count > 0)
 			{
-				header.Add (new HeaderFieldBuilderDispositionNotificationParameterList (
+				header.Add (new HeaderFieldBuilderDispositionNotificationParameterCollection (
 					HeaderFieldName.DispositionNotificationOptions,
 					dispositionNotificationOptions));
 			}
@@ -858,7 +858,7 @@ namespace Novartment.Base.Net.Mime
 			MailingList mailingList)
 		{
 			// List-ID
-			header.Add (new HeaderFieldBuilderPhraseAndId (
+			header.Add (new HeaderFieldBuilderStructuredValueAndId (
 				HeaderFieldName.ListId,
 				mailingList.Id,
 				mailingList.Description));

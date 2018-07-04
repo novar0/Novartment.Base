@@ -70,7 +70,7 @@ namespace Novartment.Base.Text
 			var outOffset = 0;
 			while ((pos < source.Length) && (pos < destination.Length))
 			{
-				var octet = source[ pos];
+				var octet = source[pos];
 				if ((octet >= AsciiCharSet.Classes.Count) || ((AsciiCharSet.Classes[octet] & (short)_enabledClass) == 0))
 				{
 					break;

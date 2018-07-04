@@ -33,29 +33,6 @@ namespace Novartment.Base.Test
 
 		[Fact]
 		[Trait ("Category", "BufferedSource")]
-		public void IndexOf ()
-		{
-			int bufSize = 120;
-			int skipSize = 91;
-			var src = new BigBufferedSourceMock (long.MaxValue, bufSize, FillFunction);
-			src.FillBufferAsync ().Wait ();
-			Assert.Equal (0, BufferedSourceExtensions.IndexOfAsync (src, FillFunction(0)).Result);
-			Assert.Equal (1, BufferedSourceExtensions.IndexOfAsync (src, FillFunction (1)).Result);
-			Assert.Equal (bufSize - 1, BufferedSourceExtensions.IndexOfAsync (src, FillFunction (bufSize - 1)).Result);
-			Assert.Equal (-1, BufferedSourceExtensions.IndexOfAsync (src, FillFunction (bufSize)).Result);
-			Assert.Equal (-1, BufferedSourceExtensions.IndexOfAsync (src, FillFunction (bufSize + skipSize - 1)).Result);
-			Assert.Equal (-1, BufferedSourceExtensions.IndexOfAsync (src, FillFunction (bufSize + skipSize)).Result);
-			src.SkipBuffer (skipSize);
-			Assert.Equal (-1, BufferedSourceExtensions.IndexOfAsync (src, FillFunction (0)).Result);
-			Assert.Equal (-1, BufferedSourceExtensions.IndexOfAsync (src, FillFunction (1)).Result);
-			Assert.Equal (bufSize - 1 - skipSize, BufferedSourceExtensions.IndexOfAsync (src, FillFunction (bufSize - 1)).Result);
-			Assert.Equal (bufSize - skipSize, BufferedSourceExtensions.IndexOfAsync (src, FillFunction (bufSize)).Result);
-			Assert.Equal (bufSize - 1, BufferedSourceExtensions.IndexOfAsync (src, FillFunction (bufSize + skipSize - 1)).Result);
-			Assert.Equal (-1, BufferedSourceExtensions.IndexOfAsync (src, FillFunction (bufSize + skipSize)).Result);
-		}
-
-		[Fact]
-		[Trait ("Category", "BufferedSource")]
 		public void CopyToBufferUntilMarker ()
 		{
 			int bufSize = 5;

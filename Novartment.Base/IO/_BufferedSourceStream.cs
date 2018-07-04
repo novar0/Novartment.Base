@@ -34,8 +34,6 @@ namespace Novartment.Base.BinaryStreaming
 				set => throw new NotSupportedException ();
 			}
 
-			internal IBufferedSource BaseBufferedSource => _source;
-
 			public override long Seek (long offset, SeekOrigin origin) => throw new NotSupportedException ();
 
 			public override void SetLength (long value) => throw new NotSupportedException ();
@@ -71,7 +69,7 @@ namespace Novartment.Base.BinaryStreaming
 					var toCopy = Math.Min (_source.Count, count);
 					if (toCopy > 0)
 					{
-						_source.BufferMemory.Slice (_source.Offset, toCopy).CopyTo (buffer.AsMemory (offset));
+						_source.BufferMemory.Span.Slice (_source.Offset, toCopy).CopyTo (buffer.AsSpan (offset));
 						_source.SkipBuffer (toCopy);
 					}
 
@@ -88,7 +86,7 @@ namespace Novartment.Base.BinaryStreaming
 					}
 
 					var toCopy = Math.Min (_source.Count, count);
-					_source.BufferMemory.Slice (_source.Offset, toCopy).CopyTo (buffer.AsMemory (offset));
+					_source.BufferMemory.Span.Slice (_source.Offset, toCopy).CopyTo (buffer.AsSpan (offset));
 					offset += toCopy;
 					count -= toCopy;
 					resultSize += toCopy;
@@ -143,7 +141,7 @@ namespace Novartment.Base.BinaryStreaming
 					var toCopy = Math.Min (_source.Count, count);
 					if (toCopy > 0)
 					{
-						_source.BufferMemory.Slice (_source.Offset, toCopy).CopyTo (buffer.AsMemory (offset));
+						_source.BufferMemory.Span.Slice (_source.Offset, toCopy).CopyTo (buffer.AsSpan (offset));
 						_source.SkipBuffer (toCopy);
 					}
 
@@ -169,7 +167,7 @@ namespace Novartment.Base.BinaryStreaming
 						}
 
 						var toCopy = Math.Min (_source.Count, count);
-						_source.BufferMemory.Slice (_source.Offset, toCopy).CopyTo (buffer.AsMemory (offset));
+						_source.BufferMemory.Span.Slice (_source.Offset, toCopy).CopyTo (buffer.AsSpan (offset));
 						offset += toCopy;
 						count -= toCopy;
 						resultSize += toCopy;
@@ -179,6 +177,55 @@ namespace Novartment.Base.BinaryStreaming
 					return resultSize;
 				}
 			}
+
+#if NETCOREAPP2_1
+			public override ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
+			{
+				if ((buffer.Length <= _source.Count) || _source.IsExhausted)
+				{
+					// данных в источнике достаточно, асинхронное обращение не требуется
+					var toCopy = Math.Min (_source.Count, buffer.Length);
+					if (toCopy > 0)
+					{
+						_source.BufferMemory.Slice (_source.Offset, toCopy).CopyTo (buffer);
+						_source.SkipBuffer (toCopy);
+					}
+
+					return new ValueTask<int> (toCopy);
+				}
+
+				return ReadAsyncStateMachine ();
+
+				// асинхронный запрос к источнику пока не наберём необходимое количество данных
+				async ValueTask<int> ReadAsyncStateMachine ()
+				{
+					var offset = 0;
+					var count = buffer.Length;
+					int resultSize = 0;
+					while (count > 0)
+					{
+						if ((count > _source.Count) && !_source.IsExhausted)
+						{
+							await _source.FillBufferAsync (cancellationToken).ConfigureAwait (false);
+						}
+
+						if (_source.Count <= 0)
+						{
+							break;
+						}
+
+						var toCopy = Math.Min (_source.Count, count);
+						_source.BufferMemory.Slice (_source.Offset, toCopy).CopyTo (buffer.Slice (offset));
+						offset += toCopy;
+						count -= toCopy;
+						resultSize += toCopy;
+						_source.SkipBuffer (toCopy);
+					}
+
+					return resultSize;
+				}
+			}
+#endif
 
 			public override Task CopyToAsync (Stream destination, int bufferSize, CancellationToken cancellationToken = default)
 			{

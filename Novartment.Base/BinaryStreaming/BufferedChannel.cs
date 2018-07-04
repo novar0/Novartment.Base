@@ -48,17 +48,17 @@ namespace Novartment.Base.BinaryStreaming
 		/// использующий указанный буфер для записи данных.
 		/// </summary>
 		/// <param name="buffer">Байтовый буфер, в котором будут содержаться записанные в канал данные.</param>
-		public BufferedChannel(Memory<byte> buffer)
+		public BufferedChannel (Memory<byte> buffer)
 		{
 			if (buffer.Length < 1)
 			{
-				throw new ArgumentOutOfRangeException(nameof(buffer));
+				throw new ArgumentOutOfRangeException (nameof (buffer));
 			}
 
-			Contract.EndContractBlock();
+			Contract.EndContractBlock ();
 
 			_buffer = buffer;
-			_pendingDataConsumption.SetResult(0);
+			_pendingDataConsumption.SetResult (0);
 		}
 
 		/// <summary>
@@ -125,7 +125,7 @@ namespace Novartment.Base.BinaryStreaming
 		/// Для отмены ожидания новых данных вызывайте метод SetComplete().
 		/// </param>
 		/// <returns>
-		/// Задача, результатом которой является количество пропущеных байтов данных, включая доступные в буфере данные.
+		/// Задача, результатом которой является количество пропущенных байтов данных, включая доступные в буфере данные.
 		/// Может быть меньше, чем было указано, если канал исчерпан.
 		/// После завершения задачи, независимо от её результата, канал будет предоставлять данные, идущие сразу за пропущенными.
 		/// </returns>

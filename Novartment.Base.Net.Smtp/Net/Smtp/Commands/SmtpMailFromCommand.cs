@@ -28,6 +28,35 @@ namespace Novartment.Base.Net.Smtp
 
 		internal ContentTransferEncoding RequestedContentTransferEncoding => _requestedContentTransferEncoding;
 
+		public override string ToString ()
+		{
+			var pathStr = this.ReturnPath?.ToString () ?? string.Empty;
+			string result;
+			switch (_requestedContentTransferEncoding)
+			{
+				case ContentTransferEncoding.EightBit:
+					result = FormattableString.Invariant ($"MAIL FROM:<{pathStr}> BODY=8BITMIME");
+					break;
+				case ContentTransferEncoding.Binary:
+					result = FormattableString.Invariant ($"MAIL FROM:<{pathStr}> BODY=BINARYMIME");
+					break;
+				default:
+					result = FormattableString.Invariant ($"MAIL FROM:<{pathStr}>");
+					break;
+			}
+
+			if (this.AssociatedMailbox != null)
+			{
+				result += " AUTH=" + ((this.AssociatedMailbox != EmptyAddrSpec) ?
+					"<" + this.AssociatedMailbox + ">" :
+					"<>");
+			}
+
+			result += "\r\n";
+
+			return result;
+		}
+
 		internal static SmtpCommand Parse (ReadOnlySpan<char> value)
 		{
 			/*
@@ -162,35 +191,6 @@ namespace Novartment.Base.Net.Smtp
 			}
 
 			return new SmtpMailFromCommand (returnPath, bodyType, associatedMailbox);
-		}
-
-		public override string ToString ()
-		{
-			var pathStr = this.ReturnPath?.ToString () ?? string.Empty;
-			string result;
-			switch (_requestedContentTransferEncoding)
-			{
-				case ContentTransferEncoding.EightBit:
-					result = FormattableString.Invariant ($"MAIL FROM:<{pathStr}> BODY=8BITMIME");
-					break;
-				case ContentTransferEncoding.Binary:
-					result = FormattableString.Invariant ($"MAIL FROM:<{pathStr}> BODY=BINARYMIME");
-					break;
-				default:
-					result = FormattableString.Invariant ($"MAIL FROM:<{pathStr}>");
-					break;
-			}
-
-			if (this.AssociatedMailbox != null)
-			{
-				result += " AUTH=" + ((this.AssociatedMailbox != EmptyAddrSpec) ?
-					"<" + this.AssociatedMailbox + ">" :
-					"<>");
-			}
-
-			result += "\r\n";
-
-			return result;
 		}
 	}
 }

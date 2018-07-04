@@ -26,8 +26,8 @@ namespace Novartment.Base.BinaryStreaming
 		/// </summary>
 		/// <param name="buffer">Массив байтов, который будет буфером источника.</param>
 		/// <param name="sources">Перечислитель, поставляющий источники данных.</param>
-		public AggregatingBufferedSource(Memory<byte> buffer, IEnumerable<IBufferedSource> sources)
-			: this(buffer, new EnumerableSourceProvider(sources))
+		public AggregatingBufferedSource (Memory<byte> buffer, IEnumerable<IBufferedSource> sources)
+			: this (buffer, new EnumerableSourceProvider (sources))
 		{
 		}
 
@@ -39,18 +39,18 @@ namespace Novartment.Base.BinaryStreaming
 		/// <param name="sourceProvider">
 		/// Поставщик источников.
 		/// Источник-маркер будет означать окончание поставки.</param>
-		public AggregatingBufferedSource(Memory<byte> buffer, IJobProvider<IBufferedSource, int> sourceProvider)
+		public AggregatingBufferedSource (Memory<byte> buffer, IJobProvider<IBufferedSource, int> sourceProvider)
 		{
 			if (sourceProvider == null)
 			{
-				throw new ArgumentNullException(nameof(sourceProvider));
+				throw new ArgumentNullException (nameof (sourceProvider));
 			}
 
-			Contract.EndContractBlock();
+			Contract.EndContractBlock ();
 
 			_buffer = buffer;
 			_sourceProvider = sourceProvider;
-			_currentSourceJob = new JobCompletionSource<IBufferedSource, int>(ArrayBufferedSource.Empty);
+			_currentSourceJob = new JobCompletionSource<IBufferedSource, int> (MemoryBufferedSource.Empty);
 		}
 
 		/// <summary>
@@ -187,7 +187,7 @@ namespace Novartment.Base.BinaryStreaming
 		/// <param name="size">Количество байтов данных для пропуска, включая доступные в буфере данные.</param>
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
 		/// <returns>
-		/// Задача, результатом которой является количество пропущеных байтов данных, включая доступные в буфере данные.
+		/// Задача, результатом которой является количество пропущенных байтов данных, включая доступные в буфере данные.
 		/// Может быть меньше, чем было указано, если источник исчерпался.
 		/// После завершения задачи, независимо от её результата, источник будет предоставлять данные, идущие сразу за пропущенными.
 		/// </returns>
@@ -343,33 +343,33 @@ namespace Novartment.Base.BinaryStreaming
 			private readonly IEnumerator<IBufferedSource> _enumerator;
 			private bool _enumerationEnded = false;
 
-			internal EnumerableSourceProvider(IEnumerable<IBufferedSource> sources)
+			internal EnumerableSourceProvider (IEnumerable<IBufferedSource> sources)
 			{
 				if (sources == null)
 				{
-					throw new ArgumentNullException(nameof(sources));
+					throw new ArgumentNullException (nameof (sources));
 				}
 
-				Contract.EndContractBlock();
+				Contract.EndContractBlock ();
 
-				_enumerator = sources.GetEnumerator();
+				_enumerator = sources.GetEnumerator ();
 			}
 
-			public Task<JobCompletionSource<IBufferedSource, int>> TakeJobAsync(CancellationToken cancellationToken = default)
+			public Task<JobCompletionSource<IBufferedSource, int>> TakeJobAsync (CancellationToken cancellationToken = default)
 			{
 				if (!_enumerationEnded)
 				{
-					_enumerationEnded = !_enumerator.MoveNext();
+					_enumerationEnded = !_enumerator.MoveNext ();
 					if (_enumerationEnded)
 					{
-						_enumerator.Dispose();
+						_enumerator.Dispose ();
 					}
 				}
 
 				var job = _enumerationEnded ?
 					JobCompletionSourceMarker.Create<IBufferedSource, int> () :
-					new JobCompletionSource<IBufferedSource, int>(_enumerator.Current);
-				return Task.FromResult(job);
+					new JobCompletionSource<IBufferedSource, int> (_enumerator.Current);
+				return Task.FromResult (job);
 			}
 		}
 	}

@@ -424,11 +424,11 @@ namespace Novartment.Base.Net.Mime.Test
 		[Trait ("Category", "Mime.HeaderDecoder")]
 		public void LoadHeaderFields ()
 		{
-			var src = new ArrayBufferedSource (Encoding.ASCII.GetBytes (string.Empty));
+			var src = new MemoryBufferedSource (Encoding.ASCII.GetBytes (string.Empty));
 			var fields = HeaderDecoder.LoadHeaderAsync (src).Result;
 			Assert.Equal (0, fields.Count);
 
-			src = new ArrayBufferedSource (Encoding.ASCII.GetBytes (
+			src = new MemoryBufferedSource (Encoding.ASCII.GetBytes (
 				"Content-Type: text/plain;\r\n\tformat=flowed;\r\n\tcharset=\"koi8-r\";\r\n\treply-type=original\r\n" +
 				"Prevent-NonDelivery-Report:\r\n" +
 				"InvalidField\r\n" +

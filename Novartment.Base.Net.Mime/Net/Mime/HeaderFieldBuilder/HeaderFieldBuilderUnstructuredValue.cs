@@ -4,21 +4,23 @@ using System.Text;
 
 namespace Novartment.Base.Net.Mime
 {
-	public class HeaderFieldBuilderPhrase : HeaderFieldBuilder
+	/// <summary>
+	/// Построитель поля заголовка из указанного неструктурированного значения.
+	/// </summary>
+	public class HeaderFieldBuilderUnstructuredValue : HeaderFieldBuilder
 	{
 		private readonly string _text;
-		private int _pos;
-		private bool _prevSequenceIsWordEncoded;
 		private byte[] _textBytes;
 		private int _textBytesSize;
+		private int _pos = 0;
+		private bool _prevSequenceIsWordEncoded = false;
 
 		/// <summary>
-		/// Создает поле заголовка из указанного значения типа 'phrase'.
+		/// Инициализирует новый экземпляр класса HeaderFieldBuilderUnstructuredValue из указанного неструктурированного значения.
 		/// </summary>
 		/// <param name="name">Имя поля заголовка.</param>
-		/// <param name="text">Значение, которое надо представить в ограничениях типа 'phrase'.</param>
-		/// <returns>Поле заголовка.</returns>
-		public HeaderFieldBuilderPhrase (HeaderFieldName name, string text)
+		/// <param name="text">Неструктурированное значение.</param>
+		public HeaderFieldBuilderUnstructuredValue (HeaderFieldName name, string text)
 			: base (name)
 		{
 			if (text == null)
@@ -50,7 +52,7 @@ namespace Novartment.Base.Net.Mime
 		/// </summary>
 		/// <param name="buf">Буфер, куда будет записана чать.</param>
 		/// <param name="isLast">Получает признак того, что полученная часть является последней.</param>
-		/// <returns>Количество байтов, записанный в буфер.</returns>
+		/// <returns>Количество байтов, записанных в буфер.</returns>
 		protected override int EncodeNextPart (Span<byte> buf, out bool isLast)
 		{
 			if (_pos >= _textBytesSize)
@@ -63,7 +65,7 @@ namespace Novartment.Base.Net.Mime
 			var size = HeaderFieldBodyEncoder.EncodeNextElement (
 				_textBytes.AsSpan (0, _textBytesSize),
 				buf,
-				TextSemantics.Phrase,
+				TextSemantics.Unstructured,
 				ref _pos,
 				ref _prevSequenceIsWordEncoded);
 			isLast = _pos >= _textBytesSize;

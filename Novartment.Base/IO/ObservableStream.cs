@@ -197,6 +197,33 @@ namespace Novartment.Base.IO
 			return task;
 		}
 
+#if NETCOREAPP2_1
+		/// <summary>
+		/// Асинхронно считывает последовательность байтов из потока,
+		/// перемещает позицию в потоке на число считанных байтов и отслеживает запросы отмены.
+		/// </summary>
+		/// <param name="buffer">Буфер, в который считывается данные.</param>
+		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
+		/// <returns>Задача, результатом которой является общее число байтов, считанных в буфер.
+		/// Значение результата может быть меньше размера буфера,
+		/// если число доступных в данный момент байтов меньше запрошенного числа,
+		/// или результат может быть равен 0 (нулю), если был достигнут конец потока.</returns>
+		public override ValueTask<int> ReadAsync (Memory<byte> buffer, CancellationToken cancellationToken = default)
+		{
+			var task = _stream.ReadAsync (buffer, cancellationToken);
+			if (task.IsCompleted)
+			{
+				ReportProgressInternal ();
+			}
+			else
+			{
+				task.AsTask ().ContinueWith (this.ReportProgressInternal1, default, TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
+			}
+
+			return task;
+		}
+#endif
+
 		/// <summary>
 		/// Записывает последовательность байтов в поток и перемещает позицию в нём вперед на число записанных байтов.
 		/// </summary>
@@ -236,6 +263,31 @@ namespace Novartment.Base.IO
 			task.ContinueWith (this.ReportProgressInternal2, default, TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
 			return task;
 		}
+
+#if NETCOREAPP2_1
+		/// <summary>
+		/// Асинхронно записывает последовательность байтов в поток,
+		/// перемещает текущую позицию внутри потока на число записанных байтов и отслеживает запросы отмены.
+		/// </summary>
+		/// <param name="buffer">Буфер, из которого записываются данные.</param>
+		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
+		/// <returns>Задача, представляющая асинхронную операцию записи.</returns>
+		public override ValueTask WriteAsync (ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default)
+		{
+			var task = _stream.WriteAsync (buffer, cancellationToken);
+			if (task.IsCompleted)
+			{
+				_length = _stream.Length;
+				ReportProgressInternal ();
+			}
+			else
+			{
+				task.AsTask ().ContinueWith (this.ReportProgressInternal2, default, TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
+			}
+
+			return task;
+		}
+#endif
 
 		/// <summary>
 		/// Уведомляет поставщика о том, что наблюдатель должен получать уведомления.

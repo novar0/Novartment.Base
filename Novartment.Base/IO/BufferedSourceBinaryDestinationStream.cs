@@ -129,6 +129,23 @@ namespace Novartment.Base.BinaryStreaming
 				_destination.WriteAsync (buffer.AsMemory (offset, count), cancellationToken);
 		}
 
+#if NETCOREAPP2_1
+
+		/// <summary>
+		/// Асинхронно записывает последовательность байтов в поток,
+		/// перемещает текущую позицию внутри потока на число записанных байтов и отслеживает запросы отмены.
+		/// </summary>
+		/// <param name="buffer">Буфер, из которого записываются данные.</param>
+		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
+		/// <returns>Задача, представляющая асинхронную операцию записи.</returns>
+		public override ValueTask WriteAsync (ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default)
+		{
+			return (_destination is StreamExtensions.StreamBinaryDestination streamBinaryDestination) ?
+				streamBinaryDestination.BaseStream.WriteAsync (buffer, cancellationToken) :
+				new ValueTask (_destination.WriteAsync (buffer, cancellationToken));
+		}
+#endif
+
 		/// <summary>
 		/// Очищает все буферы данного потока и вызывает запись данных буферов в базовое устройство.
 		/// </summary>
@@ -186,7 +203,7 @@ namespace Novartment.Base.BinaryStreaming
 				var toCopy = Math.Min (available, count);
 				if (toCopy > 0)
 				{
-					_source.BufferMemory.Slice (_source.Offset, toCopy).CopyTo (buffer.AsMemory (offset));
+					_source.BufferMemory.Span.Slice (_source.Offset, toCopy).CopyTo (buffer.AsSpan (offset));
 					_source.SkipBuffer (toCopy);
 				}
 
@@ -202,7 +219,7 @@ namespace Novartment.Base.BinaryStreaming
 				}
 
 				var toCopy = Math.Min (_source.Count, count);
-				_source.BufferMemory.Slice (_source.Offset, toCopy).CopyTo (buffer.AsMemory (offset));
+				_source.BufferMemory.Span.Slice (_source.Offset, toCopy).CopyTo (buffer.AsSpan (offset));
 				offset += toCopy;
 				count -= toCopy;
 				resultSize += toCopy;
@@ -236,8 +253,8 @@ namespace Novartment.Base.BinaryStreaming
 		/// Асинхронно считывает последовательность байтов из потока,
 		/// перемещает позицию в потоке на число считанных байтов и отслеживает запросы отмены.
 		/// </summary>
-		/// <param name="buffer">Буфер, в который записываются данные.</param>
-		/// <param name="offset">Смещение байтов в buffer, с которого начинается запись данных из потока.</param>
+		/// <param name="buffer">Буфер, в который считывается данные.</param>
+		/// <param name="offset">Смещение байтов в buffer, с которого начинается cчитывание данных из потока.</param>
 		/// <param name="count">Максимальное число байтов, предназначенных для чтения.</param>
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
 		/// <returns>Задача, результатом которой является общее число байтов, считанных в буфер.
@@ -270,7 +287,7 @@ namespace Novartment.Base.BinaryStreaming
 				var toCopy = Math.Min (available, count);
 				if (toCopy > 0)
 				{
-					_source.BufferMemory.Slice (_source.Offset, toCopy).CopyTo (buffer.AsMemory (offset));
+					_source.BufferMemory.Span.Slice (_source.Offset, toCopy).CopyTo (buffer.AsSpan (offset));
 					_source.SkipBuffer (toCopy);
 				}
 
@@ -306,6 +323,66 @@ namespace Novartment.Base.BinaryStreaming
 				return resultSize;
 			}
 		}
+
+#if NETCOREAPP2_1
+		/// <summary>
+		/// Асинхронно считывает последовательность байтов из потока,
+		/// перемещает позицию в потоке на число считанных байтов и отслеживает запросы отмены.
+		/// </summary>
+		/// <param name="buffer">Буфер, в который считывается данные.</param>
+		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
+		/// <returns>Задача, результатом которой является общее число байтов, считанных в буфер.
+		/// Значение результата может быть меньше размера буфера,
+		/// если число доступных в данный момент байтов меньше запрошенного числа,
+		/// или результат может быть равен 0 (нулю), если был достигнут конец потока.</returns>
+		public override ValueTask<int> ReadAsync (Memory<byte> buffer, CancellationToken cancellationToken = default)
+		{
+			var available = _source.Count;
+			if ((buffer.Length <= available) || _source.IsExhausted)
+			{
+				// данных в источнике достаточно, асинхронное обращение не требуется
+				var toCopy = Math.Min (available, buffer.Length);
+				if (toCopy > 0)
+				{
+					_source.BufferMemory.Slice (_source.Offset, toCopy).CopyTo (buffer);
+					_source.SkipBuffer (toCopy);
+				}
+
+				return new ValueTask<int> (toCopy);
+			}
+
+			return ReadAsyncStateMachine ();
+
+			// асинхронный запрос к источнику пока не наберём необходимое количество данных
+			async ValueTask<int> ReadAsyncStateMachine ()
+			{
+				var offset = 0;
+				var count = buffer.Length;
+				int resultSize = 0;
+				while (count > 0)
+				{
+					if ((count > _source.Count) && !_source.IsExhausted)
+					{
+						await _source.FillBufferAsync (cancellationToken).ConfigureAwait (false);
+					}
+
+					if (_source.Count <= 0)
+					{
+						break;
+					}
+
+					var toCopy = Math.Min (_source.Count, count);
+					_source.BufferMemory.Slice (_source.Offset, toCopy).CopyTo (buffer.Slice (offset));
+					offset += toCopy;
+					count -= toCopy;
+					resultSize += toCopy;
+					_source.SkipBuffer (toCopy);
+				}
+
+				return resultSize;
+			}
+		}
+#endif
 
 		/// <summary>
 		/// Асинхронно считывает байты из потока и записывает их в другой поток, используя указанный размер буфера и токен отмены.

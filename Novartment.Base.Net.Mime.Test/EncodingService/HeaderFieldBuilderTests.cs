@@ -7,14 +7,14 @@ namespace Novartment.Base.Net.Mime.Test
 {
 	#region класс-обёртки чтобы получить доступ к protected-методам PrepareToEncode() и EncodeNextPart()
 
-	internal class ExposedHeaderFieldBuilderUnstructured : HeaderFieldBuilderUnstructured
+	internal class ExposedHeaderFieldBuilderUnstructured : HeaderFieldBuilderUnstructuredValue
 	{
 		internal ExposedHeaderFieldBuilderUnstructured (HeaderFieldName name, string text) : base (name, text) { }
 		internal void PrepareToEncodeExposed (byte[] oneLineBuffer) => base.PrepareToEncode (oneLineBuffer);
 		internal int GetNextPartExposed (Span<byte> buf, out bool isLast) => base.EncodeNextPart (buf, out isLast);
 	}
 
-	internal class ExposedHeaderFieldBuilderPhrase : HeaderFieldBuilderPhrase
+	internal class ExposedHeaderFieldBuilderPhrase : HeaderFieldBuilderStructuredValue
 	{
 		internal ExposedHeaderFieldBuilderPhrase (HeaderFieldName name, string text) : base (name, text) { }
 		internal void PrepareToEncodeExposed (byte[] oneLineBuffer) => base.PrepareToEncode (oneLineBuffer);
@@ -29,28 +29,28 @@ namespace Novartment.Base.Net.Mime.Test
 	}
 
 
-	internal class ExposedHeaderFieldBuilderLanguageList : HeaderFieldBuilderLanguageList
+	internal class ExposedHeaderFieldBuilderLanguageList : HeaderFieldBuilderLanguageCollection
 	{
 		internal ExposedHeaderFieldBuilderLanguageList (HeaderFieldName name, IReadOnlyList<string> languages) : base (name, languages) { }
 		internal void PrepareToEncodeExposed (byte[] oneLineBuffer) => base.PrepareToEncode (oneLineBuffer);
 		internal int GetNextPartExposed (Span<byte> buf, out bool isLast) => base.EncodeNextPart (buf, out isLast);
 	}
 
-	internal class ExposedHeaderFieldBuilderAddrSpecList : HeaderFieldBuilderAddrSpecList
+	internal class ExposedHeaderFieldBuilderAddrSpecList : HeaderFieldBuilderAddrSpecCollection
 	{
 		internal ExposedHeaderFieldBuilderAddrSpecList (HeaderFieldName name, IReadOnlyList<AddrSpec> addrSpecs) : base (name, addrSpecs) { }
 		internal void PrepareToEncodeExposed (byte[] oneLineBuffer) => base.PrepareToEncode (oneLineBuffer);
 		internal int GetNextPartExposed (Span<byte> buf, out bool isLast) => base.EncodeNextPart (buf, out isLast);
 	}
 
-	internal class ExposedHeaderFieldBuilderAtomAndUnstructured : HeaderFieldBuilderAtomAndUnstructured
+	internal class ExposedHeaderFieldBuilderAtomAndUnstructured : HeaderFieldBuilderAtomAndUnstructuredValue
 	{
 		internal ExposedHeaderFieldBuilderAtomAndUnstructured (HeaderFieldName name, string type, string value) : base (name, type, value) { }
 		internal void PrepareToEncodeExposed (byte[] oneLineBuffer) => base.PrepareToEncode (oneLineBuffer);
 		internal int GetNextPartExposed (Span<byte> buf, out bool isLast) => base.EncodeNextPart (buf, out isLast);
 	}
 
-	internal class ExposedHeaderFieldBuilderUnstructuredPair : HeaderFieldBuilderUnstructuredPair
+	internal class ExposedHeaderFieldBuilderUnstructuredPair : HeaderFieldBuilderUnstructuredValuePair
 	{
 		internal ExposedHeaderFieldBuilderUnstructuredPair (HeaderFieldName name, string value1, string value2) : base (name, value1, value2) { }
 		internal void PrepareToEncodeExposed (byte[] oneLineBuffer) => base.PrepareToEncode (oneLineBuffer);
@@ -64,21 +64,21 @@ namespace Novartment.Base.Net.Mime.Test
 		internal int GetNextPartExposed (Span<byte> buf, out bool isLast) => base.EncodeNextPart (buf, out isLast);
 	}
 
-	internal class ExposedHeaderFieldBuilderPhraseAndId : HeaderFieldBuilderPhraseAndId
+	internal class ExposedHeaderFieldBuilderPhraseAndId : HeaderFieldBuilderStructuredValueAndId
 	{
 		internal ExposedHeaderFieldBuilderPhraseAndId (HeaderFieldName name, string id, string phrase) : base (name, id, phrase) { }
 		internal void PrepareToEncodeExposed (byte[] oneLineBuffer) => base.PrepareToEncode (oneLineBuffer);
 		internal int GetNextPartExposed (Span<byte> buf, out bool isLast) => base.EncodeNextPart (buf, out isLast);
 	}
 
-	internal class ExposedHeaderFieldBuilderPhraseList : HeaderFieldBuilderPhraseList
+	internal class ExposedHeaderFieldBuilderPhraseList : HeaderFieldBuilderStructuredValueCollection
 	{
 		internal ExposedHeaderFieldBuilderPhraseList (HeaderFieldName name, IReadOnlyList<string> values) : base (name, values) { }
 		internal void PrepareToEncodeExposed (byte[] oneLineBuffer) => base.PrepareToEncode (oneLineBuffer);
 		internal int GetNextPartExposed (Span<byte> buf, out bool isLast) => base.EncodeNextPart (buf, out isLast);
 	}
 
-	internal class ExposedHeaderFieldBuilderMailboxList : HeaderFieldBuilderMailboxList
+	internal class ExposedHeaderFieldBuilderMailboxList : HeaderFieldBuilderMailboxCollection
 	{
 		internal ExposedHeaderFieldBuilderMailboxList (HeaderFieldName name, IReadOnlyList<Mailbox> mailboxes) : base (name, mailboxes) { }
 		internal void PrepareToEncodeExposed (byte[] oneLineBuffer) => base.PrepareToEncode (oneLineBuffer);
@@ -92,7 +92,7 @@ namespace Novartment.Base.Net.Mime.Test
 		internal int GetNextPartExposed (Span<byte> buf, out bool isLast) => base.EncodeNextPart (buf, out isLast);
 	}
 
-	internal class ExposedHeaderFieldBuilderDispositionNotificationParameterList : HeaderFieldBuilderDispositionNotificationParameterList
+	internal class ExposedHeaderFieldBuilderDispositionNotificationParameterList : HeaderFieldBuilderDispositionNotificationParameterCollection
 	{
 		internal ExposedHeaderFieldBuilderDispositionNotificationParameterList (HeaderFieldName name, IReadOnlyList<DispositionNotificationParameter> parameters) : base (name, parameters) { }
 		internal void PrepareToEncodeExposed (byte[] oneLineBuffer) => base.PrepareToEncode (oneLineBuffer);
@@ -1030,7 +1030,7 @@ namespace Novartment.Base.Net.Mime.Test
 			{
 				new HeaderFieldBuilderExactValue (HeaderFieldName.ContentType, "text/plain"),
 				new HeaderFieldBuilderExactValue (HeaderFieldName.ConversionWithLoss, null),
-				new HeaderFieldBuilderUnstructured (HeaderFieldName.Received, "by server10.espc2.mechel.com (8.8.8/1.37) id CAA22933; Tue, 15 May 2012 02:49:22 +0100"),
+				new HeaderFieldBuilderUnstructuredValue (HeaderFieldName.Received, "by server10.espc2.mechel.com (8.8.8/1.37) id CAA22933; Tue, 15 May 2012 02:49:22 +0100"),
 				new HeaderFieldBuilderExactValue (HeaderFieldName.ContentMD5, ":Q2hlY2sgSW50ZWdyaXR5IQ=="),
 			};
 			src[0].AddParameter ("format", "flowed");

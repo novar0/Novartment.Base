@@ -3,6 +3,9 @@ using Novartment.Base.Text;
 
 namespace Novartment.Base.Net.Mime
 {
+	/// <summary>
+	/// Построитель поля заголовка из '*tokens' значения и даты.
+	/// </summary>
 	public class HeaderFieldBuilderTokensAndDate : HeaderFieldBuilder
 	{
 		private readonly string _value;
@@ -13,12 +16,11 @@ namespace Novartment.Base.Net.Mime
 		private int _wordStart = -1;
 
 		/// <summary>
-		/// Создает поле заголовка из '*tokens' значения и даты.
+		/// Инициализирует новый экземпляр класса HeaderFieldBuilderTokensAndDate из '*tokens' значения и даты.
 		/// </summary>
 		/// <param name="name">Имя поля заголовка.</param>
 		/// <param name="value">'*tokens' значение.</param>
 		/// <param name="dateTimeOffset">Дата.</param>
-		/// <returns>Поле заголовка.</returns>
 		public HeaderFieldBuilderTokensAndDate (HeaderFieldName name, string value, DateTimeOffset dateTimeOffset)
 			: base (name)
 		{
@@ -45,7 +47,7 @@ namespace Novartment.Base.Net.Mime
 		/// </summary>
 		/// <param name="buf">Буфер, куда будет записана чать.</param>
 		/// <param name="isLast">Получает признак того, что полученная часть является последней.</param>
-		/// <returns>Количество байтов, записанный в буфер.</returns>
+		/// <returns>Количество байтов, записанных в буфер.</returns>
 		protected override int EncodeNextPart (Span<byte> buf, out bool isLast)
 		{
 			if (_finished)
@@ -55,7 +57,6 @@ namespace Novartment.Base.Net.Mime
 			}
 
 			// An 'encoded-word' MUST NOT be used in a '*tokens' header field.
-
 			while ((_value != null) && (_pos < _value.Length))
 			{
 				var currentChar = _value[_pos];
@@ -109,7 +110,6 @@ namespace Novartment.Base.Net.Mime
 						// встретился символ не входящий в комбинацию WhiteSpace | Visible
 						throw new FormatException (FormattableString.Invariant (
 							$"Value contains invalid for 'token' character U+{currentChar:x}. Expected characters are U+0009 and U+0020...U+007E."));
-
 					}
 				}
 

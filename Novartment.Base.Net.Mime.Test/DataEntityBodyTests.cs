@@ -20,7 +20,7 @@ namespace Novartment.Base.Net.Mime.Test
 			var body = new DataEntityBody (ContentTransferEncoding.Binary);
 			var templateBytes = Encoding.UTF8.GetBytes (template1Html);
 			var result = new byte[templateBytes.Length];
-			body.LoadAsync (new ArrayBufferedSource (Encoding.UTF8.GetBytes (template1Html)), null).Wait ();
+			body.LoadAsync (new MemoryBufferedSource (Encoding.UTF8.GetBytes (template1Html)), null).Wait ();
 			var buf1 = body.GetDataSource ().ReadAllBytesAsync ().Result;
 			Assert.Equal (templateBytes.Length, buf1.Length);
 			for (int i = 0; i < templateBytes.Length; i++)
@@ -30,7 +30,7 @@ namespace Novartment.Base.Net.Mime.Test
 
 			// application/octet-stream в кодировке quoted-printable
 			body = new DataEntityBody (ContentTransferEncoding.QuotedPrintable);
-			body.LoadAsync (new ArrayBufferedSource (Encoding.ASCII.GetBytes (template1QuotedPrintable)), null).Wait ();
+			body.LoadAsync (new MemoryBufferedSource (Encoding.ASCII.GetBytes (template1QuotedPrintable)), null).Wait ();
 			Array.Clear (result, 0, result.Length);
 			var buf2 = body.GetDataSource ().ReadAllBytesAsync ().Result;
 			Assert.Equal (templateBytes.Length, buf2.Length);
@@ -41,7 +41,7 @@ namespace Novartment.Base.Net.Mime.Test
 
 			// text/plain в кодировке base64
 			body = new DataEntityBody (ContentTransferEncoding.Base64);
-			body.LoadAsync (new ArrayBufferedSource (Encoding.ASCII.GetBytes (template1Base64)), null).Wait ();
+			body.LoadAsync (new MemoryBufferedSource (Encoding.ASCII.GetBytes (template1Base64)), null).Wait ();
 			Array.Clear (result, 0, result.Length);
 			var buf3 = body.GetDataSource ().ReadAllBytesAsync ().Result;
 			Assert.Equal (templateBytes.Length, buf3.Length);
@@ -57,7 +57,7 @@ namespace Novartment.Base.Net.Mime.Test
 		{
 			// application/octet-stream в кодировке 7-bit
 			var body = new DataEntityBody (ContentTransferEncoding.SevenBit);
-			body.SetDataAsync (new ArrayBufferedSource (new byte[] { 48, 49, 50 })).Wait ();
+			body.SetDataAsync (new MemoryBufferedSource (new byte[] { 48, 49, 50 })).Wait ();
 			var bytes = new BinaryDestinationMock (128);
 			body.SaveAsync (bytes).Wait ();
 			Assert.Equal (5, bytes.Count);
@@ -65,7 +65,7 @@ namespace Novartment.Base.Net.Mime.Test
 
 			// image/png в кодировке quoted-printable
 			body = new DataEntityBody (ContentTransferEncoding.QuotedPrintable);
-			body.SetDataAsync (new ArrayBufferedSource (new byte[] { 2, 3, 4 })).Wait ();
+			body.SetDataAsync (new MemoryBufferedSource (new byte[] { 2, 3, 4 })).Wait ();
 			bytes = new BinaryDestinationMock (128);
 			body.SaveAsync (bytes).Wait ();
 			Assert.Equal (11, bytes.Count);
@@ -73,7 +73,7 @@ namespace Novartment.Base.Net.Mime.Test
 
 			// text/plain в кодировке base64
 			body = new DataEntityBody (ContentTransferEncoding.Base64);
-			body.SetDataAsync (new ArrayBufferedSource (new byte[] { 48, 49, 50 })).Wait ();
+			body.SetDataAsync (new MemoryBufferedSource (new byte[] { 48, 49, 50 })).Wait ();
 			bytes = new BinaryDestinationMock (128);
 			body.SaveAsync (bytes).Wait ();
 			Assert.Equal (6, bytes.Count);
@@ -93,7 +93,7 @@ namespace Novartment.Base.Net.Mime.Test
 				template[i] = (byte)rnd.Next (byte.MaxValue + 1);
 			}
 
-			var srcStream = new ArrayBufferedSource (template);
+			var srcStream = new MemoryBufferedSource (template);
 
 			// application/octet-stream в кодировке base64
 			var body = new DataEntityBody (ContentTransferEncoding.Base64);
@@ -107,7 +107,7 @@ namespace Novartment.Base.Net.Mime.Test
 
 			// application/octet-stream quoted-printable
 			body = new DataEntityBody (ContentTransferEncoding.QuotedPrintable);
-			srcStream = new ArrayBufferedSource (template);
+			srcStream = new MemoryBufferedSource (template);
 			body.SetDataAsync (srcStream).Wait ();
 			buf = body.GetDataSource ().ReadAllBytesAsync ().Result;
 			Assert.Equal (template.Length, buf.Length);
@@ -118,7 +118,7 @@ namespace Novartment.Base.Net.Mime.Test
 
 			// application/octet-stream в кодировке binary
 			body = new DataEntityBody (ContentTransferEncoding.Binary);
-			srcStream = new ArrayBufferedSource (template);
+			srcStream = new MemoryBufferedSource (template);
 			body.SetDataAsync (srcStream).Wait ();
 			buf = body.GetDataSource ().ReadAllBytesAsync ().Result;
 			Assert.Equal (template.Length, buf.Length);

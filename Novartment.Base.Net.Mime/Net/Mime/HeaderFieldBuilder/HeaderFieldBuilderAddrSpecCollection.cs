@@ -4,18 +4,20 @@ using System.Diagnostics.Contracts;
 
 namespace Novartment.Base.Net.Mime
 {
-	public class HeaderFieldBuilderAddrSpecList : HeaderFieldBuilder
+	/// <summary>
+	/// Построитель поля заголовка из указанной коллекции интернет-идентификаторов.
+	/// </summary>
+	public class HeaderFieldBuilderAddrSpecCollection : HeaderFieldBuilder
 	{
 		private readonly IReadOnlyList<AddrSpec> _addrSpecs;
 		private int _idx = 0;
 
 		/// <summary>
-		/// Создает поле заголовка из указанной коллекции интернет-идентификаторов.
+		/// Инициализирует новый экземпляр класса HeaderFieldBuilderAddrSpecCollection из указанной коллекции интернет-идентификаторов.
 		/// </summary>
 		/// <param name="name">Имя поля заголовка.</param>
-		/// <param name="addrSpecs">Коллекция языков в формате интернет-идентификаторов.</param>
-		/// <returns>Поле заголовка.</returns>
-		public HeaderFieldBuilderAddrSpecList (HeaderFieldName name, IReadOnlyList<AddrSpec> addrSpecs)
+		/// <param name="addrSpecs">Коллекция интернет-идентификаторов.</param>
+		public HeaderFieldBuilderAddrSpecCollection (HeaderFieldName name, IReadOnlyList<AddrSpec> addrSpecs)
 			: base (name)
 		{
 			if (addrSpecs == null)
@@ -44,7 +46,7 @@ namespace Novartment.Base.Net.Mime
 		/// </summary>
 		/// <param name="buf">Буфер, куда будет записана чать.</param>
 		/// <param name="isLast">Получает признак того, что полученная часть является последней.</param>
-		/// <returns>Количество байтов, записанный в буфер.</returns>
+		/// <returns>Количество байтов, записанных в буфер.</returns>
 		protected override int EncodeNextPart (Span<byte> buf, out bool isLast)
 		{
 			if (_idx >= _addrSpecs.Count)

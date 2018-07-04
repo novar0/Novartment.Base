@@ -4,6 +4,9 @@ using System.Text;
 
 namespace Novartment.Base.Net.Mime
 {
+	/// <summary>
+	/// Построитель поля заголовка из указанного Mailbox.
+	/// </summary>
 	public class HeaderFieldBuilderMailbox : HeaderFieldBuilder
 	{
 		private readonly Mailbox _mailbox;
@@ -14,11 +17,10 @@ namespace Novartment.Base.Net.Mime
 		private bool _finished = false;
 
 		/// <summary>
-		/// Создает поле заголовка из Mailbox.
+		/// Инициализирует новый экземпляр класса HeaderFieldBuilderMailbox из указанного Mailbox.
 		/// </summary>
 		/// <param name="name">Имя поля заголовка.</param>
 		/// <param name="mailbox">Mailbox.</param>
-		/// <returns>Поле заголовка.</returns>
 		public HeaderFieldBuilderMailbox (HeaderFieldName name, Mailbox mailbox)
 			: base (name)
 		{
@@ -55,7 +57,7 @@ namespace Novartment.Base.Net.Mime
 		/// </summary>
 		/// <param name="buf">Буфер, куда будет записана чать.</param>
 		/// <param name="isLast">Получает признак того, что полученная часть является последней.</param>
-		/// <returns>Количество байтов, записанный в буфер.</returns>
+		/// <returns>Количество байтов, записанных в буфер.</returns>
 		protected override int EncodeNextPart (Span<byte> buf, out bool isLast)
 		{
 			if (_finished)

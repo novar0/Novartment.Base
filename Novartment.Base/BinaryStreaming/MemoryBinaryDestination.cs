@@ -13,7 +13,7 @@ namespace Novartment.Base
 	/// Аналог System.IO.MemoryStream только для последовательной записи.
 	/// Отличается тем, что записанное содержимое доступно как ReadOnlyMemory&lt;byte&gt;.
 	/// </remarks>
-	public class ArrayBinaryDestination :
+	public class MemoryBinaryDestination :
 		IBinaryDestination
 	{
 		private const int MaxByteArrayLength = 0x7FFFFFC7;
@@ -24,7 +24,7 @@ namespace Novartment.Base
 		/// <summary>
 		/// Инициализирует новый экземпляр класса ArrayBinaryDestination.
 		/// </summary>
-		public ArrayBinaryDestination ()
+		public MemoryBinaryDestination ()
 			: this (0)
 		{
 		}
@@ -33,7 +33,7 @@ namespace Novartment.Base
 		/// Инициализирует новый экземпляр класса ArrayBinaryDestination c указанной начальной ёмкостью.
 		/// </summary>
 		/// <param name="capacity">Начальной ёмкость.</param>
-		public ArrayBinaryDestination (int capacity)
+		public MemoryBinaryDestination (int capacity)
 		{
 			if (capacity < 0)
 			{

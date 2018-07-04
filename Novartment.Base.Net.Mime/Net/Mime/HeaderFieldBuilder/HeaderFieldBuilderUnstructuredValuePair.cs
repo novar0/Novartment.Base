@@ -4,7 +4,10 @@ using System.Text;
 
 namespace Novartment.Base.Net.Mime
 {
-	public class HeaderFieldBuilderUnstructuredPair : HeaderFieldBuilder
+	/// <summary>
+	/// Построитель поля заголовка из двух указанных неструктурированных значений.
+	/// </summary>
+	public class HeaderFieldBuilderUnstructuredValuePair : HeaderFieldBuilder
 	{
 		private readonly string _value1;
 		private readonly string _value2 = null;
@@ -17,13 +20,12 @@ namespace Novartment.Base.Net.Mime
 		private bool _prevSequenceIsWordEncoded2 = false;
 
 		/// <summary>
-		/// Создает поле заголовка из двух 'unstructured' значений.
+		/// Инициализирует новый экземпляр класса HeaderFieldBuilderUnstructuredValuePair из двух указанных неструктурированных значений.
 		/// </summary>
 		/// <param name="name">Имя поля заголовка.</param>
-		/// <param name="value1">Обязательное 'unstructured' значение 1.</param>
-		/// <param name="value2">Необязательное 'unstructured' значение 2.</param>
-		/// <returns>Поле заголовка.</returns>
-		public HeaderFieldBuilderUnstructuredPair (HeaderFieldName name, string value1, string value2)
+		/// <param name="value1">Обязательное неструктурированное значение 1.</param>
+		/// <param name="value2">Необязательное неструктурированное значение 2.</param>
+		public HeaderFieldBuilderUnstructuredValuePair (HeaderFieldName name, string value1, string value2)
 			: base (name)
 		{
 			if (value1 == null)
@@ -62,7 +64,7 @@ namespace Novartment.Base.Net.Mime
 		/// </summary>
 		/// <param name="buf">Буфер, куда будет записана чать.</param>
 		/// <param name="isLast">Получает признак того, что полученная часть является последней.</param>
-		/// <returns>Количество байтов, записанный в буфер.</returns>
+		/// <returns>Количество байтов, записанных в буфер.</returns>
 		protected override int EncodeNextPart (Span<byte> buf, out bool isLast)
 		{
 			if (_pos2 < 0)

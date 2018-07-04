@@ -107,7 +107,7 @@ namespace Novartment.Base.Smtp.Test
 				null);
 
 			// передаём данные в не начатую
-			var src = new ArrayBufferedSource (Encoding.ASCII.GetBytes (MailBody));
+			var src = new MemoryBufferedSource (Encoding.ASCII.GetBytes (MailBody));
 			Assert.ThrowsAsync<InvalidOperationException> (() => transaction.TransferDataAndFinishAsync (src,  -1));
 			Assert.Empty (sender.SendedCommands);
 
@@ -117,7 +117,7 @@ namespace Novartment.Base.Smtp.Test
 				new SmtpOriginatorProtocolSession (sender, "test.localhost"),
 				ContentTransferEncoding.SevenBit,
 				null);
-			src = new ArrayBufferedSource (Encoding.ASCII.GetBytes (MailBody));
+			src = new MemoryBufferedSource (Encoding.ASCII.GetBytes (MailBody));
 			Assert.ThrowsAsync<InvalidOperationException> (() => transaction.TransferDataAndFinishAsync (src, -1));
 			Assert.Empty (sender.SendedCommands);
 
@@ -125,7 +125,7 @@ namespace Novartment.Base.Smtp.Test
 			transaction = PrepareSessionForDataTransfer (sender, extensionsSupported);
 			sender.ReceivedReplies.Enqueue (SmtpReply.DataStart);
 			sender.ReceivedReplies.Enqueue (SmtpReply.OK);
-			src = new ArrayBufferedSource (Encoding.ASCII.GetBytes (MailBody));
+			src = new MemoryBufferedSource (Encoding.ASCII.GetBytes (MailBody));
 			Assert.Empty (sender.SendedDataBlocks);
 			transaction.TransferDataAndFinishAsync (src, -1).Wait ();
 			Assert.Empty (sender.ReceivedReplies);
@@ -141,7 +141,7 @@ namespace Novartment.Base.Smtp.Test
 			// передаем данные без поддержки CHUNKING, недопустимый маркер конца внутри данных, должно вызвать UnrecoverableProtocolException
 			transaction = PrepareSessionForDataTransfer (sender, extensionsSupported);
 			sender.ReceivedReplies.Enqueue (SmtpReply.DataStart);
-			src = new ArrayBufferedSource (Encoding.ASCII.GetBytes (InvalidMailBodyPart1 + InvalidMailBodyPart2));
+			src = new MemoryBufferedSource (Encoding.ASCII.GetBytes (InvalidMailBodyPart1 + InvalidMailBodyPart2));
 			Assert.ThrowsAsync<UnrecoverableProtocolException> (() => transaction.TransferDataAndFinishAsync (src,  -1));
 			Assert.Empty (sender.ReceivedReplies);
 			cmd = sender.SendedCommands.Dequeue ();
@@ -155,7 +155,7 @@ namespace Novartment.Base.Smtp.Test
 			extensionsSupported.Add ("CHUNKING");
 			transaction = PrepareSessionForDataTransfer (sender, extensionsSupported);
 			sender.ReceivedReplies.Enqueue (SmtpReply.OK);
-			src = new ArrayBufferedSource (Encoding.ASCII.GetBytes (MailBody));
+			src = new MemoryBufferedSource (Encoding.ASCII.GetBytes (MailBody));
 			transaction.TransferDataAndFinishAsync (src, MailBody.Length).Wait ();
 			Assert.Empty (sender.ReceivedReplies);
 			cmd = sender.SendedCommands.Dequeue ();
@@ -167,7 +167,7 @@ namespace Novartment.Base.Smtp.Test
 
 			// передаем данные с поддержкой CHUNKING источник предоставляет данных меньше чем указано, должно вызвать UnrecoverableProtocolException
 			transaction = PrepareSessionForDataTransfer (sender, extensionsSupported);
-			src = new ArrayBufferedSource (Encoding.ASCII.GetBytes (MailBody));
+			src = new MemoryBufferedSource (Encoding.ASCII.GetBytes (MailBody));
 			Assert.ThrowsAsync<UnrecoverableProtocolException> (() => transaction.TransferDataAndFinishAsync (src, MailBody.Length + 5));
 			cmd = sender.SendedCommands.Dequeue ();
 			Assert.Empty (sender.SendedCommands);

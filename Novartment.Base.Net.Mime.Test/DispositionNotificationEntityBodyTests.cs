@@ -21,7 +21,7 @@ namespace Novartment.Base.Net.Mime.Test
 		public void Load ()
 		{
 			var body = new DispositionNotificationEntityBody ();
-			body.LoadAsync (new ArrayBufferedSource (Encoding.ASCII.GetBytes (Template1)), null).Wait ();
+			body.LoadAsync (new MemoryBufferedSource (Encoding.ASCII.GetBytes (Template1)), null).Wait ();
 
 			Assert.Equal ("joes-pc.cs.example.com", body.ReportingUserAgentName);
 			Assert.Equal ("Foomail 97.1", body.ReportingUserAgentProduct);

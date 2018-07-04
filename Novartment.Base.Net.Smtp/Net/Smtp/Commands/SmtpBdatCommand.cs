@@ -20,9 +20,11 @@ namespace Novartment.Base.Net.Smtp
 
 		internal bool IsLast { get; }
 
-		internal void SetSource (IBufferedSource source)
+		public override string ToString ()
 		{
-			this.SourceData = new SizeLimitedBufferedSource (source, this.Size);
+			return this.IsLast ?
+				FormattableString.Invariant ($"BDAT {this.Size} LAST\r\n") :
+				FormattableString.Invariant ($"BDAT {this.Size}\r\n");
 		}
 
 		internal static SmtpCommand Parse (ReadOnlySpan<char> value)
@@ -76,11 +78,9 @@ namespace Novartment.Base.Net.Smtp
 			return new SmtpBdatCommand (size, isLast);
 		}
 
-		public override string ToString ()
+		internal void SetSource (IBufferedSource source)
 		{
-			return this.IsLast ?
-				FormattableString.Invariant ($"BDAT {this.Size} LAST\r\n") :
-				FormattableString.Invariant ($"BDAT {this.Size}\r\n");
+			this.SourceData = new SizeLimitedBufferedSource (source, this.Size);
 		}
 	}
 }

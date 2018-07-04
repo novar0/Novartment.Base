@@ -30,7 +30,7 @@ namespace Novartment.Base.BinaryStreaming
 		/// <param name="throwIfNoSeparatorFound">
 		/// Признак, приводящий к бросанию исключения при чтении/пропуске в случае когда образец-разделитель не найден до исчерпания source.
 		/// </param>
-		public TemplateSeparatedBufferedSource (IBufferedSource source, byte[] separator, bool throwIfNoSeparatorFound)
+		public TemplateSeparatedBufferedSource (IBufferedSource source, ReadOnlySpan<byte> separator, bool throwIfNoSeparatorFound)
 		{
 			if (source == null)
 			{
@@ -50,7 +50,7 @@ namespace Novartment.Base.BinaryStreaming
 			Contract.EndContractBlock ();
 
 			_source = source;
-			_template = separator;
+			_template = separator.ToArray ();
 			_throwIfNoSeparatorFound = throwIfNoSeparatorFound;
 			SearchBuffer (true);
 		}

@@ -11,13 +11,13 @@ namespace Novartment.Base.BinaryStreaming
 	/// в качестве которого используется предоставленный массив байтов.
 	/// </summary>
 	[DebuggerDisplay ("{Offset}...{Offset+Count} ({BufferMemory.Length}) exhausted={IsExhausted}")]
-	public class ArrayBufferedSource :
+	public class MemoryBufferedSource :
 		IFastSkipBufferedSource
 	{
 		/// <summary>
 		/// Получает пустой источник данных, представленный байтовым буфером.
 		/// </summary>
-		public static readonly IBufferedSource Empty = new ArrayBufferedSource (Array.Empty<byte> ());
+		public static readonly IBufferedSource Empty = new MemoryBufferedSource (ReadOnlyMemory<byte>.Empty);
 
 		private readonly ReadOnlyMemory<byte> _buffer;
 		private int _offset;
@@ -27,7 +27,7 @@ namespace Novartment.Base.BinaryStreaming
 		/// Инициализирует новый экземпляр ArrayBufferedSource использующий в качестве буфера предоставленный массив байтов.
 		/// </summary>
 		/// <param name="buffer">Массив байтов, который будет буфером источника.</param>
-		public ArrayBufferedSource(ReadOnlyMemory<byte> buffer)
+		public MemoryBufferedSource(ReadOnlyMemory<byte> buffer)
 		{
 			_buffer = buffer;
 			_offset = 0;
@@ -124,7 +124,7 @@ namespace Novartment.Base.BinaryStreaming
 		/// <param name="size">Количество байтов данных для пропуска, включая доступные в буфере данные.</param>
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
 		/// <returns>
-		/// Задача, результатом которой является количество пропущеных байтов данных, включая доступные в буфере данные.
+		/// Задача, результатом которой является количество пропущенных байтов данных, включая доступные в буфере данные.
 		/// Может быть меньше, чем было указано, если источник исчерпался.
 		/// После завершения задачи, независимо от её результата, источник будет предоставлять данные, идущие сразу за пропущенными.
 		/// </returns>

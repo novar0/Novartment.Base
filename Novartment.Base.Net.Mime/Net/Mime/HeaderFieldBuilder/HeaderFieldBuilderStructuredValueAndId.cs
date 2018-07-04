@@ -5,7 +5,10 @@ using Novartment.Base.Text;
 
 namespace Novartment.Base.Net.Mime
 {
-	public class HeaderFieldBuilderPhraseAndId : HeaderFieldBuilder
+	/// <summary>
+	/// Построитель поля заголовка из указанных идентификатора и структурированного (состоящего из токенов) значения.
+	/// </summary>
+	public class HeaderFieldBuilderStructuredValueAndId : HeaderFieldBuilder
 	{
 		private readonly string _id;
 		private readonly string _phrase = null;
@@ -16,13 +19,12 @@ namespace Novartment.Base.Net.Mime
 		private int _phraseBytesSize = 0;
 
 		/// <summary>
-		/// Создает поле заголовка из идентификатора и 'phrase'.
+		/// Инициализирует новый экземпляр класса HeaderFieldBuilderStructuredValueAndId из указанных идентификатора и структурированного (состоящего из токенов) значения.
 		/// </summary>
 		/// <param name="name">Имя поля заголовка.</param>
 		/// <param name="id">Идентификатор (значение типа 'dot-atom-text').</param>
-		/// <param name="phrase">Произвольная 'phrase'.</param>
-		/// <returns>Поле заголовка.</returns>
-		public HeaderFieldBuilderPhraseAndId (HeaderFieldName name, string id, string phrase = null)
+		/// <param name="phrase">Структурированное (состоящеее из токенов) значение.</param>
+		public HeaderFieldBuilderStructuredValueAndId (HeaderFieldName name, string id, string phrase = null)
 			: base (name)
 		{
 			if (id == null)
@@ -64,7 +66,7 @@ namespace Novartment.Base.Net.Mime
 		/// </summary>
 		/// <param name="buf">Буфер, куда будет записана чать.</param>
 		/// <param name="isLast">Получает признак того, что полученная часть является последней.</param>
-		/// <returns>Количество байтов, записанный в буфер.</returns>
+		/// <returns>Количество байтов, записанных в буфер.</returns>
 		protected override int EncodeNextPart (Span<byte> buf, out bool isLast)
 		{
 			if (_finished)

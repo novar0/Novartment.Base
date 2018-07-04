@@ -68,7 +68,7 @@ namespace Novartment.Base.BinaryStreaming
 
 			return (writableStream is BinaryDestinationStream destinaton) ?
 				destinaton.BaseBinaryDestination :
-				new StreamBinaryDestination(writableStream);
+				new StreamBinaryDestination (writableStream);
 		}
 
 		/// <summary>
@@ -106,7 +106,7 @@ namespace Novartment.Base.BinaryStreaming
 
 			return (destination is StreamBinaryDestination strm) ?
 				strm.BaseStream :
-				new BinaryDestinationStream(destination);
+				new BinaryDestinationStream (destination);
 		}
 	}
 }

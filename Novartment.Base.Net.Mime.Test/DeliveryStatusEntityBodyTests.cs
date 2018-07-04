@@ -23,7 +23,7 @@ namespace Novartment.Base.Net.Mime.Test
 		public void Load ()
 		{
 			var body = new DeliveryStatusEntityBody ();
-			var src = new ArrayBufferedSource (Encoding.ASCII.GetBytes (Template1));
+			var src = new MemoryBufferedSource (Encoding.ASCII.GetBytes (Template1));
 			body.LoadAsync (src, null).Wait ();
 
 			Assert.Equal (NotificationFieldValueKind.Host, body.MailTransferAgent.Kind);

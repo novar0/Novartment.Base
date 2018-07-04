@@ -23,7 +23,7 @@ namespace Novartment.Base.Net.Test
 		{
 			_localEndpoint = localEndpoint;
 			_remoteEndpoint = remoteEndpoint;
-			_inData = new ArrayBufferedSource (inData);
+			_inData = new MemoryBufferedSource (inData);
 		}
 
 		public string RemoteHostName => null;

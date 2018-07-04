@@ -89,8 +89,15 @@ namespace Novartment.Base.BinaryStreaming
 
 				Contract.EndContractBlock ();
 
-				return _destination.WriteAsync (buffer.AsMemory (offset, count), default);
+				return _destination.WriteAsync (buffer.AsMemory (offset, count), cancellationToken);
 			}
+
+#if NETCOREAPP2_1
+			public override ValueTask WriteAsync (ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default)
+			{
+				return new ValueTask (_destination.WriteAsync (buffer, cancellationToken));
+			}
+#endif
 
 			protected override void Dispose (bool disposing)
 			{

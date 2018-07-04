@@ -202,7 +202,7 @@ namespace Novartment.Base.BinaryStreaming
 		}
 
 		/// <summary>
-		/// В наследованном классе проверяет данные на принадлежность к одной части.
+		/// В наследованном классе проверяет данные в буфере на принадлежность к одной части.
 		/// Также обновляет свойства IsEndOfPartFound и PartEpilogueSize.
 		/// </summary>
 		/// <param name="validatedPartLength">

@@ -23,7 +23,7 @@ namespace Novartment.Base.Smtp.Test
 		{
 			_localEndpoint = new IPHostEndPoint (localEndpoint);
 			_remoteEndpoint = new IPHostEndPoint (remoteEndpoint);
-			_inData = new ArrayBufferedSource (inData);
+			_inData = new MemoryBufferedSource (inData);
 		}
 
 		internal TcpConnectionMock (

@@ -20,7 +20,7 @@ namespace Novartment.Base.Smtp.Test
 				"220 smtp35.i.mail.ru ESMTP ready\r\n" +
 				"250 OK\r\n" +
 				"221 Service closing transmission channel\r\n";
-			var src = new ArrayBufferedSource (Encoding.ASCII.GetBytes (received));
+			var src = new MemoryBufferedSource (Encoding.ASCII.GetBytes (received));
 			var connection = new TcpConnectionMock (
 				new IPEndPoint (IPAddress.Loopback, 2555),
 				new IPEndPoint (IPAddress.Loopback, 25),
@@ -40,7 +40,7 @@ namespace Novartment.Base.Smtp.Test
 				"500 Syntax error, command unrecognized\r\n" +
 				"250 OK\r\n" +
 				"221 Service closing transmission channel\r\n";
-			src = new ArrayBufferedSource (Encoding.ASCII.GetBytes (received));
+			src = new MemoryBufferedSource (Encoding.ASCII.GetBytes (received));
 			connection = new TcpConnectionMock (
 				new IPEndPoint (IPAddress.Loopback, 2555),
 				new IPEndPoint (IPAddress.Loopback, 25),
@@ -60,7 +60,7 @@ namespace Novartment.Base.Smtp.Test
 		{
 			// сервер сразу отвечает что недоступен
 			var received = "421 mail.ru Service not available, closing transmission channel\r\n";
-			var src = new ArrayBufferedSource (Encoding.ASCII.GetBytes (received));
+			var src = new MemoryBufferedSource (Encoding.ASCII.GetBytes (received));
 			var connection = new TcpConnectionMock (
 				new IPEndPoint (IPAddress.Loopback, 2555),
 				new IPEndPoint (IPAddress.Loopback, 25),
@@ -74,7 +74,7 @@ namespace Novartment.Base.Smtp.Test
 			received =
 				"220 smtp35.i.mail.ru ESMTP ready\r\n" +
 				"421 mail.ru Service not available, closing transmission channel\r\n";
-			src = new ArrayBufferedSource (Encoding.ASCII.GetBytes (received));
+			src = new MemoryBufferedSource (Encoding.ASCII.GetBytes (received));
 			connection = new TcpConnectionMock (
 				new IPEndPoint (IPAddress.Loopback, 2555),
 				new IPEndPoint (IPAddress.Loopback, 25),
@@ -88,7 +88,7 @@ namespace Novartment.Base.Smtp.Test
 			// сервер приветствует и обрывает соединение
 			received =
 				"220 smtp35.i.mail.ru ESMTP ready\r\n";
-			src = new ArrayBufferedSource (Encoding.ASCII.GetBytes (received));
+			src = new MemoryBufferedSource (Encoding.ASCII.GetBytes (received));
 			connection = new TcpConnectionMock (
 				new IPEndPoint (IPAddress.Loopback, 2555),
 				new IPEndPoint (IPAddress.Loopback, 25),

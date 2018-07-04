@@ -149,7 +149,7 @@ namespace Novartment.Base.Test
 					break;
 				}
 
-				transform.BufferMemory.Slice (transform.Offset, transform.Count).CopyTo (result.AsMemory (len));
+				transform.BufferMemory.Span.Slice (transform.Offset, transform.Count).CopyTo (result.AsSpan (len));
 				len += transform.Count;
 				transform.SkipBuffer (transform.Count);
 			}

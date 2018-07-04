@@ -217,7 +217,7 @@ namespace Novartment.Base.Smtp.Test
 			Assert.Equal (354, reply.Code);
 
 			var mailBody = "Hello dear!\r\nTell me please how you feel about last meeting.";
-			var src = new ArrayBufferedSource (Encoding.ASCII.GetBytes (mailBody + "\r\n.\r\n"));
+			var src = new MemoryBufferedSource (Encoding.ASCII.GetBytes (mailBody + "\r\n.\r\n"));
 			var cmd = new SmtpActualDataCommand ();
 			cmd.SetSource (src, true);
 			sender.ReceivedCommands.Enqueue (cmd);
@@ -290,7 +290,7 @@ namespace Novartment.Base.Smtp.Test
 			Assert.False (trctn.Disposed);
 
 			mailBody = "33 sample\r\n\r\n\r\ndata 33";
-			src = new ArrayBufferedSource (Encoding.ASCII.GetBytes (mailBody + "\r\n.\r\n"));
+			src = new MemoryBufferedSource (Encoding.ASCII.GetBytes (mailBody + "\r\n.\r\n"));
 			cmd = new SmtpActualDataCommand ();
 			cmd.SetSource (src, true);
 			sender.ReceivedCommands.Enqueue (cmd);
@@ -555,7 +555,7 @@ namespace Novartment.Base.Smtp.Test
 			Assert.Equal (3, createdTransactionsCount);
 
 			var mailBody = "Hello\r\n.\r\n";
-			var src = new ArrayBufferedSource (Encoding.ASCII.GetBytes (mailBody));
+			var src = new MemoryBufferedSource (Encoding.ASCII.GetBytes (mailBody));
 			var cmd = new SmtpActualDataCommand ();
 			cmd.SetSource (src, true);
 			sender.ReceivedCommands.Enqueue (cmd);
@@ -592,8 +592,8 @@ namespace Novartment.Base.Smtp.Test
 			var mailBodyChunk1 = "Hello dear!\r\n";
 			var mailBodyChunk2 = "Tell me please how you feel about last meeting.";
 			Memory<byte> bytes = Encoding.ASCII.GetBytes (mailBodyChunk1 + mailBodyChunk2);
-			var src1 = new ArrayBufferedSource (bytes.Slice (0, mailBodyChunk1.Length));
-			var src2 = new ArrayBufferedSource (bytes.Slice (mailBodyChunk1.Length));
+			var src1 = new MemoryBufferedSource (bytes.Slice (0, mailBodyChunk1.Length));
+			var src2 = new MemoryBufferedSource (bytes.Slice (mailBodyChunk1.Length));
 
 			var cmd = new SmtpBdatCommand (mailBodyChunk1.Length, false);
 			cmd.SetSource (src1);
@@ -652,7 +652,7 @@ namespace Novartment.Base.Smtp.Test
 			var mailBodyBytes = Encoding.ASCII.GetBytes (mailBody);
 
 			// источник не сможет пропустить разделитель, что означает неожиданный обрыв данных
-			var src = new ArrayBufferedSource (mailBodyBytes);
+			var src = new MemoryBufferedSource (mailBodyBytes);
 			var cmd = new SmtpActualDataCommand ();
 			cmd.SetSource (src, true);
 			sender.ReceivedCommands.Enqueue (cmd);
@@ -669,7 +669,7 @@ namespace Novartment.Base.Smtp.Test
 			trctn = SetUpTransaction (session, sender);
 
 			// укажем размер больше чем у источника, что означает неожиданный обрыв данных
-			var src2 = new SizeLimitedBufferedSource (new ArrayBufferedSource (mailBodyBytes), mailBodyBytes.Length + 555);
+			var src2 = new SizeLimitedBufferedSource (new MemoryBufferedSource (mailBodyBytes), mailBodyBytes.Length + 555);
 			var cmd2 = new SmtpBdatCommand (mailBodyBytes.Length + 555, false);
 			cmd2.SetSource (src2);
 			sender.ReceivedCommands.Enqueue (cmd2);
@@ -705,7 +705,7 @@ namespace Novartment.Base.Smtp.Test
 			var trctn = SetUpTransaction (session, sender);
 
 			var mailBody = "Hello";
-			var src = new ArrayBufferedSource (Encoding.ASCII.GetBytes (mailBody));
+			var src = new MemoryBufferedSource (Encoding.ASCII.GetBytes (mailBody));
 			sender.ReceivedCommands.Enqueue (new SmtpInvalidSyntaxCommand (SmtpCommandType.Bdat, "some unrecoverable error"));
 			Assert.ThrowsAsync<UnrecoverableProtocolException> (() => session.ReceiveCommandSendReplyAsync ());
 			Assert.Empty (sender.SendedReplies);
@@ -828,7 +828,7 @@ namespace Novartment.Base.Smtp.Test
 			var trctn = SetUpTransaction (session, sender);
 
 			var mailBody = "Hello";
-			var src = new ArrayBufferedSource (Encoding.ASCII.GetBytes (mailBody));
+			var src = new MemoryBufferedSource (Encoding.ASCII.GetBytes (mailBody));
 			var cmd = new SmtpActualDataCommand ();
 			cmd.SetSource (src, true);
 			sender.ReceivedCommands.Enqueue (cmd);
@@ -867,7 +867,7 @@ namespace Novartment.Base.Smtp.Test
 			var trctn = SetUpTransaction (session, sender);
 
 			var mailBodyChunk = "Hello";
-			var subSrc = new ArrayBufferedSource (Encoding.ASCII.GetBytes (mailBodyChunk));
+			var subSrc = new MemoryBufferedSource (Encoding.ASCII.GetBytes (mailBodyChunk));
 			var src = new SizeLimitedBufferedSource (subSrc, mailBodyChunk.Length);
 			var cmd = new SmtpBdatCommand (mailBodyChunk.Length, false);
 			cmd.SetSource (src);

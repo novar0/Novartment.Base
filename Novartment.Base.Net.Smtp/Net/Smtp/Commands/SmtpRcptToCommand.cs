@@ -13,6 +13,11 @@ namespace Novartment.Base.Net.Smtp
 
 		internal AddrSpec Recipient { get; }
 
+		public override string ToString ()
+		{
+			return FormattableString.Invariant ($"RCPT TO:<{this.Recipient}>\r\n");
+		}
+
 		internal static SmtpCommand Parse (ReadOnlySpan<char> value)
 		{
 			// RCPT TO:<forward-path> [ SP <rcpt-parameters> ] <CRLF> ; Forward-path   = "<" Mailbox ">"
@@ -52,11 +57,6 @@ namespace Novartment.Base.Net.Smtp
 			}
 
 			return new SmtpRcptToCommand (recepient);
-		}
-
-		public override string ToString ()
-		{
-			return FormattableString.Invariant ($"RCPT TO:<{this.Recipient}>\r\n");
 		}
 	}
 }

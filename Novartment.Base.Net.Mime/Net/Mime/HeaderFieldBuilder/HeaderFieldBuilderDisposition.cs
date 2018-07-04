@@ -5,6 +5,10 @@ using Novartment.Base.Text;
 
 namespace Novartment.Base.Net.Mime
 {
+	/// <summary>
+	/// Построитель поля заголовка из указанных трех атомов плюс опциональной коллекции атомов
+	/// в формате 'actionMode/sendingMode; type/4_1,4_2,4_3,4_4 ...'.
+	/// </summary>
 	public class HeaderFieldBuilderDisposition : HeaderFieldBuilder
 	{
 		private readonly string _actionMode;
@@ -15,7 +19,7 @@ namespace Novartment.Base.Net.Mime
 		private bool _finished = false;
 
 		/// <summary>
-		/// Создает поле заголовка из трех атомов плюс опциональной коллекции атомов
+		/// Инициализирует новый экземпляр класса HeaderFieldBuilderDisposition из указанных трех атомов плюс опциональной коллекции атомов
 		/// в формате 'actionMode/sendingMode; type/4_1,4_2,4_3,4_4 ...'.
 		/// </summary>
 		/// <param name="name">Имя поля заголовка.</param>
@@ -23,7 +27,6 @@ namespace Novartment.Base.Net.Mime
 		/// <param name="sendingMode">Обязательное значение 2.</param>
 		/// <param name="type">Обязательное значение 3.</param>
 		/// <param name="modifiers">Необязательная коллекция значений.</param>
-		/// <returns>Поле заголовка.</returns>
 		public HeaderFieldBuilderDisposition (HeaderFieldName name, string actionMode, string sendingMode, string type, IReadOnlyList<string> modifiers = null)
 			: base (name)
 		{
@@ -85,7 +88,7 @@ namespace Novartment.Base.Net.Mime
 		/// </summary>
 		/// <param name="buf">Буфер, куда будет записана чать.</param>
 		/// <param name="isLast">Получает признак того, что полученная часть является последней.</param>
-		/// <returns>Количество байтов, записанный в буфер.</returns>
+		/// <returns>Количество байтов, записанных в буфер.</returns>
 		protected override int EncodeNextPart (Span<byte> buf, out bool isLast)
 		{
 			if (_finished)

@@ -129,7 +129,7 @@ namespace Novartment.Base.Net.Mime
 				throw new InvalidOperationException ("Entity body does not have any data.");
 			}
 
-			IBufferedSource src = new ArrayBufferedSource (_encodedData);
+			IBufferedSource src = new MemoryBufferedSource (_encodedData);
 			IBufferedSource dst;
 			switch (this.TransferEncoding)
 			{

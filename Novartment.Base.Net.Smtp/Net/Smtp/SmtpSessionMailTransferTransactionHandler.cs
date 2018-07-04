@@ -157,6 +157,7 @@ namespace Novartment.Base.Net.Smtp
 			{
 				_logger?.LogInformation ("Starting transfering mail data from " + _startingReturnPath + " to " + string.Join (",", _acceptedRecipients));
 			}
+
 			_status = TransactionStatus.Finished; // заранее на случай исключений
 			var isServerSupportsChunking = _session.ServerSupportedExtensions.Contains ("CHUNKING");
 			return ((exactSize >= 0) && isServerSupportsChunking) ?

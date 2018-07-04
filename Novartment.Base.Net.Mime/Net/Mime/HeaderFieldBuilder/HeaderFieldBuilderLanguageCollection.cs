@@ -5,18 +5,20 @@ using Novartment.Base.Text;
 
 namespace Novartment.Base.Net.Mime
 {
-	public class HeaderFieldBuilderLanguageList : HeaderFieldBuilder
+	/// <summary>
+	/// Построитель поля заголовка из указанной коллекции значений-идентификаторов языка.
+	/// </summary>
+	public class HeaderFieldBuilderLanguageCollection : HeaderFieldBuilder
 	{
 		private readonly IReadOnlyList<string> _languages;
 		private int _idx = 0;
 
 		/// <summary>
-		/// Создает поле заголовка из указанной коллекции значений-идентификаторов языка.
+		/// Инициализирует новый экземпляр класса HeaderFieldBuilderLanguageCollection из указанной коллекции значений-идентификаторов языка.
 		/// </summary>
 		/// <param name="name">Имя поля заголовка.</param>
 		/// <param name="languages">Коллекция значений-идентификаторов языка.</param>
-		/// <returns>Поле заголовка.</returns>
-		public HeaderFieldBuilderLanguageList (HeaderFieldName name, IReadOnlyList<string> languages)
+		public HeaderFieldBuilderLanguageCollection (HeaderFieldName name, IReadOnlyList<string> languages)
 			: base (name)
 		{
 			if (languages == null)
@@ -45,7 +47,7 @@ namespace Novartment.Base.Net.Mime
 		/// </summary>
 		/// <param name="buf">Буфер, куда будет записана чать.</param>
 		/// <param name="isLast">Получает признак того, что полученная часть является последней.</param>
-		/// <returns>Количество байтов, записанный в буфер.</returns>
+		/// <returns>Количество байтов, записанных в буфер.</returns>
 		protected override int EncodeNextPart (Span<byte> buf, out bool isLast)
 		{
 			if (_idx >= _languages.Count)

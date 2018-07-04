@@ -4,18 +4,20 @@ using System.Diagnostics.Contracts;
 
 namespace Novartment.Base.Net.Mime
 {
-	public class HeaderFieldBuilderDispositionNotificationParameterList : HeaderFieldBuilder
+	/// <summary>
+	/// Построитель поля заголовка из указанной коллекции DispositionNotificationParameter.
+	/// </summary>
+	public class HeaderFieldBuilderDispositionNotificationParameterCollection : HeaderFieldBuilder
 	{
 		private readonly IReadOnlyList<DispositionNotificationParameter> _parameters;
 		private int _idx = 0;
 
 		/// <summary>
-		/// Создает поле заголовка из указанной коллекции DispositionNotificationParameter.
+		/// Инициализирует новый экземпляр класса HeaderFieldBuilderDispositionNotificationParameterCollection из указанной коллекции DispositionNotificationParameter.
 		/// </summary>
 		/// <param name="name">Имя поля заголовка.</param>
 		/// <param name="parameters">Коллекция DispositionNotificationParameter.</param>
-		/// <returns>Поле заголовка.</returns>
-		public HeaderFieldBuilderDispositionNotificationParameterList (HeaderFieldName name, IReadOnlyList<DispositionNotificationParameter> parameters)
+		public HeaderFieldBuilderDispositionNotificationParameterCollection (HeaderFieldName name, IReadOnlyList<DispositionNotificationParameter> parameters)
 			: base (name)
 		{
 			if (name == HeaderFieldName.Unspecified)
@@ -32,7 +34,6 @@ namespace Novartment.Base.Net.Mime
 
 			_parameters = parameters;
 		}
-
 
 		/// <summary>
 		/// Подготавливает поле заголовка для вывода в двоичное представление.
@@ -51,7 +52,7 @@ namespace Novartment.Base.Net.Mime
 		/// </summary>
 		/// <param name="buf">Буфер, куда будет записана чать.</param>
 		/// <param name="isLast">Получает признак того, что полученная часть является последней.</param>
-		/// <returns>Количество байтов, записанный в буфер.</returns>
+		/// <returns>Количество байтов, записанных в буфер.</returns>
 		protected override int EncodeNextPart (Span<byte> buf, out bool isLast)
 		{
 			if (_idx >= _parameters.Count)

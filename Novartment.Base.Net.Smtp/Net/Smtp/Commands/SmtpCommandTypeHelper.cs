@@ -34,10 +34,8 @@ namespace Novartment.Base.Net.Smtp
 			pos += firstWordEndPos;
 
 			if (((pos + firstWordEndPos) < source.Length) &&
-				(
-				"MAIL".AsSpan ().Equals (commandTypeStr, StringComparison.OrdinalIgnoreCase) ||
-				"RCPT".AsSpan ().Equals (commandTypeStr, StringComparison.OrdinalIgnoreCase)
-				))
+				("MAIL".AsSpan ().Equals (commandTypeStr, StringComparison.OrdinalIgnoreCase) ||
+				"RCPT".AsSpan ().Equals (commandTypeStr, StringComparison.OrdinalIgnoreCase)))
 			{
 				// если команда из двух слов, то добавляем второе
 				// ищем второе слово оканчивающееся на ':'

@@ -57,7 +57,7 @@ namespace Novartment.Base.Net.Mime.Test
 				"Mime-Version: (\"important \\(info\\)\" here) 3.(produced by MetaSend Vx.x)2\r\n\r\n";
 
 			var msg = new MailMessage ();
-			msg.LoadAsync (new ArrayBufferedSource (Encoding.ASCII.GetBytes (template1)), EntityBodyFactory.Create).Wait ();
+			msg.LoadAsync (new MemoryBufferedSource (Encoding.ASCII.GetBytes (template1)), EntityBodyFactory.Create).Wait ();
 
 			// Trace
 			Assert.Equal (3, msg.Trace.Count);
@@ -438,7 +438,7 @@ namespace Novartment.Base.Net.Mime.Test
 			msg.MailingList.SubscribeCommands.Add ("some currently unknown command");
 			msg.MailingList.SubscribeCommands.Add ("magnet:?xt=urn:tree:tiger:Z4URQ35KGEQW3YZZTIM7YXS3OLKLHFJ3M43DPHQ&xl=8539516502&dn=12.mkv");
 			msg.MailingList.ArchiveCommands.Add ("http://www.host.com/list/archive/");
-			((IDiscreteEntityBody)msg.Body).SetDataAsync (new ArrayBufferedSource (new byte[] { 48, 49, 50 })).Wait ();
+			((IDiscreteEntityBody)msg.Body).SetDataAsync (new MemoryBufferedSource (new byte[] { 48, 49, 50 })).Wait ();
 
 			var bytes = new BinaryDestinationMock (8192);
 			msg.SaveAsync (bytes).Wait ();

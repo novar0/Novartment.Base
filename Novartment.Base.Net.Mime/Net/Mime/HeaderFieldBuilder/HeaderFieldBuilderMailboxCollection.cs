@@ -5,7 +5,10 @@ using System.Text;
 
 namespace Novartment.Base.Net.Mime
 {
-	public class HeaderFieldBuilderMailboxList : HeaderFieldBuilder
+	/// <summary>
+	/// Построитель поля заголовка из указанной коллекции Mailbox.
+	/// </summary>
+	public class HeaderFieldBuilderMailboxCollection : HeaderFieldBuilder
 	{
 		private readonly IReadOnlyList<Mailbox> _mailboxes;
 		private int _idx;
@@ -16,12 +19,11 @@ namespace Novartment.Base.Net.Mime
 		private bool _prevSequenceIsWordEncoded;
 
 		/// <summary>
-		/// Создает поле заголовка из коллекции Mailbox.
+		/// Инициализирует новый экземпляр класса HeaderFieldBuilderMailboxCollection из указанной коллекции Mailbox.
 		/// </summary>
 		/// <param name="name">Имя поля заголовка.</param>
 		/// <param name="mailboxes">Коллекция Mailbox.</param>
-		/// <returns>Поле заголовка.</returns>
-		public HeaderFieldBuilderMailboxList (HeaderFieldName name, IReadOnlyList<Mailbox> mailboxes)
+		public HeaderFieldBuilderMailboxCollection (HeaderFieldName name, IReadOnlyList<Mailbox> mailboxes)
 			: base (name)
 		{
 			if (mailboxes == null)
@@ -54,7 +56,7 @@ namespace Novartment.Base.Net.Mime
 		/// </summary>
 		/// <param name="buf">Буфер, куда будет записана чать.</param>
 		/// <param name="isLast">Получает признак того, что полученная часть является последней.</param>
-		/// <returns>Количество байтов, записанный в буфер.</returns>
+		/// <returns>Количество байтов, записанных в буфер.</returns>
 		protected override int EncodeNextPart (Span<byte> buf, out bool isLast)
 		{
 			if (_idx >= _mailboxes.Count)

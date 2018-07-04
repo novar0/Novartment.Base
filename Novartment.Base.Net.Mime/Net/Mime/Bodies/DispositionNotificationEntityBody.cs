@@ -319,7 +319,7 @@ namespace Novartment.Base.Net.Mime
 			// Reporting-UA
 			if (this.ReportingUserAgentName != null)
 			{
-				header.Add (new HeaderFieldBuilderUnstructuredPair (
+				header.Add (new HeaderFieldBuilderUnstructuredValuePair (
 					HeaderFieldName.ReportingUA,
 					this.ReportingUserAgentName,
 					this.ReportingUserAgentProduct));
@@ -328,7 +328,7 @@ namespace Novartment.Base.Net.Mime
 			// MDN-Gateway
 			if (this.Gateway != null)
 			{
-				header.Add (new HeaderFieldBuilderAtomAndUnstructured (
+				header.Add (new HeaderFieldBuilderAtomAndUnstructuredValue (
 					HeaderFieldName.MdnGateway,
 					this.Gateway.Kind.GetName (),
 					this.Gateway.Value));
@@ -337,14 +337,14 @@ namespace Novartment.Base.Net.Mime
 			// Original-Recipient
 			if (this.OriginalRecipient != null)
 			{
-				header.Add (new HeaderFieldBuilderAtomAndUnstructured (
+				header.Add (new HeaderFieldBuilderAtomAndUnstructuredValue (
 					HeaderFieldName.OriginalRecipient,
 					this.OriginalRecipient.Kind.GetName (),
 					this.OriginalRecipient.Value));
 			}
 
 			// Final-Recipient
-			header.Add (new HeaderFieldBuilderAtomAndUnstructured (
+			header.Add (new HeaderFieldBuilderAtomAndUnstructuredValue (
 				HeaderFieldName.FinalRecipient,
 				this.FinalRecipient.Kind.GetName (),
 				this.FinalRecipient.Value));
@@ -373,19 +373,19 @@ namespace Novartment.Base.Net.Mime
 			// Failure
 			foreach (var info in this.FailureInfo)
 			{
-				header.Add (new HeaderFieldBuilderUnstructured (HeaderFieldName.Failure, info));
+				header.Add (new HeaderFieldBuilderUnstructuredValue (HeaderFieldName.Failure, info));
 			}
 
 			// Error
 			foreach (var info in this.ErrorInfo)
 			{
-				header.Add (new HeaderFieldBuilderUnstructured (HeaderFieldName.Error, info));
+				header.Add (new HeaderFieldBuilderUnstructuredValue (HeaderFieldName.Error, info));
 			}
 
 			// Warning
 			foreach (var info in this.WarningInfo)
 			{
-				header.Add (new HeaderFieldBuilderUnstructured (HeaderFieldName.Warning, info));
+				header.Add (new HeaderFieldBuilderUnstructuredValue (HeaderFieldName.Warning, info));
 			}
 		}
 	}

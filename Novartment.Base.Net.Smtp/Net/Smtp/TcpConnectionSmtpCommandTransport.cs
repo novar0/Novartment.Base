@@ -115,6 +115,80 @@ namespace Novartment.Base.Net.Smtp
 			}
 		}
 
+		public async Task<SmtpReply> ReceiveReplyAsync (CancellationToken cancellationToken = default)
+		{
+			if (_reader.Count > 0)
+			{
+				return SmtpReply.Parse (_reader, _logger);
+			}
+
+			await _reader.FillBufferAsync (cancellationToken).ConfigureAwait (false);
+			if (_reader.Count < 1)
+			{
+				throw new InvalidOperationException ("Connection unexpectedly closed.");
+			}
+
+			return SmtpReply.Parse (_reader, _logger);
+		}
+
+		public Task SendReplyAsync (SmtpReply reply, bool canBeGrouped, CancellationToken cancellationToken = default)
+		{
+			var replyText = reply.ToString ();
+
+			// RFC 2920 part 3.2:
+			// A server SMTP implementation that offers the pipelining extension:
+			// ... (2) SHOULD elect to store responses to grouped ... commands in an internal buffer so they can sent as a unit.
+			// ... (7) MUST send all pending responses immediately whenever the local TCP input buffer is emptied.
+			_pendingReplies = (_pendingReplies == null) ?
+				replyText :
+				_pendingReplies + replyText;
+			if (!canBeGrouped || (_reader.Count < 1))
+			{
+				var text = _pendingReplies;
+				_pendingReplies = null;
+				return SendTextAsync (text, cancellationToken);
+			}
+
+			return Task.CompletedTask;
+		}
+
+		public Task SendCommandAsync (SmtpCommand command, CancellationToken cancellationToken = default)
+		{
+			var commandText = command.ToString ();
+			return SendTextAsync (commandText, cancellationToken);
+		}
+
+		public Task SendBinaryAsync (IBufferedSource source, CancellationToken cancellationToken = default)
+		{
+			return source.WriteToAsync (_writer, cancellationToken);
+		}
+
+		private static string GetHashAlgorithmName (HashAlgorithmType hashAlgorithmType)
+		{
+			switch ((int)hashAlgorithmType)
+			{
+				case 32780:
+					return "SHA256";
+				case 32781:
+					return "SHA384";
+				case 32782:
+					return "SHA512";
+				default:
+					return hashAlgorithmType.ToString ();
+			}
+		}
+
+		private static string GetExchangeAlgorithmName (ExchangeAlgorithmType exchangeAlgorithmType)
+		{
+			switch ((int)exchangeAlgorithmType)
+			{
+				case 44550:
+					return "ECDH_Ephemeral";
+				default:
+					return exchangeAlgorithmType.ToString ();
+			}
+		}
+
 		private SmtpCommand GetCommandFromReaderBuffer (SmtpCommand.ExpectedInputType expectedInputType)
 		{
 			if (expectedInputType == SmtpCommand.ExpectedInputType.Data)
@@ -204,80 +278,6 @@ namespace Novartment.Base.Net.Smtp
 			}
 
 			return command;
-		}
-
-		public async Task<SmtpReply> ReceiveReplyAsync (CancellationToken cancellationToken = default)
-		{
-			if (_reader.Count > 0)
-			{
-				return SmtpReply.Parse (_reader, _logger);
-			}
-
-			await _reader.FillBufferAsync (cancellationToken).ConfigureAwait (false);
-			if (_reader.Count < 1)
-			{
-				throw new InvalidOperationException ("Connection unexpectedly closed.");
-			}
-
-			return SmtpReply.Parse (_reader, _logger);
-		}
-
-		public Task SendReplyAsync (SmtpReply reply, bool canBeGrouped, CancellationToken cancellationToken = default)
-		{
-			var replyText = reply.ToString ();
-
-			// RFC 2920 part 3.2:
-			// A server SMTP implementation that offers the pipelining extension:
-			// ... (2) SHOULD elect to store responses to grouped ... commands in an internal buffer so they can sent as a unit.
-			// ... (7) MUST send all pending responses immediately whenever the local TCP input buffer is emptied.
-			_pendingReplies = (_pendingReplies == null) ?
-				replyText :
-				_pendingReplies + replyText;
-			if (!canBeGrouped || (_reader.Count < 1))
-			{
-				var text = _pendingReplies;
-				_pendingReplies = null;
-				return SendTextAsync (text, cancellationToken);
-			}
-
-			return Task.CompletedTask;
-		}
-
-		public Task SendCommandAsync (SmtpCommand command, CancellationToken cancellationToken = default)
-		{
-			var commandText = command.ToString ();
-			return SendTextAsync (commandText, cancellationToken);
-		}
-
-		public Task SendBinaryAsync (IBufferedSource source, CancellationToken cancellationToken = default)
-		{
-			return source.WriteToAsync (_writer, cancellationToken);
-		}
-
-		private static string GetHashAlgorithmName (HashAlgorithmType hashAlgorithmType)
-		{
-			switch ((int)hashAlgorithmType)
-			{
-				case 32780:
-					return "SHA256";
-				case 32781:
-					return "SHA384";
-				case 32782:
-					return "SHA512";
-				default:
-					return hashAlgorithmType.ToString ();
-			}
-		}
-
-		private static string GetExchangeAlgorithmName (ExchangeAlgorithmType exchangeAlgorithmType)
-		{
-			switch ((int)exchangeAlgorithmType)
-			{
-				case 44550:
-					return "ECDH_Ephemeral";
-				default:
-					return exchangeAlgorithmType.ToString ();
-			}
 		}
 
 		private void SetConnection (ITcpConnection connection)

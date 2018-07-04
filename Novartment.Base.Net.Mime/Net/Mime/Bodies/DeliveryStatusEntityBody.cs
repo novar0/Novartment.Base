@@ -339,14 +339,14 @@ namespace Novartment.Base.Net.Mime
 			// Original-Recipient
 			if (recipient.OriginalRecipient != null)
 			{
-				fields.Add (new HeaderFieldBuilderAtomAndUnstructured (
+				fields.Add (new HeaderFieldBuilderAtomAndUnstructuredValue (
 					HeaderFieldName.OriginalRecipient,
 					recipient.OriginalRecipient.Kind.GetName (),
 					recipient.OriginalRecipient.Value));
 			}
 
 			// Final-Recipient
-			fields.Add (new HeaderFieldBuilderAtomAndUnstructured (
+			fields.Add (new HeaderFieldBuilderAtomAndUnstructuredValue (
 				HeaderFieldName.FinalRecipient,
 				recipient.FinalRecipient.Kind.GetName (),
 				recipient.FinalRecipient.Value));
@@ -370,7 +370,7 @@ namespace Novartment.Base.Net.Mime
 			// Remote-MTA
 			if (recipient.RemoteMailTransferAgent != null)
 			{
-				fields.Add (new HeaderFieldBuilderAtomAndUnstructured (
+				fields.Add (new HeaderFieldBuilderAtomAndUnstructuredValue (
 					HeaderFieldName.RemoteMailTransferAgent,
 					recipient.RemoteMailTransferAgent.Kind.GetName (),
 					recipient.RemoteMailTransferAgent.Value));
@@ -379,7 +379,7 @@ namespace Novartment.Base.Net.Mime
 			// Diagnostic-Code
 			if (recipient.DiagnosticCode != null)
 			{
-				fields.Add (new HeaderFieldBuilderAtomAndUnstructured (
+				fields.Add (new HeaderFieldBuilderAtomAndUnstructuredValue (
 					HeaderFieldName.DiagnosticCode,
 					recipient.DiagnosticCode.Kind.GetName (),
 					recipient.DiagnosticCode.Value));
@@ -396,7 +396,7 @@ namespace Novartment.Base.Net.Mime
 			// Final-Log-ID
 			if (recipient.FinalLogId != null)
 			{
-				fields.Add (new HeaderFieldBuilderUnstructured (
+				fields.Add (new HeaderFieldBuilderUnstructuredValue (
 					HeaderFieldName.FinalLogId,
 					recipient.FinalLogId));
 			}
@@ -496,7 +496,7 @@ namespace Novartment.Base.Net.Mime
 			// Original-Envelope-Id
 			if (this.OriginalEnvelopeId != null)
 			{
-				fields.Add (new HeaderFieldBuilderUnstructured (
+				fields.Add (new HeaderFieldBuilderUnstructuredValue (
 					HeaderFieldName.OriginalEnvelopeId,
 					this.OriginalEnvelopeId));
 			}
@@ -504,7 +504,7 @@ namespace Novartment.Base.Net.Mime
 			// Reporting-MTA
 			if (this.MailTransferAgent != null)
 			{
-				fields.Add (new HeaderFieldBuilderAtomAndUnstructured (
+				fields.Add (new HeaderFieldBuilderAtomAndUnstructuredValue (
 					HeaderFieldName.MailTransferAgent,
 					this.MailTransferAgent.Kind.GetName (),
 					this.MailTransferAgent.Value));
@@ -513,7 +513,7 @@ namespace Novartment.Base.Net.Mime
 			// DSN-Gateway
 			if (this.Gateway != null)
 			{
-				fields.Add (new HeaderFieldBuilderAtomAndUnstructured (
+				fields.Add (new HeaderFieldBuilderAtomAndUnstructuredValue (
 					HeaderFieldName.DsnGateway,
 					this.Gateway.Kind.GetName (),
 					this.Gateway.Value));
@@ -522,7 +522,7 @@ namespace Novartment.Base.Net.Mime
 			// Received-From-Mta
 			if (this.ReceivedFromMailTransferAgent != null)
 			{
-				fields.Add (new HeaderFieldBuilderAtomAndUnstructured (
+				fields.Add (new HeaderFieldBuilderAtomAndUnstructuredValue (
 					HeaderFieldName.ReceivedFromMailTransferAgent,
 					this.ReceivedFromMailTransferAgent.Kind.GetName (),
 					this.ReceivedFromMailTransferAgent.Value));

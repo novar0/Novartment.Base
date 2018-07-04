@@ -54,7 +54,7 @@ namespace Novartment.Base.Smtp.Test
 			var connection = new TcpConnectionMock (
 				new IPEndPoint (IPAddress.Loopback, 25),
 				new IPEndPoint (new IPAddress (1144955L), 32701),
-				new ArrayBufferedSource (Encoding.ASCII.GetBytes (inData)));
+				new MemoryBufferedSource (Encoding.ASCII.GetBytes (inData)));
 			var protocol = new SmtpDeliveryProtocol (transactionFactory, SmtpServerSecurityParameters.NoSecurity, null);
 
 			protocol.StartAsync (connection).Wait ();

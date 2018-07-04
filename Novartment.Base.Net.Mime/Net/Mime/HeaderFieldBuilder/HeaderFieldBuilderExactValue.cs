@@ -3,17 +3,19 @@ using Novartment.Base.Text;
 
 namespace Novartment.Base.Net.Mime
 {
+	/// <summary>
+	/// Построитель поля заголовка из указанного заранее приготовленного значения.
+	/// </summary>
 	public class HeaderFieldBuilderExactValue : HeaderFieldBuilder
 	{
 		private readonly string _value;
 		private bool _finished = false;
 
 		/// <summary>
-		/// Создает поле заголовка из указанного значения.
+		/// Инициализирует новый экземпляр класса HeaderFieldBuilderExactValue из указанного заранее приготовленного значения.
 		/// </summary>
 		/// <param name="name">Имя поля заголовка.</param>
 		/// <param name="value">Значение поля заголовка.</param>
-		/// <returns>Поле заголовка.</returns>
 		public HeaderFieldBuilderExactValue (HeaderFieldName name, string value)
 			: base (name)
 		{
@@ -36,7 +38,7 @@ namespace Novartment.Base.Net.Mime
 		/// </summary>
 		/// <param name="buf">Буфер, куда будет записана чать.</param>
 		/// <param name="isLast">Получает признак того, что полученная часть является последней.</param>
-		/// <returns>Количество байтов, записанный в буфер.</returns>
+		/// <returns>Количество байтов, записанных в буфер.</returns>
 		protected override int EncodeNextPart (Span<byte> buf, out bool isLast)
 		{
 			isLast = true;

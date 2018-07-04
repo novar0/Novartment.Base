@@ -5,17 +5,53 @@ namespace Novartment.Base.Net.Smtp
 {
 	internal class SmtpAuthCommand : SmtpCommand
 	{
-		internal SmtpAuthCommand (string mechanism, ReadOnlyMemory<byte> initialResponse)
+		internal SmtpAuthCommand (string mechanism, ReadOnlySpan<byte> initialResponse)
 			: base (SmtpCommandType.Auth)
 		{
 			this.Mechanism = mechanism;
-			this.InitialResponse = initialResponse;
+			var buf = new byte[initialResponse.Length];
+			initialResponse.CopyTo (buf);
+			this.InitialResponse = buf;
 		}
 
 		// список см. http://www.iana.org/assignments/sasl-mechanisms/sasl-mechanisms.xhtml
 		internal string Mechanism { get; }
 
 		internal ReadOnlyMemory<byte> InitialResponse { get; }
+
+		public override string ToString ()
+		{
+			if (this.InitialResponse.Length < 1)
+			{
+				return "AUTH " + this.Mechanism + "\r\n";
+			}
+
+			var buf = new char[this.Mechanism.Length +
+				(((this.InitialResponse.Length / 3) + 1) * 4) + 11];
+			var pos = 0;
+			buf[pos++] = 'A';
+			buf[pos++] = 'U';
+			buf[pos++] = 'T';
+			buf[pos++] = 'H';
+			buf[pos++] = ' ';
+			for (int i = 0; i < this.Mechanism.Length; i++)
+			{
+				buf[pos++] = this.Mechanism[i];
+			}
+
+			buf[pos++] = ' ';
+
+			int size;
+#if NETCOREAPP2_1
+			Convert.TryToBase64Chars (this.InitialResponse.Span, buf.AsSpan (pos), out size, Base64FormattingOptions.None);
+#else
+			size = Convert.ToBase64CharArray (this.InitialResponse.ToArray (), 0, this.InitialResponse.Length, buf, pos, Base64FormattingOptions.None);
+#endif
+			pos += size;
+			buf[pos++] = '\r';
+			buf[pos++] = '\n';
+			return new string (buf, 0, size);
+		}
 
 		internal static SmtpCommand Parse (ReadOnlySpan<char> value)
 		{
@@ -69,26 +105,7 @@ namespace Novartment.Base.Net.Smtp
 					$"Unrecognized 'AUTH' initial-response parameter. {excpt.Message}"));
 			}
 #endif
-			return new SmtpAuthCommand (mechanism, initialResponse.AsMemory (0, responseSize));
-		}
-
-		public override string ToString ()
-		{
-			if (this.InitialResponse.Length < 1)
-			{
-				return "AUTH " + this.Mechanism + "\r\n";
-			}
-
-			int size;
-			var buf = new char[(((this.InitialResponse.Length / 3) + 1) * 4) + 3];
-#if NETCOREAPP2_1
-			Convert.TryToBase64Chars (this.InitialResponse.Span, buf, out size, Base64FormattingOptions.None);
-			var responseBase64 = new string (buf.AsSpan (0, size));
-#else
-			size = Convert.ToBase64CharArray (this.InitialResponse.ToArray (), 0, this.InitialResponse.Length, buf, 0, Base64FormattingOptions.None);
-			var responseBase64 = new string (buf, 0, size);
-#endif
-			return "AUTH " + this.Mechanism + " " + responseBase64 + "\r\n";
+			return new SmtpAuthCommand (mechanism, initialResponse.AsSpan (0, responseSize));
 		}
 	}
 }

@@ -39,7 +39,7 @@ namespace Novartment.Base.Net.Mime.Test
 			};
 
 			var srcText = string.Join ("\r\n", defaultTextTypeTemplate);
-			var src = new ArrayBufferedSource (Encoding.ASCII.GetBytes (srcText));
+			var src = new MemoryBufferedSource (Encoding.ASCII.GetBytes (srcText));
 			var entity = new Entity ();
 			entity.LoadAsync (src, EntityBodyFactory.Create, Entity.DefaultType, Entity.DefaultSubtype).Wait ();
 
@@ -83,7 +83,7 @@ namespace Novartment.Base.Net.Mime.Test
 			};
 
 			srcText = string.Join ("\r\n", defaultMessagetTypeTemplate);
-			src = new ArrayBufferedSource (Encoding.ASCII.GetBytes (srcText));
+			src = new MemoryBufferedSource (Encoding.ASCII.GetBytes (srcText));
 			entity = new Entity ();
 			entity.LoadAsync (src, EntityBodyFactory.Create, Entity.DefaultType, Entity.DefaultSubtype).Wait ();
 
@@ -135,7 +135,7 @@ namespace Novartment.Base.Net.Mime.Test
 
 			var entity = new Entity ();
 			entity.LoadAsync (
-				new ArrayBufferedSource (Encoding.ASCII.GetBytes (template1)),
+				new MemoryBufferedSource (Encoding.ASCII.GetBytes (template1)),
 				parameters => new TextEntityBody (Encoding.ASCII, parameters.TransferEncoding),
 				Entity.DefaultType,
 				Entity.DefaultSubtype).Wait ();
@@ -207,7 +207,7 @@ namespace Novartment.Base.Net.Mime.Test
 		public void Save ()
 		{
 			var body = new TextEntityBody (Encoding.GetEncoding ("koi8-r"), ContentTransferEncoding.EightBit);
-			body.SetDataAsync (new ArrayBufferedSource (new byte[] { 48, 49, 50 })).Wait ();
+			body.SetDataAsync (new MemoryBufferedSource (new byte[] { 48, 49, 50 })).Wait ();
 			var entity = new Entity (body, ContentMediaType.Text, "plain")
 			{
 				DispositionType = ContentDispositionType.Attachment,

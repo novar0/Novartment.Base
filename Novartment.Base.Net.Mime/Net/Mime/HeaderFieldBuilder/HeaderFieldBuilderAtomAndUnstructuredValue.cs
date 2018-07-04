@@ -1,36 +1,46 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Text;
+using Novartment.Base.Text;
 
 namespace Novartment.Base.Net.Mime
 {
-	public class HeaderFieldBuilderPhraseList : HeaderFieldBuilder
+	/// <summary>
+	/// Построитель поля заголовка из указанных типа и 'unstructured'-значения.
+	/// </summary>
+	public class HeaderFieldBuilderAtomAndUnstructuredValue : HeaderFieldBuilder
 	{
-		private readonly IReadOnlyList<string> _values;
-		private int _idx = -1;
-		private int _pos;
-		private bool _prevSequenceIsWordEncoded;
+		private readonly string _type;
+		private readonly string _value;
 		private byte[] _valueBytes;
 		private int _valueBytesSize;
+		private int _pos = -1;
+		private bool _prevSequenceIsWordEncoded = false;
 
 		/// <summary>
-		/// Создает поле заголовка из коллекции 'phrase'.
+		/// Инициализирует новый экземпляр класса HeaderFieldBuilderAtomAndUnstructuredValue из указанных типа и 'unstructured'-значения.
 		/// </summary>
 		/// <param name="name">Имя поля заголовка.</param>
-		/// <param name="values">Коллекция 'phrase'.</param>
-		/// <returns>Поле заголовка.</returns>
-		public HeaderFieldBuilderPhraseList (HeaderFieldName name, IReadOnlyList<string> values)
+		/// <param name="type">Тип (значение типа 'atom').</param>
+		/// <param name="value">'unstructured' значение.</param>
+		public HeaderFieldBuilderAtomAndUnstructuredValue (HeaderFieldName name, string type, string value)
 			: base (name)
 		{
-			if (values == null)
+			if (type == null)
 			{
-				throw new ArgumentNullException (nameof (values));
+				throw new ArgumentNullException (nameof (type));
+			}
+
+			var isValidAtom = AsciiCharSet.IsAllOfClass (type, AsciiCharClasses.Atom);
+			if (!isValidAtom)
+			{
+				throw new ArgumentOutOfRangeException (nameof (type));
 			}
 
 			Contract.EndContractBlock ();
 
-			_values = values;
+			_type = type;
+			_value = value;
 		}
 
 		/// <summary>
@@ -39,9 +49,10 @@ namespace Novartment.Base.Net.Mime
 		/// <param name="oneLineBuffer">Буфер для временного сохранения одной строки (максимально MaxLineLengthRequired байт).</param>
 		protected override void PrepareToEncode (byte[] oneLineBuffer)
 		{
-			_idx = -1;
+			_pos = -1;
+			_prevSequenceIsWordEncoded = false;
 			_valueBytes = oneLineBuffer;
-			_valueBytesSize = -1;
+			_valueBytesSize = Encoding.UTF8.GetBytes (_value, 0, _value.Length, _valueBytes, 0);
 		}
 
 		/// <summary>
@@ -51,46 +62,32 @@ namespace Novartment.Base.Net.Mime
 		/// </summary>
 		/// <param name="buf">Буфер, куда будет записана чать.</param>
 		/// <param name="isLast">Получает признак того, что полученная часть является последней.</param>
-		/// <returns>Количество байтов, записанный в буфер.</returns>
+		/// <returns>Количество байтов, записанных в буфер.</returns>
 		protected override int EncodeNextPart (Span<byte> buf, out bool isLast)
 		{
-			if (_valueBytesSize < 0)
+			if (_pos < 0)
 			{
-				_idx++;
-				if (_idx >= _values.Count)
-				{
-					isLast = true;
-					return 0;
-				}
-
-				var value = _values[_idx];
-				_valueBytesSize = Encoding.UTF8.GetBytes (value, 0, value.Length, _valueBytes, 0);
+				AsciiCharSet.GetBytes (_type.AsSpan (), buf);
 				_pos = 0;
-				_prevSequenceIsWordEncoded = false;
+				isLast = false;
+				buf[_type.Length] = (byte)';';
+				return _type.Length + 1;
+			}
+
+			if (_pos >= _valueBytesSize)
+			{
+				isLast = true;
+				return 0;
 			}
 
 			// текст рабивается на последовательности слов, которые удобно представить в одном виде (напрямую или в виде encoded-word)
 			var size = HeaderFieldBodyEncoder.EncodeNextElement (
 				_valueBytes.AsSpan (0, _valueBytesSize),
 				buf,
-				TextSemantics.Phrase,
+				TextSemantics.Unstructured,
 				ref _pos,
 				ref _prevSequenceIsWordEncoded);
-			var valueOver = _pos >= _valueBytesSize;
-			if (valueOver)
-			{
-				_valueBytesSize = -1;
-				isLast = _idx == (_values.Count - 1);
-				if (!isLast)
-				{
-					buf[size++] = (byte)',';
-				}
-			}
-			else
-			{
-				isLast = false;
-			}
-
+			isLast = _pos >= _valueBytesSize;
 			return size;
 		}
 	}

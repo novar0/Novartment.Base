@@ -17,7 +17,7 @@ namespace Novartment.Base.Smtp.Test
 			var replyText3 = "250-PIPELINING\r\n250-CHUNKING\r\n250 SMTPUTF8\r\n";
 			var replyText4 = "421 \r\n";
 			var replyText5 = "421 ?\r\n";
-			var src = new ArrayBufferedSource (Encoding.ASCII.GetBytes (replyText1 + replyText2 + replyText3 + replyText4 + replyText5 + "junk"));
+			var src = new MemoryBufferedSource (Encoding.ASCII.GetBytes (replyText1 + replyText2 + replyText3 + replyText4 + replyText5 + "junk"));
 			src.SkipBuffer (4);
 
 			var reply = SmtpReply.Parse (src, null);
@@ -65,16 +65,16 @@ namespace Novartment.Base.Smtp.Test
 		public void SmtpReply_Parse_Exception ()
 		{
 			// нет CRLF
-			Assert.Throws<FormatException> (() => SmtpReply.Parse (new ArrayBufferedSource (Encoding.ASCII.GetBytes ("junk")), null));
+			Assert.Throws<FormatException> (() => SmtpReply.Parse (new MemoryBufferedSource (Encoding.ASCII.GetBytes ("junk")), null));
 
 			// пустая строка
-			Assert.Throws<FormatException> (() => SmtpReply.Parse (new ArrayBufferedSource (Encoding.ASCII.GetBytes ("\r\n")), null));
+			Assert.Throws<FormatException> (() => SmtpReply.Parse (new MemoryBufferedSource (Encoding.ASCII.GetBytes ("\r\n")), null));
 
 			// невалидный номер
-			Assert.Throws<FormatException> (() => SmtpReply.Parse (new ArrayBufferedSource (Encoding.ASCII.GetBytes ("20+ OK\r\n")), null));
+			Assert.Throws<FormatException> (() => SmtpReply.Parse (new MemoryBufferedSource (Encoding.ASCII.GetBytes ("20+ OK\r\n")), null));
 
 			// невалидный разделитель номера
-			Assert.Throws<FormatException> (() => SmtpReply.Parse (new ArrayBufferedSource (Encoding.ASCII.GetBytes ("250+OK\r\n")), null));
+			Assert.Throws<FormatException> (() => SmtpReply.Parse (new MemoryBufferedSource (Encoding.ASCII.GetBytes ("250+OK\r\n")), null));
 
 			// слишком длинная строка
 			var buf = new byte[520];
@@ -89,10 +89,10 @@ namespace Novartment.Base.Smtp.Test
 
 			buf[i++] = 0x0d;
 			buf[i] = 0x0a;
-			Assert.Throws<FormatException> (() => SmtpReply.Parse (new ArrayBufferedSource (buf), null));
+			Assert.Throws<FormatException> (() => SmtpReply.Parse (new MemoryBufferedSource (buf), null));
 
 			// невалидные для ASCII символы
-			Assert.Throws<FormatException> (() => SmtpReply.Parse (new ArrayBufferedSource (Encoding.UTF8.GetBytes ("250 ♂☎\r\n")), null));
+			Assert.Throws<FormatException> (() => SmtpReply.Parse (new MemoryBufferedSource (Encoding.UTF8.GetBytes ("250 ♂☎\r\n")), null));
 		}
 	}
 }

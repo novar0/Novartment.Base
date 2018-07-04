@@ -370,7 +370,7 @@ namespace Novartment.Base.Net.Mime
 			// Content-Description
 			if (this.Description != null)
 			{
-				header.Add (new HeaderFieldBuilderUnstructured (
+				header.Add (new HeaderFieldBuilderUnstructuredValue (
 					HeaderFieldName.ContentDescription,
 					this.Description));
 			}
@@ -396,13 +396,13 @@ namespace Novartment.Base.Net.Mime
 			// Content-Language
 			if (this.Languages.Count > 0)
 			{
-				header.Add (new HeaderFieldBuilderLanguageList (HeaderFieldName.ContentLanguage, this.Languages));
+				header.Add (new HeaderFieldBuilderLanguageCollection (HeaderFieldName.ContentLanguage, this.Languages));
 			}
 
 			// Content-Features
 			if (this.Features != null)
 			{
-				header.Add (new HeaderFieldBuilderUnstructured (
+				header.Add (new HeaderFieldBuilderUnstructuredValue (
 					HeaderFieldName.ContentFeatures,
 					this.Features));
 			}
@@ -412,7 +412,7 @@ namespace Novartment.Base.Net.Mime
 			{
 				foreach (var item in this.Alternatives)
 				{
-					header.Add (new HeaderFieldBuilderUnstructured (
+					header.Add (new HeaderFieldBuilderUnstructuredValue (
 						HeaderFieldName.ContentAlternative,
 						item));
 				}

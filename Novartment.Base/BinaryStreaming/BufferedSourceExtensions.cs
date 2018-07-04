@@ -36,7 +36,7 @@ namespace Novartment.Base.BinaryStreaming
 		/// <param name="size">Количество байтов данных для пропуска, включая доступные в буфере данные.</param>
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
 		/// <returns>
-		/// Задача, результатом которой является количество пропущеных байтов данных, включая доступные в буфере данные.
+		/// Задача, результатом которой является количество пропущенных байтов данных, включая доступные в буфере данные.
 		/// Может быть меньше, чем было указано, если источник исчерпался.
 		/// После завершения задачи, независимо от её результата, источник будет предоставлять данные, идущие сразу за пропущенными.
 		/// </returns>
@@ -110,7 +110,7 @@ namespace Novartment.Base.BinaryStreaming
 		/// <param name="source">Источник данных.</param>
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
 		/// <returns>
-		/// Задача, результатом которой является количество пропущеных байтов данных.
+		/// Задача, результатом которой является количество пропущенных байтов данных.
 		/// </returns>
 		public static Task<long> SkipToEndAsync (this IBufferedSource source, CancellationToken cancellationToken = default)
 		{
@@ -158,7 +158,7 @@ namespace Novartment.Base.BinaryStreaming
 		}
 
 		/// <summary>
-		/// Считывает указанное количество байтов в указанный массив по указанному смещению из указанного источника данных.
+		/// Считывает указанный массив из указанного источника данных.
 		/// </summary>
 		/// <param name="source">Источник данных.</param>
 		/// <param name="buffer">Массив байтов - приёмник данных.
@@ -167,12 +167,7 @@ namespace Novartment.Base.BinaryStreaming
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
 		/// <returns>Задача, результатом которой является количество байтов, помещённых в буфер.
 		/// Может быть меньше, чем запрошено, если источник исчерпан.</returns>
-		public static Task<int> ReadAsync (
-			this IBufferedSource source,
-			Memory<byte> buffer,
-#pragma warning disable CA1801 // Review unused parameters
-			CancellationToken cancellationToken = default)
-#pragma warning restore CA1801 // Review unused parameters
+		public static Task<int> ReadAsync (this IBufferedSource source, Memory<byte> buffer, CancellationToken cancellationToken = default)
 		{
 			if (source == null)
 			{
@@ -231,71 +226,6 @@ namespace Novartment.Base.BinaryStreaming
 				while (!source.IsExhausted);
 
 				return totalSize;
-			}
-		}
-
-#pragma warning disable CA1801 // Review unused parameters
-		/// <summary>
-		/// Асинхронно ищет первое нахождение указанного байта в буфере указанного источника данных,
-		/// запрашивая заполнение буфера по необходимости.
-		/// </summary>
-		/// <param name="source">Источник данных.</param>
-		/// <param name="value">Байт-образец, который будет найден в источнике данных.</param>
-		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
-		/// <returns>Позиция первого нахождения указанного байта в буфере указанного источника данных,
-		/// либо -1 если указанный байт в буфере не найден.</returns>
-		public static Task<int> IndexOfAsync (this IBufferedSource source, byte value, CancellationToken cancellationToken = default)
-#pragma warning restore CA1801 // Review unused parameters
-		{
-			if (source == null)
-			{
-				throw new ArgumentNullException (nameof (source));
-			}
-
-			Contract.EndContractBlock ();
-
-			// проверяем то, что уже есть в буфере
-			var idx = source.BufferMemory.Span.Slice (source.Offset, source.Count).IndexOf (value);
-			if (idx >= 0)
-			{
-				return Task.FromResult (idx);
-			}
-
-			if (source.IsExhausted || (source.Count >= source.BufferMemory.Length))
-			{
-				// источник исчерпался или буфер полон
-				// запрашивать данные больше нет смысла
-				return Task.FromResult (-1);
-			}
-
-			// продолжение поиска с предварительным вызовом заполнения буфера
-			return IndexOfAsyncStateMachine ();
-
-			async Task<int> IndexOfAsyncStateMachine ()
-			{
-				while (!source.IsExhausted)
-				{
-					cancellationToken.ThrowIfCancellationRequested ();
-
-					// запоминаем сколько мы уже просмотрели от начала, потому что начало сдвинется при запросе новых данных
-					// запрашиваем дополнительные данные (старые данные останутся в буфере)
-					var sizeScanned = source.Count;
-					await source.FillBufferAsync (cancellationToken).ConfigureAwait (false);
-					if (sizeScanned >= source.Count)
-					{
-						// запрос не добавил новых данных, что означает что в буфер больше ничего не влезет
-						break;
-					}
-
-					var idx2 = source.BufferMemory.Span.Slice (source.Offset + sizeScanned, source.Count - sizeScanned).IndexOf (value);
-					if (idx2 >= 0)
-					{
-						return source.Offset + sizeScanned + idx;
-					}
-				}
-
-				// источник исчерпался или нет места в буфере, запрашивать данные больше нет смысла
-				return -1;
 			}
 		}
 
@@ -387,7 +317,6 @@ namespace Novartment.Base.BinaryStreaming
 			}
 		}
 
-#pragma warning disable CA1801 // Review unused parameters
 		/// <summary>
 		/// Считывает все данные, оставшиеся в источнике и возвращает их в виде массива байтов.
 		/// </summary>
@@ -396,7 +325,6 @@ namespace Novartment.Base.BinaryStreaming
 		/// <returns>Задача, результатом которой является массив байтов, считанный из источника.</returns>
 		/// <remarks>Возвращаемый массив является копией и не связан массивом-буфером источника.</remarks>
 		public static Task<ReadOnlyMemory<byte>> ReadAllBytesAsync (this IBufferedSource source, CancellationToken cancellationToken = default)
-#pragma warning restore CA1801 // Review unused parameters
 		{
 			if (source == null)
 			{
@@ -411,7 +339,7 @@ namespace Novartment.Base.BinaryStreaming
 				var copy = new byte[sizeExhausted];
 				if (sizeExhausted > 0)
 				{
-					source.BufferMemory.Slice (source.Offset, sizeExhausted).CopyTo (copy);
+					source.BufferMemory.Span.Slice (source.Offset, sizeExhausted).CopyTo (copy);
 					source.SkipBuffer (sizeExhausted);
 				}
 
@@ -422,27 +350,22 @@ namespace Novartment.Base.BinaryStreaming
 
 			async Task<ReadOnlyMemory<byte>> ReadAllBytesAsyncStateMachine ()
 			{
-				await source.FillBufferAsync (cancellationToken).ConfigureAwait (false);
-				var size = source.Count;
-				int totalSize = 0;
-				var memStream = new ArrayBinaryDestination (size);
-				while (size > 0)
+				var destination = new MemoryBinaryDestination ();
+				while (true)
 				{
-					cancellationToken.ThrowIfCancellationRequested ();
-					if (((long)totalSize + (long)size) > (long)int.MaxValue)
+					await source.FillBufferAsync (cancellationToken).ConfigureAwait (false);
+					var available = source.Count;
+					if (available <= 0)
 					{
-						throw new InvalidOperationException (FormattableString.Invariant (
-							$"Too big size of data ({(long)totalSize + (long)size}). Supported maximum is {int.MaxValue}."));
+						break;
 					}
 
-					memStream.Write (source.BufferMemory.Span.Slice (source.Offset, size));
-					totalSize += size;
-					source.SkipBuffer (size);
-					await source.FillBufferAsync (cancellationToken).ConfigureAwait (false);
-					size = source.Count;
+					cancellationToken.ThrowIfCancellationRequested ();
+					destination.Write (source.BufferMemory.Span.Slice (source.Offset, available));
+					source.SkipBuffer (available);
 				}
 
-				return memStream.Buffer;
+				return destination.Buffer;
 			}
 		}
 
@@ -491,12 +414,7 @@ namespace Novartment.Base.BinaryStreaming
 		/// <param name="destination">Получатель двоичных данных, в который будет сохранено содержимое указанного источника данных.</param>
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
 		/// <returns>Задача, результатом которой является количество байтов, записанный в указанный получатель двоичных данных.</returns>
-		public static Task<long> WriteToAsync (
-			this IBufferedSource source,
-			IBinaryDestination destination,
-#pragma warning disable CA1801 // Review unused parameters
-			CancellationToken cancellationToken = default)
-#pragma warning restore CA1801 // Review unused parameters
+		public static Task<long> WriteToAsync (this IBufferedSource source, IBinaryDestination destination, CancellationToken cancellationToken = default)
 		{
 			if (source == null)
 			{

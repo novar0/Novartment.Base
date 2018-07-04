@@ -16,6 +16,11 @@ namespace Novartment.Base.Net.Smtp
 
 		internal string Parameters { get; }
 
+		public override string ToString ()
+		{
+			return FormattableString.Invariant ($"VRFY {this.Parameters}\r\n");
+		}
+
 		internal static SmtpCommand Parse (ReadOnlySpan<char> value)
 		{
 			// vrfy = "VRFY" SP String CRLF
@@ -23,11 +28,6 @@ namespace Novartment.Base.Net.Smtp
 			return trimmedValue.Length > 0 ?
 				(SmtpCommand)new SmtpVrfyCommand (trimmedValue) :
 				new SmtpInvalidSyntaxCommand (SmtpCommandType.Vrfy, "Missed 'VRFY' parameter.");
-		}
-
-		public override string ToString ()
-		{
-			return FormattableString.Invariant ($"VRFY {this.Parameters}\r\n");
 		}
 	}
 }

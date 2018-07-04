@@ -1,9 +1,9 @@
 ﻿using System;
-using System.Text;
 using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Globalization;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Novartment.Base.BinaryStreaming;
@@ -97,8 +97,6 @@ namespace Novartment.Base.Net.Mime
 		/// <summary>
 		/// Converts encoded 'unstructured' value to decoded source value.
 		/// </summary>
-		/// <param name="source">Source encoded value.</param>
-		/// <returns>Decoded string value.</returns>
 		internal static string DecodeUnstructured (ReadOnlySpan<char> source, bool trim, char[] outBuf)
 		{
 			byte[] byteBuf = null;
@@ -212,8 +210,6 @@ namespace Novartment.Base.Net.Mime
 		/// Decodes 'phrase' into resulting string.
 		/// Only supports tokens of type Separator, Atom and Quoted.
 		/// </summary>
-		/// <param name="source">String in 'phrase' format.</param>
-		/// <returns>Decoded phrase.</returns>
 		internal static string DecodePhrase (ReadOnlySpan<char> source, char[] outBuf)
 		{
 			var parserPos = 0;
@@ -303,8 +299,6 @@ namespace Novartment.Base.Net.Mime
 		/// <summary>
 		/// Creates ValueWithType from specified string representation.
 		/// </summary>
-		/// <param name="source">String representation of NotificationFieldValue.</param>
-		/// <returns>New NotificationFieldValue, created from specified string representation.</returns>
 		internal static NotificationFieldValue DecodeNotificationFieldValue (ReadOnlySpan<char> source, char[] outBuf)
 		{
 			if (source.Length < 3)
@@ -340,8 +334,6 @@ namespace Novartment.Base.Net.Mime
 		/// <summary>
 		/// Converts two encoded 'unstructured' values (separated by semicolon) to decoded source values.
 		/// </summary>
-		/// <param name="source">Two encoded 'unstructured' values separated by semicolon.</param>
-		/// <returns>Two decoded values.</returns>
 		internal static TwoStrings DecodeUnstructuredPair (ReadOnlySpan<char> source, char[] outBuf)
 		{
 			// коменты не распознаются. допускаем что в кодированных словах нет ';'
@@ -386,8 +378,6 @@ namespace Novartment.Base.Net.Mime
 		/// <summary>
 		/// Converts encoded 'phrase' value and angle-bracketed id.
 		/// </summary>
-		/// <param name="source">Source encoded value and id.</param>
-		/// <returns>Decoded string value and id.</returns>
 		internal static TwoStrings DecodePhraseAndId (ReadOnlySpan<char> source, char[] outBuf)
 		{
 			var parserPos = 0;
@@ -445,8 +435,6 @@ namespace Novartment.Base.Net.Mime
 		/// <summary>
 		/// Creates collection of 'phrase's from specified comma-delimited string representation.
 		/// </summary>
-		/// <param name="source">String representation of collection of 'phrase's.</param>
-		/// <returns>Collection of 'phrase's.</returns>
 		internal static IReadOnlyList<string> DecodePhraseList (ReadOnlySpan<char> source, char[] outBuf)
 		{
 			var parserPos = 0;
@@ -677,8 +665,6 @@ namespace Novartment.Base.Net.Mime
 		/// <summary>
 		/// Creates atom value and collection of HeaderFieldParameter from specified string representation.
 		/// </summary>
-		/// <param name="source">Source encoded atom value and collection of field parameters.</param>
-		/// <returns>Decoded atom value and collection of HeaderFieldParameter.</returns>
 		internal static StringAndParameters DecodeAtomAndParameterList (ReadOnlySpan<char> source, char[] outBuf)
 		{
 			// Content-Type and Content-Disposition fields

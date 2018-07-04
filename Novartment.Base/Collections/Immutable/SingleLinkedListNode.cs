@@ -11,12 +11,6 @@
 		private readonly TItem _value;
 		private readonly SingleLinkedListNode<TItem> _next = null;
 
-		internal SingleLinkedListNode (TItem value, SingleLinkedListNode<TItem> next)
-		{
-			_value = value;
-			_next = next;
-		}
-
 		/// <summary>
 		/// Инициализирует новый экземпляр класса SingleLinkedListNode с указанным значением.
 		/// </summary>
@@ -25,6 +19,12 @@
 		{
 			_value = value;
 			_next = null;
+		}
+
+		internal SingleLinkedListNode (TItem value, SingleLinkedListNode<TItem> next)
+		{
+			_value = value;
+			_next = next;
 		}
 
 		/// <summary>

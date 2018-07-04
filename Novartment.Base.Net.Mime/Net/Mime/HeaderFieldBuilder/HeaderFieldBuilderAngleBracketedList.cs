@@ -5,17 +5,19 @@ using Novartment.Base.Text;
 
 namespace Novartment.Base.Net.Mime
 {
+	/// <summary>
+	/// Построитель поля заголовка из указанной коллекции url-значений.
+	/// </summary>
 	public class HeaderFieldBuilderAngleBracketedList : HeaderFieldBuilder
 	{
 		private readonly IReadOnlyList<string> _urls;
 		private int _idx = 0;
 
 		/// <summary>
-		/// Создает поле заголовка из коллекции url-значений.
+		/// Инициализирует новый экземпляр класса HeaderFieldBuilderAngleBracketedList из указанной коллекции url-значений.
 		/// </summary>
 		/// <param name="name">Имя поля заголовка.</param>
 		/// <param name="urls">Коллекция url-значений.</param>
-		/// <returns>Поле заголовка.</returns>
 		public HeaderFieldBuilderAngleBracketedList (HeaderFieldName name, IReadOnlyList<string> urls)
 			: base (name)
 		{
@@ -35,8 +37,8 @@ namespace Novartment.Base.Net.Mime
 		/// <param name="oneLineBuffer">Буфер для временного сохранения одной строки (максимально MaxLineLengthRequired байт).</param>
 		protected override void PrepareToEncode (byte[] oneLineBuffer)
 		{
-			_idx = 0;
 			// TODO: добавить валидацию каждого значения в urls
+			_idx = 0;
 		}
 
 		/// <summary>
@@ -46,7 +48,7 @@ namespace Novartment.Base.Net.Mime
 		/// </summary>
 		/// <param name="buf">Буфер, куда будет записана чать.</param>
 		/// <param name="isLast">Получает признак того, что полученная часть является последней.</param>
-		/// <returns>Количество байтов, записанный в буфер.</returns>
+		/// <returns>Количество байтов, записанных в буфер.</returns>
 		protected override int EncodeNextPart (Span<byte> buf, out bool isLast)
 		{
 			if (_idx >= _urls.Count)

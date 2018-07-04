@@ -111,7 +111,8 @@ namespace Novartment.Base.Net.Mime
 					var foldedPartSize = FoldPartByLength (bufSlice, partSize, maxLineLength, ref lineLen);
 					outPos += foldedPartSize;
 				}
-			} while (!isLast);
+			}
+			while (!isLast);
 
 			// кодируем все параметры
 			for (var idx = 0; idx < _parameters.Count; idx++)
@@ -216,7 +217,7 @@ namespace Novartment.Base.Net.Mime
 		/// </summary>
 		/// <param name="buf">Буфер, куда будет записана чать.</param>
 		/// <param name="isLast">Получает признак того, что полученная часть является последней.</param>
-		/// <returns>Количество байтов, записанный в буфер.</returns>
+		/// <returns>Количество байтов, записанных в буфер.</returns>
 		protected abstract int EncodeNextPart (Span<byte> buf, out bool isLast);
 
 		// вставляет пробелы и переводы строки по мере фолдинга по указанной длине
