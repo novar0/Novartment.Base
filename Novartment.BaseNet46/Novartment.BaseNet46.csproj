@@ -3,7 +3,7 @@
   <PropertyGroup>
     <AssemblyName>Novartment.BaseNet46</AssemblyName>
 		<TargetFramework>net461</TargetFramework>
-		<Version>2.2.3-beta</Version>
+		<Version>2.2.4-beta</Version>
 		<Description>Base classes for .Net 4.6</Description>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
@@ -31,8 +31,14 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.6.0" />
-		<PackageReference Include="StyleCop.Analyzers" Version="1.1.0-beta007" />
+		<PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.6.2">
+		  <PrivateAssets>all</PrivateAssets>
+		  <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="StyleCop.Analyzers" Version="1.1.0-beta009">
+		  <PrivateAssets>all</PrivateAssets>
+		  <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+		</PackageReference>
 	</ItemGroup>
 
 </Project>
