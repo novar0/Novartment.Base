@@ -293,10 +293,9 @@ namespace Novartment.Base.Net.Smtp
 			var buf = new byte[size];
 			AsciiCharSet.GetBytes (text.AsSpan (), buf);
 
-			var isCRLF = (size > 1) && (buf[size - 2] == 0x0d) && (buf[size - 1] == 0x0a);
 			if ((_logger != null) && _logger.IsEnabled (LogLevel.Trace))
 			{
-				_logger?.LogTrace (">>> " + (isCRLF ? text.Substring (0, size - 2) : text));
+				_logger?.LogTrace (">>> " + text.Replace ("\r\n", "||"));
 			}
 
 			_pendingReplies = null;

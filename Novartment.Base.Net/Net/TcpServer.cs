@@ -262,9 +262,14 @@ namespace Novartment.Base.Net
 		private void WatchdogTimerCallback (object state)
 #pragma warning restore CA1801 // Review unused parameters
 		{
+			if (_connectionTotalTimeout == Timeout.InfiniteTimeSpan)
+			{
+				return;
+			}
+
 			// защищаемся от реитерации
 			var oldValue = Interlocked.CompareExchange (ref _timerCallbackRunnig, 1, 0);
-			if ((oldValue != 0) || (_connectionTotalTimeout == Timeout.InfiniteTimeSpan))
+			if (oldValue != 0)
 			{
 				return;
 			}

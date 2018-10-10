@@ -79,6 +79,9 @@ namespace Novartment.Base.Net
 						break;
 					}
 
+					_logger?.LogTrace (FormattableString.Invariant (
+						$"Listener {_listener.LocalEndpoint}: new client connected {connection.RemoteEndPoint}. Clients connected: {_connections.Count}."));
+
 					// на каждое подключением создаём источник отмены, потому что каждое может отменятся независимо от других по тайм-ауту
 					var cts = new CancellationTokenSource ();
 					try
@@ -91,39 +94,38 @@ namespace Novartment.Base.Net
 						throw;
 					}
 
-					var finishingTask = AcceptedConnectionFinalizer (connection);
-					var client = new ConnectedClient (connection, finishingTask, cts);
-					_connections[connection.RemoteEndPoint] = client;
-
-					if ((_logger != null) && _logger.IsEnabled (LogLevel.Trace))
+					if (protocolTask.IsCompleted)
 					{
+						connection.Dispose ();
 						_logger?.LogTrace (FormattableString.Invariant (
-							$"Listener {_listener.LocalEndpoint}: new client connected {connection.RemoteEndPoint}. Connected clients {_connections.Count}."));
+							$"Listener {_listener.LocalEndpoint}: client disconnected {connection.RemoteEndPoint}. Clients connected: {_connections.Count}."));
+					}
+					else
+					{
+						var client = new ConnectedClient (connection, protocolTask, cts);
+						_connections[connection.RemoteEndPoint] = client;
+						var notUsed = protocolTask.ContinueWith (
+							AcceptedConnectionFinalizer,
+							connection,
+							CancellationToken.None,
+							TaskContinuationOptions.ExecuteSynchronously,
+							TaskScheduler.Default);
 					}
 				}
 			}
 			finally
 			{
 				Interlocked.Exchange (ref _acceptConnectionsLoopCancellation, null)?.Dispose (); // отменять уже нечего
-				_logger?.LogInformation ($"Listener {_listener.LocalEndpoint}: stopped accepting connections. Connected clients {_connections.Count}.");
+				_logger?.LogInformation ($"Listener {_listener.LocalEndpoint}: stopped accepting connections. Clients connected: {_connections.Count}.");
 			}
 
-			async Task AcceptedConnectionFinalizer (ITcpConnection cntn)
+			void AcceptedConnectionFinalizer (Task prevTask, object cntnData)
 			{
-				try
-				{
-					await protocolTask.ConfigureAwait (false);
-				}
-				finally
-				{
-					_connections.TryRemove (cntn.RemoteEndPoint, out ConnectedClient connectionProtocolTask);
-					cntn.Dispose ();
-					if ((_logger != null) && _logger.IsEnabled (LogLevel.Trace))
-					{
-						_logger?.LogTrace (FormattableString.Invariant (
-							$"Listener {_listener.LocalEndpoint}: client disconnected {cntn.RemoteEndPoint}. Connected clients {_connections.Count}."));
-					}
-				}
+				var cntn = (ITcpConnection)cntnData;
+				_connections.TryRemove (cntn.RemoteEndPoint, out ConnectedClient connectionProtocolTask);
+				cntn.Dispose ();
+				_logger?.LogTrace (FormattableString.Invariant (
+					$"Listener {_listener.LocalEndpoint}: client disconnected {cntn.RemoteEndPoint}. Clients connected: {_connections.Count}."));
 			}
 		}
 	}
