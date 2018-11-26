@@ -12,6 +12,8 @@ namespace Novartment.Base.Sample
 	{
 		public static async Task MessageSaveAttachmentsAsync (CancellationToken cancellationToken)
 		{
+			Encoding.RegisterProvider (CodePagesEncodingProvider.Instance);
+
 			// асинхронно сохраняем вложение из полученного сообщения
 			using (var fs = new FileStream (@".\Pickup\test1.eml", FileMode.Open, FileAccess.Read))
 			{
