@@ -58,7 +58,7 @@ namespace Novartment.Base
 			int outputSize = 0;
 			while (inputOffset < inputBuffer.Length)
 			{
-#if NETCOREAPP2_1
+#if NETCOREAPP2_2
 				Convert.TryToBase64Chars (inputBuffer.Slice (inputOffset, this.InputBlockSize), _outArray, out int size, Base64FormattingOptions.None);
 #else
 				var tempBuf = new byte[this.InputBlockSize];
@@ -94,7 +94,7 @@ namespace Novartment.Base
 				return Array.Empty<byte> ();
 			}
 
-#if NETCOREAPP2_1
+#if NETCOREAPP2_2
 			Convert.TryToBase64Chars (inputBuffer, _outArray, out int size, Base64FormattingOptions.None);
 #else
 			var tempBuf = new byte[inputBuffer.Length];

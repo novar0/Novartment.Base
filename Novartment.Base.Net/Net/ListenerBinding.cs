@@ -82,7 +82,7 @@ namespace Novartment.Base.Net
 					_logger?.LogTrace (FormattableString.Invariant (
 						$"Listener {_listener.LocalEndpoint}: new client connected {connection.RemoteEndPoint}. Clients connected: {_connections.Count}."));
 
-					// на каждое подключением создаём источник отмены, потому что каждое может отменятся независимо от других по тайм-ауту
+					// на каждое подключением создаём источник отмены, потому что каждое может отменяться независимо от других по тайм-ауту
 					var cts = new CancellationTokenSource ();
 					try
 					{

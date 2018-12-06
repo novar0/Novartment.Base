@@ -146,7 +146,7 @@ namespace Novartment.Base.Text
 			Encoding textEncoding;
 			try
 			{
-#if NETCOREAPP2_1
+#if NETCOREAPP2_2
 				textEncoding = Encoding.GetEncoding (new string (charsetStr));
 #else
 				textEncoding = Encoding.GetEncoding (new string (charsetStr.ToArray ()));

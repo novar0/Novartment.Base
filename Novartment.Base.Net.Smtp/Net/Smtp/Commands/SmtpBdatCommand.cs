@@ -53,7 +53,7 @@ namespace Novartment.Base.Net.Smtp
 			bool isLast;
 			try
 			{
-#if NETCOREAPP2_1
+#if NETCOREAPP2_2
 				size = long.Parse (
 					sizeStr,
 					NumberStyles.AllowLeadingWhite | NumberStyles.AllowTrailingWhite | NumberStyles.AllowDecimalPoint,

@@ -178,7 +178,7 @@ namespace Novartment.Base.BinaryStreaming
 				}
 			}
 
-#if NETCOREAPP2_1
+#if NETCOREAPP2_2
 			public override ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
 			{
 				if ((buffer.Length <= _source.Count) || _source.IsExhausted)

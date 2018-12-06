@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Debug;
 using Novartment.Base.BinaryStreaming;
 using Novartment.Base.Collections;
 using Novartment.Base.Net;
@@ -30,7 +31,7 @@ namespace Novartment.Base.Sample
 			(msg.Body as TextEntityBody).SetText ("текст сообщения");
 
 			// отправляем сообщение
-			var hostName = "cmk-sapp08";
+			var hostName = "localhost";
 			var addrs = await Dns.GetHostAddressesAsync (hostName).ConfigureAwait (false);
 			var endpoint = new IPHostEndPoint (addrs[0], 25) { HostName = hostName };
 			using (var connection = await SocketBinaryTcpConnection.CreateAsync (endpoint, cancellationToken)
@@ -48,7 +49,9 @@ namespace Novartment.Base.Sample
 		{
 			Encoding.RegisterProvider (CodePagesEncodingProvider.Instance);
 
-			var loggerFactory = new LoggerFactory ().AddDebug (LogLevel.Trace);
+			var loggerFactory = new LoggerFactory (
+				new ILoggerProvider[] { new DebugLoggerProvider () },
+				new LoggerFilterOptions () { MinLevel = LogLevel.Trace });
 			var tcpServerLogger = loggerFactory.CreateLogger<TcpServer> ();
 			var deliveryLogger = loggerFactory.CreateLogger<SmtpDeliveryProtocol> ();
 			var originatorLogger = loggerFactory.CreateLogger<SmtpOriginatorProtocol> ();

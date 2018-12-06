@@ -24,7 +24,7 @@ namespace Novartment.Base.BinaryStreaming
 
 			public Task WriteAsync (ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default)
 			{
-#if NETCOREAPP2_1
+#if NETCOREAPP2_2
 				return _stream.WriteAsync (buffer, cancellationToken).AsTask ();
 #else
 				return _stream.WriteAsync (buffer.ToArray (), 0, buffer.Length, cancellationToken);

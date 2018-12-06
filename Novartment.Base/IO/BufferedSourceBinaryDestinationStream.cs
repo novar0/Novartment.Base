@@ -129,7 +129,7 @@ namespace Novartment.Base.BinaryStreaming
 				_destination.WriteAsync (buffer.AsMemory (offset, count), cancellationToken);
 		}
 
-#if NETCOREAPP2_1
+#if NETCOREAPP2_2
 
 		/// <summary>
 		/// Асинхронно записывает последовательность байтов в поток,
@@ -324,7 +324,7 @@ namespace Novartment.Base.BinaryStreaming
 			}
 		}
 
-#if NETCOREAPP2_1
+#if NETCOREAPP2_2
 		/// <summary>
 		/// Асинхронно считывает последовательность байтов из потока,
 		/// перемещает позицию в потоке на число считанных байтов и отслеживает запросы отмены.

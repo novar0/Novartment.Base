@@ -52,7 +52,7 @@ namespace Novartment.Base.Net.Mime
 			// boundary := 0*69<bchars> bcharsnospace
 			// bchars := bcharsnospace / " "
 			// bcharsnospace := DIGIT / ALPHA / "'" / "(" / ")" / "+" / "_" / "," / "-" / "." / "/" / ":" / "=" / "?"
-#if NETCOREAPP2_1
+#if NETCOREAPP2_2
 			this.Boundary = boundary ?? ("NextPart=_" + Guid.NewGuid ().ToString ().Replace ("-", string.Empty, StringComparison.Ordinal));
 #else
 			this.Boundary = boundary ?? ("NextPart=_" + Guid.NewGuid ().ToString ().Replace ("-", string.Empty));

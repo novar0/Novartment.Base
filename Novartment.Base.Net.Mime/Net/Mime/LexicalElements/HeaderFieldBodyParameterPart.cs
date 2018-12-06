@@ -109,7 +109,7 @@ namespace Novartment.Base.Net.Mime
 				if (token.TokenType == StructuredHeaderFieldLexicalTokenType.Value)
 				{
 					// charset
-#if NETCOREAPP2_1
+#if NETCOREAPP2_2
 					encoding = new string (source.Slice (token.Position, token.Length));
 #else
 					encoding = new string (source.Slice (token.Position, token.Length).ToArray ());

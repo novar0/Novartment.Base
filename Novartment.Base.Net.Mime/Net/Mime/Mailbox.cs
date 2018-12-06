@@ -189,7 +189,7 @@ namespace Novartment.Base.Net.Mime
 					lastToken = token;
 				}
 
-#if NETCOREAPP2_1
+#if NETCOREAPP2_2
 				displayName = new string (outBuf.AsSpan (0, outPos));
 #else
 				displayName = new string (outBuf, 0, outPos);
@@ -226,7 +226,7 @@ namespace Novartment.Base.Net.Mime
 		/// <returns>Хэш-код для текущего объекта.</returns>
 		public override int GetHashCode ()
 		{
-#if NETCOREAPP2_1
+#if NETCOREAPP2_2
 			return ToString ().GetHashCode (StringComparison.Ordinal);
 #else
 			return ToString ().GetHashCode ();

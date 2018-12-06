@@ -322,7 +322,7 @@ namespace Novartment.Base.Text
 					{
 						return Rfc2047EncodedWord.Parse (src);
 					}
-#if NETCOREAPP2_1
+#if NETCOREAPP2_2
 					return new string (src);
 #else
 					return new string (src.ToArray ());
@@ -384,7 +384,7 @@ namespace Novartment.Base.Text
 					try
 					{
 						var size = Rfc2047EncodedWord.Parse (src, encodedWordBuffer, out Encoding encoding);
-#if NETCOREAPP2_1
+#if NETCOREAPP2_2
 						resultSize = encoding.GetChars (encodedWordBuffer.AsSpan (0, size), destination);
 #else
 						var tempBuf = encoding.GetChars (encodedWordBuffer, 0, size);

@@ -42,7 +42,7 @@ namespace Novartment.Base.Net.Smtp
 			buf[pos++] = ' ';
 
 			int size;
-#if NETCOREAPP2_1
+#if NETCOREAPP2_2
 			Convert.TryToBase64Chars (this.InitialResponse.Span, buf.AsSpan (pos), out size, Base64FormattingOptions.None);
 #else
 			size = Convert.ToBase64CharArray (this.InitialResponse.ToArray (), 0, this.InitialResponse.Length, buf, pos, Base64FormattingOptions.None);
@@ -71,7 +71,7 @@ namespace Novartment.Base.Net.Smtp
 				return new SmtpInvalidSyntaxCommand (SmtpCommandType.Auth, "Unrecognized 'AUTH' mechanism parameter.");
 			}
 
-#if NETCOREAPP2_1
+#if NETCOREAPP2_2
 			var mechanism = new string (value.Slice (saslMechToken.Position, saslMechToken.Length));
 #else
 			var mechanism = new string (value.Slice (saslMechToken.Position, saslMechToken.Length).ToArray ());
@@ -86,7 +86,7 @@ namespace Novartment.Base.Net.Smtp
 			byte[] initialResponse;
 			int responseSize;
 			var initialResponseBase64 = value.Slice (initialEesponseToken.Position, initialEesponseToken.Length);
-#if NETCOREAPP2_1
+#if NETCOREAPP2_2
 			initialResponse = new byte[(initialResponseBase64.Length / 4 * 3) + 2];
 			if (!Convert.TryFromBase64Chars (initialResponseBase64, initialResponse, out responseSize))
 			{

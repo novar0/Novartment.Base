@@ -124,7 +124,7 @@ namespace Novartment.Base.Net.Mime
 		/// <returns>Хэш-код для текущего объекта.</returns>
 		public override int GetHashCode ()
 		{
-#if NETCOREAPP2_1
+#if NETCOREAPP2_2
 			return this.Kind.GetHashCode () ^ this.Value.GetHashCode (StringComparison.Ordinal);
 #else
 			return this.Kind.GetHashCode () ^ this.Value.GetHashCode ();

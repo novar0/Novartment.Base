@@ -119,7 +119,7 @@ namespace Novartment.Base.Net
 		/// <returns>Хэш-код для текущего объекта.</returns>
 		public override int GetHashCode ()
 		{
-#if NETCOREAPP2_1
+#if NETCOREAPP2_2
 			return this.Importance.GetHashCode () ^ this.Value.GetHashCode (StringComparison.Ordinal);
 #else
 			return this.Importance.GetHashCode () ^ this.Value.GetHashCode ();

@@ -2,8 +2,8 @@
 
   <PropertyGroup>
     <AssemblyName>Novartment.Base.Media</AssemblyName>
-		<TargetFrameworks>netstandard2.0;netcoreapp2.1</TargetFrameworks>
-		<Version>4.1.4-beta</Version>
+		<TargetFrameworks>netstandard2.0;netcoreapp2.2</TargetFrameworks>
+		<Version>4.2.0-beta</Version>
 		<Description>Base classes for Media</Description>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
@@ -22,7 +22,7 @@
 		  <PrivateAssets>all</PrivateAssets>
 		  <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
 		</PackageReference>
-	  <PackageReference Include="StyleCop.Analyzers" Version="1.1.0-beta009">
+	  <PackageReference Include="StyleCop.Analyzers" Version="1.1.1-beta.61">
 	    <PrivateAssets>all</PrivateAssets>
 	    <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
 	  </PackageReference>

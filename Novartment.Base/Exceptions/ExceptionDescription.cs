@@ -89,7 +89,7 @@ namespace Novartment.Base
 
 				if (_trace != null)
 				{
-#if NETCOREAPP2_1
+#if NETCOREAPP2_2
 					var trace = (tracePatternToHide == null) ? _trace : _trace.Replace (tracePatternToHide, "...", StringComparison.Ordinal);
 #else
 					var trace = (tracePatternToHide == null) ? _trace : _trace.Replace (tracePatternToHide, "...");

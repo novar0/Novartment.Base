@@ -77,7 +77,7 @@ namespace Novartment.Base.Reflection
 		/// <returns>Хэш-код для текущего объекта.</returns>
 		public override int GetHashCode ()
 		{
-#if NETCOREAPP2_1
+#if NETCOREAPP2_2
 			return this.Name?.GetHashCode (StringComparison.Ordinal) ?? 0 ^ this.Value?.GetHashCode () ?? 0;
 #else
 			return this.Name?.GetHashCode () ?? 0 ^ this.Value?.GetHashCode () ?? 0;

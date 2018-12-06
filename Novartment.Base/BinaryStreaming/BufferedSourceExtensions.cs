@@ -397,7 +397,7 @@ namespace Novartment.Base.BinaryStreaming
 			async Task<string> ReadAllTextAsyncFinalizer ()
 			{
 				var buf = await task.ConfigureAwait (false);
-#if NETCOREAPP2_1
+#if NETCOREAPP2_2
 				return encoding.GetString (buf.Span);
 #else
 				var tempBuf = new byte[buf.Length];

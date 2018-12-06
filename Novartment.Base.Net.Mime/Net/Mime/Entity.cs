@@ -422,7 +422,7 @@ namespace Novartment.Base.Net.Mime
 			if (_md5.Length > 0)
 			{
 				var tempBuf = new char[(_md5.Length * 4) + 2];
-#if NETCOREAPP2_1
+#if NETCOREAPP2_2
 				Convert.TryToBase64Chars (_md5.Span, tempBuf, out int tempBufSize, Base64FormattingOptions.None);
 #else
 				var tempBufSize = Convert.ToBase64CharArray (_md5.ToArray (), 0, _md5.Length, tempBuf, 0);
@@ -609,7 +609,7 @@ namespace Novartment.Base.Net.Mime
 					throw new FormatException ("Unrecognized value of MediaType.");
 				}
 
-#if NETCOREAPP2_1
+#if NETCOREAPP2_2
 				_subtype = new string (data.Text.Slice (idx + 1));
 #else
 				_subtype = new string (data.Text.Slice (idx + 1).ToArray ());
@@ -749,7 +749,7 @@ namespace Novartment.Base.Net.Mime
 				throw new FormatException ("More than one '" + HeaderFieldNameHelper.GetName (HeaderFieldName.ContentBase) + "' field.");
 			}
 
-#if NETCOREAPP2_1
+#if NETCOREAPP2_2
 			this.Base = new string (body.Trim ());
 #else
 			this.Base = new string (body.Trim ().ToArray ());
@@ -764,7 +764,7 @@ namespace Novartment.Base.Net.Mime
 				throw new FormatException ("More than one '" + HeaderFieldNameHelper.GetName (HeaderFieldName.ContentLocation) + "' field.");
 			}
 
-#if NETCOREAPP2_1
+#if NETCOREAPP2_2
 			this.Location = new string (body.Trim ());
 #else
 			this.Location = new string (body.Trim ().ToArray ());
@@ -808,7 +808,7 @@ namespace Novartment.Base.Net.Mime
 				throw new FormatException ("More than one '" + HeaderFieldNameHelper.GetName (HeaderFieldName.ContentMD5) + "' field.");
 			}
 
-#if NETCOREAPP2_1
+#if NETCOREAPP2_2
 			var md5 = new byte[16];
 			var success = Convert.TryFromBase64Chars (body, md5, out int size);
 #else
@@ -832,7 +832,7 @@ namespace Novartment.Base.Net.Mime
 				throw new FormatException ("More than one '" + HeaderFieldNameHelper.GetName (HeaderFieldName.ContentDuration) + "' field.");
 			}
 
-#if NETCOREAPP2_1
+#if NETCOREAPP2_2
 			var seconds = int.Parse (
 				body,
 				NumberStyles.AllowLeadingWhite | NumberStyles.AllowTrailingWhite,
