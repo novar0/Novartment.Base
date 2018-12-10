@@ -48,7 +48,7 @@ namespace Novartment.Base.Net
 		{
 			if (!_acceptingConnectionsTask.IsCompleted)
 			{
-				throw new InvalidOperationException ($"Accepting connections on {_listener.LocalEndpoint} already started.");
+				throw new InvalidOperationException ($"Listener {_listener.LocalEndpoint} already started.");
 			}
 
 			_acceptConnectionsLoopCancellation = new CancellationTokenSource ();
@@ -66,7 +66,7 @@ namespace Novartment.Base.Net
 		private async Task AcceptConnectionsLoop ()
 		{
 			_logger?.LogInformation (FormattableString.Invariant (
-				$"Listener {_listener.LocalEndpoint}: started accepting connections."));
+				$"Listener {_listener.LocalEndpoint} starting to accept connections."));
 			Task protocolTask;
 			ITcpConnection connection;
 			try
@@ -80,7 +80,7 @@ namespace Novartment.Base.Net
 					}
 
 					_logger?.LogTrace (FormattableString.Invariant (
-						$"Listener {_listener.LocalEndpoint}: new client connected {connection.RemoteEndPoint}. Clients connected: {_connections.Count}."));
+						$"Listener {_listener.LocalEndpoint} accepted connection from {connection.RemoteEndPoint}. Other clients connected: {_connections.Count}."));
 
 					// на каждое подключением создаём источник отмены, потому что каждое может отменяться независимо от других по тайм-ауту
 					var cts = new CancellationTokenSource ();
@@ -96,9 +96,7 @@ namespace Novartment.Base.Net
 
 					if (protocolTask.IsCompleted)
 					{
-						connection.Dispose ();
-						_logger?.LogTrace (FormattableString.Invariant (
-							$"Listener {_listener.LocalEndpoint}: client disconnected {connection.RemoteEndPoint}. Clients connected: {_connections.Count}."));
+						CloseConnection (connection);
 					}
 					else
 					{
@@ -115,18 +113,23 @@ namespace Novartment.Base.Net
 			}
 			finally
 			{
-				Interlocked.Exchange (ref _acceptConnectionsLoopCancellation, null)?.Dispose (); // отменять уже нечего
-				_logger?.LogInformation ($"Listener {_listener.LocalEndpoint}: stopped accepting connections. Clients connected: {_connections.Count}.");
+				Interlocked.Exchange (ref _acceptConnectionsLoopCancellation, null)?.Dispose ();
+				_logger?.LogInformation ($"Listener {_listener.LocalEndpoint} stopping to accept connections. Сlients currently connected: {_connections.Count}.");
 			}
 
 			void AcceptedConnectionFinalizer (Task prevTask, object cntnData)
 			{
 				var cntn = (ITcpConnection)cntnData;
 				_connections.TryRemove (cntn.RemoteEndPoint, out ConnectedClient connectionProtocolTask);
-				cntn.Dispose ();
-				_logger?.LogTrace (FormattableString.Invariant (
-					$"Listener {_listener.LocalEndpoint}: client disconnected {cntn.RemoteEndPoint}. Clients connected: {_connections.Count}."));
+				CloseConnection (cntn);
 			}
+		}
+
+		private void CloseConnection (ITcpConnection connection)
+		{
+			connection.Dispose ();
+			_logger?.LogTrace (FormattableString.Invariant (
+				$"Listener {_listener.LocalEndpoint} disconnected client {connection.RemoteEndPoint}. Connected clients left: {_connections.Count}."));
 		}
 	}
 }
