@@ -3,7 +3,7 @@
   <PropertyGroup>
     <AssemblyName>Novartment.Base.Net.Smtp</AssemblyName>
 		<TargetFrameworks>netstandard2.0;netcoreapp2.2</TargetFrameworks>
-		<Version>4.3.0-beta</Version>
+		<Version>4.3.1-beta</Version>
 		<Description>Base classes for SMTP</Description>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
@@ -19,7 +19,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.6.2">
+		<PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.6.3">
 		  <PrivateAssets>all</PrivateAssets>
 		  <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
 		</PackageReference>

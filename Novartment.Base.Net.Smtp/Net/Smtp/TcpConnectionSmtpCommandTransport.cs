@@ -12,7 +12,7 @@ namespace Novartment.Base.Net.Smtp
 {
 	/// <summary>
 	/// Транспорт, доставляющий SmtpCommand-ы и ответы на них через TCP-подключение
-	/// с возможностью орагнизации безопасной доставки.
+	/// с возможностью организации безопасной доставки.
 	/// </summary>
 	internal class TcpConnectionSmtpCommandTransport :
 		ISmtpCommandTransport
@@ -262,7 +262,8 @@ namespace Novartment.Base.Net.Smtp
 
 			if ((_logger != null) && _logger.IsEnabled (LogLevel.Trace))
 			{
-				_logger?.LogTrace ("<<< " + new string (_commandBuf, 0, outPos));
+				var text = new string (_commandBuf, 0, outPos);
+				_logger?.LogTrace ($"{_connection.RemoteEndPoint} <<< {text}");
 			}
 
 			var command = SmtpCommand.Parse (_commandBuf.AsSpan (0, outPos), expectedInputType);
@@ -295,7 +296,12 @@ namespace Novartment.Base.Net.Smtp
 
 			if ((_logger != null) && _logger.IsEnabled (LogLevel.Trace))
 			{
-				_logger?.LogTrace (">>> " + text.Replace ("\r\n", "||"));
+#if NETCOREAPP2_2
+				var safeText = text.Replace ("\r\n", "||", StringComparison.Ordinal);
+#else
+				var safeText = text.Replace ("\r\n", "||");
+#endif
+				_logger?.LogTrace ($"{_connection.RemoteEndPoint} >>> {safeText}");
 			}
 
 			_pendingReplies = null;

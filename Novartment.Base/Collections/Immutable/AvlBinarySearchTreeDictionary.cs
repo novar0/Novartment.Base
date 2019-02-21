@@ -117,7 +117,7 @@ namespace Novartment.Base.Collections.Immutable
 
 				if (!(treeNode is AvlBinarySearchTreeDictionaryNode<TKey, TValue>.IntermediateNode intermediateNode))
 				{
-					value = default(TValue);
+					value = default;
 					return false;
 				}
 
