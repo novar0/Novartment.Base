@@ -86,7 +86,6 @@ namespace Novartment.Base.Net.Mime
 				}
 			}
 
-			segmentNumber++;
 			return outBytesPos;
 		}
 

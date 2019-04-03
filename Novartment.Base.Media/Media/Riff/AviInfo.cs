@@ -158,7 +158,6 @@ namespace Novartment.Base.Media
 
 						var sourceBuf = chunk.Source.BufferMemory;
 						microSecPerFrame = BinaryPrimitives.ReadUInt32LittleEndian (sourceBuf.Span.Slice (chunk.Source.Offset));
-						microSecPerFrame = BinaryPrimitives.ReadUInt32LittleEndian (sourceBuf.Span.Slice (chunk.Source.Offset));
 						flags = BinaryPrimitives.ReadUInt32LittleEndian (sourceBuf.Span.Slice (chunk.Source.Offset + 12));
 						totalFrames = BinaryPrimitives.ReadUInt32LittleEndian (sourceBuf.Span.Slice (chunk.Source.Offset + 16));
 						width = BinaryPrimitives.ReadUInt32LittleEndian (sourceBuf.Span.Slice (chunk.Source.Offset + 32));

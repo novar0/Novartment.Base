@@ -32,9 +32,8 @@ namespace Novartment.Base.Test
 		public void Parse_QEncodingSpan ()
 		{
 			var buf = new byte[500];
-			Encoding encoding;
 
-			var size = Rfc2047EncodedWord.Parse ("=?us-ascii?q?some_text?=", buf, out encoding);
+			var size = Rfc2047EncodedWord.Parse ("=?us-ascii?q?some_text?=", buf, out Encoding encoding);
 			Assert.Equal (20127, encoding.CodePage);
 			Assert.Equal ("some text", encoding.GetString (buf, 0, size));
 
@@ -70,9 +69,8 @@ namespace Novartment.Base.Test
 		public void Parse_BEncodingSpan ()
 		{
 			var buf = new byte[500];
-			Encoding encoding;
 
-			var size = Rfc2047EncodedWord.Parse ("=?koi8-r?B?68/O09TBztTJziD0xczJ3svP?=", buf, out encoding); // 8-битно
+			var size = Rfc2047EncodedWord.Parse ("=?koi8-r?B?68/O09TBztTJziD0xczJ3svP?=", buf, out Encoding encoding); // 8-битно
 			Assert.Equal (20866, encoding.CodePage);
 			Assert.Equal ("Константин Теличко", encoding.GetString (buf, 0, size));
 

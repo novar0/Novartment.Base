@@ -161,7 +161,7 @@ namespace Novartment.Base.Test
 		// Обёртка для int имеющая высокую вероятность коллизии хэша.
 		internal class MockStr : IEquatable<MockStr>
 		{
-			private double _hashMod;
+			private readonly double _hashMod;
 
 			public MockStr (int value, double hashMod)
 			{

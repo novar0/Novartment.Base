@@ -9,7 +9,7 @@ namespace Novartment.Base.Net.Mime.Test
 {
 	public class CompositeEntityBodyTests
 	{
-		private string[] _bodySample1 = new string[]
+		private readonly string[] _bodySample1 = new string[]
 		{
 			string.Empty,
 			string.Empty,
@@ -46,7 +46,7 @@ namespace Novartment.Base.Net.Mime.Test
 			"some ending text",
 		};
 
-		private string[] _bodySample2 = new string[]
+		private readonly string[] _bodySample2 = new string[]
 		{
 			string.Empty,
 			"--NextPart=_2a1f80a0bc26469baafab5bbfb1dbdff",

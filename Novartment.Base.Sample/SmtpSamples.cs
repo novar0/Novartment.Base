@@ -108,12 +108,6 @@ namespace Novartment.Base.Sample
 			await Task.WhenAll (originateTask, deliveryTask).ConfigureAwait (false);
 		}
 
-		private static Task<object> FindUser (string userName, string password)
-		{
-			var userFound = (userName == "User Name") && (password == "paSsWORd");
-			return Task.FromResult<object> (userFound ? (object)"postmater" : null); // valid user
-		}
-
 		private static async Task SendMessagesAsync (
 			IReadOnlyDictionary<string, CompetentDictionary<string, MailMessageData>> outgoingMailMessages,
 			ILogger<SmtpOriginatorProtocol> originatorLogger,

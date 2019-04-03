@@ -532,8 +532,8 @@ namespace Novartment.Base.Collections.Linq
 
 		private class SelectReadOnlyCollection<TSource, TResult> : IReadOnlyCollection<TResult>
 		{
-			private IReadOnlyCollection<TSource> _source;
-			private Func<TSource, TResult> _selector;
+			private readonly IReadOnlyCollection<TSource> _source;
+			private readonly Func<TSource, TResult> _selector;
 
 			internal SelectReadOnlyCollection (IReadOnlyCollection<TSource> source, Func<TSource, TResult> selector)
 			{
@@ -559,8 +559,8 @@ namespace Novartment.Base.Collections.Linq
 
 		private class SelectIndexReadOnlyCollection<TSource, TResult> : IReadOnlyCollection<TResult>
 		{
-			private IReadOnlyCollection<TSource> _source;
-			private Func<TSource, int, TResult> _selector;
+			private readonly IReadOnlyCollection<TSource> _source;
+			private readonly Func<TSource, int, TResult> _selector;
 
 			internal SelectIndexReadOnlyCollection (IReadOnlyCollection<TSource> source, Func<TSource, int, TResult> selector)
 			{

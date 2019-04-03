@@ -104,13 +104,18 @@ namespace Novartment.Base
 			return function.Invoke ((T1)parameter1, parameter2, parameter3);
 		}
 
-#pragma warning disable CA1801 // Review unused parameters
 		/// <summary>
 		/// Декаррирует указанный делегат, снабжая его дополнительным параметром указанного типа.
 		/// Создает Action&lt;T&gt; из Action,
 		/// позволяя передать метод, не требующий параметров туда, где требуется метод с параметром.
 		/// </summary>
-		public static void AddParameter<T> (this Action action, T parameter)
+		public static void AddParameter<T> (
+			this Action action,
+#pragma warning disable IDE0060 // Remove unused parameter
+#pragma warning disable CA1801 // Remove unused parameter
+			T parameter)
+#pragma warning restore CA1801 // Remove unused parameter
+#pragma warning restore IDE0060 // Remove unused parameter
 		{
 			action.Invoke ();
 		}
@@ -120,11 +125,16 @@ namespace Novartment.Base
 		/// Создает Func&lt;T, TResult&gt; из Func&lt;TResult&gt;,
 		/// позволяя передать метод, не требующий параметров туда, где требуется метод с параметром.
 		/// </summary>
-		public static TResult AddParameter<T, TResult> (this Func<TResult> function, T parameter)
+		public static TResult AddParameter<T, TResult> (
+			this Func<TResult> function,
+#pragma warning disable IDE0060 // Remove unused parameter
+#pragma warning disable CA1801 // Remove unused parameter
+			T parameter)
+#pragma warning restore CA1801 // Remove unused parameter
+#pragma warning restore IDE0060 // Remove unused parameter
 		{
 			return function.Invoke ();
 		}
-#pragma warning restore CA1801 // Review unused parameters
 #pragma warning restore SA1611 // Element parameters must be documented
 #pragma warning restore SA1615 // Element return value must be documented
 #pragma warning restore SA1618 // Generic type parameters must be documented

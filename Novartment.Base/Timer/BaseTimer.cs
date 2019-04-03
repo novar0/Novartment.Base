@@ -62,14 +62,16 @@ namespace Novartment.Base
 		public abstract void Dispose ();
 #pragma warning restore CA1063 // Implement IDisposable Correctly
 
+#pragma warning disable IDE0060 // Remove unused parameter
 #pragma warning disable CA1801 // Review unused parameters
 		/// <summary>
 		/// Вызывает делегат срабатывания таймера.
 		/// Можно использовать для делегата типа TimerCallback.
 		/// </summary>
-		/// <param name="notUsed">Не используется.</param>
+		/// <param name="notUsed">Не используется. Необходим для формирования сигнатуры, аналогичной некоторым другим таймерам.</param>
 		protected void DoCallback (object notUsed)
 #pragma warning restore CA1801 // Review unused parameters
+#pragma warning restore IDE0060 // Remove unused parameter
 		{
 			_callback.Invoke (_state);
 		}

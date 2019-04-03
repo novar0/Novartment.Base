@@ -295,7 +295,7 @@ namespace Novartment.Base.BinaryStreaming
 		{
 			var sourceAvailableSize = _source.Count;
 			var outputAvailableSize = _buffer.Length - _offset - _count;
-			int sizeTransformed = 0;
+			int sizeTransformed;
 			if (sourceAvailableSize >= _cryptoTransform.InputBlockSize)
 			{
 				// в источнике есть как минимум один входной блок, продолжаем преобразование

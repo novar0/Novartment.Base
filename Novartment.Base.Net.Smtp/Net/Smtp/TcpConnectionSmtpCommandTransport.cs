@@ -26,7 +26,7 @@ namespace Novartment.Base.Net.Smtp
 		private IBinaryDestination _writer;
 		private ITcpConnection _connection;
 		private string _pendingReplies = null;
-		private char[] _commandBuf = new char[MaximumCommandLength];
+		private readonly char[] _commandBuf = new char[MaximumCommandLength];
 
 		internal TcpConnectionSmtpCommandTransport (ITcpConnection connection, ILogger logger = null)
 		{

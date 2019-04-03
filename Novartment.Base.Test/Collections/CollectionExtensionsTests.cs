@@ -205,8 +205,8 @@ namespace Novartment.Base.Test
 				.Concat (Repeat<string> (null, 3))
 				.Concat (Repeat<string> ("123", 2));
 			var list2 = list1.ToArray ();
-			Assert.False (CollectionExtensions.TryGetCount (list1, out int cnt));
-			Assert.True (CollectionExtensions.TryGetCount (list2, out cnt));
+			Assert.False (CollectionExtensions.TryGetCount (list1, out _));
+			Assert.True (CollectionExtensions.TryGetCount (list2, out int cnt));
 			Assert.Equal (8, cnt);
 		}
 

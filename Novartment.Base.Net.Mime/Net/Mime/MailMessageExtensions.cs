@@ -91,9 +91,8 @@ namespace Novartment.Base.Net.Mime
 				}
 			}
 
-			var textExplanation = newMsg.AddTextPart (explanation);
-
-			var deliveryStatus = newMsg.AddDeliveryStatusPart ();
+			newMsg.AddTextPart (explanation);
+			newMsg.AddDeliveryStatusPart ();
 
 			// TODO: добавить заполение свойств deliveryStatus
 

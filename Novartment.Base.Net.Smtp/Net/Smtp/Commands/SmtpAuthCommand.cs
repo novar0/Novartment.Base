@@ -41,11 +41,10 @@ namespace Novartment.Base.Net.Smtp
 
 			buf[pos++] = ' ';
 
-			int size;
 #if NETCOREAPP2_2
-			Convert.TryToBase64Chars (this.InitialResponse.Span, buf.AsSpan (pos), out size, Base64FormattingOptions.None);
+			Convert.TryToBase64Chars (this.InitialResponse.Span, buf.AsSpan (pos), out int size, Base64FormattingOptions.None);
 #else
-			size = Convert.ToBase64CharArray (this.InitialResponse.ToArray (), 0, this.InitialResponse.Length, buf, pos, Base64FormattingOptions.None);
+			var size = Convert.ToBase64CharArray (this.InitialResponse.ToArray (), 0, this.InitialResponse.Length, buf, pos, Base64FormattingOptions.None);
 #endif
 			pos += size;
 			buf[pos++] = '\r';

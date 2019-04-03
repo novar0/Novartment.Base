@@ -209,7 +209,7 @@ namespace Novartment.Base.Text
 								throw new FormatException ("Invalid position of char '=' in base64-encoded string.");
 							}
 
-							num2 = num2 << 12;
+							num2 <<= 12;
 							if ((num2 & 0x80000000) == 0)
 							{
 								throw new FormatException ("Invalid position of char '=' in base64-encoded string.");
@@ -219,7 +219,7 @@ namespace Novartment.Base.Text
 						}
 						else
 						{
-							num2 = num2 << 6;
+							num2 <<= 6;
 							if ((num2 & 0x80000000) == 0)
 							{
 								throw new FormatException ("Invalid position of char '=' in base64-encoded string.");

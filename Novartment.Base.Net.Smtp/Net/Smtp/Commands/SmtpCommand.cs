@@ -56,9 +56,9 @@ namespace Novartment.Base.Net.Smtp
 			}
 
 			// делаем терпимый к отклонениям от стандарта разбор
-			SmtpCommand result = null;
 			var pos = 0;
 			var commandType = SmtpCommandTypeHelper.Parse (source, ref pos);
+			SmtpCommand result;
 			switch (commandType)
 			{
 				case SmtpCommandType.Data: // data = "DATA" CRLF

@@ -328,7 +328,7 @@ namespace Novartment.Base
 		{
 			while (_events.Count >= _recordLimit)
 			{
-				var isItemTaken = _events.TryTakeFirst (out SimpleEventRecord removedItem);
+				var isItemTaken = _events.TryTakeFirst (out _);
 				if (!isItemTaken)
 				{
 					break;

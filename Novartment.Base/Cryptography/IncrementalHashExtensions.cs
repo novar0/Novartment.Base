@@ -47,7 +47,7 @@ namespace Novartment.Base.IO
 			}
 
 			FileStream readStream = null;
-			long length = 0L;
+			long length;
 			try
 			{
 				readStream = new FileStream (fileName, FileMode.Open, FileAccess.Read, FileShare.Read);
@@ -132,7 +132,7 @@ namespace Novartment.Base.IO
 
 			FileStream readStream = null;
 			FileStream writeStream = null;
-			long length = 0L;
+			long length;
 			try
 			{
 				readStream = new FileStream (sourceFileName, FileMode.Open, FileAccess.Read, FileShare.Read);

@@ -65,30 +65,6 @@ namespace Novartment.Base.Collections.Linq
 		}
 
 		/// <summary>
-		/// Определяет, содержится ли указанный элемент в указанном конечном множестве.
-		/// </summary>
-		/// <typeparam name="TSource">Тип элементов множества.</typeparam>
-		/// <param name="source">Множество, в котором требуется найти данное значение.</param>
-		/// <param name="value">Значение, которое требуется найти в множестве.</param>
-		/// <param name="notUsed">Не используется.</param>
-		/// <returns>True, если множество содержит элемент с указанным значением, в противном случае — False.</returns>
-		public static bool Contains<TSource> (
-			this IReadOnlyFiniteSet<TSource> source,
-			TSource value,
-#pragma warning disable CA1801 // Review unused parameters
-			IEqualityComparer<TSource> notUsed = null)
-		{
-			if (source == null)
-			{
-				throw new ArgumentNullException (nameof (source));
-			}
-
-			Contract.EndContractBlock ();
-
-			return source.Contains (value);
-		}
-
-		/// <summary>
 		/// Изменяет порядок элементов указанного конечного множества на противоположный.
 		/// </summary>
 		/// <typeparam name="TSource">Тип элементов множества.</typeparam>
@@ -112,38 +88,13 @@ namespace Novartment.Base.Collections.Linq
 		}
 
 		/// <summary>
-		/// Возвращает указанное множество.
-		/// </summary>
-		/// <typeparam name="TSource">Тип элементов множества.</typeparam>
-		/// <param name="source">Конечное множество.</param>
-		/// <param name="notUsed">Не используется.</param>
-		/// <returns>Указанное множество.</returns>
-		public static IReadOnlyFiniteSet<TSource> Distinct<TSource> (
-			this IReadOnlyFiniteSet<TSource> source,
-			IEqualityComparer<TSource> notUsed = null)
-		{
-			if (source == null)
-			{
-				throw new ArgumentNullException (nameof (source));
-			}
-
-			Contract.EndContractBlock ();
-
-			return source;
-		}
-
-		/// <summary>
 		/// Получает разность (дополнение) указанных конечных множеств.
 		/// </summary>
 		/// <typeparam name="TSource">Тип элементов множеств.</typeparam>
 		/// <param name="first">Множество, из которого будут получена разность с множеством second.</param>
 		/// <param name="second">Множество, которое будет использовано для получения разности с множеством first.</param>
-		/// <param name="notUsed">Не используется.</param>
 		/// <returns>Множество, представляющее собой разность двух множеств.</returns>
-		public static IReadOnlyFiniteSet<TSource> Except<TSource> (
-			this IReadOnlyFiniteSet<TSource> first,
-			IReadOnlyFiniteSet<TSource> second,
-			IEqualityComparer<TSource> notUsed = null)
+		public static IReadOnlyFiniteSet<TSource> Except<TSource> (this IReadOnlyFiniteSet<TSource> first, IReadOnlyFiniteSet<TSource> second)
 		{
 			if (first == null)
 			{
@@ -201,12 +152,8 @@ namespace Novartment.Base.Collections.Linq
 		/// <typeparam name="TSource">Тип элементов множеств.</typeparam>
 		/// <param name="first">Первое множество для вычисления симметрической разности.</param>
 		/// <param name="second">Второе множество для вычисления симметрической разности.</param>
-		/// <param name="notUsed">Не используется.</param>
 		/// <returns>Множество, представляющее собой симметрическую разность двух множеств.</returns>
-		public static IReadOnlyFiniteSet<TSource> SymmetricExcept<TSource> (
-			this IReadOnlyFiniteSet<TSource> first,
-			IReadOnlyFiniteSet<TSource> second,
-			IEqualityComparer<TSource> notUsed = null)
+		public static IReadOnlyFiniteSet<TSource> SymmetricExcept<TSource> (this IReadOnlyFiniteSet<TSource> first, IReadOnlyFiniteSet<TSource> second)
 		{
 			if (first == null)
 			{
@@ -264,12 +211,8 @@ namespace Novartment.Base.Collections.Linq
 		/// <typeparam name="TSource">Тип элементов множеств.</typeparam>
 		/// <param name="first">Первое множество для вычисления пересечения.</param>
 		/// <param name="second">Второе множество для вычисления пересечения.</param>
-		/// <param name="notUsed">Не используется.</param>
 		/// <returns>Множество, представляющее собой пересечение двух множеств.</returns>
-		public static IReadOnlyFiniteSet<TSource> Intersect<TSource> (
-			this IReadOnlyFiniteSet<TSource> first,
-			IReadOnlyFiniteSet<TSource> second,
-			IEqualityComparer<TSource> notUsed = null)
+		public static IReadOnlyFiniteSet<TSource> Intersect<TSource> (this IReadOnlyFiniteSet<TSource> first, IReadOnlyFiniteSet<TSource> second)
 		{
 			if (first == null)
 			{
@@ -321,13 +264,8 @@ namespace Novartment.Base.Collections.Linq
 		/// <typeparam name="TSource">Тип элементов множеств.</typeparam>
 		/// <param name="first">Первое множество для вычисления объединения.</param>
 		/// <param name="second">Второе множество для вычисления объединения.</param>
-		/// <param name="notUsed">Не используется.</param>
 		/// <returns>Множество, представляющее собой объединение двух множеств.</returns>
-		public static IReadOnlyFiniteSet<TSource> Union<TSource> (
-			this IReadOnlyFiniteSet<TSource> first,
-			IReadOnlyFiniteSet<TSource> second,
-			IEqualityComparer<TSource> notUsed = null)
-#pragma warning restore CA1801 // Review unused parameters
+		public static IReadOnlyFiniteSet<TSource> Union<TSource> (this IReadOnlyFiniteSet<TSource> first, IReadOnlyFiniteSet<TSource> second)
 		{
 			if (first == null)
 			{

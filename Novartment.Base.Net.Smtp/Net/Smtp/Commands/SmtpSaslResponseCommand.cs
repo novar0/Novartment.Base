@@ -19,12 +19,11 @@ namespace Novartment.Base.Net.Smtp
 
 		public override string ToString ()
 		{
-			int size;
 			var buf = new char[(((_response.Length / 3) + 1) * 4) + 5];
 #if NETCOREAPP2_2
-			Convert.TryToBase64Chars (_response, buf, out size, Base64FormattingOptions.None);
+			Convert.TryToBase64Chars (_response, buf, out int size, Base64FormattingOptions.None);
 #else
-			size = Convert.ToBase64CharArray (_response, 0, _response.Length, buf, 0, Base64FormattingOptions.None);
+			var size = Convert.ToBase64CharArray (_response, 0, _response.Length, buf, 0, Base64FormattingOptions.None);
 #endif
 			buf[size++] = '\r';
 			buf[size++] = '\n';

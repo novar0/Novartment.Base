@@ -9,8 +9,8 @@ namespace Novartment.Base.Net.Test
 	internal class TcpConnectionProtocolMock : ITcpConnectionProtocol, IDisposable
 	{
 		private readonly AutoResetEvent _startedEvent = new AutoResetEvent (false);
-		private List<ITcpConnection> _connections = new List<ITcpConnection> ();
-		private Dictionary<IPEndPoint, TaskCompletionSource<int>> _stopSignalers = new Dictionary<IPEndPoint, TaskCompletionSource<int>> ();
+		private readonly List<ITcpConnection> _connections = new List<ITcpConnection> ();
+		private readonly Dictionary<IPEndPoint, TaskCompletionSource<int>> _stopSignalers = new Dictionary<IPEndPoint, TaskCompletionSource<int>> ();
 
 		internal TcpConnectionProtocolMock ()
 		{

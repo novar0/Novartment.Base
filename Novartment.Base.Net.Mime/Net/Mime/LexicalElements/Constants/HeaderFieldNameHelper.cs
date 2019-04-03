@@ -6,7 +6,7 @@ namespace Novartment.Base.Net.Mime
 {
 	internal static class HeaderFieldNameHelper
 	{
-		private static Dictionary<HeaderFieldName, string> _headerTypes = new Dictionary<HeaderFieldName, string> ()
+		private static readonly Dictionary<HeaderFieldName, string> _headerTypes = new Dictionary<HeaderFieldName, string> ()
 		{
 			[HeaderFieldName.Date] = HeaderFieldNames.Date,
 			[HeaderFieldName.From] = HeaderFieldNames.From,
@@ -112,7 +112,7 @@ namespace Novartment.Base.Net.Mime
 			[HeaderFieldName.Warning] = HeaderFieldNames.Warning,
 		};
 
-		private static Dictionary<string, HeaderFieldName> _headerTypeNames = new Dictionary<string, HeaderFieldName> (StringComparer.OrdinalIgnoreCase)
+		private static readonly Dictionary<string, HeaderFieldName> _headerTypeNames = new Dictionary<string, HeaderFieldName> (StringComparer.OrdinalIgnoreCase)
 		{
 			[HeaderFieldNames.Date] = HeaderFieldName.Date,
 			[HeaderFieldNames.From] = HeaderFieldName.From,

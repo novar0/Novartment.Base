@@ -487,7 +487,7 @@ namespace Novartment.Base.Shell
 
 		private static bool CheckAttribute (IShellItem nativeShellItem, ShellItemAttributes attribute)
 		{
-			var hr = nativeShellItem.GetAttributes (attribute, out int result);
+			var hr = nativeShellItem.GetAttributes (attribute, out _);
 			if (hr != 0 && hr != 1)
 			{
 				throw new ShellException (

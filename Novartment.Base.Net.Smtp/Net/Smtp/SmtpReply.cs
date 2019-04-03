@@ -171,9 +171,9 @@ namespace Novartment.Base.Net.Smtp
 			// Only the EHLO, EXPN, and HELP commands are expected to result in multiline replies in normal circumstances;
 			// however, multiline replies are allowed for any command.
 			var elements = new ArrayList<string> (1);
-			bool isLastElement = false;
-			int lastNumber = -1;
 			var sourceBuf = source.BufferMemory.Span;
+			bool isLastElement;
+			int lastNumber;
 			do
 			{
 				int idx = 0;

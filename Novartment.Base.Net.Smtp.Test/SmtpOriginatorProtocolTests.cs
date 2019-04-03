@@ -105,9 +105,7 @@ namespace Novartment.Base.Smtp.Test
 		{
 			internal int CallCount { get; private set; } = 0;
 
-#pragma warning disable CA1801 // Review unused parameters
 			public Task OriginateTransactionsAsync (TransactionHandlerFactory transactionFactory, CancellationToken cancellationToken = default)
-#pragma warning restore CA1801 // Review unused parameters
 			{
 				if (transactionFactory == null)
 				{

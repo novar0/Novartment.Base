@@ -47,7 +47,6 @@ namespace Novartment.Base.Net.Mime
 			var mustEncode = ScanIfNextTokenMustBeEncoded (source, semantics, ref pos);
 
 			IEstimatingEncoder encoder;
-			int maxEndocdedBytesForOneSourceByte;
 			var wordCount = 1;
 			int sequenceEndPos = pos;
 			if (!mustEncode)
@@ -120,8 +119,6 @@ namespace Novartment.Base.Net.Mime
 					wordCount++;
 					sequenceEndPos = pos;
 				}
-
-				maxEndocdedBytesForOneSourceByte = 2;
 			}
 			else
 			{
@@ -134,7 +131,6 @@ namespace Novartment.Base.Net.Mime
 					// ищем ближайшее слово требующее кодирования, пропуская нетребующие кодирования
 					while (true)
 					{
-						int testWordStartPos = pos;
 						if (pos >= source.Length)
 						{
 							stopSearch = true;
@@ -165,16 +161,11 @@ namespace Novartment.Base.Net.Mime
 					wordCount++;
 					sequenceEndPos = pos;
 				}
-
-				maxEndocdedBytesForOneSourceByte = 4;
 			}
 
 			// кодируем результат
 			var byteIndex = startPos;
 			var byteCount = sequenceEndPos - startPos;
-
-			// каждый символ кроме разделяющих слова может быть закодирован, итого может быть закодировано (byteCount - wordCount + 1) символов
-			var maxSizeOfEncodedSequence = encoder.PrologSize + ((byteCount - wordCount + 1) * maxEndocdedBytesForOneSourceByte) + encoder.EpilogSize;
 
 			int outPos = 0;
 			if (prevSequenceIsWordEncoded && mustEncode)
@@ -206,7 +197,7 @@ namespace Novartment.Base.Net.Mime
 				}
 			}
 
-			var (bytesProduced, bytesConsumed) = encoder.Encode (source.Slice (byteIndex, byteCount), buf.Slice (outPos, buf.Length - outPos), 0, true);
+			var (bytesProduced, _) = encoder.Encode (source.Slice (byteIndex, byteCount), buf.Slice (outPos, buf.Length - outPos), 0, true);
 			outPos += bytesProduced;
 
 			prevSequenceIsWordEncoded = mustEncode;
@@ -235,7 +226,6 @@ namespace Novartment.Base.Net.Mime
 				pos++;
 			}
 
-			var tokenStartPos = pos;
 			var encodeNeed = false;
 			var wordPrintableStartPos = -1; // отдельно запоминаем позицию первого непробельного символа (внутри phrase могут быть табы)
 			while (pos < source.Length)

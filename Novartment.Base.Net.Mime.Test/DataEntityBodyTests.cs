@@ -87,7 +87,6 @@ namespace Novartment.Base.Net.Mime.Test
 			var rnd = new Random ();
 			int size = 500 + rnd.Next (8192);
 			var template = new byte[size];
-			var result = new byte[size];
 			for (int i = 0; i < size; i++)
 			{
 				template[i] = (byte)rnd.Next (byte.MaxValue + 1);

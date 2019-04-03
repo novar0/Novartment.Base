@@ -103,12 +103,10 @@ namespace Novartment.Base.Test
 			Assert.Equal (0, c2.Count);
 
 			// TryPeekLast
-			v1 = int.MaxValue;
 			Assert.False (c2.TryPeekLast (out v1));
 			Assert.Equal (0, v1);
 
 			// TryTakeFirst
-			v1 = int.MaxValue;
 			Assert.False (c2.TryTakeFirst (out v1));
 			Assert.Equal (0, v1);
 		}

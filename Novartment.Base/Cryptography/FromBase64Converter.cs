@@ -9,7 +9,7 @@ namespace Novartment.Base
 	public sealed class FromBase64Converter :
 		ISpanCryptoTransform
 	{
-		private char[] _cache = new char[4];
+		private readonly char[] _cache = new char[4];
 		private int _cachedCount = 0;
 
 		/// <summary>

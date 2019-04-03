@@ -747,8 +747,8 @@ namespace Novartment.Base.Collections.Linq
 
 		private class SelectReadOnlyList<TSource, TResult> : IReadOnlyList<TResult>
 		{
-			private IReadOnlyList<TSource> _source;
-			private Func<TSource, TResult> _selector;
+			private readonly IReadOnlyList<TSource> _source;
+			private readonly Func<TSource, TResult> _selector;
 
 			internal SelectReadOnlyList (IReadOnlyList<TSource> source, Func<TSource, TResult> selector)
 			{
@@ -788,8 +788,8 @@ namespace Novartment.Base.Collections.Linq
 
 		private class SelectIndexReadOnlyList<TSource, TResult> : IReadOnlyList<TResult>
 		{
-			private IReadOnlyList<TSource> _source;
-			private Func<TSource, int, TResult> _selector;
+			private readonly IReadOnlyList<TSource> _source;
+			private readonly Func<TSource, int, TResult> _selector;
 
 			internal SelectIndexReadOnlyList (IReadOnlyList<TSource> source, Func<TSource, int, TResult> selector)
 			{

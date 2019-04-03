@@ -17,9 +17,9 @@ namespace Novartment.Base.SampleWpf
 	/// </summary>
 	public partial class MainWindow : System.Windows.Window
 	{
-		private AppSettings _appSettings;
-		private IDisposable _dropSourceRegistration;
-		private IDisposable _dropTargetRegistration;
+		private readonly AppSettings _appSettings;
+		private readonly IDisposable _dropSourceRegistration;
+		private readonly IDisposable _dropTargetRegistration;
 
 		public MainWindow (
 			BaseViewModel viewModel,
@@ -27,7 +27,7 @@ namespace Novartment.Base.SampleWpf
 			IDragDropSource dragDropSourceHandler,
 			IDragDropTarget dragDropTargetHandler)
 		{
-			DataContext = viewModel;
+			this.DataContext = viewModel;
 			_appSettings = appSettings;
 			InitializeComponent ();
 

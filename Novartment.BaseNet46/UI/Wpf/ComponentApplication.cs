@@ -280,7 +280,7 @@ namespace Novartment.Base.UI.Wpf
 		/// <param name="dataToShow">Набор данных об исключении.</param>
 		public void ReportException (UserLevelExceptionData dataToShow)
 		{
-			Dispatcher.Invoke (new Action<UserLevelExceptionData> (ShowExceptionDialog), dataToShow);
+			this.Dispatcher.Invoke (new Action<UserLevelExceptionData> (ShowExceptionDialog), dataToShow);
 		}
 
 		/// <summary>

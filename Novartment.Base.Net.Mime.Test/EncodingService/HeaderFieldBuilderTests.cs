@@ -118,12 +118,10 @@ namespace Novartment.Base.Net.Mime.Test
 		{
 			var buf = new byte[100];
 			var lineBuf = new byte[1000];
-			bool isLast;
-
 			var builder = new ExposedHeaderFieldBuilderUnstructured (HeaderFieldName.Supersedes, string.Empty);
 			builder.PrepareToEncodeExposed (lineBuf);
-			var size = builder.GetNextPartExposed (buf, out isLast);
-			Assert.True (true);
+			var size = builder.GetNextPartExposed (buf, out bool isLast);
+			Assert.True (isLast);
 			Assert.Equal (0, size);
 
 			builder = new ExposedHeaderFieldBuilderUnstructured (HeaderFieldName.Supersedes, "An 'encoded-word' may, appear: in a message; values or \"body part\" values according слово to the снова rules valuerulesvaluerulesvaluerulesvaluerulesvaluerulesvaluerulesvaluerulesvaluerules again");
@@ -197,7 +195,7 @@ namespace Novartment.Base.Net.Mime.Test
 			Assert.Equal (" again", Encoding.ASCII.GetString (buf, 0, size));
 
 			size = builder.GetNextPartExposed (buf, out isLast);
-			Assert.True (true);
+			Assert.True (isLast);
 			Assert.Equal (0, size);
 		}
 
@@ -207,11 +205,10 @@ namespace Novartment.Base.Net.Mime.Test
 		{
 			var buf = new byte[100];
 			var lineBuf = new byte[1000];
-			bool isLast;
 			var builder = new ExposedHeaderFieldBuilderPhrase (HeaderFieldName.Supersedes, "An 'encoded-word' may, appear: in a message; values or \"body part\" values according слово to the снова rules valuerulesvaluerulesvaluerulesvaluerulesvaluerulesvaluerulesvaluerulesvaluerules again");
 			builder.PrepareToEncodeExposed (lineBuf);
 
-			var size = builder.GetNextPartExposed (buf, out isLast);
+			var size = builder.GetNextPartExposed (buf, out bool isLast);
 			Assert.False (isLast);
 			Assert.Equal ("An", Encoding.ASCII.GetString (buf, 0, size));
 
@@ -248,7 +245,7 @@ namespace Novartment.Base.Net.Mime.Test
 			Assert.Equal (" again", Encoding.ASCII.GetString (buf, 0, size));
 
 			size = builder.GetNextPartExposed (buf, out isLast);
-			Assert.True (true);
+			Assert.True (isLast);
 			Assert.Equal (0, size);
 		}
 
@@ -258,16 +255,15 @@ namespace Novartment.Base.Net.Mime.Test
 		{
 			var buf = new byte[100];
 			var lineBuf = new byte[1000];
-			bool isLast;
 			var builder = new ExposedHeaderFieldBuilderMailbox (HeaderFieldName.Supersedes, new Mailbox (new AddrSpec ("someone", "server.com"), null));
 			builder.PrepareToEncodeExposed (lineBuf);
 
-			var size = builder.GetNextPartExposed (buf, out isLast);
+			var size = builder.GetNextPartExposed (buf, out bool isLast);
 			Assert.True (isLast);
 			Assert.Equal ("<someone@server.com>", Encoding.ASCII.GetString (buf, 0, size));
 
 			size = builder.GetNextPartExposed (buf, out isLast);
-			Assert.True (true);
+			Assert.True (isLast);
 			Assert.Equal (0, size);
 
 			builder = new ExposedHeaderFieldBuilderMailbox (HeaderFieldName.Supersedes, new Mailbox (new AddrSpec ("someone", "server.com"), "Dear"));
@@ -282,7 +278,7 @@ namespace Novartment.Base.Net.Mime.Test
 			Assert.Equal ("<someone@server.com>", Encoding.ASCII.GetString (buf, 0, size));
 
 			size = builder.GetNextPartExposed (buf, out isLast);
-			Assert.True (true);
+			Assert.True (isLast);
 			Assert.Equal (0, size);
 
 			builder = new ExposedHeaderFieldBuilderMailbox (HeaderFieldName.Supersedes, new Mailbox (
@@ -315,7 +311,7 @@ namespace Novartment.Base.Net.Mime.Test
 			Assert.Equal ("<\"really-long-address(for.one.line)\"@[some literal domain]>", Encoding.ASCII.GetString (buf, 0, size));
 
 			size = builder.GetNextPartExposed (buf, out isLast);
-			Assert.True (true);
+			Assert.True (isLast);
 			Assert.Equal (0, size);
 		}
 
@@ -325,11 +321,10 @@ namespace Novartment.Base.Net.Mime.Test
 		{
 			var buf = new byte[100];
 			var lineBuf = new byte[1000];
-			bool isLast;
 			var builder = new ExposedHeaderFieldBuilderLanguageList (HeaderFieldName.Supersedes, new string[] { "one", "two2", "three-en" });
 			builder.PrepareToEncodeExposed (lineBuf);
 
-			var size = builder.GetNextPartExposed (buf, out isLast);
+			var size = builder.GetNextPartExposed (buf, out bool isLast);
 			Assert.False (isLast);
 			Assert.Equal ("one,", Encoding.ASCII.GetString (buf, 0, size));
 
@@ -342,7 +337,7 @@ namespace Novartment.Base.Net.Mime.Test
 			Assert.Equal ("three-en", Encoding.ASCII.GetString (buf, 0, size));
 
 			size = builder.GetNextPartExposed (buf, out isLast);
-			Assert.True (true);
+			Assert.True (isLast);
 			Assert.Equal (0, size);
 		}
 
@@ -352,12 +347,11 @@ namespace Novartment.Base.Net.Mime.Test
 		{
 			var buf = new byte[100];
 			var lineBuf = new byte[1000];
-			bool isLast;
 
 			var builder = new ExposedHeaderFieldBuilderAddrSpecList (HeaderFieldName.Supersedes, new AddrSpec[] { AddrSpec.Parse ("someone@someserver.ru"), AddrSpec.Parse ("\"real(addr)\"@someserver.ru"), AddrSpec.Parse ("\"real(addr)\"@[some literal domain]") });
 			builder.PrepareToEncodeExposed (lineBuf);
 
-			var size = builder.GetNextPartExposed (buf, out isLast);
+			var size = builder.GetNextPartExposed (buf, out bool isLast);
 			Assert.False (isLast);
 			Assert.Equal ("<someone@someserver.ru>", Encoding.ASCII.GetString (buf, 0, size));
 
@@ -370,7 +364,7 @@ namespace Novartment.Base.Net.Mime.Test
 			Assert.Equal ("<\"real(addr)\"@[some literal domain]>", Encoding.ASCII.GetString (buf, 0, size));
 
 			size = builder.GetNextPartExposed (buf, out isLast);
-			Assert.True (true);
+			Assert.True (isLast);
 			Assert.Equal (0, size);
 		}
 
@@ -380,11 +374,10 @@ namespace Novartment.Base.Net.Mime.Test
 		{
 			var buf = new byte[100];
 			var lineBuf = new byte[1000];
-			bool isLast;
 			var builder = new ExposedHeaderFieldBuilderAtomAndUnstructured (HeaderFieldName.Supersedes, "type", "value");
 			builder.PrepareToEncodeExposed (lineBuf);
 
-			var size = builder.GetNextPartExposed (buf, out isLast);
+			var size = builder.GetNextPartExposed (buf, out bool isLast);
 			Assert.False (isLast);
 			Assert.Equal ("type;", Encoding.ASCII.GetString (buf, 0, size));
 
@@ -393,7 +386,7 @@ namespace Novartment.Base.Net.Mime.Test
 			Assert.Equal ("value", Encoding.ASCII.GetString (buf, 0, size));
 
 			size = builder.GetNextPartExposed (buf, out isLast);
-			Assert.True (true);
+			Assert.True (isLast);
 			Assert.Equal (0, size);
 
 			builder = new ExposedHeaderFieldBuilderAtomAndUnstructured (HeaderFieldName.Supersedes, "dns", "2000 Адресат Один");
@@ -408,11 +401,11 @@ namespace Novartment.Base.Net.Mime.Test
 			Assert.Equal ("2000", Encoding.ASCII.GetString (buf, 0, size));
 
 			size = builder.GetNextPartExposed (buf, out isLast);
-			Assert.True (true);
+			Assert.True (isLast);
 			Assert.Equal (" =?utf-8?B?0JDQtNGA0LXRgdCw0YIg0J7QtNC40L0=?=", Encoding.ASCII.GetString (buf, 0, size));
 
 			size = builder.GetNextPartExposed (buf, out isLast);
-			Assert.True (true);
+			Assert.True (isLast);
 			Assert.Equal (0, size);
 		}
 
@@ -422,17 +415,16 @@ namespace Novartment.Base.Net.Mime.Test
 		{
 			var buf = new byte[100];
 			var lineBuf = new byte[1000];
-			bool isLast;
 
 			var builder = new ExposedHeaderFieldBuilderUnstructuredPair (HeaderFieldName.Supersedes, "value", null);
 			builder.PrepareToEncodeExposed (lineBuf);
 
-			var size = builder.GetNextPartExposed (buf, out isLast);
+			var size = builder.GetNextPartExposed (buf, out bool isLast);
 			Assert.True (isLast);
 			Assert.Equal ("value", Encoding.ASCII.GetString (buf, 0, size));
 
 			size = builder.GetNextPartExposed (buf, out isLast);
-			Assert.True (true);
+			Assert.True (isLast);
 			Assert.Equal (0, size);
 
 			builder = new ExposedHeaderFieldBuilderUnstructuredPair (HeaderFieldName.Supersedes, "Lena's Personal <Joke> List", "слово to the снова");
@@ -459,7 +451,7 @@ namespace Novartment.Base.Net.Mime.Test
 			Assert.Equal ("=?utf-8?B?0YHQu9C+0LLQviB0byB0aGUg0YHQvdC+0LLQsA==?=", Encoding.ASCII.GetString (buf, 0, size));
 
 			size = builder.GetNextPartExposed (buf, out isLast);
-			Assert.True (true);
+			Assert.True (isLast);
 			Assert.Equal (0, size);
 		}
 
@@ -469,13 +461,12 @@ namespace Novartment.Base.Net.Mime.Test
 		{
 			var buf = new byte[100];
 			var lineBuf = new byte[1000];
-			bool isLast;
 
 			var dt = new DateTimeOffset (634726649620000000L, TimeSpan.FromHours (3));
 			var builder = new ExposedHeaderFieldBuilderTokensAndDate (HeaderFieldName.Supersedes, null, dt);
 			builder.PrepareToEncodeExposed (lineBuf);
 
-			var size = builder.GetNextPartExposed (buf, out isLast);
+			var size = builder.GetNextPartExposed (buf, out bool isLast);
 			Assert.False (isLast);
 			Assert.Equal (";", Encoding.ASCII.GetString (buf, 0, size));
 
@@ -484,7 +475,7 @@ namespace Novartment.Base.Net.Mime.Test
 			Assert.Equal ("15 May 2012 07:49:22 +0300", Encoding.ASCII.GetString (buf, 0, size));
 
 			size = builder.GetNextPartExposed (buf, out isLast);
-			Assert.True (true);
+			Assert.True (isLast);
 			Assert.Equal (0, size);
 
 			dt = new DateTimeOffset (634726649620000000L, TimeSpan.FromHours (1));
@@ -496,11 +487,11 @@ namespace Novartment.Base.Net.Mime.Test
 			Assert.Equal ("CAA22933;", Encoding.ASCII.GetString (buf, 0, size));
 
 			size = builder.GetNextPartExposed (buf, out isLast);
-			Assert.True (true);
+			Assert.True (isLast);
 			Assert.Equal ("15 May 2012 07:49:22 +0100", Encoding.ASCII.GetString (buf, 0, size));
 
 			size = builder.GetNextPartExposed (buf, out isLast);
-			Assert.True (true);
+			Assert.True (isLast);
 			Assert.Equal (0, size);
 
 			dt = new DateTimeOffset (634726649620000000L, TimeSpan.FromHours (-6));
@@ -520,7 +511,7 @@ namespace Novartment.Base.Net.Mime.Test
 			Assert.Equal ("15 May 2012 07:49:22 -0600", Encoding.ASCII.GetString (buf, 0, size));
 
 			size = builder.GetNextPartExposed (buf, out isLast);
-			Assert.True (true);
+			Assert.True (isLast);
 			Assert.Equal (0, size);
 
 			dt = new DateTimeOffset (634726649620000000L, TimeSpan.FromHours (10));
@@ -548,7 +539,7 @@ namespace Novartment.Base.Net.Mime.Test
 			Assert.Equal ("15 May 2012 07:49:22 +1000", Encoding.ASCII.GetString (buf, 0, size));
 
 			size = builder.GetNextPartExposed (buf, out isLast);
-			Assert.True (true);
+			Assert.True (isLast);
 			Assert.Equal (0, size);
 
 			dt = new DateTimeOffset (634726649670000000L, TimeSpan.FromHours (0));
@@ -596,7 +587,7 @@ namespace Novartment.Base.Net.Mime.Test
 			Assert.Equal ("15 May 2012 07:49:27 +0000", Encoding.ASCII.GetString (buf, 0, size));
 
 			size = builder.GetNextPartExposed (buf, out isLast);
-			Assert.True (true);
+			Assert.True (isLast);
 			Assert.Equal (0, size);
 		}
 
@@ -606,17 +597,16 @@ namespace Novartment.Base.Net.Mime.Test
 		{
 			var buf = new byte[100];
 			var lineBuf = new byte[1000];
-			bool isLast;
 
 			var builder = new ExposedHeaderFieldBuilderPhraseAndId (HeaderFieldName.Supersedes, "lenas-jokes.da39efc25c530ad145d41b86f7420c3b.021999.localhost", null);
 			builder.PrepareToEncodeExposed (lineBuf);
 
-			var size = builder.GetNextPartExposed (buf, out isLast);
+			var size = builder.GetNextPartExposed (buf, out bool isLast);
 			Assert.True (isLast);
 			Assert.Equal ("<lenas-jokes.da39efc25c530ad145d41b86f7420c3b.021999.localhost>", Encoding.ASCII.GetString (buf, 0, size));
 
 			size = builder.GetNextPartExposed (buf, out isLast);
-			Assert.True (true);
+			Assert.True (isLast);
 			Assert.Equal (0, size);
 
 			builder = new ExposedHeaderFieldBuilderPhraseAndId (HeaderFieldName.Supersedes, "lenas-jokes.da39efc25c530ad145d41b86f7420c3b.021999.localhost", "Lena's Personal <Joke> List");
@@ -643,7 +633,7 @@ namespace Novartment.Base.Net.Mime.Test
 			Assert.Equal ("<lenas-jokes.da39efc25c530ad145d41b86f7420c3b.021999.localhost>", Encoding.ASCII.GetString (buf, 0, size));
 
 			size = builder.GetNextPartExposed (buf, out isLast);
-			Assert.True (true);
+			Assert.True (isLast);
 			Assert.Equal (0, size);
 		}
 
@@ -653,12 +643,11 @@ namespace Novartment.Base.Net.Mime.Test
 		{
 			var buf = new byte[100];
 			var lineBuf = new byte[1000];
-			bool isLast;
 
 			var builder = new ExposedHeaderFieldBuilderPhraseList (HeaderFieldName.Supersedes, Array.Empty<string> ());
 			builder.PrepareToEncodeExposed (lineBuf);
-			var size = builder.GetNextPartExposed (buf, out isLast);
-			Assert.True (true);
+			var size = builder.GetNextPartExposed (buf, out bool isLast);
+			Assert.True (isLast);
 			Assert.Equal (0, size);
 
 			builder = new ExposedHeaderFieldBuilderPhraseList (HeaderFieldName.Supersedes, new string[] { "keyword" });
@@ -669,7 +658,7 @@ namespace Novartment.Base.Net.Mime.Test
 			Assert.Equal ("keyword", Encoding.ASCII.GetString (buf, 0, size));
 
 			size = builder.GetNextPartExposed (buf, out isLast);
-			Assert.True (true);
+			Assert.True (isLast);
 			Assert.Equal (0, size);
 
 			builder = new ExposedHeaderFieldBuilderPhraseList (HeaderFieldName.Supersedes, new string[] { "keyword", "KEY WORD", "Richard H. Nixon", "ключслово" });
@@ -704,7 +693,7 @@ namespace Novartment.Base.Net.Mime.Test
 			Assert.Equal ("=?utf-8?B?0LrQu9GO0YfRgdC70L7QstC+?=", Encoding.ASCII.GetString (buf, 0, size));
 
 			size = builder.GetNextPartExposed (buf, out isLast);
-			Assert.True (true);
+			Assert.True (isLast);
 			Assert.Equal (0, size);
 		}
 
@@ -714,13 +703,12 @@ namespace Novartment.Base.Net.Mime.Test
 		{
 			var buf = new byte[100];
 			var lineBuf = new byte[1000];
-			bool isLast;
 
 			var mailboxes = new List<Mailbox> ();
 			var builder = new ExposedHeaderFieldBuilderMailboxList (HeaderFieldName.Supersedes, mailboxes);
 			builder.PrepareToEncodeExposed (lineBuf);
-			var size = builder.GetNextPartExposed (buf, out isLast);
-			Assert.True (true);
+			var size = builder.GetNextPartExposed (buf, out bool isLast);
+			Assert.True (isLast);
 			Assert.Equal (0, size);
 
 			mailboxes.Add (new Mailbox ("one@mail.ru", "one man"));
@@ -740,7 +728,7 @@ namespace Novartment.Base.Net.Mime.Test
 			Assert.Equal ("<one@mail.ru>", Encoding.ASCII.GetString (buf, 0, size));
 
 			size = builder.GetNextPartExposed (buf, out isLast);
-			Assert.True (true);
+			Assert.True (isLast);
 			Assert.Equal (0, size);
 
 			mailboxes.Add (new Mailbox ("two@gmail.ru", "man 2"));
@@ -777,7 +765,7 @@ namespace Novartment.Base.Net.Mime.Test
 			Assert.Equal ("<three@hotmail.com>", Encoding.ASCII.GetString (buf, 0, size));
 
 			size = builder.GetNextPartExposed (buf, out isLast);
-			Assert.True (true);
+			Assert.True (isLast);
 			Assert.Equal (0, size);
 
 			mailboxes.Clear ();
@@ -812,7 +800,7 @@ namespace Novartment.Base.Net.Mime.Test
 			Assert.Equal ("<sp3@mailinator.com>", Encoding.ASCII.GetString (buf, 0, size));
 
 			size = builder.GetNextPartExposed (buf, out isLast);
-			Assert.True (true);
+			Assert.True (isLast);
 			Assert.Equal (0, size);
 		}
 
@@ -822,12 +810,11 @@ namespace Novartment.Base.Net.Mime.Test
 		{
 			var buf = new byte[100];
 			var lineBuf = new byte[1000];
-			bool isLast;
 
 			var builder = new ExposedHeaderFieldBuilderAngleBracketedList (HeaderFieldName.Supersedes, Array.Empty<string> ());
 			builder.PrepareToEncodeExposed (lineBuf);
-			var size = builder.GetNextPartExposed (buf, out isLast);
-			Assert.True (true);
+			var size = builder.GetNextPartExposed (buf, out bool isLast);
+			Assert.True (isLast);
 			Assert.Equal (0, size);
 
 			builder = new ExposedHeaderFieldBuilderAngleBracketedList (HeaderFieldName.Supersedes, new string[] { "mailto:list@host.com?subject=help" });
@@ -838,7 +825,7 @@ namespace Novartment.Base.Net.Mime.Test
 			Assert.Equal ("<mailto:list@host.com?subject=help>", Encoding.ASCII.GetString (buf, 0, size));
 
 			size = builder.GetNextPartExposed (buf, out isLast);
-			Assert.True (true);
+			Assert.True (isLast);
 			Assert.Equal (0, size);
 
 			var data = new string[]
@@ -868,7 +855,7 @@ namespace Novartment.Base.Net.Mime.Test
 			Assert.Equal ("<some currently unknown command>", Encoding.ASCII.GetString (buf, 0, size));
 
 			size = builder.GetNextPartExposed (buf, out isLast);
-			Assert.True (true);
+			Assert.True (isLast);
 			Assert.Equal (0, size);
 		}
 
@@ -878,7 +865,6 @@ namespace Novartment.Base.Net.Mime.Test
 		{
 			var buf = new byte[100];
 			var lineBuf = new byte[1000];
-			bool isLast;
 
 			var parameters = new DispositionNotificationParameter[]
 			{
@@ -887,12 +873,12 @@ namespace Novartment.Base.Net.Mime.Test
 			var builder = new ExposedHeaderFieldBuilderDispositionNotificationParameterList (HeaderFieldName.Supersedes, parameters);
 			builder.PrepareToEncodeExposed (lineBuf);
 
-			var size = builder.GetNextPartExposed (buf, out isLast);
+			var size = builder.GetNextPartExposed (buf, out bool isLast);
 			Assert.True (isLast);
 			Assert.Equal ("signed-receipt=optional,pkcs7-signature", Encoding.ASCII.GetString (buf, 0, size));
 
 			size = builder.GetNextPartExposed (buf, out isLast);
-			Assert.True (true);
+			Assert.True (isLast);
 			Assert.Equal (0, size);
 
 			parameters = new DispositionNotificationParameter[]
@@ -912,7 +898,7 @@ namespace Novartment.Base.Net.Mime.Test
 			Assert.Equal ("signed-receipt-micalg=required,sha1,md5", Encoding.ASCII.GetString (buf, 0, size));
 
 			size = builder.GetNextPartExposed (buf, out isLast);
-			Assert.True (true);
+			Assert.True (isLast);
 			Assert.Equal (0, size);
 		}
 
@@ -922,12 +908,11 @@ namespace Novartment.Base.Net.Mime.Test
 		{
 			var buf = new byte[100];
 			var lineBuf = new byte[1000];
-			bool isLast;
 
 			var builder = new ExposedHeaderFieldBuilderDisposition (HeaderFieldName.Supersedes, "value1", "value2", "value3", Array.Empty<string> ());
 			builder.PrepareToEncodeExposed (lineBuf);
 
-			var size = builder.GetNextPartExposed (buf, out isLast);
+			var size = builder.GetNextPartExposed (buf, out bool isLast);
 			Assert.False (isLast);
 			Assert.Equal ("value1/value2;", Encoding.ASCII.GetString (buf, 0, size));
 
@@ -936,7 +921,7 @@ namespace Novartment.Base.Net.Mime.Test
 			Assert.Equal ("value3", Encoding.ASCII.GetString (buf, 0, size));
 
 			size = builder.GetNextPartExposed (buf, out isLast);
-			Assert.True (true);
+			Assert.True (isLast);
 			Assert.Equal (0, size);
 
 			builder = new ExposedHeaderFieldBuilderDisposition (HeaderFieldName.Supersedes, "manual-action", "MDN-sent-manually", "displayed", new string[] { "value1", "value2", "value3" });
@@ -951,7 +936,7 @@ namespace Novartment.Base.Net.Mime.Test
 			Assert.Equal ("displayed/value1,value2,value3", Encoding.ASCII.GetString (buf, 0, size));
 
 			size = builder.GetNextPartExposed (buf, out isLast);
-			Assert.True (true);
+			Assert.True (isLast);
 			Assert.Equal (0, size);
 		}
 
