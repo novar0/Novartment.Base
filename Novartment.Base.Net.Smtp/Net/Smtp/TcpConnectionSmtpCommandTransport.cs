@@ -21,12 +21,12 @@ namespace Novartment.Base.Net.Smtp
 		// RFC 5321 part 4.5.3.1.6: The maximum total length of a text line including the <CRLF> is 1000 octets
 		private const int MaximumCommandLength = 1000;
 
+		private readonly char[] _commandBuf = new char[MaximumCommandLength];
 		private readonly ILogger _logger;
 		private IBufferedSource _reader;
 		private IBinaryDestination _writer;
 		private ITcpConnection _connection;
 		private string _pendingReplies = null;
-		private readonly char[] _commandBuf = new char[MaximumCommandLength];
 
 		internal TcpConnectionSmtpCommandTransport (ITcpConnection connection, ILogger logger = null)
 		{

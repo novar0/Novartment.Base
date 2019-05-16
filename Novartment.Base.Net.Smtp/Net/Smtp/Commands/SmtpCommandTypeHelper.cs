@@ -5,7 +5,7 @@ namespace Novartment.Base.Net.Smtp
 {
 	internal static class SmtpCommandTypeHelper
 	{
-		private static readonly ArrayList<Tuple<string, SmtpCommandType>> nameDictionary = new ArrayList<Tuple<string, SmtpCommandType>>
+		private static readonly ArrayList<Tuple<string, SmtpCommandType>> NameDictionary = new ArrayList<Tuple<string, SmtpCommandType>>
 		{
 			Tuple.Create ("DATA", SmtpCommandType.Data),
 			Tuple.Create ("NOOP", SmtpCommandType.Noop),
@@ -49,7 +49,7 @@ namespace Novartment.Base.Net.Smtp
 				pos += secondWordEndPos + 2;
 			}
 
-			foreach (var entry in nameDictionary)
+			foreach (var entry in NameDictionary)
 			{
 				if (entry.Item1.AsSpan ().Equals (commandTypeStr, StringComparison.OrdinalIgnoreCase))
 				{
