@@ -51,6 +51,8 @@ namespace Novartment.Base.Net
 				throw new InvalidOperationException ($"Listener {_listener.LocalEndpoint} already started.");
 			}
 
+			_logger?.LogInformation (FormattableString.Invariant (
+				$"Listener {_listener.LocalEndpoint} starting to accept connections."));
 			_acceptConnectionsLoopCancellation = new CancellationTokenSource ();
 			_listener.Start ();
 			_acceptingConnectionsTask = AcceptConnectionsLoop ();
@@ -58,6 +60,8 @@ namespace Novartment.Base.Net
 
 		internal void Cancel ()
 		{
+			_logger?.LogInformation (FormattableString.Invariant (
+				$"Listener {_listener.LocalEndpoint} stopping to accept connections."));
 			_listener.Stop ();
 			_acceptConnectionsLoopCancellation?.Cancel ();
 			this.State = ProcessState.Canceling;
@@ -65,9 +69,6 @@ namespace Novartment.Base.Net
 
 		private async Task AcceptConnectionsLoop ()
 		{
-			_logger?.LogInformation (FormattableString.Invariant (
-				$"Listener {_listener.LocalEndpoint} starting to accept connections."));
-			Task protocolTask;
 			ITcpConnection connection;
 			try
 			{
@@ -80,21 +81,22 @@ namespace Novartment.Base.Net
 					}
 
 					_logger?.LogTrace (FormattableString.Invariant (
-						$"Listener {_listener.LocalEndpoint} accepted connection from {connection.RemoteEndPoint}. Other clients connected: {_connections.Count}."));
+						$"Listener {_listener.LocalEndpoint} accepted connection from {connection.RemoteEndPoint}. Starting protocol {_protocol.GetType ().FullName}. Other clients connected: {_connections.Count}."));
 
 					// на каждое подключением создаём источник отмены, потому что каждое может отменяться независимо от других по тайм-ауту
 					var cts = new CancellationTokenSource ();
+					Task protocolTask = null;
 					try
 					{
 						protocolTask = _protocol.StartAsync (connection, cts.Token);
 					}
-					catch
+					catch (Exception excpt)
 					{
-						connection.Dispose ();
-						throw;
+						_logger?.LogError (FormattableString.Invariant (
+							$"Protocol starting faulted with {connection.RemoteEndPoint}. {ExceptionDescriptionProvider.GetDescription (excpt)}"));
 					}
 
-					if (protocolTask.IsCompleted)
+					if ((protocolTask == null) || protocolTask.IsCompleted)
 					{
 						CloseConnection (connection);
 					}
@@ -114,13 +116,27 @@ namespace Novartment.Base.Net
 			finally
 			{
 				Interlocked.Exchange (ref _acceptConnectionsLoopCancellation, null)?.Dispose ();
-				_logger?.LogInformation ($"Listener {_listener.LocalEndpoint} stopping to accept connections. Сlients currently connected: {_connections.Count}.");
+				_logger?.LogTrace ($"Listener {_listener.LocalEndpoint} stopped to accept connections. Сlients currently connected: {_connections.Count}.");
 			}
 
 			void AcceptedConnectionFinalizer (Task prevTask, object cntnData)
 			{
 				var cntn = (ITcpConnection)cntnData;
 				_connections.TryRemove (cntn.RemoteEndPoint, out ConnectedClient connectionProtocolTask);
+				if (prevTask.IsCanceled)
+				{
+					_logger?.LogDebug (FormattableString.Invariant (
+						$"Protocol canceled with {cntn.RemoteEndPoint}."));
+				}
+				else
+				{
+					if (prevTask.IsFaulted)
+					{
+						_logger?.LogError (FormattableString.Invariant (
+							$"Protocol faulted with {cntn.RemoteEndPoint}. {ExceptionDescriptionProvider.GetDescription (prevTask.Exception)}"));
+					}
+				}
+
 				CloseConnection (cntn);
 			}
 		}

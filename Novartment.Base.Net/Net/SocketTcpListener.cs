@@ -17,7 +17,7 @@ namespace Novartment.Base.Net
 	{
 		private readonly IPEndPoint _localEP;
 		private Socket _socket;
-		private bool _active;
+		private bool _active = false;
 
 		/// <summary>
 		/// Инициализирует новый экземпляр SocketTcpListener для прослушивания на указанной конечной точке.
@@ -68,9 +68,12 @@ namespace Novartment.Base.Net
 		/// </summary>
 		public void Stop ()
 		{
-			_socket.Dispose ();
-			_active = false;
-			_socket = new Socket (_localEP.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+			if (_active)
+			{
+				_socket.Dispose ();
+				_active = false;
+				_socket = new Socket (_localEP.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+			}
 		}
 
 		/// <summary>
@@ -82,7 +85,7 @@ namespace Novartment.Base.Net
 		{
 			if (!_active)
 			{
-				throw new InvalidOperationException ("stopped");
+				throw new InvalidOperationException ("Can not accept connections in «stopped» state.");
 			}
 
 			if (cancellationToken.IsCancellationRequested)
@@ -108,7 +111,7 @@ namespace Novartment.Base.Net
 			try
 			{
 				task = _socket.AcceptAsync ();
-				return AcceptTcpClientAsyncFinalizer ();
+				return AcceptTcpClientAsyncFinalizer (task);
 			}
 			catch (Exception excpt)
 			{
@@ -121,16 +124,16 @@ namespace Novartment.Base.Net
 				throw;
 			}
 
-			async Task<ITcpConnection> AcceptTcpClientAsyncFinalizer ()
+			async Task<ITcpConnection> AcceptTcpClientAsyncFinalizer (Task<Socket> runningTask)
 			{
 				try
 				{
-					var connectedSocket = await task.ConfigureAwait (false);
+					var connectedSocket = await runningTask.ConfigureAwait (false);
 					return new SocketBinaryTcpConnection (connectedSocket, localHostFqdn, null);
 				}
 				catch (ObjectDisposedException) when (cancellationToken.IsCancellationRequested)
 				{
-					throw new TaskCanceledException (task);
+					throw new TaskCanceledException (runningTask);
 				}
 				finally
 				{
