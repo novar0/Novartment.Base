@@ -152,7 +152,7 @@ namespace Novartment.Base.Net.Mime
 
 			if (!(entity.Body is ICompositeEntityBody compositeEntityBody))
 			{
-				throw new InvalidOperationException("Can not add part to entity with discrete content. Parts can be added only to composite entities.");
+				throw new InvalidOperationException ("Can not add part to entity with discrete content. Parts can be added only to composite entities.");
 			}
 
 			var newBody = new TextEntityBody (encoding, (transferEncoding != ContentTransferEncoding.Unspecified) ? transferEncoding : ContentTransferEncoding.Base64);
@@ -181,7 +181,7 @@ namespace Novartment.Base.Net.Mime
 
 			if (!(entity.Body is ICompositeEntityBody compositeEntityBody))
 			{
-				throw new InvalidOperationException("Can not add part to entity with discrete content. Parts can be added only to composite entities.");
+				throw new InvalidOperationException ("Can not add part to entity with discrete content. Parts can be added only to composite entities.");
 			}
 
 			var newBody = new CompositeEntityBody (null);
@@ -206,7 +206,7 @@ namespace Novartment.Base.Net.Mime
 
 			if (!(entity.Body is ICompositeEntityBody compositeEntityBody))
 			{
-				throw new InvalidOperationException("Can not add part to entity with discrete content. Parts can be added only to composite entities.");
+				throw new InvalidOperationException ("Can not add part to entity with discrete content. Parts can be added only to composite entities.");
 			}
 
 			var newBody = new DigestEntityBody ();
@@ -239,7 +239,7 @@ namespace Novartment.Base.Net.Mime
 
 			if (!(entity.Body is ICompositeEntityBody compositeEntityBody))
 			{
-				throw new InvalidOperationException("Can not add part to entity with discrete content. Parts can be added only to composite entities.");
+				throw new InvalidOperationException ("Can not add part to entity with discrete content. Parts can be added only to composite entities.");
 			}
 
 			var newBody = new MessageEntityBody
@@ -270,7 +270,7 @@ namespace Novartment.Base.Net.Mime
 
 			if (!(entity.Body is ICompositeEntityBody compositeEntityBody))
 			{
-				throw new InvalidOperationException("Can not add part to entity with discrete content. Parts can be added only to composite entities.");
+				throw new InvalidOperationException ("Can not add part to entity with discrete content. Parts can be added only to composite entities.");
 			}
 
 			var newBody = new DeliveryStatusEntityBody ();
@@ -305,7 +305,7 @@ namespace Novartment.Base.Net.Mime
 
 			if (!(entity.Body is ICompositeEntityBody compositeEntityBody))
 			{
-				throw new InvalidOperationException("Can not add part to entity with discrete content. Parts can be added only to composite entities.");
+				throw new InvalidOperationException ("Can not add part to entity with discrete content. Parts can be added only to composite entities.");
 			}
 
 			var newBody = new DispositionNotificationEntityBody ();
@@ -350,7 +350,7 @@ namespace Novartment.Base.Net.Mime
 
 			if (!(entity.Body is ICompositeEntityBody compositeEntityBody))
 			{
-				throw new InvalidOperationException("Can not add part to entity with discrete content. Parts can be added only to composite entities.");
+				throw new InvalidOperationException ("Can not add part to entity with discrete content. Parts can be added only to composite entities.");
 			}
 
 			var newBody = new DataEntityBody (ContentTransferEncoding.Base64);
@@ -411,7 +411,7 @@ namespace Novartment.Base.Net.Mime
 
 			if (!(entity.Body is ICompositeEntityBody compositeEntityBody))
 			{
-				throw new InvalidOperationException("Can not add part to entity with discrete content. Parts can be added only to composite entities.");
+				throw new InvalidOperationException ("Can not add part to entity with discrete content. Parts can be added only to composite entities.");
 			}
 
 			var newBody = new DataEntityBody (
@@ -466,7 +466,7 @@ namespace Novartment.Base.Net.Mime
 
 			if (!(entity.Body is ICompositeEntityBody compositeEntityBody))
 			{
-				throw new InvalidOperationException("Can not add part to entity with discrete content. Parts can be added only to composite entities.");
+				throw new InvalidOperationException ("Can not add part to entity with discrete content. Parts can be added only to composite entities.");
 			}
 
 			var attachmentBody = new DataEntityBody (ContentTransferEncoding.Base64);

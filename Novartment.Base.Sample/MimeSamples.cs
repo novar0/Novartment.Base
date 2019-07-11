@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -67,7 +68,17 @@ namespace Novartment.Base.Sample
 			part.AddTextPart ("текст сообщения");
 			part.AddTextPart ("<body><h1>текст сообщения<img src=\"test4.ico\" /></h1></body>", Encoding.UTF8, TextMediaSubtypeNames.Html, ContentTransferEncoding.EightBit);
 
+			// содержимое файла в кодировке по-умолчанию (base64)
 			await msg.AddAttachmentAsync ("test4.ico", cancellationToken).ConfigureAwait (false);
+
+			// произвольный массив байтов в двоичной 8-ми битной кодировке
+			var data = new byte[16384];
+			new Random ().NextBytes (data);
+			var src = new MemoryBufferedSource (data);
+			var attachment = await msg.AddApplicationPartAsync (ApplicationMediaSubtypeNames.Pdf, src, ContentTransferEncoding.EightBit, cancellationToken).ConfigureAwait (false);
+			attachment.FileName = "testdata.pdf";
+			attachment.DispositionType = ContentDispositionType.Attachment;
+			attachment.Size = data.Length;
 
 			using (var stream = new FileStream (@"composed2_async.eml", FileMode.Create, FileAccess.Write))
 			{
