@@ -94,9 +94,7 @@ namespace Novartment.Base.Collections.Immutable
 				// Following trick can reduce the range check by one
 				if ((uint)index >= (uint)this.Count)
 				{
-#pragma warning disable CA1065 // Do not raise exceptions in unexpected locations
 					throw new ArgumentOutOfRangeException (nameof (index));
-#pragma warning restore CA1065 // Do not raise exceptions in unexpected locations
 				}
 
 				Contract.EndContractBlock();

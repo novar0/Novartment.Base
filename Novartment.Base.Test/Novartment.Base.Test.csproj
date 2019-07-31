@@ -3,16 +3,10 @@
   <PropertyGroup>
     <VersionPrefix>1.0.0-beta</VersionPrefix>
     <TargetFramework>netcoreapp2.2</TargetFramework>
-		<CodeAnalysisRuleSet>StyleCop.Analyzers.ruleset</CodeAnalysisRuleSet>
 		<Features>IOperation</Features>
 		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
 		<LangVersion>latest</LangVersion>
 	</PropertyGroup>
-
-  <ItemGroup>
-    <AdditionalFiles Include="StyleCop.Analyzers.ruleset" />
-    <AdditionalFiles Include="stylecop.json" />
-  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Novartment.Base\Novartment.Base.csproj" />

@@ -85,6 +85,8 @@ namespace Novartment.Base.Smtp.Test
 			reply = sender.SendedReplies.Dequeue ();
 			Assert.Equal (554, reply.Code);
 			Assert.Empty (sender.SendedReplies);
+
+			session.Dispose ();
 		}
 
 		[Fact]
@@ -151,6 +153,8 @@ namespace Novartment.Base.Smtp.Test
 			reply = sender.SendedReplies.Dequeue ();
 			Assert.Equal (554, reply.Code);
 			Assert.Empty (sender.SendedReplies);
+
+			session.Dispose ();
 		}
 
 		[Fact]
@@ -336,6 +340,8 @@ namespace Novartment.Base.Smtp.Test
 			Assert.Equal (mailbox, trctn.Recipients[0]);
 			Assert.False (trctn.Completed);
 			Assert.False (trctn.Disposed);
+
+			session.Dispose ();
 		}
 
 		[Fact]
@@ -443,6 +449,8 @@ namespace Novartment.Base.Smtp.Test
 			Assert.Equal (250, reply.Code);
 			Assert.Equal (2, createdTransactionsCount);
 			Assert.Null (session.CurrentTransaction);
+
+			session.Dispose ();
 		}
 
 		[Fact]
@@ -567,6 +575,8 @@ namespace Novartment.Base.Smtp.Test
 			Assert.Null (session.CurrentTransaction);
 			Assert.False (trctn.Completed);
 			Assert.True (trctn.Disposed);
+
+			session.Dispose ();
 		}
 
 		[Fact]
@@ -619,6 +629,8 @@ namespace Novartment.Base.Smtp.Test
 			Assert.True (trctn.Disposed);
 			Assert.Equal (mailBodyChunk2.Length, src2.Offset);
 			Assert.Equal (mailBodyChunk1 + mailBodyChunk2, trctn.ReadedData);
+
+			session.Dispose ();
 		}
 
 		[Fact]
@@ -681,6 +693,8 @@ namespace Novartment.Base.Smtp.Test
 			Assert.Equal (2, createdTransactionsCount);
 			Assert.False (trctn.Completed);
 			Assert.True (trctn.Disposed);
+
+			session.Dispose ();
 		}
 
 		[Fact]
@@ -710,6 +724,8 @@ namespace Novartment.Base.Smtp.Test
 			Assert.ThrowsAsync<UnrecoverableProtocolException> (() => session.ReceiveCommandSendReplyAsync ());
 			Assert.Empty (sender.SendedReplies);
 			Assert.True (trctn.Disposed);
+
+			session.Dispose ();
 		}
 
 		[Fact]
@@ -751,6 +767,9 @@ namespace Novartment.Base.Smtp.Test
 			Assert.False (currentTransaction.Completed);
 			Assert.True (currentTransaction.Disposed);
 			Assert.Null (session.CurrentTransaction);
+
+			cts.Dispose ();
+			session.Dispose ();
 		}
 
 		[Fact]
@@ -803,6 +822,9 @@ namespace Novartment.Base.Smtp.Test
 			Assert.False (trctn.Completed);
 			Assert.False (trctn.Disposed);
 			Assert.NotNull (session.CurrentTransaction);
+
+			cts.Dispose ();
+			session.Dispose ();
 		}
 
 		[Fact]
@@ -842,6 +864,9 @@ namespace Novartment.Base.Smtp.Test
 			Assert.True (trctn.Disposed);
 			Assert.Null (session.CurrentTransaction);
 			Assert.Empty (sender.SendedReplies);
+
+			cts.Dispose ();
+			session.Dispose ();
 		}
 
 		[Fact]
@@ -882,6 +907,9 @@ namespace Novartment.Base.Smtp.Test
 			Assert.True (trctn.Disposed);
 			Assert.Null (session.CurrentTransaction);
 			Assert.Empty (sender.SendedReplies);
+
+			cts.Dispose ();
+			session.Dispose ();
 		}
 
 		private SmtDataTransferTransactionMock SetUpTransaction (

@@ -39,6 +39,8 @@ namespace Novartment.Base.Net.Test
 			connection.Reader.SkipBuffer (5);
 			var delta2 = connection.Duration.TotalMilliseconds - connection.IdleDuration.TotalMilliseconds;
 			Assert.InRange (Math.Abs (delta2), 100.0, double.MaxValue); // TODO: иногда тут 94
+
+			connection.Dispose ();
 		}
 	}
 }

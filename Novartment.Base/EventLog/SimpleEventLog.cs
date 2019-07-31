@@ -36,7 +36,7 @@ namespace Novartment.Base
 		public SimpleEventLog ()
 		{
 			_replacementEnabled = true;
-			ReplacementValue = "***";
+			this.ReplacementValue = "***";
 			_events.CollectionChanged += EventsChanged;
 		}
 
@@ -316,7 +316,7 @@ namespace Novartment.Base
 				var template = enumerator.Current;
 				if (message != null)
 				{
-					message = template.Replace (message, ReplacementValue);
+					message = template.Replace (message, this.ReplacementValue);
 				}
 			}
 

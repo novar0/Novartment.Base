@@ -69,6 +69,7 @@ namespace Novartment.Base.Smtp.Test
 			var protocol = new SmtpOriginatorProtocol (originator.OriginateTransactionsAsync, SmtpClientSecurityParameters.AllowNoSecurity, null);
 			Assert.ThrowsAsync<InvalidOperationException> (() => protocol.StartAsync (connection));
 			Assert.Equal (0, src.Count);
+			connection.Dispose ();
 
 			// сервер приветствует, но на EHLO отвечает что недоступен
 			received =
@@ -84,6 +85,7 @@ namespace Novartment.Base.Smtp.Test
 			var sended = connection.OutData.Queue.ToArray ();
 			Assert.Single (sended);
 			Assert.StartsWith ("EHLO ", sended[0], StringComparison.OrdinalIgnoreCase);
+			connection.Dispose ();
 
 			// сервер приветствует и обрывает соединение
 			received =
@@ -99,6 +101,7 @@ namespace Novartment.Base.Smtp.Test
 			Assert.Equal (2, sended.Length);
 			Assert.StartsWith ("EHLO ", sended[0], StringComparison.OrdinalIgnoreCase);
 			Assert.StartsWith ("QUIT", sended[1], StringComparison.OrdinalIgnoreCase);
+			connection.Dispose ();
 		}
 
 		internal class SmtpTransactionOriginatorMock

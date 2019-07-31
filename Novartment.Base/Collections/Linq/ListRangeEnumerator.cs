@@ -46,7 +46,7 @@ namespace Novartment.Base.Collections.Linq
 			}
 		}
 
-		object IEnumerator.Current => Current;
+		object IEnumerator.Current => this.Current;
 
 		/// <summary>
 		/// Перемещает перечислитель к следующему элементу строки.
@@ -81,12 +81,10 @@ namespace Novartment.Base.Collections.Linq
 			_current = default;
 		}
 
-#pragma warning disable CA1063 // Implement IDisposable Correctly
 		/// <summary>
 		/// Освобождает занятые объектом ресурсы.
 		/// </summary>
 		public void Dispose ()
-#pragma warning restore CA1063 // Implement IDisposable Correctly
 		{
 			_index = -2;
 			_current = default;

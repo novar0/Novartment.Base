@@ -99,7 +99,7 @@ namespace Novartment.Base.Test
 							Assert.False (task1.IsRunning);
 							Assert.False (task2.IsRunning);
 							Assert.False (task3.IsRunning);
-							Assert.Equal (2, _propertyChangedCount1);
+							Assert.Equal (2, _propertyChangedCount1); // TODO: иногда проскакивает 1, переделать
 							Assert.Equal (0, _propertyChangedCount2);
 							Assert.Equal (0, _propertyChangedCount3);
 							Assert.Equal (2, _startCommanCanExecuteChanged1);

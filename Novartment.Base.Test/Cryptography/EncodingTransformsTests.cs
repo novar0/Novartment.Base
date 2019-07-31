@@ -27,6 +27,7 @@ namespace Novartment.Base.Test
 			var result2 = coder.TransformFinalBlock (buf.AsSpan (800, buf.Length - 800));
 			var resutlStr = Encoding.UTF8.GetString (result1, 0, size) + Encoding.UTF8.GetString (result2.Span);
 			Assert.Equal (Template1Html, resutlStr);
+			coder.Dispose ();
 		}
 
 		[Fact]
@@ -44,6 +45,7 @@ namespace Novartment.Base.Test
 			var result2 = coder.TransformFinalBlock (buf.AsSpan (nBlocks * coder.InputBlockSize, buf.Length - (nBlocks * coder.InputBlockSize)));
 			var resutlStr = Encoding.UTF8.GetString (result1, 0, size) + Encoding.UTF8.GetString (result2.Span);
 			Assert.Equal ("DOCTYPE-html PUBLIC*123456", resutlStr);
+			coder.Dispose ();
 
 			coder = new ToQuotedPrintableWithLineBreaksConverter (true);
 			buf = Encoding.UTF8.GetBytes (Template2MostlyAsciiText);
@@ -53,6 +55,7 @@ namespace Novartment.Base.Test
 			result2 = coder.TransformFinalBlock (buf.AsSpan (nBlocks * coder.InputBlockSize, buf.Length - (nBlocks * coder.InputBlockSize)));
 			resutlStr = Encoding.UTF8.GetString (result1, 0, size) + Encoding.UTF8.GetString (result2.Span);
 			Assert.Equal (Template2QuotedPrintable, resutlStr);
+			coder.Dispose ();
 		}
 
 		[Fact]
@@ -64,6 +67,7 @@ namespace Novartment.Base.Test
 			var result = new byte[buf.Length];
 			var size = coder.TransformBlock (buf, result);
 			Assert.Equal (Template2MostlyAsciiText, Encoding.UTF8.GetString (result, 0, size));
+			coder.Dispose ();
 		}
 
 		[Fact]
@@ -81,6 +85,7 @@ namespace Novartment.Base.Test
 			var result2 = coder.TransformFinalBlock (buf.AsSpan (nBlocks * coder.InputBlockSize, buf.Length - (nBlocks * coder.InputBlockSize)));
 			var resutlStr = Encoding.UTF8.GetString (result1, 0, size) + Encoding.UTF8.GetString (result2.Span);
 			Assert.Equal (Template1QuotedPrintable, resutlStr);
+			coder.Dispose ();
 		}
 
 		[Fact]
@@ -92,6 +97,7 @@ namespace Novartment.Base.Test
 			var result = new byte[buf.Length];
 			var size = coder.TransformBlock (buf, result);
 			Assert.Equal (Template1Html, Encoding.UTF8.GetString (result, 0, size));
+			coder.Dispose ();
 		}
 
 		[Fact]
@@ -108,6 +114,7 @@ namespace Novartment.Base.Test
 			var result2 = coder.TransformFinalBlock (buf.AsSpan (11 * 57, buf.Length - (11 * 57)));
 			var resutlStr = Encoding.UTF8.GetString (result1, 0, size) + Encoding.UTF8.GetString (result2.Span);
 			Assert.Equal (Template1Base64, resutlStr);
+			coder.Dispose ();
 		}
 	}
 }

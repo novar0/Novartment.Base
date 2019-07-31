@@ -75,9 +75,7 @@ namespace Novartment.Base.Collections.Immutable
 			}
 		}
 
-#pragma warning disable CA1812 // Avoid uninstantiated internal classes
 		internal sealed class DebugView
-#pragma warning restore CA1812 // Avoid uninstantiated internal classes
 		{
 			private readonly IntermediateNode _node;
 

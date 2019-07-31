@@ -1,6 +1,7 @@
 [*]
 end_of_line = crlf
 indent_style = tab
+dotnet_code_quality.excluded_type_names_with_derived_types = System.Exception
 
 [*.cs]
 dotnet_style_qualification_for_property = true:suggestion

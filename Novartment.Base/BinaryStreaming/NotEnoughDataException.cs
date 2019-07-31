@@ -2,10 +2,8 @@
 
 namespace Novartment.Base.BinaryStreaming
 {
-#pragma warning disable CA1032 // Implement standard exception constructors
 	/// <summary>Ошибка нехватки данных.</summary>
 	public class NotEnoughDataException : Exception
-#pragma warning restore CA1032 // Implement standard exception constructors
 	{
 		/// <summary>Инициализирует новый экземпляр NotEnoughDataException с указанным количеством недостающих данных.</summary>
 		/// <param name="shortage">Количество недостающих данных, приведшее к ошибке.</param>

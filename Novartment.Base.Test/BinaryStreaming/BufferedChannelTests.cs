@@ -137,6 +137,8 @@ namespace Novartment.Base.Test
 			Assert.Equal (BitConverter.ToUInt64 (srcHash, 0), BitConverter.ToUInt64 (dstHash, 0));
 			Assert.Equal (BitConverter.ToUInt64 (srcHash, 8), BitConverter.ToUInt64 (dstHash, 8));
 			Assert.Equal (BitConverter.ToUInt32 (srcHash, 16), BitConverter.ToUInt32 (dstHash, 16));
+			srcHasher.Dispose ();
+			srcData.Dispose ();
 		}
 
 		[Fact]

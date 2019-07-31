@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using System.Threading;
 using Novartment.Base.BinaryStreaming;
 using Novartment.Base.Net;
 using Novartment.Base.Net.Smtp;
@@ -9,7 +8,7 @@ using Xunit;
 
 namespace Novartment.Base.Smtp.Test
 {
-	public class SmtpOriginatorDataTransferTransactionTests
+	public class SmtpSessionMailTransferTransactionHandlerTests
 	{
 		private static readonly AddrSpec Mailbox0 = new AddrSpec ("someone", "server.org");
 		private static readonly AddrSpec Mailbox1 = new AddrSpec ("postmaster", "github.org");
@@ -92,6 +91,8 @@ namespace Novartment.Base.Smtp.Test
 			Assert.Equal (SmtpCommandType.RcptTo, cmd.CommandType);
 			rcptToCmd = (SmtpRcptToCommand)cmd;
 			Assert.Equal (Mailbox2, rcptToCmd.Recipient);
+
+			transaction.Dispose ();
 		}
 
 		[Fact]
@@ -101,25 +102,27 @@ namespace Novartment.Base.Smtp.Test
 			var extensionsSupported = new HashSet<string> ();
 
 			var sender = new SmtpCommandReplyConnectionSenderReceiverMock ();
+
+			// передаём данные в не начатую
 			var transaction = new SmtpSessionMailTransferTransactionHandler (
 				new SmtpOriginatorProtocolSession (sender, "test.localhost"),
 				ContentTransferEncoding.SevenBit,
 				null);
-
-			// передаём данные в не начатую
 			var src = new MemoryBufferedSource (Encoding.ASCII.GetBytes (MailBody));
 			Assert.ThrowsAsync<InvalidOperationException> (() => transaction.TransferDataAndFinishAsync (src,  -1));
 			Assert.Empty (sender.SendedCommands);
+			transaction.Dispose ();
 
 			// передаём данные не указав получателей
-			transaction = PrepareSessionForDataTransfer (sender, extensionsSupported);
 			transaction = new SmtpSessionMailTransferTransactionHandler (
 				new SmtpOriginatorProtocolSession (sender, "test.localhost"),
 				ContentTransferEncoding.SevenBit,
 				null);
+			sender.ReceivedReplies.Enqueue (SmtpReply.OK);
+			transaction.StartAsync (Mailbox0).GetAwaiter ().GetResult ();
 			src = new MemoryBufferedSource (Encoding.ASCII.GetBytes (MailBody));
 			Assert.ThrowsAsync<InvalidOperationException> (() => transaction.TransferDataAndFinishAsync (src, -1));
-			Assert.Empty (sender.SendedCommands);
+			transaction.Dispose ();
 
 			// передаем данные без поддержки CHUNKING
 			transaction = PrepareSessionForDataTransfer (sender, extensionsSupported);
@@ -137,6 +140,7 @@ namespace Novartment.Base.Smtp.Test
 			Assert.Empty (sender.SendedDataBlocks);
 			Assert.Equal (MailBody, block1);
 			Assert.Equal ("\r\n.\r\n", block2);
+			transaction.Dispose ();
 
 			// передаем данные без поддержки CHUNKING, недопустимый маркер конца внутри данных, должно вызвать UnrecoverableProtocolException
 			transaction = PrepareSessionForDataTransfer (sender, extensionsSupported);
@@ -150,6 +154,7 @@ namespace Novartment.Base.Smtp.Test
 			block1 = sender.SendedDataBlocks.Dequeue ();
 			Assert.Empty (sender.SendedDataBlocks);
 			Assert.Equal (InvalidMailBodyPart1, block1);
+			transaction.Dispose ();
 
 			// передаем данные с поддержкой CHUNKING
 			extensionsSupported.Add ("CHUNKING");
@@ -164,6 +169,7 @@ namespace Novartment.Base.Smtp.Test
 			block1 = sender.SendedDataBlocks.Dequeue ();
 			Assert.Empty (sender.SendedDataBlocks);
 			Assert.Equal (MailBody, block1);
+			transaction.Dispose ();
 
 			// передаем данные с поддержкой CHUNKING источник предоставляет данных меньше чем указано, должно вызвать UnrecoverableProtocolException
 			transaction = PrepareSessionForDataTransfer (sender, extensionsSupported);
@@ -175,6 +181,7 @@ namespace Novartment.Base.Smtp.Test
 			block1 = sender.SendedDataBlocks.Dequeue ();
 			Assert.Empty (sender.SendedDataBlocks);
 			Assert.Equal (MailBody, block1);
+			transaction.Dispose ();
 		}
 
 		private SmtpSessionMailTransferTransactionHandler PrepareSessionForDataTransfer (

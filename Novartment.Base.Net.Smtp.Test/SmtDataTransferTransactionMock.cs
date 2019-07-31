@@ -57,6 +57,7 @@ namespace Novartment.Base.Smtp.Test
 		public void Dispose ()
 		{
 			_disposed = true;
+			_slowOperationInProgressEvent.Dispose ();
 		}
 
 		public async Task StartAsync (AddrSpec returnPath, CancellationToken cancellationToken = default)

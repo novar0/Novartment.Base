@@ -99,6 +99,8 @@ namespace Novartment.Base.Net.Test
 			WaitHandle.WaitAll (new WaitHandle[] { protocol1listener.StopedEvent, protocol2listener.StopedEvent });
 			Assert.False (protocol2listener.IsStarted);
 			Assert.False (protocol1listener.IsStarted);
+
+			srv.Dispose ();
 		}
 
 		[Fact]
@@ -131,7 +133,8 @@ namespace Novartment.Base.Net.Test
 			Thread.Sleep ((int)(srv.ConnectionIdleTimeout.TotalMilliseconds * 3.0));
 			Assert.True (connection.IsDisposed);
 
-			srv.StopAsync (true);
+			srv.StopAsync (true).GetAwaiter ().GetResult ();
+			srv.Dispose ();
 		}
 
 		[Fact]
@@ -171,7 +174,8 @@ namespace Novartment.Base.Net.Test
 
 			Assert.True (connection.IsDisposed);
 
-			srv.StopAsync (true);
+			srv.StopAsync (true).GetAwaiter ().GetResult ();
+			srv.Dispose ();
 		}
 	}
 }
