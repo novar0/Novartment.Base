@@ -676,7 +676,7 @@ namespace Novartment.Base.Net.Smtp
 			}
 
 			/*var authorizationIdentity = (idx1 > 0) ? Encoding.UTF8.GetString (userPasswordData.Slice (0, idx1)) : null;*/
-#if NETCOREAPP2_2
+#if NETSTANDARD2_1
 			var authenticationIdentity = Encoding.UTF8.GetString (userPasswordData.Slice (idx1 + 1, idx2 - idx1 - 1));
 			var password = Encoding.UTF8.GetString (userPasswordData.Slice (idx2 + 1));
 #else

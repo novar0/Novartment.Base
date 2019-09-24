@@ -51,7 +51,7 @@ namespace Novartment.Base.Net
 				throw new InvalidOperationException ("Can not write to completed socket destination.");
 			}
 
-#if NETCOREAPP2_2
+#if NETSTANDARD2_1
 			return _socket.SendAsync (buffer, SocketFlags.None, cancellationToken).AsTask ();
 #else
 			// TODO: как то переделать чтобы не создавать временный массив и ArraySegment

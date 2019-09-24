@@ -30,7 +30,7 @@ namespace Novartment.Base.Net.Mime
 
 			Contract.EndContractBlock ();
 
-#if NETCOREAPP2_2
+#if NETSTANDARD2_1
 			var mailBox = new Mailbox (AddrSpec.Parse (address), displayName);
 #else
 			var mailBox = new Mailbox (AddrSpec.Parse (address.AsSpan ()), displayName);

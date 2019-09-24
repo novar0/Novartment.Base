@@ -86,7 +86,7 @@ namespace Novartment.Base.Text
 			}
 
 			// day
-#if NETCOREAPP2_2
+#if NETSTANDARD2_1
 			var isValidDay = int.TryParse (token, out int day);
 #else
 			var isValidDay = int.TryParse (new string (token.ToArray ()), out int day);
@@ -104,7 +104,7 @@ namespace Novartment.Base.Text
 			// year
 			SkipWhiteSpace (source, ref pos);
 			token = ReadNonWhiteSpace (source, ref pos);
-#if NETCOREAPP2_2
+#if NETSTANDARD2_1
 			var isValidYear = int.TryParse (token, out int year);
 #else
 			var isValidYear = int.TryParse (new string (token.ToArray ()), out int year);
@@ -139,7 +139,7 @@ namespace Novartment.Base.Text
 				throw new FormatException ("Invalid string representation of data/time, semicolon not found in time value.");
 			}
 
-#if NETCOREAPP2_2
+#if NETSTANDARD2_1
 			var isValidHour = int.TryParse (token.Slice (0, 2), out int hour);
 #else
 			var isValidHour = int.TryParse (new string (token.ToArray(), 0, 2), out int hour);
@@ -149,7 +149,7 @@ namespace Novartment.Base.Text
 				throw new FormatException ("Invalid string representation of data/time. Invalid hours value.");
 			}
 
-#if NETCOREAPP2_2
+#if NETSTANDARD2_1
 			var isValidMinute = int.TryParse (token.Slice (3, 2), out int minute);
 #else
 			var isValidMinute = int.TryParse (new string (token.ToArray (), 3, 2), out int minute);
@@ -167,7 +167,7 @@ namespace Novartment.Base.Text
 					throw new FormatException ("Invalid string representation of data/time, semicolon not found after minute value.");
 				}
 
-#if NETCOREAPP2_2
+#if NETSTANDARD2_1
 				var isValidSecond = int.TryParse (token.Slice (6), out second);
 #else
 				var isValidSecond = int.TryParse (new string (token.ToArray (), 6, token.Length - 6), out second);
@@ -424,7 +424,7 @@ namespace Novartment.Base.Text
 		private static int GetMonth (ReadOnlySpan<char> monthSpan)
 		{
 			int month;
-#if NETCOREAPP2_2
+#if NETSTANDARD2_1
 			var monthStr = new string (monthSpan);
 #else
 			var monthStr = new string (monthSpan.ToArray ());
@@ -455,7 +455,7 @@ namespace Novartment.Base.Text
 
 			if ((timeZoneSpan[0] == '+') || (timeZoneSpan[0] == '-'))
 			{
-#if NETCOREAPP2_2
+#if NETSTANDARD2_1
 				var n1str = timeZoneSpan.Slice (1, 2);
 				var n2str = timeZoneSpan.Slice (3, 2);
 #else
@@ -474,7 +474,7 @@ namespace Novartment.Base.Text
 			}
 
 			// We have RFC 822 date with abbrevated time zone name. For example: GMT.
-#if NETCOREAPP2_2
+#if NETSTANDARD2_1
 			var timeZoneStr = new string (timeZoneSpan).ToUpperInvariant ();
 #else
 			var timeZoneStr = new string (timeZoneSpan.ToArray ()).ToUpperInvariant ();

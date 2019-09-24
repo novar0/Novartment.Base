@@ -296,7 +296,7 @@ namespace Novartment.Base.Net.Smtp
 
 			if ((_logger != null) && _logger.IsEnabled (LogLevel.Trace))
 			{
-#if NETCOREAPP2_2
+#if NETSTANDARD2_1
 				var safeText = text.Replace ("\r\n", "||", StringComparison.Ordinal);
 #else
 				var safeText = text.Replace ("\r\n", "||");

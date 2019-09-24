@@ -8,7 +8,7 @@ namespace Novartment.Base.Net.Smtp
 		internal SmtpEhloCommand (ReadOnlySpan<char> clientIdentification)
 			: base (SmtpCommandType.Ehlo)
 		{
-#if NETCOREAPP2_2
+#if NETSTANDARD2_1
 			this.ClientIdentification = new string (clientIdentification);
 #else
 			this.ClientIdentification = new string (clientIdentification.ToArray ());

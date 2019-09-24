@@ -20,7 +20,7 @@ namespace Novartment.Base.Net.Smtp
 		public override string ToString ()
 		{
 			var buf = new char[(((_response.Length / 3) + 1) * 4) + 5];
-#if NETCOREAPP2_2
+#if NETSTANDARD2_1
 			Convert.TryToBase64Chars (_response, buf, out int size, Base64FormattingOptions.None);
 #else
 			var size = Convert.ToBase64CharArray (_response, 0, _response.Length, buf, 0, Base64FormattingOptions.None);
@@ -40,7 +40,7 @@ namespace Novartment.Base.Net.Smtp
 
 			byte[] response = null;
 			int responseSize = 0;
-#if NETCOREAPP2_2
+#if NETSTANDARD2_1
 			response = new byte[(responseSrc.Length / 4 * 3) + 2];
 			if (!Convert.TryFromBase64Chars (responseSrc, response, out responseSize))
 			{

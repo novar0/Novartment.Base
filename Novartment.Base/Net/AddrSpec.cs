@@ -132,7 +132,7 @@ namespace Novartment.Base.Net
 			if (token1.IsValid && !token2.IsValid)
 			{
 				// особый случай для совместимости со старыми реализациями
-#if NETCOREAPP2_2
+#if NETSTANDARD2_1
 				localPart = new string (source.Slice (token1.Position, token1.Length));
 #else
 				localPart = new string (source.Slice (token1.Position, token1.Length).ToArray ());
@@ -259,7 +259,7 @@ namespace Novartment.Base.Net
 		{
 			// RFC 3798 part 2.1:
 			// The comparison MUST be case-sensitive for the local-part and case-insensitive for the domain part.
-#if NETCOREAPP2_2
+#if NETSTANDARD2_1
 			return this.LocalPart.GetHashCode (StringComparison.Ordinal) ^ StringComparer.OrdinalIgnoreCase.GetHashCode (this.Domain);
 #else
 			return this.LocalPart.GetHashCode () ^ StringComparer.OrdinalIgnoreCase.GetHashCode (this.Domain);

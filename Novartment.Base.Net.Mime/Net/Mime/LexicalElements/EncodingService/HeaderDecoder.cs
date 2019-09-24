@@ -284,7 +284,7 @@ namespace Novartment.Base.Net.Mime
 
 					lastItemIsSeparator = false;
 
-#if NETCOREAPP2_2
+#if NETSTANDARD2_1
 					var str = new string (source.Slice (token.Position, token.Length));
 #else
 					var str = new string (source.Slice (token.Position, token.Length).ToArray ());
@@ -365,7 +365,7 @@ namespace Novartment.Base.Net.Mime
 			Contract.EndContractBlock ();
 
 			var parametersPos = FindPositionOfSemicolonSkippingQuotedValues (source);
-#if NETCOREAPP2_2
+#if NETSTANDARD2_1
 			var str = new string (source.Slice (0, parametersPos - 1));
 #else
 			var str = new string (source.Slice (0, parametersPos - 1).ToArray ());
@@ -424,7 +424,7 @@ namespace Novartment.Base.Net.Mime
 			}
 
 			var text = (outPos > 0) ? new string (outBuf, 0, outPos) : null;
-#if NETCOREAPP2_2
+#if NETSTANDARD2_1
 			var id = new string (source.Slice (lastToken.Position, lastToken.Length));
 #else
 			var id = new string (source.Slice (lastToken.Position, lastToken.Length).ToArray ());
@@ -650,7 +650,7 @@ namespace Novartment.Base.Net.Mime
 
 					lastItemIsSeparator = false;
 
-#if NETCOREAPP2_2
+#if NETSTANDARD2_1
 					var str = new string (source.Slice (token.Position, token.Length));
 #else
 					var str = new string (source.Slice (token.Position, token.Length).ToArray ());
@@ -699,7 +699,7 @@ namespace Novartment.Base.Net.Mime
 						result.Add (new HeaderFieldParameter (parameterName, new string (outBuf, 0, outPos)));
 					}
 
-#if NETCOREAPP2_2
+#if NETSTANDARD2_1
 					parameterName = new string (source.Slice (part.Name.Position, part.Name.Length));
 #else
 					parameterName = new string (source.Slice (part.Name.Position, part.Name.Length).ToArray ());
@@ -747,7 +747,7 @@ namespace Novartment.Base.Net.Mime
 				throw new FormatException ("Specified value does not represent valid 'disposition-action'.");
 			}
 
-#if NETCOREAPP2_2
+#if NETSTANDARD2_1
 			var actionMode = new string (source.Slice (actionModeToken.Position, actionModeToken.Length));
 			var sendingMode = new string (source.Slice (sendingModeToken.Position, sendingModeToken.Length));
 			var dispositionType = new string (source.Slice (dispositionTypeToken.Position, dispositionTypeToken.Length));
@@ -794,7 +794,7 @@ namespace Novartment.Base.Net.Mime
 
 					lastItemIsSeparator = false;
 
-#if NETCOREAPP2_2
+#if NETSTANDARD2_1
 					modifiers.Add (new string (source.Slice (token.Position, token.Length)));
 #else
 					modifiers.Add (new string (source.Slice (token.Position, token.Length).ToArray ()));
@@ -848,7 +848,7 @@ namespace Novartment.Base.Net.Mime
 					throw new FormatException ("Invalid value of 'disposition-notification' parameter.");
 				}
 
-#if NETCOREAPP2_2
+#if NETSTANDARD2_1
 				var name = new string (source.Slice (attributeToken.Position, attributeToken.Length));
 #else
 				var name = new string (source.Slice (attributeToken.Position, attributeToken.Length).ToArray ());
@@ -886,7 +886,7 @@ namespace Novartment.Base.Net.Mime
 						throw new FormatException ("Invalid value of 'disposition-notification' parameter.");
 					}
 
-#if NETCOREAPP2_2
+#if NETSTANDARD2_1
 					var valueSrc = new string (source.Slice (valueToken.Position, valueToken.Length));
 #else
 					var valueSrc = new string (source.Slice (valueToken.Position, valueToken.Length).ToArray ());
@@ -958,7 +958,7 @@ namespace Novartment.Base.Net.Mime
 
 			var n1Str = source.Slice (numberToken1.Position, numberToken1.Length);
 			var n2Str = source.Slice (numberToken2.Position, numberToken2.Length);
-#if NETCOREAPP2_2
+#if NETSTANDARD2_1
 			var n1 = int.Parse (n1Str, NumberStyles.AllowLeadingWhite | NumberStyles.AllowTrailingWhite, CultureInfo.InvariantCulture);
 			var n2 = int.Parse (n2Str, NumberStyles.AllowLeadingWhite | NumberStyles.AllowTrailingWhite, CultureInfo.InvariantCulture);
 #else
@@ -1171,7 +1171,7 @@ namespace Novartment.Base.Net.Mime
 				throw new FormatException ("Value does not conform to format 'language-q'. First item is not 'atom'.");
 			}
 
-#if NETCOREAPP2_2
+#if NETSTANDARD2_1
 			var value = new string (source.Slice (valueToken.Position, valueToken.Length));
 #else
 			var value = new string (source.Slice (valueToken.Position, valueToken.Length).ToArray ());
@@ -1195,7 +1195,7 @@ namespace Novartment.Base.Net.Mime
 					throw new FormatException ("Value does not conform to format 'language-q'.");
 				}
 
-#if NETCOREAPP2_2
+#if NETSTANDARD2_1
 				var isValidNumber = decimal.TryParse (
 					source.Slice (qualityToken.Position, qualityToken.Length),
 					NumberStyles.AllowDecimalPoint,
