@@ -1,12 +1,8 @@
 ﻿using System;
-using System.ServiceModel;
 using Autofac;
 using Autofac.Features.OwnedInstances;
 using Novartment.Base.UI;
 using Novartment.Base.UI.Wpf;
-
-// ссылка на веб-сервис
-using ISerivceInterface = System.ServiceModel.Channels.IOutputChannel; // тут ссылка на (сгенерированный клиентский прокси) интерфейс сервиса
 
 namespace Novartment.Base.SampleWpf
 {
@@ -44,7 +40,6 @@ namespace Novartment.Base.SampleWpf
 				c.Resolve<SimpleEventLog> (),
 				c.Resolve<IClipboard> (),
 				c.Resolve<Func<IDataContainer>> (),
-				c.Resolve<ISerivceInterface> (),
 				c.ResolveNamed<Func<MessageBoxFormData, Owned<IDialogView<System.Windows.MessageBoxResult>>>> ("MessageBox", p)))
 				.As<MainViewModel> ()
 				.As<IDragDropSource> ()
@@ -70,18 +65,6 @@ namespace Novartment.Base.SampleWpf
 			builder.Register ((c, p) => new MessageBoxForm (
 				c.ResolveNamed<IDialogViewModel<System.Windows.MessageBoxResult>> ("MessageBox", p)))
 				.Named<IDialogView<System.Windows.MessageBoxResult>> ("MessageBox");
-
-			// web-service
-			builder.Register (c =>
-				{
-					var cf = new ChannelFactory<ISerivceInterface> ("WCFServiceEndpoint");
-					cf.Credentials.Windows.AllowedImpersonationLevel = System.Security.Principal.TokenImpersonationLevel.Impersonation;
-					cf.Credentials.Windows.ClientCredential = System.Net.CredentialCache.DefaultNetworkCredentials;
-					return cf;
-				})
-				.SingleInstance ();
-			Autofac.Integration.Wcf.RegistrationExtensions.UseWcfSafeRelease (
-				builder.Register (c => c.Resolve<ChannelFactory<ISerivceInterface>> ().CreateChannel ()));
 
 			var container = builder.Build ();
 

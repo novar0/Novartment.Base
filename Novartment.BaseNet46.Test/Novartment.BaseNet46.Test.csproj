@@ -1,9 +1,11 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
 
-  <PropertyGroup>
-    <VersionPrefix>1.0.0-beta</VersionPrefix>
-    <TargetFramework>net461</TargetFramework>
-    <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
+		<PropertyGroup>
+		<OutputType>WinExe</OutputType>
+		<TargetFramework>netcoreapp3.0</TargetFramework>
+		<UseWPF>true</UseWPF>
+		<VersionPrefix>1.0.0-beta</VersionPrefix>
+		<GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
 		<Features>IOperation</Features>
 	</PropertyGroup>
 
@@ -19,13 +21,6 @@
     </PackageReference>
     <PackageReference Include="xunit" Version="2.4.1" />
   </ItemGroup>
-
-	<ItemGroup Condition=" '$(TargetFramework)' == 'net461' ">
-    <Reference Include="System" />
-		<Reference Include="WindowsBase" />
-		<Reference Include="Microsoft.CSharp" />
-		<Reference Include="PresentationFramework" />
-	</ItemGroup>
 
   <ItemGroup>
     <Service Include="{82a7f48d-3b50-4b1e-b82e-3ada8210c358}" />

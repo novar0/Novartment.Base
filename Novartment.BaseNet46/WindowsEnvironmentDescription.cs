@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Security;
 using System.Security.Principal;
-using System.ServiceModel;
 using Novartment.Base.Collections;
 
 namespace Novartment.Base
@@ -30,23 +29,12 @@ namespace Novartment.Base
 			get
 			{
 				WindowsIdentity user = null;
-				var currentServiceSecurityContext = ServiceSecurityContext.Current;
-				if (currentServiceSecurityContext != null)
+				try
 				{
-					if (!currentServiceSecurityContext.IsAnonymous)
-					{
-						user = currentServiceSecurityContext.WindowsIdentity;
-					}
+					user = WindowsIdentity.GetCurrent ();
 				}
-				else
+				catch (SecurityException)
 				{
-					try
-					{
-						user = WindowsIdentity.GetCurrent ();
-					}
-					catch (SecurityException)
-					{
-					}
 				}
 
 				if (user == null)

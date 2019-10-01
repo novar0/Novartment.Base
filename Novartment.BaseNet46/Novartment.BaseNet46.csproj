@@ -1,10 +1,11 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
 
-  <PropertyGroup>
+	<PropertyGroup>
     <AssemblyName>Novartment.BaseNet46</AssemblyName>
-		<TargetFramework>net461</TargetFramework>
-		<Version>2.2.7-beta</Version>
-		<Description>Base classes for .Net 4.6</Description>
+		<TargetFramework>netcoreapp3.0</TargetFramework>
+		<UseWPF>true</UseWPF>
+		<Version>3.0.0-beta</Version>
+		<Description>Base classes for .Net Core 3.0</Description>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 		<Features>IOperation</Features>
@@ -13,15 +14,6 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\Novartment.Base\Novartment.Base.csproj" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<Reference Include="PresentationCore" />
-		<Reference Include="PresentationFramework" />
-		<Reference Include="System.Configuration" />
-		<Reference Include="System.ServiceModel" />
-		<Reference Include="System.Xaml" />
-		<Reference Include="WindowsBase" />
 	</ItemGroup>
 
 </Project>

@@ -34,7 +34,6 @@ namespace Novartment.Base.SampleWpf
 		private readonly Func<IDataContainer> _clipboardObjectFactory;
 		private readonly ComponentApplication _application;
 		private readonly AppSettings _appSettings;
-		private readonly System.ServiceModel.Channels.IOutputChannel _dataService;
 		private readonly Func<MessageBoxFormData, Autofac.Features.OwnedInstances.Owned<IDialogView<System.Windows.MessageBoxResult>>> _messageBoxFactory;
 		private readonly TaskScheduler _taskSchedulerShell = new OleStaTaskScheduler (1);
 		private readonly CommandedRepeatableTask _refreshDataTask;
@@ -48,7 +47,6 @@ namespace Novartment.Base.SampleWpf
 			SimpleEventLog eventLog,
 			IClipboard clipBoardService,
 			Func<IDataContainer> clipboardObjectFactory,
-			System.ServiceModel.Channels.IOutputChannel dataService,
 			Func<MessageBoxFormData, Autofac.Features.OwnedInstances.Owned<IDialogView<System.Windows.MessageBoxResult>>> messageBoxFactory)
 		{
 			_application = application;
@@ -56,7 +54,6 @@ namespace Novartment.Base.SampleWpf
 			_eventLog = eventLog;
 			_clipBoardService = clipBoardService;
 			_clipboardObjectFactory = clipboardObjectFactory;
-			_dataService = dataService;
 			_messageBoxFactory = messageBoxFactory;
 
 			ComponentApplication.EnableBindingOperationsWithoutSynchronization (_eventLog);

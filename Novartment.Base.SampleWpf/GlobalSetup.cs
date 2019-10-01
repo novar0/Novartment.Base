@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Deployment.Application;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text;
 using System.Threading;
 using Novartment.Base.IO;
 using Novartment.Base.UI.Wpf;
@@ -17,9 +15,7 @@ namespace Novartment.Base.SampleWpf
 	public static class GlobalSetup
 	{
 		// Константы должны быть заполнены уникальными значениями
-		// _ClickOnceURL укажите null если технология ClickOnce не используется
 		private static readonly string _UniqueApplicationName = "SampleWpf_intance_1262C4C7-D476-4E54-9BE1-5320177AD0E3";
-		private static readonly string _ClickOnceURL = @"http://someserver.com/SampleWpf/Novartment.Base.SampleWpf.application#Novartment.Base.SampleWpf.application, Culture=ru, PublicKeyToken=0000000000000000";
 
 		private static readonly int _InstanceSearchTimeout = 1000;
 
@@ -31,15 +27,9 @@ namespace Novartment.Base.SampleWpf
 
 		public static int MainEx ([CallerFilePath]string sourceFileName = "")
 		{
-			foreach (var listener in Debug.Listeners.OfType<DefaultTraceListener> ())
+			foreach (var listener in Trace.Listeners.OfType<DefaultTraceListener> ())
 			{
 				listener.AssertUiEnabled = true;
-			}
-
-			if ((_ClickOnceURL != null) && !Debugger.IsAttached && !ApplicationDeployment.IsNetworkDeployed)
-			{// запрещаем запускать EXE напрямую, перенаправляем через ClickOnce-запускатель
-				RelaunchThroughClickOnce ();
-				return (int)ProcessExitCode.Ok;
 			}
 
 			// проверка уже запущеных экземпляров
@@ -97,13 +87,6 @@ namespace Novartment.Base.SampleWpf
 
 				var notUsed = ComponentApplication.Current.Dispatcher.InvokeAsync (action);
 			}
-		}
-
-		private static void RelaunchThroughClickOnce ()
-		{
-			string newFile = Path.Combine (Path.GetTempPath (), _UniqueApplicationName + ".appref-ms");
-			File.WriteAllText (newFile, _ClickOnceURL, Encoding.Unicode);
-			Process.Start (newFile);
 		}
 	}
 }
