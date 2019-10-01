@@ -40,18 +40,14 @@ namespace Novartment.Base.UI.Wpf
 		/// Инициализирует новый экземпляр класса ComponentApplication использующий указанные параметры.
 		/// </summary>
 		/// <param name="mainWindowFactory">Фабрика, которая производит главное окно приложения.</param>
-		/// <param name="exceptionDialogFactory">Фабрика, которая производит окно диалога об исключительной ситуации.</param>
-		public ComponentApplication (Func<Window> mainWindowFactory, Func<UserLevelExceptionData, IDialogView<bool?>> exceptionDialogFactory)
+		/// <param name="exceptionDialogFactory">Фабрика, которая производит окно диалога об исключительной ситуации.
+		/// Укажите null чтобы использовать простой MessageBox.</param>
+		public ComponentApplication (Func<Window> mainWindowFactory, Func<UserLevelExceptionData, IDialogView<bool?>> exceptionDialogFactory = null)
 			: base ()
 		{
 			if (mainWindowFactory == null)
 			{
 				throw new ArgumentNullException (nameof (mainWindowFactory));
-			}
-
-			if (exceptionDialogFactory == null)
-			{
-				throw new ArgumentNullException (nameof (exceptionDialogFactory));
 			}
 
 			Contract.EndContractBlock ();

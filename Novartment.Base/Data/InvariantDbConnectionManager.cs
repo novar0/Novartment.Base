@@ -65,6 +65,7 @@ namespace Novartment.Base.Data
 			{
 				case "System.Data.SqlServerCe.SqlCeProviderFactory":
 				case "System.Data.SqlClient.SqlClientFactory":
+				case "Microsoft.Data.SqlClient.SqlClientFactory":
 					_namePlaceholder1 = "[{0}]";
 					_namePlaceholder2 = "[{1}].[{0}]";
 					_parameterPlaceholder = "@par{0:G}";
