@@ -1,11 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
 
 	<PropertyGroup>
-    <AssemblyName>Novartment.BaseNet46</AssemblyName>
+    <AssemblyName>Novartment.BaseWindows</AssemblyName>
 		<TargetFramework>netcoreapp3.0</TargetFramework>
 		<UseWPF>true</UseWPF>
 		<Version>3.0.0-beta</Version>
-		<Description>Base classes for .Net Core 3.0</Description>
+		<Description>Base classes for .Net Core 3.0 on Windows</Description>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 		<Features>IOperation</Features>

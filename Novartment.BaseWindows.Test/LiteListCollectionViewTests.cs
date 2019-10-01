@@ -4,10 +4,11 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Threading;
+using Novartment.Base;
 using Novartment.Base.UI.Wpf;
 using Xunit;
 
-namespace Novartment.Base.Net46.Test
+namespace Novartment.BaseWindows.Test
 {
 	public class LiteListCollectionViewTests
 	{

@@ -12,7 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Novartment.BaseNet46\Novartment.BaseNet46.csproj" />
+    <ProjectReference Include="..\Novartment.BaseWindows\Novartment.BaseWindows.csproj" />
   </ItemGroup>
 
 </Project>

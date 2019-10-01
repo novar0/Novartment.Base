@@ -23,9 +23,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Novartment.Base.Net.Smtp", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Novartment.Base.Net.Smtp.Test", "Novartment.Base.Net.Smtp.Test\Novartment.Base.Net.Smtp.Test.csproj", "{5B187E80-B058-4A12-9436-6667590FCDA6}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Novartment.BaseNet46", "Novartment.BaseNet46\Novartment.BaseNet46.csproj", "{DB02CE76-2DE7-4706-8959-FC287CCB7332}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Novartment.BaseWindows", "Novartment.BaseWindows\Novartment.BaseWindows.csproj", "{DB02CE76-2DE7-4706-8959-FC287CCB7332}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Novartment.BaseNet46.Test", "Novartment.BaseNet46.Test\Novartment.BaseNet46.Test.csproj", "{BA247AA9-0409-4A7B-913E-38C8ACB876A6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Novartment.BaseWindows.Test", "Novartment.BaseWindows.Test\Novartment.BaseWindows.Test.csproj", "{BA247AA9-0409-4A7B-913E-38C8ACB876A6}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Novartment.Base.Sample", "Novartment.Base.Sample\Novartment.Base.Sample.csproj", "{5AA8C329-697C-47F7-A8B8-FAE5C8B89018}"
 EndProject

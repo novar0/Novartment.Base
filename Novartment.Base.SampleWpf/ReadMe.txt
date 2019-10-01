@@ -41,7 +41,7 @@ RESX-файлы должны иметь Build Action = Embedded Resource
 
 в декларации окна должна быть ссылка на библиотеку и указание умолчального RESX-файла чтобы использовать краткую форму локализации
 <Window
-	xmlns:bcl="clr-namespace:Novartment.Base.UI.Wpf;assembly=Novartment.BaseNet46"
+	xmlns:bcl="clr-namespace:Novartment.Base.UI.Wpf;assembly=Novartment.BaseWindows"
 	bcl:ResxExtension.DefaultResxName="Novartment.Base.SampleWpf.View.MainWindow"
 
 2.1 локализация надписей
