@@ -18,7 +18,7 @@ namespace Novartment.Base.Text
 	/// Содержит тип, позицию и количество знаков, относящиеся к отдельному токену.
 	/// </summary>
 	[DebuggerDisplay ("{TokenType}: {Position}...{Position+Length}")]
-	public struct StructuredHeaderFieldLexicalToken
+	public readonly ref struct StructuredHeaderFieldLexicalToken
 	{
 		/// <summary>
 		/// Инициализирует новый экземпляр класса StructuredHeaderFieldLexicalToken с указанным типом, позицией и количеством знаков.
@@ -48,22 +48,22 @@ namespace Novartment.Base.Text
 		/// <summary>
 		/// Получает тип токена.
 		/// </summary>
-		public StructuredHeaderFieldLexicalTokenType TokenType { get; }
+		public readonly StructuredHeaderFieldLexicalTokenType TokenType { get; }
 
 		/// <summary>
 		/// Получает начальную позицию токена.
 		/// </summary>
-		public int Position { get; }
+		public readonly int Position { get; }
 
 		/// <summary>
 		/// Получает количество знаков токена.
 		/// </summary>
-		public int Length { get; }
+		public readonly int Length { get; }
 
 		/// <summary>
 		/// Получает признак валидности токена.
 		/// </summary>
-		public bool IsValid => this.TokenType != StructuredHeaderFieldLexicalTokenType.Unspecified;
+		public readonly bool IsValid => this.TokenType != StructuredHeaderFieldLexicalTokenType.Unspecified;
 
 		/// <summary>
 		/// Создаёт токен структурированного значения типа RFC 822 'atom' из его исходного ASCII-строкового представления.

@@ -351,7 +351,7 @@ namespace Novartment.Base.Collections.Immutable
 			return array.Length;
 		}
 
-		internal struct ArraySegmentLoopedEnumerator : IEnumerator<T>, IDisposable, IEnumerator
+		private struct ArraySegmentLoopedEnumerator : IEnumerator<T>, IDisposable, IEnumerator
 		{
 			private readonly LoopedArraySegment<T> _data;
 			private int _index;

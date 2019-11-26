@@ -986,7 +986,7 @@ namespace Novartment.Base.UI.Wpf
 			}
 		}
 
-		internal struct ComparerByIndexes :
+		internal readonly struct ComparerByIndexes :
 			IComparer<int>,
 			IComparer
 		{

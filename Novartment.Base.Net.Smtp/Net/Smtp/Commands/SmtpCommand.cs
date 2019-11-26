@@ -29,21 +29,15 @@ namespace Novartment.Base.Net.Smtp
 		public override string ToString ()
 		{
 			// остальные команды сами переопределяют метод ToString()
-			switch (this.CommandType)
+			return this.CommandType switch
 			{
-				case SmtpCommandType.Data:
-					return "DATA\r\n";
-				case SmtpCommandType.Rset:
-					return "RSET\r\n";
-				case SmtpCommandType.Noop:
-					return "NOOP\r\n";
-				case SmtpCommandType.Quit:
-					return "QUIT\r\n";
-				case SmtpCommandType.StartTls:
-					return "STARTTLS\r\n";
-			}
-
-			throw new InvalidOperationException ("Command's string representation undefined.");
+				SmtpCommandType.Data => "DATA\r\n",
+				SmtpCommandType.Rset => "RSET\r\n",
+				SmtpCommandType.Noop => "NOOP\r\n",
+				SmtpCommandType.Quit => "QUIT\r\n",
+				SmtpCommandType.StartTls => "STARTTLS\r\n",
+				_ => throw new InvalidOperationException ("Command's string representation undefined."),
+			};
 		}
 
 		// Разбор синтаксиса. Никаких исключений. Если что не так, возвращает SmtpInvalidSyntaxCommand.
@@ -58,50 +52,22 @@ namespace Novartment.Base.Net.Smtp
 			// делаем терпимый к отклонениям от стандарта разбор
 			var pos = 0;
 			var commandType = SmtpCommandTypeHelper.Parse (source, ref pos);
-			SmtpCommand result;
-			switch (commandType)
+			var result = commandType switch
 			{
-				case SmtpCommandType.Data: // data = "DATA" CRLF
-					result = CachedCmdData;
-					break;
-				case SmtpCommandType.Noop: // noop = "NOOP" [ SP String ] CRLF
-					result = CachedCmdNoop;
-					break;
-				case SmtpCommandType.Quit: // quit = "QUIT" CRLF
-					result = CachedCmdQuit;
-					break;
-				case SmtpCommandType.Rset: // rset = "RSET" CRLF
-					result = CachedCmdRset;
-					break;
-				case SmtpCommandType.StartTls:
-					result = CachedCmdStartTls;
-					break;
-				case SmtpCommandType.Vrfy:
-					result = SmtpVrfyCommand.Parse (source.Slice (pos));
-					break;
-				case SmtpCommandType.Ehlo:
-					result = SmtpEhloCommand.Parse (source.Slice (pos));
-					break;
-				case SmtpCommandType.Helo:
-					result = SmtpHeloCommand.Parse (source.Slice (pos));
-					break;
-				case SmtpCommandType.MailFrom:
-					result = SmtpMailFromCommand.Parse (source.Slice (pos));
-					break;
-				case SmtpCommandType.RcptTo:
-					result = SmtpRcptToCommand.Parse (source.Slice (pos));
-					break;
-				case SmtpCommandType.Bdat:
-					result = SmtpBdatCommand.Parse (source.Slice (pos));
-					break;
-				case SmtpCommandType.Auth:
-					result = SmtpAuthCommand.Parse (source.Slice (pos));
-					break;
-				default:
-					result = CachedCmdUnknown;
-					break;
-			}
-
+				SmtpCommandType.Data => CachedCmdData,
+				SmtpCommandType.Noop => CachedCmdNoop,
+				SmtpCommandType.Quit => CachedCmdQuit,
+				SmtpCommandType.Rset => CachedCmdRset,
+				SmtpCommandType.StartTls => CachedCmdStartTls,
+				SmtpCommandType.Vrfy => SmtpVrfyCommand.Parse (source.Slice (pos)),
+				SmtpCommandType.Ehlo => SmtpEhloCommand.Parse (source.Slice (pos)),
+				SmtpCommandType.Helo => SmtpHeloCommand.Parse (source.Slice (pos)),
+				SmtpCommandType.MailFrom => SmtpMailFromCommand.Parse (source.Slice (pos)),
+				SmtpCommandType.RcptTo => SmtpRcptToCommand.Parse (source.Slice (pos)),
+				SmtpCommandType.Bdat => SmtpBdatCommand.Parse (source.Slice (pos)),
+				SmtpCommandType.Auth => SmtpAuthCommand.Parse (source.Slice (pos)),
+				_ => CachedCmdUnknown,
+			};
 			return result;
 		}
 	}

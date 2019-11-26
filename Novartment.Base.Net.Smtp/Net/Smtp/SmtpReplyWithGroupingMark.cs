@@ -1,6 +1,6 @@
 ﻿namespace Novartment.Base.Net.Smtp
 {
-	internal struct SmtpReplyWithGroupingMark
+	internal readonly struct SmtpReplyWithGroupingMark
 	{
 		internal SmtpReplyWithGroupingMark (SmtpReply reply, bool canBeGrouped)
 		{

@@ -165,28 +165,22 @@ namespace Novartment.Base.Net.Smtp
 
 		private static string GetHashAlgorithmName (HashAlgorithmType hashAlgorithmType)
 		{
-			switch ((int)hashAlgorithmType)
+			return ((int)hashAlgorithmType) switch
 			{
-				case 32780:
-					return "SHA256";
-				case 32781:
-					return "SHA384";
-				case 32782:
-					return "SHA512";
-				default:
-					return hashAlgorithmType.ToString ();
-			}
+				32780 => "SHA256",
+				32781 => "SHA384",
+				32782 => "SHA512",
+				_ => hashAlgorithmType.ToString (),
+			};
 		}
 
 		private static string GetExchangeAlgorithmName (ExchangeAlgorithmType exchangeAlgorithmType)
 		{
-			switch ((int)exchangeAlgorithmType)
+			return ((int)exchangeAlgorithmType) switch
 			{
-				case 44550:
-					return "ECDH_Ephemeral";
-				default:
-					return exchangeAlgorithmType.ToString ();
-			}
+				44550 => "ECDH_Ephemeral",
+				_ => exchangeAlgorithmType.ToString (),
+			};
 		}
 
 		private SmtpCommand GetCommandFromReaderBuffer (SmtpCommand.ExpectedInputType expectedInputType)

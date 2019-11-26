@@ -43,7 +43,7 @@ namespace Novartment.Base
 	/// <summary>
 	/// Баланс операции кодирования в виде количества использованных и произведённых байтов.
 	/// </summary>
-	public struct EncodingBalance
+	public readonly struct EncodingBalance
 #pragma warning restore CA1815 // Override equals and operator equals on value types
 	{
 		/// <summary>
@@ -61,19 +61,19 @@ namespace Novartment.Base
 		/// <summary>
 		/// Получает количество байтов, произведённых в результате кодирования.
 		/// </summary>
-		public int BytesProduced { get; }
+		public readonly int BytesProduced { get; }
 
 		/// <summary>
 		/// Получает количество байтов, использованных при кодировании.
 		/// </summary>
-		public int BytesConsumed { get; }
+		public readonly int BytesConsumed { get; }
 
 		/// <summary>
 		/// Деконструирует данные.
 		/// </summary>
 		/// <param name="bytesProduced">Получает количество байтов, произведённых в результате кодирования.</param>
 		/// <param name="bytesConsumed">Получает количество байтов, использованных при кодировании.</param>
-		public void Deconstruct (out int bytesProduced, out int bytesConsumed)
+		public readonly void Deconstruct (out int bytesProduced, out int bytesConsumed)
 		{
 			bytesProduced = this.BytesProduced;
 			bytesConsumed = this.BytesConsumed;

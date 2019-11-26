@@ -56,20 +56,18 @@ namespace Novartment.Base.Net.Smtp
 			// Посредником/медиатором служит канал BufferedChannel.
 			async Task OriginateTransactionStateMachine ()
 			{
-				using (var transactionHandler = transactionHandlerFactory.Invoke (message.TransferEncoding))
+				using var transactionHandler = transactionHandlerFactory.Invoke (message.TransferEncoding);
+				var returnPath = (message.Originators.Count > 0) ? message.Originators[0] : null;
+				await transactionHandler.StartAsync (returnPath, cancellationToken).ConfigureAwait (false);
+				foreach (var recipient in recipients)
 				{
-					var returnPath = (message.Originators.Count > 0) ? message.Originators[0] : null;
-					await transactionHandler.StartAsync (returnPath, cancellationToken).ConfigureAwait (false);
-					foreach (var recipient in recipients)
-					{
-						await transactionHandler.TryAddRecipientAsync (recipient, cancellationToken).ConfigureAwait (false);
-					}
-
-					var channel = new BufferedChannel (new byte[8192]); // TcpClient.SendBufferSize default value is 8192 bytes
-					var writeTask = WriteToChannelAsync (message, channel, cancellationToken);
-					var readTask = ReadFromChannelAsync (transactionHandler, channel, cancellationToken);
-					await Task.WhenAll (writeTask, readTask).ConfigureAwait (false);
+					await transactionHandler.TryAddRecipientAsync (recipient, cancellationToken).ConfigureAwait (false);
 				}
+
+				var channel = new BufferedChannel (new byte[8192]); // TcpClient.SendBufferSize default value is 8192 bytes
+				var writeTask = WriteToChannelAsync (message, channel, cancellationToken);
+				var readTask = ReadFromChannelAsync (transactionHandler, channel, cancellationToken);
+				await Task.WhenAll (writeTask, readTask).ConfigureAwait (false);
 			}
 		}
 

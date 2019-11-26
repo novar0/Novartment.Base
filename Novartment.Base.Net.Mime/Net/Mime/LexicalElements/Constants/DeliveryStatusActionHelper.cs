@@ -12,16 +12,15 @@ namespace Novartment.Base.Net.Mime
 		/// <returns>String name of DeliveryStatusAction enumeration value.</returns>
 		internal static string GetName (this DeliveryAttemptResult value)
 		{
-			switch (value)
+			return value switch
 			{
-				case DeliveryAttemptResult.Failed: return DeliveryStatusActionNames.Failed;
-				case DeliveryAttemptResult.Delayed: return DeliveryStatusActionNames.Delayed;
-				case DeliveryAttemptResult.Delivered: return DeliveryStatusActionNames.Delivered;
-				case DeliveryAttemptResult.Relayed: return DeliveryStatusActionNames.Relayed;
-				case DeliveryAttemptResult.Expanded: return DeliveryStatusActionNames.Expanded;
-				default:
-					throw new NotSupportedException ("Unsupported value of Delivery Status Action: '" + value + "'.");
-			}
+				DeliveryAttemptResult.Failed => DeliveryStatusActionNames.Failed,
+				DeliveryAttemptResult.Delayed => DeliveryStatusActionNames.Delayed,
+				DeliveryAttemptResult.Delivered => DeliveryStatusActionNames.Delivered,
+				DeliveryAttemptResult.Relayed => DeliveryStatusActionNames.Relayed,
+				DeliveryAttemptResult.Expanded => DeliveryStatusActionNames.Expanded,
+				_ => throw new NotSupportedException ("Unsupported value of Delivery Status Action: '" + value + "'."),
+			};
 		}
 
 		/// <summary>

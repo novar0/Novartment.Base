@@ -231,17 +231,15 @@ namespace Novartment.Base.UI.Wpf
 			private void OnQueryContinueDrag (object sender, QueryContinueDragEventArgs e)
 			{
 				var handler = _handler;
-				switch ((handler != null) ?
+				var action = (handler != null) ?
 					handler.QueryContinueDrag (e.EscapePressed, (BclDragDropKeyStates)e.KeyStates) :
-					BclDragDropAction.Cancel)
+					BclDragDropAction.Cancel;
+				e.Action = action switch
 				{
-					case BclDragDropAction.Cancel:
-						e.Action = WindowsDragAction.Cancel; break;
-					case BclDragDropAction.Drop:
-						e.Action = WindowsDragAction.Drop; break;
-					default:
-						e.Action = WindowsDragAction.Continue; break;
-				}
+					BclDragDropAction.Cancel => WindowsDragAction.Cancel,
+					BclDragDropAction.Drop => WindowsDragAction.Drop,
+					_ => WindowsDragAction.Continue,
+				};
 			}
 		}
 	}

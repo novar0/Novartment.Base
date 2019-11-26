@@ -51,24 +51,22 @@ namespace Novartment.Base.SampleWpf
 					return (int)ProcessExitCode.AlreadyRunningInstanceDetected;
 				}
 
-				using (var exitProgramCTS = new CancellationTokenSource ())
+				using var exitProgramCTS = new CancellationTokenSource ();
+				int result = (int)ProcessExitCode.Ok;
+				var app = CompositionRoot.ComposeApplication ();
+
+				// сохраняем путь к исходникам проекта чтобы исключать его в трассировке стэка
+				if (!string.IsNullOrWhiteSpace (sourceFileName))
 				{
-					int result = (int)ProcessExitCode.Ok;
-					var app = CompositionRoot.ComposeApplication ();
-
-					// сохраняем путь к исходникам проекта чтобы исключать его в трассировке стэка
-					if (!string.IsNullOrWhiteSpace (sourceFileName))
-					{
-						app.SourceDirectory = Path.GetDirectoryName (sourceFileName);
-					}
-
-					// запуск бесконечного ожидания попыток соединения (команд проявить главное окно)
-					ExecuteOnSignal (listener, app.MakeVisibleAndScheduleBringToFront, exitProgramCTS.Token);
-
-					result = (int)app.Run ();
-					exitProgramCTS.Cancel ();
-					return result;
+					app.SourceDirectory = Path.GetDirectoryName (sourceFileName);
 				}
+
+				// запуск бесконечного ожидания попыток соединения (команд проявить главное окно)
+				ExecuteOnSignal (listener, app.MakeVisibleAndScheduleBringToFront, exitProgramCTS.Token);
+
+				result = (int)app.Run ();
+				exitProgramCTS.Cancel ();
+				return result;
 			}
 		}
 

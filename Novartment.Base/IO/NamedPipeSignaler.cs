@@ -45,10 +45,8 @@ namespace Novartment.Base.IO
 
 			try
 			{
-				using (var pipeServer = new NamedPipeServerStream (_pipeName, PipeDirection.In, 1, PipeTransmissionMode.Byte, PipeOptions.Asynchronous))
-				{
-					await pipeServer.WaitForConnectionAsync (cancellationToken).ConfigureAwait (false);
-				}
+				using var pipeServer = new NamedPipeServerStream (_pipeName, PipeDirection.In, 1, PipeTransmissionMode.Byte, PipeOptions.Asynchronous);
+				await pipeServer.WaitForConnectionAsync (cancellationToken).ConfigureAwait (false);
 			}
 			finally
 			{
@@ -62,11 +60,9 @@ namespace Novartment.Base.IO
 		/// <returns>Задача, представляющая операцию.</returns>
 		public async Task SendSignalAsync (int millisecondsTimeout, CancellationToken cancellationToken = default)
 		{
-			using (var client = new NamedPipeClientStream (".", _pipeName, PipeDirection.Out))
-			{
-				// это послужит сигналом серверу, ждущему подключения
-				await client.ConnectAsync (millisecondsTimeout, cancellationToken).ConfigureAwait (false);
-			}
+			using var client = new NamedPipeClientStream (".", _pipeName, PipeDirection.Out);
+			// это послужит сигналом серверу, ждущему подключения
+			await client.ConnectAsync (millisecondsTimeout, cancellationToken).ConfigureAwait (false);
 		}
 	}
 }

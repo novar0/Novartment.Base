@@ -5,7 +5,7 @@ using Novartment.Base.Text;
 
 namespace Novartment.Base.Net.Mime
 {
-	internal struct HeaderFieldBodyParameterPart
+	internal readonly ref struct HeaderFieldBodyParameterPart
 	{
 		private readonly StructuredHeaderFieldLexicalToken _value;
 		private readonly bool _isExtendedValue;
@@ -30,11 +30,11 @@ namespace Novartment.Base.Net.Mime
 			_isExtendedValue = true;
 		}
 
-		internal StructuredHeaderFieldLexicalToken Name { get; }
+		internal readonly StructuredHeaderFieldLexicalToken Name { get; }
 
-		internal bool IsFirstSection { get; }
+		internal readonly bool IsFirstSection { get; }
 
-		internal string Encoding { get; }
+		internal readonly string Encoding { get; }
 
 		internal static HeaderFieldBodyParameterPart Parse (ReadOnlySpan<char> source, ref int parserPos)
 		{

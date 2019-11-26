@@ -5,7 +5,7 @@ namespace Novartment.Base.Reflection
 	/// <summary>
 	/// Данные об аргументе конструктора атрибута.
 	/// </summary>
-	public struct AttributeArgument :
+	public readonly struct AttributeArgument :
 		IEquatable<AttributeArgument>
 	{
 		/// <summary>
@@ -22,12 +22,12 @@ namespace Novartment.Base.Reflection
 		/// <summary>
 		/// Получает имя аргумента.
 		/// </summary>
-		public string Name { get; }
+		public readonly string Name { get; }
 
 		/// <summary>
 		/// Получает значение аргумента.
 		/// </summary>
-		public object Value { get; }
+		public readonly object Value { get; }
 
 		/// <summary>
 		/// Определяет равенство двух указанных объектов.
@@ -56,7 +56,7 @@ namespace Novartment.Base.Reflection
 		/// </summary>
 		/// <param name="name">Получает имя аргумента.</param>
 		/// <param name="value">Получает значение аргумента.</param>
-		public void Deconstruct (out string name, out object value)
+		public readonly void Deconstruct (out string name, out object value)
 		{
 			name = this.Name;
 			value = this.Value;
@@ -66,7 +66,7 @@ namespace Novartment.Base.Reflection
 		/// Преобразовывает значение объекта в эквивалентное ему строковое представление.
 		/// </summary>
 		/// <returns>Строковое представление значения объекта.</returns>
-		public override string ToString ()
+		public readonly override string ToString ()
 		{
 			return FormattableString.Invariant ($"Name: {this.Name ?? "<none>"}, Value: {this.Value?.ToString () ?? "<null>"}");
 		}
@@ -75,7 +75,7 @@ namespace Novartment.Base.Reflection
 		/// Вычисляет хэш-функцию объекта.
 		/// </summary>
 		/// <returns>Хэш-код для текущего объекта.</returns>
-		public override int GetHashCode ()
+		public readonly override int GetHashCode ()
 		{
 #if NETSTANDARD2_1
 			return this.Name?.GetHashCode (StringComparison.Ordinal) ?? 0 ^ this.Value?.GetHashCode () ?? 0;

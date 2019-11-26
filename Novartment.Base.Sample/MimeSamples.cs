@@ -16,23 +16,19 @@ namespace Novartment.Base.Sample
 			Encoding.RegisterProvider (CodePagesEncodingProvider.Instance);
 
 			// асинхронно сохраняем вложение из полученного сообщения
-			using (var fs = new FileStream (@".\Pickup\test1.eml", FileMode.Open, FileAccess.Read))
+			using var fs = new FileStream (@".\Pickup\test1.eml", FileMode.Open, FileAccess.Read);
+			var message = new MailMessage ();
+			await message.LoadAsync (fs.AsBufferedSource (new byte[1024]), EntityBodyFactory.Create, cancellationToken).ConfigureAwait (false);
+			var subj = message.Subject;
+			var parts = message.GetChildContentParts (true, false);
+			var text = ((TextEntityBody)parts[0].Body).GetText ();
+			var html = ((TextEntityBody)parts[1].Body).GetText ();
+			foreach (var attObj in message.GetAttachments (true))
 			{
-				var message = new MailMessage ();
-				await message.LoadAsync (fs.AsBufferedSource (new byte[1024]), EntityBodyFactory.Create, cancellationToken).ConfigureAwait (false);
-				var subj = message.Subject;
-				var parts = message.GetChildContentParts (true, false);
-				var text = ((TextEntityBody)parts[0].Body).GetText ();
-				var html = ((TextEntityBody)parts[1].Body).GetText ();
-				foreach (var attObj in message.GetAttachments (true))
-				{
-					string fileName = "async_" + attObj.FileName;
-					var dataSrc = (attObj.Body as IDiscreteEntityBody).GetDataSource ();
-					using (var destStream = new FileStream (fileName, FileMode.Create, FileAccess.Write))
-					{
-						await dataSrc.WriteToAsync (destStream.AsBinaryDestination (), cancellationToken).ConfigureAwait (false);
-					}
-				}
+				string fileName = "async_" + attObj.FileName;
+				var dataSrc = (attObj.Body as IDiscreteEntityBody).GetDataSource ();
+				using var destStream = new FileStream (fileName, FileMode.Create, FileAccess.Write);
+				await dataSrc.WriteToAsync (destStream.AsBinaryDestination (), cancellationToken).ConfigureAwait (false);
 			}
 		}
 
@@ -80,10 +76,8 @@ namespace Novartment.Base.Sample
 			attachment.DispositionType = ContentDispositionType.Attachment;
 			attachment.Size = data.Length;
 
-			using (var stream = new FileStream (@"composed2_async.eml", FileMode.Create, FileAccess.Write))
-			{
-				await msg.SaveAsync (stream.AsBinaryDestination (), cancellationToken).ConfigureAwait (false);
-			}
+			using var stream = new FileStream (@"composed2_async.eml", FileMode.Create, FileAccess.Write);
+			await msg.SaveAsync (stream.AsBinaryDestination (), cancellationToken).ConfigureAwait (false);
 		}
 
 		// создаём ответ на сообщение
@@ -101,10 +95,8 @@ namespace Novartment.Base.Sample
 			reply.From.Add ("noone@mailinator.com", "Иван Сидоров");
 			reply.AddTextPart ("в ответ на ваше сообщение", Encoding.UTF8, "plain", ContentTransferEncoding.EightBit);
 
-			using (var stream = new FileStream (@"composed3.eml", FileMode.Create, FileAccess.Write))
-			{
-				await reply.SaveAsync (stream.AsBinaryDestination (), cancellationToken).ConfigureAwait (false);
-			}
+			using var stream = new FileStream (@"composed3.eml", FileMode.Create, FileAccess.Write);
+			await reply.SaveAsync (stream.AsBinaryDestination (), cancellationToken).ConfigureAwait (false);
 		}
 	}
 }

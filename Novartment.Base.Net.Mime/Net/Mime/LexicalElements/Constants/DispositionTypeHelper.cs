@@ -12,14 +12,13 @@ namespace Novartment.Base.Net.Mime
 		/// <returns>String name of ContentDispositionType enumeration value.</returns>
 		internal static string GetName (this ContentDispositionType value)
 		{
-			switch (value)
+			return value switch
 			{
-				case ContentDispositionType.Inline: return DispositionTypeNames.Inline;
-				case ContentDispositionType.Attachment: return DispositionTypeNames.Attachment;
-				case ContentDispositionType.FormData: return DispositionTypeNames.FormData;
-				default:
-					throw new NotSupportedException (FormattableString.Invariant ($"Unsupported value of DispositionType: '{value}'."));
-			}
+				ContentDispositionType.Inline => DispositionTypeNames.Inline,
+				ContentDispositionType.Attachment => DispositionTypeNames.Attachment,
+				ContentDispositionType.FormData => DispositionTypeNames.FormData,
+				_ => throw new NotSupportedException (FormattableString.Invariant ($"Unsupported value of DispositionType: '{value}'.")),
+			};
 		}
 
 		/// <summary>

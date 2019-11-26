@@ -64,7 +64,7 @@ namespace Novartment.Base.UI.Wpf
 					var startPointer = run.ContentStart.GetPositionAtOffset (match.Index);
 					var endPointer = startPointer.GetPositionAtOffset (match.Index + match.Length);
 					var url = match.Value;
-					var linkData = new LinkData () { Start = startPointer, Finish = endPointer, Text = url };
+					var linkData = new LinkData (startPointer, endPointer, url);
 					result.Add (linkData);
 				}
 			}
@@ -72,11 +72,18 @@ namespace Novartment.Base.UI.Wpf
 			return result;
 		}
 
-		internal struct LinkData
+		internal readonly struct LinkData
 		{
-			internal TextPointer Start;
-			internal TextPointer Finish;
-			internal string Text;
+			internal TextPointer Start { get; }
+			internal TextPointer Finish { get; }
+			internal string Text { get; }
+
+			public LinkData (TextPointer start, TextPointer finish, string text)
+			{
+				this.Start = start;
+				this.Finish = finish;
+				this.Text = text;
+			}
 		}
 	}
 }

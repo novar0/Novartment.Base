@@ -946,7 +946,7 @@ namespace Novartment.Base.Collections
 			}
 		}
 
-		internal struct SimpleListEnumerator : IEnumerator<T>, IDisposable, IEnumerator
+		private struct SimpleListEnumerator : IEnumerator<T>, IDisposable, IEnumerator
 		{
 			private readonly ArrayList<T> _data;
 			private int _index;

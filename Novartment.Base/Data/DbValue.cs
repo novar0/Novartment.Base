@@ -6,7 +6,7 @@ namespace Novartment.Base.Data
 	/// <summary>
 	/// Значение и его тип для обмена с БД.
 	/// </summary>
-	public struct DbValue
+	public readonly struct DbValue
 #pragma warning restore CA1815 // Override equals and operator equals on value types
 	{
 		/// <summary>
@@ -23,19 +23,19 @@ namespace Novartment.Base.Data
 		/// <summary>
 		/// Значение.
 		/// </summary>
-		public object Value { get; }
+		public readonly object Value { get; }
 
 		/// <summary>
 		/// Тип значения.
 		/// </summary>
-		public DbType DbType { get; }
+		public readonly DbType DbType { get; }
 
 		/// <summary>
 		/// Деконструирует данные.
 		/// </summary>
 		/// <param name="value">Получает значение.</param>
 		/// <param name="dbType">Получает тип значения.</param>
-		public void Deconstruct (out object value, out DbType dbType)
+		public readonly void Deconstruct (out object value, out DbType dbType)
 		{
 			value = this.Value;
 			dbType = this.DbType;

@@ -12,14 +12,13 @@ namespace Novartment.Base.Net.Mime
 		/// <returns>String name of NotificationFieldValueKind enumeration value.</returns>
 		internal static string GetName (this NotificationFieldValueKind value)
 		{
-			switch (value)
+			return value switch
 			{
-				case NotificationFieldValueKind.Mailbox: return NotificationFieldValueTypeNames.Rfc822;
-				case NotificationFieldValueKind.Status: return NotificationFieldValueTypeNames.Smtp;
-				case NotificationFieldValueKind.Host: return NotificationFieldValueTypeNames.Dns;
-				default:
-					throw new NotSupportedException ("Unsupported value of NotificationFieldValueType '" + value + "'.");
-			}
+				NotificationFieldValueKind.Mailbox => NotificationFieldValueTypeNames.Rfc822,
+				NotificationFieldValueKind.Status => NotificationFieldValueTypeNames.Smtp,
+				NotificationFieldValueKind.Host => NotificationFieldValueTypeNames.Dns,
+				_ => throw new NotSupportedException ("Unsupported value of NotificationFieldValueType '" + value + "'."),
+			};
 		}
 
 		/// <summary>

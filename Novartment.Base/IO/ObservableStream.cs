@@ -340,12 +340,10 @@ namespace Novartment.Base.IO
 		/// <param name="value">Значение параметра для уведомления.</param>
 		protected void ObserversNotifyNext (FileStreamStatus value)
 		{
-			using (var enumerator = _observers.GetEnumerator ())
+			using System.Collections.Generic.IEnumerator<IObserver<FileStreamStatus>> enumerator = _observers.GetEnumerator ();
+			while (enumerator.MoveNext ())
 			{
-				while (enumerator.MoveNext ())
-				{
-					enumerator.Current.OnNext (value);
-				}
+				enumerator.Current.OnNext (value);
 			}
 		}
 

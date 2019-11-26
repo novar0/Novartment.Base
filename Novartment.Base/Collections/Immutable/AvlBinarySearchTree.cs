@@ -294,7 +294,7 @@ namespace Novartment.Base.Collections.Immutable
 		{
 			if (treeNode is AvlBinarySearchTreeNode<T>.EndNode)
 			{
-				return new ValueAndNode<T> () { Value = treeNode.Value, Node = null };
+				return new ValueAndNode<T> (treeNode.Value, null);
 			}
 
 			var intermediateNode = (AvlBinarySearchTreeNode<T>.IntermediateNode)treeNode;
@@ -302,12 +302,12 @@ namespace Novartment.Base.Collections.Immutable
 			var right = intermediateNode.RightSubtree;
 			if (left == null)
 			{
-				return new ValueAndNode<T> () { Value = intermediateNode.Value, Node = right };
+				return new ValueAndNode<T> (intermediateNode.Value, right);
 			}
 
 			var tuple = CutNode (left);
 			var newNode = CreateNode (intermediateNode.Value, tuple.Node, right);
-			return new ValueAndNode<T> () { Value = tuple.Value, Node = newNode };
+			return new ValueAndNode<T> (tuple.Value, newNode);
 		}
 
 		private static int GetCountInternal<T> (this AvlBinarySearchTreeNode<T> treeNode, int accumulator = 0)
@@ -329,10 +329,16 @@ namespace Novartment.Base.Collections.Immutable
 			}
 		}
 
-		internal struct ValueAndNode<T>
+		private readonly ref struct ValueAndNode<T>
 		{
-			internal T Value;
-			internal AvlBinarySearchTreeNode<T> Node;
+			internal T Value { get; }
+			internal AvlBinarySearchTreeNode<T> Node { get; }
+
+			public ValueAndNode (T value, AvlBinarySearchTreeNode<T> node)
+			{
+				this.Value = value;
+				this.Node = node;
+			}
 		}
 
 		internal sealed class BinarySearchTreeEnumerator<T> : IEnumerator<T>

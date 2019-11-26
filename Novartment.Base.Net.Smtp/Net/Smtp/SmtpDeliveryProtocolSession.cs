@@ -207,39 +207,24 @@ namespace Novartment.Base.Net.Smtp
 			}
 
 			// TODO: SHOULD issue response text that indicates, either implicitly or explicitly, what command the response matches.
-			switch (command.CommandType)
+			return command.CommandType switch
 			{
-				case SmtpCommandType.Helo:
-					return Task.FromResult (ProcessCommandHelo ((SmtpHeloCommand)command));
-				case SmtpCommandType.Ehlo:
-					return Task.FromResult (ProcessCommandEhlo ((SmtpEhloCommand)command));
-				case SmtpCommandType.MailFrom:
-					return ProcessCommandMailFrom ((SmtpMailFromCommand)command, cancellationToken);
-				case SmtpCommandType.RcptTo:
-					return ProcessCommandRcptTo ((SmtpRcptToCommand)command, cancellationToken);
-				case SmtpCommandType.Data:
-					return Task.FromResult (ProcessCommandData ());
-				case SmtpCommandType.Bdat:
-					return ProcessCommandBdat ((SmtpBdatCommand)command, cancellationToken);
-				case SmtpCommandType.Rset:
-					return Task.FromResult (ProcessCommandRset ());
-				case SmtpCommandType.Vrfy:
-					return Task.FromResult (ProcessCommandVrfy ());
-				case SmtpCommandType.Noop:
-					return Task.FromResult (ProcessCommandNoop ());
-				case SmtpCommandType.Quit:
-					return Task.FromResult (ProcessCommandQuit ());
-				case SmtpCommandType.ActualData:
-					return ProcessCommandActualData ((SmtpActualDataCommand)command, cancellationToken);
-				case SmtpCommandType.StartTls:
-					return Task.FromResult (ProcessCommandStartTls ());
-				case SmtpCommandType.Auth:
-					return ProcessCommandAuth ((SmtpAuthCommand)command);
-				case SmtpCommandType.SaslResponse:
-					return ProcessCommandSaslResponse ((SmtpSaslResponseCommand)command);
-				default:
-					return Task.FromResult (SmtpReply.NotImplemented.DisallowGrouping ());
-			}
+				SmtpCommandType.Helo => Task.FromResult (ProcessCommandHelo ((SmtpHeloCommand)command)),
+				SmtpCommandType.Ehlo => Task.FromResult (ProcessCommandEhlo ((SmtpEhloCommand)command)),
+				SmtpCommandType.MailFrom => ProcessCommandMailFrom ((SmtpMailFromCommand)command, cancellationToken),
+				SmtpCommandType.RcptTo => ProcessCommandRcptTo ((SmtpRcptToCommand)command, cancellationToken),
+				SmtpCommandType.Data => Task.FromResult (ProcessCommandData ()),
+				SmtpCommandType.Bdat => ProcessCommandBdat ((SmtpBdatCommand)command, cancellationToken),
+				SmtpCommandType.Rset => Task.FromResult (ProcessCommandRset ()),
+				SmtpCommandType.Vrfy => Task.FromResult (ProcessCommandVrfy ()),
+				SmtpCommandType.Noop => Task.FromResult (ProcessCommandNoop ()),
+				SmtpCommandType.Quit => Task.FromResult (ProcessCommandQuit ()),
+				SmtpCommandType.ActualData => ProcessCommandActualData ((SmtpActualDataCommand)command, cancellationToken),
+				SmtpCommandType.StartTls => Task.FromResult (ProcessCommandStartTls ()),
+				SmtpCommandType.Auth => ProcessCommandAuth ((SmtpAuthCommand)command),
+				SmtpCommandType.SaslResponse => ProcessCommandSaslResponse ((SmtpSaslResponseCommand)command),
+				_ => Task.FromResult (SmtpReply.NotImplemented.DisallowGrouping ()),
+			};
 		}
 
 		private SmtpReplyWithGroupingMark ProcessCommandRset ()

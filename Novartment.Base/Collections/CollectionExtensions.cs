@@ -630,14 +630,12 @@ namespace Novartment.Base.Collections
 					}
 					else
 					{
-						using (var enumerator = source.GetEnumerator ())
+						using var enumerator = source.GetEnumerator ();
+						var isMovedToNext = enumerator.MoveNext ();
+						if (isMovedToNext)
 						{
-							var isMovedToNext = enumerator.MoveNext ();
-							if (isMovedToNext)
-							{
-								item = enumerator.Current;
-								return true;
-							}
+							item = enumerator.Current;
+							return true;
 						}
 					}
 				}
@@ -696,18 +694,16 @@ namespace Novartment.Base.Collections
 					}
 					else
 					{
-						using (var enumerator = source.GetEnumerator ())
+						using var enumerator = source.GetEnumerator ();
+						var isMovedToNext = enumerator.MoveNext ();
+						if (isMovedToNext)
 						{
-							var isMovedToNext = enumerator.MoveNext ();
-							if (isMovedToNext)
+							do
 							{
-								do
-								{
-									item = enumerator.Current;
-								}
-								while (enumerator.MoveNext ());
-								return true;
+								item = enumerator.Current;
 							}
+							while (enumerator.MoveNext ());
+							return true;
 						}
 					}
 				}

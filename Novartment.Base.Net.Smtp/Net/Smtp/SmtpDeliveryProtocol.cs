@@ -93,56 +93,54 @@ namespace Novartment.Base.Net.Smtp
 			async Task StartAsyncStateMachine ()
 			{
 				var transport = new TcpConnectionSmtpCommandTransport (connection, _logger);
-				using (var session = new SmtpDeliveryProtocolSession (
+				using var session = new SmtpDeliveryProtocolSession (
 					transport,
 					connection.RemoteEndPoint,
 					_mailHandlerFactory,
 					connection.LocalEndPoint.HostName,
 					_securityParameters,
-					_logger))
+					_logger);
+				if (cancellationToken.CanBeCanceled)
 				{
-					if (cancellationToken.CanBeCanceled)
+					cancellationToken.ThrowIfCancellationRequested ();
+
+					// на отмену регистрируем посылку прощального ответа
+					cancellationToken.Register (session.Dispose, false);
+				}
+
+				await session.StartAsync (cancellationToken).ConfigureAwait (false);
+
+				// запускаем цикл обработки команд
+				while (true)
+				{
+					try
 					{
-						cancellationToken.ThrowIfCancellationRequested ();
-
-						// на отмену регистрируем посылку прощального ответа
-						cancellationToken.Register (session.Dispose, false);
-					}
-
-					await session.StartAsync (cancellationToken).ConfigureAwait (false);
-
-					// запускаем цикл обработки команд
-					while (true)
-					{
-						try
+						var continueProcesssing = await session.ReceiveCommandSendReplyAsync (cancellationToken).ConfigureAwait (false);
+						if (!continueProcesssing)
 						{
-							var continueProcesssing = await session.ReceiveCommandSendReplyAsync (cancellationToken).ConfigureAwait (false);
-							if (!continueProcesssing)
-							{
-								break;
-							}
+							break;
 						}
-						catch (OperationCanceledException)
+					}
+					catch (OperationCanceledException)
+					{
+						_logger?.LogWarning ($"Canceling protocol with {connection.RemoteEndPoint}.");
+						throw;
+					}
+					catch (Exception excpt)
+					{
+						// Отдельно отслеживаем запрос отмены при ObjectDisposedException.
+						// Такая комбинация означает отмену операции с объектом, не поддерживающим отмену отдельных операций.
+						if (cancellationToken.IsCancellationRequested &&
+							((excpt is ObjectDisposedException) ||
+							((excpt is IOException) && (excpt.InnerException is ObjectDisposedException))))
 						{
 							_logger?.LogWarning ($"Canceling protocol with {connection.RemoteEndPoint}.");
-							throw;
+							cancellationToken.ThrowIfCancellationRequested ();
 						}
-						catch (Exception excpt)
-						{
-							// Отдельно отслеживаем запрос отмены при ObjectDisposedException.
-							// Такая комбинация означает отмену операции с объектом, не поддерживающим отмену отдельных операций.
-							if (cancellationToken.IsCancellationRequested &&
-								((excpt is ObjectDisposedException) ||
-								((excpt is IOException) && (excpt.InnerException is ObjectDisposedException))))
-							{
-								_logger?.LogWarning ($"Canceling protocol with {connection.RemoteEndPoint}.");
-								cancellationToken.ThrowIfCancellationRequested ();
-							}
 
-							_logger?.LogWarning (
-								$"Aborting protocol with {connection.RemoteEndPoint}. {ExceptionDescriptionProvider.GetDescription (excpt)}");
-							throw;
-						}
+						_logger?.LogWarning (
+							$"Aborting protocol with {connection.RemoteEndPoint}. {ExceptionDescriptionProvider.GetDescription (excpt)}");
+						throw;
 					}
 				}
 			}

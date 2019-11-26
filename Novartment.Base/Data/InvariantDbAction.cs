@@ -162,31 +162,29 @@ namespace Novartment.Base.Data
 				return null;
 			}
 
-			using (var dbCommand = _connectionManager.CreateCommand (_keyParameters.Concat (_parameters).Concat (_plusParameters), false))
+			using var dbCommand = _connectionManager.CreateCommand (_keyParameters.Concat (_parameters).Concat (_plusParameters), false);
+			dbCommand.CommandTimeout = this.CommandTimeout;
+			var columnList = string.Join (
+				",",
+				_keyParameters.Select (param => _connectionManager.FormatObjectName (param.Name))
+				.Concat (_parameters.Select (param => _connectionManager.FormatObjectName (param.Name)))
+				.Concat (_plusParameters.Select (param => _connectionManager.FormatObjectName (param.Name))));
+
+			var valueList = string.Join (
+				",",
+				_keyParameters.Select (param => param.Placeholder)
+				.Concat (_parameters.Select (param => param.Placeholder))
+				.Concat (_plusParameters.Select (param => param.Placeholder)));
+
+			var cmdText = "INSERT INTO " + _connectionManager.FormatObjectName (tableName, schemaName) + " (" + columnList + ") VALUES (" + valueList + ")";
+			if ((_logger != null) && _logger.IsEnabled (LogLevel.Trace))
 			{
-				dbCommand.CommandTimeout = this.CommandTimeout;
-				var columnList = string.Join (
-					",",
-					_keyParameters.Select (param => _connectionManager.FormatObjectName (param.Name))
-					.Concat (_parameters.Select (param => _connectionManager.FormatObjectName (param.Name)))
-					.Concat (_plusParameters.Select (param => _connectionManager.FormatObjectName (param.Name))));
-
-				var valueList = string.Join (
-					",",
-					_keyParameters.Select (param => param.Placeholder)
-					.Concat (_parameters.Select (param => param.Placeholder))
-					.Concat (_plusParameters.Select (param => param.Placeholder)));
-
-				var cmdText = "INSERT INTO " + _connectionManager.FormatObjectName (tableName, schemaName) + " (" + columnList + ") VALUES (" + valueList + ")";
-				if ((_logger != null) && _logger.IsEnabled (LogLevel.Trace))
-				{
-					_logger?.LogTrace (FormattableString.Invariant ($"Executing: {cmdText}"));
-				}
-
-				dbCommand.CommandText = cmdText;
-				dbCommand.ExecuteNonQuery ();
-				return _connectionManager.GetLastIdentityValue ();
+				_logger?.LogTrace (FormattableString.Invariant ($"Executing: {cmdText}"));
 			}
+
+			dbCommand.CommandText = cmdText;
+			dbCommand.ExecuteNonQuery ();
+			return _connectionManager.GetLastIdentityValue ();
 		}
 
 		/// <summary>
@@ -208,27 +206,25 @@ namespace Novartment.Base.Data
 				return;
 			}
 
-			using (var dbCommand = _connectionManager.CreateCommand (_parameters.Concat (_plusParameters).Concat (_keyParameters), false))
+			using var dbCommand = _connectionManager.CreateCommand (_parameters.Concat (_plusParameters).Concat (_keyParameters), false);
+			dbCommand.CommandTimeout = this.CommandTimeout;
+			var columnList = string.Join (
+				",",
+				_parameters.Select (param => _connectionManager.FormatObjectName (param.Name) + "=" + param.Placeholder)
+				.Concat (_plusParameters.Select (param => _connectionManager.FormatObjectName (param.Name) + "=" + _connectionManager.FormatObjectName (param.Name) + "+" + param.Placeholder)));
+
+			var keyColumnList = string.Join (
+				" AND ",
+				_keyParameters.Select (param => _connectionManager.FormatObjectName (param.Name) + "=" + param.Placeholder));
+
+			var cmdText = "UPDATE " + _connectionManager.FormatObjectName (tableName, schemaName) + " SET " + columnList + " WHERE " + keyColumnList;
+			if ((_logger != null) && _logger.IsEnabled (LogLevel.Trace))
 			{
-				dbCommand.CommandTimeout = this.CommandTimeout;
-				var columnList = string.Join (
-					",",
-					_parameters.Select (param => _connectionManager.FormatObjectName (param.Name) + "=" + param.Placeholder)
-					.Concat (_plusParameters.Select (param => _connectionManager.FormatObjectName (param.Name) + "=" + _connectionManager.FormatObjectName (param.Name) + "+" + param.Placeholder)));
-
-				var keyColumnList = string.Join (
-					" AND ",
-					_keyParameters.Select (param => _connectionManager.FormatObjectName (param.Name) + "=" + param.Placeholder));
-
-				var cmdText = "UPDATE " + _connectionManager.FormatObjectName (tableName, schemaName) + " SET " + columnList + " WHERE " + keyColumnList;
-				if ((_logger != null) && _logger.IsEnabled (LogLevel.Trace))
-				{
-					_logger?.LogTrace (FormattableString.Invariant ($"Executing: {cmdText}"));
-				}
-
-				dbCommand.CommandText = cmdText;
-				dbCommand.ExecuteNonQuery ();
+				_logger?.LogTrace (FormattableString.Invariant ($"Executing: {cmdText}"));
 			}
+
+			dbCommand.CommandText = cmdText;
+			dbCommand.ExecuteNonQuery ();
 		}
 
 		/// <summary>
@@ -280,22 +276,20 @@ namespace Novartment.Base.Data
 
 			Contract.EndContractBlock ();
 
-			using (var dbCommand = _connectionManager.CreateCommand (_keyParameters, false))
+			using var dbCommand = _connectionManager.CreateCommand (_keyParameters, false);
+			dbCommand.CommandTimeout = this.CommandTimeout;
+			var columnList = string.Join (
+				" AND ",
+				_keyParameters.Select (param => _connectionManager.FormatObjectName (param.Name) + "=" + param.Placeholder));
+
+			var cmdText = "SELECT COUNT(*) FROM " + _connectionManager.FormatObjectName (tableName, schemaName) + " WHERE " + columnList;
+			if ((_logger != null) && _logger.IsEnabled (LogLevel.Trace))
 			{
-				dbCommand.CommandTimeout = this.CommandTimeout;
-				var columnList = string.Join (
-					" AND ",
-					_keyParameters.Select (param => _connectionManager.FormatObjectName (param.Name) + "=" + param.Placeholder));
-
-				var cmdText = "SELECT COUNT(*) FROM " + _connectionManager.FormatObjectName (tableName, schemaName) + " WHERE " + columnList;
-				if ((_logger != null) && _logger.IsEnabled (LogLevel.Trace))
-				{
-					_logger?.LogTrace (FormattableString.Invariant ($"Executing: {cmdText}"));
-				}
-
-				dbCommand.CommandText = cmdText;
-				return dbCommand.ExecuteScalar ();
+				_logger?.LogTrace (FormattableString.Invariant ($"Executing: {cmdText}"));
 			}
+
+			dbCommand.CommandText = cmdText;
+			return dbCommand.ExecuteScalar ();
 		}
 
 		/// <summary>
@@ -317,22 +311,20 @@ namespace Novartment.Base.Data
 				return;
 			}
 
-			using (var dbCommand = _connectionManager.CreateCommand (_keyParameters, false))
+			using var dbCommand = _connectionManager.CreateCommand (_keyParameters, false);
+			dbCommand.CommandTimeout = this.CommandTimeout;
+			var columnList = string.Join (
+				" AND ",
+				_keyParameters.Select (param => _connectionManager.FormatObjectName (param.Name) + "=" + param.Placeholder));
+
+			var cmdText = "DELETE " + _connectionManager.FormatObjectName (tableName, schemaName) + " WHERE " + columnList;
+			if ((_logger != null) && _logger.IsEnabled (LogLevel.Trace))
 			{
-				dbCommand.CommandTimeout = this.CommandTimeout;
-				var columnList = string.Join (
-					" AND ",
-					_keyParameters.Select (param => _connectionManager.FormatObjectName (param.Name) + "=" + param.Placeholder));
-
-				var cmdText = "DELETE " + _connectionManager.FormatObjectName (tableName, schemaName) + " WHERE " + columnList;
-				if ((_logger != null) && _logger.IsEnabled (LogLevel.Trace))
-				{
-					_logger?.LogTrace (FormattableString.Invariant ($"Executing: {cmdText}"));
-				}
-
-				dbCommand.CommandText = cmdText;
-				dbCommand.ExecuteNonQuery ();
+				_logger?.LogTrace (FormattableString.Invariant ($"Executing: {cmdText}"));
 			}
+
+			dbCommand.CommandText = cmdText;
+			dbCommand.ExecuteNonQuery ();
 		}
 
 		/// <summary>
@@ -350,13 +342,11 @@ namespace Novartment.Base.Data
 			Contract.EndContractBlock ();
 
 			_logger?.LogTrace (FormattableString.Invariant ($"Executing procedure: {procedureName}"));
-			using (var dbCommand = _connectionManager.CreateCommand (_parameters, true))
-			{
-				dbCommand.CommandTimeout = this.CommandTimeout;
-				dbCommand.CommandText = _connectionManager.FormatObjectName (procedureName, schemaName);
-				dbCommand.CommandType = CommandType.StoredProcedure;
-				dbCommand.ExecuteNonQuery ();
-			}
+			using var dbCommand = _connectionManager.CreateCommand (_parameters, true);
+			dbCommand.CommandTimeout = this.CommandTimeout;
+			dbCommand.CommandText = _connectionManager.FormatObjectName (procedureName, schemaName);
+			dbCommand.CommandType = CommandType.StoredProcedure;
+			dbCommand.ExecuteNonQuery ();
 		}
 
 		/// <summary>
@@ -407,15 +397,13 @@ namespace Novartment.Base.Data
 				_logger?.LogTrace (FormattableString.Invariant ($"Executing function: {functionName}"));
 			}
 
-			using (var dbCommand = _connectionManager.CreateCommand (_parameters, false))
-			{
-				dbCommand.CommandTimeout = this.CommandTimeout;
-				var paramList = string.Join (",", _parameters.Select (param => param.Placeholder));
-				var cmdText = "SELECT " + _connectionManager.FormatObjectName (functionName, schemaName) + " (" + paramList + ")";
-				dbCommand.CommandText = cmdText;
-				dbCommand.CommandType = CommandType.Text;
-				return dbCommand.ExecuteScalar ();
-			}
+			using var dbCommand = _connectionManager.CreateCommand (_parameters, false);
+			dbCommand.CommandTimeout = this.CommandTimeout;
+			var paramList = string.Join (",", _parameters.Select (param => param.Placeholder));
+			var cmdText = "SELECT " + _connectionManager.FormatObjectName (functionName, schemaName) + " (" + paramList + ")";
+			dbCommand.CommandText = cmdText;
+			dbCommand.CommandType = CommandType.Text;
+			return dbCommand.ExecuteScalar ();
 		}
 	}
 }

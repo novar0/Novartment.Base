@@ -397,12 +397,7 @@ namespace Novartment.Base.Collections.Immutable
 		{
 			if (treeNode is AvlBinarySearchTreeDictionaryNode<TKey, TValue>.EndNode)
 			{
-				return new KeyValueAndNode<TKey, TValue>
-				{
-					Key = treeNode.Key,
-					Value = treeNode.Value,
-					Node = null,
-				};
+				return new KeyValueAndNode<TKey, TValue> (treeNode.Key, treeNode.Value, null);
 			}
 
 			var intermediateNode = (AvlBinarySearchTreeDictionaryNode<TKey, TValue>.IntermediateNode)treeNode;
@@ -410,29 +405,26 @@ namespace Novartment.Base.Collections.Immutable
 			var right = intermediateNode.RightSubtree;
 			if (left == null)
 			{
-				return new KeyValueAndNode<TKey, TValue>
-				{
-					Key = intermediateNode.Key,
-					Value = intermediateNode.Value,
-					Node = right,
-				};
+				return new KeyValueAndNode<TKey, TValue> (intermediateNode.Key, intermediateNode.Value, right);
 			}
 
 			var tuple = CutNode (left);
 			var newNode = CreateNode (intermediateNode.Key, intermediateNode.Value, tuple.Node, right);
-			return new KeyValueAndNode<TKey, TValue> ()
-			{
-				Key = tuple.Key,
-				Value = tuple.Value,
-				Node = newNode,
-			};
+			return new KeyValueAndNode<TKey, TValue> (tuple.Key, tuple.Value, newNode);
 		}
 
-		internal struct KeyValueAndNode<TKey, TValue>
+		private readonly ref struct KeyValueAndNode<TKey, TValue>
 		{
-			internal TKey Key;
-			internal TValue Value;
-			internal AvlBinarySearchTreeDictionaryNode<TKey, TValue> Node;
+			internal TKey Key { get; }
+			internal TValue Value { get; }
+			internal AvlBinarySearchTreeDictionaryNode<TKey, TValue> Node { get; }
+
+			public KeyValueAndNode (TKey key, TValue value, AvlBinarySearchTreeDictionaryNode<TKey, TValue> node)
+			{
+				this.Key = key;
+				this.Value = value;
+				this.Node = node;
+			}
 		}
 
 		internal sealed class BinarySearchTreeEnumerator<TKey, TValue> : IEnumerator<AvlBinarySearchTreeDictionaryNode<TKey, TValue>>

@@ -4,7 +4,7 @@
 	/// <summary>
 	/// Позиция/размер порции данных и выбранный для неё кодировщик.
 	/// </summary>
-	public struct EstimatingEncoderChunk
+	public readonly ref struct EstimatingEncoderChunk
 #pragma warning restore CA1815 // Override equals and operator equals on value types
 	{
 		/// <summary>
@@ -24,17 +24,17 @@
 		/// <summary>
 		/// Кодировщик, который выбран для порции.
 		/// </summary>
-		public IEstimatingEncoder Encoder { get; }
+		public readonly IEstimatingEncoder Encoder { get; }
 
 		/// <summary>
 		/// Начальная позиция порции в исходных данных.
 		/// </summary>
-		public int Offset { get; }
+		public readonly int Offset { get; }
 
 		/// <summary>
 		/// Размер порции.
 		/// </summary>
-		public int Count { get; }
+		public readonly int Count { get; }
 
 		/// <summary>
 		/// Деконструирует данные.
@@ -42,7 +42,7 @@
 		/// <param name="encoder">Получает кодировщик, который выбран для порции.</param>
 		/// <param name="offset">Получает начальную позицию порции в исходных данных.</param>
 		/// <param name="count">Получает размер порции.</param>
-		public void Deconstruct (out IEstimatingEncoder encoder, out int offset, out int count)
+		public readonly void Deconstruct (out IEstimatingEncoder encoder, out int offset, out int count)
 		{
 			encoder = this.Encoder;
 			offset = this.Offset;

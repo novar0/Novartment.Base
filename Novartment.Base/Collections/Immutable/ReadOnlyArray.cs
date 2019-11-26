@@ -249,7 +249,7 @@ namespace Novartment.Base.Collections.Immutable
 			return true;
 		}
 
-		internal struct SimpleArrayEnumerator : IEnumerator<T>, IDisposable, IEnumerator
+		private struct SimpleArrayEnumerator : IEnumerator<T>, IDisposable, IEnumerator
 		{
 			private readonly ReadOnlyArray<T> _data;
 			private int _index;

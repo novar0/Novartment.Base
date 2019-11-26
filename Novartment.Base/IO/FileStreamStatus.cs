@@ -5,7 +5,7 @@ namespace Novartment.Base.IO
 	/// <summary>
 	/// Параметры, описывающие текущее состояние потока: позицию, размер и дополнительный пользовательский объект-состояние.
 	/// </summary>
-	public struct FileStreamStatus :
+	public readonly struct FileStreamStatus :
 		IEquatable<FileStreamStatus>
 	{
 		/// <summary>
@@ -22,13 +22,13 @@ namespace Novartment.Base.IO
 		}
 
 		/// <summary>Получает позицию в потоке.</summary>
-		public long Position { get; }
+		public readonly long Position { get; }
 
 		/// <summary>Получает размер потока в байтах.</summary>
-		public long Length { get; }
+		public readonly long Length { get; }
 
 		/// <summary>Получает пользовательский объект-состояние, связанный с потоком.</summary>
-		public object State { get; }
+		public readonly object State { get; }
 
 		/// <summary>
 		/// Определяет равенство двух указанных объектов.
@@ -58,7 +58,7 @@ namespace Novartment.Base.IO
 		/// <param name="position">Получает позицию в потоке.</param>
 		/// <param name="length">Получает размер потока в байтах.</param>
 		/// <param name="state">Получает пользовательский объект-состояние, связанный с потоком.</param>
-		public void Deconstruct(out long position, out long length, out object state)
+		public readonly void Deconstruct (out long position, out long length, out object state)
 		{
 			position = this.Position;
 			length = this.Length;

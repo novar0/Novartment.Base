@@ -12,18 +12,17 @@ namespace Novartment.Base.Net.Mime
 		/// <returns>String name of ContentMediaType enumeration value.</returns>
 		internal static string GetName (this ContentMediaType value)
 		{
-			switch (value)
+			return value switch
 			{
-				case ContentMediaType.Text: return MediaTypeNames.Text;
-				case ContentMediaType.Image: return MediaTypeNames.Image;
-				case ContentMediaType.Audio: return MediaTypeNames.Audio;
-				case ContentMediaType.Video: return MediaTypeNames.Video;
-				case ContentMediaType.Application: return MediaTypeNames.Application;
-				case ContentMediaType.Multipart: return MediaTypeNames.Multipart;
-				case ContentMediaType.Message: return MediaTypeNames.Message;
-				default:
-					throw new NotSupportedException ("Unsupported value of MediaType '" + value + "'.");
-			}
+				ContentMediaType.Text => MediaTypeNames.Text,
+				ContentMediaType.Image => MediaTypeNames.Image,
+				ContentMediaType.Audio => MediaTypeNames.Audio,
+				ContentMediaType.Video => MediaTypeNames.Video,
+				ContentMediaType.Application => MediaTypeNames.Application,
+				ContentMediaType.Multipart => MediaTypeNames.Multipart,
+				ContentMediaType.Message => MediaTypeNames.Message,
+				_ => throw new NotSupportedException ("Unsupported value of MediaType '" + value + "'."),
+			};
 		}
 
 		/// <summary>

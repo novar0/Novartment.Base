@@ -131,7 +131,7 @@ namespace Novartment.Base
 		private static void InitBLOB (byte[] data, ref CryptBlob blob)
 		{
 			// Use empty array for null parameter.
-			data = data ?? Array.Empty<byte> ();
+			data ??= Array.Empty<byte> ();
 
 			// Allocate memory for the BLOB data.
 			blob.PointerBytesData = Marshal.AllocHGlobal (data.Length);

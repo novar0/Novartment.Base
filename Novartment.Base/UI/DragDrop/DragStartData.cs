@@ -4,7 +4,7 @@
 	/// <summary>
 	/// Данные для старта перетаскивания.
 	/// </summary>
-	public struct DragStartData
+	public readonly struct DragStartData
 #pragma warning restore CA1815 // Override equals and operator equals on value types
 	{
 		/// <summary>
@@ -21,11 +21,11 @@
 		/// <summary>
 		/// Объект, который будет перетаскиваться.
 		/// </summary>
-		public IDataContainer DragObject { get; }
+		public readonly IDataContainer DragObject { get; }
 
 		/// <summary>
 		/// Набор разрешённых для перетаскивания эффектов.
 		/// </summary>
-		public DragDropEffects AllowedEffects { get; }
+		public readonly DragDropEffects AllowedEffects { get; }
 	}
 }

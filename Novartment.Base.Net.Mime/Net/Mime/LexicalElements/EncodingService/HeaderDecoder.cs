@@ -341,7 +341,7 @@ namespace Novartment.Base.Net.Mime
 			var text1 = (idx >= 0) ? DecodeUnstructured (source.Slice (0, idx), true, outBuf) : DecodeUnstructured (source, true, outBuf);
 			var text2 = (idx >= 0) ? DecodeUnstructured (source.Slice (idx + 1), true, outBuf) : null;
 
-			return new TwoStrings () { Value1 = text1, Value2 = text2 };
+			return new TwoStrings (text1, text2);
 		}
 
 		/// <summary>
@@ -372,7 +372,7 @@ namespace Novartment.Base.Net.Mime
 #endif
 			var date = InternetDateTime.Parse (source.Slice (parametersPos));
 
-			return new TextAndTime () { Text = str, Time = date };
+			return new TextAndTime (str, date);
 		}
 
 		/// <summary>
@@ -429,7 +429,7 @@ namespace Novartment.Base.Net.Mime
 #else
 			var id = new string (source.Slice (lastToken.Position, lastToken.Length).ToArray ());
 #endif
-			return new TwoStrings () { Value1 = text, Value2 = id };
+			return new TwoStrings (text, id);
 		}
 
 		/// <summary>
@@ -802,13 +802,7 @@ namespace Novartment.Base.Net.Mime
 				}
 			}
 
-			return new ThreeStringsAndList ()
-			{
-				Value1 = actionMode,
-				Value2 = sendingMode,
-				Value3 = dispositionType,
-				List = modifiers,
-			};
+			return new ThreeStringsAndList (actionMode, sendingMode, dispositionType, modifiers);
 		}
 
 		/// <summary>
@@ -1219,40 +1213,58 @@ namespace Novartment.Base.Net.Mime
 			return new QualityValueParameter (value, quality);
 		}
 
-		internal struct TextAndTime
+		internal readonly ref struct TextAndTime
 		{
-			internal string Text;
-			internal DateTimeOffset Time;
+			internal string Text { get; }
+			internal DateTimeOffset Time { get; }
+
+			public TextAndTime (string text, DateTimeOffset time)
+			{
+				this.Text = text;
+				this.Time = time;
+			}
 		}
 
-		internal struct TwoStrings
+		internal readonly ref struct TwoStrings
 		{
-			internal string Value1;
-			internal string Value2;
+			internal string Value1 { get; }
+			internal string Value2 { get; }
+
+			public TwoStrings (string value1, string value2)
+			{
+				this.Value1 = value1;
+				this.Value2 = value2;
+			}
 		}
 
-		internal struct ThreeStringsAndList
+		internal readonly ref struct ThreeStringsAndList
 		{
-			internal string Value1;
-			internal string Value2;
-			internal string Value3;
-			internal IReadOnlyList<string> List;
+			internal string Value1 { get; }
+			internal string Value2 { get; }
+			internal string Value3 { get; }
+			internal IReadOnlyList<string> List { get; }
+
+			public ThreeStringsAndList (string value1, string value2, string value3, IReadOnlyList<string> list)
+			{
+				this.Value1 = value1;
+				this.Value2 = value2;
+				this.Value3 = value3;
+				this.List = list;
+			}
 		}
 
 		internal readonly ref struct StringAndParameters
 		{
-			internal readonly ReadOnlySpan<char> _text;
-			internal readonly IReadOnlyList<HeaderFieldParameter> _parameters;
+			internal ReadOnlySpan<char> Text { get; }
+
+			internal IReadOnlyList<HeaderFieldParameter> Parameters { get; }
 
 			internal StringAndParameters (ReadOnlySpan<char> text, IReadOnlyList<HeaderFieldParameter> parameters)
 			{
-				_text = text;
-				_parameters = parameters;
+				this.Text = text;
+				this.Parameters = parameters;
 			}
 
-			internal ReadOnlySpan<char> Text => _text;
-
-			internal IReadOnlyList<HeaderFieldParameter> Parameters => _parameters;
 		}
 	}
 }

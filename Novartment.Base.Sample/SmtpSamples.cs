@@ -34,15 +34,10 @@ namespace Novartment.Base.Sample
 			var hostName = "localhost";
 			var addrs = await Dns.GetHostAddressesAsync (hostName).ConfigureAwait (false);
 			var endpoint = new IPHostEndPoint (addrs[0], 25) { HostName = hostName };
-			using (var connection = await SocketBinaryTcpConnection.CreateAsync (endpoint, cancellationToken)
-				.ConfigureAwait (false))
-			{
-				var protocol = new SmtpOriginatorProtocol (
-					msg.PerformTransferTransaction,
-					SmtpClientSecurityParameters.AllowNoSecurity);
-					/* SmtpClientSecurityParameters.RequireEncryptionUseCredentials (new NetworkCredential ("user", "password"))); */
-				await protocol.StartAsync (connection, cancellationToken).ConfigureAwait (false);
-			}
+			using var connection = await SocketBinaryTcpConnection.CreateAsync (endpoint, cancellationToken).ConfigureAwait (false);
+			var protocol = new SmtpOriginatorProtocol (msg.PerformTransferTransaction, SmtpClientSecurityParameters.AllowNoSecurity);
+			/* SmtpClientSecurityParameters.RequireEncryptionUseCredentials (new NetworkCredential ("user", "password"))); */
+			await protocol.StartAsync (connection, cancellationToken).ConfigureAwait (false);
 		}
 
 		public static async Task StartSmtpServer ()
@@ -81,18 +76,16 @@ namespace Novartment.Base.Sample
 			foreach (var fileName in Directory.EnumerateFiles (mailPickupDirectory, "test*.eml"))
 			{
 				MailMessage message;
-				using (var fs = new FileStream (fileName, FileMode.Open, FileAccess.Read))
+				using var fs = new FileStream (fileName, FileMode.Open, FileAccess.Read);
+				message = new MailMessage ();
+				await message.LoadAsync (fs.AsBufferedSource (msgLoadBuf), EntityBodyFactory.Create)
+					.ConfigureAwait (false);
+				var returnPath = (message.Sender ?? message.From[0]).Address;
+				foreach (var recipient in message.RecipientTo)
 				{
-					message = new MailMessage ();
-					await message.LoadAsync (fs.AsBufferedSource (msgLoadBuf), EntityBodyFactory.Create)
-						.ConfigureAwait (false);
-					var returnPath = (message.Sender ?? message.From[0]).Address;
-					foreach (var recipient in message.RecipientTo)
-					{
-						var data = outgoingMailMessages[recipient.Address.Domain][fileName];
-						data.ReturnPath = returnPath;
-						data.Recipients.Add (recipient.Address);
-					}
+					var data = outgoingMailMessages[recipient.Address.Domain][fileName];
+					data.ReturnPath = returnPath;
+					data.Recipients.Add (recipient.Address);
 				}
 			}
 
@@ -128,12 +121,10 @@ namespace Novartment.Base.Sample
 					/* SmtpClientSecurityParameters.RequireEncryptionUseCredentials (new NetworkCredential ("User Name", "paSsWORd")), */
 					/* SmtpClientSecurityParameters.RequireEncryptionUseClientCertificate (clientCertificates), */
 					originatorLogger);
-				using (var connection = await SocketBinaryTcpConnection.CreateAsync (serverNameAndAddr, cancellationToken)
-					.ConfigureAwait (false))
-				{
-					await Task.Delay (1000).ConfigureAwait (false); // имитация задержки при установке соединения
-					await originatorProtocol.StartAsync (connection, cancellationToken).ConfigureAwait (false);
-				}
+				using var connection = await SocketBinaryTcpConnection.CreateAsync (serverNameAndAddr, cancellationToken)
+					.ConfigureAwait (false);
+				await Task.Delay (1000).ConfigureAwait (false); // имитация задержки при установке соединения
+				await originatorProtocol.StartAsync (connection, cancellationToken).ConfigureAwait (false);
 			}
 		}
 
@@ -159,11 +150,9 @@ namespace Novartment.Base.Sample
 					await transaction.TryAddRecipientAsync (recipient, cancellationToken).ConfigureAwait (false);
 				}
 
-				using (var fs = new FileStream (messageFileData.Key, FileMode.Open, FileAccess.Read))
-				{
-					var msgSource = fs.AsBufferedSource (new byte[1000]);
-					await transaction.TransferDataAndFinishAsync (msgSource, fs.Length, cancellationToken).ConfigureAwait (false);
-				}
+				using var fs = new FileStream (messageFileData.Key, FileMode.Open, FileAccess.Read);
+				var msgSource = fs.AsBufferedSource (new byte[1000]);
+				await transaction.TransferDataAndFinishAsync (msgSource, fs.Length, cancellationToken).ConfigureAwait (false);
 			}
 		}
 
@@ -217,46 +206,44 @@ namespace Novartment.Base.Sample
 			{
 				var isMailDestinationLocal = _localDomains.Contains (_recipients[0].Domain);
 				var fileName = CreateUniqueFileName ();
-				using (var destStream = new FileStream (
+				using var destStream = new FileStream (
 					Path.Combine (
 						isMailDestinationLocal ? _mailDropDirectory : _mailPickupDirectory,
 						fileName),
 					FileMode.Create,
-					FileAccess.Write))
+					FileAccess.Write);
+				var destination = destStream.AsBinaryDestination ();
+
+				// RFC 5321 part 3.6.3:
+				// a relay SMTP has no need to inspect or act upon the header section or body of the message data and
+				// MUST NOT do so except to add its own "Received:" header field
+				if (isMailDestinationLocal && (_returnPath != null))
 				{
-					var destination = destStream.AsBinaryDestination ();
-
-					// RFC 5321 part 3.6.3:
-					// a relay SMTP has no need to inspect or act upon the header section or body of the message data and
-					// MUST NOT do so except to add its own "Received:" header field
-					if (isMailDestinationLocal && (_returnPath != null))
-					{
-						// RFC 5321 part 4.4:
-						// When the delivery SMTP server makes the "final delivery" of a message,
-						// it inserts a return-path line at the beginning of the mail data.
-						var returnPath = "Return-Path:<" + _returnPath + ">\r\n";
-						var buf = Encoding.ASCII.GetBytes (returnPath);
-						await destination.WriteAsync (buf.AsMemory (), cancellationToken).ConfigureAwait (false);
-					}
-
 					// RFC 5321 part 4.4:
-					// When an SMTP server receives a message for delivery or further processing,
-					// it MUST insert trace ("time stamp" or "Received") information at the beginning of the message content.
-					var ipProps = IPGlobalProperties.GetIPGlobalProperties ();
-					var localHostFqdn = string.IsNullOrWhiteSpace (ipProps.DomainName) ?
-						ipProps.HostName :
-						ipProps.HostName + "." + ipProps.DomainName;
-					var received = string.Format (
-						CultureInfo.InvariantCulture,
-						"Received: FROM {0} ({1}) BY {2};\r\n {3}\r\n",
-						_deliverySourceAttributes.EndPoint.HostName,
-						_deliverySourceAttributes.EndPoint.Address,
-						localHostFqdn,
-						DateTimeOffset.Now.ToInternetString ());
-					var buf2 = Encoding.ASCII.GetBytes (received);
-					await destination.WriteAsync (buf2.AsMemory (), cancellationToken).ConfigureAwait (false);
-					await source.WriteToAsync (destination, cancellationToken).ConfigureAwait (false);
+					// When the delivery SMTP server makes the "final delivery" of a message,
+					// it inserts a return-path line at the beginning of the mail data.
+					var returnPath = "Return-Path:<" + _returnPath + ">\r\n";
+					var buf = Encoding.ASCII.GetBytes (returnPath);
+					await destination.WriteAsync (buf.AsMemory (), cancellationToken).ConfigureAwait (false);
 				}
+
+				// RFC 5321 part 4.4:
+				// When an SMTP server receives a message for delivery or further processing,
+				// it MUST insert trace ("time stamp" or "Received") information at the beginning of the message content.
+				var ipProps = IPGlobalProperties.GetIPGlobalProperties ();
+				var localHostFqdn = string.IsNullOrWhiteSpace (ipProps.DomainName) ?
+					ipProps.HostName :
+					ipProps.HostName + "." + ipProps.DomainName;
+				var received = string.Format (
+					CultureInfo.InvariantCulture,
+					"Received: FROM {0} ({1}) BY {2};\r\n {3}\r\n",
+					_deliverySourceAttributes.EndPoint.HostName,
+					_deliverySourceAttributes.EndPoint.Address,
+					localHostFqdn,
+					DateTimeOffset.Now.ToInternetString ());
+				var buf2 = Encoding.ASCII.GetBytes (received);
+				await destination.WriteAsync (buf2.AsMemory (), cancellationToken).ConfigureAwait (false);
+				await source.WriteToAsync (destination, cancellationToken).ConfigureAwait (false);
 			}
 
 			private string CreateUniqueFileName ()

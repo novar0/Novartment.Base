@@ -12,16 +12,15 @@ namespace Novartment.Base.Net.Mime
 		/// <returns>String name of ContentTransferEncoding enumeration value.</returns>
 		internal static string GetName (this ContentTransferEncoding value)
 		{
-			switch (value)
+			return value switch
 			{
-				case ContentTransferEncoding.QuotedPrintable: return TransferEncodingNames.QuotedPrintable;
-				case ContentTransferEncoding.Base64: return TransferEncodingNames.Base64;
-				case ContentTransferEncoding.SevenBit: return TransferEncodingNames.SevenBit;
-				case ContentTransferEncoding.EightBit: return TransferEncodingNames.EightBit;
-				case ContentTransferEncoding.Binary: return TransferEncodingNames.Binary;
-				default:
-					throw new NotSupportedException ("Unsupported value of ContentTransferEncoding '" + value + "'.");
-			}
+				ContentTransferEncoding.QuotedPrintable => TransferEncodingNames.QuotedPrintable,
+				ContentTransferEncoding.Base64 => TransferEncodingNames.Base64,
+				ContentTransferEncoding.SevenBit => TransferEncodingNames.SevenBit,
+				ContentTransferEncoding.EightBit => TransferEncodingNames.EightBit,
+				ContentTransferEncoding.Binary => TransferEncodingNames.Binary,
+				_ => throw new NotSupportedException ("Unsupported value of ContentTransferEncoding '" + value + "'."),
+			};
 		}
 
 		/// <summary>

@@ -479,20 +479,18 @@ namespace Novartment.Base.Collections.Linq
 
 			public IEnumerator<TSource> GetEnumerator ()
 			{
-				using (var enumerator = _source.GetEnumerator ())
+				using var enumerator = _source.GetEnumerator ();
+				var count = _skipCount;
+				while ((count > 0) && enumerator.MoveNext ())
 				{
-					var count = _skipCount;
-					while ((count > 0) && enumerator.MoveNext ())
-					{
-						--count;
-					}
+					--count;
+				}
 
-					if (count <= 0)
+				if (count <= 0)
+				{
+					while (enumerator.MoveNext ())
 					{
-						while (enumerator.MoveNext ())
-						{
-							yield return enumerator.Current;
-						}
+						yield return enumerator.Current;
 					}
 				}
 			}
@@ -669,15 +667,11 @@ namespace Novartment.Base.Collections.Linq
 
 			public IEnumerator<TResult> GetEnumerator ()
 			{
-				using (var enumerator1 = _first.GetEnumerator ())
+				using var enumerator1 = _first.GetEnumerator ();
+				using var enumerator2 = _second.GetEnumerator ();
+				while (enumerator1.MoveNext () && enumerator2.MoveNext ())
 				{
-					using (var enumerator2 = _second.GetEnumerator ())
-					{
-						while (enumerator1.MoveNext () && enumerator2.MoveNext ())
-						{
-							yield return _selector.Invoke (enumerator1.Current, enumerator2.Current);
-						}
-					}
+					yield return _selector.Invoke (enumerator1.Current, enumerator2.Current);
 				}
 			}
 		}

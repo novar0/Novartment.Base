@@ -232,15 +232,12 @@ namespace Novartment.Base.UI.Wpf
 		// Return true if the given value is can be represented using a single bit.
 		private static bool IsSingleBitValue (ulong value)
 		{
-			switch (value)
+			return value switch
 			{
-				case 0:
-					return false;
-				case 1:
-					return true;
-			}
-
-			return (value & (value - 1)) == 0;
+				0 => false,
+				1 => true,
+				_ => (value & (value - 1)) == 0,
+			};
 		}
 
 		// Get the lookup table for the given culture (creating if necessary).
@@ -354,7 +351,7 @@ namespace Novartment.Base.UI.Wpf
 				result |= Convert.ToUInt32 (value, CultureInfo.InvariantCulture);
 			}
 
-			return Enum.ToObject (EnumType, result);
+			return Enum.ToObject (this.EnumType, result);
 		}
 
 		private class LookupTable : Dictionary<string, object>

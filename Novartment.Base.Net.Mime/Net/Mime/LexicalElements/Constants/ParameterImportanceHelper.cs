@@ -12,13 +12,12 @@ namespace Novartment.Base.Net.Mime
 		/// <returns>String name of ParameterImportance enumeration value.</returns>
 		internal static string GetName (this DispositionNotificationParameterImportance value)
 		{
-			switch (value)
+			return value switch
 			{
-				case DispositionNotificationParameterImportance.Required: return ParameterImportanceNames.Required;
-				case DispositionNotificationParameterImportance.Optional: return ParameterImportanceNames.Optional;
-				default:
-					throw new NotSupportedException ("Unsupported value of DispositionNotificationParameterImportance '" + value + "'.");
-			}
+				DispositionNotificationParameterImportance.Required => ParameterImportanceNames.Required,
+				DispositionNotificationParameterImportance.Optional => ParameterImportanceNames.Optional,
+				_ => throw new NotSupportedException ("Unsupported value of DispositionNotificationParameterImportance '" + value + "'."),
+			};
 		}
 
 		/// <summary>
