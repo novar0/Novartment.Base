@@ -247,8 +247,15 @@ namespace Novartment.Base.Net.Smtp
 			var reply = await ProcessCommandAsync (new SmtpEhloCommand (_hostFqdn.AsSpan ()), cancellationToken).ConfigureAwait (false);
 			if (reply.IsPositive)
 			{
-				foreach (var extension in reply.Text)
+				// RFC 5321 part 4.1.1.1
+				// ehlo-ok-rsp =
+				//   ( "250" SP Domain [ SP ehlo-greet ] CRLF )
+				//   /
+				//   ( "250-" Domain [ SP ehlo-greet ] CRLF *( "250-" ehlo-line CRLF ) "250" SP ehlo-line CRLF )
+				// ehlo-line = ehlo-keyword *( SP ehlo-param )
+				for (var i = 1; i < reply.Text.Count; i++)
 				{
+					var extension = reply.Text[i];
 					var isOK = "OK".Equals (extension, StringComparison.OrdinalIgnoreCase);
 					if (!isOK)
 					{
