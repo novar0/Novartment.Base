@@ -5,6 +5,9 @@ namespace Novartment.Base.Test
 {
 	public class ConcurrentTreeSetTests
 	{
+
+#pragma warning disable xUnit2013 // Do not use equality check to check for collection size.
+
 		[Fact]
 		[Trait ("Category", "Collections.Set")]
 		public void Misc ()
@@ -70,5 +73,8 @@ namespace Novartment.Base.Test
 			var template = new int[] { -408, -407, -406, -405, -404, -20, 99, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 112 };
 			Assert.Equal<int> (template, set);
 		}
+
+#pragma warning restore xUnit2013 // Do not use equality check to check for collection size.
+
 	}
 }

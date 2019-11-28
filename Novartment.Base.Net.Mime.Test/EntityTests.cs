@@ -296,7 +296,7 @@ namespace Novartment.Base.Net.Mime.Test
 								start += 2;
 							}
 
-							result.Add (source.Substring (start, pos - start));
+							result.Add (source[start..pos]);
 						}
 
 						break;
@@ -309,7 +309,7 @@ namespace Novartment.Base.Net.Mime.Test
 							start += 2;
 						}
 
-						result.Add (source.Substring (start, pos - start));
+						result.Add (source[start..pos]);
 						start = pos;
 					}
 				}

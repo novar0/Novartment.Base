@@ -8,6 +8,9 @@ namespace Novartment.Base.Test
 {
 	public class ConcurrentHashTreeSetTests
 	{
+
+#pragma warning disable xUnit2013 // Do not use equality check to check for collection size.
+
 		[Fact]
 		[Trait ("Category", "Collections.Set")]
 		public void AddRemoveContains ()
@@ -189,5 +192,8 @@ namespace Novartment.Base.Test
 				return Equals (obj as MockStr);
 			}
 		}
+
+#pragma warning restore xUnit2013 // Do not use equality check to check for collection size.
+
 	}
 }

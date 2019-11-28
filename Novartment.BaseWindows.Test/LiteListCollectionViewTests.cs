@@ -35,7 +35,7 @@ namespace Novartment.BaseWindows.Test
 			}
 
 			(view as ICollectionView).CollectionChanged += (sender, args) => events.Add (args);
-			Assert.Equal (1, view.Count);
+			Assert.Single (view);
 			Assert.Equal (item1, view.GetItemAt (0));
 			Assert.False (view.NeedsRefresh);
 			view.Refresh ();
@@ -84,7 +84,7 @@ namespace Novartment.BaseWindows.Test
 			Assert.Null (events[eventN].NewItems);
 			Assert.Equal (-1, events[eventN].OldStartingIndex);
 			Assert.Null (events[eventN].OldItems);
-			Assert.Equal (1, view.Count);
+			Assert.Single (view);
 			Assert.Equal (item2, view.GetItemAt (0));
 
 			// defer without modification
@@ -105,7 +105,7 @@ namespace Novartment.BaseWindows.Test
 			Assert.Equal (-1, events[eventN].OldStartingIndex);
 			Assert.Null (events[eventN].OldItems);
 
-			Assert.Equal (0, view.Count);
+			Assert.Empty (view);
 			Assert.False (view.NeedsRefresh);
 
 			Thread.Sleep ((result / 100000) + 1); // используем result чтобы компилятор не удалил его вычисление как ненужное
@@ -299,7 +299,7 @@ namespace Novartment.BaseWindows.Test
 
 			// set filter to pass none
 			view.Filter = item => false;
-			Assert.Equal (0, view.Count);
+			Assert.Empty (view);
 			Assert.False (view.Contains (item1));
 			Assert.False (view.Contains (item2));
 			Assert.False (view.Contains (item3));
@@ -318,7 +318,7 @@ namespace Novartment.BaseWindows.Test
 			Assert.Equal (-1, events[eventN].OldStartingIndex);
 			Assert.Null (events[eventN].NewItems);
 			Assert.Null (events[eventN].OldItems);
-			Assert.Equal (0, view.Count);
+			Assert.Empty (view);
 			Assert.False (view.Contains (item1));
 			Assert.False (view.Contains (item2));
 			Assert.False (view.Contains (item3));

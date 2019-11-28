@@ -7,6 +7,9 @@ namespace Novartment.Base.Test
 {
 	public class ArrayListTests
 	{
+
+#pragma warning disable xUnit2013 // Do not use equality check to check for collection size.
+
 		[Fact]
 		[Trait ("Category", "Collections.ArrayList")]
 		public void Construction ()
@@ -338,5 +341,8 @@ namespace Novartment.Base.Test
 
 			public int Prop2 { get; set; }
 		}
+
+#pragma warning restore xUnit2013 // Do not use equality check to check for collection size.
+
 	}
 }

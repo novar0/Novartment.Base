@@ -8,6 +8,9 @@ namespace Novartment.Base.Test
 {
 	public class ReadOnlyArrayTests
 	{
+
+#pragma warning disable xUnit2013 // Do not use equality check to check for collection size.
+
 		[Fact]
 		[Trait ("Category", "Collections.ReadOnlyArray")]
 		public void Misc ()
@@ -54,5 +57,8 @@ namespace Novartment.Base.Test
 			t2[2] = 123;
 			Assert.False (((IStructuralEquatable)list).Equals (list3, EqualityComparer<int>.Default));
 		}
+
+#pragma warning restore xUnit2013 // Do not use equality check to check for collection size.
+
 	}
 }

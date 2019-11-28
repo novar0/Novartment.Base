@@ -8,6 +8,9 @@ namespace Novartment.Base.Test
 {
 	public class ConcurrentListTests
 	{
+
+#pragma warning disable xUnit2013 // Do not use equality check to check for collection size.
+
 		[Fact]
 		[Trait ("Category", "Collections.ConcurrentList")]
 		public void AddTake ()
@@ -342,5 +345,8 @@ namespace Novartment.Base.Test
 			Assert.Equal (-1, events[eventN].NewStartingIndex);
 			Assert.Null (events[eventN].NewItems);
 		}
+
+#pragma warning restore xUnit2013 // Do not use equality check to check for collection size.
+
 	}
 }
