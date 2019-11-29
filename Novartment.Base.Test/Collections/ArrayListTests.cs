@@ -58,6 +58,27 @@ namespace Novartment.Base.Test
 
 		[Fact]
 		[Trait ("Category", "Collections.ArrayList")]
+		public void Slice ()
+		{
+			var list1 = new ArrayList<int> (new int[] { 5, 1, 3, -1 });
+			var list2 = list1.Slice (0, 0);
+			Assert.Empty (list2);
+			list2 = list1.Slice (4, 0);
+			Assert.Empty (list2);
+			list2 = list1.Slice (0, 4);
+			Assert.Equal (list1, list2);
+			list2 = list1.Slice (2, 2);
+			Assert.Equal (new int[] { 3, -1 }, list2);
+
+			list1 = new ArrayList<int> (new int[] { 5, 1, 3, -1 }, 2, 3);
+			list2 = list1.Slice (0, 3);
+			Assert.Equal (list1, list2);
+			list2 = list1.Slice (1, 2);
+			Assert.Equal (new int[] { -1, 5 }, list2);
+		}
+
+		[Fact]
+		[Trait ("Category", "Collections.ArrayList")]
 		public void AddTake ()
 		{
 			var t1 = new int[] { 1, 2, 2, 3 };

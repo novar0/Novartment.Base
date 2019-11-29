@@ -3,7 +3,7 @@
   <PropertyGroup>
 		<AssemblyName>Novartment.Base</AssemblyName>
 		<TargetFrameworks>netstandard2.0;netstandard2.1</TargetFrameworks>
-		<Version>4.6.2-beta</Version>
+		<Version>4.7.0-beta</Version>
 		<Description>Base classes</Description>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
@@ -12,8 +12,9 @@
 	</PropertyGroup>
 
   <ItemGroup>
+		<PackageReference Include="IndexRange" Version="1.0.0" />
 		<PackageReference Include="System.Buffers" Version="4.5.0" />
-		<PackageReference Include="Microsoft.Extensions.Logging" Version="3.0.0" />
+		<PackageReference Include="Microsoft.Extensions.Logging" Version="3.0.1" />
 	</ItemGroup>
 	
 

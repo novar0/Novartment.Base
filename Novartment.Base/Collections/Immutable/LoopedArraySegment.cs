@@ -144,6 +144,23 @@ namespace Novartment.Base.Collections.Immutable
 		}
 
 		/// <summary>
+		/// Выделяет порцию внутреннего массива без копирования, указанную стартовой позицией и длиной.
+		/// </summary>
+		/// <param name="start">Стартовая позиция выделяемой порции.</param>
+		/// <param name="length">Длина порции.</param>
+		/// <returns>Новый экземпляр LoopedArraySegment, основанный на том же массиве, но с выделенной указанной порцией.</returns>
+		public LoopedArraySegment<T> Slice (int start, int length)
+		{
+			start += _offset;
+			if (start >= _items.Length)
+			{
+				start -= _items.Length;
+			}
+
+			return new LoopedArraySegment<T> (_items, start, length);
+		}
+
+		/// <summary>
 		/// Определяет равенство двух сегментов массива.
 		/// </summary>
 		/// <param name="first">Сегмент массива, который находится слева от оператора равенства.</param>

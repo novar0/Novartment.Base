@@ -22,9 +22,9 @@ namespace Novartment.Base.Test
 		[Trait ("Category", "Text.Hex")]
 		public void OctetsUpper ()
 		{
-			Assert.Equal ("00", Hex.OctetsUpper[0]);
-			Assert.Equal ("BC", Hex.OctetsUpper[0xbc]);
-			Assert.Equal ("FF", Hex.OctetsUpper[0xff]);
+			Assert.Equal ("00", Hex.OctetsUpper.Span[0]);
+			Assert.Equal ("BC", Hex.OctetsUpper.Span[0xbc]);
+			Assert.Equal ("FF", Hex.OctetsUpper.Span[0xff]);
 		}
 
 		[Fact]

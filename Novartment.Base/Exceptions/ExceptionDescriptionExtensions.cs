@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using Novartment.Base.Collections;
-using Novartment.Base.Collections.Immutable;
 using static System.Linq.Enumerable;
 
 namespace Novartment.Base
@@ -48,10 +47,10 @@ namespace Novartment.Base
 
 			Contract.EndContractBlock ();
 
-			return new ReadOnlyArray<string> (exceptionDescription
+			return exceptionDescription
 				.EnumerateHierarchy (false)
 				.Select (item => item.ToString (true, tracePatternToHide))
-				.ToArray ());
+				.ToList ();
 		}
 
 		/// <summary>

@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using Novartment.Base.Collections.Immutable;
 using Novartment.Base.Collections.Linq;
 
 namespace Novartment.Base
@@ -101,27 +100,27 @@ namespace Novartment.Base
 				(format == DataContainerFormats.UnicodeText) ||
 				(format == DataContainerFormats.StringFormat))
 			{
-				return new ReadOnlyArray<string> (new[] { DataContainerFormats.Text, DataContainerFormats.UnicodeText, DataContainerFormats.StringFormat });
+				return new[] { DataContainerFormats.Text, DataContainerFormats.UnicodeText, DataContainerFormats.StringFormat };
 			}
 
 			if ((format == DataContainerFormats.FileDrop) ||
 				(format == DataContainerFormats.FileName) ||
 				(format == DataContainerFormats.FileNameW))
 			{
-				return new ReadOnlyArray<string> (new[] { DataContainerFormats.FileDrop, DataContainerFormats.FileNameW, DataContainerFormats.FileName });
+				return new[] { DataContainerFormats.FileDrop, DataContainerFormats.FileNameW, DataContainerFormats.FileName };
 			}
 
 			if ((format == DataContainerFormats.Bitmap) ||
 				(format == DataContainerFormats.WindowsMediaImagingBitmapSource) ||
 				(format == DataContainerFormats.DrawingBitmapFormat))
 			{
-				return new ReadOnlyArray<string> (new[] { DataContainerFormats.Bitmap, DataContainerFormats.DrawingBitmapFormat, DataContainerFormats.WindowsMediaImagingBitmapSource });
+				return new[] { DataContainerFormats.Bitmap, DataContainerFormats.DrawingBitmapFormat, DataContainerFormats.WindowsMediaImagingBitmapSource };
 			}
 
 			if ((format == DataContainerFormats.EnhancedMetafile) ||
 				(format == DataContainerFormats.DrawingImagingMetafileFormat))
 			{
-				return new ReadOnlyArray<string> (new[] { DataContainerFormats.EnhancedMetafile, DataContainerFormats.DrawingImagingMetafileFormat });
+				return new[] { DataContainerFormats.EnhancedMetafile, DataContainerFormats.DrawingImagingMetafileFormat };
 			}
 
 			return ReadOnlyList.Repeat (format, 1);

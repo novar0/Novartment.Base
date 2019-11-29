@@ -772,7 +772,7 @@ namespace Novartment.Base.Net.Mime
 			{
 				header.Add (new HeaderFieldBuilderAddrSpecCollection (
 					HeaderFieldName.InReplyTo,
-					inReplyTo.WhereNotNull ().ToArray ()));
+					inReplyTo.Where (item => !(item is null)).ToArray ()));
 			}
 
 			// References
@@ -780,7 +780,7 @@ namespace Novartment.Base.Net.Mime
 			{
 				header.Add (new HeaderFieldBuilderAddrSpecCollection (
 					HeaderFieldName.References,
-					references.WhereNotNull ().ToArray ()));
+					references.Where (item => !(item is null)).ToArray ()));
 			}
 
 			// Original-Message-ID

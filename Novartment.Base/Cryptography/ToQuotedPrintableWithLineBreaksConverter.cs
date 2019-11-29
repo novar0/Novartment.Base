@@ -196,6 +196,7 @@ namespace Novartment.Base
 		{
 			var offsetIn = 0;
 			var offsetInEnd = inArray.Length;
+			var hexOctets = Hex.OctetsUpper.Span;
 			while (offsetIn < offsetInEnd)
 			{
 				var octet = inArray[offsetIn++];
@@ -219,8 +220,8 @@ namespace Novartment.Base
 
 								// вписываем закодированный вариант предыдущего символа
 								_outArray[_outArrayOffset++] = 0x3d; // =
-								_outArray[_outArrayOffset++] = (byte)Hex.OctetsUpper[prevOctet][0];
-								_outArray[_outArrayOffset++] = (byte)Hex.OctetsUpper[prevOctet][1];
+								_outArray[_outArrayOffset++] = (byte)hexOctets[prevOctet][0];
+								_outArray[_outArrayOffset++] = (byte)hexOctets[prevOctet][1];
 								_outArraySizes[_outArraySizesOffset++] = 3;
 								_outArraySizesCount++;
 								_outArrayCount += 3;
@@ -251,8 +252,8 @@ namespace Novartment.Base
 				{
 					// '=' 0x3d or non printable char
 					_outArray[_outArrayOffset++] = 0x3d;
-					_outArray[_outArrayOffset++] = (byte)Hex.OctetsUpper[octet][0];
-					_outArray[_outArrayOffset++] = (byte)Hex.OctetsUpper[octet][1];
+					_outArray[_outArrayOffset++] = (byte)hexOctets[octet][0];
+					_outArray[_outArrayOffset++] = (byte)hexOctets[octet][1];
 					_outArraySizes[_outArraySizesOffset++] = 3;
 					_outArraySizesCount++;
 					_outArrayCount += 3;

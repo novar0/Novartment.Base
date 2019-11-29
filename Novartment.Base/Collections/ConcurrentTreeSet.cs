@@ -19,6 +19,7 @@ namespace Novartment.Base.Collections
 	/// Для корректной работы требует надёжного компаратора значений на больше/меньше,
 	/// если компаратора нет - используйте ConcurrentHashTreeSet.
 	/// Не реализует интерфейс ICollection ввиду несовместимости его контракта с конкурентным доступом.
+	/// Конкурентный доступ осуществляется без блокировок.
 	/// </remarks>
 	public class ConcurrentTreeSet<T> :
 		IAdjustableFiniteSet<T>

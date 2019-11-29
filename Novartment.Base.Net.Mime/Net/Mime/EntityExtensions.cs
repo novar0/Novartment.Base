@@ -41,7 +41,7 @@ namespace Novartment.Base.Net.Mime
 				if (entity.Body is ICompositeEntityBody compositeEntityBody)
 				{
 					var parts = compositeEntityBody.Parts.Where (item => item.Body is IDiscreteEntityBody);
-					return new ReadOnlyArray<Entity> (parts.ToArray ());
+					return parts.ToList ();
 				}
 
 				if (entity.Body is MessageEntityBody entityBodyMessage && includeNestedMessages)
@@ -51,7 +51,7 @@ namespace Novartment.Base.Net.Mime
 
 				if (entity.Body is IDiscreteEntityBody entityBodySinglepart)
 				{
-					return new ReadOnlyArray<Entity> (new[] { entity });
+					return new[] { entity };
 				}
 
 				return ReadOnlyList.Empty<Entity> ();

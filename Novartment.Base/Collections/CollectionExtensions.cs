@@ -13,7 +13,7 @@ namespace Novartment.Base.Collections
 	public static class CollectionExtensions
 	{
 		/// <summary>
-		/// Очищает диапазон элементов зацикленного сегмента массива.
+		/// Очищает диапазон элементов сегмента зацикленного массива.
 		/// </summary>
 		/// <typeparam name="T">Тип элементов массива.</typeparam>
 		/// <param name="segmentItems">Массив элементов сегмента.</param>
@@ -82,7 +82,7 @@ namespace Novartment.Base.Collections
 		}
 
 		/// <summary>
-		/// Копирует диапазон элементов зацикленного сегмента массива из одной позиции в другую.
+		/// Копирует диапазон элементов сегмента зацикленного массива из одной позиции в другую.
 		/// Позиции для копирования указываются от начала сегмента.
 		/// </summary>
 		/// <typeparam name="T">Тип элементов массива.</typeparam>
@@ -317,12 +317,12 @@ namespace Novartment.Base.Collections
 
 		/// <summary>
 		/// Разделяет последовательность на под-последовательности в местах,
-		/// отобранных по результатам применения указанной функции к элементам исходной последовательности.
+		/// отобранных по результатам применения указанной функции-фильтра к элементам исходной последовательности.
 		/// Отобранные функцией элементы не входят в результирующие под-последовательности.
 		/// </summary>
 		/// <typeparam name="T">Тип элементов последовательности.</typeparam>
 		/// <param name="collection">Исходная последовательность, которая будут разделена на под-последовательности.</param>
-		/// <param name="splitHereFunc">Функция, которая будет вызвана для каждого элемента исходной последовательности.
+		/// <param name="splitHereFunc">Функция-фильтр, которая будет вызвана для каждого элемента исходной последовательности.
 		/// Возвращает True для тех элементов, которые разделяют отдельные под-последовательности.</param>
 		/// <returns>Последовательность под-последовательностей.</returns>
 		public static IEnumerable<IReadOnlyList<T>> Split<T> (this IEnumerable<T> collection, Func<T, bool> splitHereFunc)
@@ -566,23 +566,6 @@ namespace Novartment.Base.Collections
 			return set;
 		}
 
-		/// <summary>Повторяет последовательность, пропуская null-элементы.</summary>
-		/// <typeparam name="T">Тип элементов последовательности.</typeparam>
-		/// <param name="source">Последовательность, элементы которой будут возвращены если отличны от null.</param>
-		/// <returns>Последовательность в которой пропущены null-элементы.</returns>
-		public static IEnumerable<T> WhereNotNull<T> (this IEnumerable<T> source)
-			where T : class
-		{
-			if (source == null)
-			{
-				throw new ArgumentNullException (nameof (source));
-			}
-
-			Contract.EndContractBlock ();
-
-			return source.Where (item => !(item is null));
-		}
-
 		/// <summary>
 		/// Пытается получить первый элемент указанной коллекции.
 		/// </summary>
@@ -750,7 +733,7 @@ namespace Novartment.Base.Collections
 				return true;
 			}
 
-			count = 0;
+			count = default;
 			return false;
 		}
 

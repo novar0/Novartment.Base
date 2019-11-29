@@ -116,6 +116,7 @@ namespace Novartment.Base.Text
 			}
 
 			int srcPos = 0;
+			var hexOctets = Hex.OctetsUpper.Span;
 			while ((srcPos < source.Length) && (outOffset < maxOutCount))
 			{
 				var octet = source[srcPos];
@@ -139,7 +140,7 @@ namespace Novartment.Base.Text
 						}
 
 						destination[outOffset++] = (byte)'=';
-						var hex = Hex.OctetsUpper[octet];
+						var hex = hexOctets[octet];
 						destination[outOffset++] = (byte)hex[0];
 						destination[outOffset++] = (byte)hex[1];
 					}

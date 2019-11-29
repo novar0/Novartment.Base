@@ -87,7 +87,7 @@ namespace Novartment.Base.Collections
 		/// </param>
 		/// <param name="offset">
 		/// Начальная позиция диапазона в исходном массиве.
-		/// Зацикливается через край массива, то есть offset + count может быть больше чем размер массива.
+		/// Зацикливается через край массива, то есть offset + count может быть больше, чем размер массива.
 		/// </param>
 		/// <param name="count">Количество элементов в диапазоне исходного массива.</param>
 		public ArrayList (T[] array, int offset, int count)
@@ -188,6 +188,35 @@ namespace Novartment.Base.Collections
 
 				_items[index] = value;
 			}
+		}
+
+		/// <summary>
+		/// Выделяет порцию внутреннего массива без копирования, указанную стартовой позицией и длиной.
+		/// </summary>
+		/// <param name="start">Стартовая позиция выделяемой порции.</param>
+		/// <param name="length">Длина порции.</param>
+		/// <returns>Новый экземпляр ArrayList, основанный на том же массиве, но с выделенной указанной порцией.</returns>
+		public ArrayList<T> Slice (int start, int length)
+		{
+			if ((start < 0) || (start > this.Count) || ((start == this.Count) && (length > 0)))
+			{
+				throw new ArgumentOutOfRangeException (nameof (length));
+			}
+
+			if ((length < 0) || ((start + length) > this.Count))
+			{
+				throw new ArgumentOutOfRangeException (nameof (length));
+			}
+
+			Contract.EndContractBlock ();
+
+			start += _head;
+			if (start >= _items.Length)
+			{
+				start -= _items.Length;
+			}
+
+			return new ArrayList<T> (_items, start, length);
 		}
 
 		/// <summary>

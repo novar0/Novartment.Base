@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics.Contracts;
-using Novartment.Base.Collections.Immutable;
 
 namespace Novartment.Base.Text
 {
@@ -14,7 +12,7 @@ namespace Novartment.Base.Text
 		/// Таблица шестнадцатеричных строковых передставлений (один символ) 4-битного числа.
 		/// Содержит -1 если символ не представляет собой шестнадцатеричное строковое представление числа.
 		/// </summary>
-		public static readonly IReadOnlyList<int> Chars = new ReadOnlyArray<int>(new int[]
+		public static readonly ReadOnlyMemory<int> Chars = new int[]
 		{
 #pragma warning disable SA1001 // Commas must be spaced correctly
 #pragma warning disable SA1021 // Negative signs must be spaced correctly
@@ -24,14 +22,14 @@ namespace Novartment.Base.Text
 			10,11,12,13,14,15,
 			-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,
 			10,11,12,13,14,15,
-		});
+		};
 #pragma warning restore SA1021 // Negative signs must be spaced correctly
 #pragma warning restore SA1001 // Commas must be spaced correctly
 
 		/// <summary>
 		/// Таблица шестнадцатеричных строковых передставлений 8-битных чисел.
 		/// </summary>
-		public static readonly IReadOnlyList<string> OctetsUpper = new ReadOnlyArray<string>(new string[]
+		public static readonly ReadOnlyMemory<string> OctetsUpper = new string[]
 		{
 			"00", "01", "02", "03", "04", "05", "06", "07", "08", "09", "0A", "0B", "0C", "0D", "0E", "0F",
 			"10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "1A", "1B", "1C", "1D", "1E", "1F",
@@ -49,7 +47,7 @@ namespace Novartment.Base.Text
 			"D0", "D1", "D2", "D3", "D4", "D5", "D6", "D7", "D8", "D9", "DA", "DB", "DC", "DD", "DE", "DF",
 			"E0", "E1", "E2", "E3", "E4", "E5", "E6", "E7", "E8", "E9", "EA", "EB", "EC", "ED", "EE", "EF",
 			"F0", "F1", "F2", "F3", "F4", "F5", "F6", "F7", "F8", "F9", "FA", "FB", "FC", "FD", "FE", "FF",
-		});
+		};
 
 		/// <summary>
 		/// Преобразовывает двухзначное шестнадцатеричное строковое представление в байт.
@@ -109,16 +107,18 @@ namespace Novartment.Base.Text
 		/// <returns>Байт, полученный из шестнадцатеричного строкового представления.</returns>
 		public static byte ParseByte (char character1, char character2)
 		{
-			var b1 = (character1 < Chars.Count) ? Chars[character1] : -1;
+			var chars = Chars.Span;
+			var octets = OctetsUpper.Span;
+			var b1 = (character1 < chars.Length) ? chars[character1] : -1;
 			if (b1 < 0)
 			{
-				throw new FormatException ("Invalid HEX char U+" + OctetsUpper[character1 >> 8] + OctetsUpper[character1 & 0xff] + ".");
+				throw new FormatException ("Invalid HEX char U+" + octets[character1 >> 8] + octets[character1 & 0xff] + ".");
 			}
 
-			var b2 = (character2 < Chars.Count) ? Chars[character2] : -1;
+			var b2 = (character2 < chars.Length) ? chars[character2] : -1;
 			if (b2 < 0)
 			{
-				throw new FormatException ("Invalid HEX char U+" + OctetsUpper[character2 >> 8] + OctetsUpper[character2 & 0xff] + ".");
+				throw new FormatException ("Invalid HEX char U+" + octets[character2 >> 8] + octets[character2 & 0xff] + ".");
 			}
 
 			return (byte)((b1 << 4) | b2);
@@ -173,10 +173,11 @@ namespace Novartment.Base.Text
 			Contract.EndContractBlock ();
 
 			var buf = new char[source.Length << 1];
+			var octets = OctetsUpper.Span;
 			for (var index = 0; index < source.Length; index++)
 			{
-				buf[index << 1] = OctetsUpper[source[index]][0];
-				buf[(index << 1) + 1] = OctetsUpper[source[index]][1];
+				buf[index << 1] = octets[source[index]][0];
+				buf[(index << 1) + 1] = octets[source[index]][1];
 			}
 
 			return new string (buf);

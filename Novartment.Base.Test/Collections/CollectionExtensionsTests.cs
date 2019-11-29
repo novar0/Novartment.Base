@@ -183,21 +183,6 @@ namespace Novartment.Base.Test
 
 		[Fact]
 		[Trait ("Category", "Collections.CollectionExtensions")]
-		public void Enumerable_WhereNotNull ()
-		{
-			var list1 = Repeat<string> (null, 2)
-				.Concat (Repeat<string> ("asfc", 1))
-				.Concat (Repeat<string> (null, 3))
-				.Concat (Repeat<string> ("123", 2));
-			var list2 = CollectionExtensions.WhereNotNull (list1).ToArray ();
-			Assert.Equal (3, list2.Length);
-			Assert.Equal ("asfc", list2[0]);
-			Assert.Equal ("123", list2[1]);
-			Assert.Equal ("123", list2[2]);
-		}
-
-		[Fact]
-		[Trait ("Category", "Collections.CollectionExtensions")]
 		public void Enumerable_TryGetCount ()
 		{
 			var list1 = Repeat<string> (null, 2)

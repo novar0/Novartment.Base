@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Text;
-using Novartment.Base.Collections.Immutable;
 
 namespace Novartment.Base.Text
 {
@@ -19,7 +18,7 @@ namespace Novartment.Base.Text
 		/// <summary>
 		/// Таблица принадлежности символов различным типам.
 		/// </summary>
-		public static readonly IReadOnlyList<short> Classes = new ReadOnlyArray<short> (new short[]
+		public static readonly IReadOnlyList<short> Classes = new short[]
 		{
 /*   0x00 000 */ 0,
 /*   0x01 001 */ 0,
@@ -149,7 +148,7 @@ namespace Novartment.Base.Text
 /* } 0x7d 125 */ (short)(AsciiCharClasses.Visible | AsciiCharClasses.Domain | AsciiCharClasses.QEncodingAllowedInUnstructured | AsciiCharClasses.Atom | AsciiCharClasses.Token | AsciiCharClasses.ExtendedToken),
 /* ~ 0x7e 126 */ (short)(AsciiCharClasses.Visible | AsciiCharClasses.Domain | AsciiCharClasses.QEncodingAllowedInUnstructured | AsciiCharClasses.Atom | AsciiCharClasses.Token | AsciiCharClasses.ExtendedToken | AsciiCharClasses.UrlSchemePart),
 /*   0x7f 127 */ 0,
-		});
+		};
 
 		/// <summary>
 		/// Проверяет принадлежит ли указанный символ указанному типу.
