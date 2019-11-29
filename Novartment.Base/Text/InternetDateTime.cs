@@ -385,11 +385,12 @@ namespace Novartment.Base.Text
 		/// </summary>
 		private static int SkipWhiteSpace (ReadOnlySpan<char> source, ref int pos)
 		{
+			var asciiClasses = AsciiCharSet.Classes.Span;
 			while (pos < source.Length)
 			{
 				var character = source[pos];
 
-				if ((character >= AsciiCharSet.Classes.Count) || ((AsciiCharSet.Classes[character] & (short)AsciiCharClasses.WhiteSpace) == 0))
+				if ((character >= asciiClasses.Length) || ((asciiClasses[character] & (short)AsciiCharClasses.WhiteSpace) == 0))
 				{
 					break;
 				}
@@ -406,11 +407,12 @@ namespace Novartment.Base.Text
 		private static ReadOnlySpan<char> ReadNonWhiteSpace (ReadOnlySpan<char> source, ref int pos)
 		{
 			var startPos = pos;
+			var asciiClasses = AsciiCharSet.Classes.Span;
 			while (pos < source.Length)
 			{
 				var character = source[pos];
 
-				if ((character < AsciiCharSet.Classes.Count) && ((AsciiCharSet.Classes[character] & (short)AsciiCharClasses.WhiteSpace) != 0))
+				if ((character < asciiClasses.Length) && ((asciiClasses[character] & (short)AsciiCharClasses.WhiteSpace) != 0))
 				{
 					break;
 				}

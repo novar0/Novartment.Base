@@ -66,10 +66,11 @@ namespace Novartment.Base.Text
 				return new EncodingBalance (0, 0);
 			}
 
+			var asciiClasses = AsciiCharSet.Classes.Span;
 			while ((srcPos < source.Length) && (dstPos < maxOutCount))
 			{
 				var octet = source[srcPos];
-				var isEnabledClass = (octet < AsciiCharSet.Classes.Count) && ((AsciiCharSet.Classes[octet] & (short)_enabledClasses) != 0);
+				var isEnabledClass = (octet < asciiClasses.Length) && ((asciiClasses[octet] & (short)_enabledClasses) != 0);
 				if (isEnabledClass)
 				{
 					dstPos++;
@@ -117,6 +118,7 @@ namespace Novartment.Base.Text
 
 			int srcPos = 0;
 			var hexOctets = Hex.OctetsUpper.Span;
+			var asciiClasses = AsciiCharSet.Classes.Span;
 			while ((srcPos < source.Length) && (outOffset < maxOutCount))
 			{
 				var octet = source[srcPos];
@@ -126,7 +128,7 @@ namespace Novartment.Base.Text
 				}
 				else
 				{
-					var isEnabledClass = (octet < AsciiCharSet.Classes.Count) && ((AsciiCharSet.Classes[octet] & (short)_enabledClasses) != 0);
+					var isEnabledClass = (octet < asciiClasses.Length) && ((asciiClasses[octet] & (short)_enabledClasses) != 0);
 					if (isEnabledClass)
 					{
 						destination[outOffset++] = octet;

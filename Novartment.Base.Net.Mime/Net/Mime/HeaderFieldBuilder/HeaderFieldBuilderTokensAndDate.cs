@@ -56,12 +56,13 @@ namespace Novartment.Base.Net.Mime
 				return 0;
 			}
 
+			var asciiClasses = AsciiCharSet.Classes.Span;
 			// An 'encoded-word' MUST NOT be used in a '*tokens' header field.
 			while ((_value != null) && (_pos < _value.Length))
 			{
 				var currentChar = _value[_pos];
-				var charClass = (currentChar < AsciiCharSet.Classes.Count) ?
-					(AsciiCharClasses)AsciiCharSet.Classes[currentChar] :
+				var charClass = (currentChar < asciiClasses.Length) ?
+					(AsciiCharClasses)asciiClasses[currentChar] :
 					AsciiCharClasses.None;
 				var isWhiteSpace = (charClass & AsciiCharClasses.WhiteSpace) != 0;
 				var isCrlf = (currentChar == 0x0d) && ((_pos + 1) < _value.Length) && (_value[_pos + 1] == 0x0a);

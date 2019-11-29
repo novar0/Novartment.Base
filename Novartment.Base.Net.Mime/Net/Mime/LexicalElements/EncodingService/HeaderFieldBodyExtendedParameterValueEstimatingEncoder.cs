@@ -64,10 +64,11 @@ namespace Novartment.Base.Net.Mime
 				return new EncodingBalance (0, 0);
 			}
 
+			var asciiClasses = AsciiCharSet.Classes.Span;
 			while ((srcPos < source.Length) && (dstPos < maxOutCount))
 			{
 				var octet = source[srcPos];
-				var isToken = (octet != '%') && (octet < AsciiCharSet.Classes.Count) && ((AsciiCharSet.Classes[octet] & (short)AsciiCharClasses.Token) != 0);
+				var isToken = (octet != '%') && (octet < asciiClasses.Length) && ((asciiClasses[octet] & (short)AsciiCharClasses.Token) != 0);
 				if (!isToken)
 				{
 					if ((dstPos + 3) > maxOutCount)
@@ -117,10 +118,11 @@ namespace Novartment.Base.Net.Mime
 
 			int srcPos = 0;
 			var hexOctets = Hex.OctetsUpper.Span;
+			var asciiClasses = AsciiCharSet.Classes.Span;
 			while ((srcPos < source.Length) && (outOffset < maxOutCount))
 			{
 				var octet = source[srcPos];
-				var isToken = (octet != '%') && (octet < AsciiCharSet.Classes.Count) && ((AsciiCharSet.Classes[octet] & (short)AsciiCharClasses.Token) != 0);
+				var isToken = (octet != '%') && (octet < asciiClasses.Length) && ((asciiClasses[octet] & (short)AsciiCharClasses.Token) != 0);
 				if (!isToken)
 				{
 					// знак процента вместо символа, потом два шест.знака

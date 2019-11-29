@@ -63,10 +63,11 @@ namespace Novartment.Base.Text
 				return new EncodingBalance (0, 0);
 			}
 
+			var asciiClasses = AsciiCharSet.Classes.Span;
 			while ((srcPos < source.Length) && (dstPos < maxOutCount))
 			{
 				var octet = source[srcPos];
-				var isEnabledClass = (octet < AsciiCharSet.Classes.Count) && ((AsciiCharSet.Classes[octet] & (short)_enabledClasses) != 0);
+				var isEnabledClass = (octet < asciiClasses.Length) && ((asciiClasses[octet] & (short)_enabledClasses) != 0);
 				if (!isEnabledClass)
 				{
 					break;
@@ -120,10 +121,11 @@ namespace Novartment.Base.Text
 
 			destination[outOffset++] = (byte)'"'; // начальная кавычка
 			maxOutCount--; // уменьшаем лимит на конечную кавычку
+			var asciiClasses = AsciiCharSet.Classes.Span;
 			while ((srcPos < source.Length) && (outOffset < maxOutCount))
 			{
 				var octet = source[srcPos];
-				var isEnabledClass = (octet < AsciiCharSet.Classes.Count) && ((AsciiCharSet.Classes[octet] & (short)_enabledClasses) != 0);
+				var isEnabledClass = (octet < asciiClasses.Length) && ((asciiClasses[octet] & (short)_enabledClasses) != 0);
 				if (!isEnabledClass)
 				{
 					break;

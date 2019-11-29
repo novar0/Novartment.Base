@@ -105,10 +105,11 @@ namespace Novartment.Base.Net.Mime
 			{
 				// проверяем что все символы ASCII
 				var subPos = 0;
+				var asciiClasses = AsciiCharSet.Classes.Span;
 				while (subPos < source.Length)
 				{
 					var octet = source[subPos];
-					if ((octet >= AsciiCharSet.Classes.Count) || ((AsciiCharSet.Classes[octet] & (short)(AsciiCharClasses.Visible | AsciiCharClasses.WhiteSpace)) == 0))
+					if ((octet >= asciiClasses.Length) || ((asciiClasses[octet] & (short)(AsciiCharClasses.Visible | AsciiCharClasses.WhiteSpace)) == 0))
 					{
 						// значение, требующее кодирования или первый сегмент многосегментного значения
 						// должны использовать только ExtendedParameterEncoder

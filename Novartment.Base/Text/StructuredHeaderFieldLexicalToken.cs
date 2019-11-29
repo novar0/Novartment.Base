@@ -206,10 +206,11 @@ namespace Novartment.Base.Text
 						break;
 					default:
 						var valuePos = position;
+						var asciiClasses = AsciiCharSet.Classes.Span;
 						while (position < source.Length)
 						{
 							var octet = source[position];
-							if ((octet >= AsciiCharSet.Classes.Count) || ((AsciiCharSet.Classes[octet] & (short)valueCharClass) == 0))
+							if ((octet >= asciiClasses.Length) || ((asciiClasses[octet] & (short)valueCharClass) == 0))
 							{
 								break;
 							}
@@ -240,7 +241,7 @@ namespace Novartment.Base.Text
 								while (position < source.Length)
 								{
 									var octet = source[position];
-									if ((octet >= AsciiCharSet.Classes.Count) || ((AsciiCharSet.Classes[octet] & (short)valueCharClass) == 0))
+									if ((octet >= asciiClasses.Length) || ((asciiClasses[octet] & (short)valueCharClass) == 0))
 									{
 										break;
 									}

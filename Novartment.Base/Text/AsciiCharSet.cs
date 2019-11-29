@@ -18,7 +18,7 @@ namespace Novartment.Base.Text
 		/// <summary>
 		/// Таблица принадлежности символов различным типам.
 		/// </summary>
-		public static readonly IReadOnlyList<short> Classes = new short[]
+		public static readonly ReadOnlyMemory<short> Classes = new short[]
 		{
 /*   0x00 000 */ 0,
 /*   0x01 001 */ 0,
@@ -158,7 +158,7 @@ namespace Novartment.Base.Text
 		/// <returns>True если символ принадлежит указанному типу, иначе False.</returns>
 		public static bool IsCharOfClass (char character, AsciiCharClasses charClass)
 		{
-			return (character < Classes.Count) && ((Classes[character] & (short)charClass) != 0);
+			return (character < Classes.Length) && ((Classes.Span[character] & (short)charClass) != 0);
 		}
 
 		/// <summary>
@@ -195,10 +195,11 @@ namespace Novartment.Base.Text
 			Contract.EndContractBlock ();
 
 			var currentPos = 0;
+			var classes = Classes.Span;
 			while (currentPos < value.Length)
 			{
 				var character = value[currentPos];
-				if ((character >= Classes.Count) || ((Classes[character] & (short)characterClass) == 0))
+				if ((character >= classes.Length) || ((classes[character] & (short)characterClass) == 0))
 				{
 					return false;
 				}
@@ -248,6 +249,7 @@ namespace Novartment.Base.Text
 			Contract.EndContractBlock ();
 
 			int currentPos = 0;
+			var asciiClasses = AsciiCharSet.Classes.Span;
 			while (currentPos < value.Length)
 			{
 				var isSurrogatePair = char.IsSurrogatePair (value[currentPos], value[currentPos + 1]);
@@ -258,7 +260,7 @@ namespace Novartment.Base.Text
 				else
 				{
 					var character = value[currentPos];
-					if ((character < Classes.Count) && ((Classes[character] & (short)characterClass) != 0))
+					if ((character < asciiClasses.Length) && ((asciiClasses[character] & (short)characterClass) != 0))
 					{
 						return true;
 					}

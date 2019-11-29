@@ -48,7 +48,8 @@ namespace Novartment.Base.Text
 			Contract.EndContractBlock ();
 
 			int pos = 0;
-			while ((pos < source.Length) && (pos < maxOutCount) && (source[pos] < AsciiCharSet.Classes.Count) && ((AsciiCharSet.Classes[source[pos]] & (short)_enabledClass) != 0))
+			var asciiClasses = AsciiCharSet.Classes.Span;
+			while ((pos < source.Length) && (pos < maxOutCount) && (source[pos] < asciiClasses.Length) && ((asciiClasses[source[pos]] & (short)_enabledClass) != 0))
 			{
 				pos++;
 			}
@@ -68,10 +69,11 @@ namespace Novartment.Base.Text
 		{
 			var pos = 0;
 			var outOffset = 0;
+			var asciiClasses = AsciiCharSet.Classes.Span;
 			while ((pos < source.Length) && (pos < destination.Length))
 			{
 				var octet = source[pos];
-				if ((octet >= AsciiCharSet.Classes.Count) || ((AsciiCharSet.Classes[octet] & (short)_enabledClass) == 0))
+				if ((octet >= asciiClasses.Length) || ((asciiClasses[octet] & (short)_enabledClass) == 0))
 				{
 					break;
 				}

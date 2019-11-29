@@ -118,11 +118,12 @@ namespace Novartment.Base.Text
 
 			// пропускаем все символы класса RFC 2047 'token'
 			var charsetAndLangStrLength = 0;
+			var asciiClasses = AsciiCharSet.Classes.Span;
 			while (charsetAndLangStrLength < source.Length)
 			{
 				var character = source[charsetAndLangStrLength];
 
-				if ((character >= AsciiCharSet.Classes.Count) || ((AsciiCharSet.Classes[character] & (short)AsciiCharClasses.ExtendedToken) == 0))
+				if ((character >= asciiClasses.Length) || ((asciiClasses[character] & (short)AsciiCharClasses.ExtendedToken) == 0))
 				{
 					break;
 				}
