@@ -2,10 +2,10 @@
 
 	<PropertyGroup>
     <AssemblyName>Novartment.BaseWindows</AssemblyName>
-		<TargetFramework>netcoreapp3.0</TargetFramework>
+		<TargetFramework>netcoreapp3.1</TargetFramework>
 		<UseWPF>true</UseWPF>
-		<Version>3.0.4-beta</Version>
-		<Description>Base classes for .Net Core 3.0 on Windows</Description>
+		<Version>3.0.5-beta</Version>
+		<Description>Base classes for .Net Core on Windows</Description>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 		<Features>IOperation</Features>
