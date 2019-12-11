@@ -26,9 +26,10 @@ namespace Novartment.Base.Test
 
 			// части в середине источника
 			var subSrc = new BigBufferedSourceMock (long.MaxValue, srcBufSize, FillFunction);
-			subSrc.TryFastSkipAsync (skipBeforeLimitingSize).Wait ();
+			subSrc.TryFastSkipAsync (skipBeforeLimitingSize);
 			var src = new TemplateSeparatedBufferedSource (subSrc, separator, false);
-			src.EnsureBufferAsync (skipBufferSize + 3).Wait ();
+			var vTask = src.EnsureBufferAsync (skipBufferSize + 3);
+			Assert.True (vTask.IsCompletedSuccessfully);
 			Assert.Equal (FillFunction (skipBeforeLimitingSize), src.BufferMemory.Span[src.Offset]);
 			Assert.Equal (FillFunction (skipBeforeLimitingSize + 1), src.BufferMemory.Span[src.Offset + 1]);
 			Assert.Equal (FillFunction (skipBeforeLimitingSize + 2), src.BufferMemory.Span[src.Offset + 2]);
@@ -37,7 +38,8 @@ namespace Novartment.Base.Test
 			Assert.Equal (FillFunction (skipBeforeLimitingSize + skipBufferSize + 1), src.BufferMemory.Span[src.Offset + 1]);
 			Assert.Equal (FillFunction (skipBeforeLimitingSize + skipBufferSize + 2), src.BufferMemory.Span[src.Offset + 2]);
 			Assert.True (src.TrySkipPartAsync ().Result);
-			src.EnsureBufferAsync (3).Wait ();
+			vTask = src.EnsureBufferAsync (3);
+			Assert.True (vTask.IsCompletedSuccessfully);
 			Assert.Equal (FillFunction (secondPartPos), src.BufferMemory.Span[src.Offset]);
 			Assert.Equal (FillFunction (secondPartPos + 1), src.BufferMemory.Span[src.Offset + 1]);
 			Assert.Equal (FillFunction (secondPartPos + 2), src.BufferMemory.Span[src.Offset + 2]);
@@ -46,7 +48,7 @@ namespace Novartment.Base.Test
 			// части в конце источника
 			long size = 4611686018427387904L;
 			subSrc = new BigBufferedSourceMock (size, srcBufSize, FillFunction);
-			subSrc.TryFastSkipAsync (size - 256 - 256 - 20).Wait (); // отступаем так чтобы осталось две части с хвостиком
+			subSrc.TryFastSkipAsync (size - 256 - 256 - 20); // отступаем так чтобы осталось две части с хвостиком
 			src = new TemplateSeparatedBufferedSource (subSrc, separator, false);
 			Assert.True (src.TrySkipPartAsync ().Result);
 			Assert.True (src.TrySkipPartAsync ().Result);
@@ -76,7 +78,8 @@ namespace Novartment.Base.Test
 				source.SkipBuffer (available);
 				skipped += (long)available;
 
-				source.FillBufferAsync ().Wait ();
+				var vTask = source.FillBufferAsync ();
+				Assert.True (vTask.IsCompletedSuccessfully);
 			}
 
 			var remainder = source.Count;

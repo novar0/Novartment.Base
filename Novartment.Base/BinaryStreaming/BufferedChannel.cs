@@ -129,7 +129,7 @@ namespace Novartment.Base.BinaryStreaming
 		/// Может быть меньше, чем было указано, если канал исчерпан.
 		/// После завершения задачи, независимо от её результата, канал будет предоставлять данные, идущие сразу за пропущенными.
 		/// </returns>
-		public Task<long> TryFastSkipAsync (long size, CancellationToken cancellationToken = default)
+		public ValueTask<long> TryFastSkipAsync (long size, CancellationToken cancellationToken = default)
 		{
 			if (size < 0L)
 			{
@@ -148,7 +148,7 @@ namespace Novartment.Base.BinaryStreaming
 			_count -= (int)chunkSize;
 			if (size < 1L)
 			{
-				return Task.FromResult (skipped);
+				return new ValueTask<long> (skipped);
 			}
 
 			// этап 2: пропускаем зарезервированные и отложенные данные
@@ -160,7 +160,7 @@ namespace Novartment.Base.BinaryStreaming
 				skipped += chunkSize;
 				if (_isCompleted || (size < 1L))
 				{
-					return Task.FromResult (skipped);
+					return new ValueTask<long> (skipped);
 				}
 
 				_sizeToSkipOnWrite = size;
@@ -171,7 +171,7 @@ namespace Novartment.Base.BinaryStreaming
 			// в методе записи сразу будет пропущено указанное в _sizeToSkipOnWrite количество
 			return TrySkipAsyncStateMachine ();
 
-			async Task<long> TrySkipAsyncStateMachine ()
+			async ValueTask<long> TrySkipAsyncStateMachine ()
 			{
 				while (true)
 				{
@@ -206,7 +206,7 @@ namespace Novartment.Base.BinaryStreaming
 		/// Будут объеденены и доступны как одна порция все записанные в канал данные,
 		/// для которых хватило места в буфере.
 		/// </remarks>
-		public async Task FillBufferAsync (CancellationToken cancellationToken = default)
+		public async ValueTask FillBufferAsync (CancellationToken cancellationToken = default)
 		{
 			cancellationToken.ThrowIfCancellationRequested ();
 
@@ -228,7 +228,7 @@ namespace Novartment.Base.BinaryStreaming
 		/// Для отмены ожидания новых данных вызывайте метод SetComplete().
 		/// </param>
 		/// <returns>Задача, представляющая операцию.</returns>
-		public Task EnsureBufferAsync (int size, CancellationToken cancellationToken = default)
+		public ValueTask EnsureBufferAsync (int size, CancellationToken cancellationToken = default)
 		{
 			if ((size < 0) || (size > this.BufferMemory.Length))
 			{
@@ -237,9 +237,9 @@ namespace Novartment.Base.BinaryStreaming
 
 			Contract.EndContractBlock ();
 
-			return size <= _count ? Task.CompletedTask : EnsureBufferAsyncStateMachine ();
+			return size <= _count ? default : EnsureBufferAsyncStateMachine ();
 
-			async Task EnsureBufferAsyncStateMachine ()
+			async ValueTask EnsureBufferAsyncStateMachine ()
 			{
 				// ждём записи в канал, пока не наберём необходимое количество данных
 				bool isExhausted;
@@ -298,7 +298,7 @@ namespace Novartment.Base.BinaryStreaming
 		/// <exception cref="System.InvalidOperationException">
 		/// Возникает если предоставление данных в канал окончено.
 		/// </exception>
-		public Task WriteAsync (ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default)
+		public ValueTask WriteAsync (ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default)
 		{
 			var offset = 0;
 			var count = buffer.Length;
@@ -318,22 +318,22 @@ namespace Novartment.Base.BinaryStreaming
 					_sizeToSkipOnWrite -= chunkSize;
 				}
 
-				Task result;
+				ValueTask result;
 				if (count < 1)
 				{
-					result = Task.CompletedTask;
+					result = default;
 				}
 				else
 				{
 					var isDataProcessed = ReserveData (buffer.Slice (offset, count));
 					if (isDataProcessed)
 					{
-						result = Task.CompletedTask;
+						result = default;
 					}
 					else
 					{
 						_pendingDataConsumption = new TaskCompletionSource<int> ();
-						result = _pendingDataConsumption.Task;
+						result = new ValueTask (_pendingDataConsumption.Task);
 					}
 				}
 

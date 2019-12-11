@@ -15,9 +15,9 @@ namespace Novartment.Base.Net.Test
 
 		public int Offset => 0;
 
-		public Task EnsureBufferAsync (int size, CancellationToken cancellationToken) => Task.Delay (100);
+		public ValueTask EnsureBufferAsync (int size, CancellationToken cancellationToken) => new ValueTask (Task.Delay (100));
 
-		public Task FillBufferAsync (CancellationToken cancellationToken) => Task.CompletedTask;
+		public ValueTask FillBufferAsync (CancellationToken cancellationToken) => default;
 
 		public void SkipBuffer (int size)
 		{

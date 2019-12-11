@@ -38,7 +38,7 @@ namespace Novartment.Base.Net
 		/// Получает тело поля заголовка.
 		/// Тело представлено в кодированном виде, готовом для передачи по сетевым протоколам.
 		/// </summary>
-		public Memory<byte> Body { get; }
+		public ReadOnlyMemory<byte> Body { get; }
 
 		/// <summary>
 		/// Определяет равенство двух указанных объектов.

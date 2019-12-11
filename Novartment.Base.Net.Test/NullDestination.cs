@@ -11,6 +11,6 @@ namespace Novartment.Base.Net.Test
 		{
 		}
 
-		public Task WriteAsync (ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken) => Task.CompletedTask;
+		public ValueTask WriteAsync (ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken) => default;
 	}
 }

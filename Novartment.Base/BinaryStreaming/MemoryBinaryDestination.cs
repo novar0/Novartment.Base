@@ -54,10 +54,10 @@ namespace Novartment.Base
 		/// <param name="buffer">Буфер, из которого записываются данные.</param>
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
 		/// <returns>Задача, представляющая асинхронную операцию записи.</returns>
-		public Task WriteAsync (ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default)
+		public ValueTask WriteAsync (ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default)
 		{
 			Write (buffer.Span);
-			return Task.CompletedTask;
+			return default;
 		}
 
 		/// <summary>

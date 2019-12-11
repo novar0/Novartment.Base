@@ -519,7 +519,7 @@ namespace Novartment.Base.Net.Smtp
 			{
 				// не поздоровались или не начали транзакцию
 				return bdatCommand.SourceData
-					.SkipToEndAsync (cancellationToken) // пропускаем все данные (предотвратить их передачу невозможно)
+					.SkipToEndAsync (cancellationToken).AsTask () // пропускаем все данные (предотвратить их передачу невозможно)
 					.ContinueWith<SmtpReplyWithGroupingMark> (
 						notUsed => { throw new BadSequenceOfSmtpCommandsException (); },
 						default,
@@ -532,7 +532,7 @@ namespace Novartment.Base.Net.Smtp
 				// не указаны получатели
 				ResetTransaction ();
 				return bdatCommand.SourceData
-					.SkipToEndAsync (cancellationToken) // пропускаем все данные (предотвратить их передачу невозможно)
+					.SkipToEndAsync (cancellationToken).AsTask () // пропускаем все данные (предотвратить их передачу невозможно)
 					.ContinueWith<SmtpReplyWithGroupingMark> (
 						notUsed => { throw new NoValidRecipientsException (); },
 						default,

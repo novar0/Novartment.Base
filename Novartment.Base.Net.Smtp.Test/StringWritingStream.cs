@@ -13,11 +13,11 @@ namespace Novartment.Base.Smtp.Test
 
 		internal Queue<string> Queue => _queue;
 
-		public Task WriteAsync (ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default)
+		public ValueTask WriteAsync (ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default)
 		{
 			var str = Encoding.ASCII.GetString (buffer.Span);
 			_queue.Enqueue (str);
-			return Task.CompletedTask;
+			return default;
 		}
 
 		public void SetComplete ()

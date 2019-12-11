@@ -6,7 +6,7 @@ namespace Novartment.Base.Sample
 	{
 		public static void Main ()
 		{
-			SmtpSamples.SendOneMessageAsync (default).Wait ();
+			//SmtpSamples.SendOneMessageAsync (default).Wait ();
 			SmtpSamples.StartSmtpServer ().Wait ();
 			EbmlSamples.CreateChaptersFromMultipleMkvs (default).Wait ();
 			RiffSamples.CreateChaptersFromMultipleAviAsync (default).Wait ();

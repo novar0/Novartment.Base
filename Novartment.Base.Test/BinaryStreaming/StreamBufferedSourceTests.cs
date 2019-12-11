@@ -19,10 +19,12 @@ namespace Novartment.Base.Test
 			var data = Array.Empty<byte> ();
 			var strm = new MemoryStream (data);
 			var src = strm.AsBufferedSource (new byte[bufSize]);
-			src.FillBufferAsync (default).Wait ();
+			var vTask = src.FillBufferAsync (default);
+			Assert.True (vTask.IsCompletedSuccessfully);
 			Assert.Equal (0, src.Count);
 			Assert.Equal (0, src.TryFastSkipAsync (1, default).Result);
-			src.FillBufferAsync (default).Wait ();
+			vTask = src.FillBufferAsync (default);
+			Assert.True (vTask.IsCompletedSuccessfully);
 			Assert.True (src.IsExhausted);
 			Assert.Equal (0, src.Count);
 		}
@@ -40,19 +42,23 @@ namespace Novartment.Base.Test
 			var strm = new MemoryStream (data);
 
 			var src = strm.AsBufferedSource (new byte[bufSize]);
-			src.EnsureBufferAsync (1, default).Wait ();
+			var vTask = src.EnsureBufferAsync (1, default);
+			Assert.True (vTask.IsCompletedSuccessfully);
 			Assert.Equal (nnn, src.BufferMemory.Span[src.Offset]);
 			src.SkipBuffer (1);
-			src.FillBufferAsync (default).Wait ();
+			vTask = src.FillBufferAsync (default);
+			Assert.True (vTask.IsCompletedSuccessfully);
 			Assert.True (src.IsExhausted);
 			Assert.Equal (0, src.Count);
 
 			strm.Seek (0, SeekOrigin.Begin);
 			src = strm.AsBufferedSource (new byte[bufSize]);
-			src.FillBufferAsync (default).Wait ();
+			vTask = src.FillBufferAsync (default);
+			Assert.True (vTask.IsCompletedSuccessfully);
 			Assert.Equal (nnn, src.BufferMemory.Span[src.Offset]);
 			Assert.Equal (1, src.TryFastSkipAsync (bufSize, default).Result);
-			src.FillBufferAsync (default).Wait ();
+			vTask = src.FillBufferAsync (default);
+			Assert.True (vTask.IsCompletedSuccessfully);
 			Assert.True (src.IsExhausted);
 			Assert.Equal (0, src.Count);
 		}
@@ -80,21 +86,41 @@ namespace Novartment.Base.Test
 		{
 			var strm = new BigStreamMock (dataSize, canSeek, FillFunction);
 			var src = strm.AsBufferedSource (new byte[bufSize]);
-			src.EnsureBufferAsync (3, default).Wait ();
+			var vTask = src.EnsureBufferAsync (3, default);
+			if (!vTask.IsCompletedSuccessfully)
+			{
+				vTask.AsTask ().GetAwaiter ().GetResult ();
+			}
 			Assert.Equal (FillFunction(0), src.BufferMemory.Span[src.Offset]);
 			Assert.Equal (FillFunction(1), src.BufferMemory.Span[src.Offset + 1]);
 			Assert.Equal (FillFunction(2), src.BufferMemory.Span[src.Offset + 2]);
 			Assert.Equal (skipOverall1, src.TryFastSkipAsync (skipOverall1, default).Result);
-			src.EnsureBufferAsync (skipBuffer1, default).Wait ();
+			vTask = src.EnsureBufferAsync (skipBuffer1, default);
+			if (!vTask.IsCompletedSuccessfully)
+			{
+				vTask.AsTask ().GetAwaiter ().GetResult ();
+			}
 			src.SkipBuffer (skipBuffer1);
-			src.EnsureBufferAsync (3, default).Wait ();
+			vTask = src.EnsureBufferAsync (3, default);
+			if (!vTask.IsCompletedSuccessfully)
+			{
+				vTask.AsTask ().GetAwaiter ().GetResult ();
+			}
 			Assert.Equal (FillFunction(skipOverall1 + skipBuffer1), src.BufferMemory.Span[src.Offset]);
 			Assert.Equal (FillFunction(skipOverall1 + skipBuffer1 + 1), src.BufferMemory.Span[src.Offset + 1]);
 			Assert.Equal (FillFunction(skipOverall1 + skipBuffer1 + 2), src.BufferMemory.Span[src.Offset + 2]);
 			Assert.Equal (skipOverall2, src.TryFastSkipAsync (skipOverall2, default).Result);
-			src.EnsureBufferAsync (skipBuffer2, default).Wait ();
+			vTask = src.EnsureBufferAsync (skipBuffer2, default);
+			if (!vTask.IsCompletedSuccessfully)
+			{
+				vTask.AsTask ().GetAwaiter ().GetResult ();
+			}
 			src.SkipBuffer (skipBuffer2);
-			src.EnsureBufferAsync (3, default).Wait ();
+			vTask = src.EnsureBufferAsync (3, default);
+			if (!vTask.IsCompletedSuccessfully)
+			{
+				vTask.AsTask ().GetAwaiter ().GetResult ();
+			}
 			Assert.Equal (FillFunction(skipOverall1 + skipOverall2 + skipBuffer1 + skipBuffer2), src.BufferMemory.Span[src.Offset]);
 			Assert.Equal (FillFunction(skipOverall1 + skipOverall2 + skipBuffer1 + skipBuffer2 + 1), src.BufferMemory.Span[src.Offset + 1]);
 			Assert.Equal (FillFunction(skipOverall1 + skipOverall2 + skipBuffer1 + skipBuffer2 + 2), src.BufferMemory.Span[src.Offset + 2]);

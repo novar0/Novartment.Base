@@ -22,6 +22,12 @@ namespace Novartment.Base.Net
 		/// <param name="socket">Сокет, в который будет производиться запись.</param>
 		public SocketBinaryDestination (Socket socket)
 		{
+			if (socket == null)
+			{
+				throw new ArgumentNullException (nameof (socket));
+			}
+			Contract.EndContractBlock ();
+
 			_socket = socket;
 		}
 
@@ -44,7 +50,7 @@ namespace Novartment.Base.Net
 		/// <param name="buffer">Буфер, из которого записываются данные.</param>
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
 		/// <returns>Задача, представляющая асинхронную операцию записи.</returns>
-		public Task WriteAsync (ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default)
+		public ValueTask WriteAsync (ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default)
 		{
 			if (_isCompleted)
 			{
@@ -52,10 +58,12 @@ namespace Novartment.Base.Net
 			}
 
 #if NETSTANDARD2_1
-			return _socket.SendAsync (buffer, SocketFlags.None, cancellationToken).AsTask ();
+			var vTask = _socket.SendAsync (buffer, SocketFlags.None, cancellationToken);
+			return (vTask.IsCompletedSuccessfully) ?
+				default :
+				new ValueTask (vTask.AsTask ());
 #else
-			// TODO: как то переделать чтобы не создавать временный массив и ArraySegment
-			return _socket.SendAsync (new ArraySegment<byte> (buffer.ToArray (), 0, buffer.Length), SocketFlags.None);
+			return new ValueTask (_socket.SendAsync (new ArraySegment<byte> (buffer.ToArray (), 0, buffer.Length), SocketFlags.None));
 #endif
 		}
 	}

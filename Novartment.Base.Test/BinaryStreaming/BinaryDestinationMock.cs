@@ -20,7 +20,7 @@ namespace Novartment.Base.Test
 
 		public int Count => _count;
 
-		public Task WriteAsync (ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default)
+		public ValueTask WriteAsync (ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default)
 		{
 			if (_completed)
 			{
@@ -29,7 +29,7 @@ namespace Novartment.Base.Test
 
 			buffer.CopyTo (_buffer.AsMemory (_count, _buffer.Length - _count));
 			_count += buffer.Length;
-			return Task.CompletedTask;
+			return default;
 		}
 
 		public void SetComplete ()

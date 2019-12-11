@@ -52,7 +52,7 @@ namespace Novartment.Base.Test
 			}
 		}
 
-		public Task FillBufferAsync (CancellationToken cancellationToken = default)
+		public ValueTask FillBufferAsync (CancellationToken cancellationToken = default)
 		{
 			if (!_isExhausted)
 			{
@@ -84,10 +84,10 @@ namespace Novartment.Base.Test
 				_position += i;
 			}
 
-			return Task.CompletedTask;
+			return default;
 		}
 
-		public Task EnsureBufferAsync (int size, CancellationToken cancellationToken = default)
+		public ValueTask EnsureBufferAsync (int size, CancellationToken cancellationToken = default)
 		{
 			if ((size < 0) || (size > this.BufferMemory.Length))
 			{
@@ -136,10 +136,10 @@ namespace Novartment.Base.Test
 				}
 			}
 
-			return Task.CompletedTask;
+			return default;
 		}
 
-		public Task<long> TryFastSkipAsync (long size, CancellationToken cancellationToken = default)
+		public ValueTask<long> TryFastSkipAsync (long size, CancellationToken cancellationToken = default)
 		{
 			if (size < 0L)
 			{
@@ -151,7 +151,7 @@ namespace Novartment.Base.Test
 			if (size <= (long)availableBuffer)
 			{
 				_offset += (int)size;
-				return Task.FromResult (size);
+				return new ValueTask<long> (size);
 			}
 
 			if (availableBuffer > 0)
@@ -174,7 +174,7 @@ namespace Novartment.Base.Test
 				skipped += size;
 			}
 
-			return Task.FromResult (skipped);
+			return new ValueTask<long> (skipped);
 		}
 	}
 }

@@ -120,7 +120,7 @@ namespace Novartment.Base.BinaryStreaming
 		/// <returns>Задача, представляющая операцию.
 		/// Если после завершения в Count будет ноль,
 		/// то источник исчерпан и доступных данных в буфере больше не будет.</returns>
-		public async Task FillBufferAsync (CancellationToken cancellationToken = default)
+		public async ValueTask FillBufferAsync (CancellationToken cancellationToken = default)
 		{
 			if (!_isExhausted && (_count < _buffer.Length))
 			{
@@ -143,7 +143,7 @@ namespace Novartment.Base.BinaryStreaming
 		/// <param name="size">Требуемый размер данных в буфере.</param>
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
 		/// <returns>Задача, представляющая операцию.</returns>
-		public Task EnsureBufferAsync (int size, CancellationToken cancellationToken = default)
+		public ValueTask EnsureBufferAsync (int size, CancellationToken cancellationToken = default)
 		{
 			if ((size < 0) || (size > this.BufferMemory.Length))
 			{
@@ -159,14 +159,14 @@ namespace Novartment.Base.BinaryStreaming
 					throw new NotEnoughDataException (size - _count);
 				}
 
-				return Task.CompletedTask;
+				return default;
 			}
 
 			Defragment ();
 
 			return EnsureBufferAsyncStateMachine ();
 
-			async Task EnsureBufferAsyncStateMachine ()
+			async ValueTask EnsureBufferAsyncStateMachine ()
 			{
 				var shortage = size - _count;
 
@@ -183,13 +183,13 @@ namespace Novartment.Base.BinaryStreaming
 			}
 		}
 
-		private Task<int> FillBufferChunkAsync (CancellationToken cancellationToken)
+		private ValueTask<int> FillBufferChunkAsync (CancellationToken cancellationToken)
 		{
 			int sizeTransformed = LoadFromCache ();
 			if (sizeTransformed > 0)
 			{
 				_count += sizeTransformed;
-				return Task.FromResult (sizeTransformed);
+				return new ValueTask<int> (sizeTransformed);
 			}
 
 			var sourceAvailableSize = _source.Count;
@@ -201,14 +201,12 @@ namespace Novartment.Base.BinaryStreaming
 			{
 				sizeTransformed = LoadFromTransformedSource ();
 				_count += sizeTransformed;
-				return Task.FromResult (sizeTransformed);
+				return new ValueTask<int> (sizeTransformed);
 			}
 
-			var task = _source.FillBufferAsync (cancellationToken);
+			return FillBufferChunkAsyncFinalizer (_source.FillBufferAsync (cancellationToken));
 
-			return FillBufferChunkAsyncFinalizer ();
-
-			async Task<int> FillBufferChunkAsyncFinalizer ()
+			async ValueTask<int> FillBufferChunkAsyncFinalizer (ValueTask task)
 			{
 				await task.ConfigureAwait (false);
 				if ((_source.Count < _cryptoTransform.InputBlockSize) && !_source.IsExhausted)

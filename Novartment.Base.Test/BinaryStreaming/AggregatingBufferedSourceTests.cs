@@ -14,9 +14,9 @@ namespace Novartment.Base.Test
 			int srcBufSize = 20;
 			var src1 = new BigBufferedSourceMock (3L, srcBufSize, FillFunction);
 			var src2 = new BigBufferedSourceMock ((long)int.MaxValue + 56L, srcBufSize, FillFunction);
-			src2.TryFastSkipAsync (54).Wait ();
+			src2.TryFastSkipAsync (54);
 			var src3 = new BigBufferedSourceMock (24L, srcBufSize, FillFunction);
-			src3.TryFastSkipAsync (20).Wait ();
+			src3.TryFastSkipAsync (20);
 			var sources = new JobCompletionSource<IBufferedSource, int>[]
 			{
 				new JobCompletionSource<IBufferedSource, int> (src1),
@@ -33,7 +33,8 @@ namespace Novartment.Base.Test
 			Assert.False (sources[1].Task.IsCompleted);
 			Assert.False (sources[2].Task.IsCompleted);
 
-			src.EnsureBufferAsync (6).Wait ();
+			var vTask = src.EnsureBufferAsync (6);
+			Assert.True (vTask.IsCompletedSuccessfully);
 			Assert.False (src.IsExhausted);
 			Assert.Equal (TaskStatus.RanToCompletion, sources[0].Task.Status);
 			Assert.False (sources[1].Task.IsCompleted);
@@ -52,7 +53,8 @@ namespace Novartment.Base.Test
 			Assert.Equal (TaskStatus.RanToCompletion, sources[1].Task.Status);
 			Assert.False (sources[2].Task.IsCompleted);
 
-			src.EnsureBufferAsync (3).Wait ();
+			vTask = src.EnsureBufferAsync (3);
+			Assert.True (vTask.IsCompletedSuccessfully);
 			Assert.Equal (TaskStatus.RanToCompletion, sources[0].Task.Status);
 			Assert.Equal (TaskStatus.RanToCompletion, sources[1].Task.Status);
 			Assert.Equal (TaskStatus.RanToCompletion, sources[2].Task.Status);
@@ -60,7 +62,8 @@ namespace Novartment.Base.Test
 			Assert.Equal (FillFunction (22), src.BufferMemory.Span[src.Offset + 1]);
 			Assert.Equal (FillFunction (23), src.BufferMemory.Span[src.Offset + 2]);
 			src.SkipBuffer (3);
-			src.FillBufferAsync ().Wait ();
+			vTask = src.FillBufferAsync ();
+			Assert.True (vTask.IsCompletedSuccessfully);
 			Assert.True (src.IsExhausted);
 		}
 

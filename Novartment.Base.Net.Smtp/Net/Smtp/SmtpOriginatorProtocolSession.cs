@@ -37,7 +37,7 @@ namespace Novartment.Base.Net.Smtp
 			{
 				try
 				{
-					_transport.SendCommandAsync (SmtpCommand.CachedCmdQuit, default).Wait ();
+					_transport.SendCommandAsync (SmtpCommand.CachedCmdQuit, default).GetAwaiter ().GetResult ();
 				}
 				catch (ObjectDisposedException)
 				{

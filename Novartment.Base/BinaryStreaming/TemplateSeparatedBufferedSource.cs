@@ -107,7 +107,7 @@ namespace Novartment.Base.BinaryStreaming
 		/// <returns>Задача, представляющая операцию.
 		/// Если после завершения в Count будет ноль,
 		/// то источник исчерпан и доступных данных в буфере больше не будет.</returns>
-		public async Task FillBufferAsync (CancellationToken cancellationToken = default)
+		public async ValueTask FillBufferAsync (CancellationToken cancellationToken = default)
 		{
 			if (_foundTemplateLength >= _template.Length)
 			{
@@ -145,7 +145,7 @@ namespace Novartment.Base.BinaryStreaming
 		/// <param name="size">Требуемый размер данных в буфере.</param>
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
 		/// <returns>Задача, представляющая операцию.</returns>
-		public Task EnsureBufferAsync (int size, CancellationToken cancellationToken = default)
+		public ValueTask EnsureBufferAsync (int size, CancellationToken cancellationToken = default)
 		{
 			if ((size < 0) || (size > this.BufferMemory.Length))
 			{
@@ -161,12 +161,12 @@ namespace Novartment.Base.BinaryStreaming
 					throw new NotEnoughDataException (size - (_foundTemplateOffset - _source.Offset));
 				}
 
-				return Task.CompletedTask;
+				return default;
 			}
 
 			return EnsureBufferAsyncStateMachine();
 
-			async Task EnsureBufferAsyncStateMachine()
+			async ValueTask EnsureBufferAsyncStateMachine ()
 			{
 				while ((size > (_foundTemplateOffset - _source.Offset)) && !_source.IsExhausted)
 				{
@@ -192,7 +192,7 @@ namespace Novartment.Base.BinaryStreaming
 		/// True если разделитель найден и пропущен,
 		/// либо False если источник исчерпался и разделитель не найден.
 		/// </returns>
-		public async Task<bool> TrySkipPartAsync (CancellationToken cancellationToken = default)
+		public async ValueTask<bool> TrySkipPartAsync (CancellationToken cancellationToken = default)
 		{
 			int sizeToSkip;
 

@@ -66,13 +66,16 @@ namespace Novartment.Base.Test
 			var transform = new CryptoTransformingBufferedSource (src, mock, new byte[transformBufferSize]);
 
 			Skip (transform, totalSkip);
-			transform.EnsureBufferAsync (3).Wait ();
+			var vTask = transform.EnsureBufferAsync (3);
+			Assert.True (vTask.IsCompletedSuccessfully);
 			Assert.Equal ((byte)~FillFunction (MapTransformIndexBackToOriginal (totalSkip, mock)), transform.BufferMemory.Span[transform.Offset]);
 			Assert.Equal ((byte)~FillFunction (MapTransformIndexBackToOriginal (totalSkip + 1, mock)), transform.BufferMemory.Span[transform.Offset + 1]);
 			Assert.Equal ((byte)~FillFunction (MapTransformIndexBackToOriginal (totalSkip + 2, mock)), transform.BufferMemory.Span[transform.Offset + 2]);
-			transform.EnsureBufferAsync (bufferSkip).Wait ();
+			vTask = transform.EnsureBufferAsync (bufferSkip);
+			Assert.True (vTask.IsCompletedSuccessfully);
 			transform.SkipBuffer (bufferSkip);
-			transform.EnsureBufferAsync (3).Wait ();
+			vTask = transform.EnsureBufferAsync (3);
+			Assert.True (vTask.IsCompletedSuccessfully);
 			Assert.Equal ((byte)~FillFunction (MapTransformIndexBackToOriginal (totalSkip + bufferSkip, mock)), transform.BufferMemory.Span[transform.Offset]);
 			Assert.Equal ((byte)~FillFunction (MapTransformIndexBackToOriginal (totalSkip + bufferSkip + 1, mock)), transform.BufferMemory.Span[transform.Offset + 1]);
 			Assert.Equal ((byte)~FillFunction (MapTransformIndexBackToOriginal (totalSkip + bufferSkip + 2, mock)), transform.BufferMemory.Span[transform.Offset + 2]);
@@ -143,7 +146,8 @@ namespace Novartment.Base.Test
 			var result = new byte[resultSize];
 			while (true)
 			{
-				transform.FillBufferAsync ().Wait ();
+				var vTask = transform.FillBufferAsync ();
+				Assert.True (vTask.IsCompletedSuccessfully);
 				if (transform.Count <= 0)
 				{
 					break;
@@ -199,7 +203,8 @@ namespace Novartment.Base.Test
 				source.SkipBuffer (available);
 				size -= (long)available;
 
-				source.FillBufferAsync ().Wait ();
+				var vTask = source.FillBufferAsync ();
+				Assert.True (vTask.IsCompletedSuccessfully);
 			}
 
 			Assert.InRange (size, 0, (long)source.Count);

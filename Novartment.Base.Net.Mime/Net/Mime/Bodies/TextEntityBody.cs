@@ -103,7 +103,7 @@ namespace Novartment.Base.Net.Mime
 
 			var bytes = this.Encoding.GetBytes (value);
 			var dataSrc = new MemoryBufferedSource (bytes);
-			SetDataAsync (dataSrc, default).Wait ();
+			SetDataAsync (dataSrc, default).GetAwaiter ().GetResult ();
 		}
 	}
 }

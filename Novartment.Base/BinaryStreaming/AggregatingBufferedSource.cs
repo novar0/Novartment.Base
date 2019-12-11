@@ -88,20 +88,20 @@ namespace Novartment.Base.BinaryStreaming
 		/// <returns>Задача, представляющая операцию.
 		/// Если после завершения в Count будет ноль,
 		/// то источник исчерпан и доступных данных в буфере больше не будет.</returns>
-		public Task FillBufferAsync (CancellationToken cancellationToken = default)
+		public ValueTask FillBufferAsync (CancellationToken cancellationToken = default)
 		{
 			Defragment ();
 
 			if (_count >= _buffer.Length)
 			{
-				return Task.CompletedTask;
+				return default;
 			}
 
 			var task = EnsureSomethingInSourceAsync (cancellationToken);
 
 			return FillBufferAsyncFinalizer ();
 
-			async Task FillBufferAsyncFinalizer ()
+			async ValueTask FillBufferAsyncFinalizer ()
 			{
 				var isSomethingInSource = await task.ConfigureAwait (false);
 				if (isSomethingInSource)
@@ -119,7 +119,7 @@ namespace Novartment.Base.BinaryStreaming
 		/// <param name="size">Требуемый размер данных в буфере.</param>
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
 		/// <returns>Задача, представляющая операцию.</returns>
-		public Task EnsureBufferAsync (int size, CancellationToken cancellationToken = default)
+		public ValueTask EnsureBufferAsync (int size, CancellationToken cancellationToken = default)
 		{
 			if ((size < 0) || (size > this.BufferMemory.Length))
 			{
@@ -130,9 +130,9 @@ namespace Novartment.Base.BinaryStreaming
 
 			var shortage = size - _count;
 
-			return (shortage > 0) ? EnsureBufferAsyncStateMachine () : Task.CompletedTask;
+			return (shortage > 0) ? EnsureBufferAsyncStateMachine () : default;
 
-			async Task EnsureBufferAsyncStateMachine ()
+			async ValueTask EnsureBufferAsyncStateMachine ()
 			{
 				Defragment ();
 
@@ -191,7 +191,7 @@ namespace Novartment.Base.BinaryStreaming
 		/// Может быть меньше, чем было указано, если источник исчерпался.
 		/// После завершения задачи, независимо от её результата, источник будет предоставлять данные, идущие сразу за пропущенными.
 		/// </returns>
-		public Task<long> TryFastSkipAsync (long size, CancellationToken cancellationToken = default)
+		public ValueTask<long> TryFastSkipAsync (long size, CancellationToken cancellationToken = default)
 		{
 			if (size < 0L)
 			{
@@ -204,12 +204,12 @@ namespace Novartment.Base.BinaryStreaming
 			if (size <= (long)_count)
 			{
 				SkipBuffer ((int)size);
-				return Task.FromResult (size);
+				return new ValueTask<long> (size);
 			}
 
 			return TrySkipAsyncStateMachine ();
 
-			async Task<long> TrySkipAsyncStateMachine ()
+			async ValueTask<long> TrySkipAsyncStateMachine ()
 			{
 				var available = _count;
 
@@ -240,7 +240,7 @@ namespace Novartment.Base.BinaryStreaming
 			}
 		}
 
-		private async Task<bool> EnsureSomethingInSourceAsync (CancellationToken cancellationToken)
+		private async ValueTask<bool> EnsureSomethingInSourceAsync (CancellationToken cancellationToken)
 		{
 			while (_currentSourceJob.Item.Count < 1)
 			{

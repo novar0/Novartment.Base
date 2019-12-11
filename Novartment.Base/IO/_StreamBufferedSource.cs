@@ -9,19 +9,18 @@ namespace Novartment.Base.BinaryStreaming
 	/// <content>
 	/// Класс-обёртка StreamBufferedSource для представления Stream в виде IFastSkipBufferedSource.
 	/// </content>
-	// TODO: переделать чтобы _buffer был Memory<byte>
 	public static partial class StreamExtensions
 	{
 		private class StreamBufferedSource :
 			IFastSkipBufferedSource
 		{
 			private readonly Stream _stream;
-			private readonly byte[] _buffer;
+			private readonly Memory<byte> _buffer;
 			private int _offset = 0;
 			private int _count = 0;
 			private bool _streamEnded = false;
 
-			internal StreamBufferedSource(Stream readableStream, byte[] buffer)
+			internal StreamBufferedSource (Stream readableStream, Memory<byte> buffer)
 			{
 				_stream = readableStream;
 				_buffer = buffer;
@@ -51,7 +50,7 @@ namespace Novartment.Base.BinaryStreaming
 				}
 			}
 
-			public Task<long> TryFastSkipAsync (long size, CancellationToken cancellationToken = default)
+			public ValueTask<long> TryFastSkipAsync (long size, CancellationToken cancellationToken = default)
 			{
 				if (size < 0L)
 				{
@@ -62,7 +61,7 @@ namespace Novartment.Base.BinaryStreaming
 
 				if (cancellationToken.IsCancellationRequested)
 				{
-					return Task.FromCanceled<long> (cancellationToken);
+					return new ValueTask<long> (Task.FromCanceled<long> (cancellationToken));
 				}
 
 				var available = _count;
@@ -72,7 +71,7 @@ namespace Novartment.Base.BinaryStreaming
 				{
 					_offset += (int)size;
 					_count -= (int)size;
-					return Task.FromResult (size);
+					return new ValueTask<long> (size);
 				}
 
 				long skipped = available;
@@ -94,12 +93,12 @@ namespace Novartment.Base.BinaryStreaming
 						{
 							_stream.Seek (0, SeekOrigin.End);
 							skipped += streamAvailable;
-							return Task.FromResult (skipped);
+							return new ValueTask<long> (skipped);
 						}
 
 						_stream.Seek (size, SeekOrigin.Current);
 						skipped += size;
-						return Task.FromResult (skipped);
+						return new ValueTask<long> (skipped);
 					}
 
 					// на случай если свойство Length, свойство Position или метод Seek() не поддерживаются потоком
@@ -112,14 +111,18 @@ namespace Novartment.Base.BinaryStreaming
 				// поток не поддерживает позиционирование, читаем данные в буфер пока не считаем нужное количество
 				return TrySkipAsyncStateMachine ();
 
-				async Task<long> TrySkipAsyncStateMachine ()
+				async ValueTask<long> TrySkipAsyncStateMachine ()
 				{
 					int readed = 0;
 					do
 					{
 						size -= (long)readed;
 						skipped += (long)readed;
-						readed = await _stream.ReadAsync (_buffer, 0, _buffer.Length, cancellationToken).ConfigureAwait (false);
+#if NETSTANDARD2_1
+						readed = await _stream.ReadAsync (_buffer, cancellationToken).ConfigureAwait (false);
+#else
+						readed = await _stream.ReadAsync (_buffer.ToArray (), 0, _buffer.Length, cancellationToken).ConfigureAwait (false);
+#endif
 						if (readed < 1)
 						{
 							_streamEnded = true;
@@ -136,23 +139,28 @@ namespace Novartment.Base.BinaryStreaming
 				}
 			}
 
-			public Task FillBufferAsync (CancellationToken cancellationToken = default)
+			public ValueTask FillBufferAsync (CancellationToken cancellationToken = default)
 			{
 				if (_streamEnded || (_count >= _buffer.Length))
 				{
-					return Task.CompletedTask;
+					return default;
 				}
 
 				Defragment ();
 
-				var task = _stream.ReadAsync (
-					_buffer,
+#if NETSTANDARD2_1
+				return FillBufferAsyncFinalizer (_stream.ReadAsync (
+					_buffer.Slice (_offset + _count, _buffer.Length - _offset - _count),
+					cancellationToken));
+#else
+				return FillBufferAsyncFinalizer (new ValueTask<int> (_stream.ReadAsync (
+					_buffer.ToArray (),
 					_offset + _count,
 					_buffer.Length - _offset - _count,
-					cancellationToken);
-				return FillBufferAsyncFinalizer ();
+					cancellationToken)));
+#endif
 
-				async Task FillBufferAsyncFinalizer ()
+				async ValueTask FillBufferAsyncFinalizer (ValueTask<int> task)
 				{
 					var readed = await task.ConfigureAwait (false);
 					_count += readed;
@@ -163,7 +171,7 @@ namespace Novartment.Base.BinaryStreaming
 				}
 			}
 
-			public Task EnsureBufferAsync (int size, CancellationToken cancellationToken = default)
+			public ValueTask EnsureBufferAsync (int size, CancellationToken cancellationToken = default)
 			{
 				if ((size < 0) || (size > _buffer.Length))
 				{
@@ -179,7 +187,7 @@ namespace Novartment.Base.BinaryStreaming
 						throw new NotEnoughDataException (size - _count);
 					}
 
-					return Task.CompletedTask;
+					return default;
 				}
 
 				Defragment ();
@@ -187,17 +195,23 @@ namespace Novartment.Base.BinaryStreaming
 				return EnsureBufferAsyncAsyncStateMachine ();
 
 				// запускаем асинхронное чтение источника пока не наберём необходимое количество данных
-				async Task EnsureBufferAsyncAsyncStateMachine ()
+				async ValueTask EnsureBufferAsyncAsyncStateMachine ()
 				{
 					var available = _count;
 					var shortage = size - available;
 					while ((shortage > 0) && !_streamEnded)
 					{
+#if NETSTANDARD2_1
 						var readed = await _stream.ReadAsync (
-							_buffer,
+							_buffer.Slice (_offset + _count, _buffer.Length - _offset - _count),
+							cancellationToken).ConfigureAwait (false);
+#else
+						var readed = await _stream.ReadAsync (
+							_buffer.ToArray (),
 							_offset + _count,
 							_buffer.Length - _offset - _count,
 							cancellationToken).ConfigureAwait (false);
+#endif
 						shortage -= readed;
 						if (readed > 0)
 						{
@@ -223,7 +237,7 @@ namespace Novartment.Base.BinaryStreaming
 				{
 					if (_count > 0)
 					{
-						Array.Copy (_buffer, _offset, _buffer, 0, _count);
+						_buffer.Slice (_offset, _count).CopyTo (_buffer);
 					}
 
 					_offset = 0;

@@ -87,9 +87,9 @@ namespace Novartment.Base.BinaryStreaming
 		/// <returns>Задача, представляющая операцию.
 		/// Если после завершения в Count будет ноль,
 		/// то источник исчерпан и доступных данных в буфере больше не будет.</returns>
-		public Task FillBufferAsync (CancellationToken cancellationToken = default)
+		public ValueTask FillBufferAsync (CancellationToken cancellationToken = default)
 		{
-			return Task.CompletedTask;
+			return default;
 		}
 
 		/// <summary>
@@ -100,7 +100,7 @@ namespace Novartment.Base.BinaryStreaming
 		/// <param name="size">Требуемый размер данных в буфере.</param>
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
 		/// <returns>Задача, представляющая операцию.</returns>
-		public Task EnsureBufferAsync (int size, CancellationToken cancellationToken = default)
+		public ValueTask EnsureBufferAsync (int size, CancellationToken cancellationToken = default)
 		{
 			if ((size < 0) || (size > this.BufferMemory.Length))
 			{
@@ -114,7 +114,7 @@ namespace Novartment.Base.BinaryStreaming
 				throw new NotEnoughDataException (size - _count);
 			}
 
-			return Task.CompletedTask;
+			return default;
 		}
 
 		/// <summary>
@@ -128,7 +128,7 @@ namespace Novartment.Base.BinaryStreaming
 		/// Может быть меньше, чем было указано, если источник исчерпался.
 		/// После завершения задачи, независимо от её результата, источник будет предоставлять данные, идущие сразу за пропущенными.
 		/// </returns>
-		public Task<long> TryFastSkipAsync (long size, CancellationToken cancellationToken = default)
+		public ValueTask<long> TryFastSkipAsync (long size, CancellationToken cancellationToken = default)
 		{
 			if (size < 0L)
 			{
@@ -141,12 +141,12 @@ namespace Novartment.Base.BinaryStreaming
 			if (size > (long)available)
 			{
 				_offset = _count = 0;
-				return Task.FromResult ((long)available);
+				return new ValueTask<long> ((long)available);
 			}
 
 			_offset += (int)size;
 			_count -= (int)size;
-			return Task.FromResult (size);
+			return new ValueTask<long> (size);
 		}
 	}
 }

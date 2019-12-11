@@ -40,7 +40,7 @@ namespace Novartment.Base.BinaryStreaming
 		/// Может быть меньше, чем было указано, если источник исчерпался.
 		/// После завершения задачи, независимо от её результата, источник будет предоставлять данные, идущие сразу за пропущенными.
 		/// </returns>
-		public static Task<long> TrySkipAsync (this IBufferedSource source, long size, CancellationToken cancellationToken = default)
+		public static ValueTask<long> TrySkipAsync (this IBufferedSource source, long size, CancellationToken cancellationToken = default)
 		{
 			if (source == null)
 			{
@@ -66,19 +66,19 @@ namespace Novartment.Base.BinaryStreaming
 			{
 				// достаточно доступных данных буфера
 				source.SkipBuffer ((int)size);
-				return Task.FromResult (size);
+				return new ValueTask<long> (size);
 			}
 
 			if (source.IsExhausted)
 			{
 				// источник исчерпан
 				source.SkipBuffer (available);
-				return Task.FromResult ((long)available);
+				return new ValueTask<long> ((long)available);
 			}
 
 			return TrySkipAsyncStateMachine();
 
-			async Task<long> TrySkipAsyncStateMachine()
+			async ValueTask<long> TrySkipAsyncStateMachine()
 			{
 				long skipped = 0L;
 				do
@@ -112,7 +112,7 @@ namespace Novartment.Base.BinaryStreaming
 		/// <returns>
 		/// Задача, результатом которой является количество пропущенных байтов данных.
 		/// </returns>
-		public static Task<long> SkipToEndAsync (this IBufferedSource source, CancellationToken cancellationToken = default)
+		public static ValueTask<long> SkipToEndAsync (this IBufferedSource source, CancellationToken cancellationToken = default)
 		{
 			if (source == null)
 			{
@@ -131,14 +131,14 @@ namespace Novartment.Base.BinaryStreaming
 			if (source.IsExhausted)
 			{
 				// источник исчерпан
-				return Task.FromResult ((long)available);
+				return new ValueTask<long> ((long)available);
 			}
 
 			// источник не поддерживает быстрый пропуск,
 			// поэтому будем пропускать путём последовательного считывания и пропуска буфера
 			return SkipToEndStateMachine ();
 
-			async Task<long> SkipToEndStateMachine ()
+			async ValueTask<long> SkipToEndStateMachine ()
 			{
 				var skipped = (long)available;
 				do
@@ -167,7 +167,7 @@ namespace Novartment.Base.BinaryStreaming
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
 		/// <returns>Задача, результатом которой является количество байтов, помещённых в буфер.
 		/// Может быть меньше, чем запрошено, если источник исчерпан.</returns>
-		public static Task<int> ReadAsync (this IBufferedSource source, Memory<byte> buffer, CancellationToken cancellationToken = default)
+		public static ValueTask<int> ReadAsync (this IBufferedSource source, Memory<byte> buffer, CancellationToken cancellationToken = default)
 		{
 			if (source == null)
 			{
@@ -178,7 +178,7 @@ namespace Novartment.Base.BinaryStreaming
 
 			if (buffer.Length < 1)
 			{
-				Task.FromResult (0);
+				return new ValueTask<int> (0);
 			}
 
 			int totalSize = 0;
@@ -193,12 +193,12 @@ namespace Novartment.Base.BinaryStreaming
 
 			if ((buffer.Length < 1) || source.IsExhausted)
 			{
-				return Task.FromResult (totalSize);
+				return new ValueTask<int> (totalSize);
 			}
 
 			return ReadAsyncStateMachine ();
 
-			async Task<int> ReadAsyncStateMachine ()
+			async ValueTask<int> ReadAsyncStateMachine ()
 			{
 				do
 				{
@@ -243,7 +243,7 @@ namespace Novartment.Base.BinaryStreaming
 		/// Количество скопированных байтов источника до того, как встретился маркер.
 		/// Если маркер не встретился, то будут скопированы все данные источника.
 		/// </returns>
-		public static Task<int> CopyToBufferUntilMarkerAsync (this IBufferedSource source, byte marker, Memory<byte> buffer, CancellationToken cancellationToken = default)
+		public static ValueTask<int> CopyToBufferUntilMarkerAsync (this IBufferedSource source, byte marker, Memory<byte> buffer, CancellationToken cancellationToken = default)
 		{
 			if (source == null)
 			{
@@ -262,7 +262,7 @@ namespace Novartment.Base.BinaryStreaming
 					source.SkipBuffer (idx);
 				}
 
-				return Task.FromResult (idx);
+				return new ValueTask<int> (idx);
 			}
 
 			var totalOutCount = source.Count;
@@ -274,7 +274,7 @@ namespace Novartment.Base.BinaryStreaming
 
 			if (source.IsExhausted)
 			{
-				return Task.FromResult (totalOutCount);
+				return new ValueTask<int> (totalOutCount);
 			}
 
 			buffer = buffer.Slice (totalOutCount);
@@ -282,7 +282,7 @@ namespace Novartment.Base.BinaryStreaming
 			// продолжение поиска с предварительным вызовом заполнения буфера
 			return CopyToBufferUntilMarkerStateMachine ();
 
-			async Task<int> CopyToBufferUntilMarkerStateMachine ()
+			async ValueTask<int> CopyToBufferUntilMarkerStateMachine ()
 			{
 				while (!source.IsExhausted)
 				{
@@ -324,7 +324,7 @@ namespace Novartment.Base.BinaryStreaming
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
 		/// <returns>Задача, результатом которой является массив байтов, считанный из источника.</returns>
 		/// <remarks>Возвращаемый массив является копией и не связан массивом-буфером источника.</remarks>
-		public static Task<ReadOnlyMemory<byte>> ReadAllBytesAsync (this IBufferedSource source, CancellationToken cancellationToken = default)
+		public static ValueTask<ReadOnlyMemory<byte>> ReadAllBytesAsync (this IBufferedSource source, CancellationToken cancellationToken = default)
 		{
 			if (source == null)
 			{
@@ -343,12 +343,12 @@ namespace Novartment.Base.BinaryStreaming
 					source.SkipBuffer (sizeExhausted);
 				}
 
-				return Task.FromResult<ReadOnlyMemory<byte>> (copy);
+				return new ValueTask<ReadOnlyMemory<byte>> (copy);
 			}
 
 			return ReadAllBytesAsyncStateMachine ();
 
-			async Task<ReadOnlyMemory<byte>> ReadAllBytesAsyncStateMachine ()
+			async ValueTask<ReadOnlyMemory<byte>> ReadAllBytesAsyncStateMachine ()
 			{
 				var destination = new MemoryBinaryDestination ();
 				while (true)
@@ -376,7 +376,7 @@ namespace Novartment.Base.BinaryStreaming
 		/// <param name="encoding">Кодировка, используемая для конвертации байтов в строку.</param>
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
 		/// <returns>Задача, результатом которой является строка, считанная из источника.</returns>
-		public static Task<string> ReadAllTextAsync (this IBufferedSource source, Encoding encoding, CancellationToken cancellationToken = default)
+		public static ValueTask<string> ReadAllTextAsync (this IBufferedSource source, Encoding encoding, CancellationToken cancellationToken = default)
 		{
 			if (source == null)
 			{
@@ -394,7 +394,7 @@ namespace Novartment.Base.BinaryStreaming
 			var task = ReadAllBytesAsync (source, cancellationToken);
 			return ReadAllTextAsyncFinalizer ();
 
-			async Task<string> ReadAllTextAsyncFinalizer ()
+			async ValueTask<string> ReadAllTextAsyncFinalizer ()
 			{
 				var buf = await task.ConfigureAwait (false);
 #if NETSTANDARD2_1

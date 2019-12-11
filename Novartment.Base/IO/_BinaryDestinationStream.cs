@@ -67,7 +67,12 @@ namespace Novartment.Base.BinaryStreaming
 
 				Contract.EndContractBlock ();
 
-				_destination.WriteAsync (buffer.AsMemory (offset, count), default).Wait ();
+				var vTask = _destination.WriteAsync (buffer.AsMemory (offset, count), default);
+				if (vTask.IsCompletedSuccessfully)
+				{
+					return;
+				}
+				vTask.AsTask ().GetAwaiter ().GetResult ();
 			}
 
 			public override Task WriteAsync (byte[] buffer, int offset, int count, CancellationToken cancellationToken = default)
@@ -89,13 +94,13 @@ namespace Novartment.Base.BinaryStreaming
 
 				Contract.EndContractBlock ();
 
-				return _destination.WriteAsync (buffer.AsMemory (offset, count), cancellationToken);
+				return _destination.WriteAsync (buffer.AsMemory (offset, count), cancellationToken).AsTask ();
 			}
 
 #if NETSTANDARD2_1
 			public override ValueTask WriteAsync (ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default)
 			{
-				return new ValueTask (_destination.WriteAsync (buffer, cancellationToken));
+				return _destination.WriteAsync (buffer, cancellationToken);
 			}
 #endif
 

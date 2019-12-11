@@ -15,7 +15,7 @@ namespace Novartment.Base.BinaryStreaming
 		/// <param name="buffer">Буфер, из которого записываются данные.</param>
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
 		/// <returns>Задача, представляющая асинхронную операцию записи.</returns>
-		Task WriteAsync (ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default);
+		ValueTask WriteAsync (ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default);
 
 		/// <summary>
 		/// Указывает что запись окончена.

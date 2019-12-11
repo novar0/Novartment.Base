@@ -79,7 +79,11 @@ namespace Novartment.Base.BinaryStreaming
 				int resultSize = 0;
 				while (count > 0)
 				{
-					_source.FillBufferAsync (default).Wait ();
+					var vTask = _source.FillBufferAsync (default);
+					if (!vTask.IsCompletedSuccessfully)
+					{
+						vTask.AsTask ().GetAwaiter ().GetResult ();
+					}
 					if (_source.Count <= 0)
 					{
 						break;
@@ -104,7 +108,11 @@ namespace Novartment.Base.BinaryStreaming
 			{
 				if (_source.Count < 1)
 				{
-					_source.FillBufferAsync (default).Wait ();
+					var vTask = _source.FillBufferAsync (default);
+					if (!vTask.IsCompletedSuccessfully)
+					{
+						vTask.AsTask ().GetAwaiter ().GetResult ();
+					}
 					if (_source.Count < 1)
 					{
 						return -1;

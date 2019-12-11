@@ -39,7 +39,7 @@ namespace Novartment.Base.Test
 			var channel = new BufferedChannel (new byte[9]);
 			var skipTask = channel.TryFastSkipAsync (0x100000000L);
 			Assert.False (skipTask.IsCompleted);
-			Task writeTask;
+			ValueTask writeTask;
 			var buf = new byte[0x4000000];
 			for (int i = 0; i < 64; i++)
 			{
@@ -100,7 +100,11 @@ namespace Novartment.Base.Test
 				var dstData = new MemoryStream ();
 				while (true)
 				{
-					channel.FillBufferAsync ().Wait ();
+					var vTask = channel.FillBufferAsync ();
+					if (!vTask.IsCompletedSuccessfully)
+					{
+						vTask.AsTask ().GetAwaiter ().GetResult ();
+					}
 					if (channel.Count < 1)
 					{
 						break;
@@ -121,7 +125,11 @@ namespace Novartment.Base.Test
 			for (int cnt = 0; cnt < chunkCount; cnt++)
 			{
 				srcData.Write (src, 0, chunkSize);
-				channel.WriteAsync (src.AsMemory (0, chunkSize)).Wait ();
+				var vTask = channel.WriteAsync (src.AsMemory (0, chunkSize));
+				if (!vTask.IsCompletedSuccessfully)
+				{
+					vTask.AsTask ().GetAwaiter ().GetResult ();
+				}
 			}
 
 			channel.SetComplete ();
@@ -231,7 +239,7 @@ namespace Novartment.Base.Test
 			readTask = channel.FillBufferAsync ();
 			Assert.True (readTask.IsCompleted);
 			channel.SkipBuffer (channel.Count);
-			Assert.ThrowsAsync<NotEnoughDataException> (() => channel.EnsureBufferAsync (1));
+			Assert.ThrowsAsync<NotEnoughDataException> (() => channel.EnsureBufferAsync (1).AsTask ());
 		}
 
 		[Fact]
@@ -314,8 +322,8 @@ namespace Novartment.Base.Test
 
 			// завершение, после которого не должны приниматься новые данные
 			channel.SetComplete ();
-			Assert.ThrowsAsync<InvalidOperationException> (() => channel.WriteAsync (srcData.AsMemory (0, 3)));
-			Assert.ThrowsAsync<InvalidOperationException> (() => channel.WriteAsync (srcData.AsMemory (1, 1)));
+			Assert.ThrowsAsync<InvalidOperationException> (() => channel.WriteAsync (srcData.AsMemory (0, 3)).AsTask ());
+			Assert.ThrowsAsync<InvalidOperationException> (() => channel.WriteAsync (srcData.AsMemory (1, 1)).AsTask ());
 		}
 	}
 }

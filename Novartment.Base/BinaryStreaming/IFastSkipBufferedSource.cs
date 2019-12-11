@@ -21,6 +21,6 @@ namespace Novartment.Base.BinaryStreaming
 		/// Может быть меньше, чем было указано, если источник исчерпался.
 		/// После завершения задачи, независимо от её результата, источник будет предоставлять данные, идущие сразу за пропущенными.
 		/// </returns>
-		Task<long> TryFastSkipAsync (long size, CancellationToken cancellationToken = default);
+		ValueTask<long> TryFastSkipAsync (long size, CancellationToken cancellationToken = default);
 	}
 }

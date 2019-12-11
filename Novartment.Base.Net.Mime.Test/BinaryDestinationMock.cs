@@ -36,10 +36,10 @@ namespace Novartment.Base.Net.Mime.Test
 			_count += buffer.Length;
 		}
 
-		public Task WriteAsync (ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default)
+		public ValueTask WriteAsync (ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default)
 		{
 			Write (buffer);
-			return Task.CompletedTask;
+			return default;
 		}
 
 		public void SetComplete ()

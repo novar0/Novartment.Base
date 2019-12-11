@@ -299,7 +299,7 @@ namespace Novartment.Base.Net.Smtp
 			}
 
 			_pendingReplies = null;
-			return _writer.WriteAsync (buf.AsMemory (0, size), cancellationToken);
+			return _writer.WriteAsync (buf.AsMemory (0, size), cancellationToken).AsTask ();
 		}
 	}
 }

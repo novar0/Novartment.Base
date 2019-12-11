@@ -39,15 +39,15 @@ namespace Novartment.Base.BinaryStreaming
 
 		/// <summary>
 		/// Асинхронно заполняет буфер данными источника, дополняя уже доступные там данные.
-		/// В результате буфер может быть заполнен не полностью если источник поставляет данные блоками,
-		/// либо пуст если источник исчерпался.
+		/// В результате буфер может быть заполнен не полностью, если источник поставляет данные блоками,
+		/// либо пуст, если источник исчерпался.
 		/// При выполнении могут измениться свойства Offset, Count и IsExhausted.
 		/// </summary>
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
 		/// <returns>Задача, представляющая операцию.
 		/// Если после завершения в Count будет ноль,
 		/// то источник исчерпан и доступных данных в буфере больше не будет.</returns>
-		Task FillBufferAsync (CancellationToken cancellationToken = default);
+		ValueTask FillBufferAsync (CancellationToken cancellationToken = default);
 
 		/// <summary>
 		/// Асинхронно запрашивает у источника указанное количество данных в буфере.
@@ -63,14 +63,14 @@ namespace Novartment.Base.BinaryStreaming
 		/// Происходит если источник не может предоставить указанного количества данных.
 		/// </exception>
 		/// <returns>Задача, представляющая операцию.</returns>
-		Task EnsureBufferAsync (int size, CancellationToken cancellationToken = default);
+		ValueTask EnsureBufferAsync (int size, CancellationToken cancellationToken = default);
 
 		/// <summary>
 		/// Пропускает указанное количество данных из начала доступных данных буфера.
 		/// При выполнении может измениться свойство Offset.
 		/// </summary>
 		/// <param name="size">Размер данных для пропуска в начале доступных данных буфера.
-		/// Должен быть меньше чем размер доступных в буфере данных.</param>
+		/// Должен быть меньше, чем размер доступных в буфере данных.</param>
 		/// <exception cref="System.ArgumentOutOfRangeException">
 		/// Происходит если size меньше нуля или больше размера доступных в буфере данных.
 		/// </exception>
@@ -96,22 +96,22 @@ namespace Novartment.Base.BinaryStreaming
 
 		public bool IsExhausted => false;
 
-		public Task FillBufferAsync (CancellationToken cancellationToken = default)
+		public ValueTask FillBufferAsync (CancellationToken cancellationToken = default)
 		{
 			Contract.Ensures (this.BufferMemory.Equals (Contract.OldValue (this.BufferMemory)));
 			Contract.Ensures ((this.Count > 0) || this.IsExhausted);
 			Contract.EndContractBlock ();
-			return Task.CompletedTask;
+			return default;
 		}
 
-		public Task EnsureBufferAsync (int size, CancellationToken cancellationToken = default)
+		public ValueTask EnsureBufferAsync (int size, CancellationToken cancellationToken = default)
 		{
 			Contract.Requires (size >= 0);
 			Contract.Requires (size <= BufferMemory.Length);
 
 			Contract.Ensures (this.BufferMemory.Equals (Contract.OldValue (this.BufferMemory)));
 			Contract.EndContractBlock ();
-			return Task.CompletedTask;
+			return default;
 		}
 
 		public void SkipBuffer (int size)

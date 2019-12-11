@@ -103,7 +103,7 @@ namespace Novartment.Base.BinaryStreaming
 		/// Источник будет предоставлять данные, идущие сразу за пропущенными.
 		/// </returns>
 		/// <exception cref="System.ArgumentOutOfRangeException">Происходит если size меньше нуля.</exception>
-		public Task<long> TryFastSkipAsync (long size, CancellationToken cancellationToken = default)
+		public ValueTask<long> TryFastSkipAsync (long size, CancellationToken cancellationToken = default)
 		{
 			if (size < 0L)
 			{
@@ -114,14 +114,14 @@ namespace Novartment.Base.BinaryStreaming
 
 			if (size == 0L)
 			{
-				return Task.FromResult (0L);
+				return new ValueTask<long> (0L);
 			}
 
 			var limit = (long)_countInBuffer + _countRemainder;
 			var task = _source.TrySkipAsync ((size < limit) ? size : limit, cancellationToken);
 			return TrySkipAsyncFinalizer ();
 
-			async Task<long> TrySkipAsyncFinalizer ()
+			async ValueTask<long> TrySkipAsyncFinalizer ()
 			{
 				var skipped = await task.ConfigureAwait (false);
 				UpdateLimits (limit - skipped);
@@ -138,18 +138,18 @@ namespace Novartment.Base.BinaryStreaming
 		/// <returns>Задача, представляющая операцию.
 		/// Если после завершения в Count будет ноль,
 		/// то источник исчерпан и доступных данных в буфере больше не будет.</returns>
-		public Task FillBufferAsync (CancellationToken cancellationToken = default)
+		public ValueTask FillBufferAsync (CancellationToken cancellationToken = default)
 		{
 			if (_countRemainder <= 0)
 			{
-				return Task.CompletedTask;
+				return default;
 			}
 
 			var task = _source.FillBufferAsync (cancellationToken);
 
 			return FillBufferAsyncFinalizer ();
 
-			async Task FillBufferAsyncFinalizer ()
+			async ValueTask FillBufferAsyncFinalizer ()
 			{
 				await task.ConfigureAwait (false);
 				if ((_source.Count < 1) && (_countInBuffer < 1))
@@ -171,7 +171,7 @@ namespace Novartment.Base.BinaryStreaming
 		/// <param name="size">Требуемый размер данных в буфере.</param>
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
 		/// <returns>Задача, представляющая операцию.</returns>
-		public Task EnsureBufferAsync (int size, CancellationToken cancellationToken = default)
+		public ValueTask EnsureBufferAsync (int size, CancellationToken cancellationToken = default)
 		{
 			if ((size < 0) || (size > this.BufferMemory.Length))
 			{
@@ -187,12 +187,12 @@ namespace Novartment.Base.BinaryStreaming
 					throw new NotEnoughDataException (size - _countInBuffer);
 				}
 
-				return Task.CompletedTask;
+				return default;
 			}
 
 			return EnsureBufferAsyncStateMachine ();
 
-			async Task EnsureBufferAsyncStateMachine ()
+			async ValueTask EnsureBufferAsyncStateMachine ()
 			{
 				while ((size > _countInBuffer) && !_source.IsExhausted)
 				{

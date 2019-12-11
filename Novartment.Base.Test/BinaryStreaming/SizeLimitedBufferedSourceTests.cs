@@ -18,10 +18,11 @@ namespace Novartment.Base.Test
 			int srcBufSize = 32768;
 			long limitingSize = srcBufSize + 4611686018427387904L;
 			var subSrc = new BigBufferedSourceMock (long.MaxValue, srcBufSize, FillFunction);
-			subSrc.TryFastSkipAsync (skipBeforeLimitingSize).Wait ();
+			subSrc.TryFastSkipAsync (skipBeforeLimitingSize);
 
 			var src = new SizeLimitedBufferedSource (subSrc, limitingSize);
-			src.EnsureBufferAsync (skipBufferSize + 3).Wait ();
+			var vTask = src.EnsureBufferAsync (skipBufferSize + 3);
+			Assert.True (vTask.IsCompletedSuccessfully);
 			Assert.Equal (FillFunction (skipBeforeLimitingSize), src.BufferMemory.Span[src.Offset]);
 			Assert.Equal (FillFunction (skipBeforeLimitingSize + 1), src.BufferMemory.Span[src.Offset + 1]);
 			Assert.Equal (FillFunction (skipBeforeLimitingSize + 2), src.BufferMemory.Span[src.Offset + 2]);
@@ -30,7 +31,8 @@ namespace Novartment.Base.Test
 			Assert.Equal (FillFunction (skipBeforeLimitingSize + skipBufferSize + 1), src.BufferMemory.Span[src.Offset + 1]);
 			Assert.Equal (FillFunction (skipBeforeLimitingSize + skipBufferSize + 2), src.BufferMemory.Span[src.Offset + 2]);
 			Assert.Equal (skipInsideLimitingSize, src.TryFastSkipAsync (skipInsideLimitingSize).Result);
-			src.EnsureBufferAsync (3).Wait ();
+			vTask = src.EnsureBufferAsync (3);
+			Assert.True (vTask.IsCompletedSuccessfully);
 			Assert.Equal (FillFunction (skipBeforeLimitingSize + skipBufferSize + skipInsideLimitingSize), src.BufferMemory.Span[src.Offset]);
 			Assert.Equal (FillFunction (skipBeforeLimitingSize + skipBufferSize + skipInsideLimitingSize + 1), src.BufferMemory.Span[src.Offset + 1]);
 			Assert.Equal (FillFunction (skipBeforeLimitingSize + skipBufferSize + skipInsideLimitingSize + 2), src.BufferMemory.Span[src.Offset + 2]);
@@ -40,10 +42,11 @@ namespace Novartment.Base.Test
 			srcBufSize = 32767;
 			limitingSize = 1293L;
 			subSrc = new BigBufferedSourceMock (long.MaxValue, srcBufSize, FillFunction);
-			subSrc.TryFastSkipAsync (skipBeforeLimitingSize).Wait ();
+			subSrc.TryFastSkipAsync (skipBeforeLimitingSize);
 
 			src = new SizeLimitedBufferedSource (subSrc, limitingSize);
-			src.EnsureBufferAsync (skipBufferSize + 3).Wait ();
+			vTask = src.EnsureBufferAsync (skipBufferSize + 3);
+			Assert.True (vTask.IsCompletedSuccessfully);
 			Assert.Equal (FillFunction (skipBeforeLimitingSize), src.BufferMemory.Span[src.Offset]);
 			Assert.Equal (FillFunction (skipBeforeLimitingSize + 1), src.BufferMemory.Span[src.Offset + 1]);
 			Assert.Equal (FillFunction (skipBeforeLimitingSize + 2), src.BufferMemory.Span[src.Offset + 2]);
@@ -52,7 +55,8 @@ namespace Novartment.Base.Test
 			Assert.Equal (FillFunction (skipBeforeLimitingSize + skipBufferSize + 1), src.BufferMemory.Span[src.Offset + 1]);
 			Assert.Equal (FillFunction (skipBeforeLimitingSize + skipBufferSize + 2), src.BufferMemory.Span[src.Offset + 2]);
 			Assert.Equal (skipBufferSize, src.TryFastSkipAsync (skipBufferSize).Result);
-			src.EnsureBufferAsync (3).Wait ();
+			vTask = src.EnsureBufferAsync (3);
+			Assert.True (vTask.IsCompletedSuccessfully);
 			Assert.Equal (FillFunction (skipBeforeLimitingSize + skipBufferSize + skipBufferSize), src.BufferMemory.Span[src.Offset]);
 			Assert.Equal (FillFunction (skipBeforeLimitingSize + skipBufferSize + skipBufferSize + 1), src.BufferMemory.Span[src.Offset + 1]);
 			Assert.Equal (FillFunction (skipBeforeLimitingSize + skipBufferSize + skipBufferSize + 2), src.BufferMemory.Span[src.Offset + 2]);

@@ -18,7 +18,7 @@ namespace Novartment.Base.Net
 		IBufferedSource
 	{
 		private readonly Socket _socket;
-		private readonly byte[] _buffer;
+		private readonly Memory<byte> _buffer;
 		private int _offset = 0;
 		private int _count = 0;
 		private bool _socketClosed = false;
@@ -29,16 +29,11 @@ namespace Novartment.Base.Net
 		/// </summary>
 		/// <param name="socket">Исходный сокет для чтения данных.</param>
 		/// <param name="buffer">Байтовый буфер, в котором будут содержаться считанные из сокета данные.</param>
-		public SocketBufferedSource (Socket socket, byte[] buffer)
+		public SocketBufferedSource (Socket socket, Memory<byte> buffer)
 		{
 			if (socket == null)
 			{
 				throw new ArgumentNullException (nameof (socket));
-			}
-
-			if (buffer == null)
-			{
-				throw new ArgumentNullException (nameof (buffer));
 			}
 
 			if (buffer.Length < 1)
@@ -109,39 +104,46 @@ namespace Novartment.Base.Net
 		/// потому что чтение сокета вообще не поддерживает отмену.
 		/// Для отмены чтения используйте Socket.Close().
 		/// </remarks>
-		public Task FillBufferAsync (CancellationToken cancellationToken = default)
+		public ValueTask FillBufferAsync (CancellationToken cancellationToken = default)
 		{
 			if (cancellationToken.IsCancellationRequested)
 			{
-				return Task.FromCanceled (cancellationToken);
+				return new ValueTask (Task.FromCanceled (cancellationToken));
 			}
 
 			if (_socketClosed || (_count >= _buffer.Length))
 			{
-				return Task.CompletedTask;
+				return default;
 			}
 
 			Defragment ();
 
-			var bufSegment = new ArraySegment<byte> (_buffer, _offset + _count, _buffer.Length - _offset - _count);
-			var task = _socket.ReceiveAsync (bufSegment, SocketFlags.None);
 
-			return FillBufferAsyncFinalizer ();
+#if NETSTANDARD2_1
+			return FillBufferAsyncFinalizer (_socket.ReceiveAsync (_buffer.Slice (_offset + _count, _buffer.Length - _offset - _count), SocketFlags.None, cancellationToken));
+#else
+			var bufSegment = new ArraySegment<byte> (_buffer.ToArray (), _offset + _count, _buffer.Length - _offset - _count);
+			return FillBufferAsyncFinalizer (new ValueTask<int> (_socket.ReceiveAsync (bufSegment, SocketFlags.None)));
+#endif
 
-			async Task FillBufferAsyncFinalizer ()
+			async ValueTask FillBufferAsyncFinalizer (ValueTask<int> task)
 			{
 				int readed;
+#if NETSTANDARD2_1
+				readed = await task.ConfigureAwait (false);
+#else
 				try
 				{
 					readed = await task.ConfigureAwait (false);
 				}
 				catch (ObjectDisposedException) when (cancellationToken.IsCancellationRequested)
 				{
-					// Операции с сокетами не поддерживают отмену, поэтому в случае отмены обычно сокет просто закрывают,
+					// Когда операции с сокетами не поддерживают отмену, в случае отмены обычно сокет просто закрывают,
 					// что вызывает ObjectDisposedException.
 					// В таком случае мы проглатываем ObjectDisposedException и генерируем вместо него TaskCanceledException.
-					throw new TaskCanceledException (task);
+					throw new TaskCanceledException (task.AsTask ());
 				}
+#endif
 
 				if (readed > 0)
 				{
@@ -167,7 +169,7 @@ namespace Novartment.Base.Net
 		/// Для отмены чтения используйте Socket.Close().
 		/// </remarks>
 		/// <returns>Задача, представляющая операцию.</returns>
-		public Task EnsureBufferAsync (int size, CancellationToken cancellationToken = default)
+		public ValueTask EnsureBufferAsync (int size, CancellationToken cancellationToken = default)
 		{
 			if ((size < 0) || (size > _buffer.Length))
 			{
@@ -178,7 +180,7 @@ namespace Novartment.Base.Net
 
 			if (cancellationToken.IsCancellationRequested)
 			{
-				return Task.FromCanceled (cancellationToken);
+				return new ValueTask (Task.FromCanceled (cancellationToken));
 			}
 
 			if ((size <= _count) || _socketClosed)
@@ -188,22 +190,27 @@ namespace Novartment.Base.Net
 					throw new NotEnoughDataException (size - _count);
 				}
 
-				return Task.CompletedTask;
+				return default;
 			}
 
 			Defragment ();
 			return EnsureBufferAsyncStateMachine ();
 
 			// запускаем асинхронное чтение источника пока не наберём необходимое количество данных
-			async Task EnsureBufferAsyncStateMachine ()
+			async ValueTask EnsureBufferAsyncStateMachine ()
 			{
 				var available = _count;
 				var shortage = size - available;
 				while ((shortage > 0) && !_socketClosed)
 				{
 					cancellationToken.ThrowIfCancellationRequested ();
-					var bufSegment = new ArraySegment<byte> (_buffer, _offset + _count, _buffer.Length - _offset - _count);
 					int readed;
+#if NETSTANDARD2_1
+					readed = await _socket.ReceiveAsync (_buffer.Slice (_offset + _count, _buffer.Length - _offset - _count), SocketFlags.None, cancellationToken).ConfigureAwait (false);
+#else
+					// Операции с сокетами не поддерживают отмену, поэтому в случае отмены обычно сокет просто закрывают,
+					// что вызывает ObjectDisposedException.
+					var bufSegment = new ArraySegment<byte> (_buffer.ToArray (), _offset + _count, _buffer.Length - _offset - _count);
 					var task = _socket.ReceiveAsync (bufSegment, SocketFlags.None);
 					try
 					{
@@ -211,11 +218,11 @@ namespace Novartment.Base.Net
 					}
 					catch (ObjectDisposedException) when (cancellationToken.IsCancellationRequested)
 					{
-						// Операции с сокетами не поддерживают отмену, поэтому в случае отмены обычно сокет просто закрывают,
-						// что вызывает ObjectDisposedException.
-						// В таком случае мы проглатываем ObjectDisposedException и генерируем вместо него TaskCanceledException.
+						// сокет просто закрыт как единственно возможный метод прерывания чтения
+						// проглатываем ObjectDisposedException и генерируем вместо него TaskCanceledException
 						throw new TaskCanceledException (task);
 					}
+#endif
 
 					shortage -= readed;
 					if (readed > 0)
@@ -263,7 +270,7 @@ namespace Novartment.Base.Net
 			{
 				if (_count > 0)
 				{
-					Array.Copy (_buffer, _offset, _buffer, 0, _count);
+					_buffer.Slice (_offset, _count).CopyTo (_buffer);
 				}
 
 				_offset = 0;

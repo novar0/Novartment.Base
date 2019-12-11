@@ -71,7 +71,7 @@ namespace Novartment.Base.Media
 			Task task;
 			try
 			{
-				task = source.EnsureBufferAsync (8, cancellationToken);
+				task = source.EnsureBufferAsync (8, cancellationToken).AsTask ();
 			}
 			catch (NotEnoughDataException exception)
 			{

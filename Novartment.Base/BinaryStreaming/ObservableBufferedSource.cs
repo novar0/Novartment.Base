@@ -98,7 +98,7 @@ namespace Novartment.Base.BinaryStreaming
 		/// <returns>Задача, представляющая операцию.
 		/// Если после завершения в Count будет ноль,
 		/// то источник исчерпан и доступных данных в буфере больше не будет.</returns>
-		public Task FillBufferAsync (CancellationToken cancellationToken = default)
+		public ValueTask FillBufferAsync (CancellationToken cancellationToken = default)
 		{
 			return _source.FillBufferAsync (cancellationToken);
 		}
@@ -111,7 +111,7 @@ namespace Novartment.Base.BinaryStreaming
 		/// <param name="size">Требуемый размер данных в буфере.</param>
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
 		/// <returns>Задача, представляющая операцию.</returns>
-		public Task EnsureBufferAsync (int size, CancellationToken cancellationToken = default)
+		public ValueTask EnsureBufferAsync (int size, CancellationToken cancellationToken = default)
 		{
 			if ((size < 0) || (size > this.BufferMemory.Length))
 			{
@@ -120,7 +120,7 @@ namespace Novartment.Base.BinaryStreaming
 
 			Contract.EndContractBlock ();
 
-			return size == 0 ? Task.FromResult (0) : _source.EnsureBufferAsync (size, cancellationToken);
+			return size == 0 ? default : _source.EnsureBufferAsync (size, cancellationToken);
 		}
 
 		/// <summary>
@@ -134,7 +134,7 @@ namespace Novartment.Base.BinaryStreaming
 		/// Может быть меньше, чем было указано, если источник исчерпался.
 		/// Источник будет предоставлять данные, идущие сразу за пропущенными.
 		/// </returns>
-		public Task<long> TryFastSkipAsync (long size, CancellationToken cancellationToken = default)
+		public ValueTask<long> TryFastSkipAsync (long size, CancellationToken cancellationToken = default)
 		{
 			if (size < 0L)
 			{
@@ -143,7 +143,7 @@ namespace Novartment.Base.BinaryStreaming
 
 			Contract.EndContractBlock ();
 
-			Task<long> task;
+			ValueTask<long> task;
 			if (_source is IFastSkipBufferedSource fastSkipSource)
 			{
 				task = fastSkipSource.TryFastSkipAsync (size, cancellationToken);
@@ -158,7 +158,7 @@ namespace Novartment.Base.BinaryStreaming
 				// достаточно доступных данных буфера
 				_source.SkipBuffer ((int)size);
 				_progress.Report (size);
-				return Task.FromResult (size);
+				return new ValueTask<long> (size);
 			}
 
 			if (_source.IsExhausted)
@@ -166,12 +166,12 @@ namespace Novartment.Base.BinaryStreaming
 				// источник исчерпан
 				_source.SkipBuffer (available);
 				_progress.Report (available);
-				return Task.FromResult ((long)available);
+				return new ValueTask<long> ((long)available);
 			}
 
 			return TrySkipAsyncStateMachine ();
 
-			async Task<long> TrySkipAsyncStateMachine ()
+			async ValueTask<long> TrySkipAsyncStateMachine ()
 			{
 				long skipped = 0L;
 				do
@@ -197,7 +197,7 @@ namespace Novartment.Base.BinaryStreaming
 				return skipped;
 			}
 
-			async Task<long> TryFastSkipAsyncFinalizer ()
+			async ValueTask<long> TryFastSkipAsyncFinalizer ()
 			{
 				size = await task.ConfigureAwait (false);
 				_progress.Report (size);

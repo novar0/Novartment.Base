@@ -92,7 +92,11 @@ namespace Novartment.Base.BinaryStreaming
 			}
 			else
 			{
-				_destination.WriteAsync (buffer.AsMemory (offset, count), default).Wait ();
+				var vTask =_destination.WriteAsync (buffer.AsMemory (offset, count), default);
+				if (!vTask.IsCompletedSuccessfully)
+				{
+					vTask.AsTask ().GetAwaiter ().GetResult ();
+				}
 			}
 		}
 
@@ -126,7 +130,7 @@ namespace Novartment.Base.BinaryStreaming
 
 			return (_destination is StreamExtensions.StreamBinaryDestination streamBinaryDestination) ?
 				streamBinaryDestination.BaseStream.WriteAsync (buffer, offset, count, cancellationToken) :
-				_destination.WriteAsync (buffer.AsMemory (offset, count), cancellationToken);
+				_destination.WriteAsync (buffer.AsMemory (offset, count), cancellationToken).AsTask ();
 		}
 
 #if NETSTANDARD2_1
@@ -142,7 +146,7 @@ namespace Novartment.Base.BinaryStreaming
 		{
 			return (_destination is StreamExtensions.StreamBinaryDestination streamBinaryDestination) ?
 				streamBinaryDestination.BaseStream.WriteAsync (buffer, cancellationToken) :
-				new ValueTask (_destination.WriteAsync (buffer, cancellationToken));
+				_destination.WriteAsync (buffer, cancellationToken);
 		}
 #endif
 
@@ -212,7 +216,11 @@ namespace Novartment.Base.BinaryStreaming
 
 			while (count > 0)
 			{
-				_source.FillBufferAsync (default).Wait ();
+				var vTask = _source.FillBufferAsync (default);
+				if (!vTask.IsCompletedSuccessfully)
+				{
+					vTask.AsTask ().GetAwaiter ().GetResult ();
+				}
 				if (_source.Count <= 0)
 				{
 					break;
@@ -237,7 +245,11 @@ namespace Novartment.Base.BinaryStreaming
 		{
 			if (_source.Count < 1)
 			{
-				_source.FillBufferAsync (default).Wait ();
+				var vTask = _source.FillBufferAsync (default);
+				if (!vTask.IsCompletedSuccessfully)
+				{
+					vTask.AsTask ().GetAwaiter ().GetResult ();
+				}
 				if (_source.Count < 1)
 				{
 					return -1;
