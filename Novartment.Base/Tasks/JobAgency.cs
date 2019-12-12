@@ -1,6 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Threading.Channels;
 
 namespace Novartment.Base
 {
@@ -9,18 +11,65 @@ namespace Novartment.Base
 	/// </summary>
 	/// <typeparam name="TItem">Тип входного параметра заданий.</typeparam>
 	/// <typeparam name="TResult">Тип результата, возвращаемого заданиями.</typeparam>
+	/// <remarks>
+	/// Отличие от библиотечного System.Threading.Channels.Channel в том, что в очередь записываются не просто объекты,
+	/// а задачи, для которых потом отслеживается выполнение.
+	/// </remarks>
 	public class JobAgency<TItem, TResult> :
-		IJobProvider<TItem, TResult>
+		IAsyncEnumerable<JobCompletionSource<TItem, TResult>>
 	{
-		private readonly Queue<JobCompletionSource<TItem, TResult>> _producers = new Queue<JobCompletionSource<TItem, TResult>> ();
-		private readonly Queue<TaskCompletionSource<JobCompletionSource<TItem, TResult>>> _consumers =
-			new Queue<TaskCompletionSource<JobCompletionSource<TItem, TResult>>> ();
+		private class JobAgencyAsyncEnumerator :
+			IAsyncEnumerator<JobCompletionSource<TItem, TResult>>
+		{
+			private readonly ChannelReader<JobCompletionSource<TItem, TResult>> _reader;
+			private readonly CancellationToken _cancellationToken;
+			private JobCompletionSource<TItem, TResult> _current;
+
+			internal JobAgencyAsyncEnumerator (ChannelReader<JobCompletionSource<TItem, TResult>> reader, CancellationToken cancellationToken)
+			{
+				_reader = reader;
+				_cancellationToken = cancellationToken;
+			}
+
+			public JobCompletionSource<TItem, TResult> Current => _current;
+
+			public ValueTask DisposeAsync () => default;
+
+			public async ValueTask<bool> MoveNextAsync ()
+			{
+				_current = await _reader.ReadAsync (_cancellationToken).ConfigureAwait (false);
+				return true;
+			}
+		}
+
+		private readonly ChannelReader<JobCompletionSource<TItem, TResult>> _reader;
+		private readonly ChannelWriter<JobCompletionSource<TItem, TResult>> _writer;
+		private IAsyncEnumerator<JobCompletionSource<TItem, TResult>> _consumer = null;
 
 		/// <summary>
 		/// Инициализирует новый экземпляр JobAgency.
 		/// </summary>
 		public JobAgency ()
 		{
+			var channel = Channel.CreateUnbounded<JobCompletionSource<TItem, TResult>> ();
+			_reader = channel.Reader;
+			_writer = channel.Writer;
+		}
+
+		/// <summary>
+		/// Returns an enumerator that iterates asynchronously through the collection.
+		/// </summary>
+		/// <param name="cancellationToken">A CancellationToken that may be used to cancel the asynchronous iteration.</param>
+		/// <returns>An enumerator that can be used to iterate asynchronously through the collection.</returns>
+		public IAsyncEnumerator<JobCompletionSource<TItem, TResult>> GetAsyncEnumerator (CancellationToken cancellationToken = default)
+		{
+			if (_consumer != null)
+			{
+				throw new InvalidOperationException ("Enumerator already created. Multiple enumerators not supported.");
+			}
+
+			_consumer = new JobAgencyAsyncEnumerator (_reader, cancellationToken);
+			return _consumer;
 		}
 
 		/// <summary>
@@ -36,7 +85,7 @@ namespace Novartment.Base
 		public Task<TResult> OfferJob (TItem jobParameter)
 		{
 			var completionSource = new JobCompletionSource<TItem, TResult> (jobParameter);
-			OfferJobCompletionSource (completionSource);
+			_writer.TryWrite (completionSource);
 			return completionSource.Task;
 		}
 
@@ -48,69 +97,8 @@ namespace Novartment.Base
 		public Task PutMarker ()
 		{
 			var completionSource = JobCompletionSourceMarker.Create<TItem, TResult> ();
-			OfferJobCompletionSource (completionSource);
+			_writer.TryWrite (completionSource);
 			return completionSource.Task;
-		}
-
-		/// <summary>
-		/// Асинхронно запрашивает задание у службы.
-		/// Полученное задание передаётся в виде объекта-производителя, позволяющего отражать состояние выполнения задания.
-		/// При получении маркера, добавленного методом PutMarker(), у него будет установлен флаг IsMarker.
-		/// </summary>
-		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
-		/// <returns>
-		/// Задача, представляющая получение задания.
-		/// Результатом задачи будет производитель выполнения полученного задания.
-		/// </returns>
-		public Task<JobCompletionSource<TItem, TResult>> TakeJobAsync (CancellationToken cancellationToken = default)
-		{
-			lock (_producers)
-			{
-				if (_producers.Count > 0)
-				{
-					// возвращаем самое старое задание из производственной очереди
-					return Task.FromResult (_producers.Dequeue ());
-				}
-
-				// производственная очередь пуста, регистрируем ожидание потребителя
-				if (cancellationToken.IsCancellationRequested)
-				{
-					return Task.FromCanceled<JobCompletionSource<TItem, TResult>> (cancellationToken);
-				}
-
-				var consumer = new TaskCompletionSource<JobCompletionSource<TItem, TResult>> ();
-				if (cancellationToken.CanBeCanceled)
-				{
-					cancellationToken.Register (() => consumer.TrySetCanceled (), false);
-				}
-
-				_consumers.Enqueue (consumer);
-				return consumer.Task;
-			}
-		}
-
-		private void OfferJobCompletionSource (JobCompletionSource<TItem, TResult> completionSource)
-		{
-			TaskCompletionSource<JobCompletionSource<TItem, TResult>> consumer;
-			lock (_producers)
-			{
-				do
-				{
-					if (_consumers.Count < 1)
-					{
-						// нет ожиданий потребителей, складываем запрос в производственную очередь
-						_producers.Enqueue (completionSource);
-						return;
-					}
-
-					// берём самое старое ожидание потребителя
-					consumer = _consumers.Dequeue ();
-				}
-				while (consumer.Task.IsCompleted); // пропускаем отменённые ожидания потребителей
-			}
-
-			// удовлетворяем самое старое ожидание потребителя
-			consumer.TrySetResult (completionSource);
 		}
 	}
 }
