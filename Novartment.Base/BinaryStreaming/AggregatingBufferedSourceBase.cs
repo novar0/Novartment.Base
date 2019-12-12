@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Threading;
 using System.Threading.Tasks;
@@ -7,50 +6,28 @@ using System.Threading.Tasks;
 namespace Novartment.Base.BinaryStreaming
 {
 	/// <summary>
-	/// Источник данных, представленный байтовым буфером,
-	/// предоставляющий данные последовательно из нескольких источников.
+	/// Базовый класса для создания источников данных (представленных байтовым буфером),
+	/// предоставляющих данные последовательно из нескольких источников.
+	/// При наследовании необходимо реализовать метод MoveToNextSource(),
+	/// в котором будет установлено свойство CurrentSource.
 	/// </summary>
-	public class AggregatingBufferedSource :
+	public abstract class AggregatingBufferedSourceBase :
 		IFastSkipBufferedSource
 	{
 		private readonly Memory<byte> _buffer;
-		private readonly IJobProvider<IBufferedSource, int> _sourceProvider;
 		private int _offset = 0;
 		private int _count = 0;
 		private bool _isProviderCompleted = false;
-		private JobCompletionSource<IBufferedSource, int> _currentSourceJob;
+		private IBufferedSource _currentSource;
 
 		/// <summary>
-		/// Инициализирует новый экземпляр AggregatingBufferedSource использующий в качестве буфера предоставленный массив байтов и
-		/// предоставляющий данные из источников указанного перечислителя.
+		/// Инициализирует новый экземпляр AggregatingBufferedSourceBase использующий в качестве буфера предоставленный массив байтов.
 		/// </summary>
 		/// <param name="buffer">Массив байтов, который будет буфером источника.</param>
-		/// <param name="sources">Перечислитель, поставляющий источники данных.</param>
-		public AggregatingBufferedSource (Memory<byte> buffer, IEnumerable<IBufferedSource> sources)
-			: this (buffer, new EnumerableSourceProvider (sources))
+		public AggregatingBufferedSourceBase (Memory<byte> buffer)
 		{
-		}
-
-		/// <summary>
-		/// Инициализирует новый экземпляр AggregatingBufferedSource использующий в качестве буфера предоставленный массив байтов и
-		/// предоставляющий данные из источников, поставляемых указанным поставщиком.
-		/// </summary>
-		/// <param name="buffer">Массив байтов, который будет буфером источника.</param>
-		/// <param name="sourceProvider">
-		/// Поставщик источников.
-		/// Источник-маркер будет означать окончание поставки.</param>
-		public AggregatingBufferedSource (Memory<byte> buffer, IJobProvider<IBufferedSource, int> sourceProvider)
-		{
-			if (sourceProvider == null)
-			{
-				throw new ArgumentNullException (nameof (sourceProvider));
-			}
-
-			Contract.EndContractBlock ();
-
 			_buffer = buffer;
-			_sourceProvider = sourceProvider;
-			_currentSourceJob = new JobCompletionSource<IBufferedSource, int> (MemoryBufferedSource.Empty);
+			_currentSource = MemoryBufferedSource.Empty;
 		}
 
 		/// <summary>
@@ -77,7 +54,23 @@ namespace Novartment.Base.BinaryStreaming
 		/// Возвращает True если источник больше не поставляет данных.
 		/// Содержимое буфера при этом остаётся верным, но больше не будет меняться.
 		/// </summary>
-		public bool IsExhausted => _isProviderCompleted && _currentSourceJob.Item.IsExhausted;
+		public bool IsExhausted => _isProviderCompleted && _currentSource.IsExhausted;
+
+		/// <summary>
+		/// Для наследованных классов получает или устанавливает текущий источник данных.
+		/// </summary>
+		protected IBufferedSource CurrentSource
+		{
+			get
+			{
+				return _currentSource;
+			}
+			set
+			{
+				_currentSource = value;
+				OnSourceConsumed ();
+			}
+		}
 
 		/// <summary>
 		/// Асинхронно заполняет буфер данными источника, дополняя уже доступные там данные.
@@ -97,11 +90,9 @@ namespace Novartment.Base.BinaryStreaming
 				return default;
 			}
 
-			var task = EnsureSomethingInSourceAsync (cancellationToken);
+			return FillBufferAsyncFinalizer (EnsureSomethingInSourceAsync (cancellationToken));
 
-			return FillBufferAsyncFinalizer ();
-
-			async ValueTask FillBufferAsyncFinalizer ()
+			async ValueTask FillBufferAsyncFinalizer (ValueTask<bool> task)
 			{
 				var isSomethingInSource = await task.ConfigureAwait (false);
 				if (isSomethingInSource)
@@ -219,44 +210,57 @@ namespace Novartment.Base.BinaryStreaming
 				size -= (long)available;
 				SkipBuffer (available);
 
-				bool isJobSetted;
 				do
 				{
-					var currentSourceSkipped = await _currentSourceJob.Item.TrySkipAsync (size, cancellationToken).ConfigureAwait (false);
+					// TODO: вызывать TryFastSkipAsync() если источником поддерживается IFastSkipBufferedSource
+					var currentSourceSkipped = await _currentSource.TrySkipAsync (size, cancellationToken).ConfigureAwait (false);
 					size -= currentSourceSkipped;
 					skipped += currentSourceSkipped;
-					CheckIfSourceExhausted ();
+					OnSourceConsumed ();
 					if ((size <= 0) || _isProviderCompleted)
 					{
 						break;
 					}
 
-					var newJob = await _sourceProvider.TakeJobAsync (cancellationToken).ConfigureAwait (false);
-					isJobSetted = SetNewJob (newJob);
+					_isProviderCompleted = !await MoveToNextSource (cancellationToken).ConfigureAwait (false);
 				}
-				while (isJobSetted);
+				while (!_isProviderCompleted);
 
 				return skipped;
 			}
 		}
 
+		/// <summary>
+		/// В наследованных классах производит переход на новое задание-источник.
+		/// </summary>
+		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
+		/// <returns>Признак успешной установки нового задания-источника.</returns>
+		protected abstract ValueTask<bool> MoveToNextSource (CancellationToken cancellationToken);
+
+		/// <summary>
+		/// В наследованных классах уведомляет о потреблении некоторой части текущего задания-источника.
+		/// </summary>
+		protected virtual void OnSourceConsumed ()
+		{
+		}
+
 		private async ValueTask<bool> EnsureSomethingInSourceAsync (CancellationToken cancellationToken)
 		{
-			while (_currentSourceJob.Item.Count < 1)
+			while (_currentSource.Count < 1)
 			{
-				await _currentSourceJob.Item.FillBufferAsync (cancellationToken).ConfigureAwait (false);
-				if (_currentSourceJob.Item.Count < 1)
+				await _currentSource.FillBufferAsync (cancellationToken).ConfigureAwait (false);
+				if (_currentSource.Count < 1)
 				{
-					CheckIfSourceExhausted ();
+					OnSourceConsumed ();
 					if (_isProviderCompleted)
 					{
 						return false;
 					}
 
-					var newJob = await _sourceProvider.TakeJobAsync (cancellationToken).ConfigureAwait (false);
-					var isJobSetted = SetNewJob (newJob);
-					if (!isJobSetted)
+					var isSourceSetted = await MoveToNextSource (cancellationToken).ConfigureAwait (false);
+					if (!isSourceSetted)
 					{
+						_isProviderCompleted = true;
 						return false;
 					}
 				}
@@ -271,16 +275,13 @@ namespace Novartment.Base.BinaryStreaming
 		/// <returns>Размер доступных в текущем источнике данных.</returns>
 		private int FillBufferFromSource ()
 		{
-			var size = Math.Min (_buffer.Length - _count, _currentSourceJob.Item.Count);
+			var size = Math.Min (_buffer.Length - _count, _currentSource.Count);
 			if (size > 0)
 			{
-				_currentSourceJob.Item.BufferMemory.Slice (_currentSourceJob.Item.Offset, size).CopyTo (_buffer.Slice (_offset + _count));
-				_currentSourceJob.Item.SkipBuffer (size);
+				_currentSource.BufferMemory.Slice (_currentSource.Offset, size).CopyTo (_buffer.Slice (_offset + _count));
+				_currentSource.SkipBuffer (size);
 				_count += size;
-				if (_currentSourceJob.Item.IsExhausted && (_currentSourceJob.Item.Count < 1))
-				{
-					_currentSourceJob.TrySetResult (0);
-				}
+				OnSourceConsumed ();
 			}
 
 			return size;
@@ -300,76 +301,6 @@ namespace Novartment.Base.BinaryStreaming
 				}
 
 				_offset = 0;
-			}
-		}
-
-		/// <summary>
-		/// Устанавливает новое задание-источник.
-		/// </summary>
-		/// <param name="newJob">Новое задание-источник.</param>
-		/// <returns>Признак успешной установки нового задания-источника.</returns>
-		private bool SetNewJob (JobCompletionSource<IBufferedSource, int> newJob)
-		{
-			if (newJob == null)
-			{
-				throw new InvalidOperationException ("Contract violation: IJobProvider.TakeJobAsync() returned null.");
-			}
-
-			if (newJob.IsMarker)
-			{
-				_isProviderCompleted = true;
-				newJob.TrySetResult (0);
-				return false;
-			}
-
-			_currentSourceJob = newJob;
-			CheckIfSourceExhausted ();
-			return true;
-		}
-
-		/// <summary>
-		/// Проверяет, не закончился ли текущий источник и устанавливает соответственно признак выполнения задания.
-		/// </summary>
-		private void CheckIfSourceExhausted ()
-		{
-			if (_currentSourceJob.Item.IsExhausted && (_currentSourceJob.Item.Count < 1))
-			{
-				_currentSourceJob.TrySetResult (0);
-			}
-		}
-
-		internal class EnumerableSourceProvider : IJobProvider<IBufferedSource, int>
-		{
-			private readonly IEnumerator<IBufferedSource> _enumerator;
-			private bool _enumerationEnded = false;
-
-			internal EnumerableSourceProvider (IEnumerable<IBufferedSource> sources)
-			{
-				if (sources == null)
-				{
-					throw new ArgumentNullException (nameof (sources));
-				}
-
-				Contract.EndContractBlock ();
-
-				_enumerator = sources.GetEnumerator ();
-			}
-
-			public Task<JobCompletionSource<IBufferedSource, int>> TakeJobAsync (CancellationToken cancellationToken = default)
-			{
-				if (!_enumerationEnded)
-				{
-					_enumerationEnded = !_enumerator.MoveNext ();
-					if (_enumerationEnded)
-					{
-						_enumerator.Dispose ();
-					}
-				}
-
-				var job = _enumerationEnded ?
-					JobCompletionSourceMarker.Create<IBufferedSource, int> () :
-					new JobCompletionSource<IBufferedSource, int> (_enumerator.Current);
-				return Task.FromResult (job);
 			}
 		}
 	}

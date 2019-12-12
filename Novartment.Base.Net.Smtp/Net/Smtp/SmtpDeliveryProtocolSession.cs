@@ -33,7 +33,7 @@ namespace Novartment.Base.Net.Smtp
 		private ContentTransferEncoding _currentTransactionRequestedEncoding = ContentTransferEncoding.SevenBit;
 		private SmtpCommand.ExpectedInputType _expectedInput = SmtpCommand.ExpectedInputType.Command;
 		private JobAgency<IBufferedSource, int> _chunkingAgency = null;
-		private AggregatingBufferedSource _chunksBufferedSource = null;
+		private JobAggregatingBufferedSource _chunksBufferedSource = null;
 		private Task _chunkingDataTransferTask = null;
 		private int _completed = 0;
 		private object _authenticatedUser = null;
@@ -551,7 +551,7 @@ namespace Novartment.Base.Net.Smtp
 
 				// порция не последняя, поэтому создаём поставщика порций
 				_chunkingAgency = new JobAgency<IBufferedSource, int> ();
-				_chunksBufferedSource = new AggregatingBufferedSource (
+				_chunksBufferedSource = new JobAggregatingBufferedSource (
 					new byte[bdatCommand.SourceData.BufferMemory.Length],
 					_chunkingAgency);
 				try

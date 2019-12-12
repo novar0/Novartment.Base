@@ -1,11 +1,9 @@
-﻿using System.Threading;
-using System.Threading.Tasks;
-using Novartment.Base.BinaryStreaming;
+﻿using Novartment.Base.BinaryStreaming;
 using Xunit;
 
 namespace Novartment.Base.Test
 {
-	public class AggregatingBufferedSourceTests
+	public class EnumerableAggregatingBufferedSourceTests
 	{
 		[Fact]
 		[Trait ("Category", "BufferedSource")]
@@ -17,28 +15,26 @@ namespace Novartment.Base.Test
 			src2.TryFastSkipAsync (54);
 			var src3 = new BigBufferedSourceMock (24L, srcBufSize, FillFunction);
 			src3.TryFastSkipAsync (20);
-			var sources = new JobCompletionSource<IBufferedSource, int>[]
+			var sources = new IBufferedSource[]
 			{
-				new JobCompletionSource<IBufferedSource, int> (src1),
-				new JobCompletionSource<IBufferedSource, int> (src2),
-				new JobCompletionSource<IBufferedSource, int> (src3),
-				JobCompletionSourceMarker.Create<IBufferedSource, int> (),
+				src1,
+				src2,
+				src3,
 			};
-			var processingSrc = new ProcessingTaskProviderMock (sources);
 
 			var buf = new byte[7];
-			var src = new AggregatingBufferedSource (buf, processingSrc);
+			var src = new EnumerableAggregatingBufferedSource (buf, sources);
 			Assert.False (src.IsExhausted);
-			Assert.False (sources[0].Task.IsCompleted);
-			Assert.False (sources[1].Task.IsCompleted);
-			Assert.False (sources[2].Task.IsCompleted);
+			Assert.False (sources[0].IsEmpty ());
+			Assert.False (sources[1].IsEmpty ());
+			Assert.False (sources[2].IsEmpty ());
 
 			var vTask = src.EnsureBufferAsync (6);
 			Assert.True (vTask.IsCompletedSuccessfully);
 			Assert.False (src.IsExhausted);
-			Assert.Equal (TaskStatus.RanToCompletion, sources[0].Task.Status);
-			Assert.False (sources[1].Task.IsCompleted);
-			Assert.False (sources[2].Task.IsCompleted);
+			Assert.True (sources[0].IsEmpty ());
+			Assert.False (sources[1].IsEmpty ());
+			Assert.False (sources[2].IsEmpty ());
 			Assert.Equal (FillFunction (0), src.BufferMemory.Span[src.Offset]);
 			Assert.Equal (FillFunction (1), src.BufferMemory.Span[src.Offset + 1]);
 			Assert.Equal (FillFunction (2), src.BufferMemory.Span[src.Offset + 2]);
@@ -49,15 +45,15 @@ namespace Novartment.Base.Test
 
 			Assert.Equal ((long)int.MaxValue, src.TryFastSkipAsync ((long)int.MaxValue).Result);
 			Assert.False (src.IsExhausted);
-			Assert.Equal (TaskStatus.RanToCompletion, sources[0].Task.Status);
-			Assert.Equal (TaskStatus.RanToCompletion, sources[1].Task.Status);
-			Assert.False (sources[2].Task.IsCompleted);
+			Assert.True (sources[0].IsEmpty ());
+			Assert.True (sources[1].IsEmpty ());
+			Assert.False (sources[2].IsEmpty ());
 
 			vTask = src.EnsureBufferAsync (3);
 			Assert.True (vTask.IsCompletedSuccessfully);
-			Assert.Equal (TaskStatus.RanToCompletion, sources[0].Task.Status);
-			Assert.Equal (TaskStatus.RanToCompletion, sources[1].Task.Status);
-			Assert.Equal (TaskStatus.RanToCompletion, sources[2].Task.Status);
+			Assert.True (sources[0].IsEmpty ());
+			Assert.True (sources[1].IsEmpty ());
+			Assert.True (sources[2].IsEmpty ());
 			Assert.Equal (FillFunction (21), src.BufferMemory.Span[src.Offset]);
 			Assert.Equal (FillFunction (22), src.BufferMemory.Span[src.Offset + 1]);
 			Assert.Equal (FillFunction (23), src.BufferMemory.Span[src.Offset + 2]);
@@ -70,22 +66,6 @@ namespace Novartment.Base.Test
 		private static byte FillFunction (long position)
 		{
 			return (byte)(0xAA ^ (position & 0xFF));
-		}
-
-		internal class ProcessingTaskProviderMock : IJobProvider<IBufferedSource, int>
-		{
-			private readonly JobCompletionSource<IBufferedSource, int>[] _sources;
-			private int index = 0;
-
-			internal ProcessingTaskProviderMock (JobCompletionSource<IBufferedSource, int>[] sources)
-			{
-				_sources = sources;
-			}
-
-			public Task<JobCompletionSource<IBufferedSource, int>> TakeJobAsync (CancellationToken cancellationToken = default)
-			{
-				return Task.FromResult (_sources[index++]);
-			}
 		}
 	}
 }

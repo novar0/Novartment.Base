@@ -3,6 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using Novartment.Base.Collections.Immutable;
+using System.Threading.Tasks;
+using System.Threading;
 using static System.Linq.Enumerable;
 
 namespace Novartment.Base.Collections
@@ -12,6 +14,54 @@ namespace Novartment.Base.Collections
 	/// </summary>
 	public static class CollectionExtensions
 	{
+		private class AsyncEnumerable<TItem> :
+			IAsyncEnumerable<TItem>
+		{
+			private class AsyncEnumerator :
+				IAsyncEnumerator<TItem>
+			{
+				private readonly IEnumerator<TItem> _source;
+
+				internal AsyncEnumerator (IEnumerator<TItem> source)
+				{
+					_source = source ?? throw new ArgumentNullException (nameof (source));
+				}
+
+				public TItem Current => _source.Current;
+
+				public ValueTask<bool> MoveNextAsync () => new ValueTask<bool> (_source.MoveNext ());
+
+				public ValueTask DisposeAsync ()
+				{
+					_source.Dispose ();
+					return default;
+				}
+			}
+
+			private readonly IEnumerable<TItem> _source;
+
+			internal AsyncEnumerable (IEnumerable<TItem> source)
+			{
+				_source = source ?? throw new ArgumentNullException (nameof (source));
+			}
+
+			public IAsyncEnumerator<TItem> GetAsyncEnumerator (CancellationToken cancellationToken = default)
+			{
+				return new AsyncEnumerator (_source.GetEnumerator ());
+			}
+		}
+
+		/// <summary>
+		/// Представляет синхронный перечислитель в виде асинхронного.
+		/// </summary>
+		/// <typeparam name="TItem">Тип элементов перечислителя.</typeparam>
+		/// <param name="source">Синхронный перечислитель.</param>
+		/// <returns>Асинхронный перечислитель.</returns>
+		public static IAsyncEnumerable<TItem> AsAsyncEnumerable<TItem> (this IEnumerable<TItem> source)
+		{
+			return new AsyncEnumerable<TItem> (source);
+		}
+
 		/// <summary>
 		/// Очищает диапазон элементов сегмента зацикленного массива.
 		/// </summary>
