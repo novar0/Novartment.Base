@@ -16,29 +16,35 @@ namespace Novartment.Base.BinaryStreaming
 	{
 		private readonly IBufferedSource _source;
 		private readonly IProgress<long> _progress;
+		private Action _onCompleted;
 
 		/// <summary>
 		/// Инициализирует новый экземпляр ObservableBufferedSource,
 		/// который будет ретранслировать указанный источник.
 		/// </summary>
 		/// <param name="source">Источник данных, который будет ретранслироваться.</param>
-		/// <param name="progress">Объект, который будет получать уведомления о потреблении данных источника.</param>
-		public ObservableBufferedSource (IBufferedSource source, IProgress<long> progress)
+		/// <param name="progress">Объект, который будет получать уведомления о потреблении данных источника. Укажите null если не требуется.</param>
+		/// <param name="onCompleted">Действие, которое будет вызвано при опустошении источника. Укажите null если не требуется.</param>
+		public ObservableBufferedSource (IBufferedSource source, IProgress<long> progress = null, Action onCompleted = null)
 		{
 			if (source == null)
 			{
 				throw new ArgumentNullException (nameof (source));
 			}
 
-			if (progress == null)
-			{
-				throw new ArgumentNullException (nameof (progress));
-			}
-
 			Contract.EndContractBlock ();
 
 			_source = source;
 			_progress = progress;
+			if ((onCompleted != null) && source.IsExhausted && (source.Count < 1))
+			{
+				onCompleted.Invoke ();
+				_onCompleted = null;
+			}
+			else
+			{
+				_onCompleted = onCompleted;
+			}
 		}
 
 		/// <summary>
@@ -85,7 +91,12 @@ namespace Novartment.Base.BinaryStreaming
 			if (size > 0)
 			{
 				_source.SkipBuffer (size);
-				_progress.Report (size);
+				_progress?.Report (size);
+				if ((_onCompleted != null) && _source.IsExhausted && (_source.Count < 1))
+				{
+					_onCompleted.Invoke ();
+					_onCompleted = null;
+				}
 			}
 		}
 
@@ -143,11 +154,14 @@ namespace Novartment.Base.BinaryStreaming
 
 			Contract.EndContractBlock ();
 
-			ValueTask<long> task;
+			if (size < 1L)
+			{
+				return default;
+			}
+
 			if (_source is IFastSkipBufferedSource fastSkipSource)
 			{
-				task = fastSkipSource.TryFastSkipAsync (size, cancellationToken);
-				return TryFastSkipAsyncFinalizer ();
+				return TryFastSkipAsyncFinalizer (fastSkipSource.TryFastSkipAsync (size, cancellationToken));
 			}
 
 			// источник не поддерживает быстрый пропуск,
@@ -157,7 +171,13 @@ namespace Novartment.Base.BinaryStreaming
 			{
 				// достаточно доступных данных буфера
 				_source.SkipBuffer ((int)size);
-				_progress.Report (size);
+				_progress?.Report (size);
+				if ((_onCompleted != null) && _source.IsExhausted && (_source.Count < 1))
+				{
+					_onCompleted.Invoke ();
+					_onCompleted = null;
+				}
+
 				return new ValueTask<long> (size);
 			}
 
@@ -165,7 +185,13 @@ namespace Novartment.Base.BinaryStreaming
 			{
 				// источник исчерпан
 				_source.SkipBuffer (available);
-				_progress.Report (available);
+				_progress?.Report (available);
+				if ((_onCompleted != null) && (_source.Count < 1))
+				{
+					_onCompleted.Invoke ();
+					_onCompleted = null;
+				}
+
 				return new ValueTask<long> ((long)available);
 			}
 
@@ -179,7 +205,7 @@ namespace Novartment.Base.BinaryStreaming
 					// пропускаем всё что в буфере
 					available = _source.Count;
 					_source.SkipBuffer (available);
-					_progress.Report (available);
+					_progress?.Report (available);
 					size -= (long)available;
 					skipped += (long)available;
 
@@ -191,16 +217,30 @@ namespace Novartment.Base.BinaryStreaming
 				// пропускаем частично буфер
 				var reminder = (int)Math.Min (size, (long)_source.Count);
 				_source.SkipBuffer (reminder);
-				_progress.Report (reminder);
+				_progress?.Report (reminder);
 				skipped += reminder;
+				if ((_onCompleted != null) && _source.IsExhausted && (_source.Count < 1))
+				{
+					_onCompleted.Invoke ();
+					_onCompleted = null;
+				}
 
 				return skipped;
 			}
 
-			async ValueTask<long> TryFastSkipAsyncFinalizer ()
+			async ValueTask<long> TryFastSkipAsyncFinalizer (ValueTask<long> tsk)
 			{
-				size = await task.ConfigureAwait (false);
-				_progress.Report (size);
+				size = await tsk.ConfigureAwait (false);
+				if (size > 0)
+				{
+					_progress?.Report (size);
+					if ((_onCompleted != null) && _source.IsExhausted && (_source.Count < 1))
+					{
+						_onCompleted.Invoke ();
+						_onCompleted = null;
+					}
+				}
+
 				return size;
 			}
 		}
