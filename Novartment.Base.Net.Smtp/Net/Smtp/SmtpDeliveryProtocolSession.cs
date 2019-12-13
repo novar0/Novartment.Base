@@ -7,6 +7,8 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Novartment.Base.BinaryStreaming;
 using Novartment.Base.Collections;
+using Novartment.Base.Tasks;
+using System.Threading.Channels;
 
 namespace Novartment.Base.Net.Smtp
 {
@@ -32,8 +34,9 @@ namespace Novartment.Base.Net.Smtp
 		private int _currentTransactionAcceptedRecipients = 0;
 		private ContentTransferEncoding _currentTransactionRequestedEncoding = ContentTransferEncoding.SevenBit;
 		private SmtpCommand.ExpectedInputType _expectedInput = SmtpCommand.ExpectedInputType.Command;
-		private JobAgency<IBufferedSource, int> _chunkingAgency = null;
-		private JobAggregatingBufferedSource _chunksBufferedSource = null;
+		private ChannelReader<IBufferedSource> _chunkingReader = null;
+		private ChannelWriter<IBufferedSource> _chunkingWriter = null;
+		private EnumerableAggregatingBufferedSource _chunksBufferedSource = null;
 		private Task _chunkingDataTransferTask = null;
 		private int _completed = 0;
 		private object _authenticatedUser = null;
@@ -428,7 +431,7 @@ namespace Novartment.Base.Net.Smtp
 
 		private async Task<SmtpReplyWithGroupingMark> ProcessCommandRcptTo (SmtpRcptToCommand rcptToCommand, CancellationToken cancellationToken)
 		{
-			if ((!_clientIdentified) || (_currentTransaction == null) || (_chunkingAgency != null))
+			if ((!_clientIdentified) || (_currentTransaction == null) || (_chunkingReader != null))
 			{
 				// не поздоровались / уже начат режим передачи (порциями) / транзакция не начата
 				throw new BadSequenceOfSmtpCommandsException ();
@@ -462,7 +465,7 @@ namespace Novartment.Base.Net.Smtp
 			// a 503 "Bad sequence of commands" response MUST be sent.
 			if ((!_clientIdentified) ||
 				(_currentTransaction == null) ||
-				(_chunkingAgency != null) ||
+				(_chunkingReader != null) ||
 				(_currentTransactionRequestedEncoding == ContentTransferEncoding.Binary))
 			{
 				// не поздоровались / транзакция не начата / уже начат другой режим передачи (порциями) / режим BINARYMIME не может использоваться
@@ -540,7 +543,7 @@ namespace Novartment.Base.Net.Smtp
 						TaskScheduler.Default);
 			}
 
-			if (_chunkingAgency == null)
+			if (_chunkingReader == null)
 			{
 				// порция - первая
 				if (bdatCommand.IsLast)
@@ -550,10 +553,12 @@ namespace Novartment.Base.Net.Smtp
 				}
 
 				// порция не последняя, поэтому создаём поставщика порций
-				_chunkingAgency = new JobAgency<IBufferedSource, int> ();
-				_chunksBufferedSource = new JobAggregatingBufferedSource (
+				var channel = Channel.CreateUnbounded<IBufferedSource> ();
+				_chunkingReader = channel.Reader;
+				_chunkingWriter = channel.Writer;
+				_chunksBufferedSource = new EnumerableAggregatingBufferedSource (
 					new byte[bdatCommand.SourceData.BufferMemory.Length],
-					_chunkingAgency);
+					_chunkingReader.AsAsyncEnumerable (cancellationToken));
 				try
 				{
 					_chunkingDataTransferTask = _currentTransaction.TransferDataAndFinishAsync (
@@ -589,7 +594,7 @@ namespace Novartment.Base.Net.Smtp
 			if (!bdatCommand.SourceData.IsExhausted || (bdatCommand.SourceData.Count > 0))
 			{
 				// если порция не пустая, то ожидаем пока поставщик порций обработает её
-				var chunkCompletionTask = OfferChunkCheckExhaustedAsync (bdatCommand.SourceData, cancellationToken);
+				var chunkCompletionTask = OfferChunkAsync (bdatCommand.SourceData, cancellationToken);
 
 				// тут надо ждать обе задачи - поставку и потребление,
 				// потому что успешно завершена будет поставка,
@@ -623,10 +628,8 @@ namespace Novartment.Base.Net.Smtp
 				// порция последняя, поэтому ожидаем и обработку последней порции, и общее потребление
 				try
 				{
-					await Task.WhenAll (
-						_chunkingAgency.PutMarker (),
-						_chunkingDataTransferTask)
-						.ConfigureAwait (false);
+					_chunkingWriter.TryComplete ();
+					await _chunkingDataTransferTask.ConfigureAwait (false);
 				}
 				finally
 				{
@@ -671,20 +674,32 @@ namespace Novartment.Base.Net.Smtp
 			return _securityParameters.ClientAuthenticator.Invoke (authenticationIdentity, password);
 		}
 
-		private async Task OfferChunkCheckExhaustedAsync (IBufferedSource source, CancellationToken cancellationToken)
+		private async Task OfferChunkAsync (IBufferedSource source, CancellationToken cancellationToken)
 		{
-			// мы дожны забрать все BDAT-данные В ЛЮБОМ СЛУЧАЕ, иначе нарушится диалог
-			// поэтому перехватываем ВСЕ исключения кроме отмены,
-			// забираем все данные и только потом вновь бросаем исключение.
+			var jobSrc = new TaskCompletionSource<int> ();
+			IDisposable disposable = null;
+			if (cancellationToken.CanBeCanceled)
+			{
+				disposable = cancellationToken.Register (() => jobSrc.TrySetCanceled (cancellationToken), false);
+			}
+			var srcObservable = new ObservableBufferedSource (source, null, () => jobSrc.TrySetResult (0));
+			_chunkingWriter.TryWrite (srcObservable);
 			try
 			{
-				await _chunkingAgency.OfferJob (source).ConfigureAwait (false);
+				await jobSrc.Task.ConfigureAwait (false);
 			}
 			catch
 			{
+				// мы дожны забрать все BDAT-данные В ЛЮБОМ СЛУЧАЕ, иначе нарушится диалог
+				// поэтому перехватываем ВСЕ исключения кроме отмены,
+				// забираем все данные и только потом вновь бросаем исключение.
 				await source.SkipToEndAsync (cancellationToken).ConfigureAwait (false);
 				ResetTransaction ();
 				throw;
+			}
+			finally
+			{
+				disposable?.Dispose ();
 			}
 
 			await source.SkipToEndAsync (cancellationToken).ConfigureAwait (false);
@@ -695,7 +710,8 @@ namespace Novartment.Base.Net.Smtp
 			Interlocked.Exchange (ref _currentTransaction, null)?.Dispose ();
 			_currentTransactionAcceptedRecipients = 0;
 			_currentTransactionRequestedEncoding = ContentTransferEncoding.SevenBit;
-			_chunkingAgency = null;
+			_chunkingReader = null;
+			_chunkingWriter = null;
 			_chunksBufferedSource = null;
 			_expectedInput = SmtpCommand.ExpectedInputType.Command;
 		}
