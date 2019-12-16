@@ -107,7 +107,7 @@ namespace Novartment.Base.BinaryStreaming
 		public ValueTask EnsureBufferAsync (int size, CancellationToken cancellationToken = default)
 		{
 			Contract.Requires (size >= 0);
-			Contract.Requires (size <= BufferMemory.Length);
+			Contract.Requires (size <= this.BufferMemory.Length);
 
 			Contract.Ensures (this.BufferMemory.Equals (Contract.OldValue (this.BufferMemory)));
 			Contract.EndContractBlock ();

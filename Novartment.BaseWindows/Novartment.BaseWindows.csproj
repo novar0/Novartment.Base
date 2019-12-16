@@ -4,7 +4,7 @@
     <AssemblyName>Novartment.BaseWindows</AssemblyName>
 		<TargetFramework>netcoreapp3.1</TargetFramework>
 		<UseWPF>true</UseWPF>
-		<Version>3.0.6-beta</Version>
+		<Version>3.0.7-beta</Version>
 		<Description>Base classes for .Net Core on Windows</Description>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>

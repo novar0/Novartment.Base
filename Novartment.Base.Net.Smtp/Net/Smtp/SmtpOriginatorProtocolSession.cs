@@ -141,7 +141,7 @@ namespace Novartment.Base.Net.Smtp
 					{
 						if (extension[idx] == ' ')
 						{
-							var mechanism = extension.Substring (startIdx, idx - startIdx);
+							var mechanism = extension[startIdx..idx];
 							var isMechanismPlain = "PLAIN".Equals (mechanism, StringComparison.OrdinalIgnoreCase);
 							if (isMechanismPlain)
 							{
@@ -154,7 +154,7 @@ namespace Novartment.Base.Net.Smtp
 						idx++;
 					}
 
-					var mechanism2 = extension.Substring (startIdx, idx - startIdx);
+					var mechanism2 = extension[startIdx..idx];
 					var isMechanism2Plain = "PLAIN".Equals (mechanism2, StringComparison.OrdinalIgnoreCase);
 					if (isMechanism2Plain)
 					{
