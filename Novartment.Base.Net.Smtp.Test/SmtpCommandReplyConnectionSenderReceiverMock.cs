@@ -34,6 +34,8 @@ namespace Novartment.Base.Smtp.Test
 
 		public Task SendReplyAsync (SmtpReply reply, bool canBeGrouped, CancellationToken cancellationToken = default)
 		{
+			// тут вставлять паузу для тестирования экстренной остановки сервера
+			// await Task.Delay (3000, cancellationToken).ConfigureAwait (false);
 			this.SendedReplies.Enqueue (reply);
 			return Task.CompletedTask;
 		}

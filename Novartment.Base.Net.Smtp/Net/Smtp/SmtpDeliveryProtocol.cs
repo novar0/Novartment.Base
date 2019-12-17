@@ -111,38 +111,37 @@ namespace Novartment.Base.Net.Smtp
 				await session.StartAsync (cancellationToken).ConfigureAwait (false);
 
 				// запускаем цикл обработки команд
-				while (true)
+				var continueProcesssing = false;
+				do
 				{
 					try
 					{
-						var continueProcesssing = await session.ReceiveCommandSendReplyAsync (cancellationToken).ConfigureAwait (false);
-						if (!continueProcesssing)
-						{
-							break;
-						}
+						continueProcesssing = await session.ReceiveCommandSendReplyAsync (cancellationToken).ConfigureAwait (false);
 					}
 					catch (OperationCanceledException)
 					{
 						_logger?.LogWarning ($"Canceling protocol with {connection.RemoteEndPoint}.");
 						throw;
 					}
+					// Отдельно отслеживаем запрос отмены при ObjectDisposedException.
+					// Такая комбинация означает отмену операции с объектом, не поддерживающим отмену отдельных операций.
+					catch (ObjectDisposedException) when (cancellationToken.IsCancellationRequested)
+					{
+						_logger?.LogWarning ($"Canceling protocol with {connection.RemoteEndPoint}.");
+						cancellationToken.ThrowIfCancellationRequested ();
+					}
+					catch (IOException excpt) when (cancellationToken.IsCancellationRequested && excpt.InnerException is ObjectDisposedException)
+					{
+						_logger?.LogWarning ($"Canceling protocol with {connection.RemoteEndPoint}.");
+						cancellationToken.ThrowIfCancellationRequested ();
+					}
 					catch (Exception excpt)
 					{
-						// Отдельно отслеживаем запрос отмены при ObjectDisposedException.
-						// Такая комбинация означает отмену операции с объектом, не поддерживающим отмену отдельных операций.
-						if (cancellationToken.IsCancellationRequested &&
-							((excpt is ObjectDisposedException) ||
-							((excpt is IOException) && (excpt.InnerException is ObjectDisposedException))))
-						{
-							_logger?.LogWarning ($"Canceling protocol with {connection.RemoteEndPoint}.");
-							cancellationToken.ThrowIfCancellationRequested ();
-						}
-
 						_logger?.LogWarning (
 							$"Aborting protocol with {connection.RemoteEndPoint}. {ExceptionDescriptionProvider.GetDescription (excpt)}");
 						throw;
 					}
-				}
+				} while (continueProcesssing);
 			}
 		}
 	}

@@ -110,9 +110,10 @@ namespace Novartment.Base.Net
 		/// Запускает фоновое прослушивание на указанной конечной точке.
 		/// Для каждого подключения будет вызван указанный обработчик.
 		/// </summary>
-		/// <param name="endPoint">Конечная точки, на которой будет производиться прослушивание подключений.</param>
+		/// <param name="endPoint">Конечная точка, на которой будет производиться прослушивание подключений.</param>
 		/// <param name="protocol">Обработчик для входящих подключений.</param>
-		public void AddListenEndpoint (IPEndPoint endPoint, ITcpConnectionProtocol protocol)
+		/// <returns>Task representing listening.</returns>
+		public Task StartListenOnEndpoint (IPEndPoint endPoint, ITcpConnectionProtocol protocol)
 		{
 			if (endPoint == null)
 			{
@@ -134,81 +135,35 @@ namespace Novartment.Base.Net
 				throw new InvalidOperationException ($"Specified EndPoint {endPoint} already listening.");
 			}
 
-			binding.Start ();
+			return binding.Start ();
 		}
 
 		/// <summary>
-		/// Asynchronously stops server optionaly aborting active connections.
+		/// Stops listening on specified endpoint optionaly aborting active connections.
+		/// </summary>
+		/// <param name="endPoint">Конечная точка, на которой будет остановлено прослушивание подключений.</param>
+		/// <param name="abortActiveConnections">Specify True to abort active connections.</param>
+		public void StopListenOnEndpoint (IPEndPoint endPoint, bool abortActiveConnections)
+		{
+			if (!_bindings.TryRemove (endPoint, out var binding))
+			{
+				throw new InvalidOperationException ($"Unable to stop listening on endpoint {endPoint}, because it is not started to listen.");
+			}
+			binding.Stop (abortActiveConnections);
+		}
+
+		/// <summary>
+		/// Stops server optionaly aborting active connections.
 		/// </summary>
 		/// <param name="abortActiveConnections">Specify True to abort active connections.</param>
-		/// <returns>Task representing stoping server.</returns>
-		public Task StopAsync (bool abortActiveConnections)
+		public void StopAll (bool abortActiveConnections)
 		{
 			_logger?.LogInformation (FormattableString.Invariant ($"Stopping listeners: {_bindings.Count}"));
-
-			// для каждого из прослушивателей и клиентов собираем задачу означающую завершение
-			var tasksToWait = new ArrayList<Task> ();
-			var listeners = 0;
-			var clients = 0;
-
-			var bindingsToDelete = new ArrayList<IPEndPoint> (_bindings.Count);
-
-			foreach (var bindingEntry in _bindings)
+			foreach (var binding in _bindings.Values)
 			{
-				var binding = bindingEntry.Value;
-
-				binding.Cancel ();
-
-				// освободим и удалим сразу те привязки, в которых нет активных клиентов
-				// привязки, в которых есть активные клиенты, будут опрашиваться по таймеру и удалятся после отключения клиентов
-				if (binding.ConnectedClients.Count < 1)
-				{
-					binding.Dispose ();
-					bindingsToDelete.Add (bindingEntry.Key);
-				}
-				else
-				{
-					tasksToWait.Add (binding.AcceptingConnectionsTask);
-					listeners++;
-
-					// останавливаем все сессии
-					foreach (var client in binding.ConnectedClients)
-					{
-						if (abortActiveConnections && (_logger != null) && _logger.IsEnabled (LogLevel.Trace))
-						{
-							_logger?.LogTrace (FormattableString.Invariant ($"Aborting client {client.EndPoint}."));
-						}
-
-						var task = client.EndProcessing (abortActiveConnections);
-						tasksToWait.Add (task);
-						clients++;
-					}
-				}
+				binding.Stop (abortActiveConnections);
 			}
-
-			foreach (var endPoint in bindingsToDelete)
-			{
-				_bindings.TryRemove (endPoint, out var notUsed);
-			}
-
-			if (tasksToWait.Count < 1)
-			{
-				return Task.CompletedTask;
-			}
-
-			if ((_logger != null) && _logger.IsEnabled (LogLevel.Trace))
-			{
-				_logger?.LogTrace (FormattableString.Invariant ($"Waiting completion of {listeners} listeners and {clients} connections."));
-			}
-
-			var globalWaitTask = Task.WhenAll (tasksToWait);
-
-			// игнорируем исключения: никому не интересны проблемы в процессе "умирания" прослушивателей и протоколов
-			return globalWaitTask.ContinueWith (
-				t => { },
-				default,
-				TaskContinuationOptions.ExecuteSynchronously | TaskContinuationOptions.NotOnRanToCompletion,
-				TaskScheduler.Default);
+			_bindings.Clear ();
 		}
 
 		/// <summary>
@@ -291,7 +246,7 @@ namespace Novartment.Base.Net
 							{
 								_logger?.LogWarning (FormattableString.Invariant (
 									$"Canceling protocol with client {client.EndPoint} because of connection time ({client.Duration}) exceeds limit ({_connectionTotalTimeout})."));
-								client.EndProcessing (true);
+								client.AbortProcessing ();
 							}
 							else
 							{
@@ -299,7 +254,7 @@ namespace Novartment.Base.Net
 								{
 									_logger?.LogWarning (FormattableString.Invariant (
 										$"Canceling protocol with client {client.EndPoint} because of idle time exceeds limit {_connectionIdleTimeout}."));
-									client.EndProcessing (true);
+									client.AbortProcessing ();
 								}
 							}
 
@@ -332,7 +287,7 @@ namespace Novartment.Base.Net
 
 			foreach (var endPoint in bindingsToDelete)
 			{
-				_bindings.TryRemove (endPoint, out var notUsed);
+				_bindings.TryRemove (endPoint, out _);
 			}
 
 			_timerCallbackRunnig = 0;

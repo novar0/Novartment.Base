@@ -65,36 +65,36 @@ namespace Novartment.Base.Net.Smtp
 				}
 
 				var channel = new BufferedChannel (new byte[8192]); // TcpClient.SendBufferSize default value is 8192 bytes
-				var writeTask = WriteToChannelAsync (message, channel, cancellationToken);
-				var readTask = ReadFromChannelAsync (transactionHandler, channel, cancellationToken);
+				var writeTask = SaveSerializableEntityToDestionationAsync (message, channel, cancellationToken);
+				var readTask = TransferSourceToTransactionAsync (transactionHandler, channel, cancellationToken);
 				await Task.WhenAll (writeTask, readTask).ConfigureAwait (false);
 			}
 		}
 
-		private static async Task WriteToChannelAsync (IBinarySerializable source, BufferedChannel channel, CancellationToken cancellationToken)
+		private static async Task SaveSerializableEntityToDestionationAsync (IBinarySerializable entity, IBinaryDestination destination, CancellationToken cancellationToken)
 		{
 			try
 			{
-				await source.SaveAsync (channel, cancellationToken).ConfigureAwait (false);
+				await entity.SaveAsync (destination, cancellationToken).ConfigureAwait (false);
 			}
 			finally
 			{
-				// завершаем запись даже если чтение отменено или прервалось с исключением, иначе запись может оcтаться навечно заблокированной
-				channel.SetComplete ();
+				// завершаем запись даже если она отменена или прервалась с исключением, иначе позднее чтение может оcтаться навечно заблокированным
+				destination.SetComplete ();
 			}
 		}
 
-		private static async Task ReadFromChannelAsync (IMailTransferTransactionHandler destination, BufferedChannel channel, CancellationToken cancellationToken)
+		private static async Task TransferSourceToTransactionAsync (IMailTransferTransactionHandler transaction, IBufferedSource source, CancellationToken cancellationToken)
 		{
 			try
 			{
-				await destination.TransferDataAndFinishAsync (channel, -1, cancellationToken).ConfigureAwait (false);
+				await transaction.TransferDataAndFinishAsync (source, -1, cancellationToken).ConfigureAwait (false);
 			}
 			finally
 			{
-				// забираем записанные остатки даже если чтение отменено или прервалось с исключением,
-				// иначе чтение может оcтаться навечно заблокированной
-				await channel.SkipToEndAsync (default).ConfigureAwait (false);
+				// забираем остатки из источника даже если передача их в транзакцию отменена или прервалась с исключением,
+				// иначе позднее запись может оcтаться навечно заблокированной
+				await source.SkipToEndAsync (default).ConfigureAwait (false);
 			}
 		}
 	}

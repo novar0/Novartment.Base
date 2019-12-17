@@ -3,7 +3,7 @@
   <PropertyGroup>
     <AssemblyName>Novartment.Base.Net.Smtp</AssemblyName>
 		<TargetFrameworks>netstandard2.0;netstandard2.1</TargetFrameworks>
-		<Version>4.4.7-beta</Version>
+		<Version>4.5.2-beta</Version>
 		<Description>Base classes for SMTP</Description>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>

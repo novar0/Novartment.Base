@@ -62,13 +62,19 @@ namespace Novartment.Base.Sample
 			var deliveryServer = new TcpServer (endpoint => new SocketTcpListener (endpoint), tcpServerLogger);
 			var localDomainsSet = new HashSet<string> (localDomains);
 			var serverCertificate = new X509Certificate2 ("MyServer.pfx", "password");
-			var deliveryProtocol = new SmtpDeliveryProtocol (
+			var deliveryProtocol1 = new SmtpDeliveryProtocol (
+				srcAttribs => new DeliveryToFileDataTransferTransaction (srcAttribs, mailDropDirectory, mailPickupDirectory, localDomainsSet),
+				SmtpServerSecurityParameters.NoSecurity,
+				deliveryLogger);
+			var deliveryProtocol2 = new SmtpDeliveryProtocol (
 				srcAttribs => new DeliveryToFileDataTransferTransaction (srcAttribs, mailDropDirectory, mailPickupDirectory, localDomainsSet),
 				SmtpServerSecurityParameters.NoSecurity,
 				/* SmtpServerSecurityParameters.UseServerAndRequireClientCertificate (serverCertificate), */
 				/* SmtpServerSecurityParameters.UseServerCertificateAndClientAuthenticator (serverCertificate, FindUser), */
 				deliveryLogger);
-			deliveryServer.AddListenEndpoint (new IPEndPoint (IPAddress.Any, 25), deliveryProtocol);
+			// конфигурируем два порта для прослушивания
+			var deliveryTask1 = deliveryServer.StartListenOnEndpoint (new IPEndPoint (IPAddress.Any, 25), deliveryProtocol1);
+			var deliveryTask2 = deliveryServer.StartListenOnEndpoint (new IPEndPoint (IPAddress.Any, 2025), deliveryProtocol2);
 
 			// формируем список писем (отправитель,получатели) из папки, группируя их по домену назначения и файлу
 			var msgLoadBuf = new byte[1024];
@@ -97,8 +103,10 @@ namespace Novartment.Base.Sample
 
 			// командуем СТОП и ожидаем остановки клиентов и сервера
 			tcs.Cancel ();
-			var deliveryTask = deliveryServer.StopAsync (true);
-			await Task.WhenAll (originateTask, deliveryTask).ConfigureAwait (false);
+			deliveryServer.StopAll (true);
+			await Task.WhenAll (originateTask, deliveryTask1, deliveryTask2)
+				.ContinueWith (t => { }, default, TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default)
+				.ConfigureAwait (false);
 		}
 
 		private static async Task SendMessagesAsync (
@@ -250,9 +258,10 @@ namespace Novartment.Base.Sample
 			{
 				return string.Format (
 					CultureInfo.InvariantCulture,
-					"{0:yyyy-MM-ddTHH:mm:ss.fff} from {1}.eml",
+					"{0:yyyy-MM-ddTHH:mm:ss.fff} from {1} at {2}.eml",
 					DateTime.Now,
-					_returnPath)
+					_returnPath,
+					_deliverySourceAttributes.EndPoint)
 					.Replace (":", "-", StringComparison.Ordinal)
 					.Replace ("<", "{", StringComparison.Ordinal)
 					.Replace (">", "}", StringComparison.Ordinal);

@@ -12,6 +12,8 @@ namespace Novartment.Base.Net
 		private readonly CancellationTokenSource _cancellationSource;
 		private TimeSpan _cancelDurationStart;
 
+		internal Task ProcessingTask => _processingTask;
+
 		internal ConnectedClient (ITcpConnection connection, Task processingTask, CancellationTokenSource cancellationSource)
 		{
 			_connection = connection;
@@ -37,16 +39,11 @@ namespace Novartment.Base.Net
 			_connection.Dispose ();
 		}
 
-		internal Task EndProcessing (bool abortConnection)
+		internal void AbortProcessing ()
 		{
-			if (abortConnection)
-			{
-				this.State = ProcessState.Canceling;
-				_cancelDurationStart = _connection.Duration;
-				_cancellationSource.Cancel ();
-			}
-
-			return _processingTask;
+			this.State = ProcessState.Canceling;
+			_cancelDurationStart = _connection.Duration;
+			_cancellationSource.Cancel ();
 		}
 	}
 }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Net;
 using System.Threading;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace Novartment.Base.Net.Test
@@ -31,14 +32,14 @@ namespace Novartment.Base.Net.Test
 
 			// на каждую добавленную точку прослушивания должен быть создан запущенный прослушиватель на указанный адрес/порт
 			Assert.Empty (listeners);
-			srv.AddListenEndpoint (protocol1localEndPoint, protocol1);
+			var task1 = srv.StartListenOnEndpoint (protocol1localEndPoint, protocol1);
 			Assert.Single (listeners);
 			var protocol1listener = listeners.Pop ();
 			Assert.Equal (protocol1localEndPoint.Address, protocol1listener.LocalEndpoint.Address);
 			Assert.Equal (protocol1localEndPoint.Port, protocol1listener.LocalEndpoint.Port);
 			Assert.True (protocol1listener.IsStarted);
 
-			srv.AddListenEndpoint (protocol2localEndPoint, protocol2);
+			var task2 = srv.StartListenOnEndpoint (protocol2localEndPoint, protocol2);
 			Assert.Single (listeners);
 			var protocol2listener = listeners.Pop ();
 			Assert.Equal (protocol2localEndPoint.Address, protocol2listener.LocalEndpoint.Address);
@@ -93,7 +94,8 @@ namespace Novartment.Base.Net.Test
 
 			// после остановки сервера прослушиватели должны быть остановлены.
 			// обработка первого соединения ещё не завершилась и должна быть отменена
-			srv.StopAsync (true).GetAwaiter ().GetResult ();
+			srv.StopAll (true);
+			Assert.ThrowsAsync<TaskCanceledException> (() => Task.WhenAll (task1, task2));
 			protocol1connection1.DisposedEvent.WaitOne ();
 			Assert.True (protocol1connection1.IsDisposed);
 			WaitHandle.WaitAll (new WaitHandle[] { protocol1listener.StopedEvent, protocol2listener.StopedEvent });
@@ -119,7 +121,7 @@ namespace Novartment.Base.Net.Test
 			{
 				ConnectionIdleTimeout = TimeSpan.FromMilliseconds (200.0),
 			};
-			srv.AddListenEndpoint (new IPEndPoint (new IPAddress (9087423L), 2554), protocol);
+			var task = srv.StartListenOnEndpoint (new IPEndPoint (new IPAddress (9087423L), 2554), protocol);
 
 			// отключение по простою
 			listener.SimulateIncomingConnection (new IPEndPoint (new IPAddress (1144955L), 32701));
@@ -133,7 +135,8 @@ namespace Novartment.Base.Net.Test
 			Thread.Sleep ((int)(srv.ConnectionIdleTimeout.TotalMilliseconds * 3.0));
 			Assert.True (connection.IsDisposed);
 
-			srv.StopAsync (true).GetAwaiter ().GetResult ();
+			srv.StopAll (true);
+			Assert.ThrowsAsync<TaskCanceledException> (() => task);
 			srv.Dispose ();
 		}
 
@@ -153,7 +156,7 @@ namespace Novartment.Base.Net.Test
 			{
 				ConnectionTimeout = TimeSpan.FromMilliseconds (500.0),
 			};
-			srv.AddListenEndpoint (new IPEndPoint (new IPAddress (9087423L), 2554), protocol);
+			var task = srv.StartListenOnEndpoint (new IPEndPoint (new IPAddress (9087423L), 2554), protocol);
 
 			// отключение по полному времени
 			var updateInterval = (int)(srv.ConnectionTimeout.TotalMilliseconds / 10.0);
@@ -174,7 +177,8 @@ namespace Novartment.Base.Net.Test
 
 			Assert.True (connection.IsDisposed);
 
-			srv.StopAsync (true).GetAwaiter ().GetResult ();
+			srv.StopAll (true);
+			Assert.ThrowsAsync<TaskCanceledException> (() => task);
 			srv.Dispose ();
 		}
 	}

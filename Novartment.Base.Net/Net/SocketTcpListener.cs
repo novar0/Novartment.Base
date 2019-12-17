@@ -131,6 +131,10 @@ namespace Novartment.Base.Net
 					var connectedSocket = await runningTask.ConfigureAwait (false);
 					return new SocketBinaryTcpConnection (connectedSocket, localHostFqdn, null);
 				}
+				catch (SocketException) when (cancellationToken.IsCancellationRequested)
+				{
+					throw new TaskCanceledException (runningTask);
+				}
 				catch (ObjectDisposedException) when (cancellationToken.IsCancellationRequested)
 				{
 					throw new TaskCanceledException (runningTask);
