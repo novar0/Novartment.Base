@@ -104,9 +104,7 @@ namespace Novartment.Base.Sample
 			// командуем СТОП и ожидаем остановки клиентов и сервера
 			tcs.Cancel ();
 			deliveryServer.StopAll (true);
-			await Task.WhenAll (originateTask, deliveryTask1, deliveryTask2)
-				.ContinueWith (t => { }, default, TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default)
-				.ConfigureAwait (false);
+			await Task.WhenAll (originateTask, deliveryTask1, deliveryTask2).ConfigureAwait (false);
 		}
 
 		private static async Task SendMessagesAsync (
