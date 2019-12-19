@@ -7,10 +7,10 @@ namespace Novartment.Base.Net.Smtp
 		internal SmtpVrfyCommand (ReadOnlySpan<char> parameters)
 			: base (SmtpCommandType.Vrfy)
 		{
-#if NETSTANDARD2_1
-			this.Parameters = new string (parameters);
-#else
+#if NETSTANDARD2_0
 			this.Parameters = new string (parameters.ToArray ());
+#else
+			this.Parameters = new string (parameters);
 #endif
 		}
 

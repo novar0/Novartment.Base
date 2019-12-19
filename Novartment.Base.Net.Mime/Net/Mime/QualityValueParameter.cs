@@ -119,10 +119,10 @@ namespace Novartment.Base.Net
 		/// <returns>Хэш-код для текущего объекта.</returns>
 		public override int GetHashCode ()
 		{
-#if NETSTANDARD2_1
-			return this.Importance.GetHashCode () ^ this.Value.GetHashCode (StringComparison.Ordinal);
-#else
+#if NETSTANDARD2_0
 			return this.Importance.GetHashCode () ^ this.Value.GetHashCode ();
+#else
+			return this.Importance.GetHashCode () ^ this.Value.GetHashCode (StringComparison.Ordinal);
 #endif
 		}
 

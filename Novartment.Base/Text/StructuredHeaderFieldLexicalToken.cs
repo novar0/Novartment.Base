@@ -323,10 +323,10 @@ namespace Novartment.Base.Text
 					{
 						return Rfc2047EncodedWord.Parse (src);
 					}
-#if NETSTANDARD2_1
-					return new string (src);
-#else
+#if NETSTANDARD2_0
 					return new string (src.ToArray ());
+#else
+					return new string (src);
 #endif
 				default:
 					throw new InvalidOperationException (FormattableString.Invariant (
@@ -385,12 +385,12 @@ namespace Novartment.Base.Text
 					try
 					{
 						var size = Rfc2047EncodedWord.Parse (src, encodedWordBuffer, out Encoding encoding);
-#if NETSTANDARD2_1
-						resultSize = encoding.GetChars (encodedWordBuffer.AsSpan (0, size), destination);
-#else
+#if NETSTANDARD2_0
 						var tempBuf = encoding.GetChars (encodedWordBuffer, 0, size);
 						resultSize = tempBuf.Length;
 						tempBuf.AsSpan ().CopyTo (destination);
+#else
+						resultSize = encoding.GetChars (encodedWordBuffer.AsSpan (0, size), destination);
 #endif
 					}
 					finally

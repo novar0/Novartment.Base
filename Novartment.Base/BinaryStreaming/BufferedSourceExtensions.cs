@@ -391,18 +391,17 @@ namespace Novartment.Base.BinaryStreaming
 			Contract.EndContractBlock ();
 
 			// нельзя декодировать частями, потому что неизвестно сколько байт занимают отдельные символы
-			var task = ReadAllBytesAsync (source, cancellationToken);
-			return ReadAllTextAsyncFinalizer ();
+			return ReadAllTextAsyncFinalizer (ReadAllBytesAsync (source, cancellationToken), encoding);
 
-			async ValueTask<string> ReadAllTextAsyncFinalizer ()
+			async ValueTask<string> ReadAllTextAsyncFinalizer (ValueTask<ReadOnlyMemory<byte>> task, Encoding enc)
 			{
 				var buf = await task.ConfigureAwait (false);
-#if NETSTANDARD2_1
-				return encoding.GetString (buf.Span);
-#else
+#if NETSTANDARD2_0
 				var tempBuf = new byte[buf.Length];
 				buf.CopyTo (tempBuf);
 				return encoding.GetString (tempBuf);
+#else
+				return enc.GetString (buf.Span);
 #endif
 			}
 		}

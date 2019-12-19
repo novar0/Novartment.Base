@@ -24,10 +24,10 @@ namespace Novartment.Base.BinaryStreaming
 
 			public ValueTask WriteAsync (ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default)
 			{
-#if NETSTANDARD2_1
-				return _stream.WriteAsync (buffer, cancellationToken);
-#else
+#if NETSTANDARD2_0
 				return new ValueTask (_stream.WriteAsync (buffer.ToArray (), 0, buffer.Length, cancellationToken));
+#else
+				return _stream.WriteAsync (buffer, cancellationToken);
 #endif
 			}
 

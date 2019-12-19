@@ -186,7 +186,7 @@ namespace Novartment.Base.BinaryStreaming
 				}
 			}
 
-#if NETSTANDARD2_1
+#if !NETSTANDARD2_0
 			public override ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
 			{
 				if ((buffer.Length <= _source.Count) || _source.IsExhausted)

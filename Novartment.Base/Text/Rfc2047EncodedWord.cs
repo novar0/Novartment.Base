@@ -147,10 +147,10 @@ namespace Novartment.Base.Text
 			Encoding textEncoding;
 			try
 			{
-#if NETSTANDARD2_1
-				textEncoding = Encoding.GetEncoding (new string (charsetStr));
-#else
+#if NETSTANDARD2_0
 				textEncoding = Encoding.GetEncoding (new string (charsetStr.ToArray ()));
+#else
+				textEncoding = Encoding.GetEncoding (new string (charsetStr));
 #endif
 			}
 			catch (ArgumentException e)

@@ -58,12 +58,12 @@ namespace Novartment.Base
 			int outputSize = 0;
 			while (inputOffset < inputBuffer.Length)
 			{
-#if NETSTANDARD2_1
-				Convert.TryToBase64Chars (inputBuffer.Slice (inputOffset, this.InputBlockSize), _outArray, out int size, Base64FormattingOptions.None);
-#else
+#if NETSTANDARD2_0
 				var tempBuf = new byte[this.InputBlockSize];
 				inputBuffer.Slice (inputOffset, this.InputBlockSize).CopyTo (tempBuf);
 				var size = Convert.ToBase64CharArray (tempBuf, 0, tempBuf.Length, _outArray, 0, Base64FormattingOptions.None);
+#else
+				Convert.TryToBase64Chars (inputBuffer.Slice (inputOffset, this.InputBlockSize), _outArray, out int size, Base64FormattingOptions.None);
 #endif
 				if (size != MaxLineLen)
 				{
@@ -94,12 +94,12 @@ namespace Novartment.Base
 				return Array.Empty<byte> ();
 			}
 
-#if NETSTANDARD2_1
-			Convert.TryToBase64Chars (inputBuffer, _outArray, out int size, Base64FormattingOptions.None);
-#else
+#if NETSTANDARD2_0
 			var tempBuf = new byte[inputBuffer.Length];
 			inputBuffer.CopyTo (tempBuf);
 			var size = Convert.ToBase64CharArray (tempBuf, 0, tempBuf.Length, _outArray, 0, Base64FormattingOptions.None);
+#else
+			Convert.TryToBase64Chars (inputBuffer, _outArray, out int size, Base64FormattingOptions.None);
 #endif
 			var result = new byte[size];
 			AsciiCharSet.GetBytes (_outArray.AsSpan (0, size), result);

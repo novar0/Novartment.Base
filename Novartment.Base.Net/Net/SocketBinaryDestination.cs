@@ -57,13 +57,13 @@ namespace Novartment.Base.Net
 				throw new InvalidOperationException ("Can not write to completed socket destination.");
 			}
 
-#if NETSTANDARD2_1
+#if NETSTANDARD2_0
+			return new ValueTask (_socket.SendAsync (new ArraySegment<byte> (buffer.ToArray (), 0, buffer.Length), SocketFlags.None));
+#else
 			var vTask = _socket.SendAsync (buffer, SocketFlags.None, cancellationToken);
 			return (vTask.IsCompletedSuccessfully) ?
 				default :
 				new ValueTask (vTask.AsTask ());
-#else
-			return new ValueTask (_socket.SendAsync (new ArraySegment<byte> (buffer.ToArray (), 0, buffer.Length), SocketFlags.None));
 #endif
 		}
 	}

@@ -97,7 +97,7 @@ namespace Novartment.Base.BinaryStreaming
 				return _destination.WriteAsync (buffer.AsMemory (offset, count), cancellationToken).AsTask ();
 			}
 
-#if NETSTANDARD2_1
+#if !NETSTANDARD2_0
 			public override ValueTask WriteAsync (ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default)
 			{
 				return _destination.WriteAsync (buffer, cancellationToken);

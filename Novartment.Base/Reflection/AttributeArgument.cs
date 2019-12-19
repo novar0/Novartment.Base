@@ -77,10 +77,10 @@ namespace Novartment.Base.Reflection
 		/// <returns>Хэш-код для текущего объекта.</returns>
 		public readonly override int GetHashCode ()
 		{
-#if NETSTANDARD2_1
-			return this.Name?.GetHashCode (StringComparison.Ordinal) ?? 0 ^ this.Value?.GetHashCode () ?? 0;
-#else
+#if NETSTANDARD2_0
 			return this.Name?.GetHashCode () ?? 0 ^ this.Value?.GetHashCode () ?? 0;
+#else
+			return this.Name?.GetHashCode (StringComparison.Ordinal) ?? 0 ^ this.Value?.GetHashCode () ?? 0;
 #endif
 		}
 

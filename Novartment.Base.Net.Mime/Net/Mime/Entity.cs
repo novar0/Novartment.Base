@@ -422,10 +422,10 @@ namespace Novartment.Base.Net.Mime
 			if (_md5.Length > 0)
 			{
 				var tempBuf = new char[(_md5.Length * 4) + 2];
-#if NETSTANDARD2_1
-				Convert.TryToBase64Chars (_md5.Span, tempBuf, out int tempBufSize, Base64FormattingOptions.None);
-#else
+#if NETSTANDARD2_0
 				var tempBufSize = Convert.ToBase64CharArray (_md5.ToArray (), 0, _md5.Length, tempBuf, 0);
+#else
+				Convert.TryToBase64Chars (_md5.Span, tempBuf, out int tempBufSize, Base64FormattingOptions.None);
 #endif
 				header.Add (new HeaderFieldBuilderExactValue (HeaderFieldName.ContentMD5, new string (tempBuf, 0, tempBufSize)));
 			}
@@ -609,10 +609,10 @@ namespace Novartment.Base.Net.Mime
 					throw new FormatException ("Unrecognized value of MediaType.");
 				}
 
-#if NETSTANDARD2_1
-				_subtype = new string (data.Text.Slice (idx + 1));
-#else
+#if NETSTANDARD2_0
 				_subtype = new string (data.Text.Slice (idx + 1).ToArray ());
+#else
+				_subtype = new string (data.Text.Slice (idx + 1));
 #endif
 				contentProperties.Parameters.AddRange (data.Parameters);
 				foreach (var parameter in data.Parameters)
@@ -749,10 +749,10 @@ namespace Novartment.Base.Net.Mime
 				throw new FormatException ("More than one '" + HeaderFieldNameHelper.GetName (HeaderFieldName.ContentBase) + "' field.");
 			}
 
-#if NETSTANDARD2_1
-			this.Base = new string (body.Trim ());
-#else
+#if NETSTANDARD2_0
 			this.Base = new string (body.Trim ().ToArray ());
+#else
+			this.Base = new string (body.Trim ());
 #endif
 			return true;
 		}
@@ -764,10 +764,10 @@ namespace Novartment.Base.Net.Mime
 				throw new FormatException ("More than one '" + HeaderFieldNameHelper.GetName (HeaderFieldName.ContentLocation) + "' field.");
 			}
 
-#if NETSTANDARD2_1
-			this.Location = new string (body.Trim ());
-#else
+#if NETSTANDARD2_0
 			this.Location = new string (body.Trim ().ToArray ());
+#else
+			this.Location = new string (body.Trim ());
 #endif
 			return true;
 		}
@@ -808,13 +808,13 @@ namespace Novartment.Base.Net.Mime
 				throw new FormatException ("More than one '" + HeaderFieldNameHelper.GetName (HeaderFieldName.ContentMD5) + "' field.");
 			}
 
-#if NETSTANDARD2_1
-			var md5 = new byte[16];
-			var success = Convert.TryFromBase64Chars (body, md5, out int size);
-#else
+#if NETSTANDARD2_0
 			var md5 = Convert.FromBase64String (new string (body.ToArray ()));
 			var success = true;
 			var size = md5.Length;
+#else
+			var md5 = new byte[16];
+			var success = Convert.TryFromBase64Chars (body, md5, out int size);
 #endif
 			if (!success || (size != 16))
 			{
@@ -832,14 +832,14 @@ namespace Novartment.Base.Net.Mime
 				throw new FormatException ("More than one '" + HeaderFieldNameHelper.GetName (HeaderFieldName.ContentDuration) + "' field.");
 			}
 
-#if NETSTANDARD2_1
+#if NETSTANDARD2_0
 			var seconds = int.Parse (
-				body,
+				new string (body.ToArray ()),
 				NumberStyles.AllowLeadingWhite | NumberStyles.AllowTrailingWhite,
 				CultureInfo.InvariantCulture);
 #else
 			var seconds = int.Parse (
-				new string (body.ToArray ()),
+				body,
 				NumberStyles.AllowLeadingWhite | NumberStyles.AllowTrailingWhite,
 				CultureInfo.InvariantCulture);
 #endif

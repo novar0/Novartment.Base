@@ -89,10 +89,10 @@ namespace Novartment.Base
 
 				if (_trace != null)
 				{
-#if NETSTANDARD2_1
-					var trace = (tracePatternToHide == null) ? _trace : _trace.Replace (tracePatternToHide, "...", StringComparison.Ordinal);
-#else
+#if NETSTANDARD2_0
 					var trace = (tracePatternToHide == null) ? _trace : _trace.Replace (tracePatternToHide, "...");
+#else
+					var trace = (tracePatternToHide == null) ? _trace : _trace.Replace (tracePatternToHide, "...", StringComparison.Ordinal);
 #endif
 					var isNewLinePresent = trace.StartsWith (Environment.NewLine, StringComparison.OrdinalIgnoreCase);
 					if (isNewLinePresent)

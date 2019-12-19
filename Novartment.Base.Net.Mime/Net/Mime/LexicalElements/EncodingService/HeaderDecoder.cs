@@ -285,10 +285,10 @@ namespace Novartment.Base.Net.Mime
 
 					lastItemIsSeparator = false;
 
-#if NETSTANDARD2_1
-					var str = new string (source.Slice (token.Position, token.Length));
-#else
+#if NETSTANDARD2_0
 					var str = new string (source.Slice (token.Position, token.Length).ToArray ());
+#else
+					var str = new string (source.Slice (token.Position, token.Length));
 #endif
 					result.Add (str);
 				}
@@ -366,10 +366,10 @@ namespace Novartment.Base.Net.Mime
 			Contract.EndContractBlock ();
 
 			var parametersPos = FindPositionOfSemicolonSkippingQuotedValues (source);
-#if NETSTANDARD2_1
-			var str = new string (source.Slice (0, parametersPos - 1));
-#else
+#if NETSTANDARD2_0
 			var str = new string (source.Slice (0, parametersPos - 1).ToArray ());
+#else
+			var str = new string (source.Slice (0, parametersPos - 1));
 #endif
 			var date = InternetDateTime.Parse (source.Slice (parametersPos));
 
@@ -425,10 +425,10 @@ namespace Novartment.Base.Net.Mime
 			}
 
 			var text = (outPos > 0) ? new string (outBuf, 0, outPos) : null;
-#if NETSTANDARD2_1
-			var id = new string (source.Slice (lastToken.Position, lastToken.Length));
-#else
+#if NETSTANDARD2_0
 			var id = new string (source.Slice (lastToken.Position, lastToken.Length).ToArray ());
+#else
+			var id = new string (source.Slice (lastToken.Position, lastToken.Length));
 #endif
 			return new TwoStrings (text, id);
 		}
@@ -651,10 +651,10 @@ namespace Novartment.Base.Net.Mime
 
 					lastItemIsSeparator = false;
 
-#if NETSTANDARD2_1
-					var str = new string (source.Slice (token.Position, token.Length));
-#else
+#if NETSTANDARD2_0
 					var str = new string (source.Slice (token.Position, token.Length).ToArray ());
+#else
+					var str = new string (source.Slice (token.Position, token.Length));
 #endif
 					result.Add (str);
 				}
@@ -700,10 +700,10 @@ namespace Novartment.Base.Net.Mime
 						result.Add (new HeaderFieldParameter (parameterName, new string (outBuf, 0, outPos)));
 					}
 
-#if NETSTANDARD2_1
-					parameterName = new string (source.Slice (part.Name.Position, part.Name.Length));
-#else
+#if NETSTANDARD2_0
 					parameterName = new string (source.Slice (part.Name.Position, part.Name.Length).ToArray ());
+#else
+					parameterName = new string (source.Slice (part.Name.Position, part.Name.Length));
 #endif
 					outPos = 0;
 					try
@@ -748,14 +748,14 @@ namespace Novartment.Base.Net.Mime
 				throw new FormatException ("Specified value does not represent valid 'disposition-action'.");
 			}
 
-#if NETSTANDARD2_1
-			var actionMode = new string (source.Slice (actionModeToken.Position, actionModeToken.Length));
-			var sendingMode = new string (source.Slice (sendingModeToken.Position, sendingModeToken.Length));
-			var dispositionType = new string (source.Slice (dispositionTypeToken.Position, dispositionTypeToken.Length));
-#else
+#if NETSTANDARD2_0
 			var actionMode = new string (source.Slice (actionModeToken.Position, actionModeToken.Length).ToArray ());
 			var sendingMode = new string (source.Slice (sendingModeToken.Position, sendingModeToken.Length).ToArray ());
 			var dispositionType = new string (source.Slice (dispositionTypeToken.Position, dispositionTypeToken.Length).ToArray ());
+#else
+			var actionMode = new string (source.Slice (actionModeToken.Position, actionModeToken.Length));
+			var sendingMode = new string (source.Slice (sendingModeToken.Position, sendingModeToken.Length));
+			var dispositionType = new string (source.Slice (dispositionTypeToken.Position, dispositionTypeToken.Length));
 #endif
 			if (separatorSlashToken2.IsValid)
 			{
@@ -795,10 +795,10 @@ namespace Novartment.Base.Net.Mime
 
 					lastItemIsSeparator = false;
 
-#if NETSTANDARD2_1
-					modifiers.Add (new string (source.Slice (token.Position, token.Length)));
-#else
+#if NETSTANDARD2_0
 					modifiers.Add (new string (source.Slice (token.Position, token.Length).ToArray ()));
+#else
+					modifiers.Add (new string (source.Slice (token.Position, token.Length)));
 #endif
 				}
 			}
@@ -843,10 +843,10 @@ namespace Novartment.Base.Net.Mime
 					throw new FormatException ("Invalid value of 'disposition-notification' parameter.");
 				}
 
-#if NETSTANDARD2_1
-				var name = new string (source.Slice (attributeToken.Position, attributeToken.Length));
-#else
+#if NETSTANDARD2_0
 				var name = new string (source.Slice (attributeToken.Position, attributeToken.Length).ToArray ());
+#else
+				var name = new string (source.Slice (attributeToken.Position, attributeToken.Length));
 #endif
 
 				var importance = DispositionNotificationParameterImportance.Unspecified;
@@ -881,10 +881,10 @@ namespace Novartment.Base.Net.Mime
 						throw new FormatException ("Invalid value of 'disposition-notification' parameter.");
 					}
 
-#if NETSTANDARD2_1
-					var valueSrc = new string (source.Slice (valueToken.Position, valueToken.Length));
-#else
+#if NETSTANDARD2_0
 					var valueSrc = new string (source.Slice (valueToken.Position, valueToken.Length).ToArray ());
+#else
+					var valueSrc = new string (source.Slice (valueToken.Position, valueToken.Length));
 #endif
 					values.Add (valueSrc);
 				}
@@ -953,12 +953,12 @@ namespace Novartment.Base.Net.Mime
 
 			var n1Str = source.Slice (numberToken1.Position, numberToken1.Length);
 			var n2Str = source.Slice (numberToken2.Position, numberToken2.Length);
-#if NETSTANDARD2_1
-			var n1 = int.Parse (n1Str, NumberStyles.AllowLeadingWhite | NumberStyles.AllowTrailingWhite, CultureInfo.InvariantCulture);
-			var n2 = int.Parse (n2Str, NumberStyles.AllowLeadingWhite | NumberStyles.AllowTrailingWhite, CultureInfo.InvariantCulture);
-#else
+#if NETSTANDARD2_0
 			var n1 = int.Parse (new string (n1Str.ToArray ()), NumberStyles.AllowLeadingWhite | NumberStyles.AllowTrailingWhite, CultureInfo.InvariantCulture);
 			var n2 = int.Parse (new string (n2Str.ToArray ()), NumberStyles.AllowLeadingWhite | NumberStyles.AllowTrailingWhite, CultureInfo.InvariantCulture);
+#else
+			var n1 = int.Parse (n1Str, NumberStyles.AllowLeadingWhite | NumberStyles.AllowTrailingWhite, CultureInfo.InvariantCulture);
+			var n2 = int.Parse (n2Str, NumberStyles.AllowLeadingWhite | NumberStyles.AllowTrailingWhite, CultureInfo.InvariantCulture);
 #endif
 			return new Version (n1, n2);
 		}
@@ -1166,10 +1166,10 @@ namespace Novartment.Base.Net.Mime
 				throw new FormatException ("Value does not conform to format 'language-q'. First item is not 'atom'.");
 			}
 
-#if NETSTANDARD2_1
-			var value = new string (source.Slice (valueToken.Position, valueToken.Length));
-#else
+#if NETSTANDARD2_0
 			var value = new string (source.Slice (valueToken.Position, valueToken.Length).ToArray ());
+#else
+			var value = new string (source.Slice (valueToken.Position, valueToken.Length));
 #endif
 			var quality = defaultQuality;
 
@@ -1190,15 +1190,15 @@ namespace Novartment.Base.Net.Mime
 					throw new FormatException ("Value does not conform to format 'language-q'.");
 				}
 
-#if NETSTANDARD2_1
+#if NETSTANDARD2_0
 				var isValidNumber = decimal.TryParse (
-					source.Slice (qualityToken.Position, qualityToken.Length),
+					new string (source.Slice (qualityToken.Position, qualityToken.Length).ToArray ()),
 					NumberStyles.AllowDecimalPoint,
 					_numberFormatDot,
 					out quality);
 #else
 				var isValidNumber = decimal.TryParse (
-					new string (source.Slice (qualityToken.Position, qualityToken.Length).ToArray ()),
+					source.Slice (qualityToken.Position, qualityToken.Length),
 					NumberStyles.AllowDecimalPoint,
 					_numberFormatDot,
 					out quality);

@@ -53,14 +53,14 @@ namespace Novartment.Base.Net.Smtp
 			bool isLast;
 			try
 			{
-#if NETSTANDARD2_1
+#if NETSTANDARD2_0
 				size = long.Parse (
-					sizeStr,
+					new string (sizeStr.ToArray ()),
 					NumberStyles.AllowLeadingWhite | NumberStyles.AllowTrailingWhite | NumberStyles.AllowDecimalPoint,
 					CultureInfo.InvariantCulture);
 #else
 				size = long.Parse (
-					new string (sizeStr.ToArray ()),
+					sizeStr,
 					NumberStyles.AllowLeadingWhite | NumberStyles.AllowTrailingWhite | NumberStyles.AllowDecimalPoint,
 					CultureInfo.InvariantCulture);
 #endif

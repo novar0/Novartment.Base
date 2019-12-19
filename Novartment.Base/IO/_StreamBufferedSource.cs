@@ -118,10 +118,10 @@ namespace Novartment.Base.BinaryStreaming
 					{
 						size -= (long)readed;
 						skipped += (long)readed;
-#if NETSTANDARD2_1
-						readed = await _stream.ReadAsync (_buffer, cancellationToken).ConfigureAwait (false);
-#else
+#if NETSTANDARD2_0
 						readed = await _stream.ReadAsync (_buffer.ToArray (), 0, _buffer.Length, cancellationToken).ConfigureAwait (false);
+#else
+						readed = await _stream.ReadAsync (_buffer, cancellationToken).ConfigureAwait (false);
 #endif
 						if (readed < 1)
 						{
@@ -148,16 +148,16 @@ namespace Novartment.Base.BinaryStreaming
 
 				Defragment ();
 
-#if NETSTANDARD2_1
-				return FillBufferAsyncFinalizer (_stream.ReadAsync (
-					_buffer.Slice (_offset + _count, _buffer.Length - _offset - _count),
-					cancellationToken));
-#else
+#if NETSTANDARD2_0
 				return FillBufferAsyncFinalizer (new ValueTask<int> (_stream.ReadAsync (
 					_buffer.ToArray (),
 					_offset + _count,
 					_buffer.Length - _offset - _count,
 					cancellationToken)));
+#else
+				return FillBufferAsyncFinalizer (_stream.ReadAsync (
+					_buffer.Slice (_offset + _count, _buffer.Length - _offset - _count),
+					cancellationToken));
 #endif
 
 				async ValueTask FillBufferAsyncFinalizer (ValueTask<int> task)
@@ -201,15 +201,15 @@ namespace Novartment.Base.BinaryStreaming
 					var shortage = size - available;
 					while ((shortage > 0) && !_streamEnded)
 					{
-#if NETSTANDARD2_1
-						var readed = await _stream.ReadAsync (
-							_buffer.Slice (_offset + _count, _buffer.Length - _offset - _count),
-							cancellationToken).ConfigureAwait (false);
-#else
+#if NETSTANDARD2_0
 						var readed = await _stream.ReadAsync (
 							_buffer.ToArray (),
 							_offset + _count,
 							_buffer.Length - _offset - _count,
+							cancellationToken).ConfigureAwait (false);
+#else
+						var readed = await _stream.ReadAsync (
+							_buffer.Slice (_offset + _count, _buffer.Length - _offset - _count),
 							cancellationToken).ConfigureAwait (false);
 #endif
 						shortage -= readed;

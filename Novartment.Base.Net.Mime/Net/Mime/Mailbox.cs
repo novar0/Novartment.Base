@@ -189,10 +189,10 @@ namespace Novartment.Base.Net.Mime
 					lastToken = token;
 				}
 
-#if NETSTANDARD2_1
-				displayName = new string (outBuf.AsSpan (0, outPos));
-#else
+#if NETSTANDARD2_0
 				displayName = new string (outBuf, 0, outPos);
+#else
+				displayName = new string (outBuf.AsSpan (0, outPos));
 #endif
 			}
 			finally
@@ -226,10 +226,10 @@ namespace Novartment.Base.Net.Mime
 		/// <returns>Хэш-код для текущего объекта.</returns>
 		public override int GetHashCode ()
 		{
-#if NETSTANDARD2_1
-			return ToString ().GetHashCode (StringComparison.Ordinal);
-#else
+#if NETSTANDARD2_0
 			return ToString ().GetHashCode ();
+#else
+			return ToString ().GetHashCode (StringComparison.Ordinal);
 #endif
 		}
 

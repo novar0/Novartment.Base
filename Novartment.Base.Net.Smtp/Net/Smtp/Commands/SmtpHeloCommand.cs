@@ -7,10 +7,10 @@ namespace Novartment.Base.Net.Smtp
 		internal SmtpHeloCommand (ReadOnlySpan<char> clientIdentification)
 			: base (SmtpCommandType.Helo)
 		{
-#if NETSTANDARD2_1
-			this.ClientIdentification = new string (clientIdentification);
-#else
+#if NETSTANDARD2_0
 			this.ClientIdentification = new string (clientIdentification.ToArray ());
+#else
+			this.ClientIdentification = new string (clientIdentification);
 #endif
 		}
 

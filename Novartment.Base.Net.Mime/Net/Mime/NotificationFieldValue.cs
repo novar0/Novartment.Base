@@ -124,10 +124,10 @@ namespace Novartment.Base.Net.Mime
 		/// <returns>Хэш-код для текущего объекта.</returns>
 		public override int GetHashCode ()
 		{
-#if NETSTANDARD2_1
-			return this.Kind.GetHashCode () ^ this.Value.GetHashCode (StringComparison.Ordinal);
-#else
+#if NETSTANDARD2_0
 			return this.Kind.GetHashCode () ^ this.Value.GetHashCode ();
+#else
+			return this.Kind.GetHashCode () ^ this.Value.GetHashCode (StringComparison.Ordinal);
 #endif
 		}
 

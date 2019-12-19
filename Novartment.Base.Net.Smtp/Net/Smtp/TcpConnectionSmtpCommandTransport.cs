@@ -290,10 +290,10 @@ namespace Novartment.Base.Net.Smtp
 
 			if ((_logger != null) && _logger.IsEnabled (LogLevel.Trace))
 			{
-#if NETSTANDARD2_1
-				var safeText = text.Replace ("\r\n", "||", StringComparison.Ordinal);
-#else
+#if NETSTANDARD2_0
 				var safeText = text.Replace ("\r\n", "||");
+#else
+				var safeText = text.Replace ("\r\n", "||", StringComparison.Ordinal);
 #endif
 				_logger?.LogTrace ($"{_connection.RemoteEndPoint} >>> {safeText}");
 			}

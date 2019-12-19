@@ -109,10 +109,10 @@ namespace Novartment.Base.Net.Mime
 				if (token.TokenType == StructuredHeaderFieldLexicalTokenType.Value)
 				{
 					// charset
-#if NETSTANDARD2_1
-					encoding = new string (source.Slice (token.Position, token.Length));
-#else
+#if NETSTANDARD2_0
 					encoding = new string (source.Slice (token.Position, token.Length).ToArray ());
+#else
+					encoding = new string (source.Slice (token.Position, token.Length));
 #endif
 					token = StructuredHeaderFieldLexicalToken.ParseToken (source, ref parserPos);
 				}

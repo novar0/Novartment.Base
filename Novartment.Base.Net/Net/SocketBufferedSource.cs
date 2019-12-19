@@ -119,19 +119,17 @@ namespace Novartment.Base.Net
 			Defragment ();
 
 
-#if NETSTANDARD2_1
-			return FillBufferAsyncFinalizer (_socket.ReceiveAsync (_buffer.Slice (_offset + _count, _buffer.Length - _offset - _count), SocketFlags.None, cancellationToken));
-#else
+#if NETSTANDARD2_0
 			var bufSegment = new ArraySegment<byte> (_buffer.ToArray (), _offset + _count, _buffer.Length - _offset - _count);
 			return FillBufferAsyncFinalizer (new ValueTask<int> (_socket.ReceiveAsync (bufSegment, SocketFlags.None)));
+#else
+			return FillBufferAsyncFinalizer (_socket.ReceiveAsync (_buffer.Slice (_offset + _count, _buffer.Length - _offset - _count), SocketFlags.None, cancellationToken));
 #endif
 
 			async ValueTask FillBufferAsyncFinalizer (ValueTask<int> task)
 			{
 				int readed;
-#if NETSTANDARD2_1
-				readed = await task.ConfigureAwait (false);
-#else
+#if NETSTANDARD2_0
 				try
 				{
 					readed = await task.ConfigureAwait (false);
@@ -143,6 +141,8 @@ namespace Novartment.Base.Net
 					// В таком случае мы проглатываем ObjectDisposedException и генерируем вместо него TaskCanceledException.
 					throw new TaskCanceledException (task.AsTask ());
 				}
+#else
+				readed = await task.ConfigureAwait (false);
 #endif
 
 				if (readed > 0)
@@ -205,9 +205,7 @@ namespace Novartment.Base.Net
 				{
 					cancellationToken.ThrowIfCancellationRequested ();
 					int readed;
-#if NETSTANDARD2_1
-					readed = await _socket.ReceiveAsync (_buffer.Slice (_offset + _count, _buffer.Length - _offset - _count), SocketFlags.None, cancellationToken).ConfigureAwait (false);
-#else
+#if NETSTANDARD2_0
 					// Операции с сокетами не поддерживают отмену, поэтому в случае отмены обычно сокет просто закрывают,
 					// что вызывает ObjectDisposedException.
 					var bufSegment = new ArraySegment<byte> (_buffer.ToArray (), _offset + _count, _buffer.Length - _offset - _count);
@@ -222,6 +220,8 @@ namespace Novartment.Base.Net
 						// проглатываем ObjectDisposedException и генерируем вместо него TaskCanceledException
 						throw new TaskCanceledException (task);
 					}
+#else
+					readed = await _socket.ReceiveAsync (_buffer.Slice (_offset + _count, _buffer.Length - _offset - _count), SocketFlags.None, cancellationToken).ConfigureAwait (false);
 #endif
 
 					shortage -= readed;

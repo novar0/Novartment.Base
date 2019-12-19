@@ -41,10 +41,10 @@ namespace Novartment.Base.Net.Smtp
 
 			buf[pos++] = ' ';
 
-#if NETSTANDARD2_1
-			Convert.TryToBase64Chars (this.InitialResponse.Span, buf.AsSpan (pos), out int size, Base64FormattingOptions.None);
-#else
+#if NETSTANDARD2_0
 			var size = Convert.ToBase64CharArray (this.InitialResponse.ToArray (), 0, this.InitialResponse.Length, buf, pos, Base64FormattingOptions.None);
+#else
+			Convert.TryToBase64Chars (this.InitialResponse.Span, buf.AsSpan (pos), out int size, Base64FormattingOptions.None);
 #endif
 			pos += size;
 			buf[pos++] = '\r';
@@ -70,10 +70,10 @@ namespace Novartment.Base.Net.Smtp
 				return new SmtpInvalidSyntaxCommand (SmtpCommandType.Auth, "Unrecognized 'AUTH' mechanism parameter.");
 			}
 
-#if NETSTANDARD2_1
-			var mechanism = new string (value.Slice (saslMechToken.Position, saslMechToken.Length));
-#else
+#if NETSTANDARD2_0
 			var mechanism = new string (value.Slice (saslMechToken.Position, saslMechToken.Length).ToArray ());
+#else
+			var mechanism = new string (value.Slice (saslMechToken.Position, saslMechToken.Length));
 #endif
 
 			var initialEesponseToken = StructuredHeaderFieldLexicalToken.Parse (value, ref pos, AsciiCharClasses.Visible, false);
@@ -85,14 +85,7 @@ namespace Novartment.Base.Net.Smtp
 			byte[] initialResponse;
 			int responseSize;
 			var initialResponseBase64 = value.Slice (initialEesponseToken.Position, initialEesponseToken.Length);
-#if NETSTANDARD2_1
-			initialResponse = new byte[(initialResponseBase64.Length / 4 * 3) + 2];
-			if (!Convert.TryFromBase64Chars (initialResponseBase64, initialResponse, out responseSize))
-			{
-				return new SmtpInvalidSyntaxCommand (SmtpCommandType.Auth, FormattableString.Invariant (
-					$"Unrecognized 'AUTH' initial-response parameter."));
-			}
-#else
+#if NETSTANDARD2_0
 			try
 			{
 				initialResponse = Convert.FromBase64String (new string (initialResponseBase64.ToArray ()));
@@ -102,6 +95,13 @@ namespace Novartment.Base.Net.Smtp
 			{
 				return new SmtpInvalidSyntaxCommand (SmtpCommandType.Auth, FormattableString.Invariant (
 					$"Unrecognized 'AUTH' initial-response parameter. {excpt.Message}"));
+			}
+#else
+			initialResponse = new byte[(initialResponseBase64.Length / 4 * 3) + 2];
+			if (!Convert.TryFromBase64Chars (initialResponseBase64, initialResponse, out responseSize))
+			{
+				return new SmtpInvalidSyntaxCommand (SmtpCommandType.Auth, FormattableString.Invariant (
+					$"Unrecognized 'AUTH' initial-response parameter."));
 			}
 #endif
 			return new SmtpAuthCommand (mechanism, initialResponse.AsSpan (0, responseSize));

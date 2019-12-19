@@ -253,15 +253,15 @@ namespace Novartment.Base.Media
 			var span = _source.BufferMemory.Span.Slice (_source.Offset, (int)_size);
 			if (_size == 4)
 			{
-#if NETSTANDARD2_1
-				result = BitConverter.Int32BitsToSingle (BinaryPrimitives.ReadInt32BigEndian (span));
-#else
+#if NETSTANDARD2_0
 				var buf = new byte[4];
 				buf[0] = span[3];
 				buf[1] = span[2];
 				buf[2] = span[1];
 				buf[3] = span[0];
 				result = BitConverter.ToSingle (buf, 0);
+#else
+				result = BitConverter.Int32BitsToSingle (BinaryPrimitives.ReadInt32BigEndian (span));
 #endif
 			}
 			else
@@ -321,10 +321,10 @@ namespace Novartment.Base.Media
 				throw new NotSupportedException (FormattableString.Invariant ($"Text data size {_size} is too big. Supported maximum is {_source.BufferMemory.Length}."));
 			}
 
-#if NETSTANDARD2_1
-			var result = Encoding.UTF8.GetString (_source.BufferMemory.Span.Slice (_source.Offset, (int)_size));
-#else
+#if NETSTANDARD2_0
 			var result = Encoding.UTF8.GetString (_source.BufferMemory.ToArray (), _source.Offset, (int)_size);
+#else
+			var result = Encoding.UTF8.GetString (_source.BufferMemory.Span.Slice (_source.Offset, (int)_size));
 #endif
 			_source.SkipBuffer ((int)_size);
 			_readed += _size;
