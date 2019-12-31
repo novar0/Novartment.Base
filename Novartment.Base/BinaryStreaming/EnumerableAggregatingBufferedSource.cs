@@ -8,8 +8,8 @@ using Novartment.Base.Collections;
 namespace Novartment.Base.BinaryStreaming
 {
 	/// <summary>
-	/// Источник данных, представленный байтовым буфером,
-	/// предоставляющий данные последовательно из коллекции источников.
+	/// A data source for sequential reading, represented by a byte buffer,
+	/// that represents data from collection of other sources.
 	/// </summary>
 	public class EnumerableAggregatingBufferedSource
 		: IFastSkipBufferedSource
@@ -24,11 +24,11 @@ namespace Novartment.Base.BinaryStreaming
 		private readonly CancellationTokenSource _sourceProviderCTS = null;
 
 		/// <summary>
-		/// Инициализирует новый экземпляр EnumerableAggregatingBufferedSource использующий в качестве буфера предоставленный массив байтов и
-		/// предоставляющий данные из источников указанного перечислителя.
+		/// Initializes a new instance of the EnumerableAggregatingBufferedSource class
+		/// that uses specified buffer for the data and represents data from the specified collection of other sources.
 		/// </summary>
-		/// <param name="buffer">Массив байтов, который будет буфером источника.</param>
-		/// <param name="sources">Перечислитель, поставляющий источники данных.</param>
+		/// <param name="buffer">The region of memory that will be used as a buffer for source data.</param>
+		/// <param name="sources">The enumerator of collection of sources.</param>
 		public EnumerableAggregatingBufferedSource (Memory<byte> buffer, IEnumerable<IBufferedSource> sources)
 		{
 			if (sources == null)
@@ -44,11 +44,11 @@ namespace Novartment.Base.BinaryStreaming
 		}
 
 		/// <summary>
-		/// Инициализирует новый экземпляр EnumerableAggregatingBufferedSource использующий в качестве буфера предоставленный массив байтов и
-		/// предоставляющий данные из источников указанного асинхронного перечислителя.
+		/// Initializes a new instance of the EnumerableAggregatingBufferedSource class
+		/// that uses specified buffer for the data and represents data from the specified collection of other sources.
 		/// </summary>
-		/// <param name="buffer">Массив байтов, который будет буфером источника.</param>
-		/// <param name="sources">Перечислитель, поставляющий источники данных.</param>
+		/// <param name="buffer">The region of memory that will be used as a buffer for source data.</param>
+		/// <param name="sources">The enumerator of collection of sources.</param>
 		public EnumerableAggregatingBufferedSource (Memory<byte> buffer, IAsyncEnumerable<IBufferedSource> sources)
 		{
 			if (sources == null)
@@ -64,42 +64,42 @@ namespace Novartment.Base.BinaryStreaming
 			_sourceProvider = sources.GetAsyncEnumerator (_sourceProviderCTS.Token);
 		}
 
-
 		/// <summary>
-		/// Получает буфер, в котором содержится некоторая часть данных источника.
-		/// Текущая начальная позиция и количество доступных данных содержатся в свойствах Offset и Count,
-		/// при этом сам буфер остаётся неизменным всё время жизни источника.
+		/// Gets the buffer that contains some of the source data.
+		/// The current offset and the amount of available data are in the Offset and Count properties.
+		/// The buffer remains unchanged throughout the lifetime of the source.
 		/// </summary>
 		public ReadOnlyMemory<byte> BufferMemory => _buffer;
 
 		/// <summary>
-		/// Получает начальную позицию данных, доступных в Buffer.
-		/// Количество данных, доступных в Buffer, содержится в Count.
+		/// Gets the offset of available source data in the BufferMemory.
+		/// The amount of available source data is in the Count property.
 		/// </summary>
 		public int Offset => _offset;
 
 		/// <summary>
-		/// Получает количество данных, доступных в Buffer.
-		/// Начальная позиция доступных данных содержится в Offset.
+		/// Gets the amount of source data available in the BufferMemory.
+		/// The offset of available source data is in the Offset property.
 		/// </summary>
 		public int Count => _count;
 
 		/// <summary>
-		/// Получает признак исчерпания источника.
-		/// Возвращает True если источник больше не поставляет данных.
-		/// Содержимое буфера при этом остаётся верным, но больше не будет меняться.
+		/// Gets a value indicating whether the source is exhausted.
+		/// Returns True if the source no longer supplies data.
+		/// In that case, the data available in the buffer remains valid, but will no longer change.
 		/// </summary>
 		public bool IsExhausted => _isProviderCompleted && _currentSource.IsExhausted;
 
 		/// <summary>
-		/// Асинхронно заполняет буфер данными источника, дополняя уже доступные там данные.
-		/// В результате буфер может быть заполнен не полностью если источник поставляет данные блоками, либо пуст если источник исчерпался.
-		/// При выполнении могут измениться свойства Offset, Count и IsExhausted.
+		/// Asynchronously fills the buffer with source data, appending already available data.
+		/// As a result, the buffer may not be completely filled if the source supplies data in blocks,
+		/// or empty if the source is exhausted.
+		/// Properties Offset, Count and IsExhausted may be changed in the process.
 		/// </summary>
-		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
-		/// <returns>Задача, представляющая операцию.
-		/// Если после завершения в Count будет ноль,
-		/// то источник исчерпан и доступных данных в буфере больше не будет.</returns>
+		/// <param name="cancellationToken">The token to monitor for cancellation requests. The default value is System.Threading.CancellationToken.None.</param>
+		/// <returns>A task that represents the asynchronous fill operation.
+		/// If Count property equals zero after completion,
+		/// this means that the source is exhausted and there will be no more data in the buffer.</returns>
 		public ValueTask FillBufferAsync (CancellationToken cancellationToken = default)
 		{
 			Defragment ();
@@ -122,19 +122,13 @@ namespace Novartment.Base.BinaryStreaming
 		}
 
 		/// <summary>
-		/// Асинхронно запрашивает у источника указанное количество данных в буфере.
-		/// В результате запроса в буфере может оказаться данных больше, чем запрошено.
-		/// При выполнении могут измениться свойства Offset, Count и IsExhausted.
+		/// Asynchronously requests the source to provide the specified amount of data in the buffer.
+		/// As a result, there may be more data in the buffer than requested.
+		/// Properties Offset, Count and IsExhausted may be changed in the process.
 		/// </summary>
-		/// <param name="size">Требуемый размер данных в буфере.</param>
-		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
-		/// <exception cref="System.ArgumentOutOfRangeException">
-		/// Происходит если size меньше нуля или больше размера буфера данных.
-		/// </exception>
-		/// <exception cref="Novartment.Base.BinaryStreaming.NotEnoughDataException">
-		/// Происходит если источник не может предоставить указанного количества данных.
-		/// </exception>
-		/// <returns>Задача, представляющая операцию.</returns>
+		/// <param name="size">Amount of data required in the buffer.</param>
+		/// <param name="cancellationToken">The token to monitor for cancellation requests. The default value is System.Threading.CancellationToken.None.</param>
+		/// <returns>A task that represents the operation.</returns>
 		public ValueTask EnsureBufferAsync (int size, CancellationToken cancellationToken = default)
 		{
 			if ((size < 0) || (size > this.BufferMemory.Length))
@@ -172,14 +166,11 @@ namespace Novartment.Base.BinaryStreaming
 		}
 
 		/// <summary>
-		/// Пропускает указанное количество данных из начала доступных данных буфера.
-		/// При выполнении может измениться свойство Offset.
+		/// Skips specified amount of data from the start of available data in the buffer.
+		/// Properties Offset and Count may be changed in the process.
 		/// </summary>
-		/// <param name="size">Размер данных для пропуска в начале доступных данных буфера.
-		/// Должен быть меньше чем размер доступных в буфере данных.</param>
-		/// <exception cref="System.ArgumentOutOfRangeException">
-		/// Происходит если size меньше нуля или больше размера доступных в буфере данных.
-		/// </exception>
+		/// <param name="size">Size of data to skip from the start of available data in the buffer.
+		/// Must be less than total size of available data in the buffer.</param>
 		public void SkipBuffer (int size)
 		{
 			if ((size < 0) || (size > this.Count))
@@ -197,15 +188,16 @@ namespace Novartment.Base.BinaryStreaming
 		}
 
 		/// <summary>
-		/// Пытается асинхронно пропустить указанное количество данных источника, включая доступные в буфере данные.
-		/// При выполнении могут измениться свойства Offset, Count и IsExhausted.
+		/// Asynchronously tries to skip specified amount of source data, including data already available in the buffer.
+		/// Properties Offset, Count and IsExhausted may be changed in the process.
 		/// </summary>
-		/// <param name="size">Количество байтов данных для пропуска, включая доступные в буфере данные.</param>
-		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
+		/// <param name="size">Size of data to skip, including data already available in the buffer.</param>
+		/// <param name="cancellationToken">The token to monitor for cancellation requests. The default value is System.Threading.CancellationToken.None.</param>
 		/// <returns>
-		/// Задача, результатом которой является количество пропущенных байтов данных, включая доступные в буфере данные.
-		/// Может быть меньше, чем было указано, если источник исчерпался.
-		/// После завершения задачи, независимо от её результата, источник будет предоставлять данные, идущие сразу за пропущенными.
+		/// A task that represents the asynchronous skip operation.
+		/// The result of a task will indicate the number of actually skipped bytes of data, including data already available in the buffer.
+		/// It may be less than specified if the source is exhausted.
+		/// Upon completion of a task, regardless of the result, the source will provide data coming right after skipped.
 		/// </returns>
 		public ValueTask<long> TryFastSkipAsync (long size, CancellationToken cancellationToken = default)
 		{

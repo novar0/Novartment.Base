@@ -7,39 +7,36 @@ using System.Threading.Tasks;
 namespace Novartment.Base.BinaryStreaming
 {
 	/// <summary>
-	/// Источник данных, представленный байтовым буфером,
-	/// предоставляющий данные другого источника данных,
-	/// разделяя их на части по указанному образцу-разделителю.
+	/// A base class of data source for sequential reading, represented by a byte buffer,
+	/// that represents data in individual parts.
+	/// Data will come from other source and will be divided into parts
+	/// according to the specified separator pattern.
 	/// </summary>
 	[DebuggerDisplay ("{Offset}...{Offset+Count} ({BufferMemory.Length}) exhausted={IsExhausted}")]
 	public class TemplateSeparatedBufferedSource :
 		IPartitionedBufferedSource
 	{
 		private readonly IBufferedSource _source;
-		private readonly byte[] _template;
+		private readonly ReadOnlyMemory<byte> _template;
 		private readonly bool _throwIfNoSeparatorFound;
 		private int _foundTemplateOffset;
 		private int _foundTemplateLength = 0;
 
 		/// <summary>
-		/// Инициализирует новый экземпляр TemplateSeparatedBufferedSource предоставляющий данные указанного источника данных,
-		/// разделяя их на части по указанному образцу-разделителю.
+		/// Initializes a new instance of the TemplateSeparatedBufferedSource class,
+		/// receiving data from the specified source and
+		/// dividing it into parts according to the specified separator pattern.
 		/// </summary>
-		/// <param name="source">Источник данных, данные которого разделены на части указанным образцом-разделителем.</param>
-		/// <param name="separator">Образец-разделитель, разделяющий источник на отдельные части.</param>
+		/// <param name="source">The source of data, which will be didived into parts according to the specified separator pattern.</param>
+		/// <param name="separator">Separator pattern that divides the source into parts.</param>
 		/// <param name="throwIfNoSeparatorFound">
-		/// Признак, приводящий к бросанию исключения при чтении/пропуске в случае когда образец-разделитель не найден до исчерпания source.
+		/// A value indicating whether to throw an exception when the source is exhausted but the separator pattern is not found.
 		/// </param>
-		public TemplateSeparatedBufferedSource (IBufferedSource source, ReadOnlySpan<byte> separator, bool throwIfNoSeparatorFound)
+		public TemplateSeparatedBufferedSource (IBufferedSource source, ReadOnlyMemory<byte> separator, bool throwIfNoSeparatorFound)
 		{
 			if (source == null)
 			{
 				throw new ArgumentNullException (nameof (source));
-			}
-
-			if (separator == null)
-			{
-				throw new ArgumentNullException (nameof (separator));
 			}
 
 			if ((separator.Length < 1) || (separator.Length > source.BufferMemory.Length))
@@ -50,39 +47,44 @@ namespace Novartment.Base.BinaryStreaming
 			Contract.EndContractBlock ();
 
 			_source = source;
-			_template = separator.ToArray ();
+			_template = separator;
 			_throwIfNoSeparatorFound = throwIfNoSeparatorFound;
 			SearchBuffer (true);
 		}
 
 		/// <summary>
-		/// Получает буфер, в котором содержится некоторая часть данных источника.
-		/// Текущая начальная позиция и количество доступных данных содержатся в свойствах Offset и Count,
-		/// при этом сам буфер остаётся неизменным всё время жизни источника.
+		/// Gets the buffer that contains some of the source data.
+		/// The current offset and the amount of available data are in the Offset and Count properties.
+		/// The buffer remains unchanged throughout the lifetime of the source.
 		/// </summary>
 		public ReadOnlyMemory<byte> BufferMemory => _source.BufferMemory;
 
 		/// <summary>
-		/// Получает начальную позицию данных, доступных в Buffer.
-		/// Количество данных, доступных в Buffer, содержится в Count.
+		/// Gets the offset of available source data in the BufferMemory.
+		/// The amount of available source data is in the Count property.
 		/// </summary>
 		public int Offset => _source.Offset;
 
 		/// <summary>
-		/// Получает количество данных, доступных в Buffer.
-		/// Начальная позиция доступных данных содержится в Offset.
+		/// Gets the amount of source data available in the BufferMemory.
+		/// The offset of available source data is in the Offset property.
 		/// </summary>
 		public int Count => _foundTemplateOffset - _source.Offset;
 
-		/// <summary>Получает признак исчерпания источника.
-		/// Возвращает True если источник больше не поставляет данных.
-		/// Содержимое буфера при этом остаётся верным, но больше не будет меняться.</summary>
+		/// <summary>
+		/// Gets a value indicating whether the source is exhausted.
+		/// Returns True if the source no longer supplies data.
+		/// In that case, the data available in the buffer remains valid, but will no longer change.
+		/// </summary>
 		public bool IsExhausted =>
 				(!_throwIfNoSeparatorFound && _source.IsExhausted) || (_foundTemplateLength >= _template.Length);
 
-		/// <summary>Отбрасывает (пропускает) указанное количество данных из начала буфера.</summary>
-		/// <param name="size">Размер данных для пропуска в начале буфера.
-		/// Должен быть меньше чем размер данных в буфере.</param>
+		/// <summary>
+		/// Skips specified amount of data from the start of available data in the buffer.
+		/// Properties Offset and Count may be changed in the process.
+		/// </summary>
+		/// <param name="size">Size of data to skip from the start of available data in the buffer.
+		/// Must be less than total size of available data in the buffer.</param>
 		public void SkipBuffer (int size)
 		{
 			if ((size < 0) || (size > this.Count))
@@ -99,14 +101,15 @@ namespace Novartment.Base.BinaryStreaming
 		}
 
 		/// <summary>
-		/// Асинхронно заполняет буфер данными источника, дополняя уже доступные там данные.
-		/// В результате буфер может быть заполнен не полностью если источник поставляет данные блоками, либо пуст если источник исчерпался.
-		/// При выполнении могут измениться свойства Offset, Count и IsExhausted.
+		/// Asynchronously fills the buffer with source data, appending already available data.
+		/// As a result, the buffer may not be completely filled if the source supplies data in blocks,
+		/// or empty if the source is exhausted.
+		/// Properties Offset, Count and IsExhausted may be changed in the process.
 		/// </summary>
-		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
-		/// <returns>Задача, представляющая операцию.
-		/// Если после завершения в Count будет ноль,
-		/// то источник исчерпан и доступных данных в буфере больше не будет.</returns>
+		/// <param name="cancellationToken">The token to monitor for cancellation requests. The default value is System.Threading.CancellationToken.None.</param>
+		/// <returns>A task that represents the asynchronous fill operation.
+		/// If Count property equals zero after completion,
+		/// this means that the source is exhausted and there will be no more data in the buffer.</returns>
 		public async ValueTask FillBufferAsync (CancellationToken cancellationToken = default)
 		{
 			if (_foundTemplateLength >= _template.Length)
@@ -138,13 +141,13 @@ namespace Novartment.Base.BinaryStreaming
 		}
 
 		/// <summary>
-		/// Асинхронно запрашивает у источника указанное количество данных в буфере.
-		/// В результате запроса в буфере может оказаться данных больше, чем запрошено.
-		/// При выполнении могут измениться свойства Offset, Count и IsExhausted.
+		/// Asynchronously requests the source to provide the specified amount of data in the buffer.
+		/// As a result, there may be more data in the buffer than requested.
+		/// Properties Offset, Count and IsExhausted may be changed in the process.
 		/// </summary>
-		/// <param name="size">Требуемый размер данных в буфере.</param>
-		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
-		/// <returns>Задача, представляющая операцию.</returns>
+		/// <param name="size">Amount of data required in the buffer.</param>
+		/// <param name="cancellationToken">The token to monitor for cancellation requests. The default value is System.Threading.CancellationToken.None.</param>
+		/// <returns>A task that represents the operation.</returns>
 		public ValueTask EnsureBufferAsync (int size, CancellationToken cancellationToken = default)
 		{
 			if ((size < 0) || (size > this.BufferMemory.Length))
@@ -184,13 +187,14 @@ namespace Novartment.Base.BinaryStreaming
 		}
 
 		/// <summary>
-		/// Пытается асинхронно пропустить все данные источника, принадлежащие текущей части,
-		/// чтобы стали доступны данные следующей части.
+		/// Asynchronously tries to skip all source data belonging to the current part,
+		/// and transition to the next part.
 		/// </summary>
-		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
-		/// <returns>Задача, результатом которой является
-		/// True если разделитель найден и пропущен,
-		/// либо False если источник исчерпался и разделитель не найден.
+		/// <param name="cancellationToken">The token to monitor for cancellation requests. The default value is System.Threading.CancellationToken.None.</param>
+		/// <returns>A task that represents the asynchronous skip and transition operation. 
+		/// The result of a task will indicate success of the transition.
+		/// It will be True if the source has been transitioned to the next part,
+		/// and False if the source has been exhausted.
 		/// </returns>
 		public async ValueTask<bool> TrySkipPartAsync (CancellationToken cancellationToken = default)
 		{
@@ -245,9 +249,10 @@ namespace Novartment.Base.BinaryStreaming
 			}
 
 			var buf = _source.BufferMemory.Span;
+			var template = _template.Span;
 			while (((_foundTemplateOffset + _foundTemplateLength) < (_source.Offset + _source.Count)) && (_foundTemplateLength < _template.Length))
 			{
-				if (buf[_foundTemplateOffset + _foundTemplateLength] == _template[_foundTemplateLength])
+				if (buf[_foundTemplateOffset + _foundTemplateLength] == template[_foundTemplateLength])
 				{
 					_foundTemplateLength++;
 				}

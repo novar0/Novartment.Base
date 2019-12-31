@@ -6,12 +6,12 @@ using Novartment.Base.BinaryStreaming;
 namespace Novartment.Base
 {
 	/// <summary>
-	/// Получатель двоичных данных для последовательной записи на основе массива байтов.
-	/// По мере записи массив заменяется на другой, большего размера.
+	/// A binary data destination for sequential writing backed by a region of memory.
+	/// As data is being written, the region of memory is replaced with another, larger size.
 	/// </summary>
 	/// <remarks>
-	/// Аналог System.IO.MemoryStream только для последовательной записи.
-	/// Отличается тем, что записанное содержимое доступно как ReadOnlyMemory&lt;byte&gt;.
+	/// Similar to the library class System.IO.MemoryStream,
+	/// but exposes written content as ReadOnlyMemory&lt;byte&gt;.
 	/// </remarks>
 	public class MemoryBinaryDestination :
 		IBinaryDestination
@@ -22,7 +22,7 @@ namespace Novartment.Base
 		private int _position;
 
 		/// <summary>
-		/// Инициализирует новый экземпляр класса ArrayBinaryDestination.
+		/// Initializes a new instance of the MemoryBinaryDestination class.
 		/// </summary>
 		public MemoryBinaryDestination ()
 			: this (0)
@@ -30,9 +30,9 @@ namespace Novartment.Base
 		}
 
 		/// <summary>
-		/// Инициализирует новый экземпляр класса ArrayBinaryDestination c указанной начальной ёмкостью.
+		/// Initializes a new instance of the MemoryBinaryDestination class which is backed by a region of memory of the specified size.
 		/// </summary>
-		/// <param name="capacity">Начальной ёмкость.</param>
+		/// <param name="capacity">The number of elements that the new list can initially store.</param>
 		public MemoryBinaryDestination (int capacity)
 		{
 			if (capacity < 0)
@@ -44,16 +44,20 @@ namespace Novartment.Base
 		}
 
 		/// <summary>
-		/// Получает буфер, заполненный при записи.
+		/// Returns the region of memory that contains the written data.
 		/// </summary>
-		public ReadOnlyMemory<byte> Buffer => _buffer.AsMemory (0, _position);
+		/// <returns>The region of memory that contains the written data.</returns>
+		public ReadOnlyMemory<byte> GetBuffer ()
+		{
+			return _buffer.AsMemory (0, _position);
+		}
 
 		/// <summary>
-		/// Асинхронно записывает в получатель указанный диапазон байтов.
+		/// Asynchronously writes the specified region of memory to this destination.
 		/// </summary>
-		/// <param name="buffer">Буфер, из которого записываются данные.</param>
-		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
-		/// <returns>Задача, представляющая асинхронную операцию записи.</returns>
+		/// <param name="buffer">The region of memory to write to this destination.</param>
+		/// <param name="cancellationToken">The token to monitor for cancellation requests. The default value is System.Threading.CancellationToken.None.</param>
+		/// <returns>A task that represents the write operation.</returns>
 		public ValueTask WriteAsync (ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default)
 		{
 			Write (buffer.Span);
@@ -61,9 +65,9 @@ namespace Novartment.Base
 		}
 
 		/// <summary>
-		/// Записывает в получатель указанный диапазон байтов.
+		/// Writes the specified region of memory to this destination.
 		/// </summary>
-		/// <param name="buffer">Диапазон байтов, которые будут записаны в получатель.</param>
+		/// <param name="buffer">The region of memory to write to this destination.</param>
 		public void Write (ReadOnlySpan<byte> buffer)
 		{
 			int newPosition = _position + buffer.Length;
@@ -78,7 +82,7 @@ namespace Novartment.Base
 		}
 
 		/// <summary>
-		/// Указывает что запись окончена.
+		/// Does nothing.
 		/// </summary>
 		public void SetComplete ()
 		{

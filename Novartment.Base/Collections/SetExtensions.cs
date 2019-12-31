@@ -5,17 +5,18 @@ using System.Diagnostics.Contracts;
 namespace Novartment.Base.Collections
 {
 	/// <summary>
-	/// Методы расширения, имитирующие библиотечный ISet.
+	/// Extension methods for the IAdjustableFiniteSet interface
+	/// that mimic the ISet library interface.
 	/// </summary>
 	// TODO: учесть что в set элементы могут повторятся
 	public static class SetExtensions
 	{
 		/// <summary>
-		/// Удаляет все элементы указанной коллекции из текущего множества.
+		/// Removes all elements in the specified collection from the current set.
 		/// </summary>
-		/// <typeparam name="T">Тип элементов множества.</typeparam>
-		/// <param name="set">Множество, над которым производится операция.</param>
-		/// <param name="other">Коллекция для сравнения с текущим множеством.</param>
+		/// <typeparam name="T">The type of the elements.</typeparam>
+		/// <param name="set">The set on which the operation is performed.</param>
+		/// <param name="other">The collection of items to remove from the set.</param>
 		public static void ExceptWith<T> (this IAdjustableFiniteSet<T> set, IEnumerable<T> other)
 		{
 			if (set == null)
@@ -37,12 +38,12 @@ namespace Novartment.Base.Collections
 		}
 
 		/// <summary>
-		/// Изменяет текущее множество, чтобы оно содержало только элементы, которые имеются либо в текущем множестве,
-		/// либо в указанной коллекции, но не одновременно в них обоих.
+		/// Modifies the current set so that it contains only elements that are present either
+		/// in the current set or in the specified collection, but not both.
 		/// </summary>
-		/// <typeparam name="T">Тип элементов множества.</typeparam>
-		/// <param name="set">Множество, над которым производится операция.</param>
-		/// <param name="other">Множество для сравнения с текущим множеством.</param>
+		/// <typeparam name="T">The type of the elements.</typeparam>
+		/// <param name="set">The set on which the operation is performed.</param>
+		/// <param name="other">The collection to compare to the current set.</param>
 		public static void SymmetricExceptWith<T> (this IAdjustableFiniteSet<T> set, IEnumerable<T> other)
 		{
 			if (set == null)
@@ -72,11 +73,12 @@ namespace Novartment.Base.Collections
 		}
 
 		/// <summary>
-		/// Изменяет текущее множество, чтобы оно содержало только элементы, которые также имеются в заданной коллекции.
+		/// Modifies the current set so that it contains only elements that are also in a
+		/// specified collection.
 		/// </summary>
-		/// <typeparam name="T">Тип элементов множества.</typeparam>
-		/// <param name="set">Множество, над которым производится операция.</param>
-		/// <param name="other">Коллекция для сравнения с текущим множеством.</param>
+		/// <typeparam name="T">The type of the elements.</typeparam>
+		/// <param name="set">The set on which the operation is performed.</param>
+		/// <param name="other">The collection to compare to the current set.</param>
 		public static void IntersectWith<T> (this IAdjustableFiniteSet<T> set, IEnumerable<T> other)
 		{
 			if (set == null)
@@ -99,12 +101,12 @@ namespace Novartment.Base.Collections
 		}
 
 		/// <summary>
-		/// Изменяет текущий множество, чтобы оно содержало все элементы, которые имеются как в текущем множестве,
-		/// так и в указанной коллекции.
+		/// Modifies the current set so that it contains all elements that are present in
+		/// the current set, in the specified collection, or in both.
 		/// </summary>
-		/// <typeparam name="T">Тип элементов множества.</typeparam>
-		/// <param name="set">Множество, над которым производится операция.</param>
-		/// <param name="other">Коллекция для сравнения с текущим множеством.</param>
+		/// <typeparam name="T">The type of the elements.</typeparam>
+		/// <param name="set">The set on which the operation is performed.</param>
+		/// <param name="other">The collection to compare to the current set.</param>
 		public static void UnionWith<T> (this IAdjustableFiniteSet<T> set, IEnumerable<T> other)
 		{
 			if (set == null)
@@ -126,13 +128,12 @@ namespace Novartment.Base.Collections
 		}
 
 		/// <summary>
-		/// Определяет, является ли текущее множество строгим подмножеством заданной коллекции.
+		/// Determines whether the current set is a proper (strict) subset of a specified collection.
 		/// </summary>
-		/// <typeparam name="T">Тип элементов множества.</typeparam>
-		/// <param name="set">Множество, для которого происходит опеределение.</param>
-		/// <param name="other">Коллекция для сравнения с текущим множеством.</param>
-		/// <returns> Значение true, если текущее множество является строгим подмножеством объекта other;
-		/// в противном случае — значение false.</returns>
+		/// <typeparam name="T">The type of the elements.</typeparam>
+		/// <param name="set">The set for which the definition occurs.</param>
+		/// <param name="other">The collection to compare to the current set.</param>
+		/// <returns>True if the current collection is a proper subset of other; otherwise, False.</returns>
 		public static bool IsProperSubsetOf<T> (this IAdjustableFiniteSet<T> set, IEnumerable<T> other)
 		{
 			if (set == null)
@@ -168,12 +169,12 @@ namespace Novartment.Base.Collections
 		}
 
 		/// <summary>
-		/// Определяет, является ли множеств подмножеством заданной коллекции.
+		/// Determines whether a set is a subset of a specified collection.
 		/// </summary>
-		/// <typeparam name="T">Тип элементов множества.</typeparam>
-		/// <param name="set">Множество, для которого происходит опеределение.</param>
-		/// <param name="other">Коллекция для сравнения с текущим множеством.</param>
-		/// <returns>Значение true, если текущее множество является подмножеством объекта other; в противном случае — значение false.</returns>
+		/// <typeparam name="T">The type of the elements.</typeparam>
+		/// <param name="set">The set for which the definition occurs.</param>
+		/// <param name="other">The collection to compare to the current set.</param>
+		/// <returns>True if the current set is a subset of other; otherwise, False.</returns>
 		public static bool IsSubsetOf<T> (this IAdjustableFiniteSet<T> set, IEnumerable<T> other)
 		{
 			if (set == null)
@@ -206,12 +207,12 @@ namespace Novartment.Base.Collections
 		}
 
 		/// <summary>
-		/// Определяет, является ли текущее множество строгим надмножеством заданной коллекции.
+		///  Determines whether the current set is a proper (strict) superset of a specified collection.
 		/// </summary>
-		/// <typeparam name="T">Тип элементов множества.</typeparam>
-		/// <param name="set">Множество, для которого происходит опеределение.</param>
-		/// <param name="other">Коллекция для сравнения с текущим множеством.</param>
-		/// <returns> Значение true, если текущее множество является строгим надмножеством объекта other; в противном случае — значение false.</returns>
+		/// <typeparam name="T">The type of the elements.</typeparam>
+		/// <param name="set">The set for which the definition occurs.</param>
+		/// <param name="other">The collection to compare to the current set.</param>
+		/// <returns>True if the current set is a proper superset of other; otherwise, False.</returns>
 		public static bool IsProperSupersetOf<T> (this IAdjustableFiniteSet<T> set, IEnumerable<T> other)
 		{
 			if (set == null)
@@ -246,12 +247,12 @@ namespace Novartment.Base.Collections
 		}
 
 		/// <summary>
-		/// Определяет, является ли текущее множество надмножеством заданной коллекции.
+		/// Determines whether the current set is a superset of a specified collection.
 		/// </summary>
-		/// <typeparam name="T">Тип элементов множества.</typeparam>
-		/// <param name="set">Множество, для которого происходит опеределение.</param>
-		/// <param name="other">Коллекция для сравнения с текущим множеством.</param>
-		/// <returns> Значение true, если текущее множество является надмножеством объекта other; в противном случае — значение false.</returns>
+		/// <typeparam name="T">The type of the elements.</typeparam>
+		/// <param name="set">The set for which the definition occurs.</param>
+		/// <param name="other">The collection to compare to the current set.</param>
+		/// <returns>True if the current set is a superset of other; otherwise, False.</returns>
 		public static bool IsSupersetOf<T> (this IReadOnlyFiniteSet<T> set, IEnumerable<T> other)
 		{
 			if (set == null)
@@ -279,13 +280,12 @@ namespace Novartment.Base.Collections
 		}
 
 		/// <summary>
-		/// Определяет, пересекаются ли текущее множество и указанная коллекция.
+		/// Determines whether the current set overlaps with the specified collection.
 		/// </summary>
-		/// <typeparam name="T">Тип элементов множества.</typeparam>
-		/// <param name="set">Множество, для которого происходит опеределение.</param>
-		/// <param name="other">Коллекция для сравнения с текущим множеством.</param>
-		/// <returns> Значение true, если в текущем множестве и объекте other имеется по крайней мере один общий элемент;
-		/// в противном случае — значение false.</returns>
+		/// <typeparam name="T">The type of the elements.</typeparam>
+		/// <param name="set">The set for which the definition occurs.</param>
+		/// <param name="other">The collection to compare to the current set.</param>
+		/// <returns>True if the current set and other share at least one common element; otherwise, False.</returns>
 		public static bool Overlaps<T> (this IReadOnlyFiniteSet<T> set, IEnumerable<T> other)
 		{
 			if (set == null)
@@ -313,12 +313,12 @@ namespace Novartment.Base.Collections
 		}
 
 		/// <summary>
-		/// Определяет, содержат ли текущее множество и указанная коллекция одни и те же элементы.
+		/// Determines whether the current set and the specified collection contain the same elements.
 		/// </summary>
-		/// <typeparam name="T">Тип элементов множества.</typeparam>
-		/// <param name="set">Множество, для которого происходит опеределение.</param>
-		/// <param name="other">Коллекция для сравнения с текущим множеством.</param>
-		/// <returns> Значение true, если текущее множество равно объекту other; в противном случае — значение false.</returns>
+		/// <typeparam name="T">The type of the elements.</typeparam>
+		/// <param name="set">The set for which the definition occurs.</param>
+		/// <param name="other">The collection to compare to the current set.</param>
+		/// <returns>True if the current set is equal to other; otherwise, False.</returns>
 		public static bool SetEquals<T> (this IAdjustableFiniteSet<T> set, IEnumerable<T> other)
 		{
 			if (set == null)

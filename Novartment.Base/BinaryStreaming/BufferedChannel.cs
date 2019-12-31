@@ -6,16 +6,15 @@ using System.Threading.Tasks;
 namespace Novartment.Base.BinaryStreaming
 {
 	/// <summary>
-	/// Канал двоичных данных, представленный байтовым буфером,
-	/// позволяющий вести запись данных одновременно и независимо от их чтения.
-	/// Двоичные данные интерпретируются как непрерывный поток, независимо от количества и размера записываемых порций.
+	/// A channel of binary data, represented by a byte buffer,
+	/// that allows to write data simultaneously and independently of reading.
+	/// Binary data is interpreted as a continuous stream, regardless of the number and size of written portions.
 	/// </summary>
 	/// <remarks>
-	/// Чтение и запись данных откладываются в зависимости от заполнения буфера.
-	/// Новые (записанные) данные становятся доступны в буфере только после запроса
-	/// в методах EnsureBuffer() и FillBuffer().
-	/// Аналогичен библиотечным классам System.Threading.Channels.Channel и System.Threading.Tasks.Dataflow.BufferBlock, но не для фиксированных элементов,
-	/// а для произвольных последовательностей байтов.
+	/// Reading and writing are blocked depending on the buffer fill.
+	/// New (written) data becomes available in the buffer only after a request in the EnsureBuffer() and FillBuffer() methods.
+	/// Similar to the library classes System.Threading.Channels.Channel and System.Threading.Tasks.Dataflow.BufferBlock,
+	/// but not for fixed elements, but for arbitrary sequences of bytes.
 	/// </remarks>
 	public class BufferedChannel :
 		IFastSkipBufferedSource,
@@ -45,10 +44,10 @@ namespace Novartment.Base.BinaryStreaming
 		private long _sizeToSkipOnWrite = 0L;
 
 		/// <summary>
-		/// Инициализирует новый экземпляр BufferedChannel,
-		/// использующий указанный буфер для записи данных.
+		/// Initializes a new instance of the BufferedChannel class
+		/// that uses a specified buffer for the data.
 		/// </summary>
-		/// <param name="buffer">Байтовый буфер, в котором будут содержаться записанные в канал данные.</param>
+		/// <param name="buffer">The region of memory that will be used as a buffer for channel data.</param>
 		public BufferedChannel (Memory<byte> buffer)
 		{
 			if (buffer.Length < 1)
@@ -63,28 +62,28 @@ namespace Novartment.Base.BinaryStreaming
 		}
 
 		/// <summary>
-		/// Получает буфер, в котором содержится некоторая часть данных источника.
-		/// Текущая начальная позиция и количество доступных данных содержатся в свойствах Offset и Count,
-		/// при этом сам буфер остаётся неизменным всё время жизни источника.
+		/// Gets the buffer that contains some of the channel data.
+		/// The current offset and the amount of available data are in the Offset and Count properties.
+		/// The buffer remains unchanged throughout the lifetime of the channel.
 		/// </summary>
 		public ReadOnlyMemory<byte> BufferMemory => _buffer;
 
 		/// <summary>
-		/// Получает начальную позицию данных, доступных в Buffer.
-		/// Количество данных, доступных в Buffer, содержится в Count.
+		/// Gets the offset of available channel data in BufferMemory.
+		/// The amount of available channel data is in the Count property.
 		/// </summary>
 		public int Offset => _offset;
 
 		/// <summary>
-		/// Получает количество данных, доступных в Buffer.
-		/// Начальная позиция доступных данных содержится в Offset.
+		/// Gets the amount of channel data available in the BufferMemory.
+		/// The offset of available channel data is in the Offset property.
 		/// </summary>
 		public int Count => _count;
 
 		/// <summary>
-		/// Получает признак исчерпания канала.
-		/// Возвращает True если канал больше не поставляет данных.
-		/// Содержимое буфера при этом остаётся верным, но больше не будет меняться.
+		/// Gets a value indicating whether the channel is exhausted.
+		/// Returns True if the channel no longer supplies data.
+		/// In that case, the data available in the buffer remains valid, but will no longer change.
 		/// </summary>
 		public bool IsExhausted
 		{
@@ -100,9 +99,12 @@ namespace Novartment.Base.BinaryStreaming
 			}
 		}
 
-		/// <summary>Отбрасывает (пропускает) указанное количество данных из начала буфера канала.</summary>
-		/// <param name="size">Размер данных для пропуска в начале буфера.
-		/// Должен быть меньше чем размер данных в буфере.</param>
+		/// <summary>
+		/// Skips specified amount of data from the start of available data in the buffer.
+		/// Properties Offset and Count may be changed in the process.
+		/// </summary>
+		/// <param name="size">Size of data to skip from the start of available data in the buffer.
+		/// Must be less than total size of available data in the buffer.</param>
 		public void SkipBuffer (int size)
 		{
 			if ((size < 0) || (size > _count))
@@ -117,18 +119,19 @@ namespace Novartment.Base.BinaryStreaming
 		}
 
 		/// <summary>
-		/// Пытается асинхронно пропустить указанное количество данных канала, включая доступные в буфере данные.
-		/// При выполнении могут измениться свойства Offset, Count и IsExhausted.
+		/// Asynchronously tries to skip specified amount of channel data, including data already available in the buffer.
+		/// Properties Offset, Count and IsExhausted may be changed in the process.
 		/// </summary>
-		/// <param name="size">Количество байтов данных для пропуска, включая доступные в буфере данные.</param>
+		/// <param name="size">Size of data to skip, including data already available in the buffer.</param>
 		/// <param name="cancellationToken">
-		/// Токен для отслеживания запросов отмены не используется.
-		/// Для отмены ожидания новых данных вызывайте метод SetComplete().
+		/// The cancellation request token is not used.
+		/// To unblock the pending skip operation, call the SetComplete() method.
 		/// </param>
 		/// <returns>
-		/// Задача, результатом которой является количество пропущенных байтов данных, включая доступные в буфере данные.
-		/// Может быть меньше, чем было указано, если канал исчерпан.
-		/// После завершения задачи, независимо от её результата, канал будет предоставлять данные, идущие сразу за пропущенными.
+		/// A task that represents the asynchronous skip operation.
+		/// The result of a task will indicate the number of actually skipped bytes of data, including data already available in the buffer.
+		/// It may be less than specified if the channel is completed.
+		/// Upon completion of a task, regardless of the result, the channel will provide data coming right after skipped.
 		/// </returns>
 		public ValueTask<long> TryFastSkipAsync (long size, CancellationToken cancellationToken = default)
 		{
@@ -191,26 +194,24 @@ namespace Novartment.Base.BinaryStreaming
 		}
 
 		/// <summary>
-		/// Асинхронно заполняет буфер данными канала, дополняя уже доступные там данные.
-		/// В результате буфер может быть заполнен не полностью если канал поставляет данные блоками, либо пуст если канал исчерпан.
-		/// При выполнении могут измениться свойства Offset, Count и IsExhausted.
+		/// Asynchronously fills the buffer with channel data, appending already available data.
+		/// As a result, the buffer may not be completely filled if the channel supplies data in blocks,
+		/// or empty if the channel is exhausted.
+		/// Properties Offset, Count and IsExhausted may be changed in the process.
 		/// </summary>
 		/// <param name="cancellationToken">
-		/// Токен для отслеживания запросов отмены не используется.
-		/// Для отмены ожидания новых данных вызывайте метод SetComplete().
+		/// The cancellation request token is not used.
+		/// To unblock the pending fill buffer operation, call the SetComplete() method.
 		/// </param>
-		/// <returns>Задача, представляющая операцию.
-		/// Если после завершения в Count будет ноль,
-		/// то канал исчерпан и доступных данных в буфере больше не будет.</returns>
+		/// <returns>A task that represents the asynchronous fill operation.
+		/// If Count property equals zero after completion,
+		/// this means that the channel is exhausted and there will be no more data in the buffer.</returns>
 		/// <remarks>
-		/// Размер получаемых в буфере порций данных не зависит от размера порций, записанных в канал.
-		/// Будут объеденены и доступны как одна порция все записанные в канал данные,
-		/// для которых хватило места в буфере.
+		/// The size of the data portions available in the buffer does not depend on the size of the portions written in the channel.
+		/// All the data written in the channel for which there was enough space in the buffer will be merged and available as one portion.
 		/// </remarks>
 		public async ValueTask FillBufferAsync (CancellationToken cancellationToken = default)
 		{
-			cancellationToken.ThrowIfCancellationRequested ();
-
 			await _pendingDataArrival.Task.ConfigureAwait (false);
 			lock (_integrityLocker)
 			{
@@ -219,16 +220,16 @@ namespace Novartment.Base.BinaryStreaming
 		}
 
 		/// <summary>
-		/// Асинхронно запрашивает у канала указанное количество данных в буфере.
-		/// В результате запроса в буфере может оказаться данных больше, чем запрошено.
-		/// При выполнении могут измениться свойства Offset, Count и IsExhausted.
+		/// Asynchronously requests the channel to provide the specified amount of data in the buffer.
+		/// As a result, there may be more data in the buffer than requested.
+		/// Properties Offset, Count and IsExhausted may be changed in the process.
 		/// </summary>
-		/// <param name="size">Требуемый размер данных в буфере.</param>
+		/// <param name="size">Amount of data required in the buffer.</param>
 		/// <param name="cancellationToken">
-		/// Токен для отслеживания запросов отмены не используется.
-		/// Для отмены ожидания новых данных вызывайте метод SetComplete().
+		/// The cancellation request token is not used.
+		/// To unblock the pending fill buffer operation, call the SetComplete() method.
 		/// </param>
-		/// <returns>Задача, представляющая операцию.</returns>
+		/// <returns>A task that represents the operation.</returns>
 		public ValueTask EnsureBufferAsync (int size, CancellationToken cancellationToken = default)
 		{
 			if ((size < 0) || (size > this.BufferMemory.Length))
@@ -281,23 +282,24 @@ namespace Novartment.Base.BinaryStreaming
 		}
 
 		/// <summary>
-		/// Асинхронно записывает последовательность байтов в канал.
+		/// Asynchronously writes specified region of memory to this channel.
 		/// Запись можно вызывать одновременно и независимо от операций чтения.
 		/// </summary>
-		/// <param name="buffer">Буфер, из которого записываются данные.</param>
+		/// <param name="buffer">The region of memory to write to this destination.</param>
 		/// <param name="cancellationToken">
-		/// Токен для отслеживания запросов отмены не используется.
-		/// Для отмены ожидания вызывайте метод TrySkip() указав размер не менее чем count.
+		/// The cancellation request token is not used.
+		/// To unblock the pending write operation, call the TrySkip() method and specify a size of at least buffer.Length.
 		/// </param>
-		/// <returns>Задача, представляющая асинхронную операцию записи.</returns>
+		/// <returns>A task that represents the write operation.</returns>
 		/// <remarks>
-		/// Записанные данные будут доступны для чтения не сразу,
-		/// а только по запросу из методов EnsureBuffer(), FillBuffer() и TrySkip().
-		/// Информация об отдельных порциях записанных данных не сохраняется,
-		/// канал предоставляет все накопленные данные для чтения произвольными частями в зависимости от наличия места в буфере.
+		/// The written data will not be available in the buffer immediately,
+		/// but only upon request in EnsureBuffer(), FillBuffer() and TrySkip() methods.
+		/// Information about individual portions of written data is not kept,
+		/// the channel provides all the accumulated data for reading in arbitrary parts,
+		/// depending on the availability of space in the buffer.
 		/// </remarks>
 		/// <exception cref="System.InvalidOperationException">
-		/// Возникает если предоставление данных в канал окончено.
+		/// The channel is marked as completed.
 		/// </exception>
 		public ValueTask WriteAsync (ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default)
 		{
@@ -344,13 +346,12 @@ namespace Novartment.Base.BinaryStreaming
 		}
 
 		/// <summary>
-		/// Сигнализирует, что запись данных в канал окончена.
-		/// После этого в методах FillBuffer() и EnsureBuffer() не будет происходить ожидание новых данных,
-		/// а метод Write() будет вызывать исключение.
+		/// Mark the channel as being complete, meaning no more items will be written to it.
+		/// After that, there will be no more waiting new data in FillBuffer() and EnsureBuffer() methods, and Write() method will throw an exception.
 		/// </summary>
 		/// <remarks>
-		/// Свойство IsExhausted может быть установлено не сразу,
-		/// а только после освобождения места в буфере для помещения туда всех данных, ожидающих записи в канал.
+		/// The IsExhausted property may not be set immediately,
+		/// but only after freeing up space in the buffer to place all the data waiting to be written to the channel.
 		/// </remarks>
 		public void SetComplete ()
 		{

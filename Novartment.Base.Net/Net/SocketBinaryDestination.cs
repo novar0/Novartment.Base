@@ -45,11 +45,11 @@ namespace Novartment.Base.Net
 		}
 
 		/// <summary>
-		/// Асинхронно записывает в получатель указанный сегмент массива байтов.
+		/// Asynchronously writes specified region of memory to this destination.
 		/// </summary>
-		/// <param name="buffer">Буфер, из которого записываются данные.</param>
-		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
-		/// <returns>Задача, представляющая асинхронную операцию записи.</returns>
+		/// <param name="buffer">The region of memory to write to this destination.</param>
+		/// <param name="cancellationToken">The token to monitor for cancellation requests. The default value is System.Threading.CancellationToken.None.</param>
+		/// <returns>A task that represents the write operation.</returns>
 		public ValueTask WriteAsync (ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default)
 		{
 			if (_isCompleted)

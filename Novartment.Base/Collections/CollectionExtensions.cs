@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace Novartment.Base.Collections
 {
 	/// <summary>
-	/// Методы расширения к интерфейсам коллекций.
+	/// Extension methods for collection interfaces.
 	/// </summary>
 	public static class CollectionExtensions
 	{
@@ -43,6 +43,9 @@ namespace Novartment.Base.Collections
 				_source = source ?? throw new ArgumentNullException (nameof (source));
 			}
 
+			/// <summary>Returns an enumerator that iterates asynchronously through the collection.</summary>
+			/// <param name="cancellationToken">A <see cref="CancellationToken"/> that may be used to cancel the asynchronous iteration.</param>
+			/// <returns>An enumerator that can be used to iterate asynchronously through the collection.</returns>
 			public IAsyncEnumerator<TItem> GetAsyncEnumerator (CancellationToken cancellationToken = default)
 			{
 				return new AsyncEnumerator (_source.GetEnumerator ());
@@ -50,25 +53,25 @@ namespace Novartment.Base.Collections
 		}
 
 		/// <summary>
-		/// Представляет синхронный перечислитель в виде асинхронного.
+		/// Represents a synchronous enumerator as an asynchronous one.
 		/// </summary>
-		/// <typeparam name="TItem">Тип элементов перечислителя.</typeparam>
-		/// <param name="source">Синхронный перечислитель.</param>
-		/// <returns>Асинхронный перечислитель.</returns>
+		/// <typeparam name="TItem">The type of the elements.</typeparam>
+		/// <param name="source">The synchronous enumerator.</param>
+		/// <returns>The asynchronous enumerator.</returns>
 		public static IAsyncEnumerable<TItem> AsAsyncEnumerable<TItem> (this IEnumerable<TItem> source)
 		{
 			return new AsyncEnumerable<TItem> (source);
 		}
 
 		/// <summary>
-		/// Очищает диапазон элементов сегмента зацикленного массива.
+		/// Clears (resets to default value) the range of elements in a looped array segment.
 		/// </summary>
-		/// <typeparam name="T">Тип элементов массива.</typeparam>
-		/// <param name="segmentItems">Массив элементов сегмента.</param>
-		/// <param name="segmentOffset">Начальная позиция элементов сегмента.</param>
-		/// <param name="segmentCount">Количество элементов сегмента.</param>
-		/// <param name="index">Начальная позиция диапазона для очистки (отсчёт от начала сегмента).</param>
-		/// <param name="count">Количество очищаемых элементов.</param>
+		/// <typeparam name="T">The type of the elements.</typeparam>
+		/// <param name="segmentItems">The array, in which the segment is defined.</param>
+		/// <param name="segmentOffset">The starting position of the segment in the array.</param>
+		/// <param name="segmentCount">The number of elements in the segment of the array.</param>
+		/// <param name="index">The starting position of the range to clear (counting from the beginning of the segment).</param>
+		/// <param name="count">The number of items to clean.</param>
 		public static void LoopedArraySegmentClear<T> (
 			T[] segmentItems,
 			int segmentOffset,
@@ -130,16 +133,16 @@ namespace Novartment.Base.Collections
 		}
 
 		/// <summary>
-		/// Копирует диапазон элементов сегмента зацикленного массива из одной позиции в другую.
-		/// Позиции для копирования указываются от начала сегмента.
+		/// Copies the range of elements of a looped array segment from one position to another.
+		/// Copy positions are indicated from the beginning of the segment.
 		/// </summary>
-		/// <typeparam name="T">Тип элементов массива.</typeparam>
-		/// <param name="segmentItems">Массив элементов сегмента.</param>
-		/// <param name="segmentOffset">Начальная позиция элементов сегмента.</param>
-		/// <param name="segmentCount">Количество элементов сегмента.</param>
-		/// <param name="sourceIndex">Позиция исходного диапазона в сегменте (отсчёт от начала сегмента).</param>
-		/// <param name="destinationIndex">Позиция диапазона назначения в сегменте (отсчёт от начала сегмента).</param>
-		/// <param name="count">Число копируемых элементов.</param>
+		/// <typeparam name="T">The type of the elements.</typeparam>
+		/// <param name="segmentItems">The array, in which the segment is defined.</param>
+		/// <param name="segmentOffset">The starting position of the segment in the array.</param>
+		/// <param name="segmentCount">The number of elements in the segment of the array.</param>
+		/// <param name="sourceIndex">The starting position of the range to copy (counting from the beginning of the segment).</param>
+		/// <param name="destinationIndex">The destination range position in the segment (counting from the beginning of the segment).</param>
+		/// <param name="count">The number of items to copy.</param>
 		public static void LoopedArraySegmentCopy<T> (
 			T[] segmentItems,
 			int segmentOffset,
@@ -252,41 +255,12 @@ namespace Novartment.Base.Collections
 		}
 
 		/// <summary>
-		/// Создаёт массив, в который оптимально доступным образом скопированы все элементы указанного сегмента массива.
+		/// Adds the elements of one collection to the end of the another collection,
+		/// possibly reserving the space for new elements in advance.
 		/// </summary>
-		/// <typeparam name="T">Тип элементов сегмента массива.</typeparam>
-		/// <param name="arraySegment">Сегмент массива, который необходимо скопировать в массив.</param>
-		/// <returns>Массив, содержащий копию всех элементов исходного сегмента массива.</returns>
-		public static T[] DuplicateToArray<T> (this ArraySegment<T> arraySegment)
-		{
-			if (arraySegment == null)
-			{
-				throw new ArgumentNullException (nameof (arraySegment));
-			}
-
-			if (arraySegment.Array == null)
-			{
-				throw new ArgumentOutOfRangeException (nameof (arraySegment));
-			}
-
-			if ((arraySegment.Count < 0) || (arraySegment.Offset < 0) || (arraySegment.Offset >= arraySegment.Count))
-			{
-				throw new ArgumentOutOfRangeException (nameof (arraySegment));
-			}
-
-			Contract.EndContractBlock ();
-
-			var arrayCopy = new T[arraySegment.Count];
-			Array.Copy (arraySegment.Array, arraySegment.Offset, arrayCopy, 0, arraySegment.Count);
-			return arrayCopy;
-		}
-
-		/// <summary>
-		/// Добавляет к коллекции указанную последовательность по возможности заранее резервируя место под новые элементы.
-		/// </summary>
-		/// <typeparam name="T">Тип элементов коллекции.</typeparam>
-		/// <param name="collection">Коллекция, в которую будут добавлены элементы.</param>
-		/// <param name="items">Последовательность элементов, которые будут добавлены в коллекцию.</param>
+		/// <typeparam name="T">The type of the elements.</typeparam>
+		/// <param name="collection">Destination collection in which new elemenets will be added.</param>
+		/// <param name="items">Source collection whose elements will be added to the destionation.</param>
 		public static void AddRange<T> (this IAdjustableCollection<T> collection, IEnumerable<T> items)
 		{
 			if (collection == null)
@@ -317,12 +291,13 @@ namespace Novartment.Base.Collections
 		}
 
 		/// <summary>
-		/// Вставляет в список в указанную позицию элементы указанной последовательности.
+		/// Inserts the elements of collection to the specified position the specified list,
+		/// possibly reserving the space for new elements in advance.
 		/// </summary>
 		/// <typeparam name="T">Тип элементов списка.</typeparam>
-		/// <param name="list">Список, в который будут вставлены элементы.</param>
-		/// <param name="index">Позиция в списке, куда будут вставлены элементы.</param>
-		/// <param name="items">Последовательность вставляемых элементов.</param>
+		/// <param name="list">Destination list in which new elemenets will be inserted.</param>
+		/// <param name="index">The zero-based index of the destination at which the new elements should be inserted.</param>
+		/// <param name="items">Source collection whose elements will be inserted to the destionation.</param>
 		public static void InsertRange<T> (this IAdjustableList<T> list, int index, IEnumerable<T> items)
 		{
 			if (list == null)

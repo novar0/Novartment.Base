@@ -3,25 +3,26 @@
 namespace Novartment.Base.Collections
 {
 	/// <summary>
-	/// Коллекция пар ключ/значение (словарь).
+	/// A collection of key/value pairs.
 	/// </summary>
-	/// <typeparam name="TKey">Тип ключей в словаре.</typeparam>
-	/// <typeparam name="TValue">Тип значений в словаре.</typeparam>
+	/// <typeparam name="TKey">The type of keys in the dictionary.</typeparam>
+	/// <typeparam name="TValue">The type of values in the dictionary.</typeparam>
 	public interface IAdjustableDictionary<TKey, TValue> :
 		IReadOnlyDictionary<TKey, TValue>,
 		IAdjustableCollection<KeyValuePair<TKey, TValue>>
 	{
 		/// <summary>
-		/// Получает или устанавливает элемент с указанным ключом.
+		/// Gets or sets the element that has the specified key in the dictionary.
 		/// </summary>
-		/// <param name="key">Ключ элемента.</param>
+		/// <param name="key">The key to locate.</param>
 		new TValue this[TKey key] { get; set; }
 
 		/// <summary>
-		/// Удаляет элемент с указанным ключом.
+		/// Removes the value with the specified key from the dictionary.
 		/// </summary>
-		/// <param name="key">Ключ элемента, который требуется удалить.</param>
-		/// <returns>True, если элемент успешно удалён, в противном случае — False.</returns>
+		/// <param name="key">The key of the element to remove.</param>
+		/// <returns>True if the element is successfully found and removed; otherwise, False.
+		/// This method returns false if key is not found in the dictionary.</returns>
 		bool Remove (TKey key);
 	}
 }

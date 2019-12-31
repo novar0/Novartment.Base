@@ -1,28 +1,35 @@
 ﻿namespace Novartment.Base.Collections
 {
 	/// <summary>
-	/// Коллекция, поддерживающая добавление элементов, перечисление элементов в порядке добавления
-	/// и получение/изъятие последнего из добавленных элементов (семантика стэка).
+	/// A collection that supports adding elements,
+	/// enumerating the elements in the order they were added,
+	/// and getting/removing the last of the added elements (stack semantics).
 	/// </summary>
-	/// <typeparam name="T">Тип элементов коллекции.</typeparam>
-	/// <remarks>Характерный представитель - System.Collections.Generic.Stack.</remarks>
+	/// <typeparam name="T">The type of the elements.</typeparam>
+	/// <remarks>The typical representative - System.Collections.Generic.Stack.</remarks>
 	public interface ILifoCollection<T> :
 		IAdjustableCollection<T>
 	{
 		/// <summary>
-		/// Пытается получить последний элемент коллекции.
+		/// Tries to get the last item in a collection.
 		/// </summary>
-		/// <param name="item">Значение последнего элемента если он успешно получен,
-		/// либо значение по умолчанию если нет.</param>
-		/// <returns>True если последний элемент успешно получен, False если нет.</returns>
+		/// <param name="item">
+		/// When this method returns, the last item in a collection, if collection was not empty;
+		/// otherwise, the default value for the type of the item parameter.
+		/// This parameter is passed uninitialized.
+		/// </param>
+		/// <returns>True if the collection was not empty; otherwise, False.</returns>
 		bool TryPeekLast (out T item);
 
 		/// <summary>
-		/// Пытается изъять последний элемент коллекции.
+		/// Tries to get and remove the last item in a collection.
 		/// </summary>
-		/// <param name="item">Значение последнего элемента если он успешно изъят,
-		/// либо значение по умолчанию если нет.</param>
-		/// <returns>True если последний элемент успешно изъят, False если нет.</returns>
+		/// <param name="item">
+		/// When this method returns, the last item in a collection, if collection was not empty;
+		/// otherwise, the default value for the type of the item parameter.
+		/// This parameter is passed uninitialized.
+		/// </param>
+		/// <returns>True if the collection was not empty; otherwise, False.</returns>
 		bool TryTakeLast (out T item);
 	}
 }

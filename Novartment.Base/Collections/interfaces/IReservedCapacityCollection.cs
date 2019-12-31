@@ -1,27 +1,29 @@
 ﻿namespace Novartment.Base.Collections
 {
 	/// <summary>
-	/// Коллекция, поддерживающая перечисление и добавление элементов,
-	/// а также управление резервированием места под них.
+	/// A collection that supports the enumeration and addition of elements,
+	/// as well as managing the reservation of space for them.
 	/// </summary>
-	/// <typeparam name="T">Тип элементов коллекции.</typeparam>
+	/// <typeparam name="T">The type of the elements.</typeparam>
 	public interface IReservedCapacityCollection<T> :
 		IAdjustableCollection<T>
 	{
 		/// <summary>
-		/// Резервирует место под указанное общее количество элементов.
+		/// Reserves space for the specified total number of elements.
 		/// </summary>
-		/// <param name="min">Минимальная необходимая вместимость включая уже находящиеся в коллекции элементы.</param>
+		/// <param name="min">
+		/// Minimum required capacity including items already in the collection.
+		/// </param>
 		/// <remarks>
-		/// Соответствует установке свойства Capacity у классов System.Collections.ArrayList и System.Collections.Generic.List&lt;T&gt;.
+		/// Corresponds to setting Capacity property of classes System.Collections.ArrayList and System.Collections.Generic.List&lt;T&gt;.
 		/// </remarks>
 		void EnsureCapacity (int min);
 
 		/// <summary>
-		/// Избавляет коллекцию от зарезервированных элементов.
+		/// Eliminates the collection of reserved items.
 		/// </summary>
 		/// <remarks>
-		/// Соответствует методу TrimExcess() классов в пространстве System.Collections.Generic:
+		/// Corresponds to TrimExcess() method of classes in the  System.Collections.Generic namespace:
 		/// List&lt;T&gt;, Stack&lt;T&gt;, Queue&lt;T&gt;, HashSet&lt;T&gt;.
 		/// </remarks>
 		void TrimExcess ();

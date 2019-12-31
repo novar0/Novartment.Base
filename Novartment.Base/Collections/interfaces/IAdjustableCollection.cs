@@ -3,19 +3,22 @@
 namespace Novartment.Base.Collections
 {
 	/// <summary>
-	/// Коллекция, поддерживающая перечисление, очистку и добавление элементов.
+	/// A collection that supports enumeration, cleaning, and adding elements.
 	/// </summary>
-	/// <typeparam name="T">Тип элементов коллекции.</typeparam>
+	/// <typeparam name="T">The type of the elements.</typeparam>
+	/// <remarks>
+	/// Does not supports deletion of elements because that will require a search, which can lead to large implicit costs in most common collection types.
+	/// </remarks>
 	public interface IAdjustableCollection<T> :
 		IReadOnlyCollection<T>
 	{
 		/// <summary>
-		/// Добавляет элемент в коллекцию.
+		/// Adds an element to the collection.
 		/// </summary>
-		/// <param name="item">Элемент для добавления в коллекцию.</param>
+		/// <param name="item">The element to add to the collection</param>
 		void Add (T item);
 
-		/// <summary>Очищает коллекцию.</summary>
+		/// <summary>Removes all items from the collection.</summary>
 		void Clear ();
 	}
 }

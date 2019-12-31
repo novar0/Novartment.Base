@@ -6,79 +6,79 @@ using System.Threading.Tasks;
 namespace Novartment.Base.BinaryStreaming
 {
 	/// <summary>
-	/// Источник данных для последовательного чтения, представленный байтовым буфером.
+	/// A data source for sequential reading, represented by a byte buffer.
 	/// </summary>
 	[ContractClass (typeof (IBufferedSourceContracts))]
 	public interface IBufferedSource
 	{
 		/// <summary>
-		/// Получает буфер, в котором содержится некоторая часть данных источника.
-		/// Текущая начальная позиция и количество доступных данных содержатся в свойствах Offset и Count,
-		/// при этом сам буфер остаётся неизменным всё время жизни источника.
+		/// Gets the buffer that contains some of the source data.
+		/// The current offset and the amount of available data are in the Offset and Count properties.
+		/// The buffer remains unchanged throughout the lifetime of the source.
 		/// </summary>
 		ReadOnlyMemory<byte> BufferMemory { get; }
 
 		/// <summary>
-		/// Получает начальную позицию данных, доступных в BufferMemory.
-		/// Количество данных, доступных в BufferMemory, содержится в Count.
+		/// Gets the offset of available source data in the BufferMemory.
+		/// The amount of available source data is in the Count property.
 		/// </summary>
 		int Offset { get; }
 
 		/// <summary>
-		/// Получает количество данных, доступных в BufferMemory.
-		/// Начальная позиция доступных данных содержится в Offset.
+		/// Gets the amount of source data available in the BufferMemory.
+		/// The offset of available source data is in the Offset property.
 		/// </summary>
 		int Count { get; }
 
 		/// <summary>
-		/// Получает признак исчерпания источника.
-		/// Возвращает True если источник больше не поставляет данных.
-		/// Содержимое буфера при этом остаётся верным, но больше не будет меняться.
+		/// Gets a value indicating whether the source is exhausted.
+		/// Returns True if the source no longer supplies data.
+		/// In that case, the data available in the buffer remains valid, but will no longer change.
 		/// </summary>
 		bool IsExhausted { get; }
 
 		/// <summary>
-		/// Асинхронно заполняет буфер данными источника, дополняя уже доступные там данные.
-		/// В результате буфер может быть заполнен не полностью, если источник поставляет данные блоками,
-		/// либо пуст, если источник исчерпался.
-		/// При выполнении могут измениться свойства Offset, Count и IsExhausted.
+		/// Asynchronously fills the buffer with source data, appending already available data.
+		/// As a result, the buffer may not be completely filled if the source supplies data in blocks,
+		/// or empty if the source is exhausted.
+		/// Properties Offset, Count and IsExhausted may be changed in the process.
 		/// </summary>
-		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
-		/// <returns>Задача, представляющая операцию.
-		/// Если после завершения в Count будет ноль,
-		/// то источник исчерпан и доступных данных в буфере больше не будет.</returns>
+		/// <param name="cancellationToken">The token to monitor for cancellation requests. The default value is System.Threading.CancellationToken.None.</param>
+		/// <returns>A task that represents the asynchronous fill operation.
+		/// If Count property equals zero after completion,
+		/// this means that the source is exhausted and there will be no more data in the buffer.</returns>
 		ValueTask FillBufferAsync (CancellationToken cancellationToken = default);
 
 		/// <summary>
-		/// Асинхронно запрашивает у источника указанное количество данных в буфере.
-		/// В результате запроса в буфере может оказаться данных больше, чем запрошено.
-		/// При выполнении могут измениться свойства Offset, Count и IsExhausted.
+		/// Asynchronously requests the source to provide the specified amount of data in the buffer.
+		/// As a result, there may be more data in the buffer than requested.
+		/// Properties Offset, Count and IsExhausted may be changed in the process.
 		/// </summary>
-		/// <param name="size">Требуемый размер данных в буфере.</param>
-		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
+		/// <param name="size">Amount of data required in the buffer.</param>
+		/// <param name="cancellationToken">The token to monitor for cancellation requests. The default value is System.Threading.CancellationToken.None.</param>
+		/// <returns>A task that represents the operation.</returns>
 		/// <exception cref="System.ArgumentOutOfRangeException">
-		/// Происходит если size меньше нуля или больше размера буфера данных.
+		/// Specified size less than zero or more than size of the buffer.
 		/// </exception>
 		/// <exception cref="Novartment.Base.BinaryStreaming.NotEnoughDataException">
-		/// Происходит если источник не может предоставить указанного количества данных.
+		/// Source can not provide specified amount of data.
 		/// </exception>
-		/// <returns>Задача, представляющая операцию.</returns>
 		ValueTask EnsureBufferAsync (int size, CancellationToken cancellationToken = default);
 
 		/// <summary>
-		/// Пропускает указанное количество данных из начала доступных данных буфера.
-		/// При выполнении может измениться свойство Offset.
+		/// Skips specified amount of data from the start of available data in the buffer.
+		/// Properties Offset and Count may be changed in the process.
 		/// </summary>
-		/// <param name="size">Размер данных для пропуска в начале доступных данных буфера.
-		/// Должен быть меньше, чем размер доступных в буфере данных.</param>
+		/// <param name="size">Size of data to skip from the start of available data in the buffer.
+		/// Must be less than total size of available data in the buffer.</param>
 		/// <exception cref="System.ArgumentOutOfRangeException">
-		/// Происходит если size меньше нуля или больше размера доступных в буфере данных.
+		/// Specified size less than zero or more than size of the buffer.
 		/// </exception>
 		void SkipBuffer (int size);
 	}
 
 	/// <summary>
-	/// Содержит только метаданные контрактов для IBufferedSource.
+	/// Metadata for contracts of IBufferedSource.
 	/// </summary>
 	[ContractClassFor (typeof (IBufferedSource))]
 	internal abstract class IBufferedSourceContracts :

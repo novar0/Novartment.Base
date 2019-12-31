@@ -41,7 +41,7 @@ namespace Novartment.Base.Test
 			// first byte in first buffer
 			Array.Fill<byte> (dest, 85);
 			var src = new BigBufferedSourceMock (long.MaxValue, bufSize, FillFunction);
-			var vTask = src.CopyToBufferUntilMarkerAsync (170, dest);
+			var vTask = src.ReadToMarkerAsync (170, dest);
 			Assert.True (vTask.IsCompletedSuccessfully);
 			var result = vTask.Result;
 			Assert.Equal (0, result); // no bytes copied
@@ -51,7 +51,7 @@ namespace Novartment.Base.Test
 			// not found with size less than buffer
 			Array.Fill<byte> (dest, 85);
 			src = new BigBufferedSourceMock (4, bufSize, FillFunction);
-			vTask = src.CopyToBufferUntilMarkerAsync (85, dest);
+			vTask = src.ReadToMarkerAsync (85, dest);
 			Assert.True (vTask.IsCompletedSuccessfully);
 			result = vTask.Result;
 			Assert.Equal (4, result); // no bytes copied
@@ -66,7 +66,7 @@ namespace Novartment.Base.Test
 			// not found with size bigger than buffer
 			Array.Fill<byte> (dest, 85);
 			src = new BigBufferedSourceMock (7, bufSize, FillFunction);
-			vTask = src.CopyToBufferUntilMarkerAsync (85, dest);
+			vTask = src.ReadToMarkerAsync (85, dest);
 			Assert.True (vTask.IsCompletedSuccessfully);
 			result = vTask.Result;
 			Assert.Equal (7, result); // no bytes copied
@@ -84,7 +84,7 @@ namespace Novartment.Base.Test
 			// last byte in first buffer
 			Array.Fill<byte> (dest, 85);
 			src = new BigBufferedSourceMock (long.MaxValue, bufSize, FillFunction);
-			vTask = src.CopyToBufferUntilMarkerAsync (174, dest);
+			vTask = src.ReadToMarkerAsync (174, dest);
 			Assert.True (vTask.IsCompletedSuccessfully);
 			result = vTask.Result;
 			Assert.Equal (4, result);
@@ -98,7 +98,7 @@ namespace Novartment.Base.Test
 			// first byte in second buffer
 			Array.Fill<byte> (dest, 85);
 			src = new BigBufferedSourceMock (long.MaxValue, bufSize, FillFunction);
-			vTask = src.CopyToBufferUntilMarkerAsync (175, dest);
+			vTask = src.ReadToMarkerAsync (175, dest);
 			Assert.True (vTask.IsCompletedSuccessfully);
 			result = vTask.Result;
 			Assert.Equal (5, result);
@@ -113,7 +113,7 @@ namespace Novartment.Base.Test
 			// last byte of source
 			Array.Fill<byte> (dest, 85);
 			src = new BigBufferedSourceMock (7, bufSize, FillFunction);
-			vTask = src.CopyToBufferUntilMarkerAsync (172, dest);
+			vTask = src.ReadToMarkerAsync (172, dest);
 			Assert.True (vTask.IsCompletedSuccessfully);
 			result = vTask.Result;
 			Assert.Equal (6, result);

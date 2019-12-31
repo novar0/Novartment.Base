@@ -4,22 +4,23 @@ using System.Threading.Tasks;
 namespace Novartment.Base.BinaryStreaming
 {
 	/// <summary>
-	/// Источник данных для последовательного чтения, представленный байтовым буфером и
-	/// поддерживающий быстрый пропуск данных.
+	///  A data source for sequential reading, represented by a byte buffer and
+	///  supports fast skip of data.
 	/// </summary>
 	public interface IFastSkipBufferedSource :
 		IBufferedSource
 	{
 		/// <summary>
-		/// Пытается асинхронно пропустить указанное количество данных источника, включая доступные в буфере данные.
-		/// При выполнении могут измениться свойства Offset, Count и IsExhausted.
+		/// Asynchronously tries to skip specified amount of source data, including data already available in the buffer.
+		/// Properties Offset, Count and IsExhausted may be changed in the process.
 		/// </summary>
-		/// <param name="size">Количество байтов данных для пропуска, включая доступные в буфере данные.</param>
-		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
+		/// <param name="size">Size of data to skip, including data already available in the buffer.</param>
+		/// <param name="cancellationToken">The token to monitor for cancellation requests. The default value is System.Threading.CancellationToken.None.</param>
 		/// <returns>
-		/// Задача, результатом которой является количество пропущенных байтов данных, включая доступные в буфере данные.
-		/// Может быть меньше, чем было указано, если источник исчерпался.
-		/// После завершения задачи, независимо от её результата, источник будет предоставлять данные, идущие сразу за пропущенными.
+		/// A task that represents the asynchronous skip operation.
+		/// The result of a task will indicate the number of actually skipped bytes of data, including data already available in the buffer.
+		/// It may be less than specified if the source is exhausted.
+		/// Upon completion of a task, regardless of the result, the source will provide data coming right after skipped.
 		/// </returns>
 		ValueTask<long> TryFastSkipAsync (long size, CancellationToken cancellationToken = default);
 	}

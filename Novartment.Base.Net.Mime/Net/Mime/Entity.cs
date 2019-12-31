@@ -284,11 +284,11 @@ namespace Novartment.Base.Net.Mime
 		}
 
 		/// <summary>
-		/// Сохраняет сущность в указанный получатель двоичных данных.
+		/// Saves this entity in the specified binary data destionation.
 		/// </summary>
-		/// <param name="destination">Получатель двоичных данных, в который будет сохранена сущность.</param>
-		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
-		/// <returns>Задача, представляющая операцию.</returns>
+		/// <param name="destination">The binary data destionation, in which this entity will be saved.</param>
+		/// <param name="cancellationToken">The token to monitor for cancellation requests. The default value is System.Threading.CancellationToken.None.</param>
+		/// <returns>A task that represents the operation.</returns>
 		public Task SaveAsync (IBinaryDestination destination, CancellationToken cancellationToken = default)
 		{
 			if (destination == null)

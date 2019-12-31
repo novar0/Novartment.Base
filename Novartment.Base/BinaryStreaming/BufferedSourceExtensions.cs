@@ -12,10 +12,11 @@ namespace Novartment.Base.BinaryStreaming
 	public static class BufferedSourceExtensions
 	{
 		/// <summary>
+		/// Checks that the specified source is exhausted and contains no data.
 		/// Проверяет что указанный источник исчерпан и не содержит данных.
 		/// </summary>
-		/// <param name="source">Источник данных.</param>
-		/// <returns>True если источник исчерпан и не содержит данных.</returns>
+		/// <param name="source">The data source to check.</param>
+		/// <returns>True if the specified source is exhausted and contains no data.</returns>
 		public static bool IsEmpty (this IBufferedSource source)
 		{
 			if (source == null)
@@ -29,17 +30,21 @@ namespace Novartment.Base.BinaryStreaming
 		}
 
 		/// <summary>
-		/// Пытается асинхронно пропустить указанное количество данных источника, включая доступные в буфере данные.
-		/// При выполнении могут измениться свойства Offset, Count и IsExhausted.
+		/// Asynchronously tries to skip specified amount of source data, including data already available in the buffer.
+		/// Properties Offset, Count and IsExhausted may be changed in the process.
 		/// </summary>
-		/// <param name="source">Источник данных.</param>
-		/// <param name="size">Количество байтов данных для пропуска, включая доступные в буфере данные.</param>
-		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
+		/// <param name="source">The data source to skip data.</param>
+		/// <param name="size">Size of data to skip, including data already available in the buffer.</param>
+		/// <param name="cancellationToken">The token to monitor for cancellation requests. The default value is System.Threading.CancellationToken.None.</param>
 		/// <returns>
-		/// Задача, результатом которой является количество пропущенных байтов данных, включая доступные в буфере данные.
-		/// Может быть меньше, чем было указано, если источник исчерпался.
-		/// После завершения задачи, независимо от её результата, источник будет предоставлять данные, идущие сразу за пропущенными.
+		/// A task that represents the asynchronous skip operation.
+		/// The result of a task will indicate the number of actually skipped bytes of data, including data already available in the buffer.
+		/// It may be less than specified if the source is exhausted.
+		/// Upon completion of a task, regardless of the result, the source will provide data coming right after skipped.
 		/// </returns>
+		/// <remarks>
+		/// Work is delegated to the method TryFastSkipAsync() if source implements IFastSkipBufferedSource.
+		/// </remarks>
 		public static ValueTask<long> TrySkipAsync (this IBufferedSource source, long size, CancellationToken cancellationToken = default)
 		{
 			if (source == null)
@@ -104,13 +109,14 @@ namespace Novartment.Base.BinaryStreaming
 		}
 
 		/// <summary>
-		/// Пытается асинхронно пропустить все оставшиеся данные источника, включая доступные в буфере данные.
-		/// При выполнении могут измениться свойства Offset, Count и IsExhausted.
+		/// Asynchronously skips all available source data, including data already available in the buffer.
+		/// Properties Offset, Count and IsExhausted may be changed in the process.
 		/// </summary>
-		/// <param name="source">Источник данных.</param>
-		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
+		/// <param name="source">The data source to skip data.</param>
+		/// <param name="cancellationToken">The token to monitor for cancellation requests. The default value is System.Threading.CancellationToken.None.</param>
 		/// <returns>
-		/// Задача, результатом которой является количество пропущенных байтов данных.
+		/// A task that represents the asynchronous skip operation.
+		/// The result of a task will indicate the number of actually skipped bytes of data, including data already available in the buffer.
 		/// </returns>
 		public static ValueTask<long> SkipToEndAsync (this IBufferedSource source, CancellationToken cancellationToken = default)
 		{
@@ -158,15 +164,16 @@ namespace Novartment.Base.BinaryStreaming
 		}
 
 		/// <summary>
-		/// Считывает указанный массив из указанного источника данных.
+		/// Asynchronously reads data from the specified source into the specified region of memory.
 		/// </summary>
-		/// <param name="source">Источник данных.</param>
-		/// <param name="buffer">Массив байтов - приёмник данных.
-		/// После возврата из метода, буфер в указанном диапазоне будет содержать данные
-		/// считанные из источника.</param>
-		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
-		/// <returns>Задача, результатом которой является количество байтов, помещённых в буфер.
-		/// Может быть меньше, чем запрошено, если источник исчерпан.</returns>
+		/// <param name="source">The data source to read from.</param>
+		/// <param name="buffer">The region of memory as destination for reading data.
+		/// After reading is completed, it will contain data readed from the source.</param>
+		/// <param name="cancellationToken">The token to monitor for cancellation requests. The default value is System.Threading.CancellationToken.None.</param>
+		/// <returns>
+		/// A task that represents the asynchronous read operation.
+		/// The result of a task will indicate the number of readed bytes of data.
+		/// </returns>
 		public static ValueTask<int> ReadAsync (this IBufferedSource source, Memory<byte> buffer, CancellationToken cancellationToken = default)
 		{
 			if (source == null)
@@ -230,20 +237,21 @@ namespace Novartment.Base.BinaryStreaming
 		}
 
 		/// <summary>
-		/// Асинхронно копирует данные указанного источника в указанный буфер до появления в них указанного маркера.
+		/// Asynchronously reads data from the specified source into the specified region of memory until specified marker appears.
 		/// </summary>
-		/// <param name="source">
-		/// Источник данных для копирования.
-		/// Если будет встречен маркер, то после завершения источник будет указывать на него.
-		/// Если марке не будет найден, то после завершения источник будет исчерпан.</param>
-		/// <param name="marker">Байт-марке, при встрече которого в данных копирование будет прекращено.</param>
-		/// <param name="buffer">Буфер, куда будут копироваться все данные источника.</param>
-		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
+		/// <param name="source">The data source to copy from.
+		/// If the marker is found, then after completion, the source will point to it.
+		/// If the brand is not found, then after completion the source will be exhausted.</param>
+		/// <param name="marker">The byte marker indicating the end of the data to read.</param>
+		/// <param name="buffer">The region of memory as destination for reading data.
+		/// After reading is completed, it will contain data readed from the source.</param>
+		/// <param name="cancellationToken">The token to monitor for cancellation requests. The default value is System.Threading.CancellationToken.None.</param>
 		/// <returns>
-		/// Количество скопированных байтов источника до того, как встретился маркер.
-		/// Если маркер не встретился, то будут скопированы все данные источника.
+		/// A task that represents the asynchronous read operation.
+		/// The result of a task will indicate the number of readed bytes of data before the marker is met.
+		/// If the marker is not found then all the source data will be readed.
 		/// </returns>
-		public static ValueTask<int> CopyToBufferUntilMarkerAsync (this IBufferedSource source, byte marker, Memory<byte> buffer, CancellationToken cancellationToken = default)
+		public static ValueTask<int> ReadToMarkerAsync (this IBufferedSource source, byte marker, Memory<byte> buffer, CancellationToken cancellationToken = default)
 		{
 			if (source == null)
 			{
@@ -318,12 +326,14 @@ namespace Novartment.Base.BinaryStreaming
 		}
 
 		/// <summary>
-		/// Считывает все данные, оставшиеся в источнике и возвращает их в виде массива байтов.
+		/// Asynchronously reads data from the specified source into the newly allocated region of memory.
 		/// </summary>
-		/// <param name="source">Источник данных.</param>
-		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
-		/// <returns>Задача, результатом которой является массив байтов, считанный из источника.</returns>
-		/// <remarks>Возвращаемый массив является копией и не связан массивом-буфером источника.</remarks>
+		/// <param name="source">The data source to read from.</param>
+		/// <param name="cancellationToken">The token to monitor for cancellation requests. The default value is System.Threading.CancellationToken.None.</param>
+		/// <returns>
+		/// A task that represents the asynchronous read operation,
+		/// which wraps the newly allocated region of memory containing readed data.
+		/// </returns>
 		public static ValueTask<ReadOnlyMemory<byte>> ReadAllBytesAsync (this IBufferedSource source, CancellationToken cancellationToken = default)
 		{
 			if (source == null)
@@ -365,17 +375,20 @@ namespace Novartment.Base.BinaryStreaming
 					source.SkipBuffer (available);
 				}
 
-				return destination.Buffer;
+				return destination.GetBuffer ();
 			}
 		}
 
 		/// <summary>
-		/// Считывает все данные, оставшиеся в источнике и возвращает их в виде строки.
+		/// Asynchronously reads data from the specified source as a text in the specified encoding.
 		/// </summary>
-		/// <param name="source">Источник данных.</param>
-		/// <param name="encoding">Кодировка, используемая для конвертации байтов в строку.</param>
-		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
-		/// <returns>Задача, результатом которой является строка, считанная из источника.</returns>
+		/// <param name="source">The data source to read from.</param>
+		/// <param name="encoding">The encoding applied to the data of the source.</param>
+		/// <param name="cancellationToken">The token to monitor for cancellation requests. The default value is System.Threading.CancellationToken.None.</param>
+		/// <returns>
+		/// A task that represents the asynchronous read operation,
+		/// which wraps the text readed from the source.
+		/// </returns>
 		public static ValueTask<string> ReadAllTextAsync (this IBufferedSource source, Encoding encoding, CancellationToken cancellationToken = default)
 		{
 			if (source == null)
@@ -391,9 +404,9 @@ namespace Novartment.Base.BinaryStreaming
 			Contract.EndContractBlock ();
 
 			// нельзя декодировать частями, потому что неизвестно сколько байт занимают отдельные символы
-			return ReadAllTextAsyncFinalizer (ReadAllBytesAsync (source, cancellationToken), encoding);
+			return ReadAllTextAsyncFinalizer (ReadAllBytesAsync (source, cancellationToken), encoding, encoding);
 
-			async ValueTask<string> ReadAllTextAsyncFinalizer (ValueTask<ReadOnlyMemory<byte>> task, Encoding enc)
+			static async ValueTask<string> ReadAllTextAsyncFinalizer (ValueTask<ReadOnlyMemory<byte>> task, Encoding enc, Encoding encoding)
 			{
 				var buf = await task.ConfigureAwait (false);
 #if NETSTANDARD2_0
@@ -407,12 +420,15 @@ namespace Novartment.Base.BinaryStreaming
 		}
 
 		/// <summary>
-		/// Сохраняет содержимое указанного источника данных в указанный получатель двоичных данных.
+		/// Asynchronously writes data from the specified source into the specified destination.
 		/// </summary>
-		/// <param name="source">Источник данных, содержимое которого будет сохранено в указанный получатель двоичных данных.</param>
-		/// <param name="destination">Получатель двоичных данных, в который будет сохранено содержимое указанного источника данных.</param>
-		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
-		/// <returns>Задача, результатом которой является количество байтов, записанный в указанный получатель двоичных данных.</returns>
+		/// <param name="source">The data source to read from.</param>
+		/// <param name="destination">The binary data destionation, into which data will be written.</param>
+		/// <param name="cancellationToken">The token to monitor for cancellation requests. The default value is System.Threading.CancellationToken.None.</param>
+		/// <returns>
+		/// A task that represents the asynchronous read/write operation.
+		/// The result of a task will indicate the number of bytes written to the destination.
+		/// </returns>
 		public static Task<long> WriteToAsync (this IBufferedSource source, IBinaryDestination destination, CancellationToken cancellationToken = default)
 		{
 			if (source == null)

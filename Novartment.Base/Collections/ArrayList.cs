@@ -8,20 +8,20 @@ using SystemArray = System.Array;
 namespace Novartment.Base.Collections
 {
 	/// <summary>
-	/// Динамический список на основе зацикленного массива с передвижными головой и хвостом.
-	/// Поддерживает семантику стэка и очереди.
-	/// Для конкурентного доступа требуется внешняя синхронизация.
+	/// A dynamic list backed by a looped array with a moving head and tail.
+	/// Supports vector, stack and queue semantics.
+	/// Concurrent access requires external synchronization.
 	/// </summary>
-	/// <typeparam name="T">Тип элементов списка.</typeparam>
+	/// <typeparam name="T">The type of the elements.</typeparam>
 	/// <remarks>
-	/// Предназначен для замены List&lt;&gt;, Stack&lt;&gt; и Queue&lt;&gt; с целью минимизации накладных расходов
-	/// при внутреннем ограниченном использовании.
-	/// Может быть создан используя указанный массив, без копирования.
-	/// Даёт прямой доступ к внутреннему массиву.
-	/// Не проверяет конкурентные изменения.
-	/// Не реализует интерфейсы со сложными проверками контрактов.
-	/// Не производит уведомлений об изменениях.
-	/// Не содержит методов с неявным потреблением ресурсов.
+	/// Designed to replace List&lt;&gt;, Stack&lt;&gt; and Queue&lt;&gt; library classes
+	/// in order to minimize overhead for internal limited usage.
+	/// Can be created using a pre-allocated array, without copying.
+	/// Gives direct access to the underlying array.
+	/// Does not check concurrent changes.
+	/// Does not implement interfaces with complex contract checks.
+	/// Does not produce change notifications.
+	/// Does not contain methods with implicit resource costs.
 	/// </remarks>
 	[DebuggerDisplay ("{DebuggerDisplay,nq}")]
 	public class ArrayList<T> :
@@ -36,7 +36,7 @@ namespace Novartment.Base.Collections
 		private int _count = 0;
 
 		/// <summary>
-		/// Инициализирует новый экземпляр класса ArrayList.
+		/// Initializes a new instance of the ArrayList class that is empty.
 		/// </summary>
 		public ArrayList ()
 		{
@@ -44,9 +44,9 @@ namespace Novartment.Base.Collections
 		}
 
 		/// <summary>
-		/// Инициализирует новый экземпляр класса ArrayList с указанием начальной вместимости.
+		/// Initializes a new instance of the ArrayList class which is empty and backed by an array of the specified size.
 		/// </summary>
-		/// <param name="capacity">Начальная вместимость списка.</param>
+		/// <param name="capacity">The number of elements that the new list can initially store.</param>
 		public ArrayList (int capacity)
 		{
 			if (capacity < 0)
@@ -60,9 +60,9 @@ namespace Novartment.Base.Collections
 		}
 
 		/// <summary>
-		/// Инициализирует новый экземпляр класса ArrayList использующий указанный массив.
+		/// Initializes a new instance of the ArrayList class which is backed by a specified array.
 		/// </summary>
-		/// <param name="array">Массив, который будет использован напрямую, без копирования.</param>
+		/// <param name="array">An array to be used as backing store directly, without copying.</param>
 		public ArrayList (T[] array)
 		{
 			if (array == null)
@@ -78,18 +78,17 @@ namespace Novartment.Base.Collections
 		}
 
 		/// <summary>
-		/// Инициализирует новый экземпляр класса ArrayList использующий предоставленный диапазон массива.
+		/// Initializes a new instance of the ArrayList class which is backed by a specified array and represents its specified range.
 		/// </summary>
 		/// <param name="array">
-		/// Массив, который будет использован напрямую, без копирования.
-		/// Все элементы массива кроме ограниченных диапазоном offset, count
-		/// могут быть очищены при операциях, изменяющих список.
+		/// An array to be used as backing store directly, without copying.
+		/// Any array elements, besides those limited by the offset, count range, can be cleared during operations that modify the list.
 		/// </param>
 		/// <param name="offset">
-		/// Начальная позиция диапазона в исходном массиве.
-		/// Зацикливается через край массива, то есть offset + count может быть больше, чем размер массива.
+		/// The starting position of the range in the source array.
+		/// Loops over the edge of the array, i.e. offset + count may be larger than the size of the array.
 		/// </param>
-		/// <param name="count">Количество элементов в диапазоне исходного массива.</param>
+		/// <param name="count">The number of elements in the range of the source array.</param>
 		public ArrayList (T[] array, int offset, int count)
 		{
 			if (array == null)
@@ -115,17 +114,17 @@ namespace Novartment.Base.Collections
 		}
 
 		/// <summary>
-		/// Получает внутренний массив, в котором хранятся элементы списка.
+		/// Gets the backing array that is used to store elements of this list.
 		/// </summary>
 		public T[] Array => _items;
 
 		/// <summary>
-		/// Получает позицию начала диапазона во внутреннем массиве, в котором хранятся элементы списка.
+		/// Gets the position of the beginning of the range in the backing array in which the list items are stored.
 		/// </summary>
 		public int Offset => _head;
 
 		/// <summary>
-		/// Получает количество элементов списка.
+		/// Gets the number of list items.
 		/// </summary>
 		public int Count => _count;
 
@@ -144,9 +143,9 @@ namespace Novartment.Base.Collections
 		}
 
 		/// <summary>
-		/// Получает или устанавливает элемент списка в указанной позиции.
+		/// Gets or sets the element at the specified index.
 		/// </summary>
-		/// <param name="index">Позиция в списке.</param>
+		/// <param name="index">The zero-based index of the element to get or set.</param>
 		public T this[int index]
 		{
 			get
@@ -191,11 +190,14 @@ namespace Novartment.Base.Collections
 		}
 
 		/// <summary>
-		/// Выделяет порцию внутреннего массива без копирования, указанную стартовой позицией и длиной.
+		/// Forms a slice out of this list, beginning at <paramref name="start"/>, with <paramref name="length"/> items.
 		/// </summary>
-		/// <param name="start">Стартовая позиция выделяемой порции.</param>
-		/// <param name="length">Длина порции.</param>
-		/// <returns>Новый экземпляр ArrayList, основанный на том же массиве, но с выделенной указанной порцией.</returns>
+		/// <param name="start">The index at which to begin this slice.</param>
+		/// <param name="length">The length of the slice.</param>
+		/// <returns>
+		/// A new list that consists of <paramref name="length" /> elements from the this list starting at index <paramref name="start" />.
+		/// The returned list is backed by the same array as this list.
+		/// </returns>
 		public ArrayList<T> Slice (int start, int length)
 		{
 			if ((start < 0) || (start > this.Count) || ((start == this.Count) && (length > 0)))
@@ -220,9 +222,9 @@ namespace Novartment.Base.Collections
 		}
 
 		/// <summary>
-		/// Добавляет элемент в список.
+		/// Adds an element to the list.
 		/// </summary>
-		/// <param name="item">Элемент для добавления в список.</param>
+		/// <param name="item">The element to add to the list</param>
 		public void Add (T item)
 		{
 			EnsureCapacity (_count + 1);
@@ -238,11 +240,14 @@ namespace Novartment.Base.Collections
 		}
 
 		/// <summary>
-		/// Пытается получить первый элемент списка.
+		/// Tries to get the first item in a list.
 		/// </summary>
-		/// <param name="item">Значение первого элемента списка, если он успешно получен,
-		/// либо значение по умолчанию если нет.</param>
-		/// <returns>True если первый элемент списка успешно получен, false если нет.</returns>
+		/// <param name="item">
+		/// When this method returns, the last item in a list, if list was not empty;
+		/// otherwise, the default value for the type of the item parameter.
+		/// This parameter is passed uninitialized.
+		/// </param>
+		/// <returns>True if the list was not empty; otherwise, False.</returns>
 		public bool TryPeekFirst (out T item)
 		{
 			if (_count < 1)
@@ -256,11 +261,14 @@ namespace Novartment.Base.Collections
 		}
 
 		/// <summary>
-		/// Пытается изъять первый элемент списка.
+		/// Tries to get and remove the first item in a list.
 		/// </summary>
-		/// <param name="item">Значение первого элемента списка если он успешно изъят,
-		/// либо значение по умолчанию если нет.</param>
-		/// <returns>True если первый элемент списка успешно изъят, false если нет.</returns>
+		/// <param name="item">
+		/// When this method returns, the last item in a list, if list was not empty;
+		/// otherwise, the default value for the type of the item parameter.
+		/// This parameter is passed uninitialized.
+		/// </param>
+		/// <returns>True if the list was not empty; otherwise, False.</returns>
 		public bool TryTakeFirst (out T item)
 		{
 			if (_count < 1)
@@ -287,11 +295,14 @@ namespace Novartment.Base.Collections
 		}
 
 		/// <summary>
-		/// Пытается получить последний элемент списка.
+		/// Tries to get the last item in a list.
 		/// </summary>
-		/// <param name="item">Значение последнего элемента списка если он успешно получен,
-		/// либо значение по умолчанию если нет.</param>
-		/// <returns>True если последний элемент списка успешно получен, false если нет.</returns>
+		/// <param name="item">
+		/// When this method returns, the last item in a list, if list was not empty;
+		/// otherwise, the default value for the type of the item parameter.
+		/// This parameter is passed uninitialized.
+		/// </param>
+		/// <returns>True if the list was not empty; otherwise, False.</returns>
 		public bool TryPeekLast (out T item)
 		{
 			if (_count < 1)
@@ -311,11 +322,14 @@ namespace Novartment.Base.Collections
 		}
 
 		/// <summary>
-		/// Пытается изъять последний элемент списка.
+		/// Tries to get and remove the last item in a list.
 		/// </summary>
-		/// <param name="item">Значение последнего элемента списка если он успешно изъят,
-		/// либо значение по умолчанию если нет.</param>
-		/// <returns>True если последний элемент списка успешно изъят, false если нет.</returns>
+		/// <param name="item">
+		/// When this method returns, the last item in a list, if list was not empty;
+		/// otherwise, the default value for the type of the item parameter.
+		/// This parameter is passed uninitialized.
+		/// </param>
+		/// <returns>True if the list was not empty; otherwise, False.</returns>
 		public bool TryTakeLast (out T item)
 		{
 			if (_count < 1)
@@ -342,10 +356,10 @@ namespace Novartment.Base.Collections
 		}
 
 		/// <summary>
-		/// Вставляет указанный элемент в список в указанную позицию, отодвигая последующие элементы.
+		/// Inserts an element into the list at the specified index.
 		/// </summary>
-		/// <param name="index">Позиция в списке.</param>
-		/// <param name="item">Элемент для вставки в указанную позицию.</param>
+		/// <param name="index">The zero-based index at which item should be inserted.</param>
+		/// <param name="item">The element to insert. The value can be null for reference types.</param>
 		public void Insert (int index, T item)
 		{
 			if ((index < 0) || (index > this.Count))
@@ -394,11 +408,11 @@ namespace Novartment.Base.Collections
 		}
 
 		/// <summary>
-		/// Вставляет пустой диапазон элементов в список в указанную позицию.
-		/// Вставленные элементы будут иметь значение по-умолчанию.
+		/// Inserts a specified number of the elements into the list at the specified index.
+		/// The inserted elements will have a default value.
 		/// </summary>
-		/// <param name="index">Позиция в коллекции, куда будут вставлены элементы.</param>
-		/// <param name="count">Количество вставляемых элементов.</param>
+		/// <param name="index"> The zero-based index at which the new elements should be inserted.</param>
+		/// <param name="count">The number of elements to insert.</param>
 		public void InsertRange (int index, int count)
 		{
 			if ((index < 0) || (index > this.Count))
@@ -452,9 +466,9 @@ namespace Novartment.Base.Collections
 		}
 
 		/// <summary>
-		/// Удаляет элемент из списка в указанной позиции.
+		/// Removes the element at the specified index of the list.
 		/// </summary>
-		/// <param name="index">Позиция в списке.</param>
+		/// <param name="index">The zero-based index of the element to remove.</param>
 		public void RemoveAt (int index)
 		{
 			if ((index < 0) || (index >= this.Count))
@@ -504,10 +518,10 @@ namespace Novartment.Base.Collections
 		}
 
 		/// <summary>
-		/// Удаляет указанное число элементов из коллекции начиная с указанной позиции.
+		/// Removes a range of elements from the list.
 		/// </summary>
-		/// <param name="index">Начальная позиция элементов для удаления.</param>
-		/// <param name="count">Количество удаляемых элементов.</param>
+		/// <param name="index">The zero-based starting index of the range of elements to remove.</param>
+		/// <param name="count">The number of elements to remove.</param>
 		public void RemoveRange (int index, int count)
 		{
 			if ((index < 0) || (index > this.Count) || ((index == this.Count) && (count > 0)))
@@ -569,9 +583,7 @@ namespace Novartment.Base.Collections
 			_count = 0;
 		}
 
-		/// <summary>
-		/// Сбрасывает все элементы списка в значение по умолчанию.
-		/// </summary>
+		/// <summary>Removes all items from the list.</summary>
 		public void ResetItems ()
 		{
 			if (_count > 0)
@@ -595,10 +607,10 @@ namespace Novartment.Base.Collections
 		}
 
 		/// <summary>
-		/// Сбрасывает указанное число элементов списка в значение по умолчанию.
+		/// Resets a range of elements from the list to default values.
 		/// </summary>
-		/// <param name="index">Начальная позиция элементов для очистки.</param>
-		/// <param name="count">Количество очищаемых элементов.</param>
+		/// <param name="index">The zero-based starting index of the range of elements to reset.</param>
+		/// <param name="count">The number of elements to reset.</param>
 		public void ResetItems (int index, int count)
 		{
 			if ((index < 0) || (index > this.Count) || ((index == this.Count) && (count > 0)))
@@ -640,11 +652,12 @@ namespace Novartment.Base.Collections
 		}
 
 		/// <summary>
-		/// Копирует элементы списка в указанный массив,
-		/// начиная с указанного индекса конечного массива.
+		/// Copies the list to a one-dimensional array,
+		/// starting at the specified index of the target array.
 		/// </summary>
-		/// <param name="array">Массив, в который копируются элементы списка.</param>
-		/// <param name="arrayIndex">Позиция в конечном массиве, указывающая начало копирования.</param>
+		/// <param name="array">The one-dimensional System.Array that is the destination of the elements copied.</param>
+		/// <param name="arrayIndex">The zero-based index in array at which copying begins.</param>
+		/// <remarks>Corresponds to the System.Collections.ICollection.CopyTo() and System.Array.CopyTo().</remarks>
 		public void CopyTo (T[] array, int arrayIndex)
 		{
 			if (array == null)
@@ -685,8 +698,7 @@ namespace Novartment.Base.Collections
 		}
 
 		/// <summary>
-		/// Располагает элементы внутреннего массива так, чтобы они шли сплошным куском с начальной позиции.
-		/// После возврата будет Offset=0.
+		/// Positions the elements of the backing array so that they go in a solid piece from the starting position.
 		/// </summary>
 		public void Defragment ()
 		{
@@ -715,14 +727,14 @@ namespace Novartment.Base.Collections
 		}
 
 		/// <summary>
-		/// Сортирует элементы списка с использованием указанного компаратора.
+		/// Sorts the elements in the entire list using thespecified comparer.
 		/// </summary>
 		/// <param name="comparer">
-		/// Компаратор, реализующий интерефейс IComparer&lt;T&gt;, который будет использоваться для сравнения элементов,
-		/// или null чтобы использовать компаратор по-умолчанию для типа T.
+		/// The comparator to be used to compare items.
+		/// Specify null-reference to use default comparer for T type.
 		/// </param>
 		/// <remarks>
-		/// Если массив зациклен через край, то перед сортировкой будет произведено копирование меньшей части.
+		/// If the array is looped over the edge, then a smaller part will be copied before sorting.
 		/// </remarks>
 		public void Sort (IComparer<T> comparer = null)
 		{
@@ -757,28 +769,32 @@ namespace Novartment.Base.Collections
 		}
 
 		/// <summary>
-		/// Получает перечислитель элементов списка.
+		/// Returns an enumerator for the list.
 		/// </summary>
-		/// <returns>Перечислитель элементов списка.</returns>
+		/// <returns>An enumerator for the list.</returns>
 		IEnumerator IEnumerable.GetEnumerator ()
 		{
 			return GetEnumerator ();
 		}
 
 		/// <summary>
-		/// Получает перечислитель элементов списка.
+		/// Returns an enumerator for the list.
 		/// </summary>
-		/// <returns>Перечислитель элементов списка.</returns>
+		/// <returns>An enumerator for the list.</returns>
 		public IEnumerator<T> GetEnumerator ()
 		{
 			return new SimpleListEnumerator (this);
 		}
 
 		/// <summary>
-		/// Резервирует в массиве, в котором хранятся элементы списка, указанное количество элементов.
-		/// Позволяет избежать копирований массива при добавлении элементов в список.
+		/// Reserves space for the specified total number of elements.
 		/// </summary>
-		/// <param name="min">Минимальная необходимая вместимость включая уже находящиеся в коллекции элементы.</param>
+		/// <param name="min">
+		/// Minimum required capacity including items already in the list.
+		/// </param>
+		/// <remarks>
+		/// Corresponds to setting Capacity property of classes System.Collections.ArrayList and System.Collections.Generic.List&lt;T&gt;.
+		/// </remarks>
 		public void EnsureCapacity (int min)
 		{
 			if (min < 0)
@@ -811,8 +827,7 @@ namespace Novartment.Base.Collections
 		}
 
 		/// <summary>
-		/// Избавляет массив, в котором хранятся элементы списка, от зарезервированных элементов.
-		/// Позволяет освободить память, занятую зарезервированными элементами.
+		/// Eliminates the list of reserved items.
 		/// </summary>
 		public void TrimExcess ()
 		{
@@ -828,10 +843,10 @@ namespace Novartment.Base.Collections
 		}
 
 		/// <summary>
-		/// Получает структурный хэш-код списка.
+		/// Returns a hash code for this list.
 		/// </summary>
-		/// <param name="comparer">Объект, вычисляющий хэш-код элементов списка.</param>
-		/// <returns>Структурный хэш-код списка.</returns>
+		/// <param name="comparer">An object that computes the hash code of the current object.</param>
+		/// <returns>The hash code for this list.</returns>
 		int IStructuralEquatable.GetHashCode (IEqualityComparer comparer)
 		{
 			if (comparer == null)
@@ -854,11 +869,11 @@ namespace Novartment.Base.Collections
 		}
 
 		/// <summary>
-		/// Определяет, равны ли структурно два экземпляра списка.
+		/// Determines whether an object is structurally equal to this list.
 		/// </summary>
-		/// <param name="other">Список, который требуется сравнить с текущим списком.</param>
-		/// <param name="comparer">Объект, определяющий, равенство элементов списка.</param>
-		/// <returns>true, если указанный список структурно равен текущему списку; в противном случае — false.</returns>
+		/// <param name="other">The object to compare with this list.</param>
+		/// <param name="comparer">An object that determines whether element of this list and other are equal.</param>
+		/// <returns>True if the two lists are equal; otherwise, False.</returns>
 		bool IStructuralEquatable.Equals (object other, IEqualityComparer comparer)
 		{
 			if (comparer == null)
@@ -989,7 +1004,7 @@ namespace Novartment.Base.Collections
 			}
 
 			/// <summary>
-			/// Получает текущий элемент перечислителя.
+			/// Gets the element in the list at the current position of the enumerator.
 			/// </summary>
 			public T Current
 			{
@@ -1012,10 +1027,10 @@ namespace Novartment.Base.Collections
 			object IEnumerator.Current => this.Current;
 
 			/// <summary>
-			/// Перемещает перечислитель к следующему элементу строки.
+			/// Advances the enumerator to the next element of the list.
 			/// </summary>
-			/// <returns>true, если перечислитель был успешно перемещен к следующему элементу;
-			/// false, если перечислитель достиг конца.</returns>
+			/// <returns>true if the enumerator was successfully advanced to the next element;
+			/// false if the enumerator has passed the end of the list.</returns>
 			public bool MoveNext ()
 			{
 				if (_index == -2)
@@ -1042,7 +1057,7 @@ namespace Novartment.Base.Collections
 			}
 
 			/// <summary>
-			/// Возвращает перечислитель в исходное положение.
+			/// Sets the enumerator to its initial position, which is before the first element in the list.
 			/// </summary>
 			public void Reset ()
 			{
@@ -1051,7 +1066,7 @@ namespace Novartment.Base.Collections
 			}
 
 			/// <summary>
-			/// Освобождает занятые объектом ресурсы.
+			/// Performs resetting.
 			/// </summary>
 			public void Dispose ()
 			{

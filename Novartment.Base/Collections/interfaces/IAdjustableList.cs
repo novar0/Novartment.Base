@@ -3,12 +3,11 @@
 namespace Novartment.Base.Collections
 {
 	/// <summary>
-	/// Коллекция, элементы которой можно перечислять,
-	/// получать, устанавливать и удалять по номеру позиции,
-	/// а также добавлять новые в конец или указанную позицию.
+	/// A collection whose elements can be listed, retrieved, set and deleted by position number.
+	/// Also supports adding new elements to the end or to the specified position.
 	/// </summary>
-	/// <typeparam name="T">Тип элементов коллекции.</typeparam>
-	/// <remarks>Характерный представитель - System.Collections.Generic.List.</remarks>
+	/// <typeparam name="T">The type of the elements.</typeparam>
+	/// <remarks>The typical representative - System.Collections.Generic.List.</remarks>
 	public interface IAdjustableList<T> :
 		IReadOnlyList<T>,
 		IAdjustableCollection<T>,
@@ -16,36 +15,37 @@ namespace Novartment.Base.Collections
 		ILifoCollection<T>
 	{
 		/// <summary>
-		/// Получает или устанавливает элемент коллекции по номеру позиции.
+		/// Gets or sets the element at the specified index in list.
 		/// </summary>
-		/// <param name="index">Номер позиции нужного элемента.</param>
+		/// <param name="index">The zero-based index of the element to get.</param>
 		new T this[int index] { get; set; }
 
 		/// <summary>
-		/// Вставляет указанный элемент в коллекцию в указанную позицию.
+		/// Inserts an element into the list at the specified index.
 		/// </summary>
-		/// <param name="index">Позиция в коллекции, куда будет вставлен элемент.</param>
-		/// <param name="item">Элемент для вставки.</param>
+		/// <param name="index">The zero-based index at which item should be inserted.</param>
+		/// <param name="item">The element to insert. The value can be null for reference types.</param>
 		void Insert (int index, T item);
 
 		/// <summary>
-		/// Вставляет пустой диапазон элементов в коллекцию в указанную позицию.
+		/// Inserts a specified number of the elements into the list at the specified index.
+		/// The inserted elements will have a default value.
 		/// </summary>
-		/// <param name="index">Позиция в коллекции, куда будут вставлены элементы.</param>
-		/// <param name="count">Количество вставляемых элементов.</param>
+		/// <param name="index"> The zero-based index at which the new elements should be inserted.</param>
+		/// <param name="count">The number of elements to insert.</param>
 		void InsertRange (int index, int count);
 
 		/// <summary>
-		/// Удаляет элемент из коллекции в указанной позиции.
+		/// Removes the element at the specified index of the list.
 		/// </summary>
-		/// <param name="index">Позиция в коллекции.</param>
+		/// <param name="index">The zero-based index of the element to remove.</param>
 		void RemoveAt (int index);
 
 		/// <summary>
-		/// Удаляет указанное число элементов из коллекции начиная с указанной позиции.
+		/// Removes a range of elements from the list.
 		/// </summary>
-		/// <param name="index">Начальная позиция элементов для удаления.</param>
-		/// <param name="count">Количество удаляемых элементов.</param>
+		/// <param name="index">The zero-based starting index of the range of elements to remove.</param>
+		/// <param name="count">The number of elements to remove.</param>
 		void RemoveRange (int index, int count);
 	}
 }

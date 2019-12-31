@@ -1062,7 +1062,7 @@ namespace Novartment.Base.Net.Mime
 		private static async Task<HeaderField> LoadHeaderFieldAsync (IBufferedSource fieldSource, Memory<byte> buffer, CancellationToken cancellationToken)
 		{
 			// загружаем имя поля
-			var nameSize = await fieldSource.CopyToBufferUntilMarkerAsync ((byte)':', buffer, cancellationToken).ConfigureAwait (false);
+			var nameSize = await fieldSource.ReadToMarkerAsync ((byte)':', buffer, cancellationToken).ConfigureAwait (false);
 			if ((nameSize < 1) || fieldSource.IsEmpty ())
 			{
 				throw new FormatException ("Not found name of header field.");

@@ -3,18 +3,18 @@
 namespace Novartment.Base.Collections
 {
 	/// <summary>
-	/// Коллекция, поддерживающее перечисление и копирование всех элементов в массив.
+	/// A collection that supports enumeration and copying all elements to an array.
 	/// </summary>
-	/// <typeparam name="T">Тип элементов коллекции.</typeparam>
+	/// <typeparam name="T">The type of the elements.</typeparam>
 	public interface IArrayDuplicableCollection<T> : IReadOnlyCollection<T>
 	{
 		/// <summary>
-		/// Копирует элементы коллекции в указанный массив,
-		/// начиная с указанной позиции конечного массива.
+		/// Copies the collection to a one-dimensional array,
+		/// starting at the specified index of the target array.
 		/// </summary>
-		/// <param name="array">Массив, в который копируются элементы коллекции.</param>
-		/// <param name="arrayIndex">Отсчитываемая от нуля позиция в массиве array, указывающий начало копирования.</param>
-		/// <remarks>Соответствует System.Collections.ICollection.CopyTo() и System.Array.CopyTo().</remarks>
+		/// <param name="array">The one-dimensional System.Array that is the destination of the elements copied.</param>
+		/// <param name="arrayIndex">The zero-based index in array at which copying begins.</param>
+		/// <remarks>Corresponds to the System.Collections.ICollection.CopyTo() and System.Array.CopyTo().</remarks>
 		void CopyTo (T[] array, int arrayIndex);
 	}
 }

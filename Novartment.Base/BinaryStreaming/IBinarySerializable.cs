@@ -4,16 +4,16 @@ using System.Threading.Tasks;
 namespace Novartment.Base.BinaryStreaming
 {
 	/// <summary>
-	/// Сущность, пригодная для сохранения в получатель двоичных данных.
+	/// An entity suitable for storing in a binary data destionation.
 	/// </summary>
 	public interface IBinarySerializable
 	{
 		/// <summary>
-		/// Сохраняет сущность в указанный получатель двоичных данных.
+		/// Saves this entity in the specified binary data destionation.
 		/// </summary>
-		/// <param name="destination">Получатель двоичных данных, в который будет сохранена сущность.</param>
-		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
-		/// <returns>Задача, представляющая операцию сохранения.</returns>
+		/// <param name="destination">The binary data destionation, in which this entity will be saved.</param>
+		/// <param name="cancellationToken">The token to monitor for cancellation requests. The default value is System.Threading.CancellationToken.None.</param>
+		/// <returns>A task that represents the operation.</returns>
 		Task SaveAsync (IBinaryDestination destination, CancellationToken cancellationToken = default);
 	}
 }

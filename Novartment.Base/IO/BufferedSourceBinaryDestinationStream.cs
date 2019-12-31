@@ -136,12 +136,11 @@ namespace Novartment.Base.BinaryStreaming
 #if !NETSTANDARD2_0
 
 		/// <summary>
-		/// Асинхронно записывает последовательность байтов в поток,
-		/// перемещает текущую позицию внутри потока на число записанных байтов и отслеживает запросы отмены.
+		/// Asynchronously writes specified region of memory to this stream.
 		/// </summary>
-		/// <param name="buffer">Буфер, из которого записываются данные.</param>
-		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
-		/// <returns>Задача, представляющая асинхронную операцию записи.</returns>
+		/// <param name="buffer">The region of memory to write to this destination.</param>
+		/// <param name="cancellationToken">The token to monitor for cancellation requests. The default value is System.Threading.CancellationToken.None.</param>
+		/// <returns>A task that represents the write operation.</returns>
 		public override ValueTask WriteAsync (ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default)
 		{
 			return (_destination is StreamExtensions.StreamBinaryDestination streamBinaryDestination) ?

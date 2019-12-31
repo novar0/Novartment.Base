@@ -1,26 +1,25 @@
 ﻿namespace Novartment.Base.Collections
 {
-	// Библиотечный ISet не подходит для использования потому, что является избыточным.
-	// Все его методы (кроме Add):
-	// 1. Не могут быть реализованы внутри класса заметно более эффективно чем снаружи в методах расширения.
-	// 2. Не пригодны для конкурентного доступа.
+	// The library class System.Collections.Generic.ISet<T> is not suitable for use because it is redundant.
+	// All its methods (except Add):
+	// 1. Cannot be implemented inside the class more efficiently than outside in extension methods.
+	// 2. Not suitable for concurent access.
 
 	/// <summary>
-	/// Конечное множество уникальных элементов c перечислением, очисткой,
-	/// проверкой наличия, добавлением и удалением элементов.
+	/// The finite set of unique elements with the ability to enumerate, verify belonging, clean, add and remove elements.
 	/// </summary>
-	/// <typeparam name="T">Тип элементов множества.</typeparam>
+	/// <typeparam name="T">The type of the elements.</typeparam>
 	/// <remarks>
-	/// Характерные представители - System.Collections.Generic.SortedSet и System.Collections.Generic.HashSet.
+	/// The typical representatives - System.Collections.Generic.SortedSet and System.Collections.Generic.HashSet.
 	/// </remarks>
 	public interface IAdjustableFiniteSet<T> :
 		IReadOnlyFiniteSet<T>,
 		IAdjustableCollection<T>
 	{
 		/// <summary>
-		/// Удаляет из множества указанный элемент.
+		/// Removes the element from the set.
 		/// </summary>
-		/// <param name="item">Элемент для удаления из множества.</param>
+		/// <param name="item">The element to remove.</param>
 		void Remove (T item);
 	}
 }

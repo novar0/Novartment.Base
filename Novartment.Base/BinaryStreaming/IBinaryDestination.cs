@@ -5,20 +5,20 @@ using System.Threading.Tasks;
 namespace Novartment.Base.BinaryStreaming
 {
 	/// <summary>
-	/// Получатель двоичных данных для последовательной записи.
+	/// A binary data destionation for sequential writing.
 	/// </summary>
 	public interface IBinaryDestination
 	{
 		/// <summary>
-		/// Асинхронно записывает в получатель указанный диапазон байтов.
+		/// Asynchronously writes the specified region of memory to this destination.
 		/// </summary>
-		/// <param name="buffer">Буфер, из которого записываются данные.</param>
-		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
-		/// <returns>Задача, представляющая асинхронную операцию записи.</returns>
+		/// <param name="buffer">The region of memory to write to this destination.</param>
+		/// <param name="cancellationToken">The token to monitor for cancellation requests. The default value is System.Threading.CancellationToken.None.</param>
+		/// <returns>A task that represents the write operation.</returns>
 		ValueTask WriteAsync (ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default);
 
 		/// <summary>
-		/// Указывает что запись окончена.
+		/// Mark this destionation as being completed, meaning no more data will be written to it.
 		/// </summary>
 		void SetComplete ();
 	}
