@@ -34,7 +34,7 @@ namespace Novartment.Base.Collections
 	{
 		/*
 		для обеспечения конкурентного доступа, всё состояние хранится в одном поле _state, а любое его изменение выглядит так:
-		var spinWait = default;
+		SpinWait spinWait = default;
 		while (true)
 		{
 		  var state1 = _state;
@@ -169,7 +169,7 @@ namespace Novartment.Base.Collections
 		{
 			var state1 = _state;
 			_state = new LoopedArraySegment<T> (Array.Empty<T> ());
-			CollectionExtensions.LoopedArraySegmentClear (
+			GenericCollectionExtensions.LoopedArraySegmentClear (
 				state1.Array,
 				state1.Offset,
 				state1.Count,
@@ -367,7 +367,7 @@ namespace Novartment.Base.Collections
 					newState = new LoopedArraySegment<T> (newState.Array, newOffset, count + 1);
 					if (index > 0)
 					{
-						CollectionExtensions.LoopedArraySegmentCopy (
+						GenericCollectionExtensions.LoopedArraySegmentCopy (
 							newState.Array,
 							newState.Offset,
 							newState.Count,
@@ -381,7 +381,7 @@ namespace Novartment.Base.Collections
 					newState = new LoopedArraySegment<T> (newState.Array, newState.Offset, count + 1);
 					if (index < count)
 					{
-						CollectionExtensions.LoopedArraySegmentCopy (
+						GenericCollectionExtensions.LoopedArraySegmentCopy (
 							newState.Array,
 							newState.Offset,
 							newState.Count,
@@ -456,7 +456,7 @@ namespace Novartment.Base.Collections
 					}
 
 					newState = new LoopedArraySegment<T> (newState.Array, newOffset, size + count);
-					CollectionExtensions.LoopedArraySegmentCopy (
+					GenericCollectionExtensions.LoopedArraySegmentCopy (
 						newState.Array,
 						newState.Offset,
 						newState.Count,
@@ -467,7 +467,7 @@ namespace Novartment.Base.Collections
 				else
 				{ // место вставки - вторая половина, выгоднее отодвигать вперёд кусок от индекса до конца
 					newState = new LoopedArraySegment<T> (newState.Array, newState.Offset, size + count);
-					CollectionExtensions.LoopedArraySegmentCopy (
+					GenericCollectionExtensions.LoopedArraySegmentCopy (
 						newState.Array,
 						newState.Offset,
 						newState.Count,
@@ -477,7 +477,7 @@ namespace Novartment.Base.Collections
 				}
 
 				// очищаем место под новые элементы
-				CollectionExtensions.LoopedArraySegmentClear (
+				GenericCollectionExtensions.LoopedArraySegmentClear (
 					newState.Array,
 					newState.Offset,
 					newState.Count,
@@ -528,7 +528,7 @@ namespace Novartment.Base.Collections
 				{ // место удаления - первая половина, выгоднее отодвигать вперёд кусок от начала до индекса
 					if (index > 0)
 					{
-						CollectionExtensions.LoopedArraySegmentCopy (
+						GenericCollectionExtensions.LoopedArraySegmentCopy (
 							newState.Array,
 							newState.Offset,
 							newState.Count,
@@ -550,7 +550,7 @@ namespace Novartment.Base.Collections
 				{ // место удаления - вторая половина, выгоднее отодвигать назад кусок от индекса до конца
 					if (index < lastIndex)
 					{
-						CollectionExtensions.LoopedArraySegmentCopy (
+						GenericCollectionExtensions.LoopedArraySegmentCopy (
 							newState.Array,
 							newState.Offset,
 							newState.Count,
@@ -631,14 +631,14 @@ namespace Novartment.Base.Collections
 
 				if (size1 <= size2)
 				{ // выгоднее отодвигать вперёд кусок от начала до индекса
-					CollectionExtensions.LoopedArraySegmentCopy (
+					GenericCollectionExtensions.LoopedArraySegmentCopy (
 						newState.Array,
 						newState.Offset,
 						newState.Count,
 						0,
 						count,
 						size1);
-					CollectionExtensions.LoopedArraySegmentClear (
+					GenericCollectionExtensions.LoopedArraySegmentClear (
 						newState.Array,
 						newState.Offset,
 						newState.Count,
@@ -654,14 +654,14 @@ namespace Novartment.Base.Collections
 				}
 				else
 				{ // выгоднее отодвигать назад кусок от индекса до конца
-					CollectionExtensions.LoopedArraySegmentCopy (
+					GenericCollectionExtensions.LoopedArraySegmentCopy (
 						newState.Array,
 						newState.Offset,
 						newState.Count,
 						index + count,
 						index,
 						size2);
-					CollectionExtensions.LoopedArraySegmentClear (
+					GenericCollectionExtensions.LoopedArraySegmentClear (
 						newState.Array,
 						newState.Offset,
 						newState.Count,
@@ -911,7 +911,7 @@ namespace Novartment.Base.Collections
 			}
 
 			[DebuggerBrowsable (DebuggerBrowsableState.RootHidden)]
-			public T[] Items => CollectionExtensions.DuplicateToArray (_list._state);
+			public T[] Items => GenericCollectionExtensions.DuplicateToArray (_list._state);
 		}
 	}
 }

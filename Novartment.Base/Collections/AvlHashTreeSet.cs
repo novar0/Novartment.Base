@@ -6,15 +6,14 @@ using Novartment.Base.Collections.Immutable;
 namespace Novartment.Base.Collections
 {
 	/// <summary>
-	/// Множество уникальных значений на основе двоичного дерева поиска, построенного на хэш-функциях элементов.
+	/// Sorted set of unique values based on the binary search tree built on hash functions of elements.
 	/// </summary>
-	/// <typeparam name="T">Тип элементов множества.</typeparam>
+	/// <typeparam name="T">The type of the elements.</typeparam>
 	/// <remarks>
-	/// Для построения дерева используются не значения элементов, а их хэш-код.
-	/// Если для элементов существует компаратор на больше/меньше,
-	/// то AvlTreeSet при той же функциональности будет работать быстрее.
-	/// В дереве могут содержаться дупликаты (хэшей, но не значений),
-	/// так как хэш-функция может порождать совпадающие хэши для разных значений.
+	/// To construct the tree, it is not the values of the elements that are used, but their hash code.
+	/// If there is a value comparer for elements, then AvlTreeSet will work faster with the same functionality.
+	/// The tree may contain duplicates (hashes, but not values), since a hash function can generate matching hashes for different values.
+	/// В дереве могут содержаться дупликаты (хэшей, но не значений), так как хэш-функция может порождать совпадающие хэши для разных значений.
 	/// </remarks>
 	[DebuggerDisplay ("{DebuggerDisplay,nq}")]
 	public class AvlHashTreeSet<T> :
@@ -25,12 +24,10 @@ namespace Novartment.Base.Collections
 		private int _count = 0;
 
 		/// <summary>
-		/// Инициализирует новый экземпляр класса AvlHashTreeSet,
-		/// использующий указанный компаратор значений множества.
+		/// Initializes a new instance of the AvlHashTreeSet class that is empty and uses a specified value comparer.
 		/// </summary>
 		/// <param name="comparer">
-		/// Компаратор значений множества,
-		/// или null чтобы использовать компаратор по умолчанию.
+		/// The comparer to be used when comparing values in a set. Specify null-reference to use default comparer for type T.
 		/// </param>
 		public AvlHashTreeSet (IEqualityComparer<T> comparer = null)
 		{
@@ -38,13 +35,12 @@ namespace Novartment.Base.Collections
 		}
 
 		/// <summary>
-		/// Инициализирует новый экземпляр класса AvlHashTreeSet на основе указанного двоичного дерева поиска,
-		/// использующий указанный компаратор значений множества.
+		/// Initializes a new instance of the AvlTreeSet class that contains specified binary search tree nodes
+		/// and uses a specified value comparer.
 		/// </summary>
-		/// <param name="startNode">Начальный узел двоичного дерева поиска, которое станет содержимым множества.</param>
+		/// <param name="startNode">The initial node of the binary search tree that will become the contents of the set.</param>
 		/// <param name="comparer">
-		/// Компаратор значений множества,
-		/// или null чтобы использовать компаратор по умолчанию.
+		/// The comparer to be used when comparing values in a set. Specify null-reference to use default comparer for type T.
 		/// </param>
 		public AvlHashTreeSet (AvlBinarySearchHashTreeNode<T> startNode, IEqualityComparer<T> comparer = null)
 		{
@@ -53,14 +49,14 @@ namespace Novartment.Base.Collections
 		}
 
 		/// <summary>
-		/// Получает компаратор, используемый при сравнении значений множества.
+		/// Gets the comparer used when comparing values of a set.
 		/// </summary>
 		public IEqualityComparer<T> Comparer => _comparer;
 
 		/// <summary>
-		/// Получает количество элементов в множестве.
+		/// Gets the number of elements in the set.
 		/// </summary>
-		/// <remarks>Для проверки на пустое множество используйте свойство IsEmpty.</remarks>
+		/// <remarks>To check for an empty set, use the IsEmpty property.</remarks>
 		public int Count => _count;
 
 		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
@@ -69,12 +65,11 @@ namespace Novartment.Base.Collections
 			$"<{typeof(T).Name}> empty";
 
 		/// <summary>
-		/// Проверяет наличие в множестве элемента с указанным значением.
+		/// Checks if the specified value belongs to the set.
 		/// </summary>
-		/// <param name="item">Значение элемента для проверки наличия в множестве.</param>
+		/// <param name="item">The value to check for belonging to the set.</param>
 		/// <returns>
-		/// True если элемент с указанным значением содержится в множестве,
-		/// либо False если нет.
+		/// True if the specified value belongs to the set, or False if it does not.
 		/// </returns>
 		public bool Contains (T item)
 		{
@@ -82,10 +77,10 @@ namespace Novartment.Base.Collections
 		}
 
 		/// <summary>
-		/// Добавляет указанный элемент в множество.
+		/// Adds an element to the set.
 		/// </summary>
-		/// <param name="item">Элемент для добавления в множество.</param>
-		/// <returns>True если элемент добавлен в множество, False если в множестве уже был элемент с таким значением.</returns>
+		/// <param name="item">The element to add to the set.</param>
+		/// <returns>True if the element is added to the set, False if the set already had an element with this value.</returns>
 		public bool Add (T item)
 		{
 			bool existsBefore = false;
@@ -99,9 +94,9 @@ namespace Novartment.Base.Collections
 		}
 
 		/// <summary>
-		/// Добавляет указанный элемент в множество.
+		/// Adds an element to the set.
 		/// </summary>
-		/// <param name="item">Элемент для добавления в множество.</param>
+		/// <param name="item">The element to add to the set.</param>
 		void IAdjustableCollection<T>.Add (T item)
 		{
 			bool existsBefore = false;
@@ -112,7 +107,7 @@ namespace Novartment.Base.Collections
 			}
 		}
 
-		/// <summary>Очищает множество.</summary>
+		/// <summary>Removes all items from the set.</summary>
 		public void Clear ()
 		{
 			_startNode = null;
@@ -120,10 +115,10 @@ namespace Novartment.Base.Collections
 		}
 
 		/// <summary>
-		/// Удаляет из множества элемент с указанным значением.
+		/// Removes the element from the set.
 		/// </summary>
-		/// <param name="item">Значение элемента для удаления из множества.</param>
-		/// <returns>True если элемент удалён из множества, False если в множестве не было элемента с таким значением.</returns>
+		/// <param name="item">The element to remove.</param>
+		/// <returns>True if the element is removed from the set, False if there was no element with the same value in the set.</returns>
 		public bool Remove (T item)
 		{
 			bool existsBefore = false;
@@ -137,9 +132,9 @@ namespace Novartment.Base.Collections
 		}
 
 		/// <summary>
-		/// Удаляет из множества элемент с указанным значением.
+		/// Removes the element from the set.
 		/// </summary>
-		/// <param name="item">Значение элемента для удаления из множества.</param>
+		/// <param name="item">The element to remove.</param>
 		void IAdjustableFiniteSet<T>.Remove (T item)
 		{
 			bool existsBefore = false;
@@ -151,18 +146,18 @@ namespace Novartment.Base.Collections
 		}
 
 		/// <summary>
-		/// Получает перечислитель элементов множества.
+		/// Returns an enumerator for the set.
 		/// </summary>
-		/// <returns>Перечислитель элементов множества.</returns>
+		/// <returns>An enumerator for the set.</returns>
 		public IEnumerator<T> GetEnumerator ()
 		{
 			return _startNode.GetEnumerator ();
 		}
 
 		/// <summary>
-		/// Получает перечислитель элементов множества.
+		/// Returns an enumerator for the set.
 		/// </summary>
-		/// <returns>Перечислитель элементов множества.</returns>
+		/// <returns>An enumerator for the set.</returns>
 		IEnumerator IEnumerable.GetEnumerator ()
 		{
 			return _startNode.GetEnumerator ();

@@ -7,8 +7,7 @@ using System.Threading.Tasks;
 namespace Novartment.Base.BinaryStreaming
 {
 	/// <summary>
-	/// A base class of data source for sequential reading, represented by a byte buffer,
-	/// that represents data in individual parts.
+	/// A data source for sequential reading, represented by a byte buffer, that represents data in individual parts.
 	/// Data will come from other source and will be divided into parts
 	/// according to the specified separator pattern.
 	/// </summary>

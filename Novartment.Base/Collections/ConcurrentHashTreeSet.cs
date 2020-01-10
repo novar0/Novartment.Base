@@ -27,6 +27,22 @@ namespace Novartment.Base.Collections
 	public class ConcurrentHashTreeSet<T> :
 		IAdjustableFiniteSet<T>
 	{
+		/*
+		для обеспечения конкурентного доступа, всё состояние хранится в одном поле _startNode, а любое его изменение выглядит так:
+		SpinWait spinWait = default;
+		while (true)
+		{
+		  var state1 = _startNode;
+		  var newState = SomeOperation (state1);
+		  var state2 = Interlocked.CompareExchange (ref _startNode, newState, state1);
+		  if (state1 == state2)
+		  {
+		    return;
+		  }
+		  spinWait.SpinOnce ();
+		}
+		*/
+
 		private readonly IEqualityComparer<T> _comparer;
 		private AvlBinarySearchHashTreeNode<T> _startNode; // null является корректным значением, означает пустое дерево
 

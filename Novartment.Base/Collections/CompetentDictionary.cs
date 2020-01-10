@@ -9,19 +9,19 @@ using System.Threading;
 namespace Novartment.Base.Collections
 {
 	/// <summary>
-	/// Потокобезопасный словарь только для чтения, автоматически создающий записи при обращении к ним
-	/// и генерирующий уведомления о добавлении.
-	/// Записи создаются с помощью указанной фабрики по производству значений.
+	/// A thread-safe read-only dictionary that automatically creates entries when they are accessed
+	/// and generates notifications when they are added.
+	/// Entries are created using the specified value factory.
 	/// </summary>
-	/// <typeparam name="TKey">Тип ключей в словаре.</typeparam>
-	/// <typeparam name="TValue">Тип значений в словаре.</typeparam>
+	/// <typeparam name="TKey">The type of keys in the dictionary.</typeparam>
+	/// <typeparam name="TValue">The type of values in the dictionary.</typeparam>
 	/// <remarks>
-	/// Особенности:
-	/// * свойства Keys и Values предоставляются в виде списка с доступом по номеру позиции без блокировок и с уведомлением о добавлениях;
-	/// * никогда не порождает KeyNotFoundException;
-	/// * TryGetValue() всегда возвращает true;
-	/// * единственный метод, который возвращает реальную информацию о наличии записи - ContainsKey().
-	/// Порождает событие CollectionChanged только вида NotifyCollectionChangedAction.Add.
+	/// Peculiar properties:
+	/// * the Keys and Values properties are provided as a list with access by position number without locks and with notification of additions;
+	/// * never throws the KeyNotFoundException;
+	/// * TryGetValue() always returns True;
+	/// * The only method that returns real information about the existence of a record is ContainsKey ().
+	/// Generates a CollectionChanged event of only one kind — NotifyCollectionChangedAction.Add.
 	/// </remarks>
 	public sealed class CompetentDictionary<TKey, TValue> :
 		IReadOnlyDictionary<TKey, TValue>,
@@ -51,17 +51,16 @@ namespace Novartment.Base.Collections
 		private int _count;
 
 		/// <summary>
-		/// Инициализирует новый экземпляр класса CompetentDictionary,
-		/// использующий указанную фабрику значений и компаратор ключей.
+		/// Initializes a new instance of the CompetentDictionary class that is empty
+		/// and uses a specified value factory and key comparer.
 		/// </summary>
 		/// <param name="valueFactory">
-		/// Функция-фабрика значений для записей словаря,
-		/// не должна содержать обращений к собственно словарю,
-		/// должна быть быстрой и не содержать каких либо блокировок.
+		/// The function-factory for the entries of the dictionary.
+		/// Should not access the actual dictionary.
+		/// Should be fast and not contain any locks.
 		/// </param>
 		/// <param name="comparer">
-		/// Компаратор, который будет использоваться при сравнении ключей,
-		/// или null, чтобы использовать реализацию компаратора по умолчанию.
+		/// The comparer to be used when comparing keys. Specify null-reference to use default comparer for type TKey.
 		/// </param>
 		public CompetentDictionary (Func<TKey, TValue> valueFactory, IEqualityComparer<TKey> comparer = null)
 		{
@@ -78,30 +77,27 @@ namespace Novartment.Base.Collections
 			_valueFactory = valueFactory;
 		}
 
-		/// <summary>Происходит, когда запись добавляется в словарь.</summary>
+		/// <summary>Occurs when an entry is added to the dictionary.</summary>
 		public event NotifyCollectionChangedEventHandler CollectionChanged;
 
-		/// <summary>Получает число записей, которое содержится в словаре.</summary>
-		/// <returns>Число записей, содержащихся в словаре.</returns>
+		/// <summary>Gets the number of entries contained in the dictionary.</summary>
 		public int Count => _count;
 
-		/// <summary>Получает коллекию ключей словаря.</summary>
+		/// <summary>Gets a collection of dictionary keys.</summary>
 		IEnumerable<TKey> IReadOnlyDictionary<TKey, TValue>.Keys => _keyEnumerationProvider;
 
-		/// <summary>Получает список, содержащий ключи из словаря.</summary>
-		/// <returns>Список System.Collections.Generic.IReadOnlyList&lt;TKey&gt;, содержащий ключи из словаря.</returns>
+		/// <summary>Gets a list of dictionary keys.</summary>
 		public IReadOnlyList<TKey> Keys => _keyEnumerationProvider;
 
-		/// <summary>Получает коллекию значений словаря.</summary>
+		/// <summary>Gets a collection of dictionary values.</summary>
 		IEnumerable<TValue> IReadOnlyDictionary<TKey, TValue>.Values => _valueEnumerationProvider;
 
-		/// <summary>Получает список, содержащий значения из словаря.</summary>
-		/// <returns>Список System.Collections.Generic.IReadOnlyList&lt;TValue&gt;, содержащий значения из словаря.</returns>
+		/// <summary>Gets a list of dictionary values.</summary>
 		public IReadOnlyList<TValue> Values => _valueEnumerationProvider;
 
-		/// <summary>Возвращает значение, связанное с указанным ключом.</summary>
-		/// <param name="key">Ключ записи, значение которой требуется получить.</param>
-		/// <returns>Значение в записи словаря, найденной по указанному ключу.</returns>
+		/// <summary>Gets the element that has the specified key in the dictionary.</summary>
+		/// <param name="key">The key to locate.</param>
+		/// <returns>The element that has the specified key in the dictionary.</returns>
 		public TValue this[TKey key]
 		{
 			get
@@ -119,9 +115,9 @@ namespace Novartment.Base.Collections
 			}
 		}
 
-		/// <summary>Определяет, содержит ли словарь указанную запись.</summary>
-		/// <param name="keyValuePair">Структура KeyValuePair&lt;TKey, TValue&gt;, которую требуется найти в словаре.</param>
-		/// <returns>Значение true, если объект keyValuePair найден в словаре в противном случае — значение false.</returns>
+		/// <summary>Determines whether the dictionary contains the specified entry.</summary>
+		/// <param name="keyValuePair">The KeyValuePair&lt;TKey, TValue&gt; structure to locate in the dictionary.</param>
+		/// <returns>True if keyValuePair is found in the dictionary; otherwise, False</returns>
 		public bool Contains (KeyValuePair<TKey, TValue> keyValuePair)
 		{
 			if (keyValuePair.Key == null)
@@ -135,11 +131,11 @@ namespace Novartment.Base.Collections
 			return EqualityComparer<TValue>.Default.Equals (value, keyValuePair.Value);
 		}
 
-		/// <summary>Определяет, содержится ли указанный ключ в словаре.</summary>
-		/// <param name="key">Ключ, который требуется найти в словаре.</param>
+		/// <summary>Determines whether the read-only dictionary contains an element that has the specified key.</summary>
+		/// <param name="key">The key to locate.</param>
 		/// <returns>
-		/// Значение True, если словарь содержит элемент с указанным ключом;
-		/// в противном случае — значение False.
+		/// True if the read-only dictionary contains an element that has the specified key;
+		/// otherwise, False.
 		/// </returns>
 		public bool ContainsKey (TKey key)
 		{
@@ -166,15 +162,10 @@ namespace Novartment.Base.Collections
 			}
 		}
 
-		/// <summary>Получает значение, связанное с указанным ключом.</summary>
-		/// <param name="key">Ключ значения, которое необходимо получить.</param>
-		/// <param name="value">Возвращаемое значение, связанное с указанном ключом, если он найден;
-		/// в противном случае — значение по умолчанию для данного типа параметра value.
-		/// Этот параметр передается неинициализированным.</param>
-		/// <returns>
-		/// Значение true, если словарь содержит элемент с указанным ключом;
-		/// в противном случае — значение false.
-		/// </returns>
+		/// <summary>Gets the value that is associated with the specified key.</summary>
+		/// <param name="key">The key to locate.</param>
+		/// <param name="value">The value associated with the specified key.</param>
+		/// <returns>True because entries are created if not exists.</returns>
 		public bool TryGetValue (TKey key, out TValue value)
 		{
 			if (key == null)
@@ -188,24 +179,26 @@ namespace Novartment.Base.Collections
 		}
 
 		/// <summary>
-		/// Получает перечислитель элементов словаря.
+		/// Returns an enumerator for the dictionary.
 		/// </summary>
-		/// <returns>Перечислитель элементов словаря.</returns>
+		/// <returns>An enumerator for the dictionary.</returns>
 		public IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator ()
 		{
 			return new KeyValuePairEnumerator (this);
 		}
 
 		/// <summary>
-		/// Получает перечислитель элементов словаря.
+		/// Returns an enumerator for the dictionary.
 		/// </summary>
-		/// <returns>Перечислитель элементов словаря.</returns>
+		/// <returns>An enumerator for the dictionary.</returns>
 		IEnumerator IEnumerable.GetEnumerator ()
 		{
 			return GetEnumerator ();
 		}
 
-		/// <summary>Освобождает все внутренние ресурсы и отключает подписчиков на события.</summary>
+		/// <summary>
+		/// Performs freeing and releasing resources.
+		/// </summary>
 		public void Dispose ()
 		{
 			CollectionChanged = null;
@@ -377,10 +370,13 @@ namespace Novartment.Base.Collections
 			}
 
 			/// <summary>
-			/// Получает текущий элемент перечислителя.
+			/// Gets the element in the collection at the current position of the enumerator.
 			/// </summary>
 			public KeyValuePair<TKey, TValue> Current => _current;
 
+			/// <summary>
+			/// Gets the element in the collection at the current position of the enumerator.
+			/// </summary>
 			object IEnumerator.Current
 			{
 				get
@@ -395,7 +391,7 @@ namespace Novartment.Base.Collections
 			}
 
 			/// <summary>
-			/// Возвращает перечислитель в исходное положение.
+			///  Sets the enumerator to its initial position, which is before the first element in the collection.
 			/// </summary>
 			public void Reset ()
 			{
@@ -404,10 +400,12 @@ namespace Novartment.Base.Collections
 			}
 
 			/// <summary>
-			/// Перемещает перечислитель к следующему элементу строки.
+			/// Advances the enumerator to the next element of the collection.
 			/// </summary>
-			/// <returns>true, если перечислитель был успешно перемещен к следующему элементу;
-			/// false, если перечислитель достиг конца.</returns>
+			/// <returns>
+			/// True if the enumerator was successfully advanced to the next element;
+			/// False if the enumerator has passed the end of the collection.
+			/// </returns>
 			public bool MoveNext ()
 			{
 				if (_index < _count)
@@ -425,7 +423,7 @@ namespace Novartment.Base.Collections
 
 #pragma warning disable CA1063 // Implement IDisposable Correctly
 			/// <summary>
-			/// Ничего не делает.
+			/// Does nothing.
 			/// </summary>
 			public void Dispose ()
 #pragma warning restore CA1063 // Implement IDisposable Correctly
@@ -449,10 +447,13 @@ namespace Novartment.Base.Collections
 			}
 
 			/// <summary>
-			/// Получает текущий элемент перечислителя.
+			/// Gets the element in the collection at the current position of the enumerator.
 			/// </summary>
 			public TKey Current => _currentKey;
 
+			/// <summary>
+			/// Gets the element in the collection at the current position of the enumerator.
+			/// </summary>
 			object IEnumerator.Current
 			{
 				get
@@ -468,7 +469,7 @@ namespace Novartment.Base.Collections
 
 #pragma warning disable CA1063 // Implement IDisposable Correctly
 			/// <summary>
-			/// Ничего не делает.
+			/// Does nothing.
 			/// </summary>
 			public void Dispose ()
 #pragma warning restore CA1063 // Implement IDisposable Correctly
@@ -476,10 +477,12 @@ namespace Novartment.Base.Collections
 			}
 
 			/// <summary>
-			/// Перемещает перечислитель к следующему элементу строки.
+			/// Advances the enumerator to the next element of the collection.
 			/// </summary>
-			/// <returns>true, если перечислитель был успешно перемещен к следующему элементу;
-			/// false, если перечислитель достиг конца.</returns>
+			/// <returns>
+			/// True if the enumerator was successfully advanced to the next element;
+			/// False if the enumerator has passed the end of the collection.
+			/// </returns>
 			public bool MoveNext ()
 			{
 				if (_index < _count)
@@ -495,6 +498,9 @@ namespace Novartment.Base.Collections
 				return false;
 			}
 
+			/// <summary>
+			///  Sets the enumerator to its initial position, which is before the first element in the collection.
+			/// </summary>
 			void IEnumerator.Reset ()
 			{
 				_index = 0;
@@ -517,10 +523,13 @@ namespace Novartment.Base.Collections
 			}
 
 			/// <summary>
-			/// Получает текущий элемент перечислителя.
+			/// Gets the element in the collection at the current position of the enumerator.
 			/// </summary>
 			public TValue Current => _currentValue;
 
+			/// <summary>
+			/// Gets the element in the collection at the current position of the enumerator.
+			/// </summary>
 			object IEnumerator.Current
 			{
 				get
@@ -536,7 +545,7 @@ namespace Novartment.Base.Collections
 
 #pragma warning disable CA1063 // Implement IDisposable Correctly
 			/// <summary>
-			/// Ничего не делает.
+			/// Does nothing.
 			/// </summary>
 			public void Dispose ()
 #pragma warning restore CA1063 // Implement IDisposable Correctly
@@ -544,10 +553,12 @@ namespace Novartment.Base.Collections
 			}
 
 			/// <summary>
-			/// Перемещает перечислитель к следующему элементу строки.
+			/// Advances the enumerator to the next element of the collection.
 			/// </summary>
-			/// <returns>true, если перечислитель был успешно перемещен к следующему элементу;
-			/// false, если перечислитель достиг конца.</returns>
+			/// <returns>
+			/// True if the enumerator was successfully advanced to the next element;
+			/// False if the enumerator has passed the end of the collection.
+			/// </returns>
 			public bool MoveNext ()
 			{
 				if (_index < _count)
@@ -563,6 +574,9 @@ namespace Novartment.Base.Collections
 				return false;
 			}
 
+			/// <summary>
+			///  Sets the enumerator to its initial position, which is before the first element in the collection.
+			/// </summary>
 			void IEnumerator.Reset ()
 			{
 				_index = 0;

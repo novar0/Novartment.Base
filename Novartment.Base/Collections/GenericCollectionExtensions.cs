@@ -10,7 +10,7 @@ namespace Novartment.Base.Collections
 	/// <summary>
 	/// Extension methods for collection interfaces.
 	/// </summary>
-	public static class CollectionExtensions
+	public static class GenericCollectionExtensions
 	{
 		private class AsyncEnumerable<TItem> :
 			IAsyncEnumerable<TItem>
@@ -339,100 +339,13 @@ namespace Novartment.Base.Collections
 		}
 
 		/// <summary>
-		/// Разделяет последовательность на под-последовательности в местах,
-		/// отобранных по результатам применения указанной функции-фильтра к элементам исходной последовательности.
-		/// Отобранные функцией элементы не входят в результирующие под-последовательности.
+		/// Deletes in the specified list all elements contained in the specified set.
 		/// </summary>
-		/// <typeparam name="T">Тип элементов последовательности.</typeparam>
-		/// <param name="collection">Исходная последовательность, которая будут разделена на под-последовательности.</param>
-		/// <param name="splitHereFunc">Функция-фильтр, которая будет вызвана для каждого элемента исходной последовательности.
-		/// Возвращает True для тех элементов, которые разделяют отдельные под-последовательности.</param>
-		/// <returns>Последовательность под-последовательностей.</returns>
-		public static IEnumerable<IReadOnlyList<T>> Split<T> (this IEnumerable<T> collection, Func<T, bool> splitHereFunc)
-		{
-			if (collection == null)
-			{
-				throw new ArgumentNullException (nameof (collection));
-			}
-
-			if (splitHereFunc == null)
-			{
-				throw new ArgumentNullException (nameof (splitHereFunc));
-			}
-
-			Contract.EndContractBlock ();
-
-			var list = new ArrayList<T> ();
-			foreach (var item in collection)
-			{
-				var isSplitItem = splitHereFunc.Invoke (item);
-				if (isSplitItem)
-				{
-					if (list.Count > 0)
-					{
-						yield return list;
-					}
-
-					list = new ArrayList<T> ();
-				}
-				else
-				{
-					list.Add (item);
-				}
-			}
-
-			if (list.Count > 0)
-			{
-				yield return list;
-			}
-		}
-
-		/// <summary>Удаляет элементы в списке, прошедшие фильтрацию указанным предикатом.</summary>
-		/// <typeparam name="T">Тип элементов списка.</typeparam>
-		/// <param name="list">Список, элементы которого будут протестированы и возможно удалены.</param>
-		/// <param name="predicate">Функция тестирования элементов списка.
-		/// Должна возвращать True для тех элементов, которые подлежат удалению.</param>
-		/// <returns>Количество удалённых элементов.</returns>
-		/// <remarks>Создаёт временный список позиций для удаления.</remarks>
-		public static int RemoveWhere<T> (this IAdjustableList<T> list, Func<T, bool> predicate)
-		{
-			if (list == null)
-			{
-				throw new ArgumentNullException (nameof (list));
-			}
-
-			if (predicate == null)
-			{
-				throw new ArgumentNullException (nameof (predicate));
-			}
-
-			Contract.EndContractBlock ();
-
-			if (list.Count < 1)
-			{
-				return 0;
-			}
-
-			var indexesToRemove = new ArrayList<int> ();
-			for (var i = 0; i < list.Count; i++)
-			{
-				var isRemoveItem = predicate.Invoke (list[i]);
-				if (isRemoveItem)
-				{
-					indexesToRemove.Add (i);
-				}
-			}
-
-			list.RemoveAtMany (indexesToRemove);
-			return indexesToRemove.Count;
-		}
-
-		/// <summary>Удаляет в указанном списке все элементы, содержащиеся в указанном множестве.</summary>
-		/// <typeparam name="T">Тип элементов списка.</typeparam>
-		/// <param name="list">Список, элементы которого будут проверены и возможно удалены.</param>
-		/// <param name="collectionToRemove">Множество элементов для удаления из списка.</param>
-		/// <returns>Количество удалённых элементов.</returns>
-		/// <remarks>Создаёт временный список позиций для удаления.</remarks>
+		/// <typeparam name="T">The type of the elements.</typeparam>
+		/// <param name="list">A list whose items will be checked and possibly deleted.</param>
+		/// <param name="collectionToRemove">Set of items еo remove from the list.</param>
+		/// <returns>The number of deleted items.</returns>
+		/// <remarks>Creates a temporary list of indexes to delete.</remarks>
 		public static int RemoveItems<T> (this IAdjustableList<T> list, IReadOnlyFiniteSet<T> collectionToRemove)
 		{
 			if (list == null)
@@ -469,13 +382,13 @@ namespace Novartment.Base.Collections
 		}
 
 		/// <summary>
-		/// Удаляет элементы из списка согласно указанному отсортированному списку позиций для удаления.
+		/// Deletes items from the list according to the specified sorted list of indexes to delete.
 		/// </summary>
-		/// <typeparam name="T">Тип элементов списка.</typeparam>
-		/// <param name="list">Список, элементы которого будут удалены согласно указанному списку позиций.</param>
+		/// <typeparam name="T">The type of the elements.</typeparam>
+		/// <param name="list">A list whose items will be deleted according to the specified list of indexes.</param>
 		/// <param name="indexes">
-		/// Список позиций в которых должны быть удалены элементы.
-		/// Должен быть отсортирован от меньшего к большему.
+		/// List of indexes to delete in list.
+		/// Must be sorted from smallest to largest.
 		/// </param>
 		public static void RemoveAtMany<T> (this IAdjustableList<T> list, IReadOnlyList<int> indexes)
 		{
@@ -532,71 +445,15 @@ namespace Novartment.Base.Collections
 		}
 
 		/// <summary>
-		/// Создаёт конечное множество уникальных элементов, содержащихся в указанной последовательности,
-		/// используя указанный компаратор.
+		/// Tries to get the first element of the specified collection.
 		/// </summary>
-		/// <typeparam name="T">Тип элементов последовательности.</typeparam>
-		/// <param name="source">Исходная последовательность, из элементов которого будет создано множество.</param>
-		/// <param name="comparer">Компаратор, используемый для сравнения элементов последовательности.</param>
-		/// <returns>
-		/// Конечное множество уникальных элементов, содержащихся в указанной последовательности,
-		/// выбранных с использованием указанный компаратора.
-		/// </returns>
-		public static IAdjustableFiniteSet<T> ToSet<T> (this IEnumerable<T> source, IComparer<T> comparer = null)
-		{
-			if (source == null)
-			{
-				throw new ArgumentNullException (nameof (source));
-			}
-
-			Contract.EndContractBlock ();
-
-			var set = new AvlTreeSet<T> (comparer);
-			foreach (var item in source)
-			{
-				set.Add (item);
-			}
-
-			return set;
-		}
-
-		/// <summary>
-		/// Создаёт конечное множество уникальных элементов, содержащихся в указанной последовательности,
-		/// созданное на основе хэш-функции указанного компаратора.
-		/// </summary>
-		/// <typeparam name="T">Тип элементов последовательности.</typeparam>
-		/// <param name="source">Исходная последовательность, из элементов которого будет создано множество.</param>
-		/// <param name="comparer">Компаратор, используемый для сравнения элементов последовательности.</param>
-		/// <returns>
-		/// Конечное множество уникальных элементов, содержащихся в указанной последовательности,
-		/// выбранных с использованием указанный компаратора.
-		/// </returns>
-		public static IAdjustableFiniteSet<T> ToHashSet<T> (this IEnumerable<T> source, IEqualityComparer<T> comparer = null)
-		{
-			if (source == null)
-			{
-				throw new ArgumentNullException (nameof (source));
-			}
-
-			Contract.EndContractBlock ();
-
-			var set = new AvlHashTreeSet<T> (comparer);
-			foreach (var item in source)
-			{
-				set.Add (item);
-			}
-
-			return set;
-		}
-
-		/// <summary>
-		/// Пытается получить первый элемент указанной коллекции.
-		/// </summary>
-		/// <typeparam name="T">Тип элементов коллекции.</typeparam>
-		/// <param name="source">Коллекция, из которой будет получен первый элемент.</param>
-		/// <param name="item">Будет содержать первый элемент коллекции если он успешно получен,
-		/// либо значение по умолчанию если коллекция была пуста.</param>
-		/// <returns>True если первый элемент коллекции успешно получен, либо False если коллекция пустая.</returns>
+		/// <typeparam name="T">The type of the elements.</typeparam>
+		/// <param name="source">The collection from which the first element will be obtained.</param>
+		/// <param name="item">
+		/// Will contain the first element of the collection if it was successfully obtained,
+		/// or the default value if the collection was empty.
+		/// </param>
+		/// <returns>True if the first item in the collection is successfully obtained, or False if the collection is empty.</returns>
 		public static bool TryGetFirst<T> (this IEnumerable<T> source, out T item)
 		{
 			if (source == null)
@@ -652,13 +509,15 @@ namespace Novartment.Base.Collections
 		}
 
 		/// <summary>
-		/// Пытается получить последний элемент указанной коллекции.
+		/// Tries to get the last element of the specified collection.
 		/// </summary>
-		/// <typeparam name="T">Тип элементов коллекции.</typeparam>
-		/// <param name="source">Коллекция, из которой будет получен последний элемент.</param>
-		/// <param name="item">Будет содержать последний элемент коллекции если он успешно получен,
-		/// либо значение по умолчанию если коллекция была пуста.</param>
-		/// <returns>True если последний элемент коллекции успешно получен, либо False если коллекция пустая.</returns>
+		/// <typeparam name="T">The type of the elements.</typeparam>
+		/// <param name="source">The collection from which the last element will be obtained.</param>
+		/// <param name="item">
+		/// Will contain the last element of the collection if it was successfully obtained,
+		/// or the default value if the collection was empty.
+		/// </param>
+		/// <returns>True if the last item in the collection is successfully obtained, or False if the collection is empty.</returns>
 		public static bool TryGetLast<T> (this IEnumerable<T> source, out T item)
 		{
 			if (source == null)
@@ -720,15 +579,14 @@ namespace Novartment.Base.Collections
 		}
 
 		/// <summary>
-		/// Пытается получить количество элементов последовательности без её перебора.
+		/// Tries to get the number of elements in a collection without iterating through it.
 		/// </summary>
-		/// <typeparam name="T">Тип элементов последовательности.</typeparam>
-		/// <param name="source">Последовательность, для которой надо получить количество элементов.</param>
+		/// <typeparam name="T">The type of the elements.</typeparam>
+		/// <param name="source">The collection for which you want to get the number of elements.</param>
 		/// <param name="count">
-		/// После завершения работы метода будет содержать количество элементов в коллекции в случае успеха,
-		/// иначе будет содержать ноль.
+		/// Will contain the number of items in the collection if successful, otherwise it will contain zero.
 		/// </param>
-		/// <returns>True если количество элементов успешно получено, иначе False.</returns>
+		/// <returns>True if the number of elements is successfully obtained, otherwise False.</returns>
 		public static bool TryGetCount<T> (this IEnumerable<T> source, out int count)
 		{
 			if (source == null)
@@ -761,11 +619,11 @@ namespace Novartment.Base.Collections
 		}
 
 		/// <summary>
-		/// Создаёт массив, в который оптимально доступным образом скопированы все элементы указанной последовательности.
+		/// Creates an array in which all elements of the specified collection are optimally copied.
 		/// </summary>
-		/// <typeparam name="T">Тип элементов последовательности.</typeparam>
-		/// <param name="source">Последовательность, которую необходимо скопировать в массив.</param>
-		/// <returns>Массив, содержащий копию всех элементов исходной последовательности.</returns>
+		/// <typeparam name="T">The type of the elements.</typeparam>
+		/// <param name="source">The collection to be copied to the array.</param>
+		/// <returns>A newly allocated array containing a copy of all elements of the specified collection.</returns>
 		public static T[] DuplicateToArray<T> (this IEnumerable<T> source)
 		{
 			if (source == null)
@@ -860,11 +718,11 @@ namespace Novartment.Base.Collections
 		}
 
 		/// <summary>
-		/// Создаёт список, в который оптимально доступным образом скопированы все элементы указанной последовательности.
+		/// Creates a list in which all elements of the specified collection are optimally copied.
 		/// </summary>
-		/// <typeparam name="T">Тип элементов списка.</typeparam>
-		/// <param name="source">Последовательность, которую необходимо скопировать в список.</param>
-		/// <returns>Список, содержащий копию всех элементов исходной последовательности.</returns>
+		/// <typeparam name="T">The type of the elements.</typeparam>
+		/// <param name="source">The collection to be copied to the list.</param>
+		/// <returns>A newly allocated list containing a copy of all elements of the specified collection.</returns>
 		public static IAdjustableList<T> DuplicateToList<T> (this IEnumerable<T> source)
 		{
 			if (source == null)
