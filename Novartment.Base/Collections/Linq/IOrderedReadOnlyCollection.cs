@@ -5,21 +5,21 @@ using System.Linq;
 namespace Novartment.Base.Collections.Linq
 {
 	/// <summary>
-	/// Представляет отсортированную коллекцию.
+	/// Represents a sorted collection.
 	/// </summary>
-	/// <typeparam name="TElement">Тип элементов коллекции.</typeparam>
+	/// <typeparam name="TElement">The type of the elements.</typeparam>
 	public interface IOrderedReadOnlyCollection<TElement> :
 		IOrderedEnumerable<TElement>,
 		IReadOnlyCollection<TElement>
 	{
 		/// <summary>
-		/// Выполняет дополнительное упорядочение элементов объекта IOrderedReadOnlyCollection&lt;TElement&gt; по ключу.
+		/// Performs a subsequent ordering on the elements of a collection according to a key.
 		/// </summary>
-		/// <typeparam name="TKey">Тип ключа, созданного функцией keySelector.</typeparam>
-		/// <param name="keySelector">Функция, используемая для извлечения ключа для каждого элемента.</param>
-		/// <param name="comparer">Компаратор, используемый для сравнения ключей при формировании возвращаемой коллекции.</param>
-		/// <param name="descending">True, если элементы требуется сортировать в порядке убывания; False, чтобы сортировать элементы в порядке возрастания.</param>
-		/// <returns>Коллекция, элементы которой отсортированы по ключу.</returns>
+		/// <typeparam name="TKey">The type of the key produced by keySelector.</typeparam>
+		/// <param name="keySelector">The function used to extract the key for each element.</param>
+		/// <param name="comparer">The comparer used to compare keys for placement in the returned sequence.</param>
+		/// <param name="descending">True to sort the elements in descending order; False to sort the elements in ascending order.</param>
+		/// <returns>An collection whose elements are sorted according to a key.</returns>
 		IOrderedReadOnlyCollection<TElement> CreateOrderedReadOnlyCollection<TKey> (Func<TElement, TKey> keySelector, IComparer<TKey> comparer, bool descending);
 	}
 }

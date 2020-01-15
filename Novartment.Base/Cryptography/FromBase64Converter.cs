@@ -4,7 +4,7 @@ using Novartment.Base.Text;
 namespace Novartment.Base
 {
 	/// <summary>
-	/// Трансформация для раскодирования из "Base64" согласно RFC 2045 часть 6.8.
+	/// A transformation for decoding from "Base64" according to RFC 2045 part 6.8.
 	/// </summary>
 	public sealed class FromBase64Converter :
 		ISpanCryptoTransform
@@ -13,38 +13,47 @@ namespace Novartment.Base
 		private int _cachedCount = 0;
 
 		/// <summary>
-		/// Инициализирует новый экземпляр класса FromBase64Converter.
+		/// Initializes a new instance of the FromBase64Converter class.
 		/// </summary>
-		public FromBase64Converter()
+		public FromBase64Converter ()
 		{
 		}
 
 		/// <summary>
-		/// Получает размер входного блока.
+		/// Gets the input block size.
 		/// </summary>
 		public int InputBlockSize => 4;
 
 		/// <summary>
-		/// Получает размер выходного блока.
+		/// Gets the output block size.
 		/// </summary>
 		public int OutputBlockSize => 3;
 
 		/// <summary>
-		/// Получает значение, указывающее на возможность преобразования нескольких блоков.
+		/// Gets a value indicating that TransformBlock() can accept any number
+		/// of whole blocks, not just a single block.
 		/// </summary>
 		public bool CanTransformMultipleBlocks => true;
 
 		/// <summary>
-		/// Получает значение, указывающее на возможность повторного использования текущего преобразования.
+		/// Gets a value indicating that after a call to TransformFinalBlock() the transform
+		/// resets its internal state to its initial configuration and can
+		/// be used to perform another encryption/decryption.
 		/// </summary>
 		public bool CanReuseTransform => true;
 
 		/// <summary>
-		/// Преобразует заданную область входного массива байтов и копирует результат в заданную область выходного массива байтов.
+		/// Transforms the specified region of the input byte array and copies the resulting
+		/// transform to the specified region of the output byte array.
 		/// </summary>
-		/// <param name="inputBuffer">Входные данные, для которых вычисляется преобразование.</param>
-		/// <param name="outputBuffer">Выходной массив, в который записывается результат преобразования.</param>
-		/// <returns>Число записанных байтов.</returns>
+		/// <param name="inputBuffer">The input for which to compute the transform.</param>
+		/// <param name="outputBuffer">The output to which to write the transform.</param>
+		/// <returns>The number of bytes written.</returns>
+		/// <remarks>
+		/// The return value of TransformBlock is the number of bytes returned to outputBuffer and is
+		/// always &lt;= OutputBlockSize.  If CanTransformMultipleBlocks is true, then inputCount may be
+		/// any positive multiple of InputBlockSize.
+		/// </remarks>
 		public int TransformBlock (ReadOnlySpan<byte> inputBuffer, Span<byte> outputBuffer)
 		{
 			var outputOffset = 0;
@@ -77,10 +86,10 @@ namespace Novartment.Base
 		}
 
 		/// <summary>
-		/// Преобразует заданную область заданного массива байтов.
+		/// Transforms the specified region of the specified byte array.
 		/// </summary>
-		/// <param name="inputBuffer">Входные данные, для которых вычисляется преобразование.</param>
-		/// <returns>Вычисленное преобразование.</returns>
+		/// <param name="inputBuffer">The input for which to compute the transform.</param>
+		/// <returns>The computed transform.</returns>
 		public ReadOnlyMemory<byte> TransformFinalBlock (ReadOnlySpan<byte> inputBuffer)
 		{
 			var reserved = _cache.Length; // резервируем первые 4-байта для содержимого кэша
@@ -104,7 +113,7 @@ namespace Novartment.Base
 		}
 
 		/// <summary>
-		/// Ничего не делает, так как алгоритм не занимает дополнительных ресурсов.
+		/// Does nothing, since the algorithm does not take additional resources.
 		/// </summary>
 		public void Dispose ()
 		{

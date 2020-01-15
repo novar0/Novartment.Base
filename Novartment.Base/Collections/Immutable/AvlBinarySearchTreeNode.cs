@@ -3,10 +3,12 @@
 namespace Novartment.Base.Collections.Immutable
 {
 	/// <summary>
-	/// Узел двоичного дерева поиска.
+	/// The node of the binary search tree.
 	/// </summary>
-	/// <typeparam name="T">Тип значения узла.</typeparam>
-	/// <remarks>Значение null является корректным и означает пустое дерево.</remarks>
+	/// <typeparam name="T">The type of the value of the node.</typeparam>
+	/// <remarks>
+	/// A null-value is correct and means an empty tree.
+	/// </remarks>
 	public class AvlBinarySearchTreeNode<T> :
 		IValueHolder<T>
 	{
@@ -18,7 +20,7 @@ namespace Novartment.Base.Collections.Immutable
 		}
 
 		/// <summary>
-		/// Получает значение узла.
+		/// Gets the node value.
 		/// </summary>
 		public T Value => _value;
 

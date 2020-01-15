@@ -3,7 +3,7 @@
   <PropertyGroup>
     <AssemblyName>Novartment.Base.Net.Mime</AssemblyName>
 		<TargetFrameworks>netstandard2.0;netstandard2.1</TargetFrameworks>
-		<Version>4.4.10-beta</Version>
+		<Version>4.4.11-beta</Version>
 		<Description>Base classes for MIME</Description>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>

@@ -56,7 +56,6 @@ namespace Novartment.Base.Collections
 		/// <summary>
 		/// Gets the number of elements in the set.
 		/// </summary>
-		/// <remarks>To check for an empty set, use the IsEmpty property.</remarks>
 		public int Count => _count;
 
 		[DebuggerBrowsable(DebuggerBrowsableState.Never)]

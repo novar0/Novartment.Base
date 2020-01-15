@@ -5,11 +5,11 @@ using System.Collections.Generic;
 namespace Novartment.Base.Collections.Linq
 {
 	/// <summary>
-	/// Перечислитель элементов, образованных применением функции к элементам сразу двух списков.
+	/// An iterator over elements formed by applying the function to elements of two lists at once.
 	/// </summary>
-	/// <typeparam name="TFirst">Тип элементов первого списка.</typeparam>
-	/// <typeparam name="TSecond">Тип элементов второго списка.</typeparam>
-	/// <typeparam name="TResult">Тип элементов результирующего списка.</typeparam>
+	/// <typeparam name="TFirst">The type of the elements of first list.</typeparam>
+	/// <typeparam name="TSecond">The type of the elements of second list.</typeparam>
+	/// <typeparam name="TResult">The type of the elements of resulting list.</typeparam>
 	internal class TwoListZipEnumerator<TFirst, TSecond, TResult> : IEnumerator<TResult>
 	{
 		private readonly IReadOnlyList<TFirst> _first;
@@ -28,7 +28,7 @@ namespace Novartment.Base.Collections.Linq
 		}
 
 		/// <summary>
-		/// Получает текущий элемент перечислителя.
+		/// Gets the element in the list at the current position of the enumerator.
 		/// </summary>
 		public TResult Current
 		{
@@ -51,10 +51,10 @@ namespace Novartment.Base.Collections.Linq
 		object IEnumerator.Current => Current;
 
 		/// <summary>
-		/// Перемещает перечислитель к следующему элементу строки.
+		/// Advances the enumerator to the next element of the list.
 		/// </summary>
-		/// <returns>true, если перечислитель был успешно перемещен к следующему элементу;
-		/// false, если перечислитель достиг конца.</returns>
+		/// <returns>true if the enumerator was successfully advanced to the next element;
+		/// false if the enumerator has passed the end of the list.</returns>
 		public bool MoveNext ()
 		{
 			if (_index == -2)
@@ -76,7 +76,7 @@ namespace Novartment.Base.Collections.Linq
 		}
 
 		/// <summary>
-		/// Возвращает перечислитель в исходное положение.
+		/// Sets the enumerator to its initial position, which is before the first element in the list.
 		/// </summary>
 		public void Reset ()
 		{
@@ -84,12 +84,10 @@ namespace Novartment.Base.Collections.Linq
 			_current = default;
 		}
 
-#pragma warning disable CA1063 // Implement IDisposable Correctly
 		/// <summary>
-		/// Освобождает занятые объектом ресурсы.
+		/// Performs resources releasing.
 		/// </summary>
 		public void Dispose ()
-#pragma warning restore CA1063 // Implement IDisposable Correctly
 		{
 			_index = -2;
 			_current = default;

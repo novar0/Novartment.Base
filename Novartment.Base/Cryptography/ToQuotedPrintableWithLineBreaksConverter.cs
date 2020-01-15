@@ -4,7 +4,8 @@ using Novartment.Base.Text;
 namespace Novartment.Base
 {
 	/// <summary>
-	/// Трансформация для кодировки в RFC 2045 6.7 Quoted-Printable с учётом ограничения на длину строки.
+	/// A transformation for encoding to "Quoted-Printable" according to RFC 2045 part 6.7,
+	/// taking into account string length restrictions.
 	/// </summary>
 	public sealed class ToQuotedPrintableWithLineBreaksConverter :
 		ISpanCryptoTransform
@@ -23,10 +24,10 @@ namespace Novartment.Base
 		private int _outArraySizesCount;
 
 		/// <summary>
-		/// Инициализирует новый экземпляр класса ToQuotedPrintableWithLineBreaksConverter с указанным режимом обработки текста.
+		/// Initializes a new instance of the ToQuotedPrintableWithLineBreaksConverter class that is uses the specified text handling mode.
 		/// </summary>
 		/// <param name="isText">
-		/// Укажите True чтобы сохранять без трансформации встречающиеся в исходных данных символы перевода строки.
+		/// The value indicating whether to keep without transformation the line feed characters found in the source data.
 		/// </param>
 		public ToQuotedPrintableWithLineBreaksConverter (bool isText = false)
 		{
@@ -34,31 +35,35 @@ namespace Novartment.Base
 		}
 
 		/// <summary>
-		/// Получает размер входного блока.
+		/// Gets the input block size.
 		/// </summary>
 		public int InputBlockSize => MaximumSourceToSurelyFitMaximumLineLen;
 
 		/// <summary>
-		/// Получает размер выходного блока.
+		/// Gets the output block size.
 		/// </summary>
 		public int OutputBlockSize => MaximumLineLen + 3;
 
 		/// <summary>
-		/// Получает значение, указывающее на возможность повторного использования текущего преобразования.
-		/// </summary>
-		public bool CanReuseTransform => true;
-
-		/// <summary>
-		/// Получает значение, указывающее на возможность преобразования нескольких блоков.
+		/// Gets a value indicating that TransformBlock() can accept any number
+		/// of whole blocks, not just a single block.
 		/// </summary>
 		public bool CanTransformMultipleBlocks => true;
 
 		/// <summary>
-		/// Преобразует заданную область входного массива байтов и копирует результат в заданную область выходного массива байтов.
+		/// Gets a value indicating that after a call to TransformFinalBlock() the transform
+		/// resets its internal state to its initial configuration and can
+		/// be used to perform another encryption/decryption.
 		/// </summary>
-		/// <param name="inputBuffer">Входные данные, для которых вычисляется преобразование.</param>
-		/// <param name="outputBuffer">Выходной массив, в который записывается результат преобразования.</param>
-		/// <returns>Число записанных байтов.</returns>
+		public bool CanReuseTransform => true;
+
+		/// <summary>
+		/// Transforms the specified region of the input byte array and copies the resulting
+		/// transform to the specified region of the output byte array.
+		/// </summary>
+		/// <param name="inputBuffer">The input for which to compute the transform.</param>
+		/// <param name="outputBuffer">The output to which to write the transform.</param>
+		/// <returns>The number of bytes written.</returns>
 		public int TransformBlock (ReadOnlySpan<byte> inputBuffer, Span<byte> outputBuffer)
 		{
 			var inputOffset = 0;
@@ -154,10 +159,10 @@ namespace Novartment.Base
 		}
 
 		/// <summary>
-		/// Преобразует заданную область заданного массива байтов.
+		/// Transforms the specified region of the specified byte array.
 		/// </summary>
-		/// <param name="inputBuffer">Входные данные, для которых вычисляется преобразование.</param>
-		/// <returns>Вычисленное преобразование.</returns>
+		/// <param name="inputBuffer">The input for which to compute the transform.</param>
+		/// <returns>The computed transform.</returns>
 		public ReadOnlyMemory<byte> TransformFinalBlock (ReadOnlySpan<byte> inputBuffer)
 		{
 			var result = new byte[MaximumLineLen + _outArray.Length];
@@ -177,7 +182,7 @@ namespace Novartment.Base
 		}
 
 		/// <summary>
-		/// Ничего не делает, так как алгоритм не занимает дополнительных ресурсов.
+		/// Does nothing, since the algorithm does not take additional resources.
 		/// </summary>
 		public void Dispose ()
 		{

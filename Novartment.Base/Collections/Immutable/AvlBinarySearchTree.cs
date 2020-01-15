@@ -6,32 +6,31 @@ using System.Diagnostics.Contracts;
 namespace Novartment.Base.Collections.Immutable
 {
 	/// <summary>
-	/// Неизменяемое двоичное дерево поиска,
-	/// автоматически балансирующееся по алгоритму <a href="http://en.wikipedia.org/wiki/AVL_tree">АВЛ</a>.
+	/// An immutable binary search tree,
+	/// automatically self-balancing using the <a href="http://en.wikipedia.org/wiki/AVL_tree">AVL</a> algorithm.
 	/// </summary>
 	public static class AvlBinarySearchTree
 	{
 		/// <summary>
-		/// Получает количество узлов в дереве.
+		/// Gets the number of nodes in the specified tree.
 		/// </summary>
-		/// <typeparam name="T">Тип значений узлов дерева.</typeparam>
-		/// <param name="treeNode">Начальный узел дерева, в котором производится подсчёт.</param>
-		/// <returns>Количество узлов в дереве.</returns>
+		/// <typeparam name="T">The type of the value of the nodes.</typeparam>
+		/// <param name="treeNode">The starting node of the tree from which counting begins.</param>
+		/// <returns>The number of nodes in the specified tree.</returns>
 		public static int GetCount<T> (this AvlBinarySearchTreeNode<T> treeNode)
 		{
 			return GetCountInternal (treeNode, 0);
 		}
 
 		/// <summary>
-		/// Проверяет наличие в дереве узла с указанным значением.
+		/// Checks for a node in the tree with the specified value.
 		/// </summary>
-		/// <typeparam name="T">Тип значений узлов дерева.</typeparam>
-		/// <param name="treeNode">Начальный узел дерева, в котором производится поиск.</param>
-		/// <param name="value">Значение для проверки наличия в дереве.</param>
-		/// <param name="comparer">Реализация IComparer&lt;T&gt;, которую следует использовать при сравнении значений узлов.</param>
+		/// <typeparam name="T">The type of the value of the nodes.</typeparam>
+		/// <param name="treeNode">The starting node of the tree in which to search.</param>
+		/// <param name="value">The value to check for in the tree.</param>
+		/// <param name="comparer">The comparer to be used when comparing values in a tree.</param>
 		/// <returns>
-		/// True если узел с указанным значением содержится в дереве,
-		/// либо False если нет.
+		/// True if the node with the specified value is contained in the tree, or False if not.
 		/// </returns>
 		public static bool ContainsItem<T> (this AvlBinarySearchTreeNode<T> treeNode, T value, IComparer<T> comparer)
 		{
@@ -67,15 +66,15 @@ namespace Novartment.Base.Collections.Immutable
 		}
 
 		/// <summary>
-		/// Создаёт новое дерево из указанного путём добавлением узла с указанным значением.
+		/// Creates a new tree from the specified one with the addition of a node with the specified value.
 		/// </summary>
-		/// <typeparam name="T">Тип значений узлов дерева.</typeparam>
-		/// <param name="treeNode">Начальный узел дерева, в которое производится добавление.</param>
-		/// <param name="value">Значение для добавления в дерево.</param>
-		/// <param name="comparer">Реализация IComparer&lt;T&gt;, которую следует использовать при сравнении значений узлов.</param>
+		/// <typeparam name="T">The type of the value of the nodes.</typeparam>
+		/// <param name="treeNode">The starting node of the tree to add to.</param>
+		/// <param name="value">The value to add to the tree.</param>
+		/// <param name="comparer">The comparer to be used when comparing values in a tree.</param>
 		/// <returns>
-		/// Начальный узел дерева, полученного из указанного добавлением узла с указанным значением.
-		/// Может совпадать с начальным значением если узел с указанным значением уже был в нём и оно не требовало балансировки.
+		/// The starting node of the tree made from the specified one by adding the node with the specified value.
+		/// Can be equal to the initial value if the node with the specified value was already in the tree and the tree did not require balancing.
 		/// </returns>
 		public static AvlBinarySearchTreeNode<T> AddItem<T> (
 			this AvlBinarySearchTreeNode<T> treeNode,
@@ -94,15 +93,15 @@ namespace Novartment.Base.Collections.Immutable
 		}
 
 		/// <summary>
-		/// Создаёт новое дерево из указанного путём удалением узла с указанным значением.
+		/// Creates a new tree from the specified one, removing the node with the specified value.
 		/// </summary>
-		/// <typeparam name="T">Тип значений узлов дерева.</typeparam>
-		/// <param name="treeNode">Начальный узел дерева, из которого производится удаление.</param>
-		/// <param name="value">Значение для удаления из дерева.</param>
-		/// <param name="comparer">Реализация IComparer&lt;T&gt;, которую следует использовать при сравнении значений узлов.</param>
+		/// <typeparam name="T">The type of the value of the nodes.</typeparam>
+		/// <param name="treeNode">The starting node of the tree to be deleted from.</param>
+		/// <param name="value">The value to remove from the tree.</param>
+		/// <param name="comparer">The comparer to be used when comparing values in a tree.</param>
 		/// <returns>
-		/// Начальный узел дерева, полученного из указанного путём удалением узла с указанным значением.
-		/// Может совпадать с начальным значением если узла с указанным значением в нём не было и оно не требовало балансировки.
+		/// The starting node of the tree made from the specified one, removing the node with the specified value.
+		/// Can be equal to the initial value if the node with the specified value was not in the tree and the tree did not require balancing.
 		/// </returns>
 		public static AvlBinarySearchTreeNode<T> RemoveItem<T> (
 			this AvlBinarySearchTreeNode<T> treeNode,
@@ -121,11 +120,11 @@ namespace Novartment.Base.Collections.Immutable
 		}
 
 		/// <summary>
-		/// Получает перечислитель узлов дерева.
+		/// Returns an enumerator for the tree.
 		/// </summary>
-		/// <typeparam name="T">Тип значений узлов дерева.</typeparam>
-		/// <param name="treeNode">Начальный узел дерева, в котором производится перечисление.</param>
-		/// <returns>Перечислитель значений узлов дерева.</returns>
+		/// <typeparam name="T">The type of the value of the nodes.</typeparam>
+		/// <param name="treeNode">The starting node of the tree.</param>
+		/// <returns>Enumerator of values for tree nodes.</returns>
 		public static IEnumerator<T> GetEnumerator<T> (this AvlBinarySearchTreeNode<T> treeNode)
 		{
 			return new BinarySearchTreeEnumerator<T> (treeNode);
@@ -354,7 +353,7 @@ namespace Novartment.Base.Collections.Immutable
 			}
 
 			/// <summary>
-			/// Получает текущий элемент перечислителя.
+			/// Gets the element in the tree at the current position of the enumerator.
 			/// </summary>
 			public T Current
 			{
@@ -377,10 +376,10 @@ namespace Novartment.Base.Collections.Immutable
 			object IEnumerator.Current => this.Current;
 
 			/// <summary>
-			/// Перемещает перечислитель к следующему элементу строки.
+			/// Advances the enumerator to the next element of the tree.
 			/// </summary>
-			/// <returns>true, если перечислитель был успешно перемещен к следующему элементу;
-			/// false, если перечислитель достиг конца.</returns>
+			/// <returns>true if the enumerator was successfully advanced to the next element;
+			/// false if the enumerator has passed the end of the tree.</returns>
 			public bool MoveNext ()
 			{
 				if (!_started)
@@ -402,7 +401,7 @@ namespace Novartment.Base.Collections.Immutable
 			}
 
 			/// <summary>
-			/// Возвращает перечислитель в исходное положение.
+			/// Sets the enumerator to its initial position, which is before the first element in the tree.
 			/// </summary>
 			public void Reset ()
 			{
@@ -411,7 +410,7 @@ namespace Novartment.Base.Collections.Immutable
 			}
 
 			/// <summary>
-			/// Ничего не делает.
+			/// Performs resources releasing.
 			/// </summary>
 			public void Dispose ()
 			{

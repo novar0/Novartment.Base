@@ -6,12 +6,13 @@ namespace Novartment.Base
 	/// Defines the basic operations of cryptographic transformations.
 	/// </summary>
 	/// <remarks>
-	/// Аналог System.Security.Cryptography.ICryptoTransform адаптированный для использования Span и Memory.
+	/// An analog of System.Security.Cryptography.ICryptoTransform adapted to use Span and Memory.
 	/// </remarks>
-	public interface ISpanCryptoTransform : IDisposable
+	public interface ISpanCryptoTransform :
+		IDisposable
 	{
 		/// <summary>
-		///  Gets the input block size.
+		/// Gets the input block size.
 		/// </summary>
 		int InputBlockSize { get; }
 
@@ -25,8 +26,8 @@ namespace Novartment.Base
 		/// </summary>
 		/// <remarks>
 		/// CanTransformMultipleBlocks == true implies that TransformBlock() can accept any number
-		/// of whole blocks, not just a single block.  If CanTransformMultipleBlocks is false, you have
-		/// to feed blocks one at a time.
+		/// of whole blocks, not just a single block.
+		/// If CanTransformMultipleBlocks is false, you have to feed blocks one at a time.
 		/// </remarks>
 		bool CanTransformMultipleBlocks { get; }
 

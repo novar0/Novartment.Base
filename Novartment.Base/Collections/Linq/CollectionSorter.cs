@@ -4,9 +4,9 @@ using System.Collections.Generic;
 namespace Novartment.Base.Collections.Linq
 {
 	/// <summary>
-	/// Создатель сортированного индекса для коллекций.
+	/// Factory to create a sorted index for collections.
 	/// </summary>
-	/// <typeparam name="TElement">Тип элементов коллекции.</typeparam>
+	/// <typeparam name="TElement">The type of the elements.</typeparam>
 	internal abstract class CollectionSorter<TElement> : IComparer<int>
 	{
 		private readonly IReadOnlyCollection<TElement> _items;

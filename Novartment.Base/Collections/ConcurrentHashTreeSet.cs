@@ -8,21 +8,18 @@ using Novartment.Base.Reflection;
 namespace Novartment.Base.Collections
 {
 	/// <summary>
-	/// Множество уникальных значений для конкурентного доступа
-	/// на основе двоичного дерева поиска, построенного на хэш-функциях элементов.
+	/// Sorted set of unique values for concurrent access based on the binary search tree built on hash functions of elements.
 	/// </summary>
 	/// <typeparam name="T">
-	/// Тип элементов множества. Должен поддерживать атомарное присвоение,
-	/// то есть быть ссылочным или примитивным типом размером не более чем размер указателя на исполняемой платформе.
+	/// The type of the elements.
+	/// Must support atomic assignment, that is, be a reference type
+	/// or value type no larger than the size of a pointer on the executing platform.
 	/// </typeparam>
 	/// <remarks>
-	/// Для построения дерева используются не значения элементов, а их хэш-код.
-	/// Если для элементов существует компаратор на больше/меньше,
-	/// то ConcurrentTreeSet при той же функциональности будет работать быстрее.
-	/// В дереве могут содержаться дупликаты (хэшей, но не значений),
-	/// так как хэш-функция может порождать совпадающие хэши для разных значений.
-	/// Не реализует интерфейс ICollection ввиду несовместимости его контракта с конкурентным доступом.
-	/// Конкурентный доступ осуществляется без блокировок.
+	/// To construct the tree, it is not the values of the elements that are used, but their hash code.
+	/// If there is a value comparer for elements, then ConcurrentTreeSet will work faster with the same functionality.
+	/// No synchronization is required for concurrent access.
+	/// Does not implement ICollection interface due to incompatibility of its contract with concurrent access.
 	/// </remarks>
 	public class ConcurrentHashTreeSet<T> :
 		IAdjustableFiniteSet<T>
@@ -47,12 +44,10 @@ namespace Novartment.Base.Collections
 		private AvlBinarySearchHashTreeNode<T> _startNode; // null является корректным значением, означает пустое дерево
 
 		/// <summary>
-		/// Инициализирует новый экземпляр класса ConcurrentHashTreeSet,
-		/// использующий указанный компаратор значений множества.
+		/// Initializes a new instance of the ConcurrentHashTreeSet class that is empty and uses a specified value comparer.
 		/// </summary>
 		/// <param name="comparer">
-		/// Компаратор значений множества,
-		/// или null чтобы использовать компаратор по умолчанию.
+		/// The comparer to be used when comparing values in a set. Specify null-reference to use default comparer for type T.
 		/// </param>
 		public ConcurrentHashTreeSet (IEqualityComparer<T> comparer = null)
 		{
@@ -66,28 +61,27 @@ namespace Novartment.Base.Collections
 		}
 
 		/// <summary>
-		/// Получает компаратор, используемый при сравнении значений множества.
+		/// Gets the comparer used when comparing values of a set.
 		/// </summary>
 		public IEqualityComparer<T> Comparer => _comparer;
 
 		/// <summary>
-		/// Получает признак того, что множество пустое (не содержит элементов).
+		/// Gets a value indicating whether the set is empty (contains no elements).
 		/// </summary>
 		public bool IsEmpty => _startNode == null;
 
 		/// <summary>
-		/// Получает количество элементов в множестве.
+		/// Gets the number of elements in the set.
 		/// </summary>
-		/// <remarks>Для проверки на пустое множество используйте свойство IsEmpty.</remarks>
+		/// <remarks>To check for an empty set, use the IsEmpty property.</remarks>
 		public int Count => _startNode.GetCount ();
 
 		/// <summary>
-		/// Проверяет наличие в множестве элемента с указанным значением.
+		/// Checks if the specified value belongs to the set.
 		/// </summary>
-		/// <param name="item">Значение элемента для проверки наличия в множестве.</param>
+		/// <param name="item">The value to check for belonging to the set.</param>
 		/// <returns>
-		/// True если элемент с указанным значением содержится в множестве,
-		/// либо False если нет.
+		/// True if the specified value belongs to the set, or False if it does not.
 		/// </returns>
 		public bool Contains (T item)
 		{
@@ -95,9 +89,10 @@ namespace Novartment.Base.Collections
 		}
 
 		/// <summary>
-		/// Добавляет указанный элемент в множество.
+		/// Adds an element to the set.
 		/// </summary>
-		/// <param name="item">Элемент для добавления в множество.</param>
+		/// <param name="item">The element to add to the set.</param>
+		/// <returns>True if the element is added to the set, False if the set already had an element with this value.</returns>
 		public void Add (T item)
 		{
 			SpinWait spinWait = default;
@@ -118,16 +113,16 @@ namespace Novartment.Base.Collections
 			}
 		}
 
-		/// <summary>Очищает множество.</summary>
+		/// <summary>Removes all items from the set.</summary>
 		public void Clear ()
 		{
 			_startNode = null;
 		}
 
 		/// <summary>
-		/// Удаляет из множества элемент с указанным значением.
+		/// Removes the element from the set.
 		/// </summary>
-		/// <param name="item">Значение элемента для удаления из множества.</param>
+		/// <param name="item">The element to remove.</param>
 		public void Remove (T item)
 		{
 			SpinWait spinWait = default;
@@ -149,18 +144,18 @@ namespace Novartment.Base.Collections
 		}
 
 		/// <summary>
-		/// Получает перечислитель элементов множества.
+		/// Returns an enumerator for the set.
 		/// </summary>
-		/// <returns>Перечислитель элементов множества.</returns>
+		/// <returns>An enumerator for the set.</returns>
 		IEnumerator IEnumerable.GetEnumerator ()
 		{
 			return _startNode.GetEnumerator ();
 		}
 
 		/// <summary>
-		/// Получает перечислитель элементов множества.
+		/// Returns an enumerator for the set.
 		/// </summary>
-		/// <returns>Перечислитель элементов множества.</returns>
+		/// <returns>An enumerator for the set.</returns>
 		public IEnumerator<T> GetEnumerator ()
 		{
 			return _startNode.GetEnumerator ();

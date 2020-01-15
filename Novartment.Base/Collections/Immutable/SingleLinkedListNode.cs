@@ -1,40 +1,36 @@
 ﻿namespace Novartment.Base.Collections.Immutable
 {
 	/// <summary>
-	/// Узел односвязного списка.
+	/// A single-linked list node.
 	/// </summary>
-	/// <typeparam name="TItem">Тип значений элементов списка.</typeparam>
-	/// <remarks>Значение null является корректным и означает пустой список.</remarks>
+	/// <typeparam name="TItem">The type of the value of the node.</typeparam>
+	/// <remarks>A null-value is correct and means an empty list.</remarks>
 	public class SingleLinkedListNode<TItem> :
 		IValueHolder<TItem>
 	{
-		private readonly TItem _value;
-		private readonly SingleLinkedListNode<TItem> _next = null;
-
 		/// <summary>
-		/// Инициализирует новый экземпляр класса SingleLinkedListNode с указанным значением.
+		/// Initializes a new instance of the SingleLinkedListNode class that contains specified value.
 		/// </summary>
-		/// <param name="value">Значение узла.</param>
+		/// <param name="value">The value of the node.</param>
 		public SingleLinkedListNode (TItem value)
 		{
-			_value = value;
-			_next = null;
+			this.Value = value;
 		}
 
 		internal SingleLinkedListNode (TItem value, SingleLinkedListNode<TItem> next)
 		{
-			_value = value;
-			_next = next;
+			this.Value = value;
+			this.Next = next;
 		}
 
 		/// <summary>
-		/// Получает значение узла.
+		/// Gets the node value.
 		/// </summary>
-		public TItem Value => _value;
+		public TItem Value { get; }
 
 		/// <summary>
-		/// Получает следующий узел списка.
+		/// Gets the next node of list.
 		/// </summary>
-		public SingleLinkedListNode<TItem> Next => _next;
+		public SingleLinkedListNode<TItem> Next { get; } = null;
 	}
 }

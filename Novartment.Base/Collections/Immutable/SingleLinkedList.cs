@@ -5,16 +5,16 @@ using System.Collections.Generic;
 namespace Novartment.Base.Collections.Immutable
 {
 	/// <summary>
-	/// Односвязный список (семантика стэка).
+	/// Extension methods for implementing single-linked lists from SingleLinkedListNode class.
 	/// </summary>
 	public static class SingleLinkedList
 	{
 		/// <summary>
-		/// Получает количество узлов в указнном списке.
+		/// Gets the number of nodes in the specified list.
 		/// </summary>
-		/// <typeparam name="T">Тип значений узлов списка.</typeparam>
-		/// <param name="node">Начальный узел списка, с которого начинается подсчёт.</param>
-		/// <returns>Количество узлов в указанном списке.</returns>
+		/// <typeparam name="T">The type of the value of the nodes.</typeparam>
+		/// <param name="node">The starting node of the list from which counting begins.</param>
+		/// <returns>The number of nodes in the specified list.</returns>
 		public static int GetCount<T> (this SingleLinkedListNode<T> node)
 		{
 			int acc = 0;
@@ -28,34 +28,34 @@ namespace Novartment.Base.Collections.Immutable
 		}
 
 		/// <summary>
-		/// Создаёт новый список из указанного с добавлением в начало узла с указанным значением.
+		/// Creates a new list from the specified list with the node with the specified value added to the beginning.
 		/// </summary>
-		/// <typeparam name="T">Тип значений узлов списка.</typeparam>
-		/// <param name="node">Начальный узел списка.</param>
-		/// <param name="value">Значение для добавления в список.</param>
-		/// <returns>Новый список, в котором в начало добавлен узел с указанным значением.</returns>
+		/// <typeparam name="T">The type of the value of the nodes.</typeparam>
+		/// <param name="node">The starting node of the list.</param>
+		/// <param name="value">The value to add to the list.</param>
+		/// <returns>A new list in which a node with the specified value is added to the beginning.</returns>
 		public static SingleLinkedListNode<T> AddItem<T> (this SingleLinkedListNode<T> node, T value)
 		{
 			return new SingleLinkedListNode<T> (value, node);
 		}
 
 		/// <summary>
-		/// Создаёт новый список путём удаления указанного начального узла.
+		/// Creates a new list by deleting the specified start node.
 		/// </summary>
-		/// <typeparam name="T">Тип значений узлов списка.</typeparam>
-		/// <param name="node">Начальный удаляемый узел списка.</param>
-		/// <returns>Новый список, в котором удалён указанный узел.</returns>
+		/// <typeparam name="T">The type of the value of the nodes.</typeparam>
+		/// <param name="node">The starting node of the list to be deleted.</param>
+		/// <returns>A new list in which the specified node is deleted.</returns>
 		public static SingleLinkedListNode<T> RemoveItem<T> (this SingleLinkedListNode<T> node)
 		{
 			return node?.Next;
 		}
 
 		/// <summary>
-		/// Получает перечислитель значений узлов списка.
+		/// Returns an enumerator for the list.
 		/// </summary>
-		/// <typeparam name="T">Тип значений узлов списка.</typeparam>
-		/// <param name="node">Начальный узел списка для перечисления.</param>
-		/// <returns>Перечислитель значений узлов списка.</returns>
+		/// <typeparam name="T">The type of the value of the nodes.</typeparam>
+		/// <param name="node">The starting node of the list.</param>
+		/// <returns>Enumerator of values for list nodes.</returns>
 		public static IEnumerator<T> GetEnumerator<T> (this SingleLinkedListNode<T> node)
 		{
 			return new SingleLinkedListEnumerator<T> (node);
@@ -75,7 +75,7 @@ namespace Novartment.Base.Collections.Immutable
 			}
 
 			/// <summary>
-			/// Получает текущий элемент перечислителя.
+			/// Gets the element in the list at the current position of the enumerator.
 			/// </summary>
 			public T Current
 			{
@@ -98,10 +98,10 @@ namespace Novartment.Base.Collections.Immutable
 			object IEnumerator.Current => this.Current;
 
 			/// <summary>
-			/// Перемещает перечислитель к следующему элементу строки.
+			/// Advances the enumerator to the next element of the list.
 			/// </summary>
-			/// <returns>true, если перечислитель был успешно перемещен к следующему элементу;
-			/// false, если перечислитель достиг конца.</returns>
+			/// <returns>true if the enumerator was successfully advanced to the next element;
+			/// false if the enumerator has passed the end of the list.</returns>
 			public bool MoveNext ()
 			{
 				if (!_started)
@@ -123,7 +123,7 @@ namespace Novartment.Base.Collections.Immutable
 			}
 
 			/// <summary>
-			/// Возвращает перечислитель в исходное положение.
+			/// Sets the enumerator to its initial position, which is before the first element in the list.
 			/// </summary>
 			public void Reset ()
 			{
@@ -132,7 +132,7 @@ namespace Novartment.Base.Collections.Immutable
 			}
 
 			/// <summary>
-			/// Ничего не делает.
+			/// Performs resources releasing.
 			/// </summary>
 			public void Dispose ()
 			{

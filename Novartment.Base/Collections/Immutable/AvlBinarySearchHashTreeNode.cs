@@ -4,10 +4,13 @@ using System.Diagnostics;
 namespace Novartment.Base.Collections.Immutable
 {
 	/// <summary>
-	/// Узел двоичного дерева поиска, дополнительно к значению содержащий хэш-функцию значения.
+	/// The node of the binary search tree.
+	/// A node in the binary search tree, in addition to the value, containing a hash function of the value.
 	/// </summary>
-	/// <typeparam name="T">Тип значения узла.</typeparam>
-	/// <remarks>Значение null является корректным и означает пустое дерево.</remarks>
+	/// <typeparam name="T">The type of the value of the node.</typeparam>
+	/// <remarks>
+	/// A null-value is correct and means an empty tree.
+	/// </remarks>
 	[DebuggerDisplay ("Value = {Value}, Height = {Height}")]
 	public class AvlBinarySearchHashTreeNode<T> :
 		IValueHolder<T>
@@ -22,12 +25,12 @@ namespace Novartment.Base.Collections.Immutable
 		}
 
 		/// <summary>
-		/// Получает значение узла.
+		/// Gets the node value.
 		/// </summary>
 		public T Value => _value;
 
 		/// <summary>
-		/// Получает хэш узла.
+		/// Gets the hash of the node value.
 		/// </summary>
 		public int Hash => _hash;
 

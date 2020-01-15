@@ -6,35 +6,35 @@ using System.Diagnostics.Contracts;
 namespace Novartment.Base.Collections.Immutable
 {
 	/// <summary>
-	/// Неизменяемый (по составу элементов) словарь на базе двоичного дерева поиска,
-	/// автоматически балансирующегося по алгоритму <a href="http://en.wikipedia.org/wiki/AVL_tree">АВЛ</a>.
+	/// An immutable (by composition of elements) dictionay based on binary search tree,
+	/// automatically self-balancing using the <a href="http://en.wikipedia.org/wiki/AVL_tree">AVL</a> algorithm.
 	/// </summary>
-	/// <remarks>Синонимы: ассоциативный массив, словарь, map, associative array, symbol table, dictionary.</remarks>
+	/// <remarks>Synonyms: map, associative array, symbol table, dictionary.</remarks>
 	public static class AvlBinarySearchTreeDictionary
 	{
 		/// <summary>
-		/// Получает количество элементов в словаре.
+		/// Gets the number of nodes in the specified tree.
 		/// </summary>
-		/// <typeparam name="TKey">Тип ключа элементов словаря.</typeparam>
-		/// <typeparam name="TValue">Тип значений элементов словаря.</typeparam>
-		/// <param name="treeNode">Начальный узел дерева словаря, в котором производится подсчёт.</param>
-		/// <returns>Количество элементов в словаре.</returns>
+		/// <typeparam name="TKey">The type of keys in the dictionary.</typeparam>
+		/// <typeparam name="TValue">The type of values in the dictionary.</typeparam>
+		/// <param name="treeNode">The starting node of the dictionay from which counting begins.</param>
+		/// <returns>The number of nodes in the specified dictionay.</returns>
 		public static int GetCount<TKey, TValue> (this AvlBinarySearchTreeDictionaryNode<TKey, TValue> treeNode)
 		{
 			return GetCountInternal (treeNode, 0);
 		}
 
 		/// <summary>
-		/// Проверяет наличие в словаре элемента с указанным ключом.
+		/// Determines whether the dictionary contains an element that has the specified key.
 		/// </summary>
-		/// <typeparam name="TKey">Тип ключа элементов словаря.</typeparam>
-		/// <typeparam name="TValue">Тип значений элементов словаря.</typeparam>
-		/// <param name="treeNode">Начальный узел дерева словаря, в котором производится поиск.</param>
-		/// <param name="key">Ключ для проверки наличия элемента в словаре.</param>
-		/// <param name="comparer">Реализация IComparer&lt;TKey&gt;, которую следует использовать при сравнении значений узлов.</param>
+		/// <typeparam name="TKey">The type of keys in the dictionary.</typeparam>
+		/// <typeparam name="TValue">The type of values in the dictionary.</typeparam>
+		/// <param name="treeNode">The starting node of the dictionary tree where the search is performed.</param>
+		/// <param name="key">The key to locate.</param>
+		/// <param name="comparer">The comparer to be used when comparing keys in the dictionary.</param>
 		/// <returns>
-		/// True если элемент с указанным ключом содержится в словаре,
-		/// либо False если нет.
+		/// True if the dictionary contains an node that has the specified key;
+		/// otherwise, False.
 		/// </returns>
 		public static bool ContainsKey<TKey, TValue> (
 			this AvlBinarySearchTreeDictionaryNode<TKey, TValue> treeNode,
@@ -73,21 +73,22 @@ namespace Novartment.Base.Collections.Immutable
 		}
 
 		/// <summary>
-		/// Пытается получить из словаря значение элемента с указанным ключом.
+		/// Gets the value that is associated with the specified key.
 		/// </summary>
-		/// <typeparam name="TKey">Тип ключа элементов словаря.</typeparam>
-		/// <typeparam name="TValue">Тип значений элементов словаря.</typeparam>
-		/// <param name="treeNode">Начальный узел дерева словаря, в котором производится запрос значения.</param>
-		/// <param name="key">Ключ для получения значения элемента в словаре.</param>
-		/// <param name="comparer">Реализация IComparer&lt;TKey&gt;, которую следует использовать при сравнении значений узлов.</param>
-		/// <param name="value">Возвращаемое значение, связанное с указанном ключом, если он найден;
-		/// в противном случае — значение по умолчанию для данного типа параметра value.
-		/// Этот параметр передается неинициализированным.</param>
+		/// <typeparam name="TKey">The type of keys in the dictionary.</typeparam>
+		/// <typeparam name="TValue">The type of values in the dictionary.</typeparam>
+		/// <param name="treeNode">The starting node of the dictionary tree where the value is searched.</param>
+		/// <param name="key">The key to locate.</param>
+		/// <param name="comparer">The comparer to be used when comparing keys in the dictionary.</param>
+		/// <param name="value">
+		/// When this method returns, the value associated with the specified key, if the key is found;
+		/// otherwise, the default value for the type of the value parameter.
+		/// This parameter is passed uninitialized.
+		/// </param>
 		/// <returns>
-		/// Значение true, если словарь содержит элемент с указанным ключом;
-		/// в противном случае — значение false.
+		/// True if the dictionary contains an node that has the specified key; otherwise, false.
 		/// </returns>
-		public static bool TryGetItem<TKey, TValue> (
+		public static bool TryGetValue<TKey, TValue> (
 			this AvlBinarySearchTreeDictionaryNode<TKey, TValue> treeNode,
 			TKey key,
 			IComparer<TKey> comparer,
@@ -129,18 +130,18 @@ namespace Novartment.Base.Collections.Immutable
 		}
 
 		/// <summary>
-		/// Создаёт новый словарь из указанного путём установки указанного значения в элементе с указанным ключом,
-		/// добавляя новый элемент при необходимости.
+		/// Creates a new dictionary from the specified one by setting the specified value in the element with the specified key,
+		/// adding a new element if necessary.
 		/// </summary>
-		/// <typeparam name="TKey">Тип ключа элементов словаря.</typeparam>
-		/// <typeparam name="TValue">Тип значений элементов словаря.</typeparam>
-		/// <param name="treeNode">Начальный узел дерева словаря, в котором производится установка значения.</param>
-		/// <param name="key">Ключ для установки значения в словаре.</param>
-		/// <param name="value">Значение для установки в словаре.</param>
-		/// <param name="comparer">Реализация IComparer&lt;TKey&gt;, которую следует использовать при сравнении значений узлов.</param>
+		/// <typeparam name="TKey">The type of keys in the dictionary.</typeparam>
+		/// <typeparam name="TValue">The type of values in the dictionary.</typeparam>
+		/// <param name="treeNode">The starting node of the dictionary tree where the value is set.</param>
+		/// <param name="key">The key for setting the value in the dictionary.</param>
+		/// <param name="value">The value to set in the dictionary.</param>
+		/// <param name="comparer">The comparer to be used when comparing keys in the dictionary.</param>
 		/// <returns>
-		/// Начальный узел дерева словаря, полученного из указанного установкой указанного значения и, возможно, добавлением нового элемента.
-		/// Может совпадать с начальным значением если элемента с указанным ключом в нём уже был и оно не требовало балансировки.
+		/// The starting node of the dictionary tree made from the specified one by setting the specified value and possibly adding a new element.
+		/// Can be equal to the initial value if the node with the specified key was already in the tree and the tree did not require balancing.
 		/// </returns>
 		public static AvlBinarySearchTreeDictionaryNode<TKey, TValue> SetValue<TKey, TValue> (
 			this AvlBinarySearchTreeDictionaryNode<TKey, TValue> treeNode,
@@ -160,16 +161,16 @@ namespace Novartment.Base.Collections.Immutable
 		}
 
 		/// <summary>
-		/// Создаёт новый словарь из указанного путём удалением элемента с указанным ключом.
+		/// Creates a new dictionary from the specified one by deleting the element with the specified key.
 		/// </summary>
-		/// <typeparam name="TKey">Тип ключа элементов словаря.</typeparam>
-		/// <typeparam name="TValue">Тип значений элементов словаря.</typeparam>
-		/// <param name="treeNode">Начальный узел дерева словаря, из которого производится удаление.</param>
-		/// <param name="key">Ключ для удаления из словаря.</param>
-		/// <param name="comparer">Реализация IComparer&lt;TKey&gt;, которую следует использовать при сравнении значений узлов.</param>
+		/// <typeparam name="TKey">The type of keys in the dictionary.</typeparam>
+		/// <typeparam name="TValue">The type of values in the dictionary.</typeparam>
+		/// <param name="treeNode">The starting node of the dictionary tree to delete from.</param>
+		/// <param name="key">The key to delete from the dictionary.</param>
+		/// <param name="comparer">The comparer to be used when comparing keys in the dictionary.</param>
 		/// <returns>
-		/// Начальный узел дерева словаря, полученного из указанного с удалением элемента с указанным ключом.
-		/// Может совпадать с начальным значением если элемента с указанным ключом в нём не было и оно не требовало балансировки.
+		/// The starting node of the dictionary tree made from the specified one, removing the node with the specified key.
+		/// Can be equal to the initial value if the node with the specified key was not in the tree and the tree did not require balancing.
 		/// </returns>
 		public static AvlBinarySearchTreeDictionaryNode<TKey, TValue> RemoveKey<TKey, TValue> (
 			this AvlBinarySearchTreeDictionaryNode<TKey, TValue> treeNode,
@@ -188,12 +189,12 @@ namespace Novartment.Base.Collections.Immutable
 		}
 
 		/// <summary>
-		/// Получает перечислитель элементов словаря.
+		/// Returns an enumerator for the dictionary tree nodes.
 		/// </summary>
-		/// <typeparam name="TKey">Тип ключа элементов словаря.</typeparam>
-		/// <typeparam name="TValue">Тип значений элементов словаря.</typeparam>
-		/// <param name="treeNode">Начальный узел дерева словаря, в котором производится перечисление.</param>
-		/// <returns>Перечислитель элементов словаря.</returns>
+		/// <typeparam name="TKey">The type of keys in the dictionary.</typeparam>
+		/// <typeparam name="TValue">The type of values in the dictionary.</typeparam>
+		/// <param name="treeNode">The starting node of the dictionary tree where the enumeration is performed.</param>
+		/// <returns>Enumerator of values for dictionary tree nodes.</returns>
 		public static IEnumerator<AvlBinarySearchTreeDictionaryNode<TKey, TValue>> GetEnumerator<TKey, TValue> (
 			this AvlBinarySearchTreeDictionaryNode<TKey, TValue> treeNode)
 		{
@@ -440,7 +441,7 @@ namespace Novartment.Base.Collections.Immutable
 			}
 
 			/// <summary>
-			/// Получает текущий элемент перечислителя.
+			/// Gets the element in the tree at the current position of the enumerator.
 			/// </summary>
 			public AvlBinarySearchTreeDictionaryNode<TKey, TValue> Current
 			{
@@ -463,10 +464,10 @@ namespace Novartment.Base.Collections.Immutable
 			object IEnumerator.Current => this.Current;
 
 			/// <summary>
-			/// Перемещает перечислитель к следующему элементу строки.
+			/// Advances the enumerator to the next element of the tree.
 			/// </summary>
-			/// <returns>true, если перечислитель был успешно перемещен к следующему элементу;
-			/// false, если перечислитель достиг конца.</returns>
+			/// <returns>true if the enumerator was successfully advanced to the next element;
+			/// false if the enumerator has passed the end of the tree.</returns>
 			public bool MoveNext ()
 			{
 				if (!_started)
@@ -488,7 +489,7 @@ namespace Novartment.Base.Collections.Immutable
 			}
 
 			/// <summary>
-			/// Возвращает перечислитель в исходное положение.
+			/// Sets the enumerator to its initial position, which is before the first element in the tree.
 			/// </summary>
 			public void Reset ()
 			{
@@ -497,7 +498,7 @@ namespace Novartment.Base.Collections.Immutable
 			}
 
 			/// <summary>
-			/// Ничего не делает.
+			/// Performs resources releasing.
 			/// </summary>
 			public void Dispose ()
 			{

@@ -5,10 +5,11 @@ using System.Collections.Generic;
 namespace Novartment.Base.Collections.Linq
 {
 	/// <summary>
-	/// Перечислитель элементов списка в обратном порядке.
+	/// An iterator over a list in reverse order.
 	/// </summary>
-	/// <typeparam name="TSource">Тип элементов списка.</typeparam>
-	internal class ReverseListEnumerator<TSource> : IEnumerator<TSource>
+	/// <typeparam name="TSource">The type of the elements.</typeparam>
+	internal class ReverseListEnumerator<TSource> :
+		IEnumerator<TSource>
 	{
 		private readonly IReadOnlyList<TSource> _source;
 		private TSource _current;
@@ -22,7 +23,7 @@ namespace Novartment.Base.Collections.Linq
 		}
 
 		/// <summary>
-		/// Получает текущий элемент перечислителя.
+		/// Gets the element in the list at the current position of the enumerator.
 		/// </summary>
 		public TSource Current
 		{
@@ -45,10 +46,10 @@ namespace Novartment.Base.Collections.Linq
 		object IEnumerator.Current => Current;
 
 		/// <summary>
-		/// Перемещает перечислитель к следующему элементу строки.
+		/// Advances the enumerator to the next element of the list.
 		/// </summary>
-		/// <returns>true, если перечислитель был успешно перемещен к следующему элементу;
-		/// false, если перечислитель достиг конца.</returns>
+		/// <returns>true if the enumerator was successfully advanced to the next element;
+		/// false if the enumerator has passed the end of the list.</returns>
 		public bool MoveNext ()
 		{
 			if (_index == -2)
@@ -69,7 +70,7 @@ namespace Novartment.Base.Collections.Linq
 		}
 
 		/// <summary>
-		/// Возвращает перечислитель в исходное положение.
+		/// Sets the enumerator to its initial position, which is before the first element in the list.
 		/// </summary>
 		public void Reset ()
 		{
@@ -77,12 +78,10 @@ namespace Novartment.Base.Collections.Linq
 			_current = default;
 		}
 
-#pragma warning disable CA1063 // Implement IDisposable Correctly
 		/// <summary>
-		/// Освобождает занятые объектом ресурсы.
+		/// Performs resources releasing.
 		/// </summary>
 		public void Dispose ()
-#pragma warning restore CA1063 // Implement IDisposable Correctly
 		{
 			_index = -2;
 			_current = default;

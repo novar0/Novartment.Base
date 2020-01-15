@@ -62,7 +62,7 @@ namespace Novartment.Base.Collections
 		/// <summary>
 		/// Initializes a new instance of the ArrayList class which is backed by a specified array.
 		/// </summary>
-		/// <param name="array">An array to be used as backing store directly, without copying.</param>
+		/// <param name="array">The array to be used as backing store directly, without copying.</param>
 		public ArrayList (T[] array)
 		{
 			if (array == null)
@@ -81,7 +81,7 @@ namespace Novartment.Base.Collections
 		/// Initializes a new instance of the ArrayList class which is backed by a specified array and represents its specified range.
 		/// </summary>
 		/// <param name="array">
-		/// An array to be used as backing store directly, without copying.
+		/// The array to be used as backing store directly, without copying.
 		/// Any array elements, besides those limited by the offset, count range, can be cleared during operations that modify the list.
 		/// </param>
 		/// <param name="offset">
@@ -843,10 +843,10 @@ namespace Novartment.Base.Collections
 		}
 
 		/// <summary>
-		/// Returns a hash code for this list.
+		/// Returns a structural hash code for this list.
 		/// </summary>
 		/// <param name="comparer">An object that computes the hash code of the current object.</param>
-		/// <returns>The hash code for this list.</returns>
+		/// <returns>The structural hash code for this list.</returns>
 		int IStructuralEquatable.GetHashCode (IEqualityComparer comparer)
 		{
 			if (comparer == null)
@@ -1066,7 +1066,7 @@ namespace Novartment.Base.Collections
 			}
 
 			/// <summary>
-			/// Performs resetting.
+			/// Performs resources releasing.
 			/// </summary>
 			public void Dispose ()
 			{

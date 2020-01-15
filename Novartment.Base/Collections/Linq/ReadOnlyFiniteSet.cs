@@ -6,26 +6,26 @@ using System.Diagnostics.Contracts;
 namespace Novartment.Base.Collections.Linq
 {
 	/// <summary>
-	/// Методы расширения к конечным множествам.
+	/// Extension methods for read only finite sets.
 	/// </summary>
 	public static class ReadOnlyFiniteSet
 	{
 		/// <summary>
-		/// Создаёт пустое множество.
+		/// Creates an empty set.
 		/// </summary>
-		/// <typeparam name="TResult">Тип элементов множества.</typeparam>
-		/// <returns>Пустое множество.</returns>
+		/// <typeparam name="TResult">The type of the elements.</typeparam>
+		/// <returns>An empty set.</returns>
 		public static IReadOnlyFiniteSet<TResult> Empty<TResult> ()
 		{
 			return ReadOnlyList.EmptyReadOnlyList<TResult>.GetInstance ();
 		}
 
 		/// <summary>
-		/// Создаёт множество целых чисел в заданном диапазоне.
+		/// Creates a set consisting of integers in the specified range.
 		/// </summary>
-		/// <param name="start">Значение первого целого числа множества.</param>
-		/// <param name="count">Количество генерируемых последовательных целых чисел.</param>
-		/// <returns>Множество, содержащее диапазон последовательных целых чисел.</returns>
+		/// <param name="start">The value of the first integer in the set.</param>
+		/// <param name="count">The number of sequential integers to generate.</param>
+		/// <returns>Set consisting of integers in the specified range.</returns>
 		public static IReadOnlyFiniteSet<int> Range (int start, int count)
 		{
 			if ((count < 0) || (((long)start + (long)count - 1L) > (long)int.MaxValue))
@@ -44,14 +44,12 @@ namespace Novartment.Base.Collections.Linq
 		}
 
 		/// <summary>
-		/// Возвращает указанное конечное множество или одноэлементное множество,
-		/// содержащее указанное значение, если указанное множество пустое.
+		/// Returns a set consisting of the elements of the specified set or a set consisting of the single specified value if the set is empty.
 		/// </summary>
-		/// <typeparam name="TSource">Тип элементов множества.</typeparam>
-		/// <param name="source">Множество, для которого возвращается указанное значение, если оно пустое.</param>
-		/// <param name="defaultValue">Значение, возвращаемое в случае пустого множества.</param>
-		/// <returns>Множество, содержащее значение defaultValue, если множество source пустое;
-		/// в противном случае возвращается source.</returns>
+		/// <typeparam name="TSource">The type of the elements.</typeparam>
+		/// <param name="source">The set to return the specified value for if it is empty.</param>
+		/// <param name="defaultValue">The value to return if the set is empty.</param>
+		/// <returns>An set that contains defaultValue if source is empty; otherwise, source.</returns>
 		public static IReadOnlyFiniteSet<TSource> DefaultIfEmpty<TSource> (this IReadOnlyFiniteSet<TSource> source, TSource defaultValue = default)
 		{
 			if (source == null)
@@ -65,11 +63,11 @@ namespace Novartment.Base.Collections.Linq
 		}
 
 		/// <summary>
-		/// Изменяет порядок элементов указанного конечного множества на противоположный.
+		/// Inverts the order of the elements in a set.
 		/// </summary>
-		/// <typeparam name="TSource">Тип элементов множества.</typeparam>
-		/// <param name="source">Множество, элементы которого следует расставить в обратном порядке.</param>
-		/// <returns>Множество, элементы которого содержат те же элементы, но следуют в противоположном порядке.</returns>
+		/// <typeparam name="TSource">The type of the elements.</typeparam>
+		/// <param name="source">A set of values to reverse.</param>
+		/// <returns>A set whose elements correspond to those of the input set in reverse order.</returns>
 		public static IReadOnlyFiniteSet<TSource> Reverse<TSource> (this IReadOnlyFiniteSet<TSource> source)
 		{
 			if (source == null)
@@ -88,12 +86,13 @@ namespace Novartment.Base.Collections.Linq
 		}
 
 		/// <summary>
-		/// Получает разность (дополнение) указанных конечных множеств.
+		/// Produces the set difference of two sets.
 		/// </summary>
-		/// <typeparam name="TSource">Тип элементов множеств.</typeparam>
-		/// <param name="first">Множество, из которого будут получена разность с множеством second.</param>
-		/// <param name="second">Множество, которое будет использовано для получения разности с множеством first.</param>
-		/// <returns>Множество, представляющее собой разность двух множеств.</returns>
+		/// <typeparam name="TSource">The type of the elements.</typeparam>
+		/// <param name="first">An set whose elements that are not also in second will be returned.</param>
+		/// <param name="second">An set whose elements that also occur in the first set
+		/// will cause those elements to be removed from the returned set.</param>
+		/// <returns>A set that contains the set difference of the elements of two sets.</returns>
 		public static IReadOnlyFiniteSet<TSource> Except<TSource> (this IReadOnlyFiniteSet<TSource> first, IReadOnlyFiniteSet<TSource> second)
 		{
 			if (first == null)
@@ -147,12 +146,12 @@ namespace Novartment.Base.Collections.Linq
 		}
 
 		/// <summary>
-		/// Получает симметрическую разность указанных конечных множеств.
+		/// Produces the symmetric set difference of two sets.
 		/// </summary>
-		/// <typeparam name="TSource">Тип элементов множеств.</typeparam>
-		/// <param name="first">Первое множество для вычисления симметрической разности.</param>
-		/// <param name="second">Второе множество для вычисления симметрической разности.</param>
-		/// <returns>Множество, представляющее собой симметрическую разность двух множеств.</returns>
+		/// <typeparam name="TSource">The type of the elements.</typeparam>
+		/// <param name="first">A first set for creating symmetric difference.</param>
+		/// <param name="second">A second set for creating symmetric difference.</param>
+		/// <returns>A set that contains the symmetric set difference of the elements of two sets.</returns>
 		public static IReadOnlyFiniteSet<TSource> SymmetricExcept<TSource> (this IReadOnlyFiniteSet<TSource> first, IReadOnlyFiniteSet<TSource> second)
 		{
 			if (first == null)
@@ -206,12 +205,12 @@ namespace Novartment.Base.Collections.Linq
 		}
 
 		/// <summary>
-		/// Получает пересечение указанных конечных множеств.
+		/// Produces the set intersection of two sets.
 		/// </summary>
-		/// <typeparam name="TSource">Тип элементов множеств.</typeparam>
-		/// <param name="first">Первое множество для вычисления пересечения.</param>
-		/// <param name="second">Второе множество для вычисления пересечения.</param>
-		/// <returns>Множество, представляющее собой пересечение двух множеств.</returns>
+		/// <typeparam name="TSource">The type of the elements.</typeparam>
+		/// <param name="first">A set whose distinct elements that also appear in set will be returned.</param>
+		/// <param name="second">A set whose distinct elements that also appear in the first set will be returned.</param>
+		/// <returns>A set that contains the elements that form the set intersection of two sets.</returns>
 		public static IReadOnlyFiniteSet<TSource> Intersect<TSource> (this IReadOnlyFiniteSet<TSource> first, IReadOnlyFiniteSet<TSource> second)
 		{
 			if (first == null)
@@ -259,12 +258,12 @@ namespace Novartment.Base.Collections.Linq
 		}
 
 		/// <summary>
-		/// Получает объединение указанных конечных множеств.
+		/// Produces the set union of two sets.
 		/// </summary>
-		/// <typeparam name="TSource">Тип элементов множеств.</typeparam>
-		/// <param name="first">Первое множество для вычисления объединения.</param>
-		/// <param name="second">Второе множество для вычисления объединения.</param>
-		/// <returns>Множество, представляющее собой объединение двух множеств.</returns>
+		/// <typeparam name="TSource">The type of the elements.</typeparam>
+		/// <param name="first">A first set for the union.</param>
+		/// <param name="second">A second set for the union.</param>
+		/// <returns>An set that contains the elements from both input sets.</returns>
 		public static IReadOnlyFiniteSet<TSource> Union<TSource> (this IReadOnlyFiniteSet<TSource> first, IReadOnlyFiniteSet<TSource> second)
 		{
 			if (first == null)
@@ -311,7 +310,8 @@ namespace Novartment.Base.Collections.Linq
 			return new UnionReadOnlyFiniteSet<TSource> (first, second, count);
 		}
 
-		private class ReverseReadOnlyFiniteSet<TSource> : IReadOnlyFiniteSet<TSource>
+		private class ReverseReadOnlyFiniteSet<TSource> :
+			IReadOnlyFiniteSet<TSource>
 		{
 			private readonly IReadOnlyFiniteSet<TSource> _source;
 			private TSource[] _buffer = null;
@@ -346,7 +346,8 @@ namespace Novartment.Base.Collections.Linq
 			}
 		}
 
-		private class OneItemReadOnlyFiniteSet<T> : IReadOnlyFiniteSet<T>
+		private class OneItemReadOnlyFiniteSet<T> :
+			IReadOnlyFiniteSet<T>
 		{
 			private readonly T[] _item = new T[1];
 			private readonly IEqualityComparer<T> _comparer;
@@ -375,7 +376,8 @@ namespace Novartment.Base.Collections.Linq
 			}
 		}
 
-		private class ExceptReadOnlyFiniteSet<TSource> : IReadOnlyFiniteSet<TSource>
+		private class ExceptReadOnlyFiniteSet<TSource> :
+			IReadOnlyFiniteSet<TSource>
 		{
 			private readonly IReadOnlyFiniteSet<TSource> _first;
 			private readonly IReadOnlyFiniteSet<TSource> _second;
@@ -416,7 +418,8 @@ namespace Novartment.Base.Collections.Linq
 			}
 		}
 
-		private class SymmetricExceptReadOnlyFiniteSet<TSource> : IReadOnlyFiniteSet<TSource>
+		private class SymmetricExceptReadOnlyFiniteSet<TSource> :
+			IReadOnlyFiniteSet<TSource>
 		{
 			private readonly IReadOnlyFiniteSet<TSource> _first;
 			private readonly IReadOnlyFiniteSet<TSource> _second;
@@ -466,7 +469,8 @@ namespace Novartment.Base.Collections.Linq
 			}
 		}
 
-		private class IntersectReadOnlyFiniteSet<TSource> : IReadOnlyFiniteSet<TSource>
+		private class IntersectReadOnlyFiniteSet<TSource> :
+			IReadOnlyFiniteSet<TSource>
 		{
 			private readonly IReadOnlyFiniteSet<TSource> _first;
 			private readonly IReadOnlyFiniteSet<TSource> _second;
@@ -507,7 +511,8 @@ namespace Novartment.Base.Collections.Linq
 			}
 		}
 
-		private class UnionReadOnlyFiniteSet<TSource> : IReadOnlyFiniteSet<TSource>
+		private class UnionReadOnlyFiniteSet<TSource> :
+			IReadOnlyFiniteSet<TSource>
 		{
 			private readonly IReadOnlyFiniteSet<TSource> _first;
 			private readonly IReadOnlyFiniteSet<TSource> _second;

@@ -6,8 +6,8 @@ namespace Novartment.Base.Collections.Linq
 	/// <summary>
 	/// Создатель сортированного индекса для коллекций на основе сравнения ключей элементов, выбранных указанной функцией.
 	/// </summary>
-	/// <typeparam name="TElement">Тип элементов коллекции.</typeparam>
-	/// <typeparam name="TKey">Тип сортирующего ключа коллекции.</typeparam>
+	/// <typeparam name="TElement">The type of the elements.</typeparam>
+	/// <typeparam name="TKey">The type of the sorting key.</typeparam>
 	internal class CollectionSorter<TElement, TKey> : CollectionSorter<TElement>
 	{
 		private readonly Func<TElement, TKey> _keySelector;

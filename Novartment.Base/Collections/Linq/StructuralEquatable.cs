@@ -6,19 +6,19 @@ using System.Diagnostics.Contracts;
 namespace Novartment.Base.Collections.Linq
 {
 	/// <summary>
-	/// Методы расширения к структурно сравниваемым объектам.
+	/// Extension methods for structurally comparable objects.
 	/// </summary>
 	public static class StructuralEquatable
 	{
 		/// <summary>
-		/// Определяет, совпадают ли две коллекции, используя для сравнения элементов указанный компаратор.
+		/// Determines whether two sequences are equal by comparing their elements by using a specified comparer.
 		/// </summary>
-		/// <typeparam name="TSource">Тип элементов входных коллекций.</typeparam>
-		/// <param name="first">Объект, сравниваемый с коллекцией second.</param>
-		/// <param name="second">Объект, сравниваемый с последовательностью first.</param>
-		/// <param name="comparer">Компаратор, используемый для сравнения элементов.</param>
-		/// <returns>True, если у двух указанных коллекций одинаковая длина и соответствующие элементы совпадают
-		/// согласно компаратору comparer, в противном случае — False.</returns>
+		/// <typeparam name="TSource">The type of the elements of the input sequences.</typeparam>
+		/// <param name="first">A structurally comparable sequence to compare to second.</param>
+		/// <param name="second">A sequence to compare to the first sequence.</param>
+		/// <param name="comparer">A comparer to use to compare elements..</param>
+		/// <returns>True if the two source sequences are of equal length and their corresponding elements compare equal according to comparer;
+		/// otherwise, False.</returns>
 		public static bool SequenceEqual<TSource> (
 			this IStructuralEquatable first,
 			IEnumerable<TSource> second,

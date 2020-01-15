@@ -11,17 +11,20 @@ using Novartment.Base.Reflection;
 namespace Novartment.Base.Collections
 {
 	/// <summary>
-	/// Динамический список для конкурентного доступа с уведомлением об изменениях
-	/// на основе зацикленного массива с передвижными головой и хвостом.
-	/// Поддерживает семантику стэка и очереди.
+	/// A dynamic list for concurrent access
+	/// backed by a looped array with a moving head and tail.
+	/// Supports vector, stack and queue semantics.
+	/// Concurrent access requires external synchronization.
 	/// </summary>
-	/// <typeparam name="T">Тип элементов списка. Должен поддерживать атомарное присвоение,
-	/// то есть быть ссылочным или примитивным типом размером не более чем размер указателя на исполняемой платформе.</typeparam>
+	/// <typeparam name="T">
+	/// The type of the elements.
+	/// Must support atomic assignment, that is, be a reference type
+	/// or value type no larger than the size of a pointer on the executing platform.
+	/// </typeparam>
 	/// <remarks>
-	/// Оптимизирован для получения/изменения элементов в произвольной позиции
-	/// и удлинения/укорочения со стороны головы или хвоста.
-	/// Для конкурентного доступа синхронизация не требуется.
-	/// Не реализует интерфейсы ICollection и IList ввиду несовместимости их контрактов с конкурентным доступом.
+	/// Optimized for getting/changing elements in an arbitrary position and lengthening/shortening on the head or tail side.
+	/// No synchronization is required for concurrent access.
+	/// Does not implement ICollection and IList interfaces due to incompatibility of their contracts with concurrent access.
 	/// </remarks>
 	[DebuggerDisplay ("{DebuggerDisplay,nq}")]
 	[DebuggerTypeProxy (typeof (ConcurrentList<>.DebugView))]
@@ -52,7 +55,7 @@ namespace Novartment.Base.Collections
 		private LoopedArraySegment<T> _state;
 
 		/// <summary>
-		/// Инициализирует новый экземпляр класса ConcurrentList.
+		/// Initializes a new instance of the ConcurrentList class that is empty.
 		/// </summary>
 		public ConcurrentList ()
 		{
@@ -66,20 +69,18 @@ namespace Novartment.Base.Collections
 		}
 
 		/// <summary>
-		/// Инициализирует новый экземпляр класса ConcurrentList на основе указанной коллекции.
+		/// Initializes a new instance of the ConcurrentList class which is backed by a specified array.
 		/// </summary>
-		/// <param name="array">Массив, данные которого будут начальным содержимым создаваемого списка.
-		/// Массив будет использован напрямую, без копирования.</param>
+		/// <param name="array">The array to be used as backing store directly, without copying.</param>
 		public ConcurrentList (T[] array)
 			: this (new LoopedArraySegment<T> (array))
 		{
 		}
 
 		/// <summary>
-		/// Инициализирует новый экземпляр класса ConcurrentList на основе указанного сегмента массива.
+		/// Initializes a new instance of the ConcurrentList class which is backed by a specified looped array segment.
 		/// </summary>
-		/// <param name="arraySegment">Сегмент массива, данные которого будут начальным содержимым создаваемого списка.
-		/// Сегмент массива будет использован напрямую, без копирования.</param>
+		/// <param name="arraySegment">The looped array segment to be used as backing store directly, without copying.</param>
 		public ConcurrentList (LoopedArraySegment<T> arraySegment)
 		{
 			if (arraySegment == null)
@@ -98,12 +99,10 @@ namespace Novartment.Base.Collections
 			_state = arraySegment;
 		}
 
-		/// <summary>Происходит, когда список изменяется.</summary>
+		/// <summary>Occurs when an item is added, removed, changed, moved, or the entire list is refreshed.</summary>
 		public event NotifyCollectionChangedEventHandler CollectionChanged;
 
-		/// <summary>
-		/// Получает количество элементов в списке.
-		/// </summary>
+		/// <summary>Gets the number of elements contained in the list.</summary>
 		public int Count => _state.Count;
 
 		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
@@ -121,9 +120,9 @@ namespace Novartment.Base.Collections
 		}
 
 		/// <summary>
-		/// Получает или устанавливает элемент списка в указанной позиции.
+		/// Gets or sets the element at the specified index in list.
 		/// </summary>
-		/// <param name="index">Позиция в списке.</param>
+		/// <param name="index">The zero-based index of the element to get.</param>
 		public T this[int index]
 		{
 			get
@@ -164,7 +163,7 @@ namespace Novartment.Base.Collections
 			}
 		}
 
-		/// <summary>Очищает список.</summary>
+		/// <summary>Removes all items from the list.</summary>
 		public void Clear ()
 		{
 			var state1 = _state;
@@ -179,9 +178,9 @@ namespace Novartment.Base.Collections
 		}
 
 		/// <summary>
-		/// Добавляет элемент в список.
+		/// Adds an element to the list.
 		/// </summary>
-		/// <param name="item">Элемент для добавления в список.</param>
+		/// <param name="item">The element to add to the list</param>
 		public void Add (T item)
 		{
 			SpinWait spinWait = default;
@@ -207,11 +206,14 @@ namespace Novartment.Base.Collections
 		}
 
 		/// <summary>
-		/// Пытается получить первый элемент списка.
+		/// Tries to get the first item in a list.
 		/// </summary>
-		/// <param name="item">Значение первого элемента списка, если он успешно получен,
-		/// либо значение по умолчанию если нет.</param>
-		/// <returns>True если первый элемент списка успешно получен, false если нет.</returns>
+		/// <param name="item">
+		/// When this method returns, the last item in a list, if list was not empty;
+		/// otherwise, the default value for the type of the item parameter.
+		/// This parameter is passed uninitialized.
+		/// </param>
+		/// <returns>True if the list was not empty; otherwise, False.</returns>
 		public bool TryPeekFirst (out T item)
 		{
 			var snapshot = _state;
@@ -226,11 +228,14 @@ namespace Novartment.Base.Collections
 		}
 
 		/// <summary>
-		/// Пытается изъять первый элемент списка.
+		/// Tries to get and remove the first item in a list.
 		/// </summary>
-		/// <param name="item">Значение первого элемента списка если он успешно изъят,
-		/// либо значение по умолчанию если нет.</param>
-		/// <returns>True если первый элемент списка успешно изъят, false если нет.</returns>
+		/// <param name="item">
+		/// When this method returns, the last item in a list, if list was not empty;
+		/// otherwise, the default value for the type of the item parameter.
+		/// This parameter is passed uninitialized.
+		/// </param>
+		/// <returns>True if the list was not empty; otherwise, False.</returns>
 		public bool TryTakeFirst (out T item)
 		{
 			SpinWait spinWait = default;
@@ -267,11 +272,14 @@ namespace Novartment.Base.Collections
 		}
 
 		/// <summary>
-		/// Пытается получить последний элемент списка.
+		/// Tries to get the last item in a list.
 		/// </summary>
-		/// <param name="item">Значение последнего элемента списка если он успешно получен,
-		/// либо значение по умолчанию если нет.</param>
-		/// <returns>True если последний элемент списка успешно получен, false если нет.</returns>
+		/// <param name="item">
+		/// When this method returns, the last item in a list, if list was not empty;
+		/// otherwise, the default value for the type of the item parameter.
+		/// This parameter is passed uninitialized.
+		/// </param>
+		/// <returns>True if the list was not empty; otherwise, False.</returns>
 		public bool TryPeekLast (out T item)
 		{
 			var snapshot = _state;
@@ -287,11 +295,14 @@ namespace Novartment.Base.Collections
 		}
 
 		/// <summary>
-		/// Пытается изъять последний элемент списка.
+		/// Tries to get and remove the last item in a list.
 		/// </summary>
-		/// <param name="item">Значение последнего элемента списка если он успешно изъят,
-		/// либо значение по умолчанию если нет.</param>
-		/// <returns>True если последний элемент списка успешно изъят, false если нет.</returns>
+		/// <param name="item">
+		/// When this method returns, the last item in a list, if list was not empty;
+		/// otherwise, the default value for the type of the item parameter.
+		/// This parameter is passed uninitialized.
+		/// </param>
+		/// <returns>True if the list was not empty; otherwise, False.</returns>
 		public bool TryTakeLast (out T item)
 		{
 			SpinWait spinWait = default;
@@ -323,10 +334,10 @@ namespace Novartment.Base.Collections
 		}
 
 		/// <summary>
-		/// Вставляет указанный элемент в список в указанную позицию, отодвигая последующие элементы.
+		/// Inserts an element into the list at the specified index.
 		/// </summary>
-		/// <param name="index">Позиция в списке.</param>
-		/// <param name="item">Элемент для вставки в указанную позицию.</param>
+		/// <param name="index">The zero-based index at which item should be inserted.</param>
+		/// <param name="item">The element to insert. The value can be null for reference types.</param>
 		public void Insert (int index, T item)
 		{
 			if (index < 0)
@@ -407,11 +418,11 @@ namespace Novartment.Base.Collections
 		}
 
 		/// <summary>
-		/// Вставляет пустой диапазон элементов в список в указанную позицию.
-		/// Вставленные элементы будут иметь значение по-умолчанию.
+		/// Inserts a specified number of the elements into the list at the specified index.
+		/// The inserted elements will have a default value.
 		/// </summary>
-		/// <param name="index">Позиция в коллекции, куда будут вставлены элементы.</param>
-		/// <param name="count">Количество вставляемых элементов.</param>
+		/// <param name="index"> The zero-based index at which the new elements should be inserted.</param>
+		/// <param name="count">The number of elements to insert.</param>
 		public void InsertRange (int index, int count)
 		{
 			if (index < 0)
@@ -498,9 +509,9 @@ namespace Novartment.Base.Collections
 		}
 
 		/// <summary>
-		/// Удаляет элемент из списка в указанной позиции.
+		/// Removes the element at the specified index of the list.
 		/// </summary>
-		/// <param name="index">Позиция в списке.</param>
+		/// <param name="index">The zero-based index of the element to remove.</param>
 		public void RemoveAt (int index)
 		{
 			if (index < 0)
@@ -577,10 +588,10 @@ namespace Novartment.Base.Collections
 		}
 
 		/// <summary>
-		/// Удаляет указанное число элементов из коллекции начиная с указанной позиции.
+		/// Removes a range of elements from the list.
 		/// </summary>
-		/// <param name="index">Начальная позиция элементов для удаления.</param>
-		/// <param name="count">Количество удаляемых элементов.</param>
+		/// <param name="index">The zero-based starting index of the range of elements to remove.</param>
+		/// <param name="count">The number of elements to remove.</param>
 		public void RemoveRange (int index, int count)
 		{
 			if (index < 0)
@@ -684,10 +695,14 @@ namespace Novartment.Base.Collections
 		}
 
 		/// <summary>
-		/// Резервирует в массиве, в котором хранятся элементы списка, указанное количество элементов.
-		/// Позволяет избежать копирований массива при добавлении элементов в список.
+		/// Reserves space for the specified total number of elements.
 		/// </summary>
-		/// <param name="min">Минимальная необходимая вместимость включая уже находящиеся в коллекции элементы.</param>
+		/// <param name="min">
+		/// Minimum required capacity including items already in the list.
+		/// </param>
+		/// <remarks>
+		/// Corresponds to setting Capacity property of classes System.Collections.ArrayList and System.Collections.Generic.List&lt;T&gt;.
+		/// </remarks>
 		public void EnsureCapacity (int min)
 		{
 			if (min < 1)
@@ -716,9 +731,12 @@ namespace Novartment.Base.Collections
 		}
 
 		/// <summary>
-		/// Избавляет массив, в котором хранятся элементы списка, от зарезервированных элементов.
-		/// Позволяет освободить память, занятую зарезервированными элементами.
+		/// Eliminates the list of reserved items.
 		/// </summary>
+		/// <remarks>
+		/// Corresponds to TrimExcess() method of classes in the  System.Collections.Generic namespace:
+		/// List&lt;T&gt;, Stack&lt;T&gt;, Queue&lt;T&gt;, HashSet&lt;T&gt;.
+		/// </remarks>
 		public void TrimExcess ()
 		{
 			SpinWait spinWait = default;
@@ -748,29 +766,29 @@ namespace Novartment.Base.Collections
 		}
 
 		/// <summary>
-		/// Получает перечислитель элементов списка.
+		/// Returns an enumerator for the list.
 		/// </summary>
-		/// <returns>Перечислитель элементов списка.</returns>
+		/// <returns>An enumerator for the list.</returns>
 		public IEnumerator<T> GetEnumerator ()
 		{
 			return _state.GetEnumerator ();
 		}
 
 		/// <summary>
-		/// Получает перечислитель элементов списка.
+		/// Returns an enumerator for the list.
 		/// </summary>
-		/// <returns>Перечислитель элементов списка.</returns>
+		/// <returns>An enumerator for the list.</returns>
 		IEnumerator IEnumerable.GetEnumerator ()
 		{
 			return GetEnumerator ();
 		}
 
 		/// <summary>
-		/// Копирует элементы списка в указанный массив,
-		/// начиная с указанного индекса конечного массива.
+		/// Copies the list to a one-dimensional array,
+		/// starting at the specified index of the target array.
 		/// </summary>
-		/// <param name="array">Массив, в который копируются элементы списка.</param>
-		/// <param name="arrayIndex">Отсчитываемый от нуля индекс в массиве array, указывающий начало копирования.</param>
+		/// <param name="array">The one-dimensional System.Array that is the destination of the elements copied.</param>
+		/// <param name="arrayIndex">The zero-based index in array at which copying begins.</param>
 		public void CopyTo (T[] array, int arrayIndex)
 		{
 			if (array == null)
@@ -789,10 +807,10 @@ namespace Novartment.Base.Collections
 		}
 
 		/// <summary>
-		/// Returns a hash code for the current instance.
+		/// Returns a hash code for this list.
 		/// </summary>
 		/// <param name="comparer">An object that computes the hash code of the current object.</param>
-		/// <returns>The hash code for the current instance.</returns>
+		/// <returns>The hash code for this list.</returns>
 		int IStructuralEquatable.GetHashCode (IEqualityComparer comparer)
 		{
 			if (comparer == null)
@@ -806,11 +824,11 @@ namespace Novartment.Base.Collections
 		}
 
 		/// <summary>
-		/// Determines whether an object is structurally equal to the current instance.
+		/// Determines whether an object is structurally equal to this list.
 		/// </summary>
-		/// <param name="other">The object to compare with the current instance.</param>
-		/// <param name="comparer">An object that determines whether the current instance and other are equal.</param>
-		/// <returns>true if the two objects are equal; otherwise, false.</returns>
+		/// <param name="other">The object to compare with this list.</param>
+		/// <param name="comparer">An object that determines whether element of this list and other are equal.</param>
+		/// <returns>True if the two lists are equal; otherwise, False.</returns>
 		bool IStructuralEquatable.Equals (object other, IEqualityComparer comparer)
 		{
 			if (comparer == null)
@@ -843,14 +861,14 @@ namespace Novartment.Base.Collections
 		}
 
 		/// <summary>
-		/// Возвращает результат выполнения указанного делегата-функции, передавая ему список и указанный объект-параметр.
-		/// Делегат-функциия будет запускаться повторно если во время его работы список был конкуррентно изменён.
+		/// Returns the result of executing the specified function, passing it the list and the specified state object.
+		/// The function will be run repeatedly if the list has been changed concurrently during its operation.
 		/// </summary>
-		/// <typeparam name="TInput">Тип объекта-параметра, который будет передан в делегат-функцию.</typeparam>
-		/// <typeparam name="TOutput">Тип возвращаемого значения делегата-функции.</typeparam>
-		/// <param name="accessMethod">Делегат-функция.</param>
-		/// <param name="state">Объект-параметр, который будет передан в делегат-функцию.</param>
-		/// <returns>Значение, которое вернула делегат-функция.</returns>
+		/// <typeparam name="TInput">The type of the state parameter that will be passed to the function.</typeparam>
+		/// <typeparam name="TOutput">The type of the return value of the function.</typeparam>
+		/// <param name="accessMethod">The function to access the list. The list will be passed as the first parameter, and the state parameter as the second.</param>
+		/// <param name="state">The state object that will be passed to the function as the second parameter.</param>
+		/// <returns>The value returned by the function.</returns>
 		public TOutput AccessCollectionRetryIfConcurrentlyChanged<TInput, TOutput> (Func<ConcurrentList<T>, TInput, TOutput> accessMethod, TInput state)
 		{
 			if (accessMethod == null)

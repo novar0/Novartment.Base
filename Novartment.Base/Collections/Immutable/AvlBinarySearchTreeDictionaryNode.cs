@@ -4,48 +4,36 @@ using System.Diagnostics;
 namespace Novartment.Base.Collections.Immutable
 {
 	/// <summary>
-	/// Элемент словаря на базе двоичного дерева поиска.
+	/// Dictionary node based on a binary search tree.
 	/// </summary>
-	/// <typeparam name="TKey">Тип ключа элементов словаря.</typeparam>
-	/// <typeparam name="TValue">Тип значений элементов словаря.</typeparam>
-	/// <remarks>Значение null является корректным и означает пустой словарь.</remarks>
+	/// <typeparam name="TKey">The type of keys in the dictionary.</typeparam>
+	/// <typeparam name="TValue">The type of values in the dictionary.</typeparam>
+	/// <remarks>
+	/// A null-value is correct and means an empty dictionary.
+	/// Semantically equivalent to System.Collections.Generic.KeyValuePair, but is a reference type to guarantee atomicity of assignments.
+	/// </remarks>
 	public class AvlBinarySearchTreeDictionaryNode<TKey, TValue>
 		: IValueHolder<TValue>
 	{
-		private readonly TKey _key;
-		private TValue _value;
-
-		private AvlBinarySearchTreeDictionaryNode(TKey key, TValue value)
+		private AvlBinarySearchTreeDictionaryNode (TKey key, TValue value)
 		{
-			_key = key;
-			_value = value;
+			this.Key = key;
+			this.Value = value;
 		}
 
 		/// <summary>
-		/// Получает ключ элемента.
+		/// Gets the key of the node.
 		/// </summary>
-		public TKey Key => _key;
+		public TKey Key { get; }
 
 		/// <summary>
-		/// Получает или устанавливает значение элемента.
+		/// Gets or sets the value of the node.
 		/// </summary>
-		public TValue Value
-		{
-			get => _value;
-
-			set
-			{
-				_value = value;
-			}
-		}
+		public TValue Value { get; set; }
 
 		[DebuggerTypeProxy (typeof (AvlBinarySearchTreeDictionaryNode<,>.DebugView))]
 		internal class IntermediateNode : AvlBinarySearchTreeDictionaryNode<TKey, TValue>
 		{
-			private readonly AvlBinarySearchTreeDictionaryNode<TKey, TValue> _leftSubtree;
-			private readonly AvlBinarySearchTreeDictionaryNode<TKey, TValue> _rightSubtree;
-			private readonly int _height;
-
 			internal IntermediateNode (
 				TKey key,
 				TValue value,
@@ -54,16 +42,16 @@ namespace Novartment.Base.Collections.Immutable
 				int height)
 				: base (key, value)
 			{
-				_leftSubtree = leftSubtree;
-				_rightSubtree = rightSubtree;
-				_height = height;
+				this.LeftSubtree = leftSubtree;
+				this.RightSubtree = rightSubtree;
+				this.Height = height;
 			}
 
-			internal int Height => _height;
+			internal int Height { get; }
 
-			internal AvlBinarySearchTreeDictionaryNode<TKey, TValue> LeftSubtree => _leftSubtree;
+			internal AvlBinarySearchTreeDictionaryNode<TKey, TValue> LeftSubtree { get; }
 
-			internal AvlBinarySearchTreeDictionaryNode<TKey, TValue> RightSubtree => _rightSubtree;
+			internal AvlBinarySearchTreeDictionaryNode<TKey, TValue> RightSubtree { get; }
 		}
 
 		[DebuggerDisplay ("Key={Key}, Value = {Value}")]

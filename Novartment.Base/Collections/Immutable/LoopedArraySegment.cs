@@ -8,12 +8,11 @@ using SystemArray = System.Array;
 namespace Novartment.Base.Collections.Immutable
 {
 	/// <summary>
-	/// Сегмент массива, зацикленно переходящий через верхнюю границу массива.
+	/// A segment of the array that loops through the upper boundary.
 	/// </summary>
-	/// <typeparam name="T">Тип элементов сегмента массива.</typeparam>
+	/// <typeparam name="T">The type of the elements.</typeparam>
 	/// <remarks>
-	/// Семантически эквивалентен System.ArraySegment&lt;&gt;,
-	/// но является ссылочным типом чтобы гарантировать атомарность присвоений.
+	/// Semantically equivalent to System.ArraySegment&lt;&gt;, but is a reference type to guarantee atomicity of assignments.
 	/// </remarks>
 	[DebuggerDisplay ("{DebuggerDisplay,nq}")]
 	public sealed class LoopedArraySegment<T> :
@@ -29,23 +28,23 @@ namespace Novartment.Base.Collections.Immutable
 		private readonly int _count;
 
 		/// <summary>
-		/// Инициализирует новый экземпляр класса LoopedArraySegment использующий указанный массив.
+		/// Initializes a new instance of the LoopedArraySegment class that uses the specified array.
 		/// </summary>
-		/// <param name="array">Массив, который будет использован сегментом.</param>
+		/// <param name="array">The array to be used by the segment.</param>
 		public LoopedArraySegment (T[] array)
 			: this (array, 0, ValidatedArrayLength (array))
 		{
 		}
 
 		/// <summary>
-		/// Инициализирует новый экземпляр класса LoopedArraySegment использующий указанный диапазона массива.
+		/// Initializes a new instance of the LoopedArraySegment class that uses the specified array segment.
 		/// </summary>
-		/// <param name="array">Массив, который будет использован сегментом.</param>
+		/// <param name="array">The array to be used by the segment.</param>
 		/// <param name="offset">
-		/// Начальная позиция в исходном массиве.
-		/// Зацикливается через край массива, то есть offset + count может быть больше чем размер массива.
+		/// The starting position in the source array.
+		/// Loops over the edge of the array, meaning offset + count can be larger than the size of the array.
 		/// </param>
-		/// <param name="count">Количество элементов исходного массива.</param>
+		/// <param name="count">The number of elements in the source array.</param>
 		public LoopedArraySegment (T[] array, int offset, int count)
 		{
 			if (array == null)
@@ -72,17 +71,17 @@ namespace Novartment.Base.Collections.Immutable
 		}
 
 		/// <summary>
-		/// Получает исходный массив сегмента.
+		/// Gets the original array of the segment.
 		/// </summary>
 		public T[] Array => _items;
 
 		/// <summary>
-		/// Получает позицию начала сегмента в исходном массиве.
+		/// Gets the start position of the segment in the source array.
 		/// </summary>
 		public int Offset => _offset;
 
 		/// <summary>
-		/// Получает количество элементов сегмента массива.
+		/// Gets the number of elements in the array segment.
 		/// </summary>
 		public int Count => _count;
 
@@ -101,9 +100,9 @@ namespace Novartment.Base.Collections.Immutable
 		}
 
 		/// <summary>
-		/// Получает или устанавливает элемент сегмента массива в указанной позиции.
+		/// Gets or sets the element at the specified index.
 		/// </summary>
-		/// <param name="index">Позиция в сегменте массива.</param>
+		/// <param name="index">The zero-based index of the element to get or set.</param>
 		public T this[int index]
 		{
 			get
@@ -144,11 +143,13 @@ namespace Novartment.Base.Collections.Immutable
 		}
 
 		/// <summary>
-		/// Выделяет порцию внутреннего массива без копирования, указанную стартовой позицией и длиной.
+		/// Forms a slice out of this segment, beginning at <paramref name="start"/>, with <paramref name="length"/> items.
 		/// </summary>
-		/// <param name="start">Стартовая позиция выделяемой порции.</param>
-		/// <param name="length">Длина порции.</param>
-		/// <returns>Новый экземпляр LoopedArraySegment, основанный на том же массиве, но с выделенной указанной порцией.</returns>
+		/// <param name="start">The index at which to begin this slice.</param>
+		/// <param name="length">The length of the slice.</param>
+		/// <returns>
+		/// A new LoopedArraySegment that is based by the same array as this segment.
+		/// </returns>
 		public LoopedArraySegment<T> Slice (int start, int length)
 		{
 			start += _offset;
@@ -161,11 +162,11 @@ namespace Novartment.Base.Collections.Immutable
 		}
 
 		/// <summary>
-		/// Определяет равенство двух сегментов массива.
+		/// Returns a value that indicates whether two LoopedArraySegment objects are equal.
 		/// </summary>
-		/// <param name="first">Сегмент массива, который находится слева от оператора равенства.</param>
-		/// <param name="second">Сегмент массива, который находится справа от оператора равенства.</param>
-		/// <returns>true, если значения параметров first и second равны; в противном случае — false.</returns>
+		/// <param name="first">The first segment to compare.</param>
+		/// <param name="second">The second segment to compare.</param>
+		/// <returns>True if the two LoopedArraySegment objects are equal; otherwise, False.</returns>
 		public static bool operator == (LoopedArraySegment<T> first, LoopedArraySegment<T> second)
 		{
 			return first is null ?
@@ -174,11 +175,11 @@ namespace Novartment.Base.Collections.Immutable
 		}
 
 		/// <summary>
-		/// Определяет неравенство двух сегментов массива.
+		/// Returns a value that indicates whether two LoopedArraySegment objects are not equal.
 		/// </summary>
-		/// <param name="first">Сегмент массива, который находится слева от оператора равенства.</param>
-		/// <param name="second">Сегмент массива, который находится справа от оператора равенства.</param>
-		/// <returns>true, если значения параметров first и second не равны; в противном случае — false.</returns>
+		/// <param name="first">The first segment to compare.</param>
+		/// <param name="second">The second segment to compare.</param>
+		/// <returns>True if the two LoopedArraySegment objects are not equal; otherwise, False.</returns>
 		public static bool operator != (LoopedArraySegment<T> first, LoopedArraySegment<T> second)
 		{
 			return !(first is null ?
@@ -187,11 +188,12 @@ namespace Novartment.Base.Collections.Immutable
 		}
 
 		/// <summary>
-		/// Копирует элементы сегмента массива в указанный массив,
-		/// начиная с указанного индекса конечного массива.
+		/// Copies the elements of the segment to a one-dimensional array,
+		/// starting at the specified index of the target array.
 		/// </summary>
-		/// <param name="array">Массив, в который копируются элементы сегмента массива.</param>
-		/// <param name="arrayIndex">Позиция в конечном массиве, указывающая начало копирования.</param>
+		/// <param name="array">The one-dimensional System.Array that is the destination of the elements copied.</param>
+		/// <param name="arrayIndex">The zero-based index in array at which copying begins.</param>
+		/// <remarks>Corresponds to the System.Collections.ICollection.CopyTo() and System.Array.CopyTo().</remarks>
 		public void CopyTo (T[] array, int arrayIndex)
 		{
 			if (array == null)
@@ -232,37 +234,37 @@ namespace Novartment.Base.Collections.Immutable
 		}
 
 		/// <summary>
-		/// Получает перечислитель элементов сегмента массива.
+		/// Returns an enumerator for the segment.
 		/// </summary>
-		/// <returns>Перечислитель элементов сегмента массива.</returns>
+		/// <returns>An enumerator for the segment.</returns>
 		IEnumerator IEnumerable.GetEnumerator ()
 		{
 			return GetEnumerator ();
 		}
 
 		/// <summary>
-		/// Получает перечислитель элементов сегмента массива.
+		/// Returns an enumerator for the segment.
 		/// </summary>
-		/// <returns>Перечислитель элементов сегмента массива.</returns>
+		/// <returns>An enumerator for the segment.</returns>
 		public IEnumerator<T> GetEnumerator ()
 		{
 			return new ArraySegmentLoopedEnumerator (this);
 		}
 
 		/// <summary>
-		/// Получает хэш-код сегмента массива.
+		/// Returns a hash code for this segment.
 		/// </summary>
-		/// <returns>Хэш-код сегмента массива.</returns>
+		/// <returns>The hash code for this segment.</returns>
 		public override int GetHashCode ()
 		{
 			return (_items.GetHashCode () ^ _offset) ^ _count;
 		}
 
 		/// <summary>
-		/// Определяет, равны ли два экземпляра сегмента массива.
+		/// Determines whether an object is equal to this segment.
 		/// </summary>
-		/// <param name="obj">Объект, который требуется сравнить с текущим сегментом массива.</param>
-		/// <returns>true, если указанный объект равен текущему сегменту массива; в противном случае — false.</returns>
+		/// <param name="obj">The object to compare with this segment.</param>
+		/// <returns>True if the two segments are equal; otherwise, False.</returns>
 		public override bool Equals (object obj)
 		{
 			var asSameClass = obj as LoopedArraySegment<T>;
@@ -270,10 +272,10 @@ namespace Novartment.Base.Collections.Immutable
 		}
 
 		/// <summary>
-		/// Определяет, равны ли два экземпляра сегмента массива.
+		/// Determines whether an segment is equal to this segment.
 		/// </summary>
-		/// <param name="other">Сегмента массива, который требуется сравнить с текущим сегментом массива.</param>
-		/// <returns>true, если указанный сегмент массива равен текущему сегменту массива; в противном случае — false.</returns>
+		/// <param name="other">The segment to compare with this segment.</param>
+		/// <returns>True if the two segments are equal; otherwise, False.</returns>
 		public bool Equals (LoopedArraySegment<T> other)
 		{
 			return ReferenceEquals (this, other) ||
@@ -284,10 +286,10 @@ namespace Novartment.Base.Collections.Immutable
 		}
 
 		/// <summary>
-		/// Получает структурный хэш-код сегмента массива.
+		/// Returns a structural hash code for this segment.
 		/// </summary>
-		/// <param name="comparer">Объект, вычисляющий хэш-код элементов сегмента массива.</param>
-		/// <returns>Структурный хэш-код сегмента массива.</returns>
+		/// <param name="comparer">An object that computes the hash code of the current object.</param>
+		/// <returns>The structural hash code for this segment.</returns>
 		int IStructuralEquatable.GetHashCode (IEqualityComparer comparer)
 		{
 			if (comparer == null)
@@ -310,11 +312,11 @@ namespace Novartment.Base.Collections.Immutable
 		}
 
 		/// <summary>
-		/// Определяет, равны ли структурно два экземпляра сегмента массива.
+		/// Determines whether an object is structurally equal to this segment.
 		/// </summary>
-		/// <param name="other">Сегмента массива, который требуется сравнить с текущим сегментом массива.</param>
-		/// <param name="comparer">Объект, определяющий, равенство элементов сегмента массива.</param>
-		/// <returns>true, если указанный сегмент массива структурно равен текущему сегменту массива; в противном случае — false.</returns>
+		/// <param name="other">The object to compare with this segment.</param>
+		/// <param name="comparer">An object that determines whether element of this list and other are equal.</param>
+		/// <returns>True if the two segments are equal; otherwise, False.</returns>
 		bool IStructuralEquatable.Equals (object other, IEqualityComparer comparer)
 		{
 			if (comparer == null)
@@ -382,7 +384,7 @@ namespace Novartment.Base.Collections.Immutable
 			}
 
 			/// <summary>
-			/// Получает текущий элемент перечислителя.
+			/// Gets the element in the list at the current position of the enumerator.
 			/// </summary>
 			public T Current
 			{
@@ -405,10 +407,10 @@ namespace Novartment.Base.Collections.Immutable
 			object IEnumerator.Current => this.Current;
 
 			/// <summary>
-			/// Перемещает перечислитель к следующему элементу строки.
+			/// Advances the enumerator to the next element of the segment.
 			/// </summary>
-			/// <returns>true, если перечислитель был успешно перемещен к следующему элементу;
-			/// false, если перечислитель достиг конца.</returns>
+			/// <returns>true if the enumerator was successfully advanced to the next element;
+			/// false if the enumerator has passed the end of the segment.</returns>
 			public bool MoveNext ()
 			{
 				if (_index == -2)
@@ -429,7 +431,7 @@ namespace Novartment.Base.Collections.Immutable
 			}
 
 			/// <summary>
-			/// Возвращает перечислитель в исходное положение.
+			/// Sets the enumerator to its initial position, which is before the first element in the segment.
 			/// </summary>
 			public void Reset ()
 			{
@@ -438,7 +440,7 @@ namespace Novartment.Base.Collections.Immutable
 			}
 
 			/// <summary>
-			/// Освобождает занятые объектом ресурсы.
+			/// Performs resources releasing.
 			/// </summary>
 			public void Dispose ()
 			{

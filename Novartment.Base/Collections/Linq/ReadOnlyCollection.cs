@@ -7,16 +7,16 @@ using System.Linq;
 namespace Novartment.Base.Collections.Linq
 {
 	/// <summary>
-	/// Методы расширения к коллекциям.
+	/// Extension methods for read only collections.
 	/// </summary>
 	public static class ReadOnlyCollection
 	{
 		/// <summary>
-		/// Проверяет, содержит ли коллекция какие-либо элементы.
+		/// Determines whether a collection contains any elements.
 		/// </summary>
-		/// <typeparam name="TSource">Тип элементов коллекции.</typeparam>
-		/// <param name="source">Коллекция, проверяемая на наличие элементов.</param>
-		/// <returns>True, если исходная коллекция содержит какие-либо элементы, в противном случае — False.</returns>
+		/// <typeparam name="TSource">The type of the elements.</typeparam>
+		/// <param name="source">The collection to check for emptiness.</param>
+		/// <returns>True if the source collection contains any elements; otherwise, False.</returns>
 		public static bool Any<TSource> (this IReadOnlyCollection<TSource> source)
 		{
 			if (source == null)
@@ -30,11 +30,11 @@ namespace Novartment.Base.Collections.Linq
 		}
 
 		/// <summary>
-		/// Возвращает количество элементов в коллекции.
+		/// Returns the number of elements in a collection.
 		/// </summary>
-		/// <typeparam name="TSource">Тип элементов коллекции.</typeparam>
-		/// <param name="source">Коллекция, элементы которой требуется подсчитать.</param>
-		/// <returns>Число элементов в коллекции.</returns>
+		/// <typeparam name="TSource">The type of the elements.</typeparam>
+		/// <param name="source">A collection that contains elements to be counted.</param>
+		/// <returns>The number of elements in the input collection.</returns>
 		public static int Count<TSource> (this IReadOnlyCollection<TSource> source)
 		{
 			if (source == null)
@@ -48,11 +48,11 @@ namespace Novartment.Base.Collections.Linq
 		}
 
 		/// <summary>
-		/// Возвращает значение типа Int64, представляющее общее число элементов в коллекции.
+		/// Returns an Int64 that represents the number of elements in a collection.
 		/// </summary>
-		/// <typeparam name="TSource">Тип элементов коллекции.</typeparam>
-		/// <param name="source">Коллекция, элементы которой требуется подсчитать.</param>
-		/// <returns>Число элементов в коллекции.</returns>
+		/// <typeparam name="TSource">The type of the elements.</typeparam>
+		/// <param name="source">A collection that contains the elements to be counted.</param>
+		/// <returns>The number of elements in the source collection.</returns>
 		public static long LongCount<TSource> (this IReadOnlyCollection<TSource> source)
 		{
 			if (source == null)
@@ -66,14 +66,13 @@ namespace Novartment.Base.Collections.Linq
 		}
 
 		/// <summary>
-		/// Возвращает элементы указанной коллекции или одноэлементную коллекцию,
-		/// содержащую указанное значение, если коллекция пуста.
+		/// Returns the elements of the specified collection or
+		/// the specified value in a singleton collection if the collection is empty.
 		/// </summary>
-		/// <typeparam name="TSource">Тип элементов коллекции.</typeparam>
-		/// <param name="source">Коллекция, для которой возвращается указанное значение, если она пуста.</param>
-		/// <param name="defaultValue">Значение, возвращаемое в случае пустой коллекции.</param>
-		/// <returns>Коллекция, содержащая значение defaultValue, если коллекция source пуста;
-		/// в противном случае возвращается source.</returns>
+		/// <typeparam name="TSource">The type of the elements.</typeparam>
+		/// <param name="source">The collection to return the specified value for if it is empty.</param>
+		/// <param name="defaultValue">The value to return if the collection is empty.</param>
+		/// <returns>A collection that contains defaultValue if source is empty; otherwise, source.</returns>
 		public static IReadOnlyCollection<TSource> DefaultIfEmpty<TSource> (this IReadOnlyCollection<TSource> source, TSource defaultValue = default)
 		{
 			if (source == null)
@@ -87,12 +86,12 @@ namespace Novartment.Base.Collections.Linq
 		}
 
 		/// <summary>
-		/// Пропускает заданное число элементов коллекции и возвращает коллекцию из остальных элементов.
+		/// Bypasses a specified number of elements in a collection and then returns the remaining elements.
 		/// </summary>
-		/// <typeparam name="TSource">Тип элементов коллекции.</typeparam>
-		/// <param name="source">Коллекция, из которой требуется возвратить элементы.</param>
-		/// <param name="count">Число элементов, пропускаемых перед возвращением остальных элементов.</param>
-		/// <returns>Коллекция, содержащая элементы из входной коллекции, начиная с указанной позиции.</returns>
+		/// <typeparam name="TSource">The type of the elements.</typeparam>
+		/// <param name="source">A collection to return elements from.</param>
+		/// <param name="count">The number of elements to skip before returning the remaining elements.</param>
+		/// <returns>A collection that contains the elements that occur after the specified index in the input collection.</returns>
 		public static IReadOnlyCollection<TSource> Skip<TSource> (this IReadOnlyCollection<TSource> source, int count)
 		{
 			if (source == null)
@@ -121,12 +120,12 @@ namespace Novartment.Base.Collections.Linq
 		}
 
 		/// <summary>
-		/// Возвращает указанное число подряд идущих элементов с начала коллекции.
+		/// Returns a specified number of contiguous elements from the start of a collection.
 		/// </summary>
-		/// <typeparam name="TSource">Тип элементов коллекции.</typeparam>
-		/// <param name="source">Коллекция, из которой требуется возвратить элементы.</param>
-		/// <param name="count">Число возвращаемых элементов.</param>
-		/// <returns>Коллекция, содержащая заданное число элементов с начала входной коллекции.</returns>
+		/// <typeparam name="TSource">The type of the elements.</typeparam>
+		/// <param name="source">The collection to return elements from.</param>
+		/// <param name="count">The number of elements to return.</param>
+		/// <returns>A collection that contains the specified number of elements from the start of the input collection.</returns>
 		public static IReadOnlyCollection<TSource> Take<TSource> (this IReadOnlyCollection<TSource> source, int count)
 		{
 			if (source == null)
@@ -155,14 +154,13 @@ namespace Novartment.Base.Collections.Linq
 		}
 
 		/// <summary>
-		/// Проецирует каждый элемент коллекции в новую форму.
+		/// Projects each element of a collection into a new form.
 		/// </summary>
-		/// <typeparam name="TSource">Тип элементов коллекции source.</typeparam>
-		/// <typeparam name="TResult">Тип значения, возвращаемого функцией selector.</typeparam>
-		/// <param name="source">Коллекция значений, для которых вызывается функция преобразования.</param>
-		/// <param name="selector">Функция преобразования, применяемая к каждому элементу.</param>
-		/// <returns>Коллекция, элементы которого получены в результате вызова функции преобразования
-		/// для каждого элемента коллекции source.</returns>
+		/// <typeparam name="TSource">The type of the elements.</typeparam>
+		/// <typeparam name="TResult">The type of the value returned by selector.</typeparam>
+		/// <param name="source">A collection of values to invoke a transform function on.</param>
+		/// <param name="selector">A transform function to apply to each element.</param>
+		/// <returns>A collection whose elements are the result of invoking the transform function on each element of source.</returns>
 		public static IReadOnlyCollection<TResult> Select<TSource, TResult> (this IReadOnlyCollection<TSource> source, Func<TSource, TResult> selector)
 		{
 			if (source == null)
@@ -183,15 +181,16 @@ namespace Novartment.Base.Collections.Linq
 		}
 
 		/// <summary>
-		/// Проецирует каждый элемент коллекции в новую форму, добавляя индекс элемента.
+		/// Projects each element of a collection into a new form by incorporating the element's index.
 		/// </summary>
-		/// <typeparam name="TSource">Тип элементов коллекции source.</typeparam>
-		/// <typeparam name="TResult">Тип значения, возвращаемого функцией selector.</typeparam>
-		/// <param name="source">Коллекция значений, для которых вызывается функция преобразования.</param>
-		/// <param name="selector">Функция преобразования, применяемая к каждому исходному элементу;
-		/// второй параметр функции представляет индекс исходного элемента.</param>
-		/// <returns>Коллекция, элементы которого получены в результате вызова функции преобразования
-		/// для каждого элемента коллекции source.</returns>
+		/// <typeparam name="TSource">The type of the elements.</typeparam>
+		/// <typeparam name="TResult">The type of the value returned by selector.</typeparam>
+		/// <param name="source">A collection of values to invoke a transform function on.</param>
+		/// <param name="selector">
+		/// A transform function to apply to each source element;
+		/// the second parameter of the function represents the index of the source element.
+		/// </param>
+		/// <returns>A collection whose elements are the result of invoking the transform function on each element of source.</returns>
 		public static IReadOnlyCollection<TResult> Select<TSource, TResult> (this IReadOnlyCollection<TSource> source, Func<TSource, int, TResult> selector)
 		{
 			if (source == null)
@@ -212,12 +211,11 @@ namespace Novartment.Base.Collections.Linq
 		}
 
 		/// <summary>
-		/// Изменяет порядок элементов коллекции на противоположный.
+		/// Inverts the order of the elements in a collection.
 		/// </summary>
-		/// <typeparam name="TSource">Тип элементов коллекции.</typeparam>
-		/// <param name="source">Коллекция значений, которые следует расставить в обратном порядке.</param>
-		/// <returns>Коллекция, элементы которой соответствуют элементам входной коллекции,
-		/// но следуют в противоположном порядке.</returns>
+		/// <typeparam name="TSource">The type of the elements.</typeparam>
+		/// <param name="source">A collection of values to reverse.</param>
+		/// <returns>A collection whose elements correspond to those of the input collection in reverse order.</returns>
 		public static IReadOnlyCollection<TSource> Reverse<TSource> (this IReadOnlyCollection<TSource> source)
 		{
 			if (source == null)
@@ -236,14 +234,14 @@ namespace Novartment.Base.Collections.Linq
 		}
 
 		/// <summary>
-		/// Сортирует элементы коллекции в порядке возрастания с использованием указанного компаратора.
+		/// Sorts the elements of a collection in ascending order by using a specified comparer.
 		/// </summary>
-		/// <typeparam name="TSource">Тип элементов коллекции.</typeparam>
-		/// <typeparam name="TKey">Тип ключа, возвращаемого функцией keySelector.</typeparam>
-		/// <param name="source">Коллекция значений, которые следует упорядочить.</param>
-		/// <param name="keySelector">Функция, извлекающая ключ из элемента.</param>
-		/// <param name="comparer">Компаратор, используемый для сравнения ключей.</param>
-		/// <returns>Коллекция, элементы которого отсортированы по ключу.</returns>
+		/// <typeparam name="TSource">The type of the elements.</typeparam>
+		/// <typeparam name="TKey">The type of the key returned by keySelector.</typeparam>
+		/// <param name="source">A collection of values to order.</param>
+		/// <param name="keySelector">A function to extract a key from an element.</param>
+		/// <param name="comparer">A comparer to compare keys.</param>
+		/// <returns>A collection whose elements are sorted according to a key.</returns>
 		public static IOrderedReadOnlyCollection<TSource> OrderBy<TSource, TKey> (
 			this IReadOnlyCollection<TSource> source,
 			Func<TSource, TKey> keySelector,
@@ -265,14 +263,14 @@ namespace Novartment.Base.Collections.Linq
 		}
 
 		/// <summary>
-		/// Сортирует элементы коллекции в порядке убывания с использованием указанного компаратора.
+		/// Sorts the elements of a collection in descending order by using a specified comparer.
 		/// </summary>
-		/// <typeparam name="TSource">Тип элементов коллекции.</typeparam>
-		/// <typeparam name="TKey">Тип ключа, возвращаемого функцией keySelector.</typeparam>
-		/// <param name="source">Коллекция значений, которые следует упорядочить.</param>
-		/// <param name="keySelector">Функция, извлекающая ключ из элемента.</param>
-		/// <param name="comparer">Компаратор, используемый для сравнения ключей.</param>
-		/// <returns>Коллекция, элементы которого отсортированы по ключу в порядке убывания.</returns>
+		/// <typeparam name="TSource">The type of the elements.</typeparam>
+		/// <typeparam name="TKey">The type of the key returned by keySelector.</typeparam>
+		/// <param name="source">A collection of values to order.</param>
+		/// <param name="keySelector">A function to extract a key from an element.</param>
+		/// <param name="comparer">A comparer to compare keys.</param>
+		/// <returns>A collection whose elements are sorted in descending order according to a key.</returns>
 		public static IOrderedReadOnlyCollection<TSource> OrderByDescending<TSource, TKey> (
 			this IReadOnlyCollection<TSource> source,
 			Func<TSource, TKey> keySelector,
@@ -294,14 +292,14 @@ namespace Novartment.Base.Collections.Linq
 		}
 
 		/// <summary>
-		/// Выполняет дополнительное упорядочение элементов коллекции в порядке возрастания с использованием указанного компаратора.
+		/// Performs a subsequent ordering of the elements in a collection in ascending order by using a specified comparer.
 		/// </summary>
-		/// <typeparam name="TSource">Тип элементов коллекции.</typeparam>
-		/// <typeparam name="TKey">Тип ключа, возвращаемого функцией keySelector.</typeparam>
-		/// <param name="source">Коллекция, содержащая сортируемые элементы.</param>
-		/// <param name="keySelector">Функция, извлекающая ключ из каждого элемента.</param>
-		/// <param name="comparer">Компаратор, используемый для сравнения ключей.</param>
-		/// <returns>Коллекция, элементы которой отсортированы по ключу.</returns>
+		/// <typeparam name="TSource">The type of the elements.</typeparam>
+		/// <typeparam name="TKey">The type of the key returned by keySelector.</typeparam>
+		/// <param name="source">A collection that contains elements to sort.</param>
+		/// <param name="keySelector">A function to extract a key from each element.</param>
+		/// <param name="comparer">A comparer to compare keys.</param>
+		/// <returns>A collection whose elements are sorted according to a key.</returns>
 		public static IOrderedReadOnlyCollection<TSource> ThenBy<TSource, TKey> (
 			this IOrderedReadOnlyCollection<TSource> source,
 			Func<TSource, TKey> keySelector,
@@ -323,14 +321,14 @@ namespace Novartment.Base.Collections.Linq
 		}
 
 		/// <summary>
-		/// Выполняет дополнительное упорядочение элементов коллекции в порядке убывания с использованием указанного компаратора.
+		/// Performs a subsequent ordering of the elements in a collection in descending order by using a specified comparer.
 		/// </summary>
-		/// <typeparam name="TSource">Тип элементов коллекции.</typeparam>
-		/// <typeparam name="TKey">Тип ключа, возвращаемого функцией keySelector.</typeparam>
-		/// <param name="source">Коллекция, содержащая сортируемые элементы.</param>
-		/// <param name="keySelector">Функция, извлекающая ключ из каждого элемента.</param>
-		/// <param name="comparer">Компаратор, используемый для сравнения ключей.</param>
-		/// <returns>Коллекция, элементы которой отсортированы по ключу в порядке убывания.</returns>
+		/// <typeparam name="TSource">The type of the elements.</typeparam>
+		/// <typeparam name="TKey">The type of the key returned by keySelector.</typeparam>
+		/// <param name="source">A collection that contains elements to sort.</param>
+		/// <param name="keySelector">A function to extract a key from each element.</param>
+		/// <param name="comparer">A comparer to compare keys.</param>
+		/// <returns>A collection whose elements are sorted in descending order according to a key</returns>
 		public static IOrderedReadOnlyCollection<TSource> ThenByDescending<TSource, TKey> (
 			this IOrderedReadOnlyCollection<TSource> source,
 			Func<TSource, TKey> keySelector,
@@ -352,12 +350,12 @@ namespace Novartment.Base.Collections.Linq
 		}
 
 		/// <summary>
-		/// Объединяет две коллекции.
+		/// Concatenates two sequences.
 		/// </summary>
-		/// <typeparam name="TSource">Тип элементов коллекций.</typeparam>
-		/// <param name="first">Первая из объединяемых коллекций.</param>
-		/// <param name="second">Коллекция, объединяемая с первой коллекций.</param>
-		/// <returns>Коллекция, содержащая элементы двух входных коллекций.</returns>
+		/// <typeparam name="TSource">The type of the elements.</typeparam>
+		/// <param name="first">The first collection to concatenate.</param>
+		/// <param name="second">The collection to concatenate to the first collection.</param>
+		/// <returns>A collection that contains the concatenated elements of the two input collections.</returns>
 		public static IReadOnlyCollection<TSource> Concat<TSource> (
 			this IReadOnlyCollection<TSource> first,
 			IReadOnlyCollection<TSource> second)
@@ -388,15 +386,15 @@ namespace Novartment.Base.Collections.Linq
 		}
 
 		/// <summary>
-		/// Объединяет две коллекции, используя указанную функцию предиката.
+		/// Applies a specified function to the corresponding elements of two collections, producing a collection of the results.
 		/// </summary>
-		/// <typeparam name="TFirst">Тип элементов первой входной коллекции.</typeparam>
-		/// <typeparam name="TSecond">Тип элементов второй входной коллекции.</typeparam>
-		/// <typeparam name="TResult">Тип элементов результирующей коллекции.</typeparam>
-		/// <param name="first">Первая коллекция для объединения.</param>
-		/// <param name="second">Вторая коллекция для объединения.</param>
-		/// <param name="selector">Функция, которая определяет, как объединить элементы двух коллекций.</param>
-		/// <returns>Коллекция, содержащий объединенные элементы двух входных коллекций.</returns>
+		/// <typeparam name="TFirst">The type of the elements of the first input collection.</typeparam>
+		/// <typeparam name="TSecond">The type of the elements of the second input collection.</typeparam>
+		/// <typeparam name="TResult">The type of the elements of the result collection.</typeparam>
+		/// <param name="first">The first collection to merge.</param>
+		/// <param name="second">The second collection to merge.</param>
+		/// <param name="selector">A function that specifies how to merge the elements from the two collections.</param>
+		/// <returns>A collection that contains merged elements of two input collections.</returns>
 		public static IReadOnlyCollection<TResult> Zip<TFirst, TSecond, TResult> (
 			this IReadOnlyCollection<TFirst> first,
 			IReadOnlyCollection<TSecond> second,
@@ -425,11 +423,11 @@ namespace Novartment.Base.Collections.Linq
 		}
 
 		/// <summary>
-		/// Создаёт массив, содержащий все элементы указанной коллекции.
+		/// СCreates an array from a collection.
 		/// </summary>
-		/// <typeparam name="TSource">Тип элементов коллекции.</typeparam>
-		/// <param name="source">Коллекция, на основе которой создаётся массив.</param>
-		/// <returns>Массив, содержащий элементы из входной коллекции.</returns>
+		/// <typeparam name="TSource">The type of the elements of source.</typeparam>
+		/// <param name="source">A collection to create an array from.</param>
+		/// <returns>An array that contains the elements from the input collection.</returns>
 		public static TSource[] ToArray<TSource> (this IReadOnlyCollection<TSource> source)
 		{
 			if (source == null)
@@ -459,7 +457,8 @@ namespace Novartment.Base.Collections.Linq
 			return array;
 		}
 
-		private class SkipReadOnlyCollection<TSource> : IReadOnlyCollection<TSource>
+		private class SkipReadOnlyCollection<TSource> :
+			IReadOnlyCollection<TSource>
 		{
 			private readonly IReadOnlyCollection<TSource> _source;
 			private readonly int _skipCount;
@@ -496,7 +495,8 @@ namespace Novartment.Base.Collections.Linq
 			}
 		}
 
-		private class TakeReadOnlyCollection<TSource> : IReadOnlyCollection<TSource>
+		private class TakeReadOnlyCollection<TSource> :
+			IReadOnlyCollection<TSource>
 		{
 			private readonly IReadOnlyCollection<TSource> _source;
 			private readonly int _count;
@@ -528,7 +528,8 @@ namespace Novartment.Base.Collections.Linq
 			}
 		}
 
-		private class SelectReadOnlyCollection<TSource, TResult> : IReadOnlyCollection<TResult>
+		private class SelectReadOnlyCollection<TSource, TResult> :
+			IReadOnlyCollection<TResult>
 		{
 			private readonly IReadOnlyCollection<TSource> _source;
 			private readonly Func<TSource, TResult> _selector;
@@ -555,7 +556,8 @@ namespace Novartment.Base.Collections.Linq
 			}
 		}
 
-		private class SelectIndexReadOnlyCollection<TSource, TResult> : IReadOnlyCollection<TResult>
+		private class SelectIndexReadOnlyCollection<TSource, TResult> :
+			IReadOnlyCollection<TResult>
 		{
 			private readonly IReadOnlyCollection<TSource> _source;
 			private readonly Func<TSource, int, TResult> _selector;
@@ -583,7 +585,8 @@ namespace Novartment.Base.Collections.Linq
 			}
 		}
 
-		private class ReverseReadOnlyCollection<TSource> : IReadOnlyCollection<TSource>
+		private class ReverseReadOnlyCollection<TSource> :
+			IReadOnlyCollection<TSource>
 		{
 			private readonly IReadOnlyCollection<TSource> _source;
 			private TSource[] _buffer = null;
@@ -613,7 +616,8 @@ namespace Novartment.Base.Collections.Linq
 			}
 		}
 
-		private class ConcatReadOnlyCollection<TSource> : IReadOnlyCollection<TSource>
+		private class ConcatReadOnlyCollection<TSource> :
+			IReadOnlyCollection<TSource>
 		{
 			private readonly IReadOnlyCollection<TSource> _first;
 			private readonly IReadOnlyCollection<TSource> _second;
@@ -645,7 +649,8 @@ namespace Novartment.Base.Collections.Linq
 			}
 		}
 
-		private class ZipReadOnlyCollection<TFirst, TSecond, TResult> : IReadOnlyCollection<TResult>
+		private class ZipReadOnlyCollection<TFirst, TSecond, TResult> :
+			IReadOnlyCollection<TResult>
 		{
 			private readonly IReadOnlyCollection<TFirst> _first;
 			private readonly IReadOnlyCollection<TSecond> _second;
@@ -676,7 +681,8 @@ namespace Novartment.Base.Collections.Linq
 			}
 		}
 
-		private abstract class OrderedReadOnlyCollection<TElement> : IOrderedReadOnlyCollection<TElement>
+		private abstract class OrderedReadOnlyCollection<TElement> :
+			IOrderedReadOnlyCollection<TElement>
 		{
 			private readonly IReadOnlyCollection<TElement> _source;
 

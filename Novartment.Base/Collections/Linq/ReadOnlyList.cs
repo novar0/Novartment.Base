@@ -7,26 +7,26 @@ using System.Linq;
 namespace Novartment.Base.Collections.Linq
 {
 	/// <summary>
-	/// Методы расширения к спискам.
+	/// Extension methods for read only lists.
 	/// </summary>
 	public static class ReadOnlyList
 	{
 		/// <summary>
-		/// Создаёт пустой список.
+		/// Returns an empty list.
 		/// </summary>
-		/// <typeparam name="TResult">Тип элементов списка.</typeparam>
-		/// <returns>Пустой список.</returns>
+		/// <typeparam name="TResult">The type of the elements.</typeparam>
+		/// <returns>Empty list.</returns>
 		public static IReadOnlyList<TResult> Empty<TResult> ()
 		{
 			return EmptyReadOnlyList<TResult>.GetInstance ();
 		}
 
 		/// <summary>
-		/// Создаёт список целых чисел в заданном диапазоне.
+		/// Generates a list of integral numbers within a specified range.
 		/// </summary>
-		/// <param name="start">Значение первого целого числа списка.</param>
-		/// <param name="count">Количество генерируемых последовательных целых чисел.</param>
-		/// <returns>Список, содержащий диапазон последовательных целых чисел.</returns>
+		/// <param name="start">The value of the first integer in the list.</param>
+		/// <param name="count">The number of sequential integers to generate.</param>
+		/// <returns>A list that contains a range of sequential integral numbers.</returns>
 		public static IReadOnlyList<int> Range (int start, int count)
 		{
 			if ((count < 0) || (((long)start + (long)count - 1L) > (long)int.MaxValue))
@@ -42,12 +42,12 @@ namespace Novartment.Base.Collections.Linq
 		}
 
 		/// <summary>
-		/// Генерирует список, содержащий повторяющееся значение.
+		/// Generates a list that contains one repeated value.
 		/// </summary>
-		/// <typeparam name="TResult">Тип значения, которое будет повторяться в результирующем списке.</typeparam>
-		/// <param name="element">Повторяемое значение.</param>
-		/// <param name="count">Требуемое число повторений значения в создаваемом списке.</param>
-		/// <returns>Список, содержащий повторяющееся значение.</returns>
+		/// <typeparam name="TResult">The type of the value to be repeated in the result list.</typeparam>
+		/// <param name="element">The value to be repeated.</param>
+		/// <param name="count">The number of times to repeat the value in the generated list.</param>
+		/// <returns>A list that contains a repeated value.</returns>
 		public static IReadOnlyList<TResult> Repeat<TResult> (TResult element, int count)
 		{
 			if (count < 0)
@@ -63,11 +63,11 @@ namespace Novartment.Base.Collections.Linq
 		}
 
 		/// <summary>
-		/// Возвращает первый элемент списка.
+		/// Returns the first element of a list.
 		/// </summary>
-		/// <typeparam name="TSource">Тип элементов списка.</typeparam>
-		/// <param name="source">Список, первый элемент которого требуется возвратить.</param>
-		/// <returns>Первый элемент указанного списка.</returns>
+		/// <typeparam name="TSource">The type of the elements of source.</typeparam>
+		/// <param name="source">The list to return the first element of.</param>
+		/// <returns>The first element in the specified list.</returns>
 		public static TSource First<TSource> (this IReadOnlyList<TSource> source)
 		{
 			if (source == null)
@@ -86,11 +86,11 @@ namespace Novartment.Base.Collections.Linq
 		}
 
 		/// <summary>
-		/// Возвращает первый элемент списка или значение по умолчанию, если список не содержит элементов.
+		/// Returns the first element of a list, or a default value if the list contains no elements.
 		/// </summary>
-		/// <typeparam name="TSource">Тип элементов списка.</typeparam>
-		/// <param name="source">Список, первый элемент которого требуется возвратить.</param>
-		/// <returns>Значение по умолчанию, если список пуст, в противном случае — первый элемент списка.</returns>
+		/// <typeparam name="TSource">The type of the elements.</typeparam>
+		/// <param name="source">The list to return the first element of.</param>
+		/// <returns>default(TSource) if source is empty; otherwise, the first element in source.</returns>
 		public static TSource FirstOrDefault<TSource> (this IReadOnlyList<TSource> source)
 		{
 			if (source == null)
@@ -104,11 +104,11 @@ namespace Novartment.Base.Collections.Linq
 		}
 
 		/// <summary>
-		/// Возвращает последний элемент списка.
+		/// Returns the last element of a list.
 		/// </summary>
-		/// <typeparam name="TSource">Тип элементов списка.</typeparam>
-		/// <param name="source">Список, последний элемент которого требуется возвратить.</param>
-		/// <returns>Последний элемент указанного списка.</returns>
+		/// <typeparam name="TSource">The type of the elements.</typeparam>
+		/// <param name="source">The list to return the last element of.</param>
+		/// <returns>The value at the last position in the source list.</returns>
 		public static TSource Last<TSource> (this IReadOnlyList<TSource> source)
 		{
 			if (source == null)
@@ -127,11 +127,12 @@ namespace Novartment.Base.Collections.Linq
 		}
 
 		/// <summary>
-		/// Возвращает последний элемент списка или значение по умолчанию, если список не содержит элементов.
+		/// Returns the last element of a list, or a default value if the list contains no elements.
 		/// </summary>
-		/// <typeparam name="TSource">Тип элементов списка.</typeparam>
-		/// <param name="source">Список, последний элемент которого требуется возвратить.</param>
-		/// <returns>Значение по умолчанию, если список пуст, в противном случае — последний элемент списка.</returns>
+		/// <typeparam name="TSource">The type of the elements.</typeparam>
+		/// <param name="source">The list to return the last element of.</param>
+		/// <returns>default(TSource) if the source list is empty;
+		/// otherwise, the last element in the list.</returns>
 		public static TSource LastOrDefault<TSource> (this IReadOnlyList<TSource> source)
 		{
 			if (source == null)
@@ -145,12 +146,12 @@ namespace Novartment.Base.Collections.Linq
 		}
 
 		/// <summary>
-		/// Возвращает элемент по указанному индексу в списке.
+		/// Returns the element at a specified index in a list.
 		/// </summary>
-		/// <typeparam name="TSource">Тип элементов списка.</typeparam>
-		/// <param name="source">Список, из которого требуется возвратить элемент.</param>
-		/// <param name="index">Отсчитываемый от нуля индекс элемента, который требуется извлечь.</param>
-		/// <returns>Элемент, находящийся в указанной позиции в списке.</returns>
+		/// <typeparam name="TSource">The type of the elements.</typeparam>
+		/// <param name="source">The list to return an element from.</param>
+		/// <param name="index">The zero-based index of the element to retrieve.</param>
+		/// <returns>The element at the specified position in the source list.</returns>
 		public static TSource ElementAt<TSource> (this IReadOnlyList<TSource> source, int index)
 		{
 			if (source == null)
@@ -169,14 +170,13 @@ namespace Novartment.Base.Collections.Linq
 		}
 
 		/// <summary>
-		/// Возвращает элемент по указанному индексу в списке или
-		/// значение по умолчанию, если индекс вне допустимого диапазона.
+		/// Returns the element at a specified index in a list or a default value if the index is out of range.
 		/// </summary>
-		/// <typeparam name="TSource">Тип элементов списка.</typeparam>
-		/// <param name="source">Список, из которого требуется возвратить элемент.</param>
-		/// <param name="index">Отсчитываемый от нуля индекс элемента, который требуется извлечь.</param>
-		/// <returns>Значение по умолчанию, если индекс указывает позицию вне списка,
-		/// в противном случае — элемент, находящийся в указанной позиции в списке.</returns>
+		/// <typeparam name="TSource">The type of the elements.</typeparam>
+		/// <param name="source">The list to return an element from.</param>
+		/// <param name="index">The zero-based index of the element to retrieve.</param>
+		/// <returns>default(TSource) if the index is outside the bounds of the source list;
+		/// otherwise, the element at the specified position in the source list.</returns>
 		public static TSource ElementAtOrDefault<TSource> (this IReadOnlyList<TSource> source, int index)
 		{
 			if (source == null)
@@ -195,14 +195,12 @@ namespace Novartment.Base.Collections.Linq
 		}
 
 		/// <summary>
-		/// Возвращает элементы указанного списка или одноэлементный список,
-		/// содержащий указанное значение, если список пуст.
+		/// Returns the elements of a list, or a default valued singleton list if the list is empty.
 		/// </summary>
-		/// <typeparam name="TSource">Тип элементов списка.</typeparam>
-		/// <param name="source">Список, для которого возвращается указанное значение, если он пуст.</param>
-		/// <param name="defaultValue">Значение, возвращаемое в случае пустого списка.</param>
-		/// <returns>Список, содержащий значение defaultValue, если список source пуст;
-		/// в противном случае возвращается source.</returns>
+		/// <typeparam name="TSource">The type of the elements.</typeparam>
+		/// <param name="source">The list to return the specified value for if it is empty.</param>
+		/// <param name="defaultValue">The value to return if the list is empty.</param>
+		/// <returns>A list that contains defaultValue if source is empty; otherwise, source.</returns>
 		public static IReadOnlyList<TSource> DefaultIfEmpty<TSource> (this IReadOnlyList<TSource> source, TSource defaultValue = default)
 		{
 			if (source == null)
@@ -216,12 +214,12 @@ namespace Novartment.Base.Collections.Linq
 		}
 
 		/// <summary>
-		/// Пропускает заданное число элементов списка и возвращает список из остальных элементов.
+		/// Bypasses a specified number of elements in a list and then returns the remaining elements.
 		/// </summary>
-		/// <typeparam name="TSource">Тип элементов списка.</typeparam>
-		/// <param name="source">Список, из которого требуется возвратить элементы.</param>
-		/// <param name="count">Число элементов, пропускаемых перед возвращением остальных элементов.</param>
-		/// <returns>Список, содержащий элементы из входного списка, начиная с указанной позиции.</returns>
+		/// <typeparam name="TSource">The type of the elements.</typeparam>
+		/// <param name="source">The list to return elements from.</param>
+		/// <param name="count">The number of elements to skip before returning the remaining elements.</param>
+		/// <returns>The list that contains the elements that occur after the specified index in the input list.</returns>
 		public static IReadOnlyList<TSource> Skip<TSource> (this IReadOnlyList<TSource> source, int count)
 		{
 			if (source == null)
@@ -250,12 +248,12 @@ namespace Novartment.Base.Collections.Linq
 		}
 
 		/// <summary>
-		/// Возвращает указанное число подряд идущих элементов с начала списка.
+		/// Returns a specified number of contiguous elements from the start of a list.
 		/// </summary>
-		/// <typeparam name="TSource">Тип элементов списка.</typeparam>
-		/// <param name="source">Список, из которого требуется возвратить элементы.</param>
-		/// <param name="count">Число возвращаемых элементов.</param>
-		/// <returns>Список, содержащий заданное число элементов с начала входного списка.</returns>
+		/// <typeparam name="TSource">The type of the elements.</typeparam>
+		/// <param name="source">The list to return elements from.</param>
+		/// <param name="count">The number of elements to return.</param>
+		/// <returns>A list that contains the specified number of elements from the start of the input list.</returns>
 		public static IReadOnlyList<TSource> Take<TSource> (this IReadOnlyList<TSource> source, int count)
 		{
 			if (source == null)
@@ -284,14 +282,13 @@ namespace Novartment.Base.Collections.Linq
 		}
 
 		/// <summary>
-		/// Проецирует каждый элемент списка в новую форму.
+		/// Projects each element of a list into a new form.
 		/// </summary>
-		/// <typeparam name="TSource">Тип элементов списка source.</typeparam>
-		/// <typeparam name="TResult">Тип значения, возвращаемого функцией selector.</typeparam>
-		/// <param name="source">Список значений, для которых вызывается функция преобразования.</param>
-		/// <param name="selector">Функция преобразования, применяемая к каждому элементу.</param>
-		/// <returns>Список, элементы которого получены в результате вызова функции преобразования
-		/// для каждого элемента списка source.</returns>
+		/// <typeparam name="TSource">The type of the elements.</typeparam>
+		/// <typeparam name="TResult">The type of the value returned by selector.</typeparam>
+		/// <param name="source">A list of values to invoke a transform function on.</param>
+		/// <param name="selector">A transform function to apply to each element.</param>
+		/// <returns>A list whose elements are the result of invoking the transform function on each element of source.</returns>
 		public static IReadOnlyList<TResult> Select<TSource, TResult> (this IReadOnlyList<TSource> source, Func<TSource, TResult> selector)
 		{
 			if (source == null)
@@ -312,15 +309,14 @@ namespace Novartment.Base.Collections.Linq
 		}
 
 		/// <summary>
-		/// Проецирует каждый элемент списка в новую форму, добавляя индекс элемента.
+		/// Projects each element of a list into a new form by incorporating the element's index.
 		/// </summary>
-		/// <typeparam name="TSource">Тип элементов списка source.</typeparam>
-		/// <typeparam name="TResult">Тип значения, возвращаемого функцией selector.</typeparam>
-		/// <param name="source">Список значений, для которых вызывается функция преобразования.</param>
-		/// <param name="selector">Функция преобразования, применяемая к каждому исходному элементу;
-		/// второй параметр функции представляет индекс исходного элемента.</param>
-		/// <returns>Список, элементы которого получены в результате вызова функции преобразования
-		/// для каждого элемента списка source.</returns>
+		/// <typeparam name="TSource">The type of the elements.</typeparam>
+		/// <typeparam name="TResult">The type of the value returned by selector.</typeparam>
+		/// <param name="source">A list of values to invoke a transform function on.</param>
+		/// <param name="selector">A transform function to apply to each source element;
+		/// the second parameter of the function represents the index of the source element.</param>
+		/// <returns>A list whose elements are the result of invoking the transform function on each element of source.</returns>
 		public static IReadOnlyList<TResult> Select<TSource, TResult> (this IReadOnlyList<TSource> source, Func<TSource, int, TResult> selector)
 		{
 			if (source == null)
@@ -341,12 +337,11 @@ namespace Novartment.Base.Collections.Linq
 		}
 
 		/// <summary>
-		/// Изменяет порядок элементов списка на противоположный.
+		/// Inverts the order of the elements in a list.
 		/// </summary>
-		/// <typeparam name="TSource">Тип элементов списка.</typeparam>
-		/// <param name="source">Список значений, которые следует расставить в обратном порядке.</param>
-		/// <returns>Список, элементы которого соответствуют элементам входного списка,
-		/// но следуют в противоположном порядке.</returns>
+		/// <typeparam name="TSource">The type of the elements.</typeparam>
+		/// <param name="source">A list of values to reverse.</param>
+		/// <returns>A list whose elements correspond to those of the input list in reverse order.</returns>
 		public static IReadOnlyList<TSource> Reverse<TSource> (this IReadOnlyList<TSource> source)
 		{
 			if (source == null)
@@ -365,14 +360,14 @@ namespace Novartment.Base.Collections.Linq
 		}
 
 		/// <summary>
-		/// Сортирует элементы списка в порядке возрастания с использованием указанного компаратора.
+		/// Sorts the elements of a list in ascending order by using a specified comparer.
 		/// </summary>
-		/// <typeparam name="TSource">Тип элементов списка.</typeparam>
-		/// <typeparam name="TKey">Тип ключа, возвращаемого функцией keySelector.</typeparam>
-		/// <param name="source">Список значений, которые следует упорядочить.</param>
-		/// <param name="keySelector">Функция, извлекающая ключ из элемента.</param>
-		/// <param name="comparer">Компаратор, используемый для сравнения ключей.</param>
-		/// <returns>Список, элементы которого отсортированы по ключу.</returns>
+		/// <typeparam name="TSource">The type of the elements.</typeparam>
+		/// <typeparam name="TKey">The type of the key returned by keySelector.</typeparam>
+		/// <param name="source">A list of values to order.</param>
+		/// <param name="keySelector">A function to extract a key from an element.</param>
+		/// <param name="comparer">An comparer to compare keys.</param>
+		/// <returns>A list whose elements are sorted according to a key.</returns>
 		public static IOrderedReadOnlyList<TSource> OrderBy<TSource, TKey> (
 			this IReadOnlyList<TSource> source,
 			Func<TSource, TKey> keySelector,
@@ -394,14 +389,14 @@ namespace Novartment.Base.Collections.Linq
 		}
 
 		/// <summary>
-		/// Сортирует элементы списка в порядке убывания с использованием указанного компаратора.
+		/// Sorts the elements of a list in descending order.
 		/// </summary>
-		/// <typeparam name="TSource">Тип элементов списка.</typeparam>
-		/// <typeparam name="TKey">Тип ключа, возвращаемого функцией keySelector.</typeparam>
-		/// <param name="source">Список значений, которые следует упорядочить.</param>
-		/// <param name="keySelector">Функция, извлекающая ключ из элемента.</param>
-		/// <param name="comparer">Компаратор, используемый для сравнения ключей.</param>
-		/// <returns>Список, элементы которого отсортированы по ключу в порядке убывания.</returns>
+		/// <typeparam name="TSource">The type of the elements.</typeparam>
+		/// <typeparam name="TKey">The type of the key returned by keySelector.</typeparam>
+		/// <param name="source">A list of values to order.</param>
+		/// <param name="keySelector">A function to extract a key from an element.</param>
+		/// <param name="comparer">An comparer to compare keys.</param>
+		/// <returns>A list whose elements are sorted in descending order according to a key.</returns>
 		public static IOrderedReadOnlyList<TSource> OrderByDescending<TSource, TKey> (
 			this IReadOnlyList<TSource> source,
 			Func<TSource, TKey> keySelector,
@@ -423,14 +418,14 @@ namespace Novartment.Base.Collections.Linq
 		}
 
 		/// <summary>
-		/// Выполняет дополнительное упорядочение элементов списка в порядке возрастания с использованием указанного компаратора.
+		/// Performs a subsequent ordering of the elements in a list in ascending order by using a specified comparer.
 		/// </summary>
-		/// <typeparam name="TSource">Тип элементов списка.</typeparam>
-		/// <typeparam name="TKey">Тип ключа, возвращаемого функцией keySelector.</typeparam>
-		/// <param name="source">Список, содержащий сортируемые элементы.</param>
-		/// <param name="keySelector">Функция, извлекающая ключ из каждого элемента.</param>
-		/// <param name="comparer">Компаратор, используемый для сравнения ключей.</param>
-		/// <returns>Список, элементы которого отсортированы по ключу.</returns>
+		/// <typeparam name="TSource">The type of the elements.</typeparam>
+		/// <typeparam name="TKey">The type of the key returned by keySelector.</typeparam>
+		/// <param name="source">The list that contains elements to sort.</param>
+		/// <param name="keySelector">A function to extract a key from each element.</param>
+		/// <param name="comparer">An comparer to compare keys.</param>
+		/// <returns>A list whose elements are sorted according to a key.</returns>
 		public static IOrderedReadOnlyList<TSource> ThenBy<TSource, TKey> (
 			this IOrderedReadOnlyList<TSource> source,
 			Func<TSource, TKey> keySelector,
@@ -452,14 +447,14 @@ namespace Novartment.Base.Collections.Linq
 		}
 
 		/// <summary>
-		/// Выполняет дополнительное упорядочение элементов списка в порядке убывания с использованием указанного компаратора.
+		/// Performs a subsequent ordering of the elements in a list in descending order by using a specified comparer.
 		/// </summary>
-		/// <typeparam name="TSource">Тип элементов списка.</typeparam>
-		/// <typeparam name="TKey">Тип ключа, возвращаемого функцией keySelector.</typeparam>
-		/// <param name="source">Список, содержащий сортируемые элементы.</param>
-		/// <param name="keySelector">Функция, извлекающая ключ из каждого элемента.</param>
-		/// <param name="comparer">Компаратор, используемый для сравнения ключей.</param>
-		/// <returns>Список, элементы которого отсортированы по ключу в порядке убывания.</returns>
+		/// <typeparam name="TSource">The type of the elements.</typeparam>
+		/// <typeparam name="TKey">The type of the key returned by keySelector.</typeparam>
+		/// <param name="source">The list that contains elements to sort.</param>
+		/// <param name="keySelector">A function to extract a key from each element.</param>
+		/// <param name="comparer">An comparer to compare keys.</param>
+		/// <returns>A list whose elements are sorted in descending order according to a key.</returns>
 		public static IOrderedReadOnlyList<TSource> ThenByDescending<TSource, TKey> (
 			this IOrderedReadOnlyList<TSource> source,
 			Func<TSource, TKey> keySelector,
@@ -481,12 +476,12 @@ namespace Novartment.Base.Collections.Linq
 		}
 
 		/// <summary>
-		/// Объединяет два списка.
+		/// Concatenates two lists.
 		/// </summary>
-		/// <typeparam name="TSource">Тип элементов списков.</typeparam>
-		/// <param name="first">Первый из объединяемых списков.</param>
-		/// <param name="second">Список, объединяемый с первым списком.</param>
-		/// <returns>Список, содержащий элементы двух входных списков.</returns>
+		/// <typeparam name="TSource">The type of the elements.</typeparam>
+		/// <param name="first">The first list to concatenate.</param>
+		/// <param name="second">The list to concatenate to the first list.</param>
+		/// <returns>A list that contains the concatenated elements of the two input lists.</returns>
 		public static IReadOnlyList<TSource> Concat<TSource> (this IReadOnlyList<TSource> first, IReadOnlyList<TSource> second)
 		{
 			if (first == null)
@@ -515,15 +510,15 @@ namespace Novartment.Base.Collections.Linq
 		}
 
 		/// <summary>
-		/// Объединяет две списка, используя указанную функцию предиката.
+		/// Applies a specified function to the corresponding elements of two lists, producing a list of the results.
 		/// </summary>
-		/// <typeparam name="TFirst">Тип элементов первого входного списка.</typeparam>
-		/// <typeparam name="TSecond">Тип элементов второго входного списка.</typeparam>
-		/// <typeparam name="TResult">Тип элементов результирующего списка.</typeparam>
-		/// <param name="first">Первый список для объединения.</param>
-		/// <param name="second">Второй список для объединения.</param>
-		/// <param name="selector">Функция, которая определяет, как объединить элементы двух списков.</param>
-		/// <returns>Список, содержащий объединенные элементы двух входных списков.</returns>
+		/// <typeparam name="TFirst">The type of the elements of the first input list.</typeparam>
+		/// <typeparam name="TSecond">The type of the elements of the second input list.</typeparam>
+		/// <typeparam name="TResult">The type of the elements of the result list.</typeparam>
+		/// <param name="first">The first list to merge.</param>
+		/// <param name="second">The second list to merge.</param>
+		/// <param name="selector">A function that specifies how to merge the elements from the two lists.</param>
+		/// <returns>A list that contains merged elements of two input lists.</returns>
 		public static IReadOnlyList<TResult> Zip<TFirst, TSecond, TResult> (this IReadOnlyList<TFirst> first, IReadOnlyList<TSecond> second, Func<TFirst, TSecond, TResult> selector)
 		{
 			if (first == null)
@@ -562,7 +557,9 @@ namespace Novartment.Base.Collections.Linq
 				return _instance;
 			}
 
-			internal class EmptySetImplementation : IReadOnlyFiniteSet<T>, IReadOnlyList<T>
+			internal class EmptySetImplementation :
+				IReadOnlyFiniteSet<T>,
+				IReadOnlyList<T>
 			{
 				private readonly IEnumerable<T> _items = Array.Empty<T> ();
 
@@ -582,7 +579,9 @@ namespace Novartment.Base.Collections.Linq
 			}
 		}
 
-		internal class RangeReadOnlyList : IReadOnlyList<int>, IReadOnlyFiniteSet<int>
+		internal class RangeReadOnlyList :
+			IReadOnlyList<int>,
+			IReadOnlyFiniteSet<int>
 		{
 			private readonly int _start;
 			private readonly int _count;
@@ -628,7 +627,8 @@ namespace Novartment.Base.Collections.Linq
 			}
 		}
 
-		private class RepeatReadOnlyList<TResult> : IReadOnlyList<TResult>
+		private class RepeatReadOnlyList<TResult> :
+			IReadOnlyList<TResult>
 		{
 			private readonly TResult _element;
 			private readonly int _count;
@@ -669,7 +669,8 @@ namespace Novartment.Base.Collections.Linq
 			}
 		}
 
-		private class SkipReadOnlyList<TSource> : IReadOnlyList<TSource>
+		private class SkipReadOnlyList<TSource> :
+			IReadOnlyList<TSource>
 		{
 			private readonly IReadOnlyList<TSource> _source;
 			private readonly int _skipCount;
@@ -707,7 +708,8 @@ namespace Novartment.Base.Collections.Linq
 			}
 		}
 
-		private class TakeReadOnlyList<TSource> : IReadOnlyList<TSource>
+		private class TakeReadOnlyList<TSource> :
+			IReadOnlyList<TSource>
 		{
 			private readonly IReadOnlyList<TSource> _source;
 			private readonly int _count;
@@ -745,7 +747,8 @@ namespace Novartment.Base.Collections.Linq
 			}
 		}
 
-		private class SelectReadOnlyList<TSource, TResult> : IReadOnlyList<TResult>
+		private class SelectReadOnlyList<TSource, TResult> :
+			IReadOnlyList<TResult>
 		{
 			private readonly IReadOnlyList<TSource> _source;
 			private readonly Func<TSource, TResult> _selector;
@@ -786,7 +789,8 @@ namespace Novartment.Base.Collections.Linq
 			}
 		}
 
-		private class SelectIndexReadOnlyList<TSource, TResult> : IReadOnlyList<TResult>
+		private class SelectIndexReadOnlyList<TSource, TResult> :
+			IReadOnlyList<TResult>
 		{
 			private readonly IReadOnlyList<TSource> _source;
 			private readonly Func<TSource, int, TResult> _selector;
@@ -828,7 +832,8 @@ namespace Novartment.Base.Collections.Linq
 			}
 		}
 
-		private class ReverseReadOnlyList<TSource> : IReadOnlyList<TSource>
+		private class ReverseReadOnlyList<TSource> :
+			IReadOnlyList<TSource>
 		{
 			private readonly IReadOnlyList<TSource> _source;
 
@@ -864,7 +869,8 @@ namespace Novartment.Base.Collections.Linq
 			}
 		}
 
-		private class ConcatReadOnlyList<TSource> : IReadOnlyList<TSource>
+		private class ConcatReadOnlyList<TSource> :
+			IReadOnlyList<TSource>
 		{
 			private readonly IReadOnlyList<TSource> _first;
 			private readonly IReadOnlyList<TSource> _second;
@@ -902,7 +908,8 @@ namespace Novartment.Base.Collections.Linq
 			}
 		}
 
-		private class ZipReadOnlyList<TFirst, TSecond, TResult> : IReadOnlyList<TResult>
+		private class ZipReadOnlyList<TFirst, TSecond, TResult> :
+			IReadOnlyList<TResult>
 		{
 			private readonly IReadOnlyList<TFirst> _first;
 			private readonly IReadOnlyList<TSecond> _second;
@@ -942,7 +949,8 @@ namespace Novartment.Base.Collections.Linq
 			}
 		}
 
-		private abstract class OrderedReadOnlyList<TElement> : IOrderedReadOnlyList<TElement>
+		private abstract class OrderedReadOnlyList<TElement> :
+			IOrderedReadOnlyList<TElement>
 		{
 			private readonly IReadOnlyList<TElement> _source;
 

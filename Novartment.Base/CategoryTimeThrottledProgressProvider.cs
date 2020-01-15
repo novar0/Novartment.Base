@@ -98,7 +98,7 @@ namespace Novartment.Base
 			bool needReport = false;
 			lock (_dictionaryLocker)
 			{
-				var found = _categoryPostponedData.TryGetItem (category, _categoryComparer, out ReportEvent reportEvent);
+				var found = _categoryPostponedData.TryGetValue (category, _categoryComparer, out ReportEvent reportEvent);
 				if (found && ((DateTime.Now - reportEvent.Time) < _intervalToSendProgressUpdates))
 				{
 					// минимальный интервал от прошлого уведомления такой категории ещё не прошёл, поэтому заменяем отложенное ранее

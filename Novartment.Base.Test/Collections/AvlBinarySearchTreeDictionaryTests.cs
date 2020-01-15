@@ -21,7 +21,7 @@ namespace Novartment.Base.Test
 
 			Assert.Equal (0, map.GetCount ());
 			Assert.False (map.ContainsKey (10, comparer));
-			Assert.False (map.TryGetItem (0, comparer, out _));
+			Assert.False (map.TryGetValue (0, comparer, out _));
 
 			map = map.RemoveKey (0, comparer);
 			Assert.Equal (0, map.GetCount ());
@@ -30,8 +30,8 @@ namespace Novartment.Base.Test
 			Assert.Equal (1, map.GetCount ());
 			Assert.False (map.ContainsKey (11, comparer));
 			Assert.True (map.ContainsKey (10, comparer));
-			Assert.False (map.TryGetItem (11, comparer, out _));
-			Assert.True (map.TryGetItem (10, comparer, out string value));
+			Assert.False (map.TryGetValue (11, comparer, out _));
+			Assert.True (map.TryGetValue (10, comparer, out string value));
 			Assert.Equal ("10", value);
 
 			map = map.SetValue (-20, string.Empty, comparer);
@@ -41,12 +41,12 @@ namespace Novartment.Base.Test
 			Assert.Equal (2, map.GetCount ());
 
 			Assert.False (map.ContainsKey (11, comparer));
-			Assert.False (map.TryGetItem (11, comparer, out _));
+			Assert.False (map.TryGetValue (11, comparer, out _));
 			Assert.True (map.ContainsKey (-20, comparer));
-			Assert.True (map.TryGetItem (-20, comparer, out value));
+			Assert.True (map.TryGetValue (-20, comparer, out value));
 			Assert.Equal ("-20", value);
 			Assert.True (map.ContainsKey (10, comparer));
-			Assert.True (map.TryGetItem (10, comparer, out value));
+			Assert.True (map.TryGetValue (10, comparer, out value));
 			Assert.Equal ("10", value);
 
 			map = map.RemoveKey (1111, comparer);
@@ -55,9 +55,9 @@ namespace Novartment.Base.Test
 			map = map.RemoveKey (10, comparer);
 			Assert.Equal (1, map.GetCount ());
 			Assert.False (map.ContainsKey (10, comparer));
-			Assert.False (map.TryGetItem (10, comparer, out _));
+			Assert.False (map.TryGetValue (10, comparer, out _));
 			Assert.True (map.ContainsKey (-20, comparer));
-			Assert.True (map.TryGetItem (-20, comparer, out value));
+			Assert.True (map.TryGetValue (-20, comparer, out value));
 			Assert.Equal ("-20", value);
 
 			map = map.SetValue (105, "105", comparer);
@@ -122,7 +122,7 @@ namespace Novartment.Base.Test
 
 			Assert.Equal (0, map.GetCount ());
 			Assert.False (map.ContainsKey ("10", comparer));
-			Assert.False (map.TryGetItem ("0", comparer, out _));
+			Assert.False (map.TryGetValue ("0", comparer, out _));
 
 			map = map.RemoveKey ("0", comparer);
 			Assert.Equal (0, map.GetCount ());
@@ -131,8 +131,8 @@ namespace Novartment.Base.Test
 			Assert.Equal (1, map.GetCount ());
 			Assert.False (map.ContainsKey ("11", comparer));
 			Assert.True (map.ContainsKey ("10", comparer));
-			Assert.False (map.TryGetItem ("11", comparer, out _));
-			Assert.True (map.TryGetItem ("10", comparer, out int value));
+			Assert.False (map.TryGetValue ("11", comparer, out _));
+			Assert.True (map.TryGetValue ("10", comparer, out int value));
 			Assert.Equal (10, value);
 
 			map = map.SetValue ("-20", -999, comparer);
@@ -142,12 +142,12 @@ namespace Novartment.Base.Test
 			Assert.Equal (2, map.GetCount ());
 
 			Assert.False (map.ContainsKey ("11", comparer));
-			Assert.False (map.TryGetItem ("11", comparer, out _));
+			Assert.False (map.TryGetValue ("11", comparer, out _));
 			Assert.True (map.ContainsKey ("-20", comparer));
-			Assert.True (map.TryGetItem ("-20", comparer, out value));
+			Assert.True (map.TryGetValue ("-20", comparer, out value));
 			Assert.Equal (-20, value);
 			Assert.True (map.ContainsKey ("10", comparer));
-			Assert.True (map.TryGetItem ("10", comparer, out value));
+			Assert.True (map.TryGetValue ("10", comparer, out value));
 			Assert.Equal (10, value);
 
 			map = map.RemoveKey ("1111", comparer);
@@ -156,9 +156,9 @@ namespace Novartment.Base.Test
 			map = map.RemoveKey ("10", comparer);
 			Assert.Equal (1, map.GetCount ());
 			Assert.False (map.ContainsKey ("10", comparer));
-			Assert.False (map.TryGetItem ("10", comparer, out _));
+			Assert.False (map.TryGetValue ("10", comparer, out _));
 			Assert.True (map.ContainsKey ("-20", comparer));
-			Assert.True (map.TryGetItem ("-20", comparer, out value));
+			Assert.True (map.TryGetValue ("-20", comparer, out value));
 			Assert.Equal (-20, value);
 
 			map = map.SetValue ("105", 105, comparer);
