@@ -2,7 +2,7 @@
 using System.Data;
 using System.Data.Common;
 
-namespace Novartment.Base.Data
+namespace Novartment.Base.Data.SqlWrapper
 {
 	/// <summary>
 	/// Подключение к базе данных.

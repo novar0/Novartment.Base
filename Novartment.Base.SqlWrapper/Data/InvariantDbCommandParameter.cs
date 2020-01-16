@@ -2,7 +2,7 @@
 using System.Data;
 using System.Diagnostics.Contracts;
 
-namespace Novartment.Base.Data
+namespace Novartment.Base.Data.SqlWrapper
 {
 	/// <summary>
 	/// Параметр команды.

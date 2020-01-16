@@ -2,7 +2,7 @@
 using System.Data.Common;
 using System.Threading;
 
-namespace Novartment.Base.Data
+namespace Novartment.Base.Data.SqlWrapper
 {
 	/// <summary>Класс для хранения любого реализующего IDisposable значения плюс связанная БД-команда.
 	/// При освобождении будут освобождены и значение и связанная команда.

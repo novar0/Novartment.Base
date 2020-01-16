@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <AssemblyName>Novartment.Base.SqlWrapper</AssemblyName>
+		<TargetFrameworks>netstandard2.0;netstandard2.1</TargetFrameworks>
+		<Version>1.0.0-beta</Version>
+		<Description>Classes for building Sql-commands</Description>
+		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+		<Features>IOperation</Features>
+		<LangVersion>latest</LangVersion>
+	</PropertyGroup>
+
+	<ItemGroup>
+    <ProjectReference Include="..\Novartment.Base\Novartment.Base.csproj" />
+  </ItemGroup>
+
+</Project>

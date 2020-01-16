@@ -6,7 +6,7 @@ using System.Diagnostics.Contracts;
 using System.Globalization;
 using Microsoft.Extensions.Logging;
 
-namespace Novartment.Base.Data
+namespace Novartment.Base.Data.SqlWrapper
 {
 	/// <summary>
 	/// Подключение к базе данных.

@@ -1,6 +1,6 @@
 ﻿using System.Data.Common;
 
-namespace Novartment.Base.Data
+namespace Novartment.Base.Data.SqlWrapper
 {
 	/// <summary>
 	/// Действие, позволяюще удобно выполнять операции в БД без знания синтаксиса SQL и специфики конкретной СУБД.
@@ -27,7 +27,7 @@ namespace Novartment.Base.Data
 		void AddKeyParameter (string name, object value);
 
 		/// <summary>
-		/// Добавляет аккумулирующий с указанным именем и значением.
+		/// Добавляет аккумулирующий параметр с указанным именем и значением.
 		/// </summary>
 		/// <param name="name">Имя параметра.</param>
 		/// <param name="value">Значение параметра.</param>

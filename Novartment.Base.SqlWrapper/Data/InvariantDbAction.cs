@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 using Novartment.Base.Collections;
 using Novartment.Base.Collections.Linq;
 
-namespace Novartment.Base.Data
+namespace Novartment.Base.Data.SqlWrapper
 {
 	/// <summary>
 	/// Действие, позволяюще удобно выполнять операции в БД без знания синтаксиса SQL и специфики конкретной СУБД.
