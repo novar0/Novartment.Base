@@ -3,12 +3,11 @@ using System.Collections.Generic;
 using System.Runtime.Serialization;
 using System.Text;
 using Novartment.Base.Collections;
-using Novartment.Base.Text;
 
 namespace Novartment.Base
 {
 	/// <summary>
-	/// Строковое представление всех свойств исключения и окружения в котором оно произошло.
+	/// A textual representation of all the properties of the exception.
 	/// </summary>
 	[DataContract]
 	public class ExceptionDescription
@@ -24,13 +23,15 @@ namespace Novartment.Base
 		[DataMember (Name = "InnerExceptions")]
 		private ICollection<ExceptionDescription> _innerExceptions;
 
-		/// <summary>Инициализирует новый экземпляр класса.</summary>
-		/// <param name="name">Тип исключения.</param>
-		/// <param name="message">Сообщение исключения.</param>
-		/// <param name="details">Дополнительная информация исключения.</param>
-		/// <param name="trace">Трассировка стэка исключения.</param>
-		/// <param name="innerExceptions">Коллекция описаний вложенных исключений.</param>
-		public ExceptionDescription(
+		/// <summary>
+		/// Initializes a new instance of the ExceptionDescription class with all specified properies.
+		/// </summary>
+		/// <param name="name">The name of the exception.</param>
+		/// <param name="message">The message of the exception.</param>
+		/// <param name="details">The details of the exception.</param>
+		/// <param name="trace">The stack trace of the exception.</param>
+		/// <param name="innerExceptions">The collection of the exceptions that is the cause of the current exception.</param>
+		public ExceptionDescription (
 			string name,
 			string message,
 			string details,
@@ -44,33 +45,42 @@ namespace Novartment.Base
 			_innerExceptions = innerExceptions;
 		}
 
-		/// <summary>Тип исключения.</summary>
+		/// <summary>Gets the name of the exception.</summary>
 		public string Name => _name;
 
-		/// <summary>Сообщение исключения.</summary>
+		/// <summary>Gets a message that describes the exception.</summary>
 		public string Message => _message;
 
-		/// <summary>Дополнительная информация исключения.</summary>
+		/// <summary>Gets the details of the exception.</summary>
 		public string Details => _details;
 
-		/// <summary>Трассировка стэка исключения.</summary>
+		/// <summary>Get the stack trace of the exception.</summary>
 		public string Trace => _trace;
 
-		/// <summary>Коллекция описаний вложенных исключений.</summary>
+		/// <summary>Gets the list of the exceptions that is the cause of the current exception.</summary>
 		public ICollection<ExceptionDescription> InnerExceptions => _innerExceptions;
 
-		/// <summary>Получает одно-строковое краткое представление подробностей об исключении.</summary>
-		/// <returns>Одна строка подробностей об исключении.</returns>
+		/// <summary>
+		/// Creates and returns a single-line string representation of the current exception.
+		/// </summary>
+		/// <returns>The single-line string representation of the current exception.</returns>
 		public override string ToString ()
 		{
 			return ToString (false, null);
 		}
 
-		/// <summary>Получает строковое представление подробностей об исключении.</summary>
-		/// <param name="detailed">Укажите true чтобы получить детальное многостроковое представлени,
-		/// или false чтобы получить однострочное краткое представление.</param>
-		/// <param name="tracePatternToHide">Строка-образец, который в трассировке стэка будет заменён на многоточие.</param>
-		/// <returns>Строка подробностей об исключении.</returns>
+		/// <summary>
+		/// Creates and returns a string  of the current exception
+		/// according to the specified level of detail and, optionally, hides the specified string pattern.
+		/// </summary>
+		/// <param name="detailed">
+		/// A value indicating whether to create a detailed multi-line or a simple single-line representation.
+		/// </param>
+		/// <param name="tracePatternToHide">
+		/// A string pattern that will be replaced by an ellipsis in the stack trace.
+		/// Specify null-reference if not needed.
+		/// </param>
+		/// <returns>The string representation of the current exception.</returns>
 		public virtual string ToString (bool detailed, string tracePatternToHide = null)
 		{
 			string result;

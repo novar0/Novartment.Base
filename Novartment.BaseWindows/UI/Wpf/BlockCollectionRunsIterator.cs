@@ -8,7 +8,8 @@ using static System.Linq.Enumerable;
 
 namespace Novartment.Base.UI.Wpf
 {
-	internal class BlockCollectionRunsIterator : IEnumerable<Run>
+	internal class BlockCollectionRunsIterator :
+		IEnumerable<Run>
 	{
 		private readonly BlockCollection _collection;
 

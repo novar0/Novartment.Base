@@ -1,29 +1,29 @@
 ﻿namespace Novartment.Base
 {
 	/// <summary>
-	/// Причина завершения процесса.
+	/// Reason for the end of the process.
 	/// </summary>
 	public enum ProcessExitCode : int
 	{
-		/// <summary>Нормальное завершение.</summary>
+		/// <summary>Normal exit.</summary>
 		Ok = 0,
 
-		/// <summary>Необработанное исключение.</summary>
+		/// <summary>Unhandled exception.</summary>
 		UnhandledException = 1,
 
-		/// <summary>Запрет запуска второго экземпляра уже запущенного приложения.</summary>
+		/// <summary>Prevents the second instance of an already running application from running.</summary>
 		AlreadyRunningInstanceDetected = 2,
 
-		/// <summary>Указаны некорректные параметры в командной строке.</summary>
+		/// <summary>Incorrect parameters are specified in the command line.</summary>
 		UnknownArguments = 3,
 
-		/// <summary>Нарушение прав доступа.</summary>
+		/// <summary>Access violation.</summary>
 		AccessViolation = 4,
 
-		/// <summary>Требуется перезапуск.</summary>
+		/// <summary>Restart required.</summary>
 		NeedRestart = 5,
 
-		/// <summary>Запрет запуска во время процесса установки.</summary>
+		/// <summary>Disable startup during the installation process.</summary>
 		InstallationRunningLaunchNotAllowed = 6,
 	}
 }

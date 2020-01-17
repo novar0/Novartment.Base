@@ -6,7 +6,8 @@ namespace Novartment.Base.Collections
 	/// A collection that supports enumeration and copying all elements to an array.
 	/// </summary>
 	/// <typeparam name="T">The type of the elements.</typeparam>
-	public interface IArrayDuplicableCollection<T> : IReadOnlyCollection<T>
+	public interface IArrayDuplicableCollection<T> :
+		IReadOnlyCollection<T>
 	{
 		/// <summary>
 		/// Copies the collection to a one-dimensional array,

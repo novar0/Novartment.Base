@@ -11,7 +11,8 @@ namespace Novartment.Base.Shell
 	/// <summary>
 	/// Перечислитель элементов на основе перечислителя IEnumShellItems.
 	/// </summary>
-	internal class ShellItemsEnumerator : IEnumerator<IShellItem>
+	internal class ShellItemsEnumerator :
+		IEnumerator<IShellItem>
 	{
 		private IEnumShellItems _nativeEnumShellItems;
 		private IShellItem _current = null;

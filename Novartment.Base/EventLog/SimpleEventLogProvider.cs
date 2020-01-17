@@ -9,29 +9,29 @@ namespace Novartment.Base
 		ILoggerProvider
 	{
 		/// <summary>
-		/// Получает экземпляр SimpleEventLog, в который записываются все события.
+		/// Get the singleton instance of SimpleEventLog.
 		/// </summary>
 		public static readonly SimpleEventLog Logger = new SimpleEventLog ();
 
 		/// <summary>
-		/// Инициализирует новый экземпляр SimpleEventLogProvider.
+		/// Initializes a new instance of the SimpleEventLogProvider class.
 		/// </summary>
 		public SimpleEventLogProvider ()
 		{
 		}
 
 		/// <summary>
-		/// Создаёт экземпляр журнала.
+		/// Returns a singleton instance of SimpleEventLog.
 		/// </summary>
-		/// <param name="categoryName">Имя категории для событий журнала.</param>
-		/// <returns>Созданный экземпляр журнала.</returns>
+		/// <param name="categoryName">The category name not used.</param>
+		/// <returns>The singleton instance of SimpleEventLog.</returns>
 		public ILogger CreateLogger (string categoryName)
 		{
 			return Logger;
 		}
 
 		/// <summary>
-		/// Освобождает ресурсы, занятые в провайдере.
+		/// Does nothing.
 		/// </summary>
 		public void Dispose ()
 		{

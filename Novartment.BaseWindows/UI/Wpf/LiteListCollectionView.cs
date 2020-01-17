@@ -1022,7 +1022,10 @@ namespace Novartment.Base.UI.Wpf
 			}
 		}
 
-		internal struct SourceWithMapEnumerator : IEnumerator<TItem>, IDisposable, IEnumerator
+		internal struct SourceWithMapEnumerator :
+			IEnumerator<TItem>,
+			IDisposable,
+			IEnumerator
 		{
 			private readonly CollectionView _source;
 

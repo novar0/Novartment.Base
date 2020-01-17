@@ -990,7 +990,10 @@ namespace Novartment.Base.Collections
 			}
 		}
 
-		private struct SimpleListEnumerator : IEnumerator<T>, IDisposable, IEnumerator
+		private struct SimpleListEnumerator :
+			IEnumerator<T>,
+			IDisposable,
+			IEnumerator
 		{
 			private readonly ArrayList<T> _data;
 			private int _index;

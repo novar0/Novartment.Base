@@ -120,7 +120,8 @@ namespace Novartment.Base.UI.Wpf
 		}
 
 		// простейший непосредственный декоратор
-		private class ReadOnlySet : IReadOnlyFiniteSet<T>
+		private class ReadOnlySet :
+			IReadOnlyFiniteSet<T>
 		{
 			private readonly ISet<T> _source;
 

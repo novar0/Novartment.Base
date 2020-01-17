@@ -355,7 +355,8 @@ namespace Novartment.Base.Collections
 			internal TValue Value;
 		}
 
-		internal class KeyValuePairEnumerator : IEnumerator<KeyValuePair<TKey, TValue>>
+		internal class KeyValuePairEnumerator :
+			IEnumerator<KeyValuePair<TKey, TValue>>
 		{
 			private readonly CompetentDictionary<TKey, TValue> _dictionary;
 			private readonly int _count; // кол-во элементов родительского класса запоминаем отдельно для обеспечения повторяемости проходов
@@ -432,7 +433,8 @@ namespace Novartment.Base.Collections
 		}
 
 		[StructLayout (LayoutKind.Sequential)]
-		internal class KeyEnumerator : IEnumerator<TKey>
+		internal class KeyEnumerator :
+			IEnumerator<TKey>
 		{
 			private readonly CompetentDictionary<TKey, TValue> _dictionary;
 			private readonly int _count; // кол-во элементов внешнего класса запоминаем для обеспечения повторяемости проходов
@@ -508,7 +510,8 @@ namespace Novartment.Base.Collections
 			}
 		}
 
-		internal class ValueEnumerator : IEnumerator<TValue>
+		internal class ValueEnumerator :
+			IEnumerator<TValue>
 		{
 			private readonly CompetentDictionary<TKey, TValue> _dictionary;
 			private readonly int _count; // кол-во элементов внешнего класса запоминаем для обеспечения повторяемости проходов
@@ -588,7 +591,11 @@ namespace Novartment.Base.Collections
 		// их методы GetEnumerator() должен реализовывать родительский класс
 		// но компилятор не позволяет в одном классе реализовать несколько интерфейсов IEnumerable<>
 		// по времени жизни и доступу к членам внутренний и внешний классы связываются 1:1
-		internal sealed class KeyEnumerationProvider : IReadOnlyList<TKey>, IReadOnlyFiniteSet<TKey>, INotifyCollectionChanged, IDisposable
+		internal sealed class KeyEnumerationProvider :
+			IReadOnlyList<TKey>,
+			IReadOnlyFiniteSet<TKey>,
+			INotifyCollectionChanged,
+			IDisposable
 		{
 			private readonly CompetentDictionary<TKey, TValue> _dictionary; // ссылка на внешний класс из внутреннего
 
@@ -620,7 +627,10 @@ namespace Novartment.Base.Collections
 			}
 		}
 
-		internal sealed class ValueEnumerationProvider : IReadOnlyList<TValue>, INotifyCollectionChanged, IDisposable
+		internal sealed class ValueEnumerationProvider :
+			IReadOnlyList<TValue>,
+			INotifyCollectionChanged,
+			IDisposable
 		{
 			private readonly CompetentDictionary<TKey, TValue> _dictionary; // ссылка на внешний класс из внутреннего
 

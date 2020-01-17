@@ -1,36 +1,34 @@
 ﻿namespace Novartment.Base.Text
 {
 	/// <summary>
-	/// Поддержка замены (скрытия) образцов в тексте, например
-	/// в котором непредсказуемо может встречаться секретная информация (пароли, имена, номера, адреса и тд)
-	/// при этом вся выдаваемая информация должна скрывать секретную часть.
+	/// Support for replacing patterns in the text.
 	/// </summary>
 	public interface IPatternsReplacer
 	{
 		/// <summary>
-		/// Получает или устанавливает признак включения замены.
+		/// Gets or sets whether the replacement is enabled.
 		/// </summary>
 		bool ReplacementEnabled { get; set; }
 
 		/// <summary>
-		/// Получает или устанавливает строку которая будет вставлена вместо встреченных шаблонов.
+		/// Gets or sets the string to be inserted in place of the encountered patterns.
 		/// </summary>
 		string ReplacementValue { get; set; }
 
 		/// <summary>
-		/// Добавляет строку в список заменяемых шаблонов.
+		/// Adds a string to the list of patterns to replace.
 		/// </summary>
-		/// <param name="pattern">Строка-шаблон для поиска и замены.</param>
+		/// <param name="pattern">The string template for search and replace.</param>
 		void AddReplacementStringPattern (string pattern);
 
 		/// <summary>
-		/// Добавляет регулярное выражение в список заменяемых шаблонов.
+		/// Adds a regular expression to the list of patterns to replace.
 		/// </summary>
-		/// <param name="pattern">Строка-шаблон для поиска и замены.</param>
+		/// <param name="pattern">The regular expression for search and replace.</param>
 		void AddReplacementRegexPattern (string pattern);
 
 		/// <summary>
-		/// Очищает список заменяемых шаблонов.
+		/// Clears the list of patterns.
 		/// </summary>
 		void ClearReplacementPatterns ();
 	}

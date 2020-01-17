@@ -7,7 +7,8 @@ using Novartment.Base.Collections;
 
 namespace Novartment.Base.UI.Wpf
 {
-	internal class InlineCollectionRunsIterator : IEnumerable<Run>
+	internal class InlineCollectionRunsIterator :
+		IEnumerable<Run>
 	{
 		private readonly InlineCollection _collection;
 

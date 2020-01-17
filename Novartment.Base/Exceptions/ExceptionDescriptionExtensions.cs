@@ -13,11 +13,11 @@ namespace Novartment.Base
 	public static class ExceptionDescriptionExtensions
 	{
 		/// <summary>
-		/// Получает краткое описание исключения.
+		/// Creates and returns a simple single-line string representation of a exception description.
 		/// </summary>
-		/// <param name="exceptionDescription">Объект-описание исключения, для которого создаётся описание.</param>
-		/// <returns>Однострочное описание исключения.</returns>
-		public static string GetDescription (this ExceptionDescription exceptionDescription)
+		/// <param name="exceptionDescription">The description of the exception for which a string representation is created.</param>
+		/// <returns>The simple single-line string representation of a exception description.</returns>
+		public static string GetShortInfo (this ExceptionDescription exceptionDescription)
 		{
 			if (exceptionDescription == null)
 			{
@@ -33,11 +33,14 @@ namespace Novartment.Base
 		}
 
 		/// <summary>
-		/// Получает подробное описание исключения в виде коллекции строк.
+		/// Creates and returns a full multi-line string representation of a exception description.
 		/// </summary>
-		/// <param name="exceptionDescription">Объект-описание исключения, для которого создаётся описание.</param>
-		/// <param name="tracePatternToHide">Строка-образец, который в трассировке стэка будет заменён на многоточие.</param>
-		/// <returns>Последовательность строк, составляющих описание исключения.</returns>
+		/// <param name="exceptionDescription">The description of the exception for which a string representation is created.</param>
+		/// <param name="tracePatternToHide">
+		/// A string pattern that will be replaced by an ellipsis in the stack trace.
+		/// Specify null-reference if not needed.
+		/// </param>
+		/// <returns>The full multi-line string representation of a exception description.</returns>
 		public static IReadOnlyList<string> GetFullInfo (this ExceptionDescription exceptionDescription, string tracePatternToHide = null)
 		{
 			if (exceptionDescription == null)
@@ -54,11 +57,13 @@ namespace Novartment.Base
 		}
 
 		/// <summary>
-		/// Получает последовательность всех элементов из иерархии указанного описания исключения.
+		/// Retrieves the sequence of all elements from the hierarchy of the specified exception description.
 		/// </summary>
-		/// <param name="exceptionDescription">Объект-описание исключения, для которого создаётся последовательность.</param>
-		/// <param name="skipAggregate">Укажите true чтобы исключать из ирерахии исключения типа AggregateException.</param>
-		/// <returns>Последовательность объектов, содержащий описание исключение и данные о его положении в иерархии.</returns>
+		/// <param name="exceptionDescription">The description of the exception for which the sequence is created.</param>
+		/// <param name="skipAggregate">
+		/// A value indicating whether to exclude from hierarchy an exception of type AggregateException.
+		/// </param>
+		/// <returns>A sequence of objects that contains a description of an exception and information about its position in the hierarchy.</returns>
 		public static IEnumerable<ExceptionDescriptionAndNestingData> EnumerateHierarchy (
 			this ExceptionDescription exceptionDescription,
 			bool skipAggregate)
@@ -72,7 +77,8 @@ namespace Novartment.Base
 			return new ExceptionDescriptionHierarchyEnumerator (exceptionDescription, skipAggregate);
 		}
 
-		internal class ExceptionDescriptionHierarchyEnumerator : IEnumerable<ExceptionDescriptionAndNestingData>
+		internal class ExceptionDescriptionHierarchyEnumerator :
+			IEnumerable<ExceptionDescriptionAndNestingData>
 		{
 			private readonly ExceptionDescription _rootException;
 			private readonly bool _skipAggregate;

@@ -107,7 +107,7 @@ namespace Novartment.Base.Net
 					catch (Exception excpt)
 					{
 						_logger?.LogError (FormattableString.Invariant (
-							$"Protocol starting faulted with {connection.RemoteEndPoint}. {ExceptionDescriptionProvider.GetDescription (excpt)}"));
+							$"Protocol starting faulted with {connection.RemoteEndPoint}. {ExceptionDescriptionProvider.CreateDescription (excpt).GetShortInfo ()}"));
 					}
 
 					if ((protocolTask == null) || protocolTask.IsCompleted)
@@ -160,7 +160,7 @@ namespace Novartment.Base.Net
 					if (prevTask.IsFaulted)
 					{
 						_logger?.LogError (FormattableString.Invariant (
-							$"Protocol faulted with {cntn.RemoteEndPoint}. {ExceptionDescriptionProvider.GetDescription (prevTask.Exception)}"));
+							$"Protocol faulted with {cntn.RemoteEndPoint}. {ExceptionDescriptionProvider.CreateDescription (prevTask.Exception).GetShortInfo ()}"));
 					}
 				}
 

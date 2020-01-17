@@ -332,7 +332,7 @@ namespace Novartment.Base.UI.Wpf
 				if (window == null)
 				{
 					MessageBox.Show (
-						string.Join ("; ", dataToShow.Exception.GetDescription ()),
+						string.Join ("; ", dataToShow.Exception.GetShortInfo ()),
 						Wpf.Resources.ExceptionOccured,
 						MessageBoxButton.OK,
 						MessageBoxImage.Error);
@@ -341,7 +341,7 @@ namespace Novartment.Base.UI.Wpf
 				{
 					MessageBox.Show (
 						window,
-						string.Join ("; ", dataToShow.Exception.GetDescription ()),
+						string.Join ("; ", dataToShow.Exception.GetShortInfo ()),
 						Wpf.Resources.ExceptionOccured,
 						MessageBoxButton.OK,
 						MessageBoxImage.Error);

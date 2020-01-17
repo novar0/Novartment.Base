@@ -340,7 +340,8 @@ namespace Novartment.Base.Collections.Immutable
 			}
 		}
 
-		internal sealed class BinarySearchTreeEnumerator<T> : IEnumerator<T>
+		internal sealed class BinarySearchTreeEnumerator<T> :
+			IEnumerator<T>
 		{
 			private readonly AvlBinarySearchTreeNode<T> _startingNode;
 			private SingleLinkedListNode<AvlBinarySearchTreeNode<T>> _nodesToExplore;

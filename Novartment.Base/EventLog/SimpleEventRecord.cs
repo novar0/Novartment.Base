@@ -4,15 +4,16 @@ using Microsoft.Extensions.Logging;
 namespace Novartment.Base
 {
 	/// <summary>
-	/// Запись журнала событий.
+	/// Event log record.
 	/// </summary>
 	public class SimpleEventRecord
 	{
 		/// <summary>
+		/// Initializes a new instance of the SimpleEventLog class with a specified level of detail and a message.
 		/// Инициализирует новый экземпляр SimpleEventRecord на основе указанных параметров.
 		/// </summary>
-		/// <param name="verbosity">Уровень детализации информации, для которого показывать событие.</param>
-		/// <param name="message">Сообщение события.</param>
+		/// <param name="verbosity">The level of information detail corresponding to the event.</param>
+		/// <param name="message">The message of the event.</param>
 		internal SimpleEventRecord (LogLevel verbosity, string message)
 		{
 			this.Verbosity = verbosity;
@@ -20,19 +21,19 @@ namespace Novartment.Base
 			this.Message = message;
 		}
 
-		/// <summary>Получает уровень детализации информации, для которого показывать событие.</summary>
+		/// <summary>Gets the level of information detail corresponding to the event.</summary>
 		public LogLevel Verbosity { get; }
 
-		/// <summary>Получает время события.</summary>
+		/// <summary>Gets the time of the event.</summary>
 		public DateTime Time { get; }
 
-		/// <summary>Получает сообщение события.</summary>
+		/// <summary>Gets the message of the event.</summary>
 		public string Message { get; }
 
 		/// <summary>
-		/// Преобразовывает значение объекта в эквивалентное ему строковое представление.
+		/// Converts the value of this instance to its equivalent string representation.
 		/// </summary>
-		/// <returns>Строковое представление значения объекта.</returns>
+		/// <returns>The string representation of the value of this instance.</returns>
 		public override string ToString ()
 		{
 			return FormattableString.Invariant ($"{this.Time:yyy-MM-dd HH:mm:ss}\t{this.Message}");

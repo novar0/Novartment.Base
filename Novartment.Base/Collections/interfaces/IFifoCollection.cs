@@ -14,7 +14,7 @@
 		/// Tries to get the first item in a collection.
 		/// </summary>
 		/// <param name="item">
-		/// When this method returns, the last item in a collection, if collection was not empty;
+		/// When this method returns, the first item in a collection, if collection was not empty;
 		/// otherwise, the default value for the type of the item parameter.
 		/// This parameter is passed uninitialized.
 		/// </param>
@@ -25,7 +25,7 @@
 		/// Tries to get and remove the first item in a collection.
 		/// </summary>
 		/// <param name="item">
-		/// When this method returns, the last item in a collection, if collection was not empty;
+		/// When this method returns, the first item in a collection, if collection was not empty;
 		/// otherwise, the default value for the type of the item parameter.
 		/// This parameter is passed uninitialized.
 		/// </param>

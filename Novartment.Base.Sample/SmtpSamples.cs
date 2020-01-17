@@ -169,7 +169,8 @@ namespace Novartment.Base.Sample
 			internal ArrayList<AddrSpec> Recipients { get; } = new ArrayList<AddrSpec> (1);
 		}
 
-		internal class DeliveryToFileDataTransferTransaction : IMailTransferTransactionHandler
+		internal class DeliveryToFileDataTransferTransaction :
+			IMailTransferTransactionHandler
 		{
 			private readonly string _mailDropDirectory;
 			private readonly string _mailPickupDirectory;

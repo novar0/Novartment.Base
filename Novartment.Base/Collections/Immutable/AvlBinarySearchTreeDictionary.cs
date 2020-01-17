@@ -428,7 +428,8 @@ namespace Novartment.Base.Collections.Immutable
 			}
 		}
 
-		internal sealed class BinarySearchTreeEnumerator<TKey, TValue> : IEnumerator<AvlBinarySearchTreeDictionaryNode<TKey, TValue>>
+		internal sealed class BinarySearchTreeEnumerator<TKey, TValue> :
+			IEnumerator<AvlBinarySearchTreeDictionaryNode<TKey, TValue>>
 		{
 			private readonly AvlBinarySearchTreeDictionaryNode<TKey, TValue> _startingNode;
 			private SingleLinkedListNode<AvlBinarySearchTreeDictionaryNode<TKey, TValue>> _nodesToExplore;

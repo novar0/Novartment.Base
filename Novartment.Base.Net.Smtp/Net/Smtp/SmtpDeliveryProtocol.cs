@@ -138,7 +138,7 @@ namespace Novartment.Base.Net.Smtp
 					catch (Exception excpt)
 					{
 						_logger?.LogWarning (
-							$"Aborting protocol with {connection.RemoteEndPoint}. {ExceptionDescriptionProvider.GetDescription (excpt)}");
+							$"Aborting protocol with {connection.RemoteEndPoint}. {ExceptionDescriptionProvider.CreateDescription (excpt).GetShortInfo ()}");
 						throw;
 					}
 				} while (continueProcesssing);

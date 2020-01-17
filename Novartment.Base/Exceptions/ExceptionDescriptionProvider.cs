@@ -62,7 +62,7 @@ namespace Novartment.Base
 
 			if ((innerExcpts == null) && (exception.InnerException != null))
 			{
-				innerExcpts = ReadOnlyList.Repeat (exception.InnerException, 1);
+				innerExcpts = new Exception[] { exception.InnerException };
 			}
 
 			return innerExcpts ?? ReadOnlyList.Empty<Exception> ();
@@ -199,27 +199,6 @@ namespace Novartment.Base
 		}
 
 		/// <summary>
-		/// Получает краткое однострочное описание исключения.
-		/// </summary>
-		/// <param name="exception">Исключение, для которого нужно получить краткое описание.</param>
-		/// <returns>Краткое однострочное описание исключения.</returns>
-		public static string GetDescription (Exception exception)
-		{
-			if (exception == null)
-			{
-				throw new ArgumentNullException (nameof (exception));
-			}
-
-			Contract.EndContractBlock ();
-
-			return string.Join (
-				"; ",
-				CreateDescription (exception)
-					.EnumerateHierarchy (true)
-					.Select (item => item.ToString (false, null)));
-		}
-
-		/// <summary>
 		/// Получает полное подробное описание исключения.
 		/// </summary>
 		/// <param name="exception">Исключение, для которого создаётся подробное описание.</param>
@@ -257,15 +236,15 @@ namespace Novartment.Base
 
 			Contract.EndContractBlock ();
 
-			var innerExceptions = ExceptionDescriptionProvider.GetInnerExceptions (exception);
+			var innerExceptions = GetInnerExceptions (exception);
 			var innerDescriptions = (innerExceptions != null) ?
 					innerExceptions.Select (item => CreateDescription (item)).DuplicateToArray () :
 				Array.Empty<ExceptionDescription> ();
 			return new ExceptionDescription (
-				ExceptionDescriptionProvider.GetName (exception),
-				ExceptionDescriptionProvider.GetMessage (exception),
-				ExceptionDescriptionProvider.GetDetails (exception),
-				ExceptionDescriptionProvider.GetTrace (exception),
+				GetName (exception),
+				GetMessage (exception),
+				GetDetails (exception),
+				GetTrace (exception),
 				innerDescriptions);
 		}
 	}

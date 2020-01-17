@@ -1,32 +1,29 @@
 ﻿using System;
 using System.Collections.Generic;
-using Novartment.Base.Collections.Linq;
 
 namespace Novartment.Base
 {
-#pragma warning disable CA1032 // Implement standard exception constructors
 	/// <summary>
-	/// Класс-обёртка для передачи информации об исключениях различного рода
-	/// (не представленных типом System.Exception) туда, где ожидается тип System.Exception.
+	/// A wrapper for passing information about exceptions of various kinds
+	/// (not represented by the System.Exception type) where the System.Exception type is expected.
 	/// </summary>
 	public class CustomErrorException : Exception
-#pragma warning restore CA1032 // Implement standard exception constructors
 	{
 		/// <summary>
-		/// Инициализирует новый экземпляр CustomErrorException на основе предоставленных данных.
+		/// Initializes a new instance of the CustomErrorException class with a specified name.
 		/// </summary>
-		/// <param name="name">Название исключения.</param>
-		public CustomErrorException(string name)
-			: base()
+		/// <param name="name">The name of the exception.</param>
+		public CustomErrorException (string name)
+			: base ()
 		{
 			this.Name = name;
 		}
 
 		/// <summary>
-		/// Инициализирует новый экземпляр CustomErrorException на основе предоставленных данных.
+		/// Initializes a new instance of the CustomErrorException class with a specified name and a message.
 		/// </summary>
-		/// <param name="name">Название исключения.</param>
-		/// <param name="message">Сообщение исключения.</param>
+		/// <param name="name">The name of the exception.</param>
+		/// <param name="message">The message of the exception.</param>
 		public CustomErrorException (string name, string message)
 			: base (message)
 		{
@@ -34,11 +31,12 @@ namespace Novartment.Base
 		}
 
 		/// <summary>
-		/// Инициализирует новый экземпляр CustomErrorException на основе предоставленных данных.
+		/// Initializes a new instance of the CustomErrorException class with a specified name, a message
+		/// and a reference to the inner exception that is the cause of this exception.
 		/// </summary>
-		/// <param name="name">Название исключения.</param>
-		/// <param name="message">Сообщение исключения.</param>
-		/// <param name="innerException">Дочернее (вложенное) исключение.</param>
+		/// <param name="name">The name of the exception.</param>
+		/// <param name="message">The message of the exception.</param>
+		/// <param name="innerException">The exception that is the cause of the current exception.</param>
 		public CustomErrorException (
 			string name,
 			string message,
@@ -46,17 +44,17 @@ namespace Novartment.Base
 			: base (message)
 		{
 			this.Name = name;
-			this.InnerExceptions = ReadOnlyList.Repeat (innerException, 1);
+			this.InnerExceptions = new Exception[] { innerException };
 		}
 
 		/// <summary>
-		/// Инициализирует новый экземпляр CustomErrorException на основе предоставленных данных.
+		/// Initializes a new instance of the CustomErrorException class with all specified properies.
 		/// </summary>
-		/// <param name="name">Название исключения.</param>
-		/// <param name="message">Сообщение исключения.</param>
-		/// <param name="details">Подробности исключения.</param>
-		/// <param name="trace">Трассировка исключения.</param>
-		/// <param name="innerExceptions">Список дочерних (вложенных) исключений.</param>
+		/// <param name="name">The name of the exception.</param>
+		/// <param name="message">The message of the exception.</param>
+		/// <param name="details">The details of the exception.</param>
+		/// <param name="trace">The stack trace of the exception.</param>
+		/// <param name="innerExceptions">The list of the exceptions that is the cause of the current exception.</param>
 		public CustomErrorException (
 			string name,
 			string message,
@@ -71,16 +69,16 @@ namespace Novartment.Base
 			this.InnerExceptions = innerExceptions;
 		}
 
-		/// <summary>Получает название исключения.</summary>
+		/// <summary>Gets the name of the exception.</summary>
 		public string Name { get; }
 
-		/// <summary>Получает подробности исключения.</summary>
+		/// <summary>Gets the details of the exception.</summary>
 		public string Details { get; }
 
-		/// <summary>Получает трассировку исключения.</summary>
+		/// <summary>Get the stack trace of the exception.</summary>
 		public string Trace { get; }
 
-		/// <summary>Получает список дочерних (вложенных) исключений.</summary>
+		/// <summary>Gets the list of the exceptions that is the cause of the current exception.</summary>
 		public IReadOnlyList<Exception> InnerExceptions { get; }
 	}
 }

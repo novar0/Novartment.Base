@@ -4,21 +4,22 @@ using System.Collections.Generic;
 namespace Novartment.Base
 {
 	/// <summary>
-	/// Описание исключения, дополненное данными о его положении в иерархии исключений.
+	/// A textual representation of all the properties of the exception,
+	/// supplemented by data on its position in the hierarchy of exceptions.
 	/// </summary>
 	public class ExceptionDescriptionAndNestingData : ExceptionDescription
 	{
 		/// <summary>
-		/// Инициализирует новый экземпляр класса ExceptionDescriptionAndNestingData содержащий указанные данные.
+		/// Initializes a new instance of the ExceptionDescriptionAndNestingData class with all specified properies.
 		/// </summary>
-		/// <param name="name">Название (тип) исключения.</param>
-		/// <param name="message">Сообщение исключения.</param>
-		/// <param name="details">Дополнительная информация исключения.</param>
-		/// <param name="trace">Трассировка исключения.</param>
-		/// <param name="innerExceptions">Коллекция описаний вложенных исключений.</param>
-		/// <param name="nestingLevel">Уровень исключения в иерархии, начиная с нуля.</param>
-		/// <param name="numberInLevel">Номер исключения в пределах одного уровня иерархии, начиная с нуля.</param>
-		/// <param name="totalInLevel">Общее количество исключений в пределах одного уровня иерархии.</param>
+		/// <param name="name">The name of the exception.</param>
+		/// <param name="message">The message of the exception.</param>
+		/// <param name="details">The details of the exception.</param>
+		/// <param name="trace">The stack trace of the exception.</param>
+		/// <param name="innerExceptions">The collection of the exceptions that is the cause of the current exception.</param>
+		/// <param name="nestingLevel">The level of the exception in the hierarchy, starting from zero.</param>
+		/// <param name="numberInLevel">The number of the exception within the same hierarchy, starting at zero.</param>
+		/// <param name="totalInLevel">The total number of exceptions within the same hierarchy level.</param>
 		public ExceptionDescriptionAndNestingData (
 			string name,
 			string message,
@@ -35,30 +36,36 @@ namespace Novartment.Base
 			this.TotalInLevel = totalInLevel;
 		}
 
-		/// <summary>Получает уровень исключения в иерархии, начиная с нуля.</summary>
+		/// <summary>Gets the level of this exception in the hierarchy, starting from zero.</summary>
 		public int NestingLevel { get; }
 
-		/// <summary>Получает номер исключения в пределах одного уровня иерархии, начиная с нуля.</summary>
+		/// <summary>Gets the number of this exception within the same hierarchy, starting at zero.</summary>
 		public int NumberInLevel { get; }
 
-		/// <summary>Получает общее количество исключений в пределах одного уровня иерархии.</summary>
+		/// <summary>Gets the total number of exceptions within the same hierarchy level.</summary>
 		public int TotalInLevel { get; }
 
 		/// <summary>
-		/// Получает одно-строковое краткое представление подробностей об исключении.
+		/// Creates and returns a single-line string representation of the current exception.
 		/// </summary>
-		/// <returns>Одна строка подробностей об исключении.</returns>
+		/// <returns>The single-line string representation of the current exception.</returns>
 		public override string ToString ()
 		{
 			return ToString (false, null);
 		}
 
 		/// <summary>
-		/// Получает строковое представление подробностей об исключении с указанным уровнем детализации и скрытием указанного образца.
+		/// Creates and returns a string  of the current exception
+		/// according to the specified level of detail and, optionally, hides the specified string pattern.
 		/// </summary>
-		/// <param name="detailed">Укажите true чтобы получить детальное многостроковое представлени, или false чтобы получить однострочное краткое представление.</param>
-		/// <param name="tracePatternToHide">Строка-образец, который в трассировке стэка будет заменён на многоточие.</param>
-		/// <returns>Строка подробностей об исключении.</returns>
+		/// <param name="detailed">
+		/// A value indicating whether to create a detailed multi-line or a simple single-line representation.
+		/// </param>
+		/// <param name="tracePatternToHide">
+		/// A string pattern that will be replaced by an ellipsis in the stack trace.
+		/// Specify null-reference if not needed.
+		/// </param>
+		/// <returns>The string representation of the current exception.</returns>
 		public override string ToString (bool detailed, string tracePatternToHide = null)
 		{
 			var nestingInfo = ((this.NestingLevel > 0) || ((InnerExceptions != null) && (InnerExceptions.Count > 0))) ?

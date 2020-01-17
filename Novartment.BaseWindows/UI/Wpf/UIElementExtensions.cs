@@ -72,7 +72,8 @@ namespace Novartment.Base.UI.Wpf
 			return new DragDropTargetUIElementHandler (element, handler);
 		}
 
-		internal sealed class DragDropTargetUIElementHandler : IDisposable
+		internal sealed class DragDropTargetUIElementHandler :
+			IDisposable
 		{
 			private readonly UIElement _element;
 			private IDragDropTarget _handler;

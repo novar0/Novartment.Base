@@ -399,7 +399,8 @@ namespace Novartment.Base.Collections.Linq.Test
 			Assert.Equal ("12.2", list[2]);
 		}
 
-		private class StringLenComparer : IComparer<string>
+		private class StringLenComparer :
+			IComparer<string>
 		{
 			public int Compare (string x, string y)
 			{

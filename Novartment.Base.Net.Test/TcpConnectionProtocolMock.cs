@@ -6,7 +6,9 @@ using System.Threading.Tasks;
 
 namespace Novartment.Base.Net.Test
 {
-	internal class TcpConnectionProtocolMock : ITcpConnectionProtocol, IDisposable
+	internal class TcpConnectionProtocolMock :
+		ITcpConnectionProtocol,
+		IDisposable
 	{
 		private readonly AutoResetEvent _startedEvent = new AutoResetEvent (false);
 		private readonly List<ITcpConnection> _connections = new List<ITcpConnection> ();

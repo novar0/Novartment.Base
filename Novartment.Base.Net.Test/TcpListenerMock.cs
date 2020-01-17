@@ -6,7 +6,8 @@ using System.Threading.Tasks;
 
 namespace Novartment.Base.Net.Test
 {
-	internal class TcpListenerMock : ITcpListener
+	internal class TcpListenerMock :
+		ITcpListener
 	{
 		private readonly AutoResetEvent _stopedEvent = new AutoResetEvent (false);
 		private readonly IPEndPoint _endpoint;

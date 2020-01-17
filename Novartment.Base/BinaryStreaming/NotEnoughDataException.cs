@@ -28,7 +28,8 @@ namespace Novartment.Base.BinaryStreaming
 		}
 
 		/// <summary>
-		/// Initializes a new instance of the NotEnoughDataException with a specified error message and an amount of missing data.
+		/// Initializes a new instance of the NotEnoughDataException with a specified error message, an amount of missing data
+		/// and a reference to the inner exception that is the cause of this exception.
 		/// </summary>
 		/// <param name="message">The error message that explains the reason for the exception.</param>
 		/// <param name="shortage">The amount of missing data that led to the exception.</param>

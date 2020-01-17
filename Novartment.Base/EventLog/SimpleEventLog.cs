@@ -14,7 +14,9 @@ using Novartment.Base.Text;
 namespace Novartment.Base
 {
 	/// <summary>
-	/// Журнал событий, пригодный для многопоточного асинхронного использования.
+	/// The in-memory event log suitable for multi-threaded, asynchronous use.
+	/// Supports replacing (hiding) sensetive information.
+	/// Supports property and collection change notification.
 	/// </summary>
 	public class SimpleEventLog :
 		ILogger,
@@ -22,7 +24,8 @@ namespace Novartment.Base
 		IPatternsReplacer,
 		IArrayDuplicableCollection<SimpleEventRecord>,
 		INotifyCollectionChanged,
-		INotifyPropertyChanged
+		INotifyPropertyChanged,
+		IDisposable
 	{
 		private readonly ConcurrentList<SimpleEventRecord> _events = new ConcurrentList<SimpleEventRecord> ();
 		private SingleLinkedListNode<Regex> _templatesToHide = null;
@@ -31,7 +34,7 @@ namespace Novartment.Base
 		private LogLevel _logLevel = LogLevel.Trace;
 
 		/// <summary>
-		/// Инициализирует новый экземпляр SimpleEventLog.
+		/// Initializes a new instance of the SimpleEventLog class.
 		/// </summary>
 		public SimpleEventLog ()
 		{
@@ -40,25 +43,25 @@ namespace Novartment.Base
 			_events.CollectionChanged += EventsChanged;
 		}
 
-		/// <summary>Происходит, когда коллекция изменяется.</summary>
+		/// <summary>Occurs when an event is added, removed, changed, moved, or the entire log is refreshed.</summary>
 		public event NotifyCollectionChangedEventHandler CollectionChanged;
 
-		/// <summary>Происходит, когда свойство коллекции изменяется.</summary>
+		/// <summary>Occurs when a property value changes.</summary>
 		public event PropertyChangedEventHandler PropertyChanged;
 
 		/// <summary>
-		/// Происходит когда изменяется конфигурация журнала событий.
+		/// Occurs when the configuration of the event log changes.
 		/// </summary>
 		public event EventHandler<EventArgs> LoggerReconfigured;
 
 		/// <summary>
-		/// Получает количество записей в журнале.
+		/// Gets the number of log records.
 		/// </summary>
 		public int Count => _events.Count;
 
 		/// <summary>
-		/// Получает или устанавливает ограничение на количество записей, хранимых в журнале.
-		/// Лишние старые записи удаляются когда добавляются новые.
+		/// Gets or sets a limit on the number of records stored in the log.
+		/// Excess records are deleted when new ones are added.
 		/// </summary>
 		public int RecordLimit
 		{
@@ -81,7 +84,7 @@ namespace Novartment.Base
 		}
 
 		/// <summary>
-		/// Получает или устанавливает уровень детализации информации, регистрируемой журналом событий.
+		/// Gets or sets the level of detail of information recorded by the event log.
 		/// </summary>
 		public LogLevel LoggingLevel
 		{
@@ -98,7 +101,7 @@ namespace Novartment.Base
 		}
 
 		/// <summary>
-		/// Получает или устанавливает признак включения замены.
+		/// Gets or sets whether the replacement is enabled.
 		/// </summary>
 		public bool ReplacementEnabled
 		{
@@ -114,18 +117,18 @@ namespace Novartment.Base
 		}
 
 		/// <summary>
-		/// Получает или устанавливает строку которая будет вставлена вместо встреченных шаблонов.
+		/// Gets or sets the string to be inserted in place of the encountered patterns.
 		/// </summary>
 		public string ReplacementValue { get; set; }
 
 		/// <summary>
-		/// Получает запись с указанным номером.
+		/// Gets a record with the specified number.
 		/// </summary>
-		/// <param name="index">Номер записи.</param>
+		/// <param name="index">The zero-based index of the record to get.</param>
 		public SimpleEventRecord this[int index] => _events[index];
 
 		/// <summary>
-		/// Очищает журнал.
+		/// Clears the log.
 		/// </summary>
 		public void Clear ()
 		{
@@ -135,9 +138,9 @@ namespace Novartment.Base
 		}
 
 		/// <summary>
-		/// Добавляет строку в список заменяемых шаблонов.
+		/// Adds a string to the list of patterns to replace.
 		/// </summary>
-		/// <param name="pattern">Строка-шаблон для поиска и замены.</param>
+		/// <param name="pattern">The string template for search and replace.</param>
 		public void AddReplacementStringPattern (string pattern)
 		{
 			if (pattern == null)
@@ -151,9 +154,9 @@ namespace Novartment.Base
 		}
 
 		/// <summary>
-		/// Добавляет регулярное выражение в список заменяемых шаблонов.
+		/// Adds a regular expression to the list of patterns to replace.
 		/// </summary>
-		/// <param name="pattern">Строка-шаблон для поиска и замены.</param>
+		/// <param name="pattern">The regular expression for search and replace.</param>
 		public void AddReplacementRegexPattern (string pattern)
 		{
 			if (pattern == null)
@@ -184,7 +187,7 @@ namespace Novartment.Base
 		}
 
 		/// <summary>
-		/// Очищает список заменяемых шаблонов.
+		/// Clears the list of patterns.
 		/// </summary>
 		public void ClearReplacementPatterns ()
 		{
@@ -192,7 +195,7 @@ namespace Novartment.Base
 		}
 
 		/// <summary>
-		/// Освобождает все ресурсы, занятые объектом.
+		/// Releases all resources of the log.
 		/// </summary>
 		public void Dispose ()
 		{
@@ -203,42 +206,48 @@ namespace Novartment.Base
 		}
 
 		/// <summary>
-		/// Пытается получить первый элемент журнала.
+		/// Tries to get the first record in a log.
 		/// </summary>
-		/// <param name="item">Значение первого элемента если он успешно получен,
-		/// либо значение по умолчанию если нет.</param>
-		/// <returns>True если первый элемент успешно получен, False если нет.</returns>
+		/// <param name="item">
+		/// When this method returns, the first record in a log, if log was not empty;
+		/// otherwise, the default value for the type of the record.
+		/// This parameter is passed uninitialized.
+		/// </param>
+		/// <returns>True if the log was not empty; otherwise, False.</returns>
 		public bool TryPeekFirst (out SimpleEventRecord item)
 		{
 			return _events.TryPeekFirst (out item);
 		}
 
 		/// <summary>
-		/// Пытается получить последний элемент журнала.
+		/// Tries to get the last itrecordem in a log.
 		/// </summary>
-		/// <param name="item">Значение последнего элемента если он успешно получен,
-		/// либо значение по умолчанию если нет.</param>
-		/// <returns>True если последний элемент успешно получен, False если нет.</returns>
+		/// <param name="item">
+		/// When this method returns, the last record in a log, if log was not empty;
+		/// otherwise, the default value for the type of the record.
+		/// This parameter is passed uninitialized.
+		/// </param>
+		/// <returns>True if the log was not empty; otherwise, False.</returns>
 		public bool TryPeekLast (out SimpleEventRecord item)
 		{
 			return _events.TryPeekLast (out item);
 		}
 
 		/// <summary>
-		/// Копирует элементы журнала в указанный массив,
-		/// начиная с указанной позиции конечного массива.
+		/// Copies the log to a one-dimensional array,
+		/// starting at the specified index of the target array.
 		/// </summary>
-		/// <param name="array">Массив, в который копируются элементы журнала.</param>
-		/// <param name="arrayIndex">Отсчитываемая от нуля позиция в массиве array, указывающий начало копирования.</param>
+		/// <param name="array">The one-dimensional System.Array that is the destination of the records copied.</param>
+		/// <param name="arrayIndex">The zero-based index in array at which copying begins.</param>
 		public void CopyTo (SimpleEventRecord[] array, int arrayIndex)
 		{
 			_events.CopyTo (array, arrayIndex);
 		}
 
 		/// <summary>
-		/// Получает перечислитель элементов списка.
+		/// Returns an enumerator for the log.
 		/// </summary>
-		/// <returns>Перечислитель элементов списка.</returns>
+		/// <returns>An enumerator for the log.</returns>
 		public IEnumerator<SimpleEventRecord> GetEnumerator ()
 		{
 			return _events.GetEnumerator ();
@@ -283,25 +292,25 @@ namespace Novartment.Base
 		public IDisposable BeginScope<TState> (TState state) => null;
 
 		/// <summary>
-		/// Получает перечислитель элементов списка.
+		/// Returns an enumerator for the list.
 		/// </summary>
-		/// <returns>Перечислитель элементов списка.</returns>
+		/// <returns>An enumerator for the list.</returns>
 		IEnumerator IEnumerable.GetEnumerator ()
 		{
 			return GetEnumerator ();
 		}
 
 		/// <summary>
-		/// Вызывает событие PropertyChanged с указанными аргументами.
+		/// Calls the PropertyChanged event with the specified arguments.
 		/// </summary>
-		/// <param name="args">Аргументы события PropertyChanged.</param>
+		/// <param name="args">The arguments of PropertyChanged event.</param>
 		protected virtual void OnPropertyChanged (PropertyChangedEventArgs args)
 		{
 			this.PropertyChanged?.Invoke (this, args);
 		}
 
 		/// <summary>
-		/// Вызывает событие LoggerReconfigured.
+		/// Calls the LoggerReconfigured event.
 		/// </summary>
 		protected void OnLoggerReconfigured ()
 		{
@@ -310,13 +319,16 @@ namespace Novartment.Base
 
 		private void LogEvent (LogLevel verbosity, string message)
 		{
-			var enumerator = _templatesToHide.GetEnumerator ();
-			while (enumerator.MoveNext ())
+			if (_replacementEnabled)
 			{
-				var template = enumerator.Current;
-				if (message != null)
+				var enumerator = _templatesToHide.GetEnumerator ();
+				while (enumerator.MoveNext ())
 				{
-					message = template.Replace (message, this.ReplacementValue);
+					var template = enumerator.Current;
+					if (message != null)
+					{
+						message = template.Replace (message, this.ReplacementValue);
+					}
 				}
 			}
 

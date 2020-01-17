@@ -142,7 +142,7 @@ namespace Novartment.Base.Net.Smtp
 					}
 
 					_logger?.LogWarning (
-						$"Aborting protocol with {connection.RemoteEndPoint}. {ExceptionDescriptionProvider.GetDescription (excpt)}");
+						$"Aborting protocol with {connection.RemoteEndPoint}. {ExceptionDescriptionProvider.CreateDescription (excpt).GetShortInfo ()}");
 					throw;
 				}
 			}

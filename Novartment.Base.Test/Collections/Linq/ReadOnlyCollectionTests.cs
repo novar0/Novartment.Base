@@ -314,7 +314,8 @@ namespace Novartment.Base.Collections.Linq.Test
 			return Enumerable.ToArray (enumerable);
 		}
 
-		private class StringLenComparer : IComparer<string>
+		private class StringLenComparer :
+			IComparer<string>
 		{
 			public int Compare (string x, string y)
 			{

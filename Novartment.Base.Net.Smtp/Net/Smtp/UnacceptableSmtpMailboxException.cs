@@ -3,12 +3,10 @@ using System.Diagnostics.Contracts;
 
 namespace Novartment.Base.Net.Smtp
 {
-#pragma warning disable CA1032 // Implement standard exception constructors
 	/// <summary>
 	/// Недопустимый почтовый ящик.
 	/// </summary>
 	public class UnacceptableSmtpMailboxException : InvalidOperationException
-#pragma warning restore CA1032 // Implement standard exception constructors
 	{
 		/// <summary>
 		/// Инициализирует новый экземпляр класса UnacceptableSmtpMailboxException с указанным почтовым ящиком.

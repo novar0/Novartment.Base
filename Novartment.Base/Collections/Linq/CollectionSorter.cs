@@ -7,7 +7,8 @@ namespace Novartment.Base.Collections.Linq
 	/// Factory to create a sorted index for collections.
 	/// </summary>
 	/// <typeparam name="TElement">The type of the elements.</typeparam>
-	internal abstract class CollectionSorter<TElement> : IComparer<int>
+	internal abstract class CollectionSorter<TElement> :
+		IComparer<int>
 	{
 		private readonly IReadOnlyCollection<TElement> _items;
 

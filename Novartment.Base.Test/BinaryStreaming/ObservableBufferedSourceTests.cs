@@ -7,7 +7,8 @@ namespace Novartment.Base.Test
 {
 	public class ObservableBufferedSourceTests
 	{
-		internal class ProgressHistory : IProgress<long>
+		internal class ProgressHistory :
+			IProgress<long>
 		{
 			public List<long> History { get; } = new List<long> ();
 
