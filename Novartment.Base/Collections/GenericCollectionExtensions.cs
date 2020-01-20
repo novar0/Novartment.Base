@@ -260,7 +260,7 @@ namespace Novartment.Base.Collections
 		/// </summary>
 		/// <typeparam name="T">The type of the elements.</typeparam>
 		/// <param name="collection">Destination collection in which new elemenets will be added.</param>
-		/// <param name="items">Source collection whose elements will be added to the destionation.</param>
+		/// <param name="items">Source collection whose elements will be added to the destination.</param>
 		public static void AddRange<T> (this IAdjustableCollection<T> collection, IEnumerable<T> items)
 		{
 			if (collection == null)
@@ -297,7 +297,7 @@ namespace Novartment.Base.Collections
 		/// <typeparam name="T">Тип элементов списка.</typeparam>
 		/// <param name="list">Destination list in which new elemenets will be inserted.</param>
 		/// <param name="index">The zero-based index of the destination at which the new elements should be inserted.</param>
-		/// <param name="items">Source collection whose elements will be inserted to the destionation.</param>
+		/// <param name="items">Source collection whose elements will be inserted to the destination.</param>
 		public static void InsertRange<T> (this IAdjustableList<T> list, int index, IEnumerable<T> items)
 		{
 			if (list == null)

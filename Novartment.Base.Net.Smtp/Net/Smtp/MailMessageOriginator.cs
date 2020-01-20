@@ -65,13 +65,13 @@ namespace Novartment.Base.Net.Smtp
 				}
 
 				var channel = new BufferedChannel (new byte[8192]); // TcpClient.SendBufferSize default value is 8192 bytes
-				var writeTask = SaveSerializableEntityToDestionationAsync (message, channel, cancellationToken);
+				var writeTask = SaveSerializableEntityToDestinationAsync (message, channel, cancellationToken);
 				var readTask = TransferSourceToTransactionAsync (transactionHandler, channel, cancellationToken);
 				await Task.WhenAll (writeTask, readTask).ConfigureAwait (false);
 			}
 		}
 
-		private static async Task SaveSerializableEntityToDestionationAsync (IBinarySerializable entity, IBinaryDestination destination, CancellationToken cancellationToken)
+		private static async Task SaveSerializableEntityToDestinationAsync (IBinarySerializable entity, IBinaryDestination destination, CancellationToken cancellationToken)
 		{
 			try
 			{

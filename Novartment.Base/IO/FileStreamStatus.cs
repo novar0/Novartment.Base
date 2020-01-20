@@ -1,19 +1,17 @@
-﻿using System;
-
-namespace Novartment.Base.IO
+﻿namespace Novartment.Base.IO
 {
 	/// <summary>
-	/// Параметры, описывающие текущее состояние потока: позицию, размер и дополнительный пользовательский объект-состояние.
+	/// Parameters that describe the current state of the stream: position, size, and an additional custom state object.
 	/// </summary>
-	public readonly struct FileStreamStatus :
-		IEquatable<FileStreamStatus>
+	public readonly struct FileStreamStatus
 	{
 		/// <summary>
-		/// Инициализирует новый экземпляр FileStreamStatus содержащий указанные позицию, размер и объект-состояние.
+		/// Initializes a new instance of the FileStreamStatus class
+		/// with the specified position, size, and an additional custom state object.
 		/// </summary>
-		/// <param name="position">Позиция в потоке.</param>
-		/// <param name="length">Длина потока в байтах.</param>
-		/// <param name="state">Пользовательский объект-состояние, связанный с потоком.</param>
+		/// <param name="position">The position in the stream.</param>
+		/// <param name="length">The size of the stream.</param>
+		/// <param name="state">The state object.</param>
 		public FileStreamStatus (long position, long length, object state)
 		{
 			this.Position = position;
@@ -21,81 +19,26 @@ namespace Novartment.Base.IO
 			this.State = state;
 		}
 
-		/// <summary>Получает позицию в потоке.</summary>
+		/// <summary>Gets the position in the stream.</summary>
 		public readonly long Position { get; }
 
-		/// <summary>Получает размер потока в байтах.</summary>
+		/// <summary>Gets the size of the stream.</summary>
 		public readonly long Length { get; }
 
-		/// <summary>Получает пользовательский объект-состояние, связанный с потоком.</summary>
+		/// <summary>Gets the state object</summary>
 		public readonly object State { get; }
 
 		/// <summary>
-		/// Определяет равенство двух указанных объектов.
+		/// Deconstruct object into individual properties.
 		/// </summary>
-		/// <param name="first">Первый объект для сравнения.</param>
-		/// <param name="second">Второй объект для сравнения.</param>
-		/// <returns>True если значение параметра first равно second; в противном случае — False.</returns>
-		public static bool operator ==(FileStreamStatus first, FileStreamStatus second)
-		{
-			return first.Equals(second);
-		}
-
-		/// <summary>
-		/// Определяет неравенство двух указанных объектов.
-		/// </summary>
-		/// <param name="first">Первый объект для сравнения.</param>
-		/// <param name="second">Второй объект для сравнения.</param>
-		/// <returns>True если значение параметра first не равно second; в противном случае — False.</returns>
-		public static bool operator !=(FileStreamStatus first, FileStreamStatus second)
-		{
-			return !first.Equals(second);
-		}
-
-		/// <summary>
-		/// Деконструирует данные.
-		/// </summary>
-		/// <param name="position">Получает позицию в потоке.</param>
-		/// <param name="length">Получает размер потока в байтах.</param>
-		/// <param name="state">Получает пользовательский объект-состояние, связанный с потоком.</param>
+		/// <param name="position">When this method returns, the position in the stream.</param>
+		/// <param name="length">When this method returns, the size of the stream.</param>
+		/// <param name="state">When this method returns, the state object.</param>
 		public readonly void Deconstruct (out long position, out long length, out object state)
 		{
 			position = this.Position;
 			length = this.Length;
 			state = this.State;
-		}
-
-		/// <summary>
-		/// Вычисляет хэш-функцию объекта.
-		/// </summary>
-		/// <returns>Хэш-код для текущего объекта.</returns>
-		public override int GetHashCode ()
-		{
-			return this.Position.GetHashCode () ^
-				this.Length.GetHashCode () ^
-				(this.State?.GetHashCode () ?? 0);
-		}
-
-		/// <summary>
-		/// Определяет, равен ли заданный объект текущему объекту.
-		/// </summary>
-		/// <param name="obj">Объект, который требуется сравнить с текущим объектом. </param>
-		/// <returns>True , если указанный объект равен текущему объекту; в противном случае — False.</returns>
-		public override bool Equals (object obj)
-		{
-			return (obj is FileStreamStatus) && Equals ((FileStreamStatus)obj);
-		}
-
-		/// <summary>
-		/// Определяет, равен ли заданный объект текущему объекту.
-		/// </summary>
-		/// <param name="other">Объект, который требуется сравнить с текущим объектом. </param>
-		/// <returns>True , если указанный объект равен текущему объекту; в противном случае — False.</returns>
-		public bool Equals (FileStreamStatus other)
-		{
-			return (other.Position == this.Position) &&
-				(other.Length == this.Length) &&
-				(other.State == this.State);
 		}
 	}
 }

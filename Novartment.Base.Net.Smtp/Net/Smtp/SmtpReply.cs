@@ -171,83 +171,91 @@ namespace Novartment.Base.Net.Smtp
 			// Only the EHLO, EXPN, and HELP commands are expected to result in multiline replies in normal circumstances;
 			// however, multiline replies are allowed for any command.
 			var elements = new ArrayList<string> (1);
-			var sourceBuf = source.BufferMemory.Span;
-			bool isLastElement;
-			int lastNumber;
+			bool isLast;
+			int number;
 			do
 			{
-				int idx = 0;
-				do
+				string text;
+				int size;
+				(number, text, isLast, size) = ParseLine (source.BufferMemory.Span.Slice (source.Offset, source.Count), logger);
+				if (text != null)
 				{
-					if (idx >= (source.Count - 1))
-					{
-						throw new FormatException ("CRLF not found.");
-					}
-
-					idx++;
-				}
-				while ((sourceBuf[source.Offset + idx - 1] != 0x0d) || (sourceBuf[source.Offset + idx] != 0x0a));
-				idx++;
-				if ((logger != null) && logger.IsEnabled (LogLevel.Trace))
-				{
-					logger?.LogTrace ("<<< " + AsciiCharSet.GetStringMaskingInvalidChars (sourceBuf.Slice (source.Offset, idx - 2), '?'));
+					elements.Add (text);
 				}
 
-				// RFC 5321 part 4.5.3.1.5:
-				// The maximum total length of a reply line including the reply code and the <CRLF> is 512 octets.
-				if (idx > 512)
-				{
-					throw new FormatException ("Reply line too long. Maximum 512 bytes.");
-				}
-
-				// including CRLF
-				if (idx < 5)
-				{
-					throw new FormatException ("Reply line do not contains 3-digit code.");
-				}
-
-				var codeChar1 = sourceBuf[source.Offset];
-				var codeChar2 = sourceBuf[source.Offset + 1];
-				var codeChar3 = sourceBuf[source.Offset + 2];
-
-				// RFC 5321 part 4.2: Reply-code  = %x32-35 %x30-35 %x30-39
-				if ((codeChar1 < 0x32) || (codeChar1 > 0x35) ||
-					(codeChar2 < 0x30) || (codeChar2 > 0x39) ||
-					(codeChar3 < 0x30) || (codeChar3 > 0x39))
-				{
-					throw new FormatException ("Reply line do not contains valid 3-digit code.");
-				}
-
-				lastNumber = ((sourceBuf[source.Offset] - 0x030) * 100) +
-					((sourceBuf[source.Offset + 1] - 0x30) * 10) +
-					(sourceBuf[source.Offset + 2] - 0x30);
-
-				// 'nnn CRLF' = 6 bytes
-				if (idx < 6)
-				{
-					isLastElement = true;
-				}
-				else
-				{
-					var separator = sourceBuf[source.Offset + 3];
-					if ((separator != 0x20) && (separator != 0x2d))
-					{
-						throw new FormatException ("Reply line contains invalid character after 3-digit code.");
-					}
-
-					isLastElement = separator != 0x2d;
-					if (idx > 6)
-					{
-						var text = AsciiCharSet.GetString (sourceBuf.Slice (source.Offset + 4, idx - 6)); // 'nnn CRLF' = 6 bytes
-						elements.Add (text);
-					}
-				}
-
-				source.SkipBuffer (idx);
+				source.Skip (size);
 			}
-			while (!isLastElement);
+			while (!isLast);
 
-			return new SmtpReply (lastNumber, elements);
+			return new SmtpReply (number, elements);
+		}
+
+		private static (int, string, bool, int) ParseLine (ReadOnlySpan<byte> sourceBuf, ILogger logger)
+		{
+			int idx = 0;
+			do
+			{
+				if (idx >= (sourceBuf.Length - 1))
+				{
+					throw new FormatException ("CRLF not found.");
+				}
+
+				idx++;
+			}
+			while ((sourceBuf[idx - 1] != 0x0d) || (sourceBuf[idx] != 0x0a));
+			idx++;
+			if ((logger != null) && logger.IsEnabled (LogLevel.Trace))
+			{
+				logger?.LogTrace ("<<< " + AsciiCharSet.GetStringMaskingInvalidChars (sourceBuf.Slice (0, idx - 2), '?'));
+			}
+
+			// RFC 5321 part 4.5.3.1.5:
+			// The maximum total length of a reply line including the reply code and the <CRLF> is 512 octets.
+			if (idx > 512)
+			{
+				throw new FormatException ("Reply line too long. Maximum 512 bytes.");
+			}
+
+			// including CRLF
+			if (idx < 5)
+			{
+				throw new FormatException ("Reply line do not contains 3-digit code.");
+			}
+
+			var codeChar1 = sourceBuf[0];
+			var codeChar2 = sourceBuf[1];
+			var codeChar3 = sourceBuf[2];
+
+			// RFC 5321 part 4.2: Reply-code  = %x32-35 %x30-35 %x30-39
+			if ((codeChar1 < 0x32) || (codeChar1 > 0x35) ||
+				(codeChar2 < 0x30) || (codeChar2 > 0x39) ||
+				(codeChar3 < 0x30) || (codeChar3 > 0x39))
+			{
+				throw new FormatException ("Reply line does not contains valid 3-digit code.");
+			}
+
+			var number = ((codeChar1 - '0') * 100) + ((codeChar2 - '0') * 10) + (codeChar3 - '0');
+
+			// 'nnn CRLF' = 6 bytes
+			if (idx < 6)
+			{
+				return (number, null, true, idx);
+			}
+
+			var separator = sourceBuf[3];
+			if ((separator != 0x20) && (separator != 0x2d))
+			{
+				throw new FormatException ("Reply line contains invalid character after 3-digit code.");
+			}
+
+			string text = null;
+			var isLastElement = separator != 0x2d;
+			if (idx > 6)
+			{
+				text = AsciiCharSet.GetString (sourceBuf.Slice (4, idx - 6)); // 'nnn CRLF' = 6 bytes
+			}
+
+			return (number, text, isLastElement, idx);
 		}
 
 		internal SmtpReplyWithGroupingMark DisallowGrouping ()

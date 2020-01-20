@@ -31,14 +31,14 @@ namespace Novartment.Base.Test
 		}
 
 		public ReadOnlyMemory<byte> BufferMemory => _buffer;
-
+		
 		public int Offset => _offset;
 
 		public int Count => _count;
 
 		public bool IsExhausted => _isExhausted;
 
-		public void SkipBuffer (int size)
+		public void Skip (int size)
 		{
 			if ((size < 0) || (size > this.Count))
 			{
@@ -52,7 +52,7 @@ namespace Novartment.Base.Test
 			}
 		}
 
-		public ValueTask FillBufferAsync (CancellationToken cancellationToken = default)
+		public ValueTask LoadAsync (CancellationToken cancellationToken = default)
 		{
 			if (!_isExhausted)
 			{
@@ -87,7 +87,7 @@ namespace Novartment.Base.Test
 			return default;
 		}
 
-		public ValueTask EnsureBufferAsync (int size, CancellationToken cancellationToken = default)
+		public ValueTask EnsureAvailableAsync (int size, CancellationToken cancellationToken = default)
 		{
 			if ((size < 0) || (size > this.BufferMemory.Length))
 			{
@@ -139,7 +139,7 @@ namespace Novartment.Base.Test
 			return default;
 		}
 
-		public ValueTask<long> TryFastSkipAsync (long size, CancellationToken cancellationToken = default)
+		public ValueTask<long> SkipWihoutBufferingAsync (long size, CancellationToken cancellationToken = default)
 		{
 			if (size < 0L)
 			{

@@ -591,7 +591,7 @@ namespace Novartment.Base.Net.Smtp
 
 		private async Task<SmtpReplyWithGroupingMark> ProcessCommandBdatNextChunk (SmtpBdatCommand bdatCommand, CancellationToken cancellationToken)
 		{
-			if (!bdatCommand.SourceData.IsExhausted || (bdatCommand.SourceData.Count > 0))
+			if (!bdatCommand.SourceData.IsExhausted || (bdatCommand.SourceData. Count > 0))
 			{
 				// если порция не пустая, то ожидаем пока поставщик порций обработает её
 				var chunkCompletionTask = OfferChunkAsync (bdatCommand.SourceData, cancellationToken);

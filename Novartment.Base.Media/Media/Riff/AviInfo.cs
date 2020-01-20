@@ -102,7 +102,7 @@ namespace Novartment.Base.Media
 					throw new FormatException ("Root RIFF-chunk does not contain any subchunks.");
 				}
 
-				await source.EnsureBufferAsync (4, cancellationToken).ConfigureAwait (false);
+				await source.EnsureAvailableAsync (4, cancellationToken).ConfigureAwait (false);
 				var reader = new RiffChunkListReader (rootChunk.Source);
 				if (reader.ListId != "AVI ")
 				{
@@ -122,7 +122,7 @@ namespace Novartment.Base.Media
 					throw new FormatException ("Specified source does not contain RIFF-chunk with main header 'LIST/hdrl'.");
 				}
 
-				await source.EnsureBufferAsync (4, cancellationToken).ConfigureAwait (false);
+				await source.EnsureAvailableAsync (4, cancellationToken).ConfigureAwait (false);
 				reader = new RiffChunkListReader (aviChunk.Source);
 				if ((reader == null) ||
 					(reader.ListId != "hdrl"))
@@ -154,7 +154,7 @@ namespace Novartment.Base.Media
 						DWORD dwHeight;
 						DWORD dwReserved[4];
 						*/
-						await chunk.Source.EnsureBufferAsync (56, cancellationToken).ConfigureAwait (false); // "To small size of RIFF-chunk 'avih'. Expected minimum 56 bytes.");
+						await chunk.Source.EnsureAvailableAsync (56, cancellationToken).ConfigureAwait (false); // "To small size of RIFF-chunk 'avih'. Expected minimum 56 bytes.");
 
 						var sourceBuf = chunk.Source.BufferMemory;
 						microSecPerFrame = BinaryPrimitives.ReadUInt32LittleEndian (sourceBuf.Span.Slice (chunk.Source.Offset));
@@ -166,7 +166,7 @@ namespace Novartment.Base.Media
 
 					if (chunk.IsSubChunkList)
 					{
-						await chunk.Source.EnsureBufferAsync (4, cancellationToken).ConfigureAwait (false);
+						await chunk.Source.EnsureAvailableAsync (4, cancellationToken).ConfigureAwait (false);
 						var subReader = new RiffChunkListReader (chunk.Source);
 						if (subReader.ListId == "strl")
 						{

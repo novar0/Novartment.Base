@@ -12,7 +12,7 @@ namespace Novartment.Base.BinaryStreaming
 	/// </summary>
 	/// <remarks>
 	/// Reading and writing are blocked depending on the buffer fill.
-	/// New (written) data becomes available in the buffer only after a request in the EnsureBuffer() and FillBuffer() methods.
+	/// New (written) data becomes available in the buffer only after a request in the EnsureAvailableAsync() and LoadAsync() methods.
 	/// Similar to the library classes System.Threading.Channels.Channel and System.Threading.Tasks.Dataflow.BufferBlock,
 	/// but not for fixed elements, but for arbitrary sequences of bytes.
 	/// </remarks>
@@ -104,8 +104,8 @@ namespace Novartment.Base.BinaryStreaming
 		/// Properties Offset and Count may be changed in the process.
 		/// </summary>
 		/// <param name="size">Size of data to skip from the start of available data in the buffer.
-		/// Must be less than total size of available data in the buffer.</param>
-		public void SkipBuffer (int size)
+		/// Must be less than or equal to the size of available data in the buffer.</param>
+		public void Skip (int size)
 		{
 			if ((size < 0) || (size > _count))
 			{
@@ -133,7 +133,7 @@ namespace Novartment.Base.BinaryStreaming
 		/// It may be less than specified if the channel is completed.
 		/// Upon completion of a task, regardless of the result, the channel will provide data coming right after skipped.
 		/// </returns>
-		public ValueTask<long> TryFastSkipAsync (long size, CancellationToken cancellationToken = default)
+		public ValueTask<long> SkipWihoutBufferingAsync (long size, CancellationToken cancellationToken = default)
 		{
 			if (size < 0L)
 			{
@@ -194,9 +194,9 @@ namespace Novartment.Base.BinaryStreaming
 		}
 
 		/// <summary>
-		/// Asynchronously fills the buffer with channel data, appending already available data.
-		/// As a result, the buffer may not be completely filled if the channel supplies data in blocks,
-		/// or empty if the channel is exhausted.
+		/// Asynchronously requests the source to load more data in the buffer.
+		/// As a result, the buffer may not be completely filled if the source supplies data in blocks,
+		/// or it may be empty if the source is exhausted.
 		/// Properties Offset, Count and IsExhausted may be changed in the process.
 		/// </summary>
 		/// <param name="cancellationToken">
@@ -210,7 +210,7 @@ namespace Novartment.Base.BinaryStreaming
 		/// The size of the data portions available in the buffer does not depend on the size of the portions written in the channel.
 		/// All the data written in the channel for which there was enough space in the buffer will be merged and available as one portion.
 		/// </remarks>
-		public async ValueTask FillBufferAsync (CancellationToken cancellationToken = default)
+		public async ValueTask LoadAsync (CancellationToken cancellationToken = default)
 		{
 			await _pendingDataArrival.Task.ConfigureAwait (false);
 			lock (_integrityLocker)
@@ -230,7 +230,7 @@ namespace Novartment.Base.BinaryStreaming
 		/// To unblock the pending fill buffer operation, call the SetComplete() method.
 		/// </param>
 		/// <returns>A task that represents the operation.</returns>
-		public ValueTask EnsureBufferAsync (int size, CancellationToken cancellationToken = default)
+		public ValueTask EnsureAvailableAsync (int size, CancellationToken cancellationToken = default)
 		{
 			if ((size < 0) || (size > this.BufferMemory.Length))
 			{
@@ -288,12 +288,12 @@ namespace Novartment.Base.BinaryStreaming
 		/// <param name="buffer">The region of memory to write to this destination.</param>
 		/// <param name="cancellationToken">
 		/// The cancellation request token is not used.
-		/// To unblock the pending write operation, call the TrySkip() method and specify a size of at least buffer.Length.
+		/// To unblock the pending write operation, call the SkipWihoutBufferingAsync() method and specify a size of at least buffer.Length.
 		/// </param>
 		/// <returns>A task that represents the write operation.</returns>
 		/// <remarks>
 		/// The written data will not be available in the buffer immediately,
-		/// but only upon request in EnsureBuffer(), FillBuffer() and TrySkip() methods.
+		/// but only upon request in EnsureAvailableAsync(), LoadAsync() and SkipWihoutBufferingAsync() methods.
 		/// Information about individual portions of written data is not kept,
 		/// the channel provides all the accumulated data for reading in arbitrary parts,
 		/// depending on the availability of space in the buffer.
@@ -347,7 +347,7 @@ namespace Novartment.Base.BinaryStreaming
 
 		/// <summary>
 		/// Mark the channel as being complete, meaning no more items will be written to it.
-		/// After that, there will be no more waiting new data in FillBuffer() and EnsureBuffer() methods, and Write() method will throw an exception.
+		/// After that, there will be no more waiting new data in LoadAsync() and EnsureAvailableAsync() methods, and Write() method will throw an exception.
 		/// </summary>
 		/// <remarks>
 		/// The IsExhausted property may not be set immediately,

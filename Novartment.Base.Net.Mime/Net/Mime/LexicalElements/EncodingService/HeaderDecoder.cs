@@ -1076,13 +1076,13 @@ namespace Novartment.Base.Net.Mime
 			}
 
 			// двоеточие после имени
-			fieldSource.SkipBuffer (1);
+			fieldSource.Skip (1);
 
 			// загружаем остатак в виде тела поля
 			var valueSize = 0;
 			while (true)
 			{
-				await fieldSource.FillBufferAsync (cancellationToken).ConfigureAwait (false);
+				await fieldSource.LoadAsync (cancellationToken).ConfigureAwait (false);
 				var available = fieldSource.Count;
 				if (available <= 0)
 				{
@@ -1092,7 +1092,7 @@ namespace Novartment.Base.Net.Mime
 				cancellationToken.ThrowIfCancellationRequested ();
 				fieldSource.BufferMemory.Slice (fieldSource.Offset, available).CopyTo (buffer);
 				valueSize += available;
-				fieldSource.SkipBuffer (available);
+				fieldSource.Skip (available);
 			}
 
 			var field = isKnown ?

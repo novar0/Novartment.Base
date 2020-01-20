@@ -43,21 +43,20 @@ namespace Novartment.Base.Smtp.Test
 
 		public async Task SendBinaryAsync (IBufferedSource source, CancellationToken cancellationToken = default)
 		{
-			MemoryStream strm;
-			using (strm = new MemoryStream ())
+			using (var strm = new MemoryStream ())
 			{
 				try
 				{
 					while (true)
 					{
-						await source.FillBufferAsync ().ConfigureAwait (false);
+						await source.LoadAsync ().ConfigureAwait (false);
 						if (source.Count <= 0)
 						{
 							break;
 						}
 
 						strm.Write (source.BufferMemory.Span.Slice (source.Offset, source.Count));
-						source.SkipBuffer (source.Count);
+						source.Skip (source.Count);
 					}
 				}
 				finally

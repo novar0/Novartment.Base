@@ -48,33 +48,38 @@ namespace Novartment.Base.Net
 		}
 
 		/// <summary>
-		/// Получает буфер, в котором содержится некоторая часть данных источника.
-		/// Текущая начальная позиция и количество доступных данных содержатся в свойствах Offset и Count,
-		/// при этом сам буфер остаётся неизменным всё время жизни источника.
+		/// Gets the buffer that contains some of the source data.
+		/// The current offset and the amount of available data are in the Offset and Count properties.
+		/// The buffer remains unchanged throughout the lifetime of the source.
 		/// </summary>
 		public ReadOnlyMemory<byte> BufferMemory => _buffer;
 
 		/// <summary>
-		/// Получает начальную позицию данных, доступных в Buffer.
-		/// Количество данных, доступных в Buffer, содержится в Count.
+		/// Gets the offset of available source data in the BufferMemory.
+		/// The amount of available source data is in the Count property.
 		/// </summary>
 		public int Offset => _offset;
 
 		/// <summary>
-		/// Получает количество данных, доступных в Buffer.
-		/// Начальная позиция доступных данных содержится в Offset.
+		/// Gets the amount of source data available in the BufferMemory.
+		/// The offset of available source data is in the Offset property.
 		/// </summary>
 		public int Count => _count;
 
-		/// <summary>Получает признак исчерпания сокета.
-		/// Возвращает True если сокет больше не поставляет данных.
-		/// Содержимое буфера при этом остаётся верным, но больше не будет меняться.</summary>
+		/// <summary>
+		/// Gets a value indicating whether the source is exhausted.
+		/// Returns True if the source no longer supplies data.
+		/// In that case, the data available in the buffer remains valid, but will no longer change.
+		/// </summary>
 		public bool IsExhausted => _socketClosed;
 
-		/// <summary>Отбрасывает (пропускает) указанное количество данных из начала буфера.</summary>
-		/// <param name="size">Размер данных для пропуска в начале буфера.
-		/// Должен быть меньше чем размер данных в буфере.</param>
-		public void SkipBuffer (int size)
+		/// <summary>
+		/// Skips specified amount of available data in the buffer.
+		/// Properties Offset and Count may be changed in the process.
+		/// </summary>
+		/// <param name="size">Size of data to skip from the start of available data in the buffer.
+		/// Must be less than or equal to the size of available data in the buffer.</param>
+		public void Skip (int size)
 		{
 			if ((size < 0) || (size > _count))
 			{
@@ -91,20 +96,16 @@ namespace Novartment.Base.Net
 		}
 
 		/// <summary>
-		/// Асинхронно заполняет буфер данными источника, дополняя уже доступные там данные.
-		/// В результате буфер может быть заполнен не полностью если источник поставляет данные блоками, либо пуст если источник исчерпался.
-		/// При выполнении могут измениться свойства Offset, Count и IsExhausted.
+		/// Asynchronously requests the source to load more data in the buffer.
+		/// As a result, the buffer may not be completely filled if the source supplies data in blocks,
+		/// or it may be empty if the source is exhausted.
+		/// Properties Offset, Count and IsExhausted may be changed in the process.
 		/// </summary>
-		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
-		/// <returns>Задача, представляющая операцию.
-		/// Если после завершения в Count будет ноль,
-		/// то источник исчерпан и доступных данных в буфере больше не будет.</returns>
-		/// <remarks>
-		/// Параметр cancellationToken не используется для отмены уже запущенного чтения сокета,
-		/// потому что чтение сокета вообще не поддерживает отмену.
-		/// Для отмены чтения используйте Socket.Close().
-		/// </remarks>
-		public ValueTask FillBufferAsync (CancellationToken cancellationToken = default)
+		/// <param name="cancellationToken">The token to monitor for cancellation requests. The default value is System.Threading.CancellationToken.None.</param>
+		/// <returns>A task that represents the asynchronous fill operation.
+		/// If Count property equals zero after completion,
+		/// this means that the source is exhausted and there will be no more data in the buffer.</returns>
+		public ValueTask LoadAsync (CancellationToken cancellationToken = default)
 		{
 			if (cancellationToken.IsCancellationRequested)
 			{
@@ -157,19 +158,14 @@ namespace Novartment.Base.Net
 		}
 
 		/// <summary>
-		/// Асинхронно запрашивает у источника указанное количество данных в буфере.
-		/// В результате запроса в буфере может оказаться данных больше, чем запрошено.
-		/// При выполнении могут измениться свойства Offset, Count и IsExhausted.
+		/// Asynchronously requests the source to load the specified amount of data in the buffer.
+		/// As a result, there may be more data in the buffer than requested.
+		/// Properties Offset, Count and IsExhausted may be changed in the process.
 		/// </summary>
-		/// <param name="size">Требуемый размер данных в буфере.</param>
-		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
-		/// <remarks>
-		/// Параметр cancellationToken не используется для отмены уже запущенного чтения сокета,
-		/// потому что чтение сокета вообще не поддерживает отмену.
-		/// Для отмены чтения используйте Socket.Close().
-		/// </remarks>
-		/// <returns>Задача, представляющая операцию.</returns>
-		public ValueTask EnsureBufferAsync (int size, CancellationToken cancellationToken = default)
+		/// <param name="size">Amount of data required in the buffer.</param>
+		/// <param name="cancellationToken">The token to monitor for cancellation requests. The default value is System.Threading.CancellationToken.None.</param>
+		/// <returns>A task that represents the operation.</returns>
+		public ValueTask EnsureAvailableAsync (int size, CancellationToken cancellationToken = default)
 		{
 			if ((size < 0) || (size > _buffer.Length))
 			{

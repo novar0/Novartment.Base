@@ -6,11 +6,11 @@ using System.Threading.Tasks;
 
 namespace Novartment.Base.BinaryStreaming
 {
-	/// <content>
-	/// Класс-обёртка BufferedSourceStream для представления IBufferedSource в виде Stream.
-	/// </content>
-	public static partial class StreamExtensions
+	public static partial class BinaryStreamingStreamExtensions
 	{
+		/// <content>
+		/// Класс-обёртка BufferedSourceStream для представления IBufferedSource в виде Stream.
+		/// </content>
 		private class BufferedSourceStream : Stream
 		{
 			private readonly IBufferedSource _source;
@@ -70,7 +70,7 @@ namespace Novartment.Base.BinaryStreaming
 					if (toCopy > 0)
 					{
 						_source.BufferMemory.Span.Slice (_source.Offset, toCopy).CopyTo (buffer.AsSpan (offset));
-						_source.SkipBuffer (toCopy);
+						_source.Skip (toCopy);
 					}
 
 					return toCopy;
@@ -79,7 +79,7 @@ namespace Novartment.Base.BinaryStreaming
 				int resultSize = 0;
 				while (count > 0)
 				{
-					var vTask = _source.FillBufferAsync (default);
+					var vTask = _source.LoadAsync (default);
 					if (!vTask.IsCompletedSuccessfully)
 					{
 						vTask.AsTask ().GetAwaiter ().GetResult ();
@@ -94,7 +94,7 @@ namespace Novartment.Base.BinaryStreaming
 					offset += toCopy;
 					count -= toCopy;
 					resultSize += toCopy;
-					_source.SkipBuffer (toCopy);
+					_source.Skip (toCopy);
 				}
 
 				return resultSize;
@@ -108,7 +108,7 @@ namespace Novartment.Base.BinaryStreaming
 			{
 				if (_source.Count < 1)
 				{
-					var vTask = _source.FillBufferAsync (default);
+					var vTask = _source.LoadAsync (default);
 					if (!vTask.IsCompletedSuccessfully)
 					{
 						vTask.AsTask ().GetAwaiter ().GetResult ();
@@ -120,7 +120,7 @@ namespace Novartment.Base.BinaryStreaming
 				}
 
 				var result = (int)_source.BufferMemory.Span[_source.Offset];
-				_source.SkipBuffer (1);
+				_source.Skip (1);
 				return result;
 			}
 
@@ -150,7 +150,7 @@ namespace Novartment.Base.BinaryStreaming
 					if (toCopy > 0)
 					{
 						_source.BufferMemory.Span.Slice (_source.Offset, toCopy).CopyTo (buffer.AsSpan (offset));
-						_source.SkipBuffer (toCopy);
+						_source.Skip (toCopy);
 					}
 
 					return Task.FromResult (toCopy);
@@ -166,7 +166,7 @@ namespace Novartment.Base.BinaryStreaming
 					{
 						if ((count > _source.Count) && !_source.IsExhausted)
 						{
-							await _source.FillBufferAsync (cancellationToken).ConfigureAwait (false);
+							await _source.LoadAsync (cancellationToken).ConfigureAwait (false);
 						}
 
 						if (_source.Count <= 0)
@@ -179,7 +179,7 @@ namespace Novartment.Base.BinaryStreaming
 						offset += toCopy;
 						count -= toCopy;
 						resultSize += toCopy;
-						_source.SkipBuffer (toCopy);
+						_source.Skip (toCopy);
 					}
 
 					return resultSize;
@@ -196,7 +196,7 @@ namespace Novartment.Base.BinaryStreaming
 					if (toCopy > 0)
 					{
 						_source.BufferMemory.Slice (_source.Offset, toCopy).CopyTo (buffer);
-						_source.SkipBuffer (toCopy);
+						_source.Skip (toCopy);
 					}
 
 					return new ValueTask<int> (toCopy);
@@ -214,7 +214,7 @@ namespace Novartment.Base.BinaryStreaming
 					{
 						if ((count > _source.Count) && !_source.IsExhausted)
 						{
-							await _source.FillBufferAsync (cancellationToken).ConfigureAwait (false);
+							await _source.LoadAsync (cancellationToken).ConfigureAwait (false);
 						}
 
 						if (_source.Count <= 0)
@@ -227,7 +227,7 @@ namespace Novartment.Base.BinaryStreaming
 						offset += toCopy;
 						count -= toCopy;
 						resultSize += toCopy;
-						_source.SkipBuffer (toCopy);
+						_source.Skip (toCopy);
 					}
 
 					return resultSize;

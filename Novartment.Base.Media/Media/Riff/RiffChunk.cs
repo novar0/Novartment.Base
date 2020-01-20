@@ -71,7 +71,7 @@ namespace Novartment.Base.Media
 			Task task;
 			try
 			{
-				task = source.EnsureBufferAsync (8, cancellationToken).AsTask ();
+				task = source.EnsureAvailableAsync (8, cancellationToken).AsTask ();
 			}
 			catch (NotEnoughDataException exception)
 			{
@@ -94,7 +94,7 @@ namespace Novartment.Base.Media
 				var id = AsciiCharSet.GetString (source.BufferMemory.Span.Slice (source.Offset, 4));
 
 				var size = (long)BinaryPrimitives.ReadUInt32LittleEndian (source.BufferMemory.Span.Slice (source.Offset + 4));
-				source.SkipBuffer (8);
+				source.Skip (8);
 
 				var data = new SizeLimitedBufferedSource (source, size);
 

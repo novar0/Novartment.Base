@@ -43,7 +43,7 @@ namespace Novartment.Base.Media
 			}
 
 			this.ListId = AsciiCharSet.GetString (_source.BufferMemory.Span.Slice (_source.Offset, 4));
-			_source.SkipBuffer (4);
+			_source.Skip (4);
 		}
 
 		/// <summary>Получает FOURCC-код, идентифицирующий коллекцию.</summary>
@@ -82,7 +82,7 @@ namespace Novartment.Base.Media
 				await _current.Source.SkipToEndAsync (cancellationToken).ConfigureAwait (false);
 			}
 
-			await _source.FillBufferAsync (cancellationToken).ConfigureAwait (false);
+			await _source.LoadAsync (cancellationToken).ConfigureAwait (false);
 			if (_source.Count < 8)
 			{
 				// no more data

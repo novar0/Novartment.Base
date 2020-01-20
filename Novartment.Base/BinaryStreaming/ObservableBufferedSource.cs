@@ -79,8 +79,8 @@ namespace Novartment.Base.BinaryStreaming
 		/// Properties Offset and Count may be changed in the process.
 		/// </summary>
 		/// <param name="size">Size of data to skip from the start of available data in the buffer.
-		/// Must be less than total size of available data in the buffer.</param>
-		public void SkipBuffer (int size)
+		/// Must be less than or equal to the size of available data in the buffer.</param>
+		public void Skip (int size)
 		{
 			if ((size < 0) || (size > this.Count))
 			{
@@ -91,7 +91,7 @@ namespace Novartment.Base.BinaryStreaming
 
 			if (size > 0)
 			{
-				_source.SkipBuffer (size);
+				_source.Skip (size);
 				_progress?.Report (size);
 				if ((_onCompleted != null) && _source.IsExhausted && (_source.Count < 1))
 				{
@@ -102,29 +102,29 @@ namespace Novartment.Base.BinaryStreaming
 		}
 
 		/// <summary>
-		/// Asynchronously fills the buffer with source data, appending already available data.
+		/// Asynchronously requests the source to load more data in the buffer.
 		/// As a result, the buffer may not be completely filled if the source supplies data in blocks,
-		/// or empty if the source is exhausted.
+		/// or it may be empty if the source is exhausted.
 		/// Properties Offset, Count and IsExhausted may be changed in the process.
 		/// </summary>
 		/// <param name="cancellationToken">The token to monitor for cancellation requests. The default value is System.Threading.CancellationToken.None.</param>
 		/// <returns>A task that represents the asynchronous fill operation.
 		/// If Count property equals zero after completion,
 		/// this means that the source is exhausted and there will be no more data in the buffer.</returns>
-		public ValueTask FillBufferAsync (CancellationToken cancellationToken = default)
+		public ValueTask LoadAsync (CancellationToken cancellationToken = default)
 		{
-			return _source.FillBufferAsync (cancellationToken);
+			return _source.LoadAsync (cancellationToken);
 		}
 
 		/// <summary>
-		/// Asynchronously requests the source to provide the specified amount of data in the buffer.
+		/// Asynchronously requests the source to load the specified amount of data in the buffer.
 		/// As a result, there may be more data in the buffer than requested.
 		/// Properties Offset, Count and IsExhausted may be changed in the process.
 		/// </summary>
 		/// <param name="size">Amount of data required in the buffer.</param>
 		/// <param name="cancellationToken">The token to monitor for cancellation requests. The default value is System.Threading.CancellationToken.None.</param>
 		/// <returns>A task that represents the operation.</returns>
-		public ValueTask EnsureBufferAsync (int size, CancellationToken cancellationToken = default)
+		public ValueTask EnsureAvailableAsync (int size, CancellationToken cancellationToken = default)
 		{
 			if ((size < 0) || (size > this.BufferMemory.Length))
 			{
@@ -133,7 +133,7 @@ namespace Novartment.Base.BinaryStreaming
 
 			Contract.EndContractBlock ();
 
-			return size == 0 ? default : _source.EnsureBufferAsync (size, cancellationToken);
+			return size == 0 ? default : _source.EnsureAvailableAsync (size, cancellationToken);
 		}
 
 		/// <summary>
@@ -148,7 +148,7 @@ namespace Novartment.Base.BinaryStreaming
 		/// It may be less than specified if the source is exhausted.
 		/// Upon completion of a task, regardless of the result, the source will provide data coming right after skipped.
 		/// </returns>
-		public ValueTask<long> TryFastSkipAsync (long size, CancellationToken cancellationToken = default)
+		public ValueTask<long> SkipWihoutBufferingAsync (long size, CancellationToken cancellationToken = default)
 		{
 			if (size < 0L)
 			{
@@ -164,7 +164,7 @@ namespace Novartment.Base.BinaryStreaming
 
 			if (_source is IFastSkipBufferedSource fastSkipSource)
 			{
-				return TryFastSkipAsyncFinalizer (fastSkipSource.TryFastSkipAsync (size, cancellationToken));
+				return TryFastSkipAsyncFinalizer (fastSkipSource.SkipWihoutBufferingAsync (size, cancellationToken));
 			}
 
 			// источник не поддерживает быстрый пропуск,
@@ -173,7 +173,7 @@ namespace Novartment.Base.BinaryStreaming
 			if (size <= (long)available)
 			{
 				// достаточно доступных данных буфера
-				_source.SkipBuffer ((int)size);
+				_source.Skip ((int)size);
 				_progress?.Report (size);
 				if ((_onCompleted != null) && _source.IsExhausted && (_source.Count < 1))
 				{
@@ -187,7 +187,7 @@ namespace Novartment.Base.BinaryStreaming
 			if (_source.IsExhausted)
 			{
 				// источник исчерпан
-				_source.SkipBuffer (available);
+				_source.Skip (available);
 				_progress?.Report (available);
 				if ((_onCompleted != null) && (_source.Count < 1))
 				{
@@ -207,19 +207,19 @@ namespace Novartment.Base.BinaryStreaming
 				{
 					// пропускаем всё что в буфере
 					available = _source.Count;
-					_source.SkipBuffer (available);
+					_source.Skip (available);
 					_progress?.Report (available);
 					size -= (long)available;
 					skipped += (long)available;
 
 					// заполняем буфер
-					await _source.FillBufferAsync (cancellationToken).ConfigureAwait (false);
+					await _source.LoadAsync (cancellationToken).ConfigureAwait (false);
 				}
 				while (!_source.IsExhausted && (size > (long)_source.Count));
 
 				// пропускаем частично буфер
 				var reminder = (int)Math.Min (size, (long)_source.Count);
-				_source.SkipBuffer (reminder);
+				_source.Skip (reminder);
 				_progress?.Report (reminder);
 				skipped += reminder;
 				if ((_onCompleted != null) && _source.IsExhausted && (_source.Count < 1))

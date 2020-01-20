@@ -66,15 +66,15 @@ namespace Novartment.Base.Test
 			var transform = new CryptoTransformingBufferedSource (src, mock, new byte[transformBufferSize]);
 
 			Skip (transform, totalSkip);
-			var vTask = transform.EnsureBufferAsync (3);
+			var vTask = transform.EnsureAvailableAsync (3);
 			Assert.True (vTask.IsCompletedSuccessfully);
 			Assert.Equal ((byte)~FillFunction (MapTransformIndexBackToOriginal (totalSkip, mock)), transform.BufferMemory.Span[transform.Offset]);
 			Assert.Equal ((byte)~FillFunction (MapTransformIndexBackToOriginal (totalSkip + 1, mock)), transform.BufferMemory.Span[transform.Offset + 1]);
 			Assert.Equal ((byte)~FillFunction (MapTransformIndexBackToOriginal (totalSkip + 2, mock)), transform.BufferMemory.Span[transform.Offset + 2]);
-			vTask = transform.EnsureBufferAsync (bufferSkip);
+			vTask = transform.EnsureAvailableAsync (bufferSkip);
 			Assert.True (vTask.IsCompletedSuccessfully);
-			transform.SkipBuffer (bufferSkip);
-			vTask = transform.EnsureBufferAsync (3);
+			transform.Skip (bufferSkip);
+			vTask = transform.EnsureAvailableAsync (3);
 			Assert.True (vTask.IsCompletedSuccessfully);
 			Assert.Equal ((byte)~FillFunction (MapTransformIndexBackToOriginal (totalSkip + bufferSkip, mock)), transform.BufferMemory.Span[transform.Offset]);
 			Assert.Equal ((byte)~FillFunction (MapTransformIndexBackToOriginal (totalSkip + bufferSkip + 1, mock)), transform.BufferMemory.Span[transform.Offset + 1]);
@@ -146,7 +146,7 @@ namespace Novartment.Base.Test
 			var result = new byte[resultSize];
 			while (true)
 			{
-				var vTask = transform.FillBufferAsync ();
+				var vTask = transform.LoadAsync ();
 				Assert.True (vTask.IsCompletedSuccessfully);
 				if (transform.Count <= 0)
 				{
@@ -155,7 +155,7 @@ namespace Novartment.Base.Test
 
 				transform.BufferMemory.Span.Slice (transform.Offset, transform.Count).CopyTo (result.AsSpan (len));
 				len += transform.Count;
-				transform.SkipBuffer (transform.Count);
+				transform.Skip (transform.Count);
 			}
 
 			Assert.True (transform.IsExhausted);
@@ -193,23 +193,23 @@ namespace Novartment.Base.Test
 			if (size <= (long)available)
 			{
 				// достаточно доступных данных буфера
-				source.SkipBuffer ((int)size);
+				source.Skip ((int)size);
 				return;
 			}
 
 			while (!source.IsExhausted && (size > (long)source.Count))
 			{
 				available = source.Count;
-				source.SkipBuffer (available);
+				source.Skip (available);
 				size -= (long)available;
 
-				var vTask = source.FillBufferAsync ();
+				var vTask = source.LoadAsync ();
 				Assert.True (vTask.IsCompletedSuccessfully);
 			}
 
 			Assert.InRange (size, 0, (long)source.Count);
 			var reminder = Math.Min (size, (long)source.Count);
-			source.SkipBuffer ((int)reminder);
+			source.Skip ((int)reminder);
 		}
 
 		private static byte FillFunction (long position)

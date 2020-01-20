@@ -91,16 +91,16 @@ namespace Novartment.Base.BinaryStreaming
 		public bool IsExhausted => _isProviderCompleted && _currentSource.IsExhausted;
 
 		/// <summary>
-		/// Asynchronously fills the buffer with source data, appending already available data.
+		/// Asynchronously requests the source to load more data in the buffer.
 		/// As a result, the buffer may not be completely filled if the source supplies data in blocks,
-		/// or empty if the source is exhausted.
+		/// or it may be empty if the source is exhausted.
 		/// Properties Offset, Count and IsExhausted may be changed in the process.
 		/// </summary>
 		/// <param name="cancellationToken">The token to monitor for cancellation requests. The default value is System.Threading.CancellationToken.None.</param>
 		/// <returns>A task that represents the asynchronous fill operation.
 		/// If Count property equals zero after completion,
 		/// this means that the source is exhausted and there will be no more data in the buffer.</returns>
-		public ValueTask FillBufferAsync (CancellationToken cancellationToken = default)
+		public ValueTask LoadAsync (CancellationToken cancellationToken = default)
 		{
 			Defragment ();
 
@@ -122,14 +122,14 @@ namespace Novartment.Base.BinaryStreaming
 		}
 
 		/// <summary>
-		/// Asynchronously requests the source to provide the specified amount of data in the buffer.
+		/// Asynchronously requests the source to load the specified amount of data in the buffer.
 		/// As a result, there may be more data in the buffer than requested.
 		/// Properties Offset, Count and IsExhausted may be changed in the process.
 		/// </summary>
 		/// <param name="size">Amount of data required in the buffer.</param>
 		/// <param name="cancellationToken">The token to monitor for cancellation requests. The default value is System.Threading.CancellationToken.None.</param>
 		/// <returns>A task that represents the operation.</returns>
-		public ValueTask EnsureBufferAsync (int size, CancellationToken cancellationToken = default)
+		public ValueTask EnsureAvailableAsync (int size, CancellationToken cancellationToken = default)
 		{
 			if ((size < 0) || (size > this.BufferMemory.Length))
 			{
@@ -170,8 +170,8 @@ namespace Novartment.Base.BinaryStreaming
 		/// Properties Offset and Count may be changed in the process.
 		/// </summary>
 		/// <param name="size">Size of data to skip from the start of available data in the buffer.
-		/// Must be less than total size of available data in the buffer.</param>
-		public void SkipBuffer (int size)
+		/// Must be less than or equal to the size of available data in the buffer.</param>
+		public void Skip (int size)
 		{
 			if ((size < 0) || (size > this.Count))
 			{
@@ -199,7 +199,7 @@ namespace Novartment.Base.BinaryStreaming
 		/// It may be less than specified if the source is exhausted.
 		/// Upon completion of a task, regardless of the result, the source will provide data coming right after skipped.
 		/// </returns>
-		public ValueTask<long> TryFastSkipAsync (long size, CancellationToken cancellationToken = default)
+		public ValueTask<long> SkipWihoutBufferingAsync (long size, CancellationToken cancellationToken = default)
 		{
 			if (size < 0L)
 			{
@@ -211,7 +211,7 @@ namespace Novartment.Base.BinaryStreaming
 			// достаточно доступных данных буфера
 			if (size <= (long)_count)
 			{
-				SkipBuffer ((int)size);
+				Skip ((int)size);
 				return new ValueTask<long> (size);
 			}
 
@@ -225,7 +225,7 @@ namespace Novartment.Base.BinaryStreaming
 
 				// пропускаем весь буфер
 				size -= (long)available;
-				SkipBuffer (available);
+				Skip (available);
 
 				do
 				{
@@ -281,7 +281,7 @@ namespace Novartment.Base.BinaryStreaming
 		{
 			while (_currentSource.Count < 1)
 			{
-				await _currentSource.FillBufferAsync (cancellationToken).ConfigureAwait (false);
+				await _currentSource.LoadAsync (cancellationToken).ConfigureAwait (false);
 				if (_currentSource.Count < 1)
 				{
 					if (_isProviderCompleted)
@@ -311,7 +311,7 @@ namespace Novartment.Base.BinaryStreaming
 			if (size > 0)
 			{
 				_currentSource.BufferMemory.Slice (_currentSource.Offset, size).CopyTo (_buffer.Slice (_offset + _count));
-				_currentSource.SkipBuffer (size);
+				_currentSource.Skip (size);
 				_count += size;
 			}
 

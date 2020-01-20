@@ -204,7 +204,7 @@ namespace Novartment.Base.Media
 								short int right;
 								short int bottom;
 							 */
-							await chunk.Source.EnsureBufferAsync (56, cancellationToken).ConfigureAwait (false); // "Insuficient size of RIFF-chunk 'strh'. Expected minimum 56 bytes.");
+							await chunk.Source.EnsureAvailableAsync (56, cancellationToken).ConfigureAwait (false); // "Insuficient size of RIFF-chunk 'strh'. Expected minimum 56 bytes.");
 							type = AsciiCharSet.GetString (chunk.Source.BufferMemory.Span.Slice (chunk.Source.Offset, 4));
 
 							var sourceBuf = chunk.Source.BufferMemory;

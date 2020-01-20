@@ -83,7 +83,7 @@ namespace Novartment.Base.Net
 				throw new ArgumentNullException (nameof (buffer));
 			}
 
-			return StreamExtensions.AsBufferedSource (stream, buffer);
+			return BinaryStreamingStreamExtensions.AsBufferedSource (stream, buffer);
 		}
 
 		private static IBinaryDestination GetBinaryDestination (SslStream stream)
@@ -93,7 +93,7 @@ namespace Novartment.Base.Net
 				throw new ArgumentNullException (nameof (stream));
 			}
 
-			return StreamExtensions.AsBinaryDestination (stream);
+			return BinaryStreamingStreamExtensions.AsBinaryDestination (stream);
 		}
 	}
 }

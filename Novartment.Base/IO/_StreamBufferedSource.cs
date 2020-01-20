@@ -6,11 +6,11 @@ using System.Threading.Tasks;
 
 namespace Novartment.Base.BinaryStreaming
 {
-	/// <content>
-	/// Класс-обёртка StreamBufferedSource для представления Stream в виде IFastSkipBufferedSource.
-	/// </content>
-	public static partial class StreamExtensions
+	public static partial class BinaryStreamingStreamExtensions
 	{
+		/// <content>
+		/// Класс-обёртка StreamBufferedSource для представления Stream в виде IFastSkipBufferedSource.
+		/// </content>
 		private class StreamBufferedSource :
 			IFastSkipBufferedSource
 		{
@@ -34,7 +34,7 @@ namespace Novartment.Base.BinaryStreaming
 
 			public bool IsExhausted => _streamEnded;
 
-			public void SkipBuffer (int size)
+			public void Skip (int size)
 			{
 				if ((size < 0) || (size > _count))
 				{
@@ -50,7 +50,7 @@ namespace Novartment.Base.BinaryStreaming
 				}
 			}
 
-			public ValueTask<long> TryFastSkipAsync (long size, CancellationToken cancellationToken = default)
+			public ValueTask<long> SkipWihoutBufferingAsync (long size, CancellationToken cancellationToken = default)
 			{
 				if (size < 0L)
 				{
@@ -139,7 +139,7 @@ namespace Novartment.Base.BinaryStreaming
 				}
 			}
 
-			public ValueTask FillBufferAsync (CancellationToken cancellationToken = default)
+			public ValueTask LoadAsync (CancellationToken cancellationToken = default)
 			{
 				if (_streamEnded || (_count >= _buffer.Length))
 				{
@@ -171,7 +171,7 @@ namespace Novartment.Base.BinaryStreaming
 				}
 			}
 
-			public ValueTask EnsureBufferAsync (int size, CancellationToken cancellationToken = default)
+			public ValueTask EnsureAvailableAsync (int size, CancellationToken cancellationToken = default)
 			{
 				if ((size < 0) || (size > _buffer.Length))
 				{

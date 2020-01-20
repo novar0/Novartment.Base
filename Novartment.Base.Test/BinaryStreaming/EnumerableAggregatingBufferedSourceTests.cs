@@ -12,9 +12,9 @@ namespace Novartment.Base.Test
 			int srcBufSize = 20;
 			var src1 = new BigBufferedSourceMock (3L, srcBufSize, FillFunction);
 			var src2 = new BigBufferedSourceMock ((long)int.MaxValue + 56L, srcBufSize, FillFunction);
-			src2.TryFastSkipAsync (54);
+			src2.SkipWihoutBufferingAsync (54);
 			var src3 = new BigBufferedSourceMock (24L, srcBufSize, FillFunction);
-			src3.TryFastSkipAsync (20);
+			src3.SkipWihoutBufferingAsync (20);
 			var sources = new IBufferedSource[]
 			{
 				src1,
@@ -29,7 +29,7 @@ namespace Novartment.Base.Test
 			Assert.False (sources[1].IsEmpty ());
 			Assert.False (sources[2].IsEmpty ());
 
-			var vTask = src.EnsureBufferAsync (6);
+			var vTask = src.EnsureAvailableAsync (6);
 			Assert.True (vTask.IsCompletedSuccessfully);
 			Assert.False (src.IsExhausted);
 			Assert.True (sources[0].IsEmpty ());
@@ -41,15 +41,15 @@ namespace Novartment.Base.Test
 			Assert.Equal (FillFunction (54), src.BufferMemory.Span[src.Offset + 3]);
 			Assert.Equal (FillFunction (55), src.BufferMemory.Span[src.Offset + 4]);
 			Assert.Equal (FillFunction (56), src.BufferMemory.Span[src.Offset + 5]);
-			src.SkipBuffer (6);
+			src.Skip (6);
 
-			Assert.Equal ((long)int.MaxValue, src.TryFastSkipAsync ((long)int.MaxValue).Result);
+			Assert.Equal ((long)int.MaxValue, src.SkipWihoutBufferingAsync ((long)int.MaxValue).Result);
 			Assert.False (src.IsExhausted);
 			Assert.True (sources[0].IsEmpty ());
 			Assert.True (sources[1].IsEmpty ());
 			Assert.False (sources[2].IsEmpty ());
 
-			vTask = src.EnsureBufferAsync (3);
+			vTask = src.EnsureAvailableAsync (3);
 			Assert.True (vTask.IsCompletedSuccessfully);
 			Assert.True (sources[0].IsEmpty ());
 			Assert.True (sources[1].IsEmpty ());
@@ -57,8 +57,8 @@ namespace Novartment.Base.Test
 			Assert.Equal (FillFunction (21), src.BufferMemory.Span[src.Offset]);
 			Assert.Equal (FillFunction (22), src.BufferMemory.Span[src.Offset + 1]);
 			Assert.Equal (FillFunction (23), src.BufferMemory.Span[src.Offset + 2]);
-			src.SkipBuffer (3);
-			vTask = src.FillBufferAsync ();
+			src.Skip (3);
+			vTask = src.LoadAsync ();
 			Assert.True (vTask.IsCompletedSuccessfully);
 			Assert.True (src.IsExhausted);
 		}

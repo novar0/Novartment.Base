@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 namespace Novartment.Base.BinaryStreaming
 {
 	/// <summary>
-	/// A binary data destionation for sequential writing.
+	/// A binary data destination for sequential writing.
 	/// </summary>
 	public interface IBinaryDestination
 	{
@@ -18,7 +18,7 @@ namespace Novartment.Base.BinaryStreaming
 		ValueTask WriteAsync (ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default);
 
 		/// <summary>
-		/// Mark this destionation as being completed, meaning no more data will be written to it.
+		/// Mark this destination as being completed, meaning no more data will be written to it.
 		/// </summary>
 		void SetComplete ();
 	}

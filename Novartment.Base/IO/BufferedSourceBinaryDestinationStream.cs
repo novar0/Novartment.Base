@@ -7,8 +7,8 @@ using System.Threading.Tasks;
 namespace Novartment.Base.BinaryStreaming
 {
 	/// <summary>
-	/// Поток, получающий данные из источника данных, представленного байтовым буфером и
-	/// передающий все записываемые данные в указанный получатель двоичных данных.
+	/// A stream that reads data from the data source represented by a byte buffer
+	/// and transfers all written data to the binary data destination.
 	/// </summary>
 	public class BufferedSourceBinaryDestinationStream : Stream
 	{
@@ -16,57 +16,61 @@ namespace Novartment.Base.BinaryStreaming
 		private readonly IBinaryDestination _destination;
 
 		/// <summary>
-		/// Инициализирует новый экземпляр BufferedSourceBinaryDestinationStream,
-		/// получающий данные из указанного источника данных, представленного байтовым буфером и
-		/// передающий все записываемые данные в указанный получатель двоичных данных.
+		/// Initializes a new instance of the BufferedSourceBinaryDestinationStream class
+		/// that reads data from the specified data source represented by a byte buffer
+		/// and transfers all written data to the specified binary data destination.
 		/// </summary>
-		/// <param name="source">Источник данных, представленный байтовым буфером, из котрого будет получать данные поток.</param>
-		/// <param name="destination">Получатель двоичных данных, в который будут передаваться все записываемые в поток данные.</param>
+		/// <param name="source">A data source represented by a byte buffer from which the stream will read data.</param>
+		/// <param name="destination">The binary data destination to which all data written to the stream will be transfered.</param>
 		public BufferedSourceBinaryDestinationStream (IBufferedSource source, IBinaryDestination destination)
 		{
 			_source = source;
 			_destination = destination;
 		}
 
-		/// <summary>Получает значение, показывающее, поддерживает ли поток возможность чтения.</summary>
+		/// <summary>Gets a value indicating that this stream supports reading.</summary>
 		public override bool CanRead => true;
 
-		/// <summary>Получает значение, которое показывает, поддерживает ли поток возможность записи.</summary>
+		/// <summary>Gets a value indicating that this stream supports writing.</summary>
 		public override bool CanWrite => true;
 
-		/// <summary>Получает значение, которое показывает, поддерживается ли в потоке возможность поиска.</summary>
+		/// <summary>Gets a value indicating that this stream does not supports seeking.</summary>
 		public override bool CanSeek => false;
 
-		/// <summary>Получает длину потока в байтах.</summary>
+		/// <summary>Not supported.</summary>
+		/// <exception cref="System.NotSupportedException">
+		/// Always throws because the stream not supports seeking.
+		/// </exception>
 		public override long Length => throw new NotSupportedException ();
 
-		/// <summary>Получает или задает позицию в потоке.</summary>
+		/// <summary>Not supported.</summary>
+		/// <exception cref="System.NotSupportedException">
+		/// Always throws because the stream not supports seeking.
+		/// </exception>
 		public override long Position
 		{
 			get => throw new NotSupportedException ();
 			set => throw new NotSupportedException ();
 		}
 
-		/// <summary>
-		/// Задает позицию в потоке.
-		/// </summary>
-		/// <param name="offset">Смещение в байтах относительно параметра origin.</param>
-		/// <param name="origin">определяет точку ссылки, которая используется для получения новой позиции.</param>
-		/// <returns>Новая позиция в текущем потоке.</returns>
+		/// <summary>Not supported.</summary>
+		/// <exception cref="System.NotSupportedException">
+		/// Always throws because the stream not supports seeking.
+		/// </exception>
 		public override long Seek (long offset, SeekOrigin origin) => throw new NotSupportedException ();
 
-		/// <summary>
-		/// Задает длину потока.
-		/// </summary>
-		/// <param name="value">Необходимая длина потока в байтах.</param>
+		/// <summary>Not supported.</summary>
+		/// <exception cref="System.NotSupportedException">
+		/// Always throws because the stream not supports seeking.
+		/// </exception>
 		public override void SetLength (long value) => throw new NotSupportedException ();
 
 		/// <summary>
-		/// Записывает последовательность байтов в поток и перемещает позицию в нём вперед на число записанных байтов.
+		/// Writes a sequence of bytes to the stream.
 		/// </summary>
-		/// <param name="buffer">Буфер, из которого записываются данные.</param>
-		/// <param name="offset">Смещение байтов (начиная с нуля) в buffer, с которого начинается копирование байтов в поток.</param>
-		/// <param name="count">Максимальное число байтов для записи.</param>
+		/// <param name="buffer">An array of bytes. This method copies count bytes from buffer to the stream.</param>
+		/// <param name="offset">The zero-based byte offset in buffer at which to begin copying bytes to the stream.</param>
+		/// <param name="count">The number of bytes to be written to the stream.</param>
 		public override void Write (byte[] buffer, int offset, int count)
 		{
 			if (buffer == null)
@@ -86,7 +90,7 @@ namespace Novartment.Base.BinaryStreaming
 
 			Contract.EndContractBlock ();
 
-			if (_destination is StreamExtensions.StreamBinaryDestination streamBinaryDestination)
+			if (_destination is BinaryStreamingStreamExtensions.StreamBinaryDestination streamBinaryDestination)
 			{
 				streamBinaryDestination.BaseStream.Write (buffer, offset, count);
 			}
@@ -101,14 +105,13 @@ namespace Novartment.Base.BinaryStreaming
 		}
 
 		/// <summary>
-		/// Асинхронно записывает последовательность байтов в поток,
-		/// перемещает текущую позицию внутри потока на число записанных байтов и отслеживает запросы отмены.
+		/// Asynchronously writes a sequence of bytes to the stream and monitors cancellation requests.
 		/// </summary>
-		/// <param name="buffer">Буфер, из которого записываются данные.</param>
-		/// <param name="offset">Смещение байтов (начиная с нуля) в buffer, с которого начинается копирование байтов в поток.</param>
-		/// <param name="count">Максимальное число байтов для записи.</param>
-		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
-		/// <returns>Задача, представляющая асинхронную операцию записи.</returns>
+		/// <param name="buffer">An array of bytes. This method copies count bytes from buffer to the stream.</param>
+		/// <param name="offset">The zero-based byte offset in buffer at which to begin copying bytes to the stream.</param>
+		/// <param name="count">The number of bytes to be written to the stream.</param>
+		/// <param name="cancellationToken">The token to monitor for cancellation requests. The default value is System.Threading.CancellationToken.None.</param>
+		/// <returns>A task that represents the asynchronous write operation.</returns>
 		public override Task WriteAsync (byte[] buffer, int offset, int count, CancellationToken cancellationToken = default)
 		{
 			if (buffer == null)
@@ -128,7 +131,7 @@ namespace Novartment.Base.BinaryStreaming
 
 			Contract.EndContractBlock ();
 
-			return (_destination is StreamExtensions.StreamBinaryDestination streamBinaryDestination) ?
+			return (_destination is BinaryStreamingStreamExtensions.StreamBinaryDestination streamBinaryDestination) ?
 				streamBinaryDestination.BaseStream.WriteAsync (buffer, offset, count, cancellationToken) :
 				_destination.WriteAsync (buffer.AsMemory (offset, count), cancellationToken).AsTask ();
 		}
@@ -136,49 +139,55 @@ namespace Novartment.Base.BinaryStreaming
 #if !NETSTANDARD2_0
 
 		/// <summary>
-		/// Asynchronously writes specified region of memory to this stream.
+		/// Asynchronously writes a sequence of bytes to the stream and monitors cancellation requests.
 		/// </summary>
-		/// <param name="buffer">The region of memory to write to this destination.</param>
-		/// <param name="cancellationToken">The token to monitor for cancellation requests. The default value is System.Threading.CancellationToken.None.</param>
-		/// <returns>A task that represents the write operation.</returns>
+		/// <param name="buffer">The region of memory to write data from.</param>
+		/// <param name="cancellationToken"> The token to monitor for cancellation requests. The default value is System.Threading.CancellationToken.None.</param>
+		/// <returns>A task that represents the asynchronous write operation.</returns>
 		public override ValueTask WriteAsync (ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default)
 		{
-			return (_destination is StreamExtensions.StreamBinaryDestination streamBinaryDestination) ?
+			return (_destination is BinaryStreamingStreamExtensions.StreamBinaryDestination streamBinaryDestination) ?
 				streamBinaryDestination.BaseStream.WriteAsync (buffer, cancellationToken) :
 				_destination.WriteAsync (buffer, cancellationToken);
 		}
 #endif
 
 		/// <summary>
-		/// Очищает все буферы данного потока и вызывает запись данных буферов в базовое устройство.
+		/// Clears all buffers for stream and causes
+		/// any buffered data to be written to the underlying device.
 		/// </summary>
 		public override void Flush ()
 		{
-			if (_destination is StreamExtensions.StreamBinaryDestination streamBinaryDestination)
+			if (_destination is BinaryStreamingStreamExtensions.StreamBinaryDestination streamBinaryDestination)
 			{
 				streamBinaryDestination.BaseStream.Flush ();
 			}
 		}
 
 		/// <summary>
-		/// Асинхронно очищает все буферы для этого потока и вызывает запись всех буферизованных данных в базовое устройство.
+		/// Asynchronously clears all buffers for this stream, causes any buffered data to
+		/// be written to the underlying device, and monitors cancellation requests.
 		/// </summary>
-		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
-		/// <returns>Задача, представляющая асинхронную операцию очистки.</returns>
+		/// <param name="cancellationToken">The token to monitor for cancellation requests. The default value is System.Threading.CancellationToken.None.</param>
+		/// <returns>A task that represents the asynchronous flush operation.</returns>
 		public override Task FlushAsync (CancellationToken cancellationToken = default)
 		{
-			return (_destination is StreamExtensions.StreamBinaryDestination streamBinaryDestination) ?
+			return (_destination is BinaryStreamingStreamExtensions.StreamBinaryDestination streamBinaryDestination) ?
 				streamBinaryDestination.BaseStream.FlushAsync () :
 				Task.CompletedTask;
 		}
 
 		/// <summary>
-		/// Считывает последовательность байтов из потока и перемещает позицию в потоке на число считанных байтов.
+		/// Reads a sequence of bytes from the stream.
 		/// </summary>
-		/// <param name="buffer">Буфер, в который записываются данные.</param>
-		/// <param name="offset">Смещение байтов в buffer, с которого начинается запись данных из потока.</param>
-		/// <param name="count">Максимальное число байтов, предназначенных для чтения.</param>
-		/// <returns>Общее количество байтов, считанных в буфер.Это число может быть меньше количества запрошенных байтов, если столько байтов в настоящее время недоступно, а также равняться нулю (0), если был достигнут конец потока.</returns>
+		/// <param name="buffer">The buffer to write the data into.</param>
+		/// <param name="offset">The byte offset in buffer at which to begin writing data from the stream.</param>
+		/// <param name="count">The maximum number of bytes to read.</param>
+		/// <returns>
+		///  The total number of bytes read into the buffer. This can be less than the number
+		///  of bytes requested if that many bytes are not currently available, or zero (0)
+		///  if the end of the stream has been reached.
+		/// </returns>
 		public override int Read (byte[] buffer, int offset, int count)
 		{
 			if (buffer == null)
@@ -207,7 +216,7 @@ namespace Novartment.Base.BinaryStreaming
 				if (toCopy > 0)
 				{
 					_source.BufferMemory.Span.Slice (_source.Offset, toCopy).CopyTo (buffer.AsSpan (offset));
-					_source.SkipBuffer (toCopy);
+					_source.Skip (toCopy);
 				}
 
 				return toCopy;
@@ -215,7 +224,7 @@ namespace Novartment.Base.BinaryStreaming
 
 			while (count > 0)
 			{
-				var vTask = _source.FillBufferAsync (default);
+				var vTask = _source.LoadAsync (default);
 				if (!vTask.IsCompletedSuccessfully)
 				{
 					vTask.AsTask ().GetAwaiter ().GetResult ();
@@ -230,21 +239,22 @@ namespace Novartment.Base.BinaryStreaming
 				offset += toCopy;
 				count -= toCopy;
 				resultSize += toCopy;
-				_source.SkipBuffer (toCopy);
+				_source.Skip (toCopy);
 			}
 
 			return resultSize;
 		}
 
 		/// <summary>
-		/// Считывает байт из потока и перемещает позицию в потоке на один байт или возвращает -1, если достигнут конец потока.
+		/// Reads a byte from the stream and advances the position within the stream by one byte,
+		/// or returns -1 if at the end of the stream.
 		/// </summary>
-		/// <returns>Байт без знака, приведенный к Int32, или значение -1, если достигнут конец потока.</returns>
+		/// <returns>The unsigned byte cast to an Int32, or -1 if at the end of the stream.</returns>
 		public override int ReadByte ()
 		{
 			if (_source.Count < 1)
 			{
-				var vTask = _source.FillBufferAsync (default);
+				var vTask = _source.LoadAsync (default);
 				if (!vTask.IsCompletedSuccessfully)
 				{
 					vTask.AsTask ().GetAwaiter ().GetResult ();
@@ -256,22 +266,23 @@ namespace Novartment.Base.BinaryStreaming
 			}
 
 			var result = (int)_source.BufferMemory.Span[_source.Offset];
-			_source.SkipBuffer (1);
+			_source.Skip (1);
 			return result;
 		}
 
 		/// <summary>
-		/// Асинхронно считывает последовательность байтов из потока,
-		/// перемещает позицию в потоке на число считанных байтов и отслеживает запросы отмены.
+		/// Asynchronously reads a sequence of bytes from the stream and monitors cancellation requests.
 		/// </summary>
-		/// <param name="buffer">Буфер, в который считывается данные.</param>
-		/// <param name="offset">Смещение байтов в buffer, с которого начинается cчитывание данных из потока.</param>
-		/// <param name="count">Максимальное число байтов, предназначенных для чтения.</param>
-		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
-		/// <returns>Задача, результатом которой является общее число байтов, считанных в буфер.
-		/// Значение результата может быть меньше запрошенного числа байтов,
-		/// если число доступных в данный момент байтов меньше запрошенного числа,
-		/// или результат может быть равен 0 (нулю), если был достигнут конец потока.</returns>
+		/// <param name="buffer">The buffer to write the data into.</param>
+		/// <param name="offset">The byte offset in buffer at which to begin writing data from the stream.</param>
+		/// <param name="count">The maximum number of bytes to read.</param>
+		/// <param name="cancellationToken">The token to monitor for cancellation requests. The default value is System.Threading.CancellationToken.None.</param>
+		/// <returns>
+		/// A task that represents the asynchronous read operation.
+		/// The value of the TResult parameter contains the total number of bytes read into the buffer.
+		/// The result value can be less than the number of bytes requested if the number of bytes currently
+		/// available is less than the requested number, or it can be 0 (zero) if the end of the stream has been reached.
+		/// </returns>
 		public override Task<int> ReadAsync (byte[] buffer, int offset, int count, CancellationToken cancellationToken = default)
 		{
 			if (buffer == null)
@@ -299,7 +310,7 @@ namespace Novartment.Base.BinaryStreaming
 				if (toCopy > 0)
 				{
 					_source.BufferMemory.Span.Slice (_source.Offset, toCopy).CopyTo (buffer.AsSpan (offset));
-					_source.SkipBuffer (toCopy);
+					_source.Skip (toCopy);
 				}
 
 				return Task.FromResult (toCopy);
@@ -315,7 +326,7 @@ namespace Novartment.Base.BinaryStreaming
 				{
 					if ((count > _source.Count) && !_source.IsExhausted)
 					{
-						await _source.FillBufferAsync (cancellationToken).ConfigureAwait (false);
+						await _source.LoadAsync (cancellationToken).ConfigureAwait (false);
 					}
 
 					if (_source.Count <= 0)
@@ -328,7 +339,7 @@ namespace Novartment.Base.BinaryStreaming
 					offset += toCopy;
 					count -= toCopy;
 					resultSize += toCopy;
-					_source.SkipBuffer (toCopy);
+					_source.Skip (toCopy);
 				}
 
 				return resultSize;
@@ -337,15 +348,16 @@ namespace Novartment.Base.BinaryStreaming
 
 #if !NETSTANDARD2_0
 		/// <summary>
-		/// Асинхронно считывает последовательность байтов из потока,
-		/// перемещает позицию в потоке на число считанных байтов и отслеживает запросы отмены.
+		/// Asynchronously reads a sequence of bytes from the stream and monitors cancellation requests.
 		/// </summary>
-		/// <param name="buffer">Буфер, в который считывается данные.</param>
-		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
-		/// <returns>Задача, результатом которой является общее число байтов, считанных в буфер.
-		/// Значение результата может быть меньше размера буфера,
-		/// если число доступных в данный момент байтов меньше запрошенного числа,
-		/// или результат может быть равен 0 (нулю), если был достигнут конец потока.</returns>
+		/// <param name="buffer">The region of memory to write the data into.</param>
+		/// <param name="cancellationToken">The token to monitor for cancellation requests. The default value is System.Threading.CancellationToken.None.</param>
+		/// <returns>
+		/// A task that represents the asynchronous read operation.
+		/// The result value contains the total number of bytes read into the buffer.
+		/// It can be less than the number of bytes allocated in the buffer if that many
+		/// bytes are not currently available, or it can be 0 (zero) if the end of the stream has been reached.
+		/// </returns>
 		public override ValueTask<int> ReadAsync (Memory<byte> buffer, CancellationToken cancellationToken = default)
 		{
 			var available = _source.Count;
@@ -356,7 +368,7 @@ namespace Novartment.Base.BinaryStreaming
 				if (toCopy > 0)
 				{
 					_source.BufferMemory.Slice (_source.Offset, toCopy).CopyTo (buffer);
-					_source.SkipBuffer (toCopy);
+					_source.Skip (toCopy);
 				}
 
 				return new ValueTask<int> (toCopy);
@@ -374,7 +386,7 @@ namespace Novartment.Base.BinaryStreaming
 				{
 					if ((count > _source.Count) && !_source.IsExhausted)
 					{
-						await _source.FillBufferAsync (cancellationToken).ConfigureAwait (false);
+						await _source.LoadAsync (cancellationToken).ConfigureAwait (false);
 					}
 
 					if (_source.Count <= 0)
@@ -387,7 +399,7 @@ namespace Novartment.Base.BinaryStreaming
 					offset += toCopy;
 					count -= toCopy;
 					resultSize += toCopy;
-					_source.SkipBuffer (toCopy);
+					_source.Skip (toCopy);
 				}
 
 				return resultSize;
@@ -396,22 +408,25 @@ namespace Novartment.Base.BinaryStreaming
 #endif
 
 		/// <summary>
-		/// Асинхронно считывает байты из потока и записывает их в другой поток, используя указанный размер буфера и токен отмены.
+		/// Asynchronously reads the bytes from the stream and writes them to another stream,
+		/// using a specified buffer size and cancellation token.
 		/// </summary>
-		/// <param name="destination">Поток, в который будет скопировано содержимое текущего потока.</param>
-		/// <param name="bufferSize">Размер (в байтах) буфера. Это значение должно быть больше нуля.</param>
-		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
-		/// <returns>Задача, представляющая асинхронную операцию копирования.</returns>
+		/// <param name="destination">The stream to which the contents of the stream will be copied.</param>
+		/// <param name="bufferSize">The size, in bytes, of the buffer. This value must be greater than zero.</param>
+		/// <param name="cancellationToken">The token to monitor for cancellation requests. The default value is System.Threading.CancellationToken.None.</param>
+		/// <returns>A task that represents the asynchronous copy operation.</returns>
 		public override Task CopyToAsync (Stream destination, int bufferSize, CancellationToken cancellationToken = default)
 		{
 			return BufferedSourceExtensions.WriteToAsync (_source, destination.AsBinaryDestination (), cancellationToken);
 		}
 
 		/// <summary>
-		/// Освобождает неуправляемые ресурсы, используемые объектом, а при необходимости освобождает также управляемые ресурсы.
+		/// Releases the resources used by stream.
 		/// </summary>
-		/// <param name="disposing">Значение true позволяет освободить управляемые и неуправляемые ресурсы;
-		/// значение false позволяет освободить только неуправляемые ресурсы.</param>
+		/// <param name="disposing">
+		/// True to release both managed and unmanaged resources;
+		/// false to release only unmanaged resources.
+		/// </param>
 		protected override void Dispose (bool disposing)
 		{
 			base.Dispose (disposing);

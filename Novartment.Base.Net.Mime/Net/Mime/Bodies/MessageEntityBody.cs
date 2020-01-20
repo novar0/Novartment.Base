@@ -86,9 +86,9 @@ namespace Novartment.Base.Net.Mime
 		}
 
 		/// <summary>
-		/// Saves this entity in the specified binary data destionation.
+		/// Saves this entity in the specified binary data destination.
 		/// </summary>
-		/// <param name="destination">The binary data destionation, in which this entity will be saved.</param>
+		/// <param name="destination">The binary data destination, in which this entity will be saved.</param>
 		/// <param name="cancellationToken">The token to monitor for cancellation requests. The default value is System.Threading.CancellationToken.None.</param>
 		/// <returns>A task that represents the operation.</returns>
 		public Task SaveAsync (IBinaryDestination destination, CancellationToken cancellationToken = default)

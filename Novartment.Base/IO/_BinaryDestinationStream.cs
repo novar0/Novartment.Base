@@ -6,11 +6,11 @@ using System.Threading.Tasks;
 
 namespace Novartment.Base.BinaryStreaming
 {
-	/// <content>
-	/// Класс-обёртка BinaryDestinationStream для представления IBinaryDestination в виде Stream.
-	/// </content>
-	public static partial class StreamExtensions
+	public static partial class BinaryStreamingStreamExtensions
 	{
+		/// <content>
+		/// Класс-обёртка BinaryDestinationStream для представления IBinaryDestination в виде Stream.
+		/// </content>
 		private class BinaryDestinationStream : Stream
 		{
 			private readonly IBinaryDestination _destination;

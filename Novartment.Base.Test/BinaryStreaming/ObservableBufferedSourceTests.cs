@@ -24,15 +24,15 @@ namespace Novartment.Base.Test
 		public void Empty ()
 		{
 			var subSrc = new BigBufferedSourceMock (10, 10, pos => (byte)(0xAA ^ (pos & 0xFF)));
-			subSrc.FillBufferAsync ();
-			subSrc.SkipBuffer (10);
+			subSrc.LoadAsync ();
+			subSrc.Skip (10);
 			var monitor = new ProgressHistory ();
 			var src = new ObservableBufferedSource (subSrc, monitor, monitor.OnCompleted);
 
 			Assert.Empty (monitor.History);
 			Assert.Equal (1, monitor.CompletedCount);
 
-			src.TryFastSkipAsync (10);
+			src.SkipWihoutBufferingAsync (10);
 			Assert.Empty (monitor.History);
 			Assert.Equal (1, monitor.CompletedCount);
 		}
@@ -45,23 +45,23 @@ namespace Novartment.Base.Test
 			var monitor = new ProgressHistory ();
 			var src = new ObservableBufferedSource (subSrc, monitor, monitor.OnCompleted);
 
-			src.FillBufferAsync ();
+			src.LoadAsync ();
 			Assert.Empty (monitor.History);
 			Assert.Equal (0, monitor.CompletedCount);
 
-			src.SkipBuffer (2);
+			src.Skip (2);
 			Assert.Equal (new long[] { 2 }, monitor.History);
 			Assert.Equal (0, monitor.CompletedCount);
 
-			src.SkipBuffer (8);
+			src.Skip (8);
 			Assert.Equal (new long[] { 2, 8 }, monitor.History);
 			Assert.Equal (1, monitor.CompletedCount);
 
-			src.TryFastSkipAsync (int.MaxValue);
+			src.SkipWihoutBufferingAsync (int.MaxValue);
 			Assert.Equal (new long[] { 2, 8 }, monitor.History);
 			Assert.Equal (1, monitor.CompletedCount);
 
-			src.TryFastSkipAsync (1);
+			src.SkipWihoutBufferingAsync (1);
 			Assert.Equal (new long[] { 2, 8 }, monitor.History);
 			Assert.Equal (1, monitor.CompletedCount);
 		}
@@ -74,19 +74,19 @@ namespace Novartment.Base.Test
 			var monitor = new ProgressHistory ();
 			var src = new ObservableBufferedSource (subSrc, monitor, monitor.OnCompleted);
 
-			src.FillBufferAsync ();
+			src.LoadAsync ();
 			Assert.Empty (monitor.History);
 			Assert.Equal (0, monitor.CompletedCount);
 
-			src.SkipBuffer (2);
+			src.Skip (2);
 			Assert.Equal (new long[] { 2 }, monitor.History);
 			Assert.Equal (0, monitor.CompletedCount);
 
-			src.TryFastSkipAsync (int.MaxValue);
+			src.SkipWihoutBufferingAsync (int.MaxValue);
 			Assert.Equal (new long[] { 2, 98 }, monitor.History);
 			Assert.Equal (1, monitor.CompletedCount);
 
-			src.TryFastSkipAsync (1);
+			src.SkipWihoutBufferingAsync (1);
 			Assert.Equal (new long[] { 2, 98 }, monitor.History);
 			Assert.Equal (1, monitor.CompletedCount);
 		}

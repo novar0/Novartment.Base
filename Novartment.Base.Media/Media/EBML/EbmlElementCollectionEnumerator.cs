@@ -12,7 +12,7 @@ namespace Novartment.Base.Media
 	[CLSCompliant (false)]
 	public class EbmlElementCollectionEnumerator
 	{
-		private readonly IBufferedSource _data;
+		private readonly IBufferedSource _source;
 		private EbmlElement _current;
 		private bool _ended;
 
@@ -34,7 +34,7 @@ namespace Novartment.Base.Media
 
 			Contract.EndContractBlock ();
 
-			_data = source;
+			_source = source;
 		}
 
 		/// <summary>
@@ -77,8 +77,8 @@ namespace Novartment.Base.Media
 				await _current.SkipAllAsync (cancellationToken).ConfigureAwait (false);
 			}
 
-			await _data.FillBufferAsync (cancellationToken).ConfigureAwait (false);
-			if (_data.Count < 2)
+			await _source.LoadAsync (cancellationToken).ConfigureAwait (false);
+			if (_source.Count < 2)
 			{
 				// no more data
 				_ended = true;
@@ -86,7 +86,7 @@ namespace Novartment.Base.Media
 				return false;
 			}
 
-			_current = await EbmlElement.ParseAsync (_data, cancellationToken).ConfigureAwait (false);
+			_current = await EbmlElement.ParseAsync (_source, cancellationToken).ConfigureAwait (false);
 			return true;
 		}
 	}

@@ -38,19 +38,19 @@ namespace Novartment.Base.BinaryStreaming
 		bool IsExhausted { get; }
 
 		/// <summary>
-		/// Asynchronously fills the buffer with source data, appending already available data.
+		/// Asynchronously requests the source to load more data in the buffer.
 		/// As a result, the buffer may not be completely filled if the source supplies data in blocks,
-		/// or empty if the source is exhausted.
+		/// or it may be empty if the source is exhausted.
 		/// Properties Offset, Count and IsExhausted may be changed in the process.
 		/// </summary>
 		/// <param name="cancellationToken">The token to monitor for cancellation requests. The default value is System.Threading.CancellationToken.None.</param>
 		/// <returns>A task that represents the asynchronous fill operation.
 		/// If Count property equals zero after completion,
 		/// this means that the source is exhausted and there will be no more data in the buffer.</returns>
-		ValueTask FillBufferAsync (CancellationToken cancellationToken = default);
+		ValueTask LoadAsync (CancellationToken cancellationToken = default);
 
 		/// <summary>
-		/// Asynchronously requests the source to provide the specified amount of data in the buffer.
+		/// Asynchronously requests the source to load the specified amount of data in the buffer.
 		/// As a result, there may be more data in the buffer than requested.
 		/// Properties Offset, Count and IsExhausted may be changed in the process.
 		/// </summary>
@@ -61,20 +61,20 @@ namespace Novartment.Base.BinaryStreaming
 		/// Specified size less than zero or more than size of the buffer.
 		/// </exception>
 		/// <exception cref="Novartment.Base.BinaryStreaming.NotEnoughDataException">
-		/// Source can not provide specified amount of data.
+		/// The source can not provide specified amount of data.
 		/// </exception>
-		ValueTask EnsureBufferAsync (int size, CancellationToken cancellationToken = default);
+		ValueTask EnsureAvailableAsync (int size, CancellationToken cancellationToken = default);
 
 		/// <summary>
-		/// Skips specified amount of data from the start of available data in the buffer.
+		/// Skips specified amount of available data in the buffer.
 		/// Properties Offset and Count may be changed in the process.
 		/// </summary>
 		/// <param name="size">Size of data to skip from the start of available data in the buffer.
-		/// Must be less than total size of available data in the buffer.</param>
+		/// Must be less than or equal to the size of available data in the buffer.</param>
 		/// <exception cref="System.ArgumentOutOfRangeException">
 		/// Specified size less than zero or more than size of the buffer.
 		/// </exception>
-		void SkipBuffer (int size);
+		void Skip (int size);
 	}
 
 	/// <summary>
@@ -96,7 +96,7 @@ namespace Novartment.Base.BinaryStreaming
 
 		public bool IsExhausted => false;
 
-		public ValueTask FillBufferAsync (CancellationToken cancellationToken = default)
+		public ValueTask LoadAsync (CancellationToken cancellationToken = default)
 		{
 			Contract.Ensures (this.BufferMemory.Equals (Contract.OldValue (this.BufferMemory)));
 			Contract.Ensures ((this.Count > 0) || this.IsExhausted);
@@ -104,7 +104,7 @@ namespace Novartment.Base.BinaryStreaming
 			return default;
 		}
 
-		public ValueTask EnsureBufferAsync (int size, CancellationToken cancellationToken = default)
+		public ValueTask EnsureAvailableAsync (int size, CancellationToken cancellationToken = default)
 		{
 			Contract.Requires (size >= 0);
 			Contract.Requires (size <= this.BufferMemory.Length);
@@ -114,7 +114,7 @@ namespace Novartment.Base.BinaryStreaming
 			return default;
 		}
 
-		public void SkipBuffer (int size)
+		public void Skip (int size)
 		{
 			Contract.Requires ((size >= 0) && (size <= this.Count));
 

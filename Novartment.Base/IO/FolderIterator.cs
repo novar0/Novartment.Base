@@ -8,7 +8,7 @@ using Novartment.Base.Collections;
 namespace Novartment.Base.IO
 {
 	/// <summary>
-	/// Перечислитель объектов директории, включая содержимое вложенных директорий.
+	/// An e\Enumerator of directory objects, including the contents of nested directories.
 	/// </summary>
 	public class FolderIterator :
 		IEnumerable<FileData>
@@ -17,21 +17,24 @@ namespace Novartment.Base.IO
 		private readonly string _fileNameFilter;
 
 		/// <summary>
-		/// Инициализирует новый экземпляр FolderIterator для перечисления объектов в указанной директории.
+		/// Initializes a new instance of the FolderIterator class
+		/// for enumeration in the specified directory.
 		/// </summary>
-		/// <param name="baseFolder">Директория, в которой производить перечисление содержимого.</param>
+		/// <param name="baseFolder">The directory whose content will be enumerated.</param>
 		public FolderIterator (string baseFolder)
 			: this (baseFolder, null)
 		{
 		}
 
 		/// <summary>
+		/// Initializes a new instance of the FolderIterator class
+		/// for enumeration of the objects with specified name in the specified directory.
 		/// Инициализирует новый экземпляр FolderIterator для перечисления объектов с указанным именем в указанной директории.
 		/// </summary>
-		/// <param name="baseFolder">Директория, в которой производить перечисление содержимого.</param>
+		/// <param name="baseFolder">The directory whose content will be enumerated.</param>
 		/// <param name="fileNameFilter">
-		/// Имя объекта, которое считается пригодным.
-		/// Проверяется полное совпадение без учёта регистра.
+		/// The name of the object that is considered suitable.
+		/// A full match is checked, case-insensitive.
 		/// </param>
 		public FolderIterator (string baseFolder, string fileNameFilter)
 		{
@@ -53,20 +56,18 @@ namespace Novartment.Base.IO
 		}
 
 		/// <summary>
-		/// Возвращает перечислитель, выполняющий итерацию элементов.
-		/// Каждый элемент представляет собой относительный по отношению к базовому путь к файлу.
+		/// Returns an enumerator for the directory objects.
 		/// </summary>
-		/// <returns>Интерфейс, который может использоваться для перебора элементов.</returns>
+		/// <returns>An enumerator for the directory objects.</returns>
 		IEnumerator IEnumerable.GetEnumerator ()
 		{
 			return GetEnumerator ();
 		}
 
 		/// <summary>
-		/// Возвращает перечислитель, выполняющий итерацию элементов.
-		/// Каждый элемент представляет собой относительный по отношению к базовому путь к файлу.
+		/// Returns an enumerator for the directory objects.
 		/// </summary>
-		/// <returns>Интерфейс, который может использоваться для перебора элементов.</returns>
+		/// <returns>An enumerator for the directory objects.</returns>
 		public IEnumerator<FileData> GetEnumerator ()
 		{
 			var stack = new ArrayList<string>

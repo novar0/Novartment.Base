@@ -19,11 +19,11 @@ namespace Novartment.Base.Test
 			var data = Array.Empty<byte> ();
 			var strm = new MemoryStream (data);
 			var src = strm.AsBufferedSource (new byte[bufSize]);
-			var vTask = src.FillBufferAsync (default);
+			var vTask = src.LoadAsync (default);
 			Assert.True (vTask.IsCompletedSuccessfully);
 			Assert.Equal (0, src.Count);
-			Assert.Equal (0, src.TryFastSkipAsync (1, default).Result);
-			vTask = src.FillBufferAsync (default);
+			Assert.Equal (0, src.SkipWihoutBufferingAsync (1, default).Result);
+			vTask = src.LoadAsync (default);
 			Assert.True (vTask.IsCompletedSuccessfully);
 			Assert.True (src.IsExhausted);
 			Assert.Equal (0, src.Count);
@@ -42,22 +42,22 @@ namespace Novartment.Base.Test
 			var strm = new MemoryStream (data);
 
 			var src = strm.AsBufferedSource (new byte[bufSize]);
-			var vTask = src.EnsureBufferAsync (1, default);
+			var vTask = src.EnsureAvailableAsync (1, default);
 			Assert.True (vTask.IsCompletedSuccessfully);
 			Assert.Equal (nnn, src.BufferMemory.Span[src.Offset]);
-			src.SkipBuffer (1);
-			vTask = src.FillBufferAsync (default);
+			src.Skip (1);
+			vTask = src.LoadAsync (default);
 			Assert.True (vTask.IsCompletedSuccessfully);
 			Assert.True (src.IsExhausted);
 			Assert.Equal (0, src.Count);
 
 			strm.Seek (0, SeekOrigin.Begin);
 			src = strm.AsBufferedSource (new byte[bufSize]);
-			vTask = src.FillBufferAsync (default);
+			vTask = src.LoadAsync (default);
 			Assert.True (vTask.IsCompletedSuccessfully);
 			Assert.Equal (nnn, src.BufferMemory.Span[src.Offset]);
-			Assert.Equal (1, src.TryFastSkipAsync (bufSize, default).Result);
-			vTask = src.FillBufferAsync (default);
+			Assert.Equal (1, src.SkipWihoutBufferingAsync (bufSize, default).Result);
+			vTask = src.LoadAsync (default);
 			Assert.True (vTask.IsCompletedSuccessfully);
 			Assert.True (src.IsExhausted);
 			Assert.Equal (0, src.Count);
@@ -86,7 +86,7 @@ namespace Novartment.Base.Test
 		{
 			var strm = new BigStreamMock (dataSize, canSeek, FillFunction);
 			var src = strm.AsBufferedSource (new byte[bufSize]);
-			var vTask = src.EnsureBufferAsync (3, default);
+			var vTask = src.EnsureAvailableAsync (3, default);
 			if (!vTask.IsCompletedSuccessfully)
 			{
 				vTask.AsTask ().GetAwaiter ().GetResult ();
@@ -94,14 +94,14 @@ namespace Novartment.Base.Test
 			Assert.Equal (FillFunction(0), src.BufferMemory.Span[src.Offset]);
 			Assert.Equal (FillFunction(1), src.BufferMemory.Span[src.Offset + 1]);
 			Assert.Equal (FillFunction(2), src.BufferMemory.Span[src.Offset + 2]);
-			Assert.Equal (skipOverall1, src.TryFastSkipAsync (skipOverall1, default).Result);
-			vTask = src.EnsureBufferAsync (skipBuffer1, default);
+			Assert.Equal (skipOverall1, src.SkipWihoutBufferingAsync (skipOverall1, default).Result);
+			vTask = src.EnsureAvailableAsync (skipBuffer1, default);
 			if (!vTask.IsCompletedSuccessfully)
 			{
 				vTask.AsTask ().GetAwaiter ().GetResult ();
 			}
-			src.SkipBuffer (skipBuffer1);
-			vTask = src.EnsureBufferAsync (3, default);
+			src.Skip (skipBuffer1);
+			vTask = src.EnsureAvailableAsync (3, default);
 			if (!vTask.IsCompletedSuccessfully)
 			{
 				vTask.AsTask ().GetAwaiter ().GetResult ();
@@ -109,14 +109,14 @@ namespace Novartment.Base.Test
 			Assert.Equal (FillFunction(skipOverall1 + skipBuffer1), src.BufferMemory.Span[src.Offset]);
 			Assert.Equal (FillFunction(skipOverall1 + skipBuffer1 + 1), src.BufferMemory.Span[src.Offset + 1]);
 			Assert.Equal (FillFunction(skipOverall1 + skipBuffer1 + 2), src.BufferMemory.Span[src.Offset + 2]);
-			Assert.Equal (skipOverall2, src.TryFastSkipAsync (skipOverall2, default).Result);
-			vTask = src.EnsureBufferAsync (skipBuffer2, default);
+			Assert.Equal (skipOverall2, src.SkipWihoutBufferingAsync (skipOverall2, default).Result);
+			vTask = src.EnsureAvailableAsync (skipBuffer2, default);
 			if (!vTask.IsCompletedSuccessfully)
 			{
 				vTask.AsTask ().GetAwaiter ().GetResult ();
 			}
-			src.SkipBuffer (skipBuffer2);
-			vTask = src.EnsureBufferAsync (3, default);
+			src.Skip (skipBuffer2);
+			vTask = src.EnsureAvailableAsync (3, default);
 			if (!vTask.IsCompletedSuccessfully)
 			{
 				vTask.AsTask ().GetAwaiter ().GetResult ();
@@ -124,7 +124,7 @@ namespace Novartment.Base.Test
 			Assert.Equal (FillFunction(skipOverall1 + skipOverall2 + skipBuffer1 + skipBuffer2), src.BufferMemory.Span[src.Offset]);
 			Assert.Equal (FillFunction(skipOverall1 + skipOverall2 + skipBuffer1 + skipBuffer2 + 1), src.BufferMemory.Span[src.Offset + 1]);
 			Assert.Equal (FillFunction(skipOverall1 + skipOverall2 + skipBuffer1 + skipBuffer2 + 2), src.BufferMemory.Span[src.Offset + 2]);
-			Assert.Equal (dataSize - skipOverall1 - skipOverall2 - skipBuffer1 - skipBuffer2, src.TryFastSkipAsync (skipOverEnd, default).Result);
+			Assert.Equal (dataSize - skipOverall1 - skipOverall2 - skipBuffer1 - skipBuffer2, src.SkipWihoutBufferingAsync (skipOverEnd, default).Result);
 			Assert.True (src.IsExhausted);
 			Assert.Equal (0, src.Count);
 		}

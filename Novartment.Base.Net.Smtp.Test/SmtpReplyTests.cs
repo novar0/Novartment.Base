@@ -18,7 +18,7 @@ namespace Novartment.Base.Smtp.Test
 			var replyText4 = "421 \r\n";
 			var replyText5 = "421 ?\r\n";
 			var src = new MemoryBufferedSource (Encoding.ASCII.GetBytes (replyText1 + replyText2 + replyText3 + replyText4 + replyText5 + "junk"));
-			src.SkipBuffer (4);
+			src.Skip (4);
 
 			var reply = SmtpReply.Parse (src, null);
 			Assert.Equal (551, reply.Code);

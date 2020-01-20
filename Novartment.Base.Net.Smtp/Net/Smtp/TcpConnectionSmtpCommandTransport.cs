@@ -103,7 +103,7 @@ namespace Novartment.Base.Net.Smtp
 
 			async Task<SmtpCommand> ReceiveCommandAsyncStateMachine ()
 			{
-				await _reader.FillBufferAsync (cancellationToken).ConfigureAwait (false);
+				await _reader.LoadAsync (cancellationToken).ConfigureAwait (false);
 
 				if (_reader.Count < 1)
 				{
@@ -122,7 +122,7 @@ namespace Novartment.Base.Net.Smtp
 				return SmtpReply.Parse (_reader, _logger);
 			}
 
-			await _reader.FillBufferAsync (cancellationToken).ConfigureAwait (false);
+			await _reader.LoadAsync (cancellationToken).ConfigureAwait (false);
 			if (_reader.Count < 1)
 			{
 				throw new InvalidOperationException ("Connection unexpectedly closed.");
@@ -193,7 +193,7 @@ namespace Novartment.Base.Net.Smtp
 				return cmd;
 			}
 
-			var source = _reader.BufferMemory.Span.Slice (_reader.Offset, _reader.Count);
+			var sourceData = _reader.BufferMemory.Span.Slice (_reader.Offset, _reader.Count);
 
 			var inPos = 0;
 			var outPos = 0;
@@ -203,15 +203,15 @@ namespace Novartment.Base.Net.Smtp
 			// независимо от корректности команды мы должны посчитать сколько пропустить байт (то есть найти CRLF)
 			while (true)
 			{
-				if (inPos > (source.Length - 2))
+				if (inPos > (sourceData.Length - 2))
 				{
 					// вся строка просканирована, CRLF не найден
-					_reader.SkipBuffer (source.Length);
+					_reader.Skip (sourceData.Length);
 					return new SmtpInvalidSyntaxCommand (SmtpCommandType.Unknown, "Ending CRLF not found in command.");
 				}
 
-				var octet = source[inPos];
-				if ((octet == 0x0d) && (source[inPos + 1] == 0x0a))
+				var octet = sourceData[inPos];
+				if ((octet == 0x0d) && (sourceData[inPos + 1] == 0x0a))
 				{
 					// CRLF найден
 					break;
@@ -242,7 +242,7 @@ namespace Novartment.Base.Net.Smtp
 				inPos++;
 			}
 
-			_reader.SkipBuffer (inPos + 2);
+			_reader.Skip (inPos + 2);
 
 			if (isInvalidCharsFound)
 			{

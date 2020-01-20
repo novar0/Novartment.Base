@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace Novartment.Base.IO
 {
 	/// <summary>
-	/// Сигнализатор для подачи сигналов между компонентами, использующий именованые каналы.
+	/// A signaler for sending signals between components that uses named channels.
 	/// </summary>
 	public class NamedPipeSignaler :
 		ISignaler
@@ -16,9 +16,9 @@ namespace Novartment.Base.IO
 		private int _started = 0;
 
 		/// <summary>
-		/// Инициализирует новый экземпляр NamedPipeSignaler использующий указанное имя канала.
+		/// Initializes a new instance of the FolderIterator class that uses the specified channel name.
 		/// </summary>
-		/// <param name="pipeName">Имя канала. Должно быть уникально среди связывающихся компонентов.</param>
+		/// <param name="pipeName">The channel name. Must be unique among the communicating components.</param>
 		public NamedPipeSignaler (string pipeName)
 		{
 			var isNullOrWhiteSpace = string.IsNullOrWhiteSpace (pipeName);
@@ -32,9 +32,9 @@ namespace Novartment.Base.IO
 			_pipeName = pipeName;
 		}
 
-		/// <summary>Запуск ожидания приёма сигнала.</summary>
-		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
-		/// <returns>Задача, представляющая собой процесс ожидания.</returns>
+		/// <summary>Starts waiting for the signal to be received.</summary>
+		/// <param name="cancellationToken">The token to monitor for cancellation requests. The default value is System.Threading.CancellationToken.None.</param>
+		/// <returns>A task that represents the process of waiting for a signal.</returns>
 		public async Task WaitForSignalAsync (CancellationToken cancellationToken = default)
 		{
 			var oldValue = Interlocked.CompareExchange (ref _started, 1, 0);
@@ -54,10 +54,10 @@ namespace Novartment.Base.IO
 			}
 		}
 
-		/// <summary>Посылка сигнала.</summary>
-		/// <param name="millisecondsTimeout">Максимальное время (в миллисекундах) отведённое на отсылку сигнала.</param>
-		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
-		/// <returns>Задача, представляющая операцию.</returns>
+		/// <summary>Send signals.</summary>
+		/// <param name="millisecondsTimeout">The maximum time (in milliseconds) allowed for sending a signal.</param>
+		/// <param name="cancellationToken">The token to monitor for cancellation requests. The default value is System.Threading.CancellationToken.None.</param>
+		/// <returns>A task that represents the operation.</returns>
 		public async Task SendSignalAsync (int millisecondsTimeout, CancellationToken cancellationToken = default)
 		{
 			using var client = new NamedPipeClientStream (".", _pipeName, PipeDirection.Out);

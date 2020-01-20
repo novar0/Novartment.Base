@@ -61,7 +61,7 @@ namespace Novartment.Base.BinaryStreaming
 
 			if (source is IFastSkipBufferedSource fastSkipSource)
 			{
-				return fastSkipSource.TryFastSkipAsync(size, cancellationToken);
+				return fastSkipSource.SkipWihoutBufferingAsync(size, cancellationToken);
 			}
 
 			// источник не поддерживает быстрый пропуск,
@@ -70,14 +70,14 @@ namespace Novartment.Base.BinaryStreaming
 			if (size <= (long)available)
 			{
 				// достаточно доступных данных буфера
-				source.SkipBuffer ((int)size);
+				source.Skip ((int)size);
 				return new ValueTask<long> (size);
 			}
 
 			if (source.IsExhausted)
 			{
 				// источник исчерпан
-				source.SkipBuffer (available);
+				source.Skip (available);
 				return new ValueTask<long> ((long)available);
 			}
 
@@ -90,18 +90,18 @@ namespace Novartment.Base.BinaryStreaming
 				{
 					// пропускаем всё что в буфере
 					available = source.Count;
-					source.SkipBuffer(available);
+					source.Skip(available);
 					size -= (long)available;
 					skipped += (long)available;
 
 					// заполняем буфер
-					await source.FillBufferAsync(cancellationToken).ConfigureAwait(false);
+					await source.LoadAsync(cancellationToken).ConfigureAwait(false);
 				}
 				while (!source.IsExhausted && (size > (long)source.Count));
 
 				// пропускаем частично буфер
 				var reminder = Math.Min(size, (long)source.Count);
-				source.SkipBuffer((int)reminder);
+				source.Skip((int)reminder);
 				skipped += reminder;
 
 				return skipped;
@@ -129,11 +129,11 @@ namespace Novartment.Base.BinaryStreaming
 
 			if (source is IFastSkipBufferedSource fastSkipSource)
 			{
-				return fastSkipSource.TryFastSkipAsync(long.MaxValue, cancellationToken);
+				return fastSkipSource.SkipWihoutBufferingAsync(long.MaxValue, cancellationToken);
 			}
 
 			var available = source.Count;
-			source.SkipBuffer (available);
+			source.Skip (available);
 			if (source.IsExhausted)
 			{
 				// источник исчерпан
@@ -150,11 +150,11 @@ namespace Novartment.Base.BinaryStreaming
 				do
 				{
 					// заполняем буфер
-					await source.FillBufferAsync (cancellationToken).ConfigureAwait (false);
+					await source.LoadAsync (cancellationToken).ConfigureAwait (false);
 
 					// пропускаем всё что в буфере
 					available = source.Count;
-					source.SkipBuffer (available);
+					source.Skip (available);
 					skipped += (long)available;
 				}
 				while (!source.IsExhausted);
@@ -194,7 +194,7 @@ namespace Novartment.Base.BinaryStreaming
 				// копируем то, что уже есть в буфере
 				totalSize = Math.Min (buffer.Length, source.Count);
 				source.BufferMemory.Slice (source.Offset, totalSize).CopyTo (buffer);
-				source.SkipBuffer (totalSize);
+				source.Skip (totalSize);
 				buffer = buffer.Slice (totalSize);
 			}
 
@@ -209,7 +209,7 @@ namespace Novartment.Base.BinaryStreaming
 			{
 				do
 				{
-					await source.FillBufferAsync (cancellationToken).ConfigureAwait (false);
+					await source.LoadAsync (cancellationToken).ConfigureAwait (false);
 
 					if (source.Count < 1)
 					{
@@ -219,7 +219,7 @@ namespace Novartment.Base.BinaryStreaming
 					{
 						var size = Math.Min (source.Count, buffer.Length);
 						source.BufferMemory.Slice (source.Offset, size).CopyTo (buffer);
-						source.SkipBuffer (size);
+						source.Skip (size);
 						totalSize += size;
 
 						if (buffer.Length <= size)
@@ -267,7 +267,7 @@ namespace Novartment.Base.BinaryStreaming
 				if (idx > 0)
 				{
 					source.BufferMemory.Slice (source.Offset, idx).CopyTo (buffer);
-					source.SkipBuffer (idx);
+					source.Skip (idx);
 				}
 
 				return new ValueTask<int> (idx);
@@ -277,7 +277,7 @@ namespace Novartment.Base.BinaryStreaming
 			if (totalOutCount > 0)
 			{
 				source.BufferMemory.Slice (source.Offset, totalOutCount).CopyTo (buffer);
-				source.SkipBuffer (totalOutCount);
+				source.Skip (totalOutCount);
 			}
 
 			if (source.IsExhausted)
@@ -296,7 +296,7 @@ namespace Novartment.Base.BinaryStreaming
 				{
 					cancellationToken.ThrowIfCancellationRequested ();
 
-					await source.FillBufferAsync (cancellationToken).ConfigureAwait (false);
+					await source.LoadAsync (cancellationToken).ConfigureAwait (false);
 
 					var idx2 = source.BufferMemory.Span.Slice (source.Offset, source.Count).IndexOf (marker);
 					if (idx2 >= 0)
@@ -304,7 +304,7 @@ namespace Novartment.Base.BinaryStreaming
 						if (idx2 > 0)
 						{
 							source.BufferMemory.Slice (source.Offset, idx2).CopyTo (buffer);
-							source.SkipBuffer (idx2);
+							source.Skip (idx2);
 						}
 
 						return totalOutCount + idx2;
@@ -314,7 +314,7 @@ namespace Novartment.Base.BinaryStreaming
 					if (outCount > 0)
 					{
 						source.BufferMemory.Slice (source.Offset, outCount).CopyTo (buffer);
-						source.SkipBuffer (outCount);
+						source.Skip (outCount);
 						buffer = buffer.Slice (outCount);
 						totalOutCount += outCount;
 					}
@@ -349,8 +349,8 @@ namespace Novartment.Base.BinaryStreaming
 				var copy = new byte[sizeExhausted];
 				if (sizeExhausted > 0)
 				{
-					source.BufferMemory.Span.Slice (source.Offset, sizeExhausted).CopyTo (copy);
-					source.SkipBuffer (sizeExhausted);
+					source.BufferMemory.Slice (source.Offset, source.Count).CopyTo (copy);
+					source.Skip (sizeExhausted);
 				}
 
 				return new ValueTask<ReadOnlyMemory<byte>> (copy);
@@ -363,7 +363,7 @@ namespace Novartment.Base.BinaryStreaming
 				var destination = new MemoryBinaryDestination ();
 				while (true)
 				{
-					await source.FillBufferAsync (cancellationToken).ConfigureAwait (false);
+					await source.LoadAsync (cancellationToken).ConfigureAwait (false);
 					var available = source.Count;
 					if (available <= 0)
 					{
@@ -371,8 +371,8 @@ namespace Novartment.Base.BinaryStreaming
 					}
 
 					cancellationToken.ThrowIfCancellationRequested ();
-					destination.Write (source.BufferMemory.Span.Slice (source.Offset, available));
-					source.SkipBuffer (available);
+					destination.Write (source.BufferMemory.Span.Slice (source.Offset, source.Count));
+					source.Skip (available);
 				}
 
 				return destination.GetBuffer ();
@@ -423,7 +423,7 @@ namespace Novartment.Base.BinaryStreaming
 		/// Asynchronously writes data from the specified source into the specified destination.
 		/// </summary>
 		/// <param name="source">The data source to read from.</param>
-		/// <param name="destination">The binary data destionation, into which data will be written.</param>
+		/// <param name="destination">The binary data destination, into which data will be written.</param>
 		/// <param name="cancellationToken">The token to monitor for cancellation requests. The default value is System.Threading.CancellationToken.None.</param>
 		/// <returns>
 		/// A task that represents the asynchronous read/write operation.
@@ -450,7 +450,7 @@ namespace Novartment.Base.BinaryStreaming
 				long resultSize = 0;
 				while (true)
 				{
-					await source.FillBufferAsync (cancellationToken).ConfigureAwait (false);
+					await source.LoadAsync (cancellationToken).ConfigureAwait (false);
 					var available = source.Count;
 					if (available <= 0)
 					{
@@ -460,7 +460,7 @@ namespace Novartment.Base.BinaryStreaming
 					cancellationToken.ThrowIfCancellationRequested ();
 					await destination.WriteAsync (source.BufferMemory.Slice (source.Offset, available), cancellationToken).ConfigureAwait (false);
 					resultSize += available;
-					source.SkipBuffer (available);
+					source.Skip (available);
 				}
 
 				return resultSize;

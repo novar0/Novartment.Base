@@ -19,24 +19,24 @@ namespace Novartment.Base.Test
 
 			// части в середине источника
 			var subSrc = new BigBufferedSourceMock (long.MaxValue, srcBufSize, FillFunction);
-			subSrc.TryFastSkipAsync (skipBeforeLimitingSize);
+			subSrc.SkipWihoutBufferingAsync (skipBeforeLimitingSize);
 			var src = new OneHundredEvaluatorBufferedSource (subSrc);
-			var vTask = src.FillBufferAsync ();
+			var vTask = src.LoadAsync ();
 			Assert.True (vTask.IsCompletedSuccessfully);
 			Assert.True (src.TrySkipPartAsync ().Result);
-			vTask = src.EnsureBufferAsync (3);
+			vTask = src.EnsureAvailableAsync (3);
 			Assert.True (vTask.IsCompletedSuccessfully);
 			Assert.Equal (FillFunction (firstPartPos), src.BufferMemory.Span[src.Offset]);
 			Assert.Equal (FillFunction (firstPartPos + 1), src.BufferMemory.Span[src.Offset + 1]);
 			Assert.Equal (FillFunction (firstPartPos + 2), src.BufferMemory.Span[src.Offset + 2]);
 			Assert.True (src.TrySkipPartAsync ().Result);
-			vTask = src.EnsureBufferAsync (3);
+			vTask = src.EnsureAvailableAsync (3);
 			Assert.True (vTask.IsCompletedSuccessfully);
 			Assert.Equal (FillFunction (secondPartPos), src.BufferMemory.Span[src.Offset]);
 			Assert.Equal (FillFunction (secondPartPos + 1), src.BufferMemory.Span[src.Offset + 1]);
 			Assert.Equal (FillFunction (secondPartPos + 2), src.BufferMemory.Span[src.Offset + 2]);
 			Assert.True (src.TrySkipPartAsync ().Result);
-			vTask = src.EnsureBufferAsync (3);
+			vTask = src.EnsureAvailableAsync (3);
 			Assert.True (vTask.IsCompletedSuccessfully);
 			Assert.Equal (FillFunction (thirdPartPos), src.BufferMemory.Span[src.Offset]);
 			Assert.Equal (FillFunction (thirdPartPos + 1), src.BufferMemory.Span[src.Offset + 1]);
@@ -45,7 +45,7 @@ namespace Novartment.Base.Test
 			// части в конце источника
 			long size = 0x4000000000000000L;
 			subSrc = new BigBufferedSourceMock (size, srcBufSize, FillFunction);
-			subSrc.TryFastSkipAsync (0x3fffffffffffffc0L); // отступаем так чтобы осталось две части с хвостиком
+			subSrc.SkipWihoutBufferingAsync (0x3fffffffffffffc0L); // отступаем так чтобы осталось две части с хвостиком
 			src = new OneHundredEvaluatorBufferedSource (subSrc);
 			Assert.True (src.TrySkipPartAsync ().Result);
 			Assert.True (src.TrySkipPartAsync ().Result);

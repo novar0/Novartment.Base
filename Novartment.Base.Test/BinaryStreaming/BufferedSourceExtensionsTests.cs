@@ -1,33 +1,32 @@
 ﻿using System;
-using System.Threading;
 using Novartment.Base.BinaryStreaming;
 using Xunit;
 
 namespace Novartment.Base.Test
 {
-	public class BufferedSourceExtensionsTests
+	public class BinaryStreamingStreamExtensionsTests
 	{
 		[Fact]
 		[Trait ("Category", "BufferedSource")]
 		public void IsEmpty ()
 		{
 			var src = new BigBufferedSourceMock (0, 1, FillFunction);
-			src.FillBufferAsync ();
+			src.LoadAsync ();
 			Assert.True (BufferedSourceExtensions.IsEmpty (src));
 
 			src = new BigBufferedSourceMock (1, 1, FillFunction);
-			src.FillBufferAsync ();
+			src.LoadAsync ();
 			Assert.False (BufferedSourceExtensions.IsEmpty (src));
-			src.SkipBuffer (1);
+			src.Skip (1);
 			Assert.True (BufferedSourceExtensions.IsEmpty (src));
 
 			src = new BigBufferedSourceMock (long.MaxValue, 32768, FillFunction);
-			src.FillBufferAsync ();
+			src.LoadAsync ();
 			Assert.False (BufferedSourceExtensions.IsEmpty (src));
-			src.TryFastSkipAsync (long.MaxValue - 1);
-			src.FillBufferAsync ();
+			src.SkipWihoutBufferingAsync (long.MaxValue - 1);
+			src.LoadAsync ();
 			Assert.False (BufferedSourceExtensions.IsEmpty (src));
-			src.SkipBuffer (1);
+			src.Skip (1);
 			Assert.True (BufferedSourceExtensions.IsEmpty (src));
 		}
 
@@ -135,9 +134,9 @@ namespace Novartment.Base.Test
 			int srcBufSize = 32768;
 			int testSampleSize = 68;
 			var src = new BigBufferedSourceMock (long.MaxValue, srcBufSize, FillFunction);
-			src.FillBufferAsync ();
+			src.LoadAsync ();
 			var skip = srcBufSize - testSampleSize;
-			src.SkipBuffer (skip);
+			src.Skip (skip);
 			var buf = new byte[testSampleSize];
 			var vTask = BufferedSourceExtensions.ReadAsync (src, buf);
 			Assert.True (vTask.IsCompletedSuccessfully);
@@ -148,7 +147,7 @@ namespace Novartment.Base.Test
 				Assert.Equal (FillFunction ((long)(skip + i)), buf[i]);
 			}
 
-			src.TryFastSkipAsync (long.MaxValue - (long)srcBufSize - 3);
+			src.SkipWihoutBufferingAsync (long.MaxValue - (long)srcBufSize - 3);
 			vTask = BufferedSourceExtensions.ReadAsync (src, buf);
 			Assert.True (vTask.IsCompletedSuccessfully);
 			Assert.Equal (3, vTask.Result);
@@ -164,7 +163,7 @@ namespace Novartment.Base.Test
 			long skipSize = long.MaxValue - (long)testSampleSize;
 
 			var src = new BigBufferedSourceMock (long.MaxValue, srcBufSize, FillFunction);
-			src.TryFastSkipAsync (skipSize);
+			src.SkipWihoutBufferingAsync (skipSize);
 			var vTask = BufferedSourceExtensions.ReadAllBytesAsync (src);
 			Assert.True (vTask.IsCompletedSuccessfully);
 			var result = vTask.Result;
@@ -183,7 +182,7 @@ namespace Novartment.Base.Test
 			long skipSize = long.MaxValue - (long)testSampleSize;
 			int srcBufSize = testSampleSize / 3;
 			var src = new BigBufferedSourceMock (long.MaxValue, srcBufSize, FillFunction);
-			src.TryFastSkipAsync (skipSize);
+			src.SkipWihoutBufferingAsync (skipSize);
 			var dst = new BinaryDestinationMock (8192);
 			var vTask = BufferedSourceExtensions.WriteToAsync (src, dst);
 			Assert.True (vTask.IsCompletedSuccessfully);

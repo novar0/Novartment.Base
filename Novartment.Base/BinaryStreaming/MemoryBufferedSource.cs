@@ -60,8 +60,8 @@ namespace Novartment.Base.BinaryStreaming
 		/// Properties Offset and Count may be changed in the process.
 		/// </summary>
 		/// <param name="size">Size of data to skip from the start of available data in the buffer.
-		/// Must be less than total size of available data in the buffer.</param>
-		public void SkipBuffer (int size)
+		/// Must be less than or equal to the size of available data in the buffer.</param>
+		public void Skip (int size)
 		{
 			if ((size < 0) || (size > this.Count))
 			{
@@ -82,7 +82,7 @@ namespace Novartment.Base.BinaryStreaming
 		/// </summary>
 		/// <param name="cancellationToken">Not used.</param>
 		/// <returns>Completed task.</returns>
-		public ValueTask FillBufferAsync (CancellationToken cancellationToken = default)
+		public ValueTask LoadAsync (CancellationToken cancellationToken = default)
 		{
 			return default;
 		}
@@ -93,7 +93,7 @@ namespace Novartment.Base.BinaryStreaming
 		/// <param name="size">Amount of data required in the buffer.</param>
 		/// <param name="cancellationToken">Not used.</param>
 		/// <returns>Completed task.</returns>
-		public ValueTask EnsureBufferAsync (int size, CancellationToken cancellationToken = default)
+		public ValueTask EnsureAvailableAsync (int size, CancellationToken cancellationToken = default)
 		{
 			if ((size < 0) || (size > this.BufferMemory.Length))
 			{
@@ -120,7 +120,7 @@ namespace Novartment.Base.BinaryStreaming
 		/// Completed task, which wraps the number of actually skipped bytes of data.
 		/// Regardless of the result, the source will provide data coming right after skipped.
 		/// </returns>
-		public ValueTask<long> TryFastSkipAsync (long size, CancellationToken cancellationToken = default)
+		public ValueTask<long> SkipWihoutBufferingAsync (long size, CancellationToken cancellationToken = default)
 		{
 			if (size < 0L)
 			{

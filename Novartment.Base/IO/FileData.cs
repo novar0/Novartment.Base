@@ -5,22 +5,25 @@ using System.IO;
 namespace Novartment.Base.IO
 {
 	/// <summary>
-	/// Основные данные о файле.
+	/// Basic data about file.
 	/// </summary>
-	/// <remarks>В отличие от System.IO.FileInfo дополнительно содержит базовый и относительный путь.</remarks>
+	/// <remarks>
+	/// Unlike System.IO.FileInfo additionally contains a base and relative path.
+	/// </remarks>
 	public class FileData
 	{
 		/// <summary>
-		/// Инициализирует новый экземпляр FileData на основе указанных данных.
+		/// Initializes a new instance of the FileData class
+		/// with specified parameters.
 		/// </summary>
-		/// <param name="basePath">Базовая часть пути к файлу.</param>
-		/// <param name="relativeName">Относительная часть пути к файлу.</param>
-		/// <param name="fullPath">Полный путь к файлу.</param>
-		/// <param name="attributes">Атрибуты файла.</param>
-		/// <param name="length">Размер файла в байтах.</param>
-		/// <param name="creationTime">Время время создания файла.</param>
-		/// <param name="lastAccessTime">Время последнего доступа к файлу.</param>
-		/// <param name="lastWriteTime">Время последней операции записи в файл.</param>
+		/// <param name="basePath">The base part of the path of the file.</param>
+		/// <param name="relativeName">The relative part of the path of the file.</param>
+		/// <param name="fullPath">The full path of the file.</param>
+		/// <param name="attributes">The attributes for the file.</param>
+		/// <param name="length">The size, in bytes, of the file.</param>
+		/// <param name="creationTime">The creation time of the file.</param>
+		/// <param name="lastAccessTime">The time the file was last accessed.</param>
+		/// <param name="lastWriteTime">The time the file was last written to.</param>
 		public FileData (
 			string basePath,
 			string relativeName,
@@ -59,42 +62,42 @@ namespace Novartment.Base.IO
 		}
 
 		/// <summary>
-		/// Получает базовую часть пути к файлу.
+		/// Gets the base part of the path of the file.
 		/// </summary>
 		public string BasePath { get; }
 
 		/// <summary>
-		/// Получает относительную часть пути к файлу.
+		/// Gets the relative part of the path of the file.
 		/// </summary>
 		public string RelativeName { get; }
 
 		/// <summary>
-		/// Получает полный путь к файлу.
+		/// Gets the full path of the file.
 		/// </summary>
 		public string FullPath { get; }
 
 		/// <summary>
-		/// Получает атрибуты файла.
+		/// Gets the attributes for the file.
 		/// </summary>
 		public FileAttributes Attributes { get; }
 
 		/// <summary>
-		/// Получает размер файла в байтах.
+		/// Gets the size, in bytes, of the file.
 		/// </summary>
 		public long Length { get; }
 
 		/// <summary>
-		/// Получает время время создания файла.
+		/// Gets the creation time of the file.
 		/// </summary>
 		public DateTime CreationTime { get; }
 
 		/// <summary>
-		/// Получает время последнего доступа к файлу.
+		/// Gets the time the file was last accessed.
 		/// </summary>
 		public DateTime LastAccessTime { get; }
 
 		/// <summary>
-		/// Получает время последней операции записи в файл.
+		/// Gets the time the file was last written to.
 		/// </summary>
 		public DateTime LastWriteTime { get; }
 	}

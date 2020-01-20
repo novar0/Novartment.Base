@@ -75,11 +75,7 @@ namespace Novartment.Base.Media
 		/// <param name="source">Источник, содержащий EBML-элемент.</param>
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
 		/// <returns>EBML-элемент, считанный из указанного источника.</returns>
-		public static Task<EbmlElement> ParseAsync (
-			IBufferedSource source,
-#pragma warning disable CA1801 // Review unused parameters
-			CancellationToken cancellationToken = default)
-#pragma warning restore CA1801 // Review unused parameters
+		public static Task<EbmlElement> ParseAsync (IBufferedSource source, CancellationToken cancellationToken = default)
 		{
 			if (source == null)
 			{
@@ -94,7 +90,7 @@ namespace Novartment.Base.Media
 			{
 				var id = await ReadVIntAsync (source, cancellationToken).ConfigureAwait (false);
 				var size = await ReadVIntValueAsync (source, cancellationToken).ConfigureAwait (false);
-				await source.FillBufferAsync (cancellationToken).ConfigureAwait (false);
+				await source.LoadAsync (cancellationToken).ConfigureAwait (false);
 				return new EbmlElement (id, size, source);
 			}
 		}
@@ -128,48 +124,48 @@ namespace Novartment.Base.Media
 				throw new InvalidOperationException ("Cant read data when all element's data already readed.");
 			}
 
-			var sourceBuffer = _source.BufferMemory.Span;
+			var buf = _source.BufferMemory.Span.Slice (_source.Offset, _source.Count);
 			var result = _size switch
 			{
-				8 => (long)sourceBuffer[_source.Offset + 7] |
-						(long)sourceBuffer[_source.Offset + 6] << 8 |
-						(long)sourceBuffer[_source.Offset + 5] << 16 |
-						(long)sourceBuffer[_source.Offset + 4] << 24 |
-						(long)sourceBuffer[_source.Offset + 3] << 32 |
-						(long)sourceBuffer[_source.Offset + 2] << 40 |
-						(long)sourceBuffer[_source.Offset + 1] << 48 |
-						(long)sourceBuffer[_source.Offset] << 56,
-				7 => (long)sourceBuffer[_source.Offset + 6] |
-						(long)sourceBuffer[_source.Offset + 5] << 8 |
-						(long)sourceBuffer[_source.Offset + 4] << 16 |
-						(long)sourceBuffer[_source.Offset + 3] << 24 |
-						(long)sourceBuffer[_source.Offset + 2] << 32 |
-						(long)sourceBuffer[_source.Offset + 1] << 40 |
-						(long)sourceBuffer[_source.Offset] << 48,
-				6 => (long)sourceBuffer[_source.Offset + 5] |
-						(long)sourceBuffer[_source.Offset + 4] << 8 |
-						(long)sourceBuffer[_source.Offset + 3] << 16 |
-						(long)sourceBuffer[_source.Offset + 2] << 24 |
-						(long)sourceBuffer[_source.Offset + 1] << 32 |
-						(long)sourceBuffer[_source.Offset] << 40,
-				5 => (long)sourceBuffer[_source.Offset + 4] |
-						(long)sourceBuffer[_source.Offset + 3] << 8 |
-						(long)sourceBuffer[_source.Offset + 2] << 16 |
-						(long)sourceBuffer[_source.Offset + 1] << 24 |
-						(long)sourceBuffer[_source.Offset] << 32,
-				4 => (long)sourceBuffer[_source.Offset + 3] |
-						(long)sourceBuffer[_source.Offset + 2] << 8 |
-						(long)sourceBuffer[_source.Offset + 1] << 16 |
-						(long)sourceBuffer[_source.Offset] << 24,
-				3 => (long)sourceBuffer[_source.Offset + 2] |
-						(long)sourceBuffer[_source.Offset + 1] << 8 |
-						(long)sourceBuffer[_source.Offset] << 16,
-				2 => (long)sourceBuffer[_source.Offset + 1] |
-						(long)sourceBuffer[_source.Offset] << 8,
-				1 => (long)sourceBuffer[_source.Offset],
+				8 => (long)buf[7] |
+						(long)buf[6] << 8 |
+						(long)buf[5] << 16 |
+						(long)buf[4] << 24 |
+						(long)buf[3] << 32 |
+						(long)buf[2] << 40 |
+						(long)buf[1] << 48 |
+						(long)buf[0] << 56,
+				7 => (long)buf[6] |
+						(long)buf[5] << 8 |
+						(long)buf[4] << 16 |
+						(long)buf[3] << 24 |
+						(long)buf[2] << 32 |
+						(long)buf[1] << 40 |
+						(long)buf[0] << 48,
+				6 => (long)buf[5] |
+						(long)buf[4] << 8 |
+						(long)buf[3] << 16 |
+						(long)buf[2] << 24 |
+						(long)buf[1] << 32 |
+						(long)buf[0] << 40,
+				5 => (long)buf[4] |
+						(long)buf[3] << 8 |
+						(long)buf[2] << 16 |
+						(long)buf[1] << 24 |
+						(long)buf[0] << 32,
+				4 => (long)buf[3] |
+						(long)buf[2] << 8 |
+						(long)buf[1] << 16 |
+						(long)buf[0] << 24,
+				3 => (long)buf[2] |
+						(long)buf[1] << 8 |
+						(long)buf[0] << 16,
+				2 => (long)buf[1] |
+						(long)buf[0] << 8,
+				1 => (long)buf[0],
 				_ => throw new FormatException (FormattableString.Invariant ($"Ivalid size ({_size}) of data of type Int. Expected 1 to 8 bytes.")),
 			};
-			_source.SkipBuffer ((int)_size);
+			_source.Skip ((int)_size);
 			_readed += _size;
 			return result;
 		}
@@ -185,48 +181,48 @@ namespace Novartment.Base.Media
 				throw new InvalidOperationException ("Cant read data when all element's data already readed.");
 			}
 
-			var sourceBuf = _source.BufferMemory.Span;
+			var buf = _source.BufferMemory.Span.Slice (_source.Offset, _source.Count);
 			var result = _size switch
 			{
-				8 => (ulong)sourceBuf[_source.Offset + 7] |
-						(ulong)sourceBuf[_source.Offset + 6] << 8 |
-						(ulong)sourceBuf[_source.Offset + 5] << 16 |
-						(ulong)sourceBuf[_source.Offset + 4] << 24 |
-						(ulong)sourceBuf[_source.Offset + 3] << 32 |
-						(ulong)sourceBuf[_source.Offset + 2] << 40 |
-						(ulong)sourceBuf[_source.Offset + 1] << 48 |
-						(ulong)sourceBuf[_source.Offset] << 56,
-				7 => (ulong)sourceBuf[_source.Offset + 6] |
-						(ulong)sourceBuf[_source.Offset + 5] << 8 |
-						(ulong)sourceBuf[_source.Offset + 4] << 16 |
-						(ulong)sourceBuf[_source.Offset + 3] << 24 |
-						(ulong)sourceBuf[_source.Offset + 2] << 32 |
-						(ulong)sourceBuf[_source.Offset + 1] << 40 |
-						(ulong)sourceBuf[_source.Offset] << 48,
-				6 => (ulong)sourceBuf[_source.Offset + 5] |
-						(ulong)sourceBuf[_source.Offset + 4] << 8 |
-						(ulong)sourceBuf[_source.Offset + 3] << 16 |
-						(ulong)sourceBuf[_source.Offset + 2] << 24 |
-						(ulong)sourceBuf[_source.Offset + 1] << 32 |
-						(ulong)sourceBuf[_source.Offset] << 40,
-				5 => (ulong)sourceBuf[_source.Offset + 4] |
-						(ulong)sourceBuf[_source.Offset + 3] << 8 |
-						(ulong)sourceBuf[_source.Offset + 2] << 16 |
-						(ulong)sourceBuf[_source.Offset + 1] << 24 |
-						(ulong)sourceBuf[_source.Offset] << 32,
-				4 => (ulong)sourceBuf[_source.Offset + 3] |
-						(ulong)sourceBuf[_source.Offset + 2] << 8 |
-						(ulong)sourceBuf[_source.Offset + 1] << 16 |
-						(ulong)sourceBuf[_source.Offset] << 24,
-				3 => (ulong)sourceBuf[_source.Offset + 2] |
-						(ulong)sourceBuf[_source.Offset + 1] << 8 |
-						(ulong)sourceBuf[_source.Offset] << 16,
-				2 => (ulong)sourceBuf[_source.Offset + 1] |
-						(ulong)sourceBuf[_source.Offset] << 8,
-				1 => (ulong)sourceBuf[_source.Offset],
+				8 => (ulong)buf[7] |
+						(ulong)buf[6] << 8 |
+						(ulong)buf[5] << 16 |
+						(ulong)buf[4] << 24 |
+						(ulong)buf[3] << 32 |
+						(ulong)buf[2] << 40 |
+						(ulong)buf[1] << 48 |
+						(ulong)buf[0] << 56,
+				7 => (ulong)buf[6] |
+						(ulong)buf[5] << 8 |
+						(ulong)buf[4] << 16 |
+						(ulong)buf[3] << 24 |
+						(ulong)buf[2] << 32 |
+						(ulong)buf[1] << 40 |
+						(ulong)buf[0] << 48,
+				6 => (ulong)buf[5] |
+						(ulong)buf[4] << 8 |
+						(ulong)buf[3] << 16 |
+						(ulong)buf[2] << 24 |
+						(ulong)buf[1] << 32 |
+						(ulong)buf[0] << 40,
+				5 => (ulong)buf[4] |
+						(ulong)buf[3] << 8 |
+						(ulong)buf[2] << 16 |
+						(ulong)buf[1] << 24 |
+						(ulong)buf[0] << 32,
+				4 => (ulong)buf[3] |
+						(ulong)buf[2] << 8 |
+						(ulong)buf[1] << 16 |
+						(ulong)buf[0] << 24,
+				3 => (ulong)buf[2] |
+						(ulong)buf[1] << 8 |
+						(ulong)buf[0] << 16,
+				2 => (ulong)buf[1] |
+						(ulong)buf[0] << 8,
+				1 => (ulong)buf[0],
 				_ => throw new FormatException (FormattableString.Invariant ($"Ivalid size ({_size}) of data of type UInt. Expected 1 to 8 bytes.")),
 			};
-			_source.SkipBuffer ((int)_size);
+			_source.Skip ((int)_size);
 			_readed += _size;
 			return result;
 		}
@@ -269,7 +265,7 @@ namespace Novartment.Base.Media
 				result = BitConverter.Int64BitsToDouble (BinaryPrimitives.ReadInt64BigEndian (span));
 			}
 
-			_source.SkipBuffer ((int)_size);
+			_source.Skip ((int)_size);
 			_readed += _size;
 			return result;
 		}
@@ -300,7 +296,7 @@ namespace Novartment.Base.Media
 			}
 
 			var result = AsciiCharSet.GetString (_source.BufferMemory.Span.Slice (_source.Offset, (int)_size));
-			_source.SkipBuffer ((int)_size);
+			_source.Skip ((int)_size);
 			_readed += _size;
 			return result;
 		}
@@ -326,7 +322,7 @@ namespace Novartment.Base.Media
 #else
 			var result = Encoding.UTF8.GetString (_source.BufferMemory.Span.Slice (_source.Offset, (int)_size));
 #endif
-			_source.SkipBuffer ((int)_size);
+			_source.Skip ((int)_size);
 			_readed += _size;
 			return result;
 		}
@@ -353,16 +349,18 @@ namespace Novartment.Base.Media
 
 		private static async Task<ulong> ReadVIntAsync (IBufferedSource source, CancellationToken cancellationToken)
 		{
-			await source.EnsureBufferAsync (1, cancellationToken).ConfigureAwait (false);
+			await source.EnsureAvailableAsync (1, cancellationToken).ConfigureAwait (false);
 
-			if (source.BufferMemory.Span[source.Offset] == 0)
+			var byte0 = source.BufferMemory.Span[source.Offset];
+
+			if (byte0 == 0)
 			{
 				throw new NotSupportedException ("VInt values more then 8 bytes are not suppoted.");
 			}
 
-			var extraBytes = ((source.BufferMemory.Span[source.Offset] & 0xf0) != 0) ?
-				ExtraBytesSize[source.BufferMemory.Span[source.Offset] >> 4] :
-				(4 + ExtraBytesSize[source.BufferMemory.Span[source.Offset]]);
+			var extraBytes = ((byte0 & 0xf0) != 0) ?
+				ExtraBytesSize[byte0 >> 4] :
+				(4 + ExtraBytesSize[byte0]);
 
 			var size = extraBytes + 1;
 			if (size > source.BufferMemory.Length)
@@ -370,31 +368,26 @@ namespace Novartment.Base.Media
 				throw new FormatException ();
 			}
 
-			await source.EnsureBufferAsync (size, cancellationToken).ConfigureAwait (false);
-
-			ulong encodedValue = source.BufferMemory.Span[source.Offset];
-			for (var i = 0; i < extraBytes; i++)
-			{
-				encodedValue = encodedValue << 8 | source.BufferMemory.Span[source.Offset + i + 1];
-			}
-
-			source.SkipBuffer (size);
+			await source.EnsureAvailableAsync (size, cancellationToken).ConfigureAwait (false);
+			ulong encodedValue = DecodeVInt (source.BufferMemory.Span.Slice (source.Offset, source.Count), extraBytes);
+			source.Skip (size);
 
 			return encodedValue;
 		}
 
 		private static async Task<ulong> ReadVIntValueAsync (IBufferedSource source, CancellationToken cancellationToken)
 		{
-			await source.EnsureBufferAsync (1, cancellationToken).ConfigureAwait (false);
+			await source.EnsureAvailableAsync (1, cancellationToken).ConfigureAwait (false);
 
-			if (source.BufferMemory.Span[source.Offset] == 0)
+			var byte0 = source.BufferMemory.Span[source.Offset];
+			if (byte0 == 0)
 			{
 				throw new NotSupportedException ("Size of VInt more than 8 bytes is not supported.");
 			}
 
-			var extraBytes = ((source.BufferMemory.Span[source.Offset] & 0xf0) != 0) ?
-				ExtraBytesSize[source.BufferMemory.Span[source.Offset] >> 4] :
-				(4 + ExtraBytesSize[source.BufferMemory.Span[source.Offset]]);
+			var extraBytes = ((byte0 & 0xf0) != 0) ?
+				ExtraBytesSize[byte0 >> 4] :
+				(4 + ExtraBytesSize[byte0]);
 
 			var size = extraBytes + 1;
 			if (size > source.BufferMemory.Length)
@@ -402,17 +395,22 @@ namespace Novartment.Base.Media
 				throw new FormatException ();
 			}
 
-			await source.EnsureBufferAsync (size, cancellationToken).ConfigureAwait (false);
-
-			ulong encodedValue = source.BufferMemory.Span[source.Offset];
-			for (var i = 0; i < extraBytes; i++)
-			{
-				encodedValue = encodedValue << 8 | source.BufferMemory.Span[source.Offset + i + 1];
-			}
-
-			source.SkipBuffer (size);
+			await source.EnsureAvailableAsync (size, cancellationToken).ConfigureAwait (false);
+			ulong encodedValue = DecodeVInt (source.BufferMemory.Span.Slice (source.Offset, source.Count), extraBytes);
+			source.Skip (size);
 
 			return encodedValue & DataBitsMask[extraBytes + 1];
+		}
+
+		private static ulong DecodeVInt (ReadOnlySpan<byte> buf, int size)
+		{
+			ulong encodedValue = buf[0];
+			for (var i = 0; i < size; i++)
+			{
+				encodedValue = encodedValue << 8 | buf[i + 1];
+			}
+
+			return encodedValue;
 		}
 	}
 }

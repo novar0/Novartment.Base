@@ -35,8 +35,8 @@ namespace Novartment.Base.Net.Test
 			Assert.InRange (Math.Abs (delta1), 0.0, 100.0); // TODO: иногда тут 187
 
 			// после активности разница в продолжительностях стала большой
-			connection.Reader.EnsureBufferAsync (10);
-			connection.Reader.SkipBuffer (5);
+			connection.Reader.EnsureAvailableAsync (10);
+			connection.Reader.Skip (5);
 			var delta2 = connection.Duration.TotalMilliseconds - connection.IdleDuration.TotalMilliseconds;
 			Assert.InRange (Math.Abs (delta2), 100.0, double.MaxValue); // TODO: иногда тут 94
 

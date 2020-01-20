@@ -9,18 +9,18 @@ namespace Novartment.Base.Net.Test
 		IBufferedSource
 	{
 		public ReadOnlyMemory<byte> BufferMemory => new byte[20];
-
+		
 		public int Count => 20;
 
 		public bool IsExhausted => false;
 
 		public int Offset => 0;
 
-		public ValueTask EnsureBufferAsync (int size, CancellationToken cancellationToken) => new ValueTask (Task.Delay (100));
+		public ValueTask EnsureAvailableAsync (int size, CancellationToken cancellationToken) => new ValueTask (Task.Delay (100));
 
-		public ValueTask FillBufferAsync (CancellationToken cancellationToken) => default;
+		public ValueTask LoadAsync (CancellationToken cancellationToken) => default;
 
-		public void SkipBuffer (int size)
+		public void Skip (int size)
 		{
 		}
 	}

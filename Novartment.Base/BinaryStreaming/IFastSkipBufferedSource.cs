@@ -22,6 +22,6 @@ namespace Novartment.Base.BinaryStreaming
 		/// It may be less than specified if the source is exhausted.
 		/// Upon completion of a task, regardless of the result, the source will provide data coming right after skipped.
 		/// </returns>
-		ValueTask<long> TryFastSkipAsync (long size, CancellationToken cancellationToken = default);
+		ValueTask<long> SkipWihoutBufferingAsync (long size, CancellationToken cancellationToken = default);
 	}
 }

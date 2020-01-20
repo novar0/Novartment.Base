@@ -83,8 +83,8 @@ namespace Novartment.Base.BinaryStreaming
 		/// Properties Offset and Count may be changed in the process.
 		/// </summary>
 		/// <param name="size">Size of data to skip from the start of available data in the buffer.
-		/// Must be less than total size of available data in the buffer.</param>
-		public void SkipBuffer (int size)
+		/// Must be less than or equal to the size of available data in the buffer.</param>
+		public void Skip (int size)
 		{
 			if ((size < 0) || (size > this.Count))
 			{
@@ -95,21 +95,21 @@ namespace Novartment.Base.BinaryStreaming
 
 			if (size > 0)
 			{
-				_source.SkipBuffer (size);
+				_source.Skip (size);
 			}
 		}
 
 		/// <summary>
-		/// Asynchronously fills the buffer with source data, appending already available data.
+		/// Asynchronously requests the source to load more data in the buffer.
 		/// As a result, the buffer may not be completely filled if the source supplies data in blocks,
-		/// or empty if the source is exhausted.
+		/// or it may be empty if the source is exhausted.
 		/// Properties Offset, Count and IsExhausted may be changed in the process.
 		/// </summary>
 		/// <param name="cancellationToken">The token to monitor for cancellation requests. The default value is System.Threading.CancellationToken.None.</param>
 		/// <returns>A task that represents the asynchronous fill operation.
 		/// If Count property equals zero after completion,
 		/// this means that the source is exhausted and there will be no more data in the buffer.</returns>
-		public async ValueTask FillBufferAsync (CancellationToken cancellationToken = default)
+		public async ValueTask LoadAsync (CancellationToken cancellationToken = default)
 		{
 			if (_foundTemplateLength >= _template.Length)
 			{
@@ -121,7 +121,7 @@ namespace Novartment.Base.BinaryStreaming
 			var prevOffset = _source.Offset;
 			try
 			{
-				await _source.FillBufferAsync (cancellationToken).ConfigureAwait (false);
+				await _source.LoadAsync (cancellationToken).ConfigureAwait (false);
 			}
 			finally
 			{
@@ -140,14 +140,14 @@ namespace Novartment.Base.BinaryStreaming
 		}
 
 		/// <summary>
-		/// Asynchronously requests the source to provide the specified amount of data in the buffer.
+		/// Asynchronously requests the source to load the specified amount of data in the buffer.
 		/// As a result, there may be more data in the buffer than requested.
 		/// Properties Offset, Count and IsExhausted may be changed in the process.
 		/// </summary>
 		/// <param name="size">Amount of data required in the buffer.</param>
 		/// <param name="cancellationToken">The token to monitor for cancellation requests. The default value is System.Threading.CancellationToken.None.</param>
 		/// <returns>A task that represents the operation.</returns>
-		public ValueTask EnsureBufferAsync (int size, CancellationToken cancellationToken = default)
+		public ValueTask EnsureAvailableAsync (int size, CancellationToken cancellationToken = default)
 		{
 			if ((size < 0) || (size > this.BufferMemory.Length))
 			{
@@ -173,7 +173,7 @@ namespace Novartment.Base.BinaryStreaming
 				while ((size > (_foundTemplateOffset - _source.Offset)) && !_source.IsExhausted)
 				{
 					var prevOffset = _source.Offset;
-					await _source.FillBufferAsync(cancellationToken).ConfigureAwait(false);
+					await _source.LoadAsync(cancellationToken).ConfigureAwait(false);
 					var resetSearch = prevOffset != _source.Offset; // изменилась позиция данных в буфере. при этом сами данные, доступные ранее, не могут измениться, могут лишь добавиться новые
 					SearchBuffer(resetSearch);
 				}
@@ -205,11 +205,11 @@ namespace Novartment.Base.BinaryStreaming
 				sizeToSkip = _foundTemplateOffset - _source.Offset;
 				if (sizeToSkip > 0)
 				{
-					SkipBuffer (sizeToSkip); // skip all data to found separator
+					Skip (sizeToSkip); // skip all data to found separator
 				}
 
 				var prevOffset = _source.Offset;
-				await _source.FillBufferAsync (cancellationToken).ConfigureAwait (false);
+				await _source.LoadAsync (cancellationToken).ConfigureAwait (false);
 				var resetSearch = prevOffset != _source.Offset; // изменилась позиция данных в буфере. при этом сами данные, доступные ранее, не могут измениться, могут лишь добавиться новые
 				var isSourceExhausted = SearchBuffer (resetSearch);
 				if (isSourceExhausted)
@@ -217,7 +217,7 @@ namespace Novartment.Base.BinaryStreaming
 					// разделитель не найден, источник ичерпался
 					if (_source.Count > 0)
 					{
-						_source.SkipBuffer (_source.Count);
+						_source.Skip (_source.Count);
 					}
 
 					return false;
@@ -226,7 +226,7 @@ namespace Novartment.Base.BinaryStreaming
 
 			// jump over found separator
 			sizeToSkip = _foundTemplateOffset - _source.Offset + _foundTemplateLength;
-			_source.SkipBuffer (sizeToSkip);
+			_source.Skip (sizeToSkip);
 			SearchBuffer (true);
 
 			return true;
@@ -249,7 +249,8 @@ namespace Novartment.Base.BinaryStreaming
 
 			var buf = _source.BufferMemory.Span;
 			var template = _template.Span;
-			while (((_foundTemplateOffset + _foundTemplateLength) < (_source.Offset + _source.Count)) && (_foundTemplateLength < _template.Length))
+			var endOffset = _source.Offset + _source.Count;
+			while (((_foundTemplateOffset + _foundTemplateLength) < endOffset) && (_foundTemplateLength < _template.Length))
 			{
 				if (buf[_foundTemplateOffset + _foundTemplateLength] == template[_foundTemplateLength])
 				{
