@@ -1,7 +1,5 @@
 ﻿using System;
 using System.ComponentModel;
-using System.IO;
-using System.Reflection;
 using Novartment.Base.Reflection;
 using Xunit;
 
@@ -12,65 +10,30 @@ namespace Novartment.Base.Test
 	{
 		[Fact]
 		[Trait ("Category", "ReflectionService")]
-		public void GetAssemblyVersion ()
+		public void GetDisplayVersion ()
 		{
-			var actualVer = ReflectionService.GetAssemblyVersion (this.GetType ().Assembly);
+			var actualVer = ReflectionService.GetDisplayVersion (this.GetType ().Assembly);
 			Assert.Equal ("1.1.15037.9256", actualVer);
 		}
 
 		[Fact]
 		[Trait ("Category", "ReflectionService")]
-		public void GetFormattedFullName ()
+		public void GetDisplayName ()
 		{
 			Assert.Equal (
 				"Novartment.Base.Test.ReflectionServiceTests",
-				ReflectionService.GetFormattedFullName (this.GetType ()));
+				ReflectionService.GetDisplayName (this.GetType ()));
 			Assert.Equal (
 				"Novartment.Base.Test.Mock5`2",
-				ReflectionService.GetFormattedFullName (typeof (Mock5<int, string>).GetGenericTypeDefinition ()));
+				ReflectionService.GetDisplayName (typeof (Mock5<int, string>).GetGenericTypeDefinition ()));
 			Assert.Equal (
 				"Novartment.Base.Test.Mock5`2<System.Int32, System.String>",
-				ReflectionService.GetFormattedFullName (typeof (Mock5<int, string>)));
+				ReflectionService.GetDisplayName (typeof (Mock5<int, string>)));
 			Assert.Equal (
 				"Novartment.Base.Test.Mock5`2<System.Int32, System.Tuple`2<System.Int32, System.String>>",
-				ReflectionService.GetFormattedFullName (typeof (Mock5<int, Tuple<int, string>>)));
-		}
-
-		[Fact]
-		[Trait ("Category", "ReflectionService")]
-		[DefaultValue ("test")] // этот аттрибут не удалять, он используется тестом
-		public void GetAttributeArguments ()
-		{
-			var args = ReflectionService.GetAttributeArguments<DefaultValueAttribute> (new Action (GetAttributeArguments).GetMethodInfo ());
-			Assert.Equal (1, args.Count);
-			Assert.IsType<string> (args[0].Value);
-			Assert.Null (args[0].Name);
-			Assert.Equal ("test", (string)args[0].Value);
-
-			args = ReflectionService.GetAttributeArguments<DefaultValueAttribute> (this.GetType ());
-			Assert.Equal (2, args.Count);
-
-			Assert.IsAssignableFrom<Type> (args[0].Value);
-			Assert.Null (args[0].Name);
-			Assert.Equal (typeof (DateTime), (Type)args[0].Value);
-
-			Assert.IsType<string> (args[1].Value);
-			Assert.Null (args[1].Name);
-			Assert.Equal ("Много не связанных тестов", (string)args[1].Value);
-		}
-
-		[Fact]
-		[Trait ("Category", "ReflectionService")]
-		public void GetAttributeArgumentsEnum ()
-		{
-			Assert.Equal ("Test Value 1", ReflectionService.GetAttributeArguments<DefaultValueAttribute> (TestEnum.TestVal1)[0].Value);
-			Assert.Equal ("Test Value Три", ReflectionService.GetAttributeArguments<DefaultValueAttribute> (TestEnum.TestVal3)[0].Value);
-			Assert.Equal (0, ReflectionService.GetAttributeArguments<DefaultValueAttribute> (FileAccess.ReadWrite).Count);
+				ReflectionService.GetDisplayName (typeof (Mock5<int, Tuple<int, string>>)));
 		}
 	}
-
-#pragma warning disable SA1201 // Elements must appear in the correct order
-#pragma warning disable SA1402 // File may only contain a single type
 
 	public enum TestEnum
 	{
@@ -87,7 +50,4 @@ namespace Novartment.Base.Test
 
 		public T2 Prop2 { get; set; }
 	}
-
-#pragma warning restore SA1402 // File may only contain a single type
-#pragma warning restore SA1201 // Elements must appear in the correct order
 }

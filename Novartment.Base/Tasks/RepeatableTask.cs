@@ -6,21 +6,20 @@ using System.Threading.Tasks;
 namespace Novartment.Base.Tasks
 {
 	/// <summary>
-	/// Повторяемая отменяемая задача на основе фабрики по производству задач.
-	/// По команде отмены и при старте новой, уже запущенные задачи отменяются.
+	/// A repeatable cancellable task based on the task creation factory.
+	/// In case of the cancellation and when starting a new one, already running tasks are canceled.
 	/// </summary>
 	/// <remarks>
-	/// Подходит для задач типа открытия URL в браузере.
-	/// Ключевые характеристики.
-	/// Создаётся заранее (а не во время запуска) и потом поддерживает многократный запуск с разным значением параметра,
-	/// что удобно для декларативного назначения действий элементам пользовательского интерфейса.
-	/// Автоматически создаёт/освобождает необходимые CancellationTokenSorce.
-	/// Отслеживает статус предыдущих задач (которым послан сигнал отмены) даже если уже запущены новые.
+	/// Suitable for tasks such as opening a URL in a browser.
+	/// Key Features.
+	/// It is created in advance (and not during startup) and then supports multiple launches with different parameter values,
+	/// which is convenient for declaratively assigning actions to user interface elements.
+	/// Automatically creates/releases the necessary CancellationTokenSorce.
+	/// Monitors the status of previous tasks (to which a cancel signal was sent) even if new ones are already running.
 	/// </remarks>
-	// Согласно рекомендациям Stephen Toub (специалист по параллелизму, конкурентности и асинхронности из команды Visual Studio)
-	// http://blogs.msdn.com/b/pfxteam/archive/2012/03/25/10287435.aspx
-	// для объектов типа Task и CancellationTokenSource не производится освобождение (вызов IDisposable.Dispose()),
-	// которое бы значительно усложнило класс.
+	/// Official documentaion of the Task.Dispose method:
+	/// «if your app targets the .NET Framework 4.5 or later, there is no need to call Dispose».
+	/// Therefore, for objects of type such as Task and CancellationTokenSource, no release is performed that would greatly complicate the class.
 #pragma warning disable CA1063 // Implement IDisposable Correctly
 	public class RepeatableTask :
 #pragma warning restore CA1063 // Implement IDisposable Correctly
@@ -33,10 +32,13 @@ namespace Novartment.Base.Tasks
 		private int _tasksInProgressCount = 0;
 
 		/// <summary>
-		/// Инициализирует новый экземпляр RepeatableTask на основе указанной фабрики по производству задач.
+		/// Initializes a new instance of the RepeatableTask class
+		/// that will use the tasks returned by the specified task creation function.
 		/// </summary>
-		/// <param name="taskFactory">Функция, создающая задачу. Будет вызвана при старте.
-		/// Возвращённая функцией задача должна быть уже запущена.</param>
+		/// <param name="taskFactory">
+		/// The task creation function. Will be called every time RepeatableTask starts.
+		/// The task returned by the function should already be running.
+		/// </param>
 		public RepeatableTask (Func<object, CancellationToken, Task> taskFactory)
 		{
 			if (taskFactory == null)
@@ -50,11 +52,17 @@ namespace Novartment.Base.Tasks
 		}
 
 		/// <summary>
-		/// Инициализирует новый экземпляр RepeatableTask на основе указанного делегата и планировщика задач.
+		/// Initializes a new instance of the RepeatableTask class
+		/// that will create tasks by asynchronously invoking the specified method
+		/// using the specified task scheduler.
 		/// </summary>
-		/// <param name="taskAction">Делегат, который будут вызывать запускаемые задачи.</param>
-		/// <param name="taskScheduler">Планировщик, в котором будут выполняться запускаемые задачи.
-		/// Укажите null чтобы использовать планировщик по умолчанию.</param>
+		/// <param name="taskAction">
+		/// The method, that will be asynchronously invoked every time RepeatableTask starts.
+		/// </param>
+		/// <param name="taskScheduler">
+		/// The task scheduler, that will be used to asynchronously invoke starting action.
+		/// Specify null-reference to use the default scheduler.
+		/// </param>
 		public RepeatableTask (Action<object, CancellationToken> taskAction, TaskScheduler taskScheduler = null)
 		{
 			if (taskAction == null)
@@ -68,25 +76,25 @@ namespace Novartment.Base.Tasks
 			_taskAction = taskAction;
 		}
 
-		/// <summary>Происходит перед тем, как запустится задача.</summary>
+		/// <summary>Occurs before the task starts.</summary>
 		public event EventHandler<TaskStartingEventArgs> TaskStarting;
 
-		/// <summary>Происходит после запуска задачи.</summary>
+		/// <summary>Occurs after starting a task.</summary>
 		public event EventHandler<DataEventArgs<object>> TaskStarted;
 
-		/// <summary>Происходит после завершения задачи.</summary>
+		/// <summary>Occurs after a task completes.</summary>
 		public event EventHandler<DataEventArgs<CompletedTaskData>> TaskEnded;
 
 		/// <summary>
-		/// Возвращает true если задача в настоящий момент выполняется, иначе false.
+		/// Gets a value indicating whether the task is currently running.
 		/// </summary>
 		public bool IsRunning => _tasksInProgressCount > 0;
 
 		/// <summary>
-		/// Запускает задачу с указанным объектом состояния.
-		/// Ранее запущенная задача отменяется.
+		/// Starts a task with the specified state object.
+		/// A previously started task is canceled.
 		/// </summary>
-		/// <param name="state">Объект-состояние, передаваемый в запускаемую задачу.</param>
+		/// <param name="state">State object passed to the task being started.</param>
 		public void Start (object state)
 		{
 			// уведомляем о запуске задачи. обработчик может установить флаг отмены запуска и поменять объект-состояние
@@ -142,7 +150,7 @@ namespace Novartment.Base.Tasks
 		}
 
 		/// <summary>
-		/// Отменяет все ранее запущенные задачи.
+		/// Cancels all previously started tasks.
 		/// </summary>
 		public void Cancel ()
 		{
@@ -151,7 +159,7 @@ namespace Novartment.Base.Tasks
 
 #pragma warning disable CA1063 // Implement IDisposable Correctly
 		/// <summary>
-		/// Освобождает все занятые ресурсы.
+		/// Performs freeing and releasing resources.
 		/// </summary>
 		public void Dispose ()
 #pragma warning restore CA1063 // Implement IDisposable Correctly
@@ -163,7 +171,7 @@ namespace Novartment.Base.Tasks
 		}
 
 		/// <summary>
-		/// Вызывает событие TaskStarting с указанными аргументами.
+		/// Calls the TaskStarting event with the specified arguments.
 		/// </summary>
 		/// <param name="args">Аргументы события TaskStarting.</param>
 		protected virtual void OnTaskStarting (TaskStartingEventArgs args)
@@ -172,7 +180,7 @@ namespace Novartment.Base.Tasks
 		}
 
 		/// <summary>
-		/// Вызывает событие TaskStarted с указанными аргументами.
+		/// Calls the TaskStarted event with the specified arguments.
 		/// </summary>
 		/// <param name="args">Аргументы события TaskStarted.</param>
 		protected virtual void OnTaskStarted (DataEventArgs<object> args)
@@ -181,7 +189,7 @@ namespace Novartment.Base.Tasks
 		}
 
 		/// <summary>
-		/// Вызывает событие TaskEnded с указанными аргументами.
+		/// Calls the TaskEnded event with the specified arguments.
 		/// </summary>
 		/// <param name="args">Аргументы события TaskEnded.</param>
 		protected virtual void OnTaskEnded (DataEventArgs<CompletedTaskData> args)

@@ -5,37 +5,41 @@ using System.Threading.Tasks;
 namespace Novartment.Base.Net
 {
 	/// <summary>
-	/// Прослушиватель TCP-подключений.
+	/// Listens for connections from TCP network clients.
 	/// </summary>
 	/// <remarks>
-	/// Извлечён из библиотечного System.Net.Sockets.TcpListener. Отличия только в методе AcceptTcpClientAsync():
-	/// 1. Для реализации отмены прослушивания принимает параметр CancellationToken.
-	/// 2. Для реализации IoC возвращает ITcpConnection вместо библиотечного TcpClient.
+	/// Designed to replace System.Net.Sockets.TcpListener class.
+	/// Differences only in the AcceptTcpClientAsync() method:
+	/// 1. Accepts the CancellationToken parameter to implement listening cancellation.
+	/// 2. Returns interface ITcpConnection instead of the specific library class.
 	/// </remarks>
 	public interface ITcpListener
 	{
 		/// <summary>
-		/// Получает конечнную точку, на которой производится прослушивание.
+		/// Gets the underlying endpoint of the current listener.
 		/// </summary>
 		IPEndPoint LocalEndpoint { get; }
 
 		/// <summary>
-		/// Запускает прослушивание.
+		/// Starts listening for incoming connection requests.
 		/// </summary>
 		void Start ();
 
 #pragma warning disable CA1716 // Identifiers should not match keywords
 		/// <summary>
-		/// Останавливает прослушивание.
+		/// Closes the listener.
 		/// </summary>
 		void Stop ();
 #pragma warning restore CA1716 // Identifiers should not match keywords
 
 		/// <summary>
-		/// Асинхронно получает подключение, полученное прослушивателем.
+		/// Accepts a pending connection request as an asynchronous operation.
 		/// </summary>
-		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
-		/// <returns>Установленное TCP-подключение.</returns>
+		/// <param name="cancellationToken">The token to monitor for cancellation requests. The default value is System.Threading.CancellationToken.None.</param>
+		/// <returns>
+		/// The task representing the asynchronous operation.
+		/// The result of the task is the established TCP connection used to send and receive data.
+		/// </returns>
 		Task<ITcpConnection> AcceptTcpClientAsync (CancellationToken cancellationToken = default);
 	}
 }

@@ -58,7 +58,7 @@ namespace Novartment.Base.Sample
 			msg.RecipientTo.Add ("man3@server.com", "Адресат Три");
 			msg.From.Add ("noone@mail.net", "Иван Сидоров");
 			msg.Subject = "тема сообщения";
-			msg.References.Add ("fdz.fue8vae@node12.server.ru");
+			msg.References.Add (AddrSpec.Parse ("fdz.fue8vae@node12.server.ru"));
 
 			var part = msg.AddCompositePart (MultipartMediaSubtypeNames.Alternative);
 			part.AddTextPart ("текст сообщения");

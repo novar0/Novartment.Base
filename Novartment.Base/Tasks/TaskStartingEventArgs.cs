@@ -1,29 +1,25 @@
-﻿using System;
+﻿using System.ComponentModel;
 
 namespace Novartment.Base.Tasks
 {
 	/// <summary>
-	/// Содержит данные запускаемой задачи.
+	/// Provides data for a task starting event.
 	/// </summary>
-	public class TaskStartingEventArgs : EventArgs
+	public class TaskStartingEventArgs : CancelEventArgs
 	{
 		/// <summary>
-		/// Инициализирует новый экземпляр TaskStartingEventArgs на основе указанного объекта-состояния задачи.
+		///  Initializes a new instance of the TaskStartingEventArgs class
+		///  with the specified state object.
 		/// </summary>
-		/// <param name="state">Объект-состояния задачи.</param>
-		public TaskStartingEventArgs(object state)
+		/// <param name="state">The state object of the task.</param>
+		public TaskStartingEventArgs (object state)
 		{
-			State = state;
+			this.State = state;
 		}
 
 		/// <summary>
-		/// Получает или устанавливает объект-состояние задачи.
+		/// Gets or sets the state object of the task.
 		/// </summary>
 		public object State { get; set; }
-
-		/// <summary>
-		/// Получает или устанавливает необходимость отмены запускаемой задачи.
-		/// </summary>
-		public bool Cancel { get; set; }
 	}
 }

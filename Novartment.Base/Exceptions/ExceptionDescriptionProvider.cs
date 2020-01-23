@@ -84,7 +84,7 @@ namespace Novartment.Base
 
 			return (exception is CustomErrorException customErrorException) ?
 				customErrorException.Name :
-				ReflectionService.GetFormattedFullName(exception.GetType());
+				ReflectionService.GetDisplayName(exception.GetType());
 		}
 
 		/// <summary>

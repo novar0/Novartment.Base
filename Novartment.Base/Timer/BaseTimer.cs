@@ -3,23 +3,22 @@ using System.Diagnostics.Contracts;
 
 namespace Novartment.Base
 {
-#pragma warning disable CA1063 // Implement IDisposable Correctly
 	/// <summary>
-	/// Базовый класс для реализации таймера.
+	/// A base class for timers.
 	/// </summary>
-	/// <typeparam name="TState">Тип объекта, передаваемый в делегат срабатывания таймера.</typeparam>
+	/// <typeparam name="TState">Type of the state object, passed to the callback.</typeparam>
 	public abstract class BaseTimer<TState> :
-#pragma warning restore CA1063 // Implement IDisposable Correctly
 		ITimer
 	{
 		private readonly Action<TState> _callback;
 		private readonly TState _state;
 
 		/// <summary>
-		/// Инициализирует новый экземпляр BaseTimer, вызывающий при срабатывании указанный делегат с указанным параметром.
+		/// Initializes a new instance of the BaseTimer class
+		/// that calls the specified callback with the specified parameter when triggered.
 		/// </summary>
-		/// <param name="callback">Делегат, вызываемый при срабатывании таймера.</param>
-		/// <param name="state">Объект, передавамый в делегат при срабатывании таймера.</param>
+		/// <param name="callback">The callback, that will be called when the timer is triggered.</param>
+		/// <param name="state">The state object, that will be passed to callback when the timer is triggered.</param>
 		protected BaseTimer (Action<TState> callback, TState state)
 		{
 			if (callback == null)
@@ -34,30 +33,30 @@ namespace Novartment.Base
 		}
 
 		/// <summary>
-		/// Получает или устанавливает интервал срабатывания таймера.
+		/// Gets or sets the trigger interval.
 		/// </summary>
 		public abstract TimeSpan Interval { get; set; }
 
 		/// <summary>
-		/// Получает состояние таймера. True если таймер запущен, иначе false.
+		/// Gets state of the time. True means that the timer is started, and false means that the timer is stopped.
 		/// </summary>
 		public abstract bool Enabled { get; }
 
 		/// <summary>
-		/// Запускает таймер.
+		/// Starts the timer.
 		/// </summary>
 		public abstract void Start ();
 
 #pragma warning disable CA1716 // Identifiers should not match keywords
 		/// <summary>
-		/// Останавливает таймер.
+		/// Stops the timer.
 		/// </summary>
 		public abstract void Stop ();
 #pragma warning restore CA1716 // Identifiers should not match keywords
 
 #pragma warning disable CA1063 // Implement IDisposable Correctly
 		/// <summary>
-		/// Освобождает занимаемые объектом ресурсы.
+		/// Performs freeing and releasing resources.
 		/// </summary>
 		public abstract void Dispose ();
 #pragma warning restore CA1063 // Implement IDisposable Correctly
@@ -65,10 +64,10 @@ namespace Novartment.Base
 #pragma warning disable IDE0060 // Remove unused parameter
 #pragma warning disable CA1801 // Review unused parameters
 		/// <summary>
-		/// Вызывает делегат срабатывания таймера.
-		/// Можно использовать для делегата типа TimerCallback.
+		/// Invokes the timer callback.
+		/// Can be used for a TimerCallback type delegate.
 		/// </summary>
-		/// <param name="notUsed">Не используется. Необходим для формирования сигнатуры, аналогичной некоторым другим таймерам.</param>
+		/// <param name="notUsed">Not used. Required to generate a signature similar to some other timers.</param>
 		protected void DoCallback (object notUsed)
 #pragma warning restore CA1801 // Review unused parameters
 #pragma warning restore IDE0060 // Remove unused parameter
@@ -77,19 +76,19 @@ namespace Novartment.Base
 		}
 
 		/// <summary>
-		/// Вызывает делегат срабатывания таймера.
-		/// Можно использовать для делегата типа EventHandler.
+		/// Invokes the timer callback.
+		/// Can be used for a EventHandler type delegate.
 		/// </summary>
-		/// <param name="notUsed1">notUsed1 не используется.</param>
-		/// <param name="notUsed2">notUsed2 не используется.</param>
+		/// <param name="notUsed1">Not used. Required to generate a signature similar to some other timers.</param>
+		/// <param name="notUsed2">Not used. Required to generate a signature similar to some other timers.</param>
 		protected void DoCallback (object notUsed1, EventArgs notUsed2)
 		{
 			_callback.Invoke (_state);
 		}
 
 		/// <summary>
-		/// Вызывает делегат срабатывания таймераа.
-		/// Можно использовать для делегата типа Action.
+		/// Invokes the timer callback.
+		/// Can be used for a Action type delegate.
 		/// </summary>
 		protected void DoCallback ()
 		{

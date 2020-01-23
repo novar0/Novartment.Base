@@ -5,17 +5,18 @@ using System.Threading.Tasks;
 namespace Novartment.Base.Tasks
 {
 	/// <summary>
-	/// Параметры завершённой задачи.
+	/// A completed task parameters.
 	/// </summary>
 	public class CompletedTaskData
 	{
 		/// <summary>
-		/// Инициализирует новый экземпляр CompletedTaskData на основе указанного состояния, исключения и состояния.
+		/// Initializes a new instance of the CompletedTaskData class
+		/// with the specified status, the exception and the state object.
 		/// </summary>
-		/// <param name="status">Состояние задачи.</param>
-		/// <param name="exception">Исключения задачи.</param>
-		/// <param name="state">Объект-состояние задачи.</param>
-		public CompletedTaskData(TaskStatus status, AggregateException exception, object state)
+		/// <param name="status">The status of the task.</param>
+		/// <param name="exception">The exception of the task.</param>
+		/// <param name="state">The state object of the task.</param>
+		public CompletedTaskData (TaskStatus status, AggregateException exception, object state)
 		{
 			if ((status != TaskStatus.RanToCompletion) &&
 				(status != TaskStatus.Canceled) &&
@@ -32,10 +33,11 @@ namespace Novartment.Base.Tasks
 		}
 
 		/// <summary>
-		/// Инициализирует новый экземпляр CompletedTaskData на основе указанной задачи.
+		/// Initializes a new instance of the CompletedTaskData class
+		/// with the parameters of the specified task.
 		/// </summary>
-		/// <param name="task">Завершённая задача, параметры которой будет содержать создаваемый экземпляр.</param>
-		public CompletedTaskData(Task task)
+		/// <param name="task">A completed task, the parameters of which will contain the created instance.</param>
+		public CompletedTaskData (Task task)
 		{
 			if (task == null)
 			{
@@ -55,17 +57,18 @@ namespace Novartment.Base.Tasks
 		}
 
 		/// <summary>
-		/// Получает статус задачи: RanToCompletion, Canceled или Faulted.
+		/// Gets the status of the task: RanToCompletion, Canceled или Faulted.
 		/// </summary>
 		public TaskStatus Status { get; }
 
 		/// <summary>
-		/// Получает исключение, возникшее в ходе выполнения задачи. Null если исключений не было.
+		/// Gets an exception that occurred during the execution of a task.
+		/// The null-reference indicates that no exceptions have occured.
 		/// </summary>
 		public AggregateException Exception { get; }
 
 		/// <summary>
-		/// Получает объект-состояние задачи.
+		/// Gets the state object of the task.
 		/// </summary>
 		public object State { get; }
 	}

@@ -5,25 +5,25 @@ using Novartment.Base.BinaryStreaming;
 namespace Novartment.Base.Net
 {
 	/// <summary>
-	/// Почтовое сообщение.
+	/// The generic internet message defined in RFC 822.
 	/// </summary>
-	/// <typeparam name="TMailbox">Тип почтовых ящиков, указываемых в параметрах сообщения.</typeparam>
+	/// <typeparam name="TMailbox">The type of mailboxes specified in the message properties.</typeparam>
 	public interface IMailMessage<out TMailbox> :
 		IBinarySerializable
 	{
-		/// <summary>Получает дату формирования сообщения.</summary>
+		/// <summary>Gets the origination date of the message.</summary>
 		DateTimeOffset? OriginationDate { get; }
 
-		/// <summary>Получает тему сообщения.</summary>
+		/// <summary>Gets the subject of the message.</summary>
 		string Subject { get; }
 
-		/// <summary>Получает коллекцию почтовых ящиков авторов сообщения.</summary>
+		/// <summary>Gets the collection of the mailboxes of authors of the message.</summary>
 		IReadOnlyList<TMailbox> Originators { get; }
 
-		/// <summary>Получает коллекцию почтовых ящиков получателей сообщения.</summary>
+		/// <summary>Gets the collection of the mailboxes of recipients of the message.</summary>
 		IReadOnlyList<TMailbox> Recipients { get; }
 
-		/// <summary>Получает кодировку передачи содержимого, требуемую для передачи сообщения.</summary>
+		/// <summary>Gets the content transfer encoding required for message.</summary>
 		ContentTransferEncoding TransferEncoding { get; }
 	}
 }

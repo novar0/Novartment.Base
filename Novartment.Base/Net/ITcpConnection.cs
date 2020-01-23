@@ -1,18 +1,18 @@
 ﻿namespace Novartment.Base.Net
 {
 	/// <summary>
-	/// Установленное TCP-подключение с отслеживанием полного времени и времени простоя.
+	/// An established TCP connection with monitoring of idle time and total time.
 	/// </summary>
 	public interface ITcpConnection :
 		ITimedStreamConnection
 	{
 		/// <summary>
-		/// Получает локальную конечную точку подключения.
+		/// Gets the local network endpoint.
 		/// </summary>
 		IPHostEndPoint LocalEndPoint { get; }
 
 		/// <summary>
-		/// Получает удалённую конечную точку подключения.
+		/// Gets the remote network endpoint.
 		/// </summary>
 		IPHostEndPoint RemoteEndPoint { get; }
 	}

@@ -59,7 +59,7 @@ namespace Novartment.Base.Collections
 		/// </summary>
 		public ConcurrentList ()
 		{
-			var isAtomicallyAssignable = typeof (T).IsAtomicallyAssignable ();
+			var isAtomicallyAssignable = ReflectionService.IsAtomicallyAssignable (typeof (T));
 			if (!isAtomicallyAssignable)
 			{
 				throw new InvalidOperationException ("Invalid type of elements. Type must support atomic assignment, that is, to be reference type of privitive type of size not greater than size of platform-specific pointer.");
@@ -90,7 +90,7 @@ namespace Novartment.Base.Collections
 
 			Contract.EndContractBlock ();
 
-			var isAtomicallyAssignable = typeof (T).IsAtomicallyAssignable ();
+			var isAtomicallyAssignable = ReflectionService.IsAtomicallyAssignable (typeof (T));
 			if (!isAtomicallyAssignable)
 			{
 				throw new InvalidOperationException ("Invalid type of elements. Type must support atomic assignment, that is, to be reference type of privitive type of size not greater than size of platform-specific pointer.");

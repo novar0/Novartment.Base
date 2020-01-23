@@ -3,29 +3,30 @@
 namespace Novartment.Base
 {
 	/// <summary>
-	/// Останавливаемый/перезапускаемый таймер с изменяемым интервалом срабатывания.
+	/// A timer with a variable trigger interval
+	/// that can be stopped and restarted.
 	/// </summary>
 	public interface ITimer :
 		IDisposable
 	{
 		/// <summary>
-		/// Получает или устанавливает интервал срабатывания таймера.
+		/// Gets or sets the trigger interval.
 		/// </summary>
 		TimeSpan Interval { get; set; }
 
 		/// <summary>
-		/// Получает состояние таймера. True если таймер запущен, иначе False.
+		/// Gets state of the time. True means that the timer is started, and false means that the timer is stopped.
 		/// </summary>
 		bool Enabled { get; }
 
 		/// <summary>
-		/// Запускает таймер.
+		/// Starts the timer.
 		/// </summary>
 		void Start ();
 
 #pragma warning disable CA1716 // Identifiers should not match keywords
 		/// <summary>
-		/// Останавливает таймер.
+		/// Stops the timer.
 		/// </summary>
 		void Stop ();
 #pragma warning restore CA1716 // Identifiers should not match keywords

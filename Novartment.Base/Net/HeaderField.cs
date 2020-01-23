@@ -4,16 +4,16 @@ using System.Diagnostics.Contracts;
 namespace Novartment.Base.Net
 {
 	/// <summary>
-	/// Поле заголовка.
+	/// The field of the header of the generic message format defined in RFC 822.
 	/// </summary>
 	public class HeaderField :
 		IEquatable<HeaderField>
 	{
 		/// <summary>
-		/// Инициализирует новый экземпляр класса HeaderField с указанным именем и значением.
+		/// Initializes a new instance of the HeaderField class with a specified name and a value.
 		/// </summary>
-		/// <param name="name">Имя поля заголовка.</param>
-		/// <param name="body">Тело поля заголовка в кодированном виде, используемом для передачи по сетевым протоколам.</param>
+		/// <param name="name">The name of the field.</param>
+		/// <param name="body">The body of the field in encoded form, used for transmission over network protocols.</param>
 		public HeaderField (HeaderFieldName name, ReadOnlySpan<byte> body)
 		{
 			if (name == HeaderFieldName.Unspecified)
@@ -30,22 +30,22 @@ namespace Novartment.Base.Net
 		}
 
 		/// <summary>
-		/// Получает имя поля заголовка.
+		/// Gets the name of the field.
 		/// </summary>
 		public HeaderFieldName Name { get; }
 
 		/// <summary>
-		/// Получает тело поля заголовка.
-		/// Тело представлено в кодированном виде, готовом для передачи по сетевым протоколам.
+		/// Gets the body of the field.
+		/// The body is in encoded form, used for transmission over network protocols.
 		/// </summary>
 		public ReadOnlyMemory<byte> Body { get; }
 
 		/// <summary>
-		/// Определяет равенство двух указанных объектов.
+		/// Returns a value that indicates whether two HeaderField objects are equal.
 		/// </summary>
-		/// <param name="first">Первый объект для сравнения.</param>
-		/// <param name="second">Второй объект для сравнения.</param>
-		/// <returns>True если значение параметра first равно second; в противном случае — False.</returns>
+		/// <param name="first">The first segment to compare.</param>
+		/// <param name="second">The second segment to compare.</param>
+		/// <returns>True if the two HeaderField objects are equal; otherwise, False.</returns>
 		public static bool operator == (HeaderField first, HeaderField second)
 		{
 			return first is null ?
@@ -54,11 +54,11 @@ namespace Novartment.Base.Net
 		}
 
 		/// <summary>
-		/// Определяет неравенство двух указанных объектов.
+		/// Returns a value that indicates whether two HeaderField objects are not equal.
 		/// </summary>
-		/// <param name="first">Первый объект для сравнения.</param>
-		/// <param name="second">Второй объект для сравнения.</param>
-		/// <returns>True если значение параметра first не равно second; в противном случае — False.</returns>
+		/// <param name="first">The first segment to compare.</param>
+		/// <param name="second">The second segment to compare.</param>
+		/// <returns>True if the two HeaderField objects are not equal; otherwise, False.</returns>
 		public static bool operator != (HeaderField first, HeaderField second)
 		{
 			return !(first is null ?
@@ -67,28 +67,28 @@ namespace Novartment.Base.Net
 		}
 
 		/// <summary>
-		/// Преобразовывает значение объекта в эквивалентное ему строковое представление.
+		/// Returns a string that represents the this object.
 		/// </summary>
-		/// <returns>Строковое представление значения объекта.</returns>
+		/// <returns>A string that represents the current object.</returns>
 		public override string ToString ()
 		{
 			return (this.Body.Length > 0) ? $"{this.Name}: {this.Body}" : $"{this.Name}:";
 		}
 
 		/// <summary>
-		/// Вычисляет хэш-функцию объекта.
+		/// Returns the hash code for this object.
 		/// </summary>
-		/// <returns>Хэш-код для текущего объекта.</returns>
+		/// <returns>A 32-bit signed integer hash code.</returns>
 		public override int GetHashCode ()
 		{
 			return this.Name.GetHashCode () ^ this.Body.GetHashCode ();
 		}
 
 		/// <summary>
-		/// Определяет, равен ли заданный объект текущему объекту.
+		/// Indicates whether the current object is equal to another object of the same type.
 		/// </summary>
 		/// <param name="obj">Объект, который требуется сравнить с текущим объектом. </param>
-		/// <returns>True, если указанный объект равен текущему объекту; в противном случае — False.</returns>
+		/// <returns>True if the current object is equal to the other parameter; otherwise, False.</returns>
 		public override bool Equals (object obj)
 		{
 			var typedOther = obj as HeaderField;
@@ -96,10 +96,10 @@ namespace Novartment.Base.Net
 		}
 
 		/// <summary>
-		/// Определяет, равен ли заданный объект текущему объекту.
+		/// Indicates whether the current object is equal to another object of the same type.
 		/// </summary>
 		/// <param name="other">Объект, который требуется сравнить с текущим объектом. </param>
-		/// <returns>True, если указанный объект равен текущему объекту; в противном случае — False.</returns>
+		/// <returns>True if the current object is equal to the other parameter; otherwise, False.</returns>
 		public bool Equals (HeaderField other)
 		{
 			if (other == null)

@@ -1,46 +1,44 @@
 ﻿namespace Novartment.Base.Net
 {
 	/// <summary>
-	/// MIME-кодировка передачи содержимого.
+	/// The MIME-standardized content transfer encoding.
 	/// </summary>
 	public enum ContentTransferEncoding
 	{
-		/// <summary>Кодировка не указана.</summary>
+		/// <summary>No transfer encoding specified.</summary>
 		Unspecified = 0,
 
 		/// <summary>
-		/// Кодирование произвольной последовательности байт в пригодную для прямого использования в письме форму.
-		/// Не создаёт накладных расходов и сохраняет читабельность когда используется для данных
-		/// состоящих преимущественно из US-ASCII символов.
-		/// Большие накладные расходы (200%) для остальных символов.
-		/// Определено в RFC 2045 часть 6.7.
+		/// Encoding an arbitrary sequence of bytes in a form suitable for direct use in a Internet Message.
+		/// Does not create overhead and maintains readability when used for data consisting mainly of US-ASCII characters.
+		/// Large overhead (200%) for the rest of the characters.
+		/// Defined in RFC 2045 part 6.7.
 		/// </summary>
 		QuotedPrintable = 1,
 
 		/// <summary>
-		/// Кодирование произвольной последовательности байт в пригодную для прямого использования в письме форму.
-		/// Подходит для любых исходных данных, имеет фиксированные накладные расходы в размере 33%.
-		/// Определено в RFC 2045 часть 6.8.
+		/// Encoding an arbitrary sequence of bytes in a form suitable for direct use in a Internet Message.
+		/// Suitable for any source data, has a fixed overhead of 33%.
+		/// Defined in RFC 2045 part 6.8.
 		/// </summary>
 		Base64 = 2,
 
 		/// <summary>
-		/// До 998 байтов на строку, каждый ограничен диапазоном 1..127, а значения 10 и 13 разрешаются только как CRLF в конце строки.
-		/// Определено в RFC 2045 часть 6.2.
+		/// Up to 998 bytes per line, values are limited to the range 1..127, and values 10 and 13 are only allowed as CRLF at the end of the line.
+		/// No overhead. Defined in RFC 2045 part 6.2.
 		/// </summary>
 		SevenBit = 3,
 
 		/// <summary>
-		/// До 998 байтов на строку, без ограничений кроме того что значения 10 и 13 разрешаются только как CRLF в конце строки.
-		/// Не имеет накладных расходов.
-		/// Определено в RFC 2045 часть 6.2.
+		/// Up to 998 bytes per line, values are unlimited except values 10 and 13 are only allowed as CRLF at the end of the line.
+		/// No overhead. Defined in RFC 2045 part 6.2.
 		/// </summary>
 		EightBit = 4,
 
 		/// <summary>
-		/// Необработанная произвольная последовательность байтов. Не имеет накладных расходов.
-		/// Применение ограничено только для мест где специально заявлена поддержка.
-		/// Определено в RFC 3030.
+		/// Raw random byte sequence. No overhead.
+		/// Application is limited only to places where support is specially declared.
+		/// Defined in RFC 3030.
 		/// </summary>
 		Binary = 5,
 	}

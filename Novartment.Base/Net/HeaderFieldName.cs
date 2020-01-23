@@ -1,11 +1,11 @@
 ﻿namespace Novartment.Base.Net
 {
 	/// <summary>
-	/// Имя поля заголовка.
+	/// The name of the field of the header of the generic message format defined in RFC 822.
 	/// </summary>
 	public enum HeaderFieldName
 	{
-		/// <summary>Не указано.</summary>
+		/// <summary>No header field name specified.</summary>
 		Unspecified = 0,
 
 		/// <summary>Message date and time. "Date" header field in RFC 2822.</summary>
@@ -314,7 +314,7 @@
 		/// <summary>"Warning". Additional information when the "warning" disposition modifier appear.</summary>
 		Warning = 102,
 
-		/// <summary>Нестандартное дополнительное имя. Для использования в расширениях протоколов.</summary>
+		/// <summary>Custom (nonstandard) name. For use in protocol extensions.</summary>
 		Extension = 0x7ffffff,
 	}
 }

@@ -5,12 +5,12 @@ using System.Net;
 namespace Novartment.Base.Net
 {
 	/// <summary>
-	/// Конечная точка подключения узла.
+	/// Represents a network endpoint as an IP address, a port number and a host name.
 	/// </summary>
 	public class IPHostEndPoint : IPEndPoint
 	{
 		/// <summary>
-		/// Инициализирует новый экземпляр IPHostEndPoint с указанной конечной точкой подключения.
+		/// Initializes a new instance of the AddrSpec class based on the specified IPEndPoint.
 		/// </summary>
 		/// <param name="endPoint">Конечная точка подключения.</param>
 		public IPHostEndPoint (IPEndPoint endPoint)
@@ -19,17 +19,18 @@ namespace Novartment.Base.Net
 		}
 
 		/// <summary>
-		/// Инициализирует новый экземпляр IPHostEndPoint с указанными атрибутами.
+		/// Initializes a new instance of the AddrSpec class
+		/// with the specified IP address and the port number.
 		/// </summary>
-		/// <param name="address">Адрес.</param>
-		/// <param name="port">Порт.</param>
+		/// <param name="address">The IP address.</param>
+		/// <param name="port">The port number.</param>
 		public IPHostEndPoint (IPAddress address, int port)
 			: base (address, port)
 		{
 		}
 
 		/// <summary>
-		/// Получает или устанавливает имя узла.
+		/// Gets or sets the host name.
 		/// </summary>
 		public string HostName { get; set; }
 

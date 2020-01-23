@@ -1,22 +1,20 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Reflection;
-using Novartment.Base.Collections;
 using Novartment.Base.Collections.Linq;
 using static System.Linq.Enumerable;
 
 namespace Novartment.Base.Reflection
 {
 	/// <summary>
-	/// Сервис получения информации рефлексии.
+	/// The reflection information service.
 	/// </summary>
 	public static class ReflectionService
 	{
-		/// <summary>Получает строковое название типа, включающее список дженерик-параметров.</summary>
-		/// <param name="type">Тип, для которого нужно получить имя.</param>
-		/// <returns>Строковое описание типа.</returns>
-		public static string GetFormattedFullName (Type type)
+		/// <summary>Gets a string representation of a type that includes a list of generic parameters.</summary>
+		/// <param name="type">The type to get the name for.</param>
+		/// <returns>The string representation of a type</returns>
+		public static string GetDisplayName (Type type)
 		{
 			if (type == null)
 			{
@@ -27,17 +25,17 @@ namespace Novartment.Base.Reflection
 
 			if (type.IsConstructedGenericType)
 			{
-				var arguments = type.GenericTypeArguments.Select (GetFormattedFullName);
+				var arguments = type.GenericTypeArguments.Select (GetDisplayName);
 				return type.GetGenericTypeDefinition ().FullName + "<" + string.Join (", ", arguments) + ">";
 			}
 
 			return type.FullName;
 		}
 
-		/// <summary>Получает версию указанной сборки System.Reflection.Assembly.</summary>
-		/// <param name="assembly">Сборка, для которой надо получить версию.</param>
-		/// <returns>Строковое представление версии.</returns>
-		public static string GetAssemblyVersion (Assembly assembly)
+		/// <summary>Creates string representation of the version of the specfified Assembly.</summary>
+		/// <param name="assembly">The Assembly for which string representation of the version will be created.</param>
+		/// <returns>The string representation of the version of the specfified Assembly.</returns>
+		public static string GetDisplayVersion (Assembly assembly)
 		{
 			if (assembly == null)
 			{
@@ -64,49 +62,66 @@ namespace Novartment.Base.Reflection
 		}
 
 		/// <summary>
-		/// Получает список аргументов конструктора атрибута члена класса.
+		/// Checks whether values can be assigned atomically to variables of the specified type.
 		/// </summary>
-		/// <typeparam name="T">Тип атрибута.</typeparam>
-		/// <param name="member">Член класса.</param>
-		/// <returns>Коллекция аргументов конструктора атрибута.</returns>
-		public static IReadOnlyList<AttributeArgument> GetAttributeArguments<T> (MemberInfo member)
-			where T : Attribute
+		/// <param name="type">
+		/// The type for which it checks whether it is possible to atomically assign values to variables.
+		/// </param>
+		/// <returns>True if values for variables of the specified type can be assigned atomically; otherwise False.</returns>
+		public static bool IsAtomicallyAssignable (Type type)
 		{
-			if (member == null)
+			if (type == null)
 			{
-				throw new ArgumentNullException (nameof (member));
+				throw new ArgumentNullException (nameof (type));
 			}
 
 			Contract.EndContractBlock ();
 
-			var attrs = member.CustomAttributes;
-			var attr = attrs.SingleOrDefault (item => item.AttributeType == typeof (T));
-			if (attr == null)
+			if (!type.IsValueType)
 			{
-				return ReadOnlyList.Empty<AttributeArgument> ();
+				return true;
 			}
 
-			return attr.ConstructorArguments
-				.Select (item => new AttributeArgument (null, item.Value))
-				.Concat (attr.NamedArguments.Select (item =>
-					new AttributeArgument (item.MemberName, item.TypedValue.Value)))
-				.DuplicateToArray ();
-		}
+			if (type.IsEnum)
+			{
+				return IsAtomicallyAssignable (Enum.GetUnderlyingType (type));
+			}
 
-		/// <summary>
-		/// Получает список аргументов конструктора атрибута.
-		/// </summary>
-		/// <typeparam name="T">Тип атрибута.</typeparam>
-		/// <param name="value">Значение перечисления, для которого надо получить аргумент конструктора атрибута.</param>
-		/// <returns>Коллекция аргументов конструктора атрибута.</returns>
-		public static IReadOnlyList<AttributeArgument> GetAttributeArguments<T> (Enum value)
-			where T : Attribute
-		{
-			var name = value.ToString ();
-			var fieldInfo = value.GetType ().GetField (name);
-			return (fieldInfo == null) ?
-				ReadOnlyList.Empty<AttributeArgument> () :
-				GetAttributeArguments<T> (fieldInfo);
+			if ((type == typeof (bool)) ||
+				(type == typeof (byte)) ||
+				(type == typeof (sbyte)) ||
+				(type == typeof (IntPtr)))
+			{
+				// тип размером 8 бит и указатель платформы
+				return true;
+			}
+
+			if ((type == typeof (char)) ||
+				(type == typeof (short)) ||
+				(type == typeof (ushort)))
+			{
+				// тип размером 16 бит
+				return IntPtr.Size >= 2;
+			}
+
+			if ((type == typeof (int)) ||
+				(type == typeof (uint)) ||
+				(type == typeof (float)))
+			{
+				// тип размером 32 бит
+				return IntPtr.Size >= 4;
+			}
+
+			if ((type == typeof (long)) ||
+				(type == typeof (ulong)) ||
+				(type == typeof (double)) ||
+				(type == typeof (DateTime)))
+			{
+				// тип размером 64 бит
+				return IntPtr.Size >= 8;
+			}
+
+			return false;
 		}
 	}
 }

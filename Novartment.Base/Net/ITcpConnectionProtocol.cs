@@ -4,19 +4,21 @@ using System.Threading.Tasks;
 namespace Novartment.Base.Net
 {
 	/// <summary>
-	/// Протокол, осуществляющий обработку потокового подклюючения.
+	/// The network protocol on base of streaming connection.
 	/// </summary>
 	public interface ITcpConnectionProtocol
 	{
 		/// <summary>
-		/// Запускает обработку указанного подключения.
+		/// Starts processing the specified connection.
 		/// </summary>
-		/// <param name="connection">Потоковое подключение.</param>
-		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
-		/// <returns>Задача, представляющая обработку подключения.</returns>
+		/// <param name="connection">The streaming connection.</param>
+		/// <param name="cancellationToken">The token to monitor for cancellation requests. The default value is System.Threading.CancellationToken.None.</param>
+		/// <returns>
+		/// A task that represents the processing.
+		/// </returns>
 		/// <exception cref="Novartment.Base.Net.UnrecoverableProtocolException">
-		/// Происходит когда в протоколе возникла неустранимое противоречие, делающее его дальнейшую работу невозможным.
-		/// Настоятельно рекомендуется закрыть соединение.
+		/// Critical violation of the protocol in which it cannot continue.
+		/// It is highly recommended that you close the connection.
 		/// </exception>
 		Task StartAsync (ITcpConnection connection, CancellationToken cancellationToken = default);
 	}

@@ -4,19 +4,20 @@ using System.Security.Cryptography.X509Certificates;
 namespace Novartment.Base.Net
 {
 	/// <summary>
-	/// Установленное TLS-подключение,
-	/// с отслеживанием полного времени и времени простоя.
+	/// An established TLS connection with monitoring of idle time and total time.
 	/// </summary>
 	public interface ITlsConnection :
 		ITcpConnection
 	{
 		/// <summary>
-		/// Получает сертификат локальной стороны подключения. Null если сертификат не предоставлен.
+		/// Gets the certificate of the local side of the connection.
+		/// Returns a null-value if the certificate is not provided.
 		/// </summary>
 		X509Certificate LocalCertificate { get; }
 
 		/// <summary>
-		/// Получает сертификат удалённой стороны подключения. Null если сертификат не предоставлен.
+		/// Gets the certificate of the remote side of the connection.
+		/// Returns a null-value if the certificate is not provided.
 		/// </summary>
 		X509Certificate RemoteCertificate { get; }
 

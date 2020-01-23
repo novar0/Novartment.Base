@@ -4,33 +4,33 @@ using Novartment.Base.BinaryStreaming;
 namespace Novartment.Base.Net
 {
 	/// <summary>
-	/// Установленное потоковое подключение с отслеживанием полного времени и времени простоя.
+	/// An established streaming connection with monitoring of idle time and total time.
 	/// </summary>
 	/// <remarks>
-	/// Подключение считается установленным, поэтому методы Connect()/Disconnect() не предусмотрены.
-	/// Неустановленное подключение не имеет смысла, так как до установки подключения не имеет смысла ни один член интерфейса.
-	/// При реализации метод Disconnect() заменяется методом Dispose().
+	/// The connection is considered established, so the Connect()/Disconnect() methods are not provided.
+	/// An unestablished connection does not make sense, since no interface member makes sense before the connection is established.
+	/// When implemented, the dicconnection is implemented in the Dispose () method.
 	/// </remarks>
 	public interface ITimedStreamConnection :
 			IDisposable
 	{
 		/// <summary>
-		/// Получает источник входящих через подключение данных.
+		/// Gets the data source, from which connection data can be read.
 		/// </summary>
 		IBufferedSource Reader { get; }
 
 		/// <summary>
-		/// Получатель двоичных данных, осуществляющий запись данных в подключение.
+		/// Gets the data destination, that writes data to the connection.
 		/// </summary>
 		IBinaryDestination Writer { get; }
 
 		/// <summary>
-		/// Получает промежуток времени, прошедший с момента установки подключения.
+		/// Gets the amount of time that has elapsed since the connection was established.
 		/// </summary>
 		TimeSpan Duration { get; }
 
 		/// <summary>
-		/// Получает промежуток времени, прошедший с момента последнего получения входящих данных подключения.
+		/// Gets the amount of time that has elapsed since incoming connection data was last received.
 		/// </summary>
 		TimeSpan IdleDuration { get; }
 	}

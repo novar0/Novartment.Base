@@ -1,22 +1,23 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using Novartment.Base.Text;
 
 namespace Novartment.Base.Net
 {
 	/// <summary>
-	/// Интернет-идентификатор типа 'локальная_часть@домен'
-	/// согласно формату "addr-spec", описанному в RFC 5322 часть 3.4.1.
+	/// An Internet identifier of the form 'local-part@domain'
+	/// in accordance with the "addr-spec" format described in RFC 5322 part 3.4.1.
 	/// </summary>
 	public class AddrSpec :
 		IEquatable<AddrSpec>
 	{
 		/// <summary>
+		/// Initializes a new instance of the AddrSpec class
+		/// the with the specified local part and the domain.
 		/// Инициализирует новый экземпляр класса AddrSpec с указанными локальной частью и доменом.
 		/// </summary>
-		/// <param name="localPart">Локальная часть интернет-идентификатора.</param>
-		/// <param name="domain">Домен интернет-идентификатора.</param>
+		/// <param name="localPart">The local part of the Internet identifier.</param>
+		/// <param name="domain">The domain of the Internet identifier.</param>
 		public AddrSpec (string localPart, string domain)
 		{
 			/*
@@ -70,21 +71,21 @@ namespace Novartment.Base.Net
 		}
 
 		/// <summary>
-		/// Получает локальную часть интернет-идентификатора.
+		/// Gets the local part of the Internet identifier.
 		/// </summary>
 		public string LocalPart { get; }
 
 		/// <summary>
-		/// Получает домен интернет-идентификатора.
+		/// Gets the domain of the Internet identifier.
 		/// </summary>
 		public string Domain { get; }
 
 		/// <summary>
-		/// Определяет равенство двух указанных объектов.
+		/// Returns a value that indicates whether two AddrSpec objects are equal.
 		/// </summary>
-		/// <param name="first">Первый объект для сравнения.</param>
-		/// <param name="second">Второй объект для сравнения.</param>
-		/// <returns>True если значение параметра first равно second; в противном случае — False.</returns>
+		/// <param name="first">The first segment to compare.</param>
+		/// <param name="second">The second segment to compare.</param>
+		/// <returns>True if the two AddrSpec objects are equal; otherwise, False.</returns>
 		public static bool operator == (AddrSpec first, AddrSpec second)
 		{
 			return first is null ?
@@ -93,11 +94,11 @@ namespace Novartment.Base.Net
 		}
 
 		/// <summary>
-		/// Определяет неравенство двух указанных объектов.
+		/// Returns a value that indicates whether two AddrSpec objects are not equal.
 		/// </summary>
-		/// <param name="first">Первый объект для сравнения.</param>
-		/// <param name="second">Второй объект для сравнения.</param>
-		/// <returns>True если значение параметра first не равно second; в противном случае — False.</returns>
+		/// <param name="first">The first segment to compare.</param>
+		/// <param name="second">The second segment to compare.</param>
+		/// <returns>True if the two AddrSpec objects are not equal; otherwise, False.</returns>
 		public static bool operator != (AddrSpec first, AddrSpec second)
 		{
 			return !(first is null ?
@@ -106,10 +107,17 @@ namespace Novartment.Base.Net
 		}
 
 		/// <summary>
-		/// Создаёт интернет-идентификатор из указанного строкового представления.
+		/// Creates an Internet identifier from the specified string representation.
 		/// </summary>
-		/// <param name="source">Строковое представление интернет-идентификатора.</param>
-		/// <returns>Интернет-идентификатор, созданный из строкового представления.</returns>
+		/// <param name="source">String representation of the Internet identifier.</param>
+		/// <returns>The Internet identifier created from a string representation.</returns>
+		public static AddrSpec Parse (string source) => Parse (source.AsSpan ());
+
+		/// <summary>
+		/// Creates an Internet identifier from the specified string representation.
+		/// </summary>
+		/// <param name="source">String representation of the Internet identifier.</param>
+		/// <returns>The Internet identifier created from a string representation.</returns>
 		public static AddrSpec Parse (ReadOnlySpan<char> source)
 		{
 			/*
@@ -159,9 +167,9 @@ namespace Novartment.Base.Net
 		}
 
 		/// <summary>
-		/// Преобразовывает значение объекта в эквивалентное ему строковое представление.
+		/// Returns a string that represents the this object.
 		/// </summary>
-		/// <returns>Строковое представление значения объекта.</returns>
+		/// <returns>A string that represents the current object.</returns>
 		public override string ToString ()
 		{
 			var localPart = AsciiCharSet.IsValidInternetDomainName (this.LocalPart) ? this.LocalPart : AsciiCharSet.Quote (this.LocalPart);
@@ -171,10 +179,10 @@ namespace Novartment.Base.Net
 		}
 
 		/// <summary>
-		/// Преобразовывает значение объекта в эквивалентное ему строковое представление.
+		/// Converts the value of an object to its equivalent string representation.
 		/// </summary>
-		/// <param name="buf">Буфер, куда будет записано строковое представление значения объекта.</param>
-		/// <returns>Количество знаков, записанных в буфер.</returns>
+		/// <param name="buf">The buffer where the string representation of the value of the object will be written.</param>
+		/// <returns>The number of characters written to the buffer.</returns>
 		public int ToString (Span<char> buf)
 		{
 			var pos = 0;
@@ -207,10 +215,10 @@ namespace Novartment.Base.Net
 		}
 
 		/// <summary>
-		/// Преобразовывает значение объекта в эквивалентное ему строковое представление.
+		/// Converts the value of an object to its equivalent UTF-8 string representation.
 		/// </summary>
-		/// <param name="buf">Буфер, куда будет записано строковое представление значения объекта.</param>
-		/// <returns>Количество знаков, записанных в буфер.</returns>
+		/// <param name="buf">The buffer where the string representation of the value of the object will be written.</param>
+		/// <returns>The number of characters written to the buffer.</returns>
 		public int ToUtf8String (Span<byte> buf)
 		{
 			var localPart = this.LocalPart;
@@ -252,9 +260,9 @@ namespace Novartment.Base.Net
 		}
 
 		/// <summary>
-		/// Вычисляет хэш-функцию объекта.
+		/// Returns the hash code for this object.
 		/// </summary>
-		/// <returns>Хэш-код для текущего объекта.</returns>
+		/// <returns>A 32-bit signed integer hash code.</returns>
 		public override int GetHashCode ()
 		{
 			// RFC 3798 part 2.1:
@@ -267,10 +275,10 @@ namespace Novartment.Base.Net
 		}
 
 		/// <summary>
-		/// Определяет, равен ли заданный объект текущему объекту.
+		/// Indicates whether the current object is equal to another object of the same type.
 		/// </summary>
 		/// <param name="obj">Объект, который требуется сравнить с текущим объектом. </param>
-		/// <returns>True , если указанный объект равен текущему объекту; в противном случае — False.</returns>
+		/// <returns>True if the current object is equal to the other parameter; otherwise, False.</returns>
 		public override bool Equals (object obj)
 		{
 			var typedOther = obj as AddrSpec;
@@ -278,10 +286,10 @@ namespace Novartment.Base.Net
 		}
 
 		/// <summary>
-		/// Определяет, равен ли заданный объект текущему объекту.
+		/// Indicates whether the current object is equal to another object of the same type.
 		/// </summary>
 		/// <param name="other">Объект, который требуется сравнить с текущим объектом. </param>
-		/// <returns>True , если указанный объект равен текущему объекту; в противном случае — False.</returns>
+		/// <returns>True if the current object is equal to the other parameter; otherwise, False.</returns>
 		public bool Equals (AddrSpec other)
 		{
 			// RFC 3798 part 2.1:

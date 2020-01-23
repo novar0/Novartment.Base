@@ -4,15 +4,15 @@ using System.Threading;
 
 namespace Novartment.Base
 {
+	// Реализация таймера на основе System.Timers.Timer не нужна потому что он основан на
+	// System.Threading.Timer + возможность вызова через ISynchronizeInvoke,
+	// а ISynchronizeInvoke используется только в Windows.Forms.
+
 	/// <summary>
-	/// Реализация таймера на основе System.Threading.Timer.
-	/// При срабатывании вызывает указанный делегат с указанным параметром.
+	/// A timer based on the System.Threading.Timer.
+	/// Calls the specified callback with the specified parameter when triggered.
 	/// </summary>
-	/// <typeparam name="TState">Тип объекта, передаваемый в делегат срабатывания таймера.</typeparam>
-	/// <remarks>Реализация таймера на основе System.Timers.Timer не нужна потому что он основан на
-	/// System.Threading.Timer + возможность вызова через ISynchronizeInvoke,
-	/// а ISynchronizeInvoke используется только в Windows.Forms.
-	/// </remarks>
+	/// <typeparam name="TState">Type of the state object, passed to the callback.</typeparam>
 	public class AppDomainQueueTimer<TState> :
 		BaseTimer<TState>
 	{
@@ -22,10 +22,11 @@ namespace Novartment.Base
 		private bool _enabled;
 
 		/// <summary>
-		/// Инициализирует новый экземпляр AppDomainQueueTimer, вызывающий при срабатывании указанный делегат с указанным параметром.
+		/// Initializes a new instance of the AppDomainQueueTimer class
+		/// that calls the specified callback with the specified parameter when triggered.
 		/// </summary>
-		/// <param name="callback">Делегат, вызываемый при срабатывании таймера.</param>
-		/// <param name="state">Объект, передавамый в делегат при срабатывании таймера.</param>
+		/// <param name="callback">The callback, that will be called when the timer is triggered.</param>
+		/// <param name="state">The state object, that will be passed to callback when the timer is triggered.</param>
 		public AppDomainQueueTimer (Action<TState> callback, TState state)
 			: base (callback, state)
 		{
@@ -42,7 +43,7 @@ namespace Novartment.Base
 		}
 
 		/// <summary>
-		/// Получает или устанавливает интервал срабатывания таймера.
+		/// Gets or sets the trigger interval.
 		/// </summary>
 		public override TimeSpan Interval
 		{
@@ -68,7 +69,7 @@ namespace Novartment.Base
 		}
 
 		/// <summary>
-		/// Получает состояние таймера. True если таймер запущен, иначе false.
+		/// Gets state of the time. True means that the timer is started, and false means that the timer is stopped.
 		/// </summary>
 		public override bool Enabled
 		{
@@ -82,7 +83,7 @@ namespace Novartment.Base
 		}
 
 		/// <summary>
-		/// Запускает таймер.
+		/// Starts the timer.
 		/// </summary>
 		public override void Start ()
 		{
@@ -94,7 +95,7 @@ namespace Novartment.Base
 		}
 
 		/// <summary>
-		/// Останавливает таймер.
+		/// Stops the timer.
 		/// </summary>
 		public override void Stop ()
 		{
@@ -106,7 +107,7 @@ namespace Novartment.Base
 		}
 
 		/// <summary>
-		/// Освобождает занимаемые объектом ресурсы.
+		/// Performs freeing and releasing resources.
 		/// </summary>
 		public override void Dispose ()
 		{

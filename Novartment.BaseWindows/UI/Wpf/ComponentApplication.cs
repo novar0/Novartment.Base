@@ -54,7 +54,7 @@ namespace Novartment.Base.UI.Wpf
 
 			_mainWindowFactory = mainWindowFactory;
 			_exceptionDialogFactory = exceptionDialogFactory;
-			_version = ReflectionService.GetAssemblyVersion (Assembly.GetEntryAssembly () ?? Assembly.GetCallingAssembly ());
+			_version = ReflectionService.GetDisplayVersion (Assembly.GetEntryAssembly () ?? Assembly.GetCallingAssembly ());
 		}
 
 		/// <summary>Происходит когда меняется содержимое буфера обмена.</summary>
@@ -265,7 +265,7 @@ namespace Novartment.Base.UI.Wpf
 				WindowsEnvironmentDescription.CurrentUser,
 				WindowsEnvironmentDescription.Framework,
 				Path.GetFileName (assembly.Location),
-				ReflectionService.GetAssemblyVersion (assembly),
+				ReflectionService.GetDisplayVersion (assembly),
 				failedAction ?? Wpf.Resources.NotSpecifiedAction,
 				recommendedSolution ?? Wpf.Resources.NotSpecifiedRecommendations));
 		}
