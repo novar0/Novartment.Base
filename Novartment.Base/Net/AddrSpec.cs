@@ -13,11 +13,16 @@ namespace Novartment.Base.Net
 	{
 		/// <summary>
 		/// Initializes a new instance of the AddrSpec class
-		/// the with the specified local part and the domain.
-		/// Инициализирует новый экземпляр класса AddrSpec с указанными локальной частью и доменом.
+		/// the with the specified locally interpreted part and the domain.
 		/// </summary>
-		/// <param name="localPart">The local part of the Internet identifier.</param>
-		/// <param name="domain">The domain of the Internet identifier.</param>
+		/// <param name="localPart">
+		/// The locally interpreted part of the Internet identifier.
+		/// Only printable US-ASCII characters are allowed.
+		/// </param>
+		/// <param name="domain">
+		/// The domain of the Internet identifier.
+		/// Only printable US-ASCII characters not including "[", "]", or "\" are allowed.
+		/// </param>
 		public AddrSpec (string localPart, string domain)
 		{
 			/*
@@ -60,7 +65,8 @@ namespace Novartment.Base.Net
 				throw new ArgumentOutOfRangeException (nameof (localPart));
 			}
 
-			var isDomainValidChars = AsciiCharSet.IsAllOfClass (domain, AsciiCharClasses.Domain | AsciiCharClasses.WhiteSpace);
+			var isDomainValidChars = AsciiCharSet.IsAllOfClass (domain, AsciiCharClasses.Visible | AsciiCharClasses.WhiteSpace) &&
+				(domain.IndexOfAny (new char[] { '[', ']', '\\' }) < 0);
 			if (!isDomainValidChars)
 			{
 				throw new ArgumentOutOfRangeException (nameof (domain));
@@ -71,7 +77,7 @@ namespace Novartment.Base.Net
 		}
 
 		/// <summary>
-		/// Gets the local part of the Internet identifier.
+		/// Gets the locally interpreted part of the Internet identifier.
 		/// </summary>
 		public string LocalPart { get; }
 
@@ -277,7 +283,7 @@ namespace Novartment.Base.Net
 		/// <summary>
 		/// Indicates whether the current object is equal to another object of the same type.
 		/// </summary>
-		/// <param name="obj">Объект, который требуется сравнить с текущим объектом. </param>
+		/// <param name="obj">The object that you want to compare with the current object.</param>
 		/// <returns>True if the current object is equal to the other parameter; otherwise, False.</returns>
 		public override bool Equals (object obj)
 		{
@@ -288,7 +294,7 @@ namespace Novartment.Base.Net
 		/// <summary>
 		/// Indicates whether the current object is equal to another object of the same type.
 		/// </summary>
-		/// <param name="other">Объект, который требуется сравнить с текущим объектом. </param>
+		/// <param name="other">The object that you want to compare with the current object.</param>
 		/// <returns>True if the current object is equal to the other parameter; otherwise, False.</returns>
 		public bool Equals (AddrSpec other)
 		{

@@ -3,41 +3,42 @@
 namespace Novartment.Base.UI
 {
 	/// <summary>
-	/// Состояние элементов управления, влияющих на перетаскивание.
+	/// Specifies the current state of the modifier keys (SHIFT, CTRL, and ALT), as well as the state of the mouse buttons.
+	/// This enumeration allows a bitwise combination of its member values.
 	/// </summary>
 	/// <remarks>
-	/// Значение передаётся в параметрах при вызовах COM-интерфейсов IDropTarget и IDropSource.
-	/// Создано чтобы не привязываться к конкретным технологиям,
-	/// в которых есть аналоги (System.Windows.DragDropKeyStates).
+	/// The value is passed in parameters when calling the IDropTarget and IDropSource COM interfaces.
+	/// Analog of System.Windows.DragDropKeyStates.
+	/// Created so that there is no binding to PresentationCore.dll.
 	/// </remarks>
 	[Flags]
 	public enum DragDropKeyStates : int
 	{
-		/// <summary>Не активирован ни один элемент управления.</summary>
+		/// <summary>No modifier keys or mouse buttons are pressed.</summary>
 		None = 0,
 
-		/// <summary>Активирована левая кнопка мыши.</summary>
-		/// <remarks>Константа MK_LBUTTON.</remarks>
+		/// <summary>The left mouse button is pressed.</summary>
+		/// <remarks>The MK_LBUTTON Win32 constant.</remarks>
 		LeftMouseButton = 1,
 
-		/// <summary>Активирована правая кнопка мыши.</summary>
-		/// <remarks>Константа MK_RBUTTON.</remarks>
+		/// <summary>The right mouse button is pressed.</summary>
+		/// <remarks>The MK_RBUTTON Win32 constant.</remarks>
 		RightMouseButton = 2,
 
-		/// <summary>Активирована клавиша SHIFT.</summary>
-		/// <remarks>Константа MK_SHIFT.</remarks>
+		/// <summary>The shift (SHIFT) key is pressed.</summary>
+		/// <remarks>The MK_SHIFT Win32 constant.</remarks>
 		ShiftKey = 4,
 
-		/// <summary>Активирована клавиша CTRL.</summary>
-		/// <remarks>Константа MK_CONTROL.</remarks>
+		/// <summary>The control (CTRL) key is pressed.</summary>
+		/// <remarks>The MK_CONTROL Win32 constant.</remarks>
 		ControlKey = 8,
 
-		/// <summary>Активирована средняя кнопка мыши.</summary>
-		/// <remarks>Константа MK_MBUTTON.</remarks>
+		/// <summary>The middle mouse button is pressed.</summary>
+		/// <remarks>The MK_MBUTTON Win32 constant.</remarks>
 		MiddleMouseButton = 16,
 
-		/// <summary>Активирована клавиша ALT.</summary>
-		/// <remarks>Константа MK_ALT.</remarks>
+		/// <summary>The ALT key is pressed.</summary>
+		/// <remarks>The MK_ALT Win32 constant.</remarks>
 		AltKey = 32,
 	}
 }

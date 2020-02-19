@@ -1,45 +1,45 @@
 ﻿namespace Novartment.Base.UI
 {
 	/// <summary>
-	/// Цель, на которую можно перетаскивать объекты в том числе из других приложений.
+	/// A target that you can drag-and-drop objects to, including from other applications.
 	/// </summary>
 	public interface IDragDropTarget
 	{
 		/// <summary>
-		/// Обрабатывает вхождение перетаскиваемого объекта в область цели.
+		/// Handles entering of the dragged object in the target area.
 		/// </summary>
-		/// <param name="data">Объект, предоставляющий перетаскиваемые данные.</param>
-		/// <param name="keyStates">Состояние элементов управления, влияющих на перетаскивание.</param>
-		/// <param name="positionX">Координата по оси X точки, где находится перетаскиваемый объект.</param>
-		/// <param name="positionY">Координата по оси Y точки, где находится перетаскиваемый объект.</param>
-		/// <param name="allowedEffects">Допустимые эффекты перетаскивания, разрешённые источником.</param>
-		/// <returns>Эффект перетаскивания, выбранный целью из списка, предложенного источником.</returns>
+		/// <param name="data">Еру object that provides drag-and-drop data.</param>
+		/// <param name="keyStates">The state of controls that affect drag-and-drop.</param>
+		/// <param name="positionX">The x-axis coordinate of the point where the object to be dragged is located.</param>
+		/// <param name="positionY">The y-axis coordinate of the point where the object to be dragged is located.</param>
+		/// <param name="allowedEffects">The drag-and-drop effects allowed by the source.</param>
+		/// <returns>The drag effect selected by the target from the effects suggested by the source.</returns>
 		DragDropEffects DragEnter (IDataContainer data, DragDropKeyStates keyStates, double positionX, double positionY, DragDropEffects allowedEffects);
 
 		/// <summary>
-		/// Обрабатывает покидание объектом области цели.
+		/// Handles when the dragged object leaves the target area.
 		/// </summary>
 		void DragLeave ();
 
 		/// <summary>
-		/// Обрабатывает изменение позиции или клавишных модификаторов при перетаскивании объекта над областью цели.
+		/// Handles changing the position or keyboard modifiers when dragging the object over the target area.
 		/// </summary>
-		/// <param name="keyStates">Состояние элементов управления, влияющих на перетаскивание.</param>
-		/// <param name="positionX">Координата по оси X точки, где находится перетаскиваемый объект.</param>
-		/// <param name="positionY">Координата по оси Y точки, где находится перетаскиваемый объект.</param>
-		/// <param name="allowedEffects">Допустимые эффекты перетаскивания, разрешённые источником.</param>
-		/// <returns>Эффект перетаскивания, выбранный целью из списка, предложенного источником.</returns>
+		/// <param name="keyStates">The state of controls that affect drag-and-drop.</param>
+		/// <param name="positionX">The x-axis coordinate of the point where the object to be dragged is located.</param>
+		/// <param name="positionY">The y-axis coordinate of the point where the object to be dragged is located.</param>
+		/// <param name="allowedEffects">The drag-and-drop effects allowed by the source.</param>
+		/// <returns>The drag effect selected by the target from the effects suggested by the source.</returns>
 		DragDropEffects DragOver (DragDropKeyStates keyStates, double positionX, double positionY, DragDropEffects allowedEffects);
 
 		/// <summary>
-		/// Обрабатывает отпускание объекта на цель.
+		/// Handles releasing the dragged object on the target.
 		/// </summary>
-		/// <param name="data">Объект, предоставляющий перетаскиваемые данные.</param>
-		/// <param name="keyStates">Состояние элементов управления, влияющих на перетаскивание.</param>
-		/// <param name="positionX">Координата по оси X точки, где находится перетаскиваемый объект.</param>
-		/// <param name="positionY">Координата по оси Y точки, где находится перетаскиваемый объект.</param>
-		/// <param name="allowedEffects">Допустимые эффекты перетаскивания, разрешённые источником.</param>
-		/// <returns>Эффект перетаскивания, выбранный целью из списка, предложенного источником.</returns>
+		/// <param name="data">Еру object that provides drag-and-drop data.</param>
+		/// <param name="keyStates">The state of controls that affect drag-and-drop.</param>
+		/// <param name="positionX">The x-axis coordinate of the point where the object to be dragged is located.</param>
+		/// <param name="positionY">The y-axis coordinate of the point where the object to be dragged is located.</param>
+		/// <param name="allowedEffects">The drag-and-drop effects allowed by the source.</param>
+		/// <returns>The drag effect selected by the target from the effects suggested by the source.</returns>
 		DragDropEffects Drop (IDataContainer data, DragDropKeyStates keyStates, double positionX, double positionY, DragDropEffects allowedEffects);
 	}
 }

@@ -49,7 +49,7 @@ namespace Novartment.Base.Text
 
 			int pos = 0;
 			var asciiClasses = AsciiCharSet.Classes.Span;
-			while ((pos < source.Length) && (pos < maxOutCount) && (source[pos] < asciiClasses.Length) && ((asciiClasses[source[pos]] & (short)_enabledClass) != 0))
+			while ((pos < source.Length) && (pos < maxOutCount) && (source[pos] < asciiClasses.Length) && ((asciiClasses[source[pos]] & _enabledClass) != 0))
 			{
 				pos++;
 			}
@@ -73,7 +73,7 @@ namespace Novartment.Base.Text
 			while ((pos < source.Length) && (pos < destination.Length))
 			{
 				var octet = source[pos];
-				if ((octet >= asciiClasses.Length) || ((asciiClasses[octet] & (short)_enabledClass) == 0))
+				if ((octet >= asciiClasses.Length) || ((asciiClasses[octet] & _enabledClass) == 0))
 				{
 					break;
 				}

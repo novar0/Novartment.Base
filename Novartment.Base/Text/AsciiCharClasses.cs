@@ -3,7 +3,7 @@
 namespace Novartment.Base.Text
 {
 	/// <summary>
-	/// Тип ASCII символа, такой как цифра, буква алфавита, токен.
+	/// Classes that an ASCII character belongs to, such as a number, an alphabet letter, or a token.
 	/// </summary>
 	[Flags]
 #pragma warning disable CA1028 // Enum Storage should be Int32
@@ -16,84 +16,79 @@ namespace Novartment.Base.Text
 		None = 0x0000,
 
 		/// <summary>
-		/// White space (non-printable) characters.
+		/// The white space (non-printable) characters.
 		/// </summary>
 		WhiteSpace = 0x0001,
 
 		/// <summary>
-		/// Visible (Printable) US-ASCII characters 33...126.
+		/// The visible (Printable) US-ASCII characters 33...126.
 		/// </summary>
 		Visible = 0x0002,
 
 		/// <summary>
-		/// Decimal digits [0...9].
+		/// The decimal digits [0...9].
 		/// </summary>
 		Digit = 0x0004,
 
 		/// <summary>
-		/// Alpha characters [A...Z] and [a...z].
+		/// The alpha characters [A...Z] and [a...z].
 		/// </summary>
 		Alpha = 0x0008,
 
 		/// <summary>
-		/// RFC 822 'atom' text.
+		/// The RFC 5322 'atom' is used as an identifier of various kinds.
 		/// Printable US-ASCII characters not including <code>()&lt;&gt;@,;:\[]".</code>.
 		/// </summary>
 		/// <remarks>
 		/// Alpha + Digit + <code>!#$%&amp;'*+-/=?^_`{|}~</code>.
-		/// Same as Visible excluding all kind of brackets, 'at', 'reverse solidus', 'dot', 'comma', 'colon' and 'semicolon'.
+		/// Same as Visible excluding all kind of brackets, 'at', 'backslash (reverse solidus)', 'dot', 'comma', 'colon' and 'semicolon'.
 		/// </remarks>
 		Atom = 0x0010,
 
 		/// <summary>
-		/// RFC 2045 'token' used as parameter names and values text in parameterized fields such as
-		/// 'Content-Type', 'Content-Disposition' and 'Disposition-Notification-Options'.
+		/// The RFC 2045 'token' is used as a header field parameter names and values.
 		/// Updated in RFC 2231.
 		/// Printable US-ASCII characters not including <code>()&lt;&gt;@,;:\[]"/?=*'%</code>.
 		/// </summary>
 		/// <remarks>
 		/// Alpha + Digit + <code>!#$&amp;+-^_`{|}~</code>.
-		/// Same as Visible plus 'dot' and excluding 'solidus', 'question', 'equality', 'asterix', 'apostrophe' and 'percent'.
+		/// Same as Atom plus 'dot' and excluding 'solidus', 'question', 'equality', 'asterix', 'apostrophe' and 'percent'.
 		/// </remarks>
 		Token = 0x0020,
 
 		/// <summary>
-		/// RFC 2047 'token' used as 'charset' and 'encoding'.
+		/// The RFC 2047 'token' is used as a 'charset' and 'encoding' identifiers.
 		/// Printable US-ASCII characters not including <code>()&lt;&gt;@,;:\[]"/?=."</code>.
 		/// </summary>
 		/// <remarks>
-		/// Same as Visible and excluding 'solidus', 'question', 'equality'.
+		/// Same as Atom and excluding 'solidus', 'question', 'equality'.
 		/// </remarks>
 		ExtendedToken = 0x0040,
 
 		/// <summary>
-		/// RFC 1738 'scheme' URL scheme text. Lower case alpha charactes, digits and <code>+-.</code>.
+		/// The RFC 1738 'scheme' is used as a URL scheme text. Lower case alpha charactes, digits and <code>+-.</code>.
 		/// </summary>
 		UrlScheme = 0x0080,
 
 		/// <summary>
-		/// RFC 1738 'xchar' URL schemepart text. Alpha charactes, digits and <code>$-_.+!*'(),;/?:@&amp;=~</code>.
+		/// The RFC 1738 'xchar' is used as a URL schemepart text. Alpha charactes, digits and <code>$-_.+!*'(),;/?:@&amp;=~</code>.
 		/// </summary>
 		UrlSchemePart = 0x0100,
 
 		/// <summary>
-		/// RFC 5322 'dtext' domain-literal text. Printable US-ASCII characters not including <code>[]\</code>.
+		/// The RFC 2047 "Q"-encoded 'encoded-word' used for characters not required to be encoded for unstructured values.
 		/// </summary>
-		Domain = 0x0200,
+		QEncodingAllowedInUnstructured = 0x0200,
 
 		/// <summary>
-		/// RFC 2047 "Q"-encoded 'encoded-word' characters not required to be encoded for unstructured values.
+		/// The RFC 2047 "Q"-encoded 'encoded-word' used for characters not required to be encoded for structured values.
 		/// </summary>
-		QEncodingAllowedInUnstructured = 0x0400,
+		QEncodingAllowedInStructured = 0x0400,
 
 		/// <summary>
-		/// RFC 2047 "Q"-encoded 'encoded-word' characters not required to be encoded for structured values.
+		/// The Base64-encoding alphabet according to RFC 2045 part 6.8.
+		/// Alpha charactes, digits and <code>+/=</code>.
 		/// </summary>
-		QEncodingAllowedInStructured = 0x0800,
-
-		/// <summary>
-		/// Алфавит кодировки Base64 согласно RFC 2045 часть 6.8.
-		/// </summary>
-		Base64Alphabet = 0x1000,
+		Base64Alphabet = 0x800,
 	}
 }

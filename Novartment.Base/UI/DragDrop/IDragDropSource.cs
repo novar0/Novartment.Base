@@ -1,45 +1,44 @@
 ﻿namespace Novartment.Base.UI
 {
 	/// <summary>
-	/// Источник для перетаскивания объектов в том числе в другие приложения.
+	/// Source for drag-and-drop objects from, including to other applications.
 	/// </summary>
 	public interface IDragDropSource
 	{
 		/// <summary>
-		/// При старте перетаскивания создаёт объект, который будет перетаскиваться.
+		/// Creates an object that will be dragged when dragging starts.
 		/// </summary>
-		/// <param name="positionX">Координата по оси X точки, откуда начато перетаскивание.</param>
-		/// <param name="positionY">Координата по оси Y точки, откуда начато перетаскивание.</param>
-		/// <param name="dragControl">Орган управления, использованный для старта перетаскивания.</param>
+		/// <param name="positionX">The x-axis coordinate of the point where the drag started.</param>
+		/// <param name="positionY">The y-axis coordinate of the point where the drag started.</param>
+		/// <param name="dragControl">The control used to start dragging.</param>
 		/// <returns>
-		/// Кортеж, состоящий из объекта, который будет перетаскиваться и набора разрешённых для перетаскивания эффектов.
-		/// Перетаскивание будет отменено если разрешённых эффектов нет (указано значение DragDropEffect.None).
+		/// The data for the start of the drag-and-drop, which consists of an object to be dragged and a set of drag-and-drop effects allowed.
+		/// Drag-and-drop will be canceled if there are no allowed effects (the value specified is Dragdropeffects.None).
 		/// </returns>
 		DragStartData DragStart (double positionX, double positionY, DragControl dragControl);
 
 		/// <summary>
-		/// Отображает для пользователя эффект перестакивания.
+		/// Displays the drag-and-drop effect for the user.
 		/// </summary>
-		/// <param name="effects">Выбранный целью эффект перетаскивания.</param>
-		/// <returns>Признак использования курсоров по умолчанию.
-		/// Если True, то будут автоматически устанавливаться курсоры по умолчанию.
-		/// Если False то необходимые курсоры устанавливает источник перетаскивания.</returns>
+		/// <param name="effects">The drag effect selected by the target.</param>
+		/// <returns>Indicates whether default cursors are used.
+		/// If True, the default cursors will be automatically set;
+		/// otherwise the required cursors are set by the drag source.</returns>
 		bool GiveFeedback (DragDropEffects effects);
 
 		/// <summary>
-		/// Определяет дальнейшее действие (продолжить, отменить либо завершить перетаскивание)
-		/// в случае измененения параметров перетаскивания.
+		/// Determines the next action after changing the drag and drop parameters.
 		/// </summary>
-		/// <param name="escapePressed">Признак нажатия клавиши ESC.</param>
-		/// <param name="keyStates">Состояние элементов управления, влияющих на перетаскивание.</param>
-		/// <returns>Требуемое действие перетаскивания.</returns>
+		/// <param name="escapePressed">Indicates whether the ESC key is pressed.</param>
+		/// <param name="keyStates">The state of controls that affect drag-and-drop.</param>
+		/// <returns>The required drag action.</returns>
 		DragDropAction QueryContinueDrag (bool escapePressed, DragDropKeyStates keyStates);
 
 		/// <summary>
-		/// Обрабатывает завершение перетаскивания.
-		/// Как правило, требуется действие только для эффекта DragDropEffect.Move.
+		/// Handles the completion of the drag and drop.
+		/// Typically, you only need an action for the DragDropEffect.Move effect.
 		/// </summary>
-		/// <param name="effects">Выбранный целью эффект перетаскивания.</param>
+		/// <param name="effects">The drag effect selected by the target.</param>
 		void DragEnd (DragDropEffects effects);
 	}
 }

@@ -70,7 +70,7 @@ namespace Novartment.Base.Text
 			while ((srcPos < source.Length) && (dstPos < maxOutCount))
 			{
 				var octet = source[srcPos];
-				var isEnabledClass = (octet < asciiClasses.Length) && ((asciiClasses[octet] & (short)_enabledClasses) != 0);
+				var isEnabledClass = (octet < asciiClasses.Length) && ((asciiClasses[octet] & _enabledClasses) != 0);
 				if (isEnabledClass)
 				{
 					dstPos++;
@@ -128,7 +128,7 @@ namespace Novartment.Base.Text
 				}
 				else
 				{
-					var isEnabledClass = (octet < asciiClasses.Length) && ((asciiClasses[octet] & (short)_enabledClasses) != 0);
+					var isEnabledClass = (octet < asciiClasses.Length) && ((asciiClasses[octet] & _enabledClasses) != 0);
 					if (isEnabledClass)
 					{
 						destination[outOffset++] = octet;

@@ -210,7 +210,7 @@ namespace Novartment.Base.Text
 						while (position < source.Length)
 						{
 							var octet = source[position];
-							if ((octet >= asciiClasses.Length) || ((asciiClasses[octet] & (short)valueCharClass) == 0))
+							if ((octet >= asciiClasses.Length) || ((asciiClasses[octet] & valueCharClass) == 0))
 							{
 								break;
 							}
@@ -241,7 +241,7 @@ namespace Novartment.Base.Text
 								while (position < source.Length)
 								{
 									var octet = source[position];
-									if ((octet >= asciiClasses.Length) || ((asciiClasses[octet] & (short)valueCharClass) == 0))
+									if ((octet >= asciiClasses.Length) || ((asciiClasses[octet] & valueCharClass) == 0))
 									{
 										break;
 									}

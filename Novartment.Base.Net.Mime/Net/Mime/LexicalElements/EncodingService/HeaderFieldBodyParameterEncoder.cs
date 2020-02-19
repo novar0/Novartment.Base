@@ -109,7 +109,7 @@ namespace Novartment.Base.Net.Mime
 				while (subPos < source.Length)
 				{
 					var octet = source[subPos];
-					if ((octet >= asciiClasses.Length) || ((asciiClasses[octet] & (short)(AsciiCharClasses.Visible | AsciiCharClasses.WhiteSpace)) == 0))
+					if ((octet >= asciiClasses.Length) || ((asciiClasses[octet] & (AsciiCharClasses.Visible | AsciiCharClasses.WhiteSpace)) == 0))
 					{
 						// значение, требующее кодирования или первый сегмент многосегментного значения
 						// должны использовать только ExtendedParameterEncoder

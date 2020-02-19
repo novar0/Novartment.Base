@@ -123,7 +123,7 @@ namespace Novartment.Base.Text
 			{
 				var character = source[charsetAndLangStrLength];
 
-				if ((character >= asciiClasses.Length) || ((asciiClasses[character] & (short)AsciiCharClasses.ExtendedToken) == 0))
+				if ((character >= asciiClasses.Length) || ((asciiClasses[character] & AsciiCharClasses.ExtendedToken) == 0))
 				{
 					break;
 				}

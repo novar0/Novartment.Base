@@ -390,7 +390,7 @@ namespace Novartment.Base.Text
 			{
 				var character = source[pos];
 
-				if ((character >= asciiClasses.Length) || ((asciiClasses[character] & (short)AsciiCharClasses.WhiteSpace) == 0))
+				if ((character >= asciiClasses.Length) || ((asciiClasses[character] & AsciiCharClasses.WhiteSpace) == 0))
 				{
 					break;
 				}
@@ -412,7 +412,7 @@ namespace Novartment.Base.Text
 			{
 				var character = source[pos];
 
-				if ((character < asciiClasses.Length) && ((asciiClasses[character] & (short)AsciiCharClasses.WhiteSpace) != 0))
+				if ((character < asciiClasses.Length) && ((asciiClasses[character] & AsciiCharClasses.WhiteSpace) != 0))
 				{
 					break;
 				}

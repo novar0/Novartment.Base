@@ -68,7 +68,7 @@ namespace Novartment.Base.Net.Mime
 			while ((srcPos < source.Length) && (dstPos < maxOutCount))
 			{
 				var octet = source[srcPos];
-				var isToken = (octet != '%') && (octet < asciiClasses.Length) && ((asciiClasses[octet] & (short)AsciiCharClasses.Token) != 0);
+				var isToken = (octet != '%') && (octet < asciiClasses.Length) && ((asciiClasses[octet] & AsciiCharClasses.Token) != 0);
 				if (!isToken)
 				{
 					if ((dstPos + 3) > maxOutCount)
@@ -122,7 +122,7 @@ namespace Novartment.Base.Net.Mime
 			while ((srcPos < source.Length) && (outOffset < maxOutCount))
 			{
 				var octet = source[srcPos];
-				var isToken = (octet != '%') && (octet < asciiClasses.Length) && ((asciiClasses[octet] & (short)AsciiCharClasses.Token) != 0);
+				var isToken = (octet != '%') && (octet < asciiClasses.Length) && ((asciiClasses[octet] & AsciiCharClasses.Token) != 0);
 				if (!isToken)
 				{
 					// знак процента вместо символа, потом два шест.знака

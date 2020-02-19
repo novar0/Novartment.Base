@@ -2,16 +2,17 @@
 {
 #pragma warning disable CA1815 // Override equals and operator equals on value types
 	/// <summary>
-	/// Данные для старта перетаскивания.
+	/// The data for the start of the drag-and-drop.
 	/// </summary>
 	public readonly struct DragStartData
 #pragma warning restore CA1815 // Override equals and operator equals on value types
 	{
 		/// <summary>
-		/// Инициализирует новый экземпляр DragStartData для указанного объекта с указанным набором разрешённых для перетаскивания эффектов.
+		///  Initializes a new instance of the DragStartData class
+		///  with the specified drag-and-drop object and the set of effects allowed.
 		/// </summary>
-		/// <param name="dragObject">Объект, который будет перетаскиваться.</param>
-		/// <param name="allowedEffects">Набор разрешённых для перетаскивания эффектов.</param>
+		/// <param name="dragObject">The object to be dragged.</param>
+		/// <param name="allowedEffects">The set of drag-and-drop effects allowed.</param>
 		public DragStartData (IDataContainer dragObject, DragDropEffects allowedEffects)
 		{
 			this.DragObject = dragObject;
@@ -19,12 +20,12 @@
 		}
 
 		/// <summary>
-		/// Объект, который будет перетаскиваться.
+		/// Gets the object to be dragged.
 		/// </summary>
 		public readonly IDataContainer DragObject { get; }
 
 		/// <summary>
-		/// Набор разрешённых для перетаскивания эффектов.
+		/// Gets the set of drag-and-drop effects allowed.
 		/// </summary>
 		public readonly DragDropEffects AllowedEffects { get; }
 	}

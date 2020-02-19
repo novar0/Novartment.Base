@@ -1,25 +1,25 @@
 ﻿namespace Novartment.Base.UI
 {
 	/// <summary>
-	/// Требуемое действие во время перетаскивания.
+	/// Specifies how and if a drag-and-drop operation should continue.
 	/// </summary>
 	/// <remarks>
-	/// Значение возвращается при вызове COM-интерфейса IDropSource::QueryContinueDrag().
-	/// Создано чтобы не привязываться к конкретным технологиям,
-	/// в которых есть аналоги (System.Windows.DragAction и System.Windows.Forms.DragAction).
+	/// The value is returned when calling the IDropSource::QueryContinueDrag() COM interface.
+	/// Analog of System.Windows.DragAction and System.Windows.Forms.DragAction.
+	/// Created so that there is no binding to PresentationCore.dll or System.Windows.Forms.dll.
 	/// </remarks>
 	public enum DragDropAction : int
 	{
-		/// <summary>Операция перетаскивания должна продолжиться.</summary>
-		/// <remarks>Константа S_OK.</remarks>
+		/// <summary>The operation will continue.</summary>
+		/// <remarks>The S_OK Win32 constant.</remarks>
 		Continue = 0,
 
-		/// <summary>Должно произойти отпускание перетаскиваемого объекта, успешно завершающее операцию перетаскивания.</summary>
-		/// <remarks>Константа DRAGDROP_S_DROP.</remarks>
+		/// <summary>The operation will stop with a drop.</summary>
+		/// <remarks>The DRAGDROP_S_DROP Win32 constant.</remarks>
 		Drop = 262400,
 
-		/// <summary>Операция перетаскивания должна быть отменена без отпускания перетаскиваемого объекта.</summary>
-		/// <remarks>Константа DRAGDROP_S_CANCEL.</remarks>
+		/// <summary>The operation is canceled with no drop message.</summary>
+		/// <remarks>The DRAGDROP_S_CANCEL Win32 constant.</remarks>
 		Cancel = 262401,
 	}
 }

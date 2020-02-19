@@ -134,7 +134,7 @@ namespace Novartment.Base.Net.Mime
 						while (pos < source.Length)
 						{
 							octet = source[pos];
-							if ((octet >= asciiClasses.Length) || ((asciiClasses[octet] & (short)AsciiCharClasses.Visible) == 0))
+							if ((octet >= asciiClasses.Length) || ((asciiClasses[octet] & AsciiCharClasses.Visible) == 0))
 							{
 								break;
 							}

@@ -268,7 +268,7 @@ namespace Novartment.Base.Net.Mime
 				{
 					encodeNeed = encodeNeed ||
 						(octet >= asciiClasses.Length) ||
-						((asciiClasses[octet] & (short)(AsciiCharClasses.WhiteSpace | AsciiCharClasses.Visible)) == 0);
+						((asciiClasses[octet] & (AsciiCharClasses.WhiteSpace | AsciiCharClasses.Visible)) == 0);
 					if (wordPrintableStartPos < 0)
 					{
 						wordPrintableStartPos = pos;
@@ -305,7 +305,7 @@ namespace Novartment.Base.Net.Mime
 			var asciiClasses = AsciiCharSet.Classes.Span;
 			for (var idx = start; idx < end; idx++)
 			{
-				var isAtom = (source[idx] < asciiClasses.Length) && ((asciiClasses[source[idx]] & (short)AsciiCharClasses.Atom) != 0);
+				var isAtom = (source[idx] < asciiClasses.Length) && ((asciiClasses[source[idx]] & AsciiCharClasses.Atom) != 0);
 				if (!isAtom)
 				{
 					toQuoteCount++;

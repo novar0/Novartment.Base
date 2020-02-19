@@ -1,7 +1,7 @@
 ﻿namespace Novartment.Base.UI
 {
 	/// <summary>
-	/// Орган управления, использованный при перетаскивании.
+	/// The control used when dragging.
 	/// </summary>
 	public enum DragControl
 	{
