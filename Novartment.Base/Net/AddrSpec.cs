@@ -178,8 +178,10 @@ namespace Novartment.Base.Net
 		/// <returns>A string that represents the current object.</returns>
 		public override string ToString ()
 		{
-			var localPart = AsciiCharSet.IsValidInternetDomainName (this.LocalPart) ? this.LocalPart : AsciiCharSet.Quote (this.LocalPart);
-			return AsciiCharSet.IsValidInternetDomainName (this.Domain) ?
+			var isValidLocalPart = AsciiCharSet.IsValidInternetDomainName (this.LocalPart);
+			var isValidDomain = AsciiCharSet.IsValidInternetDomainName (this.Domain);
+			var localPart = isValidLocalPart ? this.LocalPart : AsciiCharSet.Quote (this.LocalPart);
+			return isValidDomain ?
 				localPart + "@" + this.Domain :
 				localPart + "@[" + this.Domain + "]";
 		}
@@ -191,20 +193,20 @@ namespace Novartment.Base.Net
 		/// <returns>The number of characters written to the buffer.</returns>
 		public int ToString (Span<char> buf)
 		{
-			var pos = 0;
 			var isValidLocalPart = AsciiCharSet.IsValidInternetDomainName (this.LocalPart);
+			var isValidDomain = AsciiCharSet.IsValidInternetDomainName (this.Domain);
+			int pos;
 			if (isValidLocalPart)
 			{
-				this.LocalPart.AsSpan ().CopyTo (buf.Slice (pos));
-				pos += this.LocalPart.Length;
+				this.LocalPart.AsSpan ().CopyTo (buf);
+				pos = this.LocalPart.Length;
 			}
 			else
 			{
-				pos += AsciiCharSet.Quote (this.LocalPart.AsSpan (), buf.Slice (pos));
+				pos = AsciiCharSet.Quote (this.LocalPart.AsSpan (), buf);
 			}
 
 			buf[pos++] = '@';
-			var isValidDomain = AsciiCharSet.IsValidInternetDomainName (this.Domain);
 			if (!isValidDomain)
 			{
 				buf[pos++] = '[';
@@ -215,51 +217,6 @@ namespace Novartment.Base.Net
 			if (!isValidDomain)
 			{
 				buf[pos++] = ']';
-			}
-
-			return pos;
-		}
-
-		/// <summary>
-		/// Converts the value of an object to its equivalent UTF-8 string representation.
-		/// </summary>
-		/// <param name="buf">The buffer where the string representation of the value of the object will be written.</param>
-		/// <returns>The number of characters written to the buffer.</returns>
-		public int ToUtf8String (Span<byte> buf)
-		{
-			var localPart = this.LocalPart;
-			var domain = this.Domain;
-			var isValidLocalPart = AsciiCharSet.IsValidInternetDomainName (localPart);
-			int pos = 0;
-			if (isValidLocalPart)
-			{
-				while (pos < localPart.Length)
-				{
-					buf[pos] = (byte)localPart[pos];
-					pos++;
-				}
-			}
-			else
-			{
-				pos += AsciiCharSet.QuoteToUtf8 (localPart.AsSpan (), buf.Slice (pos));
-			}
-
-			buf[pos++] = (byte)'@';
-			var isValidDomain = AsciiCharSet.IsValidInternetDomainName (this.Domain);
-			if (!isValidDomain)
-			{
-				buf[pos++] = (byte)'[';
-			}
-
-			var idx = 0;
-			while (idx < domain.Length)
-			{
-				buf[pos++] = (byte)domain[idx++];
-			}
-
-			if (!isValidDomain)
-			{
-				buf[pos++] = (byte)']';
 			}
 
 			return pos;

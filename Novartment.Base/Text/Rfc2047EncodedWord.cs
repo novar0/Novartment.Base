@@ -118,7 +118,7 @@ namespace Novartment.Base.Text
 
 			// пропускаем все символы класса RFC 2047 'token'
 			var charsetAndLangStrLength = 0;
-			var asciiClasses = AsciiCharSet.Classes.Span;
+			var asciiClasses = AsciiCharSet.ValueClasses.Span;
 			while (charsetAndLangStrLength < source.Length)
 			{
 				var character = source[charsetAndLangStrLength];
@@ -288,6 +288,7 @@ namespace Novartment.Base.Text
 			var endOffset = value.Length;
 			var offset = 0;
 			var bufferOffset = 0;
+			var charClasses = AsciiCharSet.ValueClasses.Span;
 			while (offset < endOffset)
 			{
 				var octet = value[offset];
@@ -309,7 +310,7 @@ namespace Novartment.Base.Text
 						offset += 3;
 						break;
 					default: // Just write back all other bytes
-						var isVisibleChar = AsciiCharSet.IsCharOfClass (octet, AsciiCharClasses.Visible);
+						var isVisibleChar = (octet < charClasses.Length) && ((charClasses[octet] & AsciiCharClasses.Visible) == AsciiCharClasses.Visible);
 						if (!isVisibleChar)
 						{
 							throw new FormatException (FormattableString.Invariant (

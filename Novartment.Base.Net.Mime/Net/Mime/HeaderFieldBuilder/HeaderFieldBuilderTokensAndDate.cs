@@ -56,7 +56,7 @@ namespace Novartment.Base.Net.Mime
 				return 0;
 			}
 
-			var asciiClasses = AsciiCharSet.Classes.Span;
+			var asciiClasses = AsciiCharSet.ValueClasses.Span;
 			// An 'encoded-word' MUST NOT be used in a '*tokens' header field.
 			while ((_value != null) && (_pos < _value.Length))
 			{
@@ -137,7 +137,9 @@ namespace Novartment.Base.Net.Mime
 				return 1;
 			}
 
-			var size = _dateTimeOffset.ToInternetUtf8String (buf);
+			var str = _dateTimeOffset.ToInternetString ();
+			AsciiCharSet.GetBytes (str.AsSpan (), buf);
+			var size = str.Length;
 			_finished = true;
 			isLast = true;
 			return size;

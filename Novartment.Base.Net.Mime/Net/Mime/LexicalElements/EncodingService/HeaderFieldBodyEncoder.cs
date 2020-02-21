@@ -228,7 +228,7 @@ namespace Novartment.Base.Net.Mime
 
 			var encodeNeed = false;
 			var wordPrintableStartPos = -1; // отдельно запоминаем позицию первого непробельного символа (внутри phrase могут быть табы)
-			var asciiClasses = AsciiCharSet.Classes.Span;
+			var asciiClasses = AsciiCharSet.ValueClasses.Span;
 			while (pos < source.Length)
 			{
 				var octet = source[pos];
@@ -302,7 +302,7 @@ namespace Novartment.Base.Net.Mime
 			}
 
 			var toQuoteCount = 0;
-			var asciiClasses = AsciiCharSet.Classes.Span;
+			var asciiClasses = AsciiCharSet.ValueClasses.Span;
 			for (var idx = start; idx < end; idx++)
 			{
 				var isAtom = (source[idx] < asciiClasses.Length) && ((asciiClasses[source[idx]] & AsciiCharClasses.Atom) != 0);

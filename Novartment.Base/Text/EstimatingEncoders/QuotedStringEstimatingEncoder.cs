@@ -63,7 +63,7 @@ namespace Novartment.Base.Text
 				return new EncodingBalance (0, 0);
 			}
 
-			var asciiClasses = AsciiCharSet.Classes.Span;
+			var asciiClasses = AsciiCharSet.ValueClasses.Span;
 			while ((srcPos < source.Length) && (dstPos < maxOutCount))
 			{
 				var octet = source[srcPos];
@@ -121,7 +121,7 @@ namespace Novartment.Base.Text
 
 			destination[outOffset++] = (byte)'"'; // начальная кавычка
 			maxOutCount--; // уменьшаем лимит на конечную кавычку
-			var asciiClasses = AsciiCharSet.Classes.Span;
+			var asciiClasses = AsciiCharSet.ValueClasses.Span;
 			while ((srcPos < source.Length) && (outOffset < maxOutCount))
 			{
 				var octet = source[srcPos];

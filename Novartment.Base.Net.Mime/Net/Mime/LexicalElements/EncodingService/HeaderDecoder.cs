@@ -130,7 +130,7 @@ namespace Novartment.Base.Net.Mime
 					else
 					{
 						var valuePos = pos;
-						var asciiClasses = AsciiCharSet.Classes.Span;
+						var asciiClasses = AsciiCharSet.ValueClasses.Span;
 						while (pos < source.Length)
 						{
 							octet = source[pos];

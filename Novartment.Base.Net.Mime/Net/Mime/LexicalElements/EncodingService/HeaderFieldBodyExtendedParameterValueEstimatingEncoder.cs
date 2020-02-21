@@ -64,7 +64,7 @@ namespace Novartment.Base.Net.Mime
 				return new EncodingBalance (0, 0);
 			}
 
-			var asciiClasses = AsciiCharSet.Classes.Span;
+			var asciiClasses = AsciiCharSet.ValueClasses.Span;
 			while ((srcPos < source.Length) && (dstPos < maxOutCount))
 			{
 				var octet = source[srcPos];
@@ -118,7 +118,7 @@ namespace Novartment.Base.Net.Mime
 
 			int srcPos = 0;
 			var hexOctets = Hex.OctetsUpper.Span;
-			var asciiClasses = AsciiCharSet.Classes.Span;
+			var asciiClasses = AsciiCharSet.ValueClasses.Span;
 			while ((srcPos < source.Length) && (outOffset < maxOutCount))
 			{
 				var octet = source[srcPos];

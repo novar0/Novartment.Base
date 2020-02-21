@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics.Contracts;
 using System.Text;
+using Novartment.Base.Text;
 
 namespace Novartment.Base.Net.Mime
 {
@@ -66,10 +67,10 @@ namespace Novartment.Base.Net.Mime
 				return 0;
 			}
 
-			var size = 0;
+			var pos = 0;
 			if (_pos < _mailboxNameBytesSize)
 			{
-				size = HeaderFieldBodyEncoder.EncodeNextElement (
+				pos = HeaderFieldBodyEncoder.EncodeNextElement (
 					_mailboxNameBytes.AsSpan (0, _mailboxNameBytesSize),
 					buf,
 					TextSemantics.Phrase,
@@ -77,16 +78,18 @@ namespace Novartment.Base.Net.Mime
 					ref _prevSequenceIsWordEncoded);
 			}
 
-			isLast = size < 1;
+			isLast = pos < 1;
 			if (isLast)
 			{
-				buf[size++] = (byte)'<';
-				size += _mailbox.Address.ToUtf8String (buf.Slice (size));
-				buf[size++] = (byte)'>';
+				buf[pos++] = (byte)'<';
+				var addrStr = _mailbox.Address.ToString ();
+				AsciiCharSet.GetBytes (addrStr.AsSpan (), buf.Slice (pos));
+				pos += addrStr.Length;
+				buf[pos++] = (byte)'>';
 				_finished = true;
 			}
 
-			return size;
+			return pos;
 		}
 	}
 }

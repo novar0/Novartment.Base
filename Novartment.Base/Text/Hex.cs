@@ -4,15 +4,11 @@ using System.Diagnostics.Contracts;
 namespace Novartment.Base.Text
 {
 	/// <summary>
-	/// Методы получения и разбора строкового шестнадцатеричного представления байтов.
+	/// Methods for getting and parsing the string hexadecimal representation of bytes.
 	/// </summary>
 	public static class Hex
 	{
-		/// <summary>
-		/// Таблица шестнадцатеричных строковых передставлений (один символ) 4-битного числа.
-		/// Содержит -1 если символ не представляет собой шестнадцатеричное строковое представление числа.
-		/// </summary>
-		public static readonly ReadOnlyMemory<int> Chars = new int[]
+		private static readonly ReadOnlyMemory<int> Chars = new int[]
 		{
 #pragma warning disable SA1001 // Commas must be spaced correctly
 #pragma warning disable SA1021 // Negative signs must be spaced correctly
@@ -27,7 +23,7 @@ namespace Novartment.Base.Text
 #pragma warning restore SA1001 // Commas must be spaced correctly
 
 		/// <summary>
-		/// Таблица шестнадцатеричных строковых передставлений 8-битных чисел.
+		/// A table of hexadecimal string representations of 8-bit numbers.
 		/// </summary>
 		public static readonly ReadOnlyMemory<string> OctetsUpper = new string[]
 		{
@@ -50,61 +46,11 @@ namespace Novartment.Base.Text
 		};
 
 		/// <summary>
-		/// Преобразовывает двухзначное шестнадцатеричное строковое представление в байт.
+		/// Converts a two-digit hexadecimal string representation to a byte.
 		/// </summary>
-		/// <param name="source">Двухзначное шестнадцатеричное строковое представление байта.</param>
-		/// <returns>Байт, полученный из шестнадцатеричного строкового представления.</returns>
-		public static byte ParseByte (string source)
-		{
-			if (source == null)
-			{
-				throw new ArgumentNullException (nameof (source));
-			}
-
-			if (source.Length < 2)
-			{
-				throw new ArgumentOutOfRangeException (nameof (source));
-			}
-
-			Contract.EndContractBlock ();
-
-			return ParseByte (source[0], source[1]);
-		}
-
-		/// <summary>
-		/// Преобразовывает двухзначное шестнадцатеричное строковое представление в байт.
-		/// </summary>
-		/// <param name="source">Двухзначное шестнадцатеричное строковое представление байта.</param>
-		/// <param name="index">Начальная позиция в строке.</param>
-		/// <returns>Байт, полученный из шестнадцатеричного строкового представления.</returns>
-		public static byte ParseByte (string source, int index)
-		{
-			if (source == null)
-			{
-				throw new ArgumentNullException (nameof (source));
-			}
-
-			if (source.Length < 2)
-			{
-				throw new ArgumentOutOfRangeException (nameof (source));
-			}
-
-			if ((index < 0) || (index > (source.Length - 2)))
-			{
-				throw new ArgumentOutOfRangeException (nameof (index));
-			}
-
-			Contract.EndContractBlock ();
-
-			return ParseByte (source[index], source[index + 1]);
-		}
-
-		/// <summary>
-		/// Преобразовывает двухзначное шестнадцатеричное строковое представление в байт.
-		/// </summary>
-		/// <param name="character1">Первый символ (старшие 4 бита).</param>
-		/// <param name="character2">Второй символ (младшие 4 бита).</param>
-		/// <returns>Байт, полученный из шестнадцатеричного строкового представления.</returns>
+		/// <param name="character1">The first digit (the higher 4 bits).</param>
+		/// <param name="character2">The second digit (the lower 4 bits).</param>
+		/// <returns>A byte obtained from a hexadecimal string representation.</returns>
 		public static byte ParseByte (char character1, char character2)
 		{
 			var chars = Chars.Span;
@@ -125,10 +71,10 @@ namespace Novartment.Base.Text
 		}
 
 		/// <summary>
-		/// Преобразовывает шестнадцатеричное строковое представление в массив байт.
+		/// Converts a hexadecimal string representation to an array of bytes.
 		/// </summary>
-		/// <param name="source">Шестнадцатеричное строковое представление байт.</param>
-		/// <returns>Массив байт, полученный из шестнадцатеричного строкового представления.</returns>
+		/// <param name="source">The hexadecimal string.</param>
+		/// <returns>An array of bytes obtained from a hexadecimal string representation.</returns>
 		public static byte[] ParseArray (string source)
 		{
 			if (source == null)
@@ -138,49 +84,51 @@ namespace Novartment.Base.Text
 
 			Contract.EndContractBlock ();
 
-			return ParseArray (source.AsSpan ());
-		}
-
-		/// <summary>
-		/// Преобразовывает шестнадцатеричное строковое представление в массив байт.
-		/// </summary>
-		/// <param name="source">Шестнадцатеричное строковое представление байт.</param>
-		/// <returns>Массив байт, полученный из шестнадцатеричного строкового представления.</returns>
-		public static byte[] ParseArray (ReadOnlySpan<char> source)
-		{
-			var size = source.Length / 2;
-			var result = new byte[size];
-			for (var index = 0; index < size; index++)
-			{
-				result[index] = ParseByte (source[index * 2], source[(index * 2) + 1]);
-			}
-
+			var result = new byte[source.Length / 2];
+			ParseArray (source.AsSpan (), result);
 			return result;
 		}
 
 		/// <summary>
-		/// Преобразовывает массив байт в строковое шестнадцатеричное представление прописными буквами.
+		/// Converts a hexadecimal string representation to a range of memory.
 		/// </summary>
-		/// <param name="source">Массив байт для преобразования в строковое шестнадцатеричное представление.</param>
-		/// <returns>Строковое шестнадцатеричное представление прописными буквами указанного массива байтов.</returns>
-		public static string ToHexStringUpper (Span<byte> source)
+		/// <param name="source">The hexadecimal string.</param>
+		/// <param name="buffer">The buffer to which the resulting sequence of bytes will be written.</param>
+		/// <returns>The number of bytes written to the buffer.</returns>
+		public static int ParseArray (ReadOnlySpan<char> source, Span<byte> buffer)
 		{
-			if (source.Length < 1)
+			var dstIdx = 0;
+			for (var index = 0; index < source.Length; index += 2)
 			{
-				throw new ArgumentOutOfRangeException (nameof (source));
+				buffer[dstIdx++] = ParseByte (source[index], source[index + 1]);
+			}
+
+			return dstIdx;
+		}
+
+		/// <summary>
+		/// Converts a range of memory to a string hexadecimal representation in uppercase letters.
+		/// </summary>
+		/// <param name="source">A range of memory to convert to a string hexadecimal representation.</param>
+		/// <param name="buffer">The buffer where the string hexadecimal representation will be written.</param>
+		/// <returns>The number of characters written to the buffer.</returns>
+		public static int ToHexStringUpper (ReadOnlySpan<byte> source, Span<char> buffer)
+		{
+			if (buffer.Length < (source.Length * 2))
+			{
+				throw new ArgumentOutOfRangeException (nameof (buffer));
 			}
 
 			Contract.EndContractBlock ();
 
-			var buf = new char[source.Length << 1];
 			var octets = OctetsUpper.Span;
 			for (var index = 0; index < source.Length; index++)
 			{
-				buf[index << 1] = octets[source[index]][0];
-				buf[(index << 1) + 1] = octets[source[index]][1];
+				buffer[index << 1] = octets[source[index]][0];
+				buffer[(index << 1) + 1] = octets[source[index]][1];
 			}
 
-			return new string (buf);
+			return source.Length * 2;
 		}
 	}
 }

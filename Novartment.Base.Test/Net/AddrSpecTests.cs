@@ -79,24 +79,6 @@ namespace Novartment.Base.Net.Test
 
 		[Fact]
 		[Trait ("Category", "Net")]
-		public void ToUtf8String ()
-		{
-			var buf = new byte[100];
-			var size = new AddrSpec ("someone", "someserver.ru").ToUtf8String (buf);
-			Assert.Equal ("someone@someserver.ru", Encoding.ASCII.GetString (buf.AsSpan (0, size)));
-
-			size = new AddrSpec ("real(addr)", "someserver.ru").ToUtf8String (buf);
-			Assert.Equal ("\"real(addr)\"@someserver.ru", Encoding.ASCII.GetString (buf.AsSpan (0, size)));
-
-			size = new AddrSpec ("someone", "some literal domain").ToUtf8String (buf);
-			Assert.Equal ("someone@[some literal domain]", Encoding.ASCII.GetString (buf.AsSpan (0, size)));
-
-			size = new AddrSpec ("real(addr)", "some literal domain").ToUtf8String (buf);
-			Assert.Equal ("\"real(addr)\"@[some literal domain]", Encoding.ASCII.GetString (buf.AsSpan (0, size)));
-		}
-
-		[Fact]
-		[Trait ("Category", "Net")]
 		public void Equals_ ()
 		{
 			Assert.True (new AddrSpec ("someone", "someserver.ru").Equals (new AddrSpec ("someone", "someserver.ru")));

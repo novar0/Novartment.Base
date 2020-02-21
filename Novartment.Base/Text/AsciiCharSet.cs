@@ -10,14 +10,15 @@ namespace Novartment.Base.Text
 	public static class AsciiCharSet
 	{
 		/// <summary>
-		/// Максимально допустимый код символа в ASCII (127).
+		/// Represents the largest possible value of ASCII character.
 		/// </summary>
-		public const char MaxCharValue = (char)127;
+		public static readonly char MaxCharValue = (char)127;
 
 		/// <summary>
-		/// Таблица принадлежности символов различным типам.
+		/// Table of values belonging to different types.
+		/// The index in the table corresponds to the character code.
 		/// </summary>
-		public static readonly ReadOnlyMemory<AsciiCharClasses> Classes = new AsciiCharClasses[]
+		public static readonly ReadOnlyMemory<AsciiCharClasses> ValueClasses = new AsciiCharClasses[]
 		{
 /*   0x00 000 */ AsciiCharClasses.None,
 /*   0x01 001 */ AsciiCharClasses.None,
@@ -150,22 +151,11 @@ namespace Novartment.Base.Text
 		};
 
 		/// <summary>
-		/// Проверяет принадлежит ли указанный символ указанному типу.
+		/// Checks whether all characters in the specified string belong to the specified class or combination of classes.
 		/// </summary>
-		/// <param name="character">Проверяемый символ.</param>
-		/// <param name="charClass">Тип символов, принадлеждность которому проверяется.</param>
-		/// <returns>True если символ принадлежит указанному типу, иначе False.</returns>
-		public static bool IsCharOfClass (char character, AsciiCharClasses charClass)
-		{
-			return (character < Classes.Length) && ((Classes.Span[character] & charClass) != 0);
-		}
-
-		/// <summary>
-		/// Проверяет принадлежат ли все символы указанной строки указанному типу.
-		/// </summary>
-		/// <param name="value">Строка для проверки.</param>
-		/// <param name="characterClass">Тип символов, приндлеждность которому проверяется.</param>
-		/// <returns>True если все символы строки принадлежат указанному типу, иначе False.</returns>
+		/// <param name="value">The string to check.</param>
+		/// <param name="characterClass">The combination of classes of characters to be checked for.</param>
+		/// <returns>True if all characters in the string belong to the specified class; otherwise False.</returns>
 		public static bool IsAllOfClass (string value, AsciiCharClasses characterClass)
 		{
 			if (value == null)
@@ -179,11 +169,11 @@ namespace Novartment.Base.Text
 		}
 
 		/// <summary>
-		/// Проверяет принадлежат ли все символы указанной части строки указанному типу.
+		/// Checks whether all characters in the specified string belong to the specified class or combination of classes.
 		/// </summary>
-		/// <param name="value">Строка для проверки.</param>
-		/// <param name="characterClass">Тип символов, приндлеждность которому проверяется.</param>
-		/// <returns>True если все символы строки принадлежат указанному типу, иначе False.</returns>
+		/// <param name="value">The string to check.</param>
+		/// <param name="characterClass">The combination of classes of characters to be checked for.</param>
+		/// <returns>True if all characters in the string belong to the specified class; otherwise False.</returns>
 		public static bool IsAllOfClass (ReadOnlySpan<char> value, AsciiCharClasses characterClass)
 		{
 			if (characterClass == AsciiCharClasses.None)
@@ -194,9 +184,10 @@ namespace Novartment.Base.Text
 			Contract.EndContractBlock ();
 
 			var currentPos = 0;
-			var classes = Classes.Span;
+			var classes = ValueClasses.Span;
 			while (currentPos < value.Length)
 			{
+				// суррогатные пары можно игнорировать, их части не попадают ни в какой класс ASCII
 				var character = value[currentPos];
 				if ((character >= classes.Length) || ((classes[character] & characterClass) == 0))
 				{
@@ -210,11 +201,11 @@ namespace Novartment.Base.Text
 		}
 
 		/// <summary>
-		/// Проверяет встречается ли среди символов указанной строки символы указанного типа.
+		/// Checks whether the specified string contains characters of the specified class or combination of classes.
 		/// </summary>
-		/// <param name="value">Строка для проверки.</param>
-		/// <param name="characterClass">Тип символов, приндлеждность которому проверяется.</param>
-		/// <returns>True если среди символов строки встречаются символы указанного типа, иначе False.</returns>
+		/// <param name="value">The string to check.</param>
+		/// <param name="characterClass">The combination of classes of characters to be checked for.</param>
+		/// <returns>True if the string contains characters of the specified class; otherwise False.</returns>
 		public static bool IsAnyOfClass (string value, AsciiCharClasses characterClass)
 		{
 			if (value == null)
@@ -233,11 +224,11 @@ namespace Novartment.Base.Text
 		}
 
 		/// <summary>
-		/// Проверяет встречается ли среди символов указанной строки символы указанного типа.
+		/// Checks whether the specified string contains characters of the specified class or combination of classes.
 		/// </summary>
-		/// <param name="value">Строка для проверки.</param>
-		/// <param name="characterClass">Тип символов, приндлеждность которому проверяется.</param>
-		/// <returns>True если среди символов строки встречаются символы указанного типа, иначе False.</returns>
+		/// <param name="value">The string to check.</param>
+		/// <param name="characterClass">The combination of classes of characters to be checked for.</param>
+		/// <returns>True if the string contains characters of the specified class; otherwise False.</returns>
 		public static bool IsAnyOfClass (ReadOnlySpan<char> value, AsciiCharClasses characterClass)
 		{
 			if (characterClass == AsciiCharClasses.None)
@@ -248,7 +239,7 @@ namespace Novartment.Base.Text
 			Contract.EndContractBlock ();
 
 			int currentPos = 0;
-			var asciiClasses = AsciiCharSet.Classes.Span;
+			var asciiClasses = ValueClasses.Span;
 			while (currentPos < value.Length)
 			{
 				var isSurrogatePair = char.IsSurrogatePair (value[currentPos], value[currentPos + 1]);
@@ -272,13 +263,13 @@ namespace Novartment.Base.Text
 		}
 
 		/// <summary>
-		/// Создаёт в указанном массиве байт представление указанного сегмента массива ASCII-символов.
+		/// Creates a representation of the specified ASCII string in the specified region of memory.
 		/// </summary>
-		/// <param name="value">Массив ASCII-символов, для которого требуется получить байтовое представление.</param>
-		/// <param name="buffer">Массив байтов, в который будет помещена результирующая последовательность байтов.</param>
-		/// <exception cref="System.ArgumentOutOfRangeException">Происходит если размер value больше, чем buffer.</exception>
-		/// <exception cref="System.FormatException">Происходит когда во входных данных встречается символ, не входящий в набор ASCII.</exception>
-		/// <remarks>Семантический аналог ASCIIEncoding.GetBytes (), но более быстрый.</remarks>
+		/// <param name="value">The ASCII string to encode.</param>
+		/// <param name="buffer">The region of memory to which the resulting sequence of bytes will be written.</param>
+		/// <exception cref="System.ArgumentOutOfRangeException">The length of the value is greater than the buffer.</exception>
+		/// <exception cref="System.FormatException">The input data contains a character that is not included in the ASCII character set.</exception>
+		/// <remarks>A semantic analogue of ASCIIEncoding.GetBytes (), but faster.</remarks>
 		public static void GetBytes (ReadOnlySpan<char> value, Span<byte> buffer)
 		{
 			if (value.Length > buffer.Length)
@@ -302,14 +293,19 @@ namespace Novartment.Base.Text
 		}
 
 		/// <summary>
-		/// Создаёт ASCII-строковое представление указанного сегмента массива байтов.
+		/// Creates an ASCII string representation of the specified region of memory.
 		/// </summary>
-		/// <param name="value">Массив байт, указанный сегмент которого будет преобразован в ASCII-строку.</param>
-		/// <returns>Массив ASCII-символов, созданный из указанного сегмента массива байтов.</returns>
-		/// <exception cref="System.FormatException">Происходит когда во входных данных встречается символ, не входящий в набор ASCII.</exception>
-		/// <remarks>Семантический аналог ASCIIEncoding.GetChars (), но более быстрый.</remarks>
-		public static char[] GetChars (ReadOnlySpan<byte> value)
+		/// <param name="value">The region of memory that will be decoded to an ASCII string.</param>
+		/// <returns>The ASCII string created from the specified region of memory.</returns>
+		/// <exception cref="System.FormatException">The input data contains a character that is not included in the ASCII character set.</exception>
+		/// <remarks>A semantic analogue of ASCIIEncoding.GetString (), but faster.</remarks>
+		public static string GetString (ReadOnlySpan<byte> value)
 		{
+			if (value.Length < 1)
+			{
+				return string.Empty;
+			}
+
 			var result = new char[value.Length];
 			for (var i = 0; i < value.Length; i++)
 			{
@@ -323,43 +319,18 @@ namespace Novartment.Base.Text
 				result[i] = (char)b;
 			}
 
-			return result;
+			return new string (result);
 		}
 
 		/// <summary>
-		/// Создаёт ASCII-строковое представление указанного сегмента массива байтов.
+		/// Converts the specified string to the 'quoted-string' form.
+		/// In the resulting string, quotes will be inserted at the beginning and end,
+		/// and additional back slashes will be inserted before the quotes and slashes in the source string.
 		/// </summary>
-		/// <param name="value">Массив байт, указанный сегмент которого будет преобразован в ASCII-строку.</param>
-		/// <returns>ASCII-строка, созданная из указанного сегмента массива байтов.</returns>
-		/// <exception cref="System.FormatException">Происходит когда во входных данных встречается символ, не входящий в набор ASCII.</exception>
-		/// <remarks>Семантический аналог ASCIIEncoding.GetString (), но более быстрый.</remarks>
-		public static string GetString (ReadOnlySpan<byte> value)
-		{
-			return GetStringInternal (value, char.MaxValue);
-		}
-
-		/// <summary>
-		/// Создаёт ASCII-строковое представление указанного сегмента массива байтов,
-		/// заменяя не-ASCII символы указанным символом-заменителем.
-		/// </summary>
-		/// <param name="value">Массив байт, указанный сегмент которого будет преобразован в ASCII-строку.</param>
-		/// <param name="substituteCharacter">Символ-заменитель, который будет вставлен вместо не-ASCII символов.</param>
-		/// <returns>ASCII-строка, созданная из указанного сегмента массива байтов.</returns>
-		/// <remarks>Семантический аналог ASCIIEncoding.GetString (), но более быстрый.</remarks>
-		public static string GetStringMaskingInvalidChars (ReadOnlySpan<byte> value, char substituteCharacter)
-		{
-			return GetStringInternal (value, substituteCharacter);
-		}
-
-		/// <summary>
-		/// Преобразует указанную строку в вид 'quoted-string'.
-		/// В результирующей строке в начале и конце будут вставлены кавычки,
-		/// а перед кавычками и знаками косой черты в исходной строке будут вставлены дополнительные знаки косой черты.
-		/// </summary>
-		/// <param name="text">Значение, которое надо представить в виде 'quoted-string'.</param>
-		/// <returns>Указанное значение, преобразованное в вид 'quoted-string'.</returns>
-		/// <exception cref="System.ArgumentNullException">Происходит если text равен null.</exception>
-		/// <exception cref="System.FormatException">Происходит когда во входных данных встречается символ, не входящий в набор ASCII.</exception>
+		/// <param name="text">The string to be converted in the 'quoted-string' form.</param>
+		/// <returns>The specified string converted to the 'quoted-string' form.</returns>
+		/// <exception cref="System.ArgumentNullException">The text is null.</exception>
+		/// <exception cref="System.FormatException">The input data contains a character that is not included in the ASCII character set.</exception>
 		public static string Quote (string text)
 		{
 			if (text == null)
@@ -375,10 +346,12 @@ namespace Novartment.Base.Text
 			}
 
 			var result = new StringBuilder ("\"", text.Length + 2); // начальная кавычка и мин. размер который точно понадобится
+			var charClasses = ValueClasses.Span;
+			var allowedCharClasses = AsciiCharClasses.Visible | AsciiCharClasses.WhiteSpace;
 			for (var srcPos = 0; srcPos < text.Length; srcPos++)
 			{
 				var character = text[srcPos];
-				var isVisibleOrWS = AsciiCharSet.IsCharOfClass (character, AsciiCharClasses.Visible | AsciiCharClasses.WhiteSpace);
+				var isVisibleOrWS = (character < charClasses.Length) && ((charClasses[character] & allowedCharClasses) != 0);
 				if (!isVisibleOrWS)
 				{
 					throw new FormatException (FormattableString.Invariant (
@@ -399,22 +372,31 @@ namespace Novartment.Base.Text
 		}
 
 		/// <summary>
-		/// Преобразует указанную строку в вид 'quoted-string'.
-		/// В результирующей строке в начале и конце будут вставлены кавычки,
-		/// а перед кавычками и знаками косой черты в исходной строке будут вставлены дополнительные знаки косой черты.
+		/// Converts the specified string to the 'quoted-string' form.
+		/// In the resulting string, quotes will be inserted at the beginning and end,
+		/// and additional back slashes will be inserted before the quotes and slashes in the source string.
 		/// </summary>
-		/// <param name="text">Значение, которое надо представить в виде 'quoted-string'.</param>
-		/// <param name="buf">Буфер, куда будет записано значение, преобразованное в вид 'quoted-string'.</param>
-		/// <returns>Количество знаков, записанных в буфер.</returns>
-		/// <exception cref="System.FormatException">Происходит когда во входных данных встречается символ, не входящий в набор ASCII.</exception>
+		/// <param name="text">The string to be converted in the 'quoted-string' form.</param>
+		/// <param name="buf">The buffer, where the specified string converted to the 'quoted-string' form will be written.</param>
+		/// <returns>The number of characters written to the buffer.</returns>
+		/// <exception cref="System.FormatException">The input data contains a character that is not included in the ASCII character set.</exception>
 		public static int Quote (ReadOnlySpan<char> text, Span<char> buf)
 		{
+			if (buf.Length < (text.Length + 2))
+			{
+				throw new ArgumentOutOfRangeException (nameof (buf));
+			}
+
+			Contract.EndContractBlock ();
+
 			var outPos = 0;
 			buf[outPos++] = '"'; // начальная кавычка
+			var charClasses = ValueClasses.Span;
+			var allowedCharClasses = AsciiCharClasses.Visible | AsciiCharClasses.WhiteSpace;
 			for (var srcPos = 0; srcPos < text.Length; srcPos++)
 			{
 				var character = text[srcPos];
-				var isVisibleOrWS = AsciiCharSet.IsCharOfClass (character, AsciiCharClasses.Visible | AsciiCharClasses.WhiteSpace);
+				var isVisibleOrWS = (character < charClasses.Length) && ((charClasses[character] & allowedCharClasses) != 0);
 				if (!isVisibleOrWS)
 				{
 					throw new FormatException (FormattableString.Invariant (
@@ -434,48 +416,13 @@ namespace Novartment.Base.Text
 			return outPos;
 		}
 
-		/// <summary>
-		/// Преобразует указанную строку в вид 'quoted-string'.
-		/// В результирующей строке в начале и конце будут вставлены кавычки,
-		/// а перед кавычками и знаками косой черты в исходной строке будут вставлены дополнительные знаки косой черты.
-		/// </summary>
-		/// <param name="text">Значение, которое надо представить в виде 'quoted-string'.</param>
-		/// <param name="buf">Буфер, куда будет записано значение, преобразованное в вид 'quoted-string'.</param>
-		/// <returns>Количество знаков, записанных в буфер.</returns>
-		/// <exception cref="System.FormatException">Происходит когда во входных данных встречается символ, не входящий в набор ASCII.</exception>
-		public static int QuoteToUtf8 (ReadOnlySpan<char> text, Span<byte> buf)
-		{
-			var outPos = 0;
-			buf[outPos++] = (byte)'"'; // начальная кавычка
-			for (var srcPos = 0; srcPos < text.Length; srcPos++)
-			{
-				var character = text[srcPos];
-				var isVisibleOrWS = AsciiCharSet.IsCharOfClass (character, AsciiCharClasses.Visible | AsciiCharClasses.WhiteSpace);
-				if (!isVisibleOrWS)
-				{
-					throw new FormatException (FormattableString.Invariant (
-						$"Value contains invalid for 'quoted-sting' character U+{character:x}. Expected characters are U+0009 and U+0020...U+007E."));
-				}
-
-				if ((character == '\"') || (character == '\\'))
-				{
-					// кавычка либо косая черта предваряется косой чертой
-					buf[outPos++] = (byte)'\\';
-				}
-
-				buf[outPos++] = (byte)character;
-			}
-
-			buf[outPos++] = (byte)'"'; // конечная кавычка
-			return outPos;
-		}
 
 		/// <summary>
-		/// Проверяет, является ли указанная строка корректным доменным именем в Интернете.
+		/// Checks if the specified string is a valid Internet domain name.
 		/// </summary>
-		/// <param name="name">Строка для проверки соответсвия формату доменного имени Интернета.</param>
-		/// <returns>True если указанная строка является корректным доменным именем в Интернете, иначе False.</returns>
-		/// <remarks>Также соответствует 'dot-atom' RFC 5322.</remarks>
+		/// <param name="name">A string to check compliance with the Internet domain name format.</param>
+		/// <returns>True if the specified string is a valid Internet domain name; otherwise False.</returns>
+		/// <remarks>Also matches 'dot-atom' specification in the RFC 5322.</remarks>
 		public static bool IsValidInternetDomainName (string name)
 		{
 			if (name == null)
@@ -492,6 +439,7 @@ namespace Novartment.Base.Text
 
 			int lastDotPosition = -1;
 			int position;
+			var charClasses = ValueClasses.Span;
 			for (position = 0; position < name.Length; position++)
 			{
 				var c = name[position];
@@ -507,7 +455,7 @@ namespace Novartment.Base.Text
 				}
 				else
 				{
-					var isCharValid = AsciiCharSet.IsCharOfClass (c, AsciiCharClasses.Atom);
+					var isCharValid = (c < charClasses.Length) && ((charClasses[c] & AsciiCharClasses.Atom) == AsciiCharClasses.Atom);
 					if (!isCharValid)
 					{
 						return false;
@@ -521,36 +469,6 @@ namespace Novartment.Base.Text
 			}
 
 			return true;
-		}
-
-		private static string GetStringInternal (ReadOnlySpan<byte> value, char substituteChar)
-		{
-			if (value.Length < 1)
-			{
-				return string.Empty;
-			}
-
-			var result = new char[value.Length];
-			for (var i = 0; i < value.Length; i++)
-			{
-				var b = value[i];
-				if (b > MaxCharValue)
-				{
-					if (substituteChar == char.MaxValue)
-					{
-						throw new FormatException (FormattableString.Invariant (
-							$"Invalid ASCII char U+{b:x}. Acceptable range is from U+0000 to U+007F."));
-					}
-
-					result[i] = substituteChar;
-				}
-				else
-				{
-					result[i] = (char)b;
-				}
-			}
-
-			return new string (result);
 		}
 	}
 }

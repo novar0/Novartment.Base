@@ -105,7 +105,7 @@ namespace Novartment.Base.Net.Mime
 			{
 				// проверяем что все символы ASCII
 				var subPos = 0;
-				var asciiClasses = AsciiCharSet.Classes.Span;
+				var asciiClasses = AsciiCharSet.ValueClasses.Span;
 				while (subPos < source.Length)
 				{
 					var octet = source[subPos];

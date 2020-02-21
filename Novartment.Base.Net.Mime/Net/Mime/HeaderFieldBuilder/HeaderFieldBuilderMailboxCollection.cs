@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Text;
+using Novartment.Base.Text;
 
 namespace Novartment.Base.Net.Mime
 {
@@ -79,12 +80,12 @@ namespace Novartment.Base.Net.Mime
 				_prevSequenceIsWordEncoded = false;
 			}
 
-			var size = 0;
+			var pos = 0;
 			isLast = false;
 			if (_pos < _mailboxNameBytesSize)
 			{
 				// текст рабивается на последовательности слов, которые удобно представить в одном виде (напрямую или в виде encoded-word)
-				size = HeaderFieldBodyEncoder.EncodeNextElement (
+				pos = HeaderFieldBodyEncoder.EncodeNextElement (
 					_mailboxNameBytes.AsSpan (0, _mailboxNameBytesSize),
 					buf,
 					TextSemantics.Phrase,
@@ -92,22 +93,24 @@ namespace Novartment.Base.Net.Mime
 					ref _prevSequenceIsWordEncoded);
 			}
 
-			if (size < 1)
+			if (pos < 1)
 			{
-				buf[size++] = (byte)'<';
-				size += _mailboxAddr.ToUtf8String (buf.Slice (size));
-				buf[size++] = (byte)'>';
+				buf[pos++] = (byte)'<';
+				var addrStr = _mailboxAddr.ToString ();
+				AsciiCharSet.GetBytes (addrStr.AsSpan (), buf.Slice (pos));
+				pos += addrStr.Length;
+				buf[pos++] = (byte)'>';
 				isLast = _idx == (_mailboxes.Count - 1);
 				if (!isLast)
 				{
-					buf[size++] = (byte)',';
+					buf[pos++] = (byte)',';
 				}
 
 				_mailboxAddr = null;
 				_idx++;
 			}
 
-			return size;
+			return pos;
 		}
 	}
 }

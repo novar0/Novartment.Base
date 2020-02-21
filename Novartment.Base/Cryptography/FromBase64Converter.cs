@@ -131,6 +131,7 @@ namespace Novartment.Base
 			var count = buffer.Length;
 			int base64AlphabetCharCount = 0;
 			var lastChar = char.MaxValue;
+			var charClasses = AsciiCharSet.ValueClasses.Span;
 			for (var index = 0; index < count; index++)
 			{
 				var nextChar = (char)buffer[index];
@@ -143,7 +144,7 @@ namespace Novartment.Base
 					}
 
 					var isNextCharBase64 = (nextChar == '=') ||
-						AsciiCharSet.IsCharOfClass (nextChar, AsciiCharClasses.Base64Alphabet);
+						((nextChar < charClasses.Length) && ((charClasses[nextChar] & AsciiCharClasses.Base64Alphabet) == AsciiCharClasses.Base64Alphabet));
 					if (isNextCharBase64)
 					{
 						base64AlphabetCharCount++;
@@ -161,7 +162,7 @@ namespace Novartment.Base
 			{
 				var nextChar = (char)buffer[index];
 				var isNextCharBase64 = (nextChar == '=') ||
-					AsciiCharSet.IsCharOfClass (nextChar, AsciiCharClasses.Base64Alphabet);
+					((nextChar < charClasses.Length) && ((charClasses[nextChar] & AsciiCharClasses.Base64Alphabet) == AsciiCharClasses.Base64Alphabet));
 				if (isNextCharBase64)
 				{
 					result[idx++] = nextChar;

@@ -190,6 +190,23 @@ namespace Novartment.Base.Net.Smtp
 			return new SmtpReply (number, elements);
 		}
 
+		private static string GetStringMaskingInvalidChars (ReadOnlySpan<byte> value)
+		{
+			if (value.Length < 1)
+			{
+				return string.Empty;
+			}
+
+			var result = new char[value.Length];
+			for (var i = 0; i < value.Length; i++)
+			{
+				var b = value[i];
+				result[i] = (b > AsciiCharSet.MaxCharValue) ? '?' : (char)b;
+			}
+
+			return new string (result);
+		}
+
 		private static (int, string, bool, int) ParseLine (ReadOnlySpan<byte> sourceBuf, ILogger logger)
 		{
 			int idx = 0;
@@ -206,7 +223,7 @@ namespace Novartment.Base.Net.Smtp
 			idx++;
 			if ((logger != null) && logger.IsEnabled (LogLevel.Trace))
 			{
-				logger?.LogTrace ("<<< " + AsciiCharSet.GetStringMaskingInvalidChars (sourceBuf.Slice (0, idx - 2), '?'));
+				logger?.LogTrace ("<<< " + GetStringMaskingInvalidChars (sourceBuf.Slice (0, idx - 2)));
 			}
 
 			// RFC 5321 part 4.5.3.1.5:

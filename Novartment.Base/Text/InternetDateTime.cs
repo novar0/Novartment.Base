@@ -5,7 +5,7 @@ using System.Globalization;
 namespace Novartment.Base.Text
 {
 	/// <summary>
-	/// Операции для конвертирования DateTimeOffset в строковое представление согласно RFC 2822 и обратно.
+	/// Internet date/time representation according to RFC 5322.
 	/// </summary>
 	public static class InternetDateTime
 	{
@@ -26,12 +26,12 @@ namespace Novartment.Base.Text
 		};
 
 		/// <summary>
-		/// Конвертирует RFC 2822 строковое представление времени в объект типа DateTimeOffset.
+		/// Converts RFC 5322 string representation of date/time to a DateTimeOffset object.
 		/// </summary>
 		/// <param name="value">
-		/// Строковое представление времени согласно RFC 2822.
-		/// Комментарии (текст в круглых скобках) не допускаются.</param>
-		/// <returns>Объект типа DateTimeOffset соответствующий указанному строковому представлению.</returns>
+		/// String representation of time according to RFC 5322 part 3.3.
+		/// Comments (text in parentheses) are not allowed.</param>
+		/// <returns>An object of the DateTimeOffset type corresponding to the specified string representation.</returns>
 		public static DateTimeOffset Parse (string value)
 		{
 			if (value == null)
@@ -45,12 +45,12 @@ namespace Novartment.Base.Text
 		}
 
 		/// <summary>
-		/// Конвертирует RFC 2822 строковое представление времени в объект типа DateTimeOffset.
+		/// Converts RFC 5322 string representation of date/time to a DateTimeOffset object.
 		/// </summary>
 		/// <param name="source">
-		/// Строковое представление времени согласно RFC 2822.
-		/// Комментарии (текст в круглых скобках) не допускаются.</param>
-		/// <returns>Объект типа DateTimeOffset соответствующий указанному строковому представлению.</returns>
+		/// String representation of time according to RFC 5322 part 3.3.
+		/// Comments (text in parentheses) are not allowed.</param>
+		/// <returns>An object of the DateTimeOffset type corresponding to the specified string representation.</returns>
 		public static DateTimeOffset Parse (ReadOnlySpan<char> source)
 		{
 			/*
@@ -114,7 +114,7 @@ namespace Novartment.Base.Text
 				throw new FormatException ("Invalid string representation of data/time. Invalid year.");
 			}
 
-			// RFC 2822 part 4.3:
+			// RFC 5322 part 4.3:
 			// If a two digit year is encountered whose value is between 00 and 49, the year is interpreted by adding 2000,
 			// ending up with a value between 2000 and 2049.
 			// If a two digit year is encountered with a value between 50 and 99, or any three digit year is encountered,
@@ -198,10 +198,10 @@ namespace Novartment.Base.Text
 		}
 
 		/// <summary>
-		/// Конвертирует DateTimeOffset в RFC 2822 строковое представление времени.
+		/// Converts a DateTimeOffset object to RFC 5322 string representation of date/time.
 		/// </summary>
-		/// <param name="dateTime">DateTimeOffset для конвертирования в строковое представление.</param>
-		/// <returns>RFC 2822 строковое представление времени.</returns>
+		/// <param name="dateTime">The DateTimeOffset object for converting to a string representation.</param>
+		/// <returns>The RFC 5322 string representation of date/time.</returns>
 		public static string ToInternetString (this DateTimeOffset dateTime)
 		{
 			if (((int)dateTime.Offset.TotalHours < -12) || ((int)dateTime.Offset.TotalHours) > 12)
@@ -217,11 +217,11 @@ namespace Novartment.Base.Text
 		}
 
 		/// <summary>
-		/// Конвертирует DateTimeOffset в RFC 2822 строковое представление времени.
+		/// Converts a DateTimeOffset object to RFC 5322 string representation of date/time.
 		/// </summary>
-		/// <param name="dateTime">DateTimeOffset для конвертирования в строковое представление.</param>
-		/// <param name="buf">Буфер, куда будет записано строковое представление.</param>
-		/// <returns>Количество знаков, записанных в буфер.</returns>
+		/// <param name="dateTime">The DateTimeOffset object for converting to a string representation.</param>
+		/// <param name="buf">The buffer where the string representation will be written.</param>
+		/// <returns>The number of characters written to the buffer.</returns>
 		public static int ToInternetString (this DateTimeOffset dateTime, Span<char> buf)
 		{
 			if (((int)dateTime.Offset.TotalHours < -12) || ((int)dateTime.Offset.TotalHours) > 12)
@@ -267,66 +267,6 @@ namespace Novartment.Base.Text
 			else
 			{
 				sign = '+';
-			}
-
-			buf[21] = sign;
-			WriteTwoDecimalDigits ((uint)offset.Hours, buf, 22);
-			WriteTwoDecimalDigits ((uint)offset.Minutes, buf, 24);
-
-			return 26;
-		}
-
-		/// <summary>
-		/// Конвертирует DateTimeOffset в RFC 2822 строковое представление времени.
-		/// </summary>
-		/// <param name="dateTime">DateTimeOffset для конвертирования в строковое представление.</param>
-		/// <param name="buf">Буфер, куда будет записано строковое представление.</param>
-		/// <returns>Количество знаков, записанных в буфер.</returns>
-		public static int ToInternetUtf8String (this DateTimeOffset dateTime, Span<byte> buf)
-		{
-			if (((int)dateTime.Offset.TotalHours < -12) || ((int)dateTime.Offset.TotalHours) > 12)
-			{
-				throw new ArgumentOutOfRangeException (nameof (dateTime));
-			}
-
-			Contract.EndContractBlock ();
-
-			var value = dateTime.DateTime;
-			var offset = dateTime.Offset;
-
-			WriteTwoDecimalDigits ((uint)value.Day, buf, 0);
-			buf[2] = (byte)' ';
-
-			uint monthAbbrev = _monthAbbreviations[value.Month - 1];
-			buf[3] = (byte)monthAbbrev;
-			monthAbbrev >>= 8;
-			buf[4] = (byte)monthAbbrev;
-			monthAbbrev >>= 8;
-			buf[5] = (byte)monthAbbrev;
-			buf[6] = (byte)' ';
-
-			WriteFourDecimalDigits ((uint)value.Year, buf, 7);
-			buf[11] = (byte)' ';
-
-			WriteTwoDecimalDigits ((uint)value.Hour, buf, 12);
-			buf[14] = (byte)':';
-
-			WriteTwoDecimalDigits ((uint)value.Minute, buf, 15);
-			buf[17] = (byte)':';
-
-			WriteTwoDecimalDigits ((uint)value.Second, buf, 18);
-			buf[20] = (byte)' ';
-
-			byte sign;
-
-			if (offset < default (TimeSpan))
-			{
-				sign = (byte)'-';
-				offset = TimeSpan.FromTicks (-offset.Ticks);
-			}
-			else
-			{
-				sign = (byte)'+';
 			}
 
 			buf[21] = sign;
@@ -385,7 +325,7 @@ namespace Novartment.Base.Text
 		/// </summary>
 		private static int SkipWhiteSpace (ReadOnlySpan<char> source, ref int pos)
 		{
-			var asciiClasses = AsciiCharSet.Classes.Span;
+			var asciiClasses = AsciiCharSet.ValueClasses.Span;
 			while (pos < source.Length)
 			{
 				var character = source[pos];
@@ -407,7 +347,7 @@ namespace Novartment.Base.Text
 		private static ReadOnlySpan<char> ReadNonWhiteSpace (ReadOnlySpan<char> source, ref int pos)
 		{
 			var startPos = pos;
-			var asciiClasses = AsciiCharSet.Classes.Span;
+			var asciiClasses = AsciiCharSet.ValueClasses.Span;
 			while (pos < source.Length)
 			{
 				var character = source[pos];

@@ -123,6 +123,7 @@ namespace Novartment.Base.Text
 					"Specified valueCharClass includes white space characters. White spaces supposed to delimit tokens and can not be in their values.");
 			}
 
+			var charClasses = AsciiCharSet.ValueClasses.Span;
 			while (position < source.Length)
 			{
 				switch (source[position])
@@ -206,7 +207,7 @@ namespace Novartment.Base.Text
 						break;
 					default:
 						var valuePos = position;
-						var asciiClasses = AsciiCharSet.Classes.Span;
+						var asciiClasses = AsciiCharSet.ValueClasses.Span;
 						while (position < source.Length)
 						{
 							var octet = source[position];
@@ -235,7 +236,7 @@ namespace Novartment.Base.Text
 							while (((position + 1) < source.Length) &&
 								allowDotInsideValue &&
 								(source[position] == '.') &&
-								AsciiCharSet.IsCharOfClass ((char)source[position + 1], valueCharClass))
+								((source[position + 1] < charClasses.Length) && ((charClasses[source[position + 1]] & valueCharClass) != 0)))
 							{
 								position++;
 								while (position < source.Length)
