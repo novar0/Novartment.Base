@@ -134,8 +134,12 @@ namespace Novartment.Base.Net.Mime
 				((token3.TokenType == StructuredHeaderFieldLexicalTokenType.Value) || (token3.TokenType == StructuredHeaderFieldLexicalTokenType.SquareBracketedValue)))
 			{
 				// addr-spec
-				var localPart = token1.Decode (source);
-				var domain = token3.Decode (source);
+				// RFC 5321 4.5.3.1.2: The maximum total length of a domain name or number is 255 octets.
+				var buf = new char[255];
+				var len = token1.Decode (source, buf);
+				var localPart = new string (buf, 0, len);
+				len = token3.Decode (source, buf);
+				var domain = new string (buf, 0, len);
 				var addr = new AddrSpec (localPart, domain);
 				return new Mailbox (addr);
 			}

@@ -132,40 +132,7 @@ namespace Novartment.Base.Test
 
 		[Fact]
 		[Trait ("Category", "Mime")]
-		public void DecodeElement ()
-		{
-			var src = "=?aa?bb?cc?".AsSpan ();
-			var item = new StructuredHeaderFieldLexicalToken (StructuredHeaderFieldLexicalTokenType.Value, 0, src.Length);
-			Assert.Equal ("=?aa?bb?cc?", item.Decode (src));
-
-			src = "=?aa?bb?cc?";
-			item = new StructuredHeaderFieldLexicalToken (StructuredHeaderFieldLexicalTokenType.QuotedValue, 0, src.Length);
-			Assert.Equal ("=?aa?bb?cc?", item.Decode (src));
-
-			src = "=?aa?bb?cc?";
-			item = new StructuredHeaderFieldLexicalToken (StructuredHeaderFieldLexicalTokenType.SquareBracketedValue, 0, src.Length);
-			Assert.Equal ("=?aa?bb?cc?", item.Decode (src));
-
-			src = "some   \\\"one\\\"";
-			item = new StructuredHeaderFieldLexicalToken (StructuredHeaderFieldLexicalTokenType.SquareBracketedValue, 0, src.Length);
-			Assert.Equal ("some   \"one\"", item.Decode (src));
-
-			src = "some   \\\"one\\\"";
-			item = new StructuredHeaderFieldLexicalToken (StructuredHeaderFieldLexicalTokenType.QuotedValue, 0, src.Length);
-			Assert.Equal ("some   \"one\"", item.Decode (src));
-
-			src = "=?utf-8*ru-ru?B?0YLQtdC80LAg0YHQvtC+0LHRidC10L3QuNGPINGC0LXQutGB0YIg0YHQvtC+0LHRidC10L3QuNGP?=";
-			item = new StructuredHeaderFieldLexicalToken (StructuredHeaderFieldLexicalTokenType.Value, 0, src.Length);
-			Assert.Equal ("тема сообщения текст сообщения", item.Decode (src));
-
-			src = "=?utf-8*ru-ru?B?0YLQtdC80LAg0YHQvtC+0LHRidC10L3QuNGPINGC0LXQutGB0YIg0YHQvtC+0LHRidC10L3QuNGP?=";
-			item = new StructuredHeaderFieldLexicalToken (StructuredHeaderFieldLexicalTokenType.Value, 0, src.Length);
-			Assert.Equal ("тема сообщения текст сообщения", item.Decode (src));
-		}
-
-		[Fact]
-		[Trait ("Category", "Mime")]
-		public void DecodeElementSpan ()
+		public void Decode ()
 		{
 			var buf = new char[500];
 

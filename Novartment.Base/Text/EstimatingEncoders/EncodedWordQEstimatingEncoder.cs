@@ -135,7 +135,7 @@ namespace Novartment.Base.Text
 					}
 					else
 					{
-						// знак процента вместо символа, потом два шест.знака
+						// знак '=' вместо символа, потом два шест.знака
 						if ((outOffset + 3) > maxOutCount)
 						{
 							break;

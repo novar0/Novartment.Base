@@ -18,10 +18,12 @@ namespace Novartment.Base.Net
 		/// <param name="localPart">
 		/// The locally interpreted part of the Internet identifier.
 		/// Only printable US-ASCII characters are allowed.
+		/// The maximum length of a local-part is 64.
 		/// </param>
 		/// <param name="domain">
 		/// The domain of the Internet identifier.
 		/// Only printable US-ASCII characters not including "[", "]", or "\" are allowed.
+		/// The maximum length of a domain is 255.
 		/// </param>
 		public AddrSpec (string localPart, string domain)
 		{
@@ -42,7 +44,8 @@ namespace Novartment.Base.Net
 				throw new ArgumentNullException (nameof (localPart));
 			}
 
-			if (localPart.Length < 1)
+			// RFC 5321 4.5.3.1.1: The maximum total length of a user name or other local-part is 64 octets.
+			if ((localPart.Length < 1) || (localPart.Length > 64))
 			{
 				throw new ArgumentOutOfRangeException (nameof (localPart));
 			}
@@ -52,7 +55,8 @@ namespace Novartment.Base.Net
 				throw new ArgumentNullException (nameof (domain));
 			}
 
-			if (domain.Length < 1)
+			// RFC 5321 4.5.3.1.2: The maximum total length of a domain name or number is 255 octets.
+			if ((domain.Length < 1) || (domain.Length > 255))
 			{
 				throw new ArgumentOutOfRangeException (nameof (domain));
 			}
@@ -165,8 +169,12 @@ namespace Novartment.Base.Net
 					throw new FormatException ("Value does not conform to format 'addr-spec'.");
 				}
 
-				localPart = token1.Decode (source);
-				domain = token3.Decode (source);
+				// RFC 5321 4.5.3.1.2: The maximum total length of a domain name or number is 255 octets.
+				var buf = new char[255];
+				var len = token1.Decode (source, buf);
+				localPart = new string (buf, 0, len);
+				len = token3.Decode (source, buf);
+				domain = new string (buf, 0, len);
 			}
 
 			return new AddrSpec (localPart, domain);

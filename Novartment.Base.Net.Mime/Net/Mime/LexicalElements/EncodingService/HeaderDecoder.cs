@@ -174,11 +174,10 @@ namespace Novartment.Base.Net.Mime
 						{
 							if (byteBuf == null)
 							{
-								byteBuf = ArrayPool<byte>.Shared.Rent (Rfc2047EncodedWord.MaxBinaryLenght);
+								byteBuf = ArrayPool<byte>.Shared.Rent (HeaderFieldBuilder.MaxLineLengthRequired);
 							}
 
-							var size = Rfc2047EncodedWord.Parse (source.Slice (valuePos, valueLength), byteBuf, out var encoding);
-							outPos += encoding.GetChars (byteBuf, 0, size, outBuf, outPos);
+							outPos += Rfc2047EncodedWord.Parse (source.Slice (valuePos, valueLength), outBuf.AsSpan (outPos));
 						}
 						else
 						{

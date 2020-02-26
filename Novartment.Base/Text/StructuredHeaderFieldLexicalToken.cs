@@ -284,61 +284,6 @@ namespace Novartment.Base.Text
 		/// Декодирует значение токена в соответствии с его типом.
 		/// </summary>
 		/// <param name="source">Строка типа RFC 5322 'Structured Header Field Body', в которой выделен токен.</param>
-		/// <returns>Декодировенное значение токена.</returns>
-		public string Decode (ReadOnlySpan<char> source)
-		{
-			switch (this.TokenType)
-			{
-				case StructuredHeaderFieldLexicalTokenType.SquareBracketedValue:
-				case StructuredHeaderFieldLexicalTokenType.QuotedValue:
-					// unquote string
-					int idx = 0;
-					var result = new char[this.Length];
-					var endPos = this.Position + this.Length;
-					for (var i = this.Position; i < endPos; i++)
-					{
-						var ch = source[i];
-						if (ch == '\\')
-						{
-							i++;
-							ch = source[i];
-						}
-
-						result[idx++] = ch;
-					}
-
-					return new string (result, 0, idx);
-				case StructuredHeaderFieldLexicalTokenType.Separator:
-					return new string (source[this.Position], 1);
-
-				case StructuredHeaderFieldLexicalTokenType.Value:
-					var src = source.Slice (this.Position, this.Length);
-					var isWordEncoded = (this.TokenType == StructuredHeaderFieldLexicalTokenType.Value) &&
-						(src.Length > 8) &&
-						(src[0] == '=') &&
-						(src[1] == '?') &&
-						(src[src.Length - 2] == '?') &&
-						(src[src.Length - 1] == '=');
-
-					if (isWordEncoded)
-					{
-						return Rfc2047EncodedWord.Parse (src);
-					}
-#if NETSTANDARD2_0
-					return new string (src.ToArray ());
-#else
-					return new string (src);
-#endif
-				default:
-					throw new InvalidOperationException (FormattableString.Invariant (
-						$"Token of type '{this.TokenType}' is complex and can not be decoded to discrete value."));
-			}
-		}
-
-		/// <summary>
-		/// Декодирует значение токена в соответствии с его типом.
-		/// </summary>
-		/// <param name="source">Строка типа RFC 5322 'Structured Header Field Body', в которой выделен токен.</param>
 		/// <param name="destination">Буфер, куда будет записано декодировенное значение токена.</param>
 		/// <returns>Количество знаков, записанных в buffer.</returns>
 		public int Decode (ReadOnlySpan<char> source, Span<char> destination)
@@ -381,24 +326,7 @@ namespace Novartment.Base.Text
 					}
 
 					// декодируем 'encoded-word'
-					int resultSize;
-					var encodedWordBuffer = ArrayPool<byte>.Shared.Rent (Rfc2047EncodedWord.MaxBinaryLenght);
-					try
-					{
-						var size = Rfc2047EncodedWord.Parse (src, encodedWordBuffer, out Encoding encoding);
-#if NETSTANDARD2_0
-						var tempBuf = encoding.GetChars (encodedWordBuffer, 0, size);
-						resultSize = tempBuf.Length;
-						tempBuf.AsSpan ().CopyTo (destination);
-#else
-						resultSize = encoding.GetChars (encodedWordBuffer.AsSpan (0, size), destination);
-#endif
-					}
-					finally
-					{
-						ArrayPool<byte>.Shared.Return (encodedWordBuffer);
-					}
-
+					var resultSize = Rfc2047EncodedWord.Parse (src, destination);
 					return resultSize;
 
 				default:

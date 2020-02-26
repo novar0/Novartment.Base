@@ -10,43 +10,37 @@ namespace Novartment.Base.Text
 	public static class Rfc2047EncodedWord
 	{
 		/// <summary>
-		/// Максимально допустимый размер декодированного двоичного значения "encoded-word".
-		/// Зависит от указанной в RFC 5322 часть 2.1.1 максимальной длины строки.
-		/// </summary>
-		public static readonly int MaxBinaryLenght = 990;
-
-		/// <summary>
 		/// Декодирует RFC 2047 'encoded-word'.
 		/// </summary>
 		/// <param name="source">Значение, закодированное в формате RFC 2047 'encoded-word'.</param>
 		/// <returns>Декодированное значение.</returns>
-		public static string Parse (ReadOnlySpan<char> source)
+		public static string Parse (string source)
 		{
-			var (textEncoding, binaryEncoding, valuePos, valueSize) = SplitParts (source);
-			var valueStr = source.Slice (valuePos, valueSize);
-			int resultSize;
+			var (textEncoding, binaryEncoding, valuePos, valueSize) = SplitParts (source.AsSpan ());
+			var valueStr = source.AsSpan ().Slice (valuePos, valueSize);
 
-			byte[] buffer = null;
+			byte[] byteBuf = null;
 			try
 			{
+				int resultSize;
 				if (binaryEncoding)
 				{
-					buffer = ArrayPool<byte>.Shared.Rent (((source.Length / 4) * 3) + 2);
-					resultSize = ParseBString (valueStr, buffer);
+					byteBuf = ArrayPool<byte>.Shared.Rent (((source.Length / 4) * 3) + 2);
+					resultSize = ParseBString (valueStr, byteBuf);
 				}
 				else
 				{
-					buffer = ArrayPool<byte>.Shared.Rent (source.Length);
-					resultSize = ParseQString (valueStr, buffer);
+					byteBuf = ArrayPool<byte>.Shared.Rent (source.Length);
+					resultSize = ParseQString (valueStr, byteBuf);
 				}
 
-				return textEncoding.GetString (buffer, 0, resultSize);
+				return textEncoding.GetString (byteBuf, 0, resultSize);
 			}
 			finally
 			{
-				if (buffer != null)
+				if (byteBuf != null)
 				{
-					ArrayPool<byte>.Shared.Return (buffer);
+					ArrayPool<byte>.Shared.Return (byteBuf);
 				}
 			}
 		}
@@ -55,48 +49,43 @@ namespace Novartment.Base.Text
 		/// Декодирует RFC 2047 'encoded-word'.
 		/// </summary>
 		/// <param name="source">Значение, закодированное в формате RFC 2047 'encoded-word'.</param>
-		/// <param name="destination">
-		/// Буфер, в который будет помещено декодированное значение.
-		/// Максимальный размер буфера, который может понадобится, указан в свойстве MaxBinaryLenght.
-		/// </param>
-		/// <param name="encoding">Текстовая кодировка, в которой представлено декодированное значение.</param>
+		/// <param name="buffer">Буфер, в который будет помещено декодированное значение.</param>
 		/// <returns>Количество знаков, записанных в buffer.</returns>
-		public static int Parse (ReadOnlySpan<char> source, Span<byte> destination, out Encoding encoding)
+		public static int Parse (ReadOnlySpan<char> source, Span<char> buffer)
 		{
 			var (textEncoding, binaryEncoding, valuePos, valueSize) = SplitParts (source);
-			encoding = textEncoding;
-			var value = source.Slice (valuePos, valueSize);
-			return binaryEncoding ?
-				ParseBString (value, destination) :
-				ParseQString (value, destination);
-		}
+			var valueStr = source.Slice (valuePos, valueSize);
 
-		/// <summary>
-		/// Проверяет указанную часть строки на соответствие формату RFC 2047 'encoded-word'.
-		/// </summary>
-		/// <param name="value">Строка для проверки.</param>
-		/// <returns>True если строка соответствует формату RFC 2047 'encoded-word'.</returns>
-		public static bool IsValid (ReadOnlySpan<char> value)
-		{
-			/* RFC 2047 2.
-				encoded-word = "=?" charset "?" textEncoding "?" encoded-text "?="
+			byte[] byteBuf = null;
+			try
+			{
+				int resultSize;
+				if (binaryEncoding)
+				{
+					byteBuf = ArrayPool<byte>.Shared.Rent (((source.Length / 4) * 3) + 2);
+					resultSize = ParseBString (valueStr, byteBuf);
+				}
+				else
+				{
+					byteBuf = ArrayPool<byte>.Shared.Rent (source.Length);
+					resultSize = ParseQString (valueStr, byteBuf);
+				}
 
-				An 'encoded-word' may not be more than 75 characters long, including
-				'charset', 'textEncoding', 'encoded-text', and delimiters. If it is
-				desirable to encode more text than will fit in an 'encoded-word' of
-				75 characters, multiple 'encoded-word's (separated by CarriageReturnLinefeed SPACE) may
-				be used.
-
-				RFC 2231 (updates syntax)
-				encoded-word := "=?" charset ["*" language] "?" encoded-text "?="
-			*/
-
-			return (value.Length > 8) &&
-					(value[0] == '=') &&
-					(value[1] == '?') &&
-					(value[value.Length - 2] == '?') &&
-					(value[value.Length - 1] == '=') &&
-					AsciiCharSet.IsAllOfClass (value, AsciiCharClasses.Visible);
+#if NETSTANDARD2_0
+				var resultStr = textEncoding.GetChars (byteBuf, 0, resultSize);
+				resultStr.AsSpan ().CopyTo (buffer);
+				return resultStr.Length;
+#else
+				return textEncoding.GetChars (byteBuf.AsSpan ().Slice (0, resultSize), buffer);
+#endif
+			}
+			finally
+			{
+				if (byteBuf != null)
+				{
+					ArrayPool<byte>.Shared.Return (byteBuf);
+				}
+			}
 		}
 
 		private static (Encoding textEncoding, bool binaryEncoding, int valuePos, int valueSize) SplitParts (ReadOnlySpan<char> source)
