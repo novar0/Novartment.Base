@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Text;
-using System.Threading;
 using Novartment.Base.BinaryStreaming;
 using Xunit;
 
@@ -208,14 +207,22 @@ namespace Novartment.Base.Net.Mime.Test
 		{
 			var addrs = HeaderDecoder.DecodeAddrSpecList ("(return path here) < (none) > ", true);
 			Assert.Equal (0, addrs.Count);
+
+			addrs = HeaderDecoder.DecodeAddrSpecList (" (some (nested (subnested 2) one) comments) (another\\) comment) <\"root person\"@ [server10/espc2/mechel third]>", true);
+			Assert.Equal (1, addrs.Count);
+			Assert.Equal ("root person", addrs[0].LocalPart);
+			Assert.Equal ("server10/espc2/mechel third", addrs[0].Domain);
+
 			addrs = HeaderDecoder.DecodeAddrSpecList ("\troot@server10.espc2.mechel.com", true);
 			Assert.Equal (1, addrs.Count);
 			Assert.Equal ("root", addrs[0].LocalPart);
 			Assert.Equal ("server10.espc2.mechel.com", addrs[0].Domain);
+
 			addrs = HeaderDecoder.DecodeAddrSpecList ("\t <\"sp1 <d>\"@[some...strange domain]>  ");
 			Assert.Equal (1, addrs.Count);
 			Assert.Equal ("sp1 <d>", addrs[0].LocalPart);
 			Assert.Equal ("some...strange domain", addrs[0].Domain);
+
 			addrs = HeaderDecoder.DecodeAddrSpecList ("\t<root@server10.espc2.mechel.com>\t <\"sp1 <d>\"@[some...strange domain]> < 2V1WYw6Z100000137@itc-serv01.chmk.mechelgroup.ru> ");
 			Assert.Equal (3, addrs.Count);
 			Assert.Equal ("root", addrs[0].LocalPart);

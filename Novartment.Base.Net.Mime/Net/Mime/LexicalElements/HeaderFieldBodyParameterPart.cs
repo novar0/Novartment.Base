@@ -7,11 +7,11 @@ namespace Novartment.Base.Net.Mime
 {
 	internal readonly ref struct HeaderFieldBodyParameterPart
 	{
-		private readonly StructuredHeaderFieldLexicalToken _value;
+		private readonly StructuredStringToken _value;
 		private readonly bool _isExtendedValue;
 
 		// для параметров regular-parameter и extended-other-parameter
-		internal HeaderFieldBodyParameterPart (StructuredHeaderFieldLexicalToken name, StructuredHeaderFieldLexicalToken value, bool isFirstSection, bool isExtendedValue)
+		internal HeaderFieldBodyParameterPart (StructuredStringToken name, StructuredStringToken value, bool isFirstSection, bool isExtendedValue)
 		{
 			this.Name = name;
 			_value = value;
@@ -21,7 +21,7 @@ namespace Novartment.Base.Net.Mime
 		}
 
 		// для параметров extended-initial-parameter
-		internal HeaderFieldBodyParameterPart (StructuredHeaderFieldLexicalToken name, StructuredHeaderFieldLexicalToken value, string encoding)
+		internal HeaderFieldBodyParameterPart (StructuredStringToken name, StructuredStringToken value, string encoding)
 		{
 			this.Name = name;
 			_value = value;
@@ -30,7 +30,7 @@ namespace Novartment.Base.Net.Mime
 			_isExtendedValue = true;
 		}
 
-		internal readonly StructuredHeaderFieldLexicalToken Name { get; }
+		internal readonly StructuredStringToken Name { get; }
 
 		internal readonly bool IsFirstSection { get; }
 
@@ -60,11 +60,20 @@ namespace Novartment.Base.Net.Mime
 			other-sections         := "*" ("1" / "2" / "3" / "4" / "5" / "6" / "7" / "8" / "9") *DIGIT)
 			*/
 
-			var nameToken = StructuredHeaderFieldLexicalToken.ParseToken (source, ref parserPos);
-			var separatorToken = StructuredHeaderFieldLexicalToken.ParseToken (source, ref parserPos);
+			StructuredStringToken nameToken;
+			do
+			{
+				nameToken = HeaderDecoder.TokenParser.Parse (source, ref parserPos);
+			} while (nameToken.IsRoundBracketedValue (source));
 
-			if ((nameToken.TokenType != StructuredHeaderFieldLexicalTokenType.Value) ||
-				(separatorToken.TokenType != StructuredHeaderFieldLexicalTokenType.Separator))
+			StructuredStringToken separatorToken;
+			do
+			{
+				separatorToken = HeaderDecoder.TokenParser.Parse (source, ref parserPos);
+			} while (separatorToken.IsRoundBracketedValue (source));
+
+			if ((nameToken.TokenType != StructuredStringTokenType.Value) ||
+				(separatorToken.TokenType != StructuredStringTokenType.Separator))
 			{
 				throw new FormatException ("Invalid format of header field parameter.");
 			}
@@ -73,40 +82,54 @@ namespace Novartment.Base.Net.Mime
 			var isExtendedValue = false;
 			if (source[separatorToken.Position] == '*')
 			{
-				var sectionToken = StructuredHeaderFieldLexicalToken.ParseToken (source, ref parserPos);
-				if (sectionToken.TokenType != StructuredHeaderFieldLexicalTokenType.Value)
+				StructuredStringToken sectionToken;
+				do
+				{
+					sectionToken = HeaderDecoder.TokenParser.Parse (source, ref parserPos);
+				} while (sectionToken.IsRoundBracketedValue (source));
+
+				if (sectionToken.TokenType != StructuredStringTokenType.Value)
 				{
 					throw new FormatException ("Invalid format of header field parameter.");
 				}
 
 				isZeroSection = ((sectionToken.Length == 1) && (source[sectionToken.Position] == '0')) ||
 					((sectionToken.Length == 2) && (source[sectionToken.Position] == '0') && (source[sectionToken.Position + 1] == '0'));
-				separatorToken = StructuredHeaderFieldLexicalToken.ParseToken (source, ref parserPos);
-				if (separatorToken.TokenType != StructuredHeaderFieldLexicalTokenType.Separator)
+				do
+				{
+					separatorToken = HeaderDecoder.TokenParser.Parse (source, ref parserPos);
+				} while (separatorToken.IsRoundBracketedValue (source));
+
+				if (separatorToken.TokenType != StructuredStringTokenType.Separator)
 				{
 					throw new FormatException ("Invalid format of header field parameter.");
 				}
 			}
 
-			if ((separatorToken.TokenType == StructuredHeaderFieldLexicalTokenType.Separator) && (source[separatorToken.Position] == '*'))
+			if (separatorToken.IsSeparator (source, '*'))
 			{
 				isExtendedValue = true;
 				parserPos++;
 			}
 			else
 			{
-				if ((separatorToken.TokenType != StructuredHeaderFieldLexicalTokenType.Separator) || (source[separatorToken.Position] != '='))
+				if (!separatorToken.IsSeparator (source, '='))
 				{
 					throw new FormatException ("Invalid format of header field parameter.");
 				}
 			}
 
 			var isExtendedInitialValue = isExtendedValue && isZeroSection;
-			var token = StructuredHeaderFieldLexicalToken.ParseToken (source, ref parserPos);
+			StructuredStringToken token;
+			do
+			{
+				token = HeaderDecoder.TokenParser.Parse (source, ref parserPos);
+			} while (token.IsRoundBracketedValue (source));
+
 			if (isExtendedInitialValue)
 			{
 				string encoding = null;
-				if (token.TokenType == StructuredHeaderFieldLexicalTokenType.Value)
+				if (token.TokenType == StructuredStringTokenType.Value)
 				{
 					// charset
 #if NETSTANDARD2_0
@@ -114,28 +137,38 @@ namespace Novartment.Base.Net.Mime
 #else
 					encoding = new string (source.Slice (token.Position, token.Length));
 #endif
-					token = StructuredHeaderFieldLexicalToken.ParseToken (source, ref parserPos);
+					token = HeaderDecoder.TokenParser.Parse (source, ref parserPos);
 				}
 
-				if ((token.TokenType != StructuredHeaderFieldLexicalTokenType.Separator) || (source[token.Position] != '\''))
+				if (!token.IsSeparator (source, '\''))
 				{
 					throw new FormatException ("Invalid format of header field parameter.");
 				}
 
-				token = StructuredHeaderFieldLexicalToken.ParseToken (source, ref parserPos);
-				if (token.TokenType == StructuredHeaderFieldLexicalTokenType.Value)
+				do
+				{
+					token = HeaderDecoder.TokenParser.Parse (source, ref parserPos);
+				} while (token.IsRoundBracketedValue (source));
+
+				if (token.TokenType == StructuredStringTokenType.Value)
 				{
 					// skip language
-					token = StructuredHeaderFieldLexicalToken.ParseToken (source, ref parserPos);
+					do
+					{
+						token = HeaderDecoder.TokenParser.Parse (source, ref parserPos);
+					} while (token.IsRoundBracketedValue (source));
 				}
 
-				if ((token.TokenType != StructuredHeaderFieldLexicalTokenType.Separator) || (source[token.Position] != '\''))
+				if (!token.IsSeparator (source, '\''))
 				{
 					throw new FormatException ("Invalid format of header field parameter.");
 				}
 
-				token = StructuredHeaderFieldLexicalToken.ParseToken (source, ref parserPos);
-				if (token.TokenType != StructuredHeaderFieldLexicalTokenType.Value)
+				do
+				{
+					token = HeaderDecoder.TokenParser.Parse (source, ref parserPos);
+				} while (token.IsRoundBracketedValue (source));
+				if (token.TokenType != StructuredStringTokenType.Value)
 				{
 					throw new FormatException ("Invalid format of header field parameter.");
 				}
@@ -145,7 +178,7 @@ namespace Novartment.Base.Net.Mime
 
 			if (isExtendedValue)
 			{
-				if (token.TokenType != StructuredHeaderFieldLexicalTokenType.Value)
+				if (token.TokenType != StructuredStringTokenType.Value)
 				{
 					throw new FormatException ("Invalid format of header field parameter.");
 				}
@@ -153,7 +186,7 @@ namespace Novartment.Base.Net.Mime
 				return new HeaderFieldBodyParameterPart (nameToken, token, isZeroSection, true);
 			}
 
-			if ((token.TokenType != StructuredHeaderFieldLexicalTokenType.Value) && (token.TokenType != StructuredHeaderFieldLexicalTokenType.QuotedValue))
+			if ((token.TokenType != StructuredStringTokenType.Value) && !token.IsDoubleQuotedValue (source))
 			{
 				throw new FormatException ("Invalid format of header field parameter.");
 			}
@@ -167,7 +200,7 @@ namespace Novartment.Base.Net.Mime
 		{
 			if (!_isExtendedValue)
 			{
-				return _value.Decode (source, destination.AsSpan (destinationPos));
+				return HeaderDecoder.DecodeStructuredHeaderFieldBodyToken (_value, source, destination.AsSpan (destinationPos));
 			}
 
 			int offset = 0;

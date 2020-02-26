@@ -1,8 +1,8 @@
 ﻿using System;
-using System.Text;
 using Xunit;
+using Novartment.Base.Net;
 
-namespace Novartment.Base.Net.Test
+namespace Novartment.Base.Test
 {
 	public class AddrSpecTests
 	{
@@ -30,6 +30,10 @@ namespace Novartment.Base.Net.Test
 			addr = AddrSpec.Parse ("<some>");
 			Assert.Equal ("some", addr.LocalPart);
 			Assert.Equal ("localhost", addr.Domain);
+
+			addr = AddrSpec.Parse ("\"sp1 <d>\"@[some...strange domain]");
+			Assert.Equal ("sp1 <d>", addr.LocalPart);
+			Assert.Equal ("some...strange domain", addr.Domain);
 		}
 
 		[Fact]

@@ -179,6 +179,7 @@ namespace Novartment.Base.Net.Mime.Test
 			Assert.Equal (1, msg.MailingList.ArchiveCommands.Count);
 			Assert.Equal ("http://www.host.com/list/archive/", msg.MailingList.ArchiveCommands[0]);
 
+			Assert.NotNull (msg.ReturnPath);
 			Assert.Equal ("root person", msg.ReturnPath.LocalPart);
 			Assert.Equal ("server10/espc2/mechel third", msg.ReturnPath.Domain);
 		}

@@ -1,8 +1,10 @@
 ﻿using System.Collections.Generic;
+using Novartment.Base.Collections;
+using Novartment.Base.Collections.Linq;
 using Xunit;
 using Enumerable = System.Linq.Enumerable;
 
-namespace Novartment.Base.Collections.Linq.Test
+namespace Novartment.Base.Test
 {
 	public class ReadOnlyFiniteSetTests
 	{

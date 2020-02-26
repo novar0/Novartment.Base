@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using Novartment.Base.Collections.Linq;
 using Xunit;
 
-namespace Novartment.Base.Collections.Linq.Test
+namespace Novartment.Base.Test
 {
 	public class ReadOnlyListTests
 	{

@@ -16,6 +16,13 @@ namespace Novartment.Base.Net.Mime
 		// name-addr  = [display-name] angle-addr
 		// angle-addr = [CFWS] "&lt;" addr-spec "&gt;" [CFWS]
 		// addr-spec  = local-part "@" domain
+		// display-name = phrase
+
+		private static readonly StructuredStringParser DotAtomParser = new StructuredStringParser (
+			AsciiCharClasses.WhiteSpace,
+			AsciiCharClasses.Atom,
+			true,
+			StructuredStringParser.StructuredHeaderFieldBodyFormats);
 
 		/// <summary>
 		/// Инициализирует новый экземпляр класса Mailbox с указанным адресом и именем.
@@ -104,44 +111,61 @@ namespace Novartment.Base.Net.Mime
 			*/
 
 			var parserPos = 0;
-			var token1 = StructuredHeaderFieldLexicalToken.ParseDotAtom (source, ref parserPos);
+			StructuredStringToken token1;
+			do
+			{
+				token1 = DotAtomParser.Parse (source, ref parserPos);
+			} while (token1.IsRoundBracketedValue (source));
 
 			if (!token1.IsValid)
 			{
 				throw new FormatException ("Value does not conform to format 'mailbox'.");
 			}
 
+			StructuredStringToken token2;
+			do
+			{
+				token2 = DotAtomParser.Parse (source, ref parserPos);
+			} while (token2.IsRoundBracketedValue (source));
+
 			// один элемент
-			var token2 = StructuredHeaderFieldLexicalToken.ParseDotAtom (source, ref parserPos);
 			if (token1.IsValid && !token2.IsValid)
 			{
-				if ((token1.TokenType == StructuredHeaderFieldLexicalTokenType.AngleBracketedValue) || // angle-addr
-					(token1.TokenType == StructuredHeaderFieldLexicalTokenType.QuotedValue))
+				if (token1.IsAngleBracketedValue (source) || token1.IsDoubleQuotedValue (source))
 				{
 					// non-standard form of addr-spec: "addrs@server.com"
-					return new Mailbox (AddrSpec.Parse (source.Slice (token1.Position, token1.Length)), null);
+					return new Mailbox (AddrSpec.Parse (source.Slice (token1.Position + 1, token1.Length - 2)), null);
 				}
 
 				throw new FormatException ("Value does not conform to format 'mailbox'.");
 			}
 
-			// три элемента
-			var token3 = StructuredHeaderFieldLexicalToken.ParseDotAtom (source, ref parserPos);
-			var token4 = StructuredHeaderFieldLexicalToken.ParseDotAtom (source, ref parserPos);
-			if (!token4.IsValid &&
-				((token1.TokenType == StructuredHeaderFieldLexicalTokenType.Value) || (token1.TokenType == StructuredHeaderFieldLexicalTokenType.QuotedValue)) &&
-				(token2.TokenType == StructuredHeaderFieldLexicalTokenType.Separator) && (source[token2.Position] == '@') &&
-				((token3.TokenType == StructuredHeaderFieldLexicalTokenType.Value) || (token3.TokenType == StructuredHeaderFieldLexicalTokenType.SquareBracketedValue)))
+			StructuredStringToken token3;
+			do
 			{
-				// addr-spec
-				// RFC 5321 4.5.3.1.2: The maximum total length of a domain name or number is 255 octets.
-				var buf = new char[255];
-				var len = token1.Decode (source, buf);
-				var localPart = new string (buf, 0, len);
-				len = token3.Decode (source, buf);
-				var domain = new string (buf, 0, len);
-				var addr = new AddrSpec (localPart, domain);
-				return new Mailbox (addr);
+				token3 = DotAtomParser.Parse (source, ref parserPos);
+			} while (token3.IsRoundBracketedValue (source));
+
+			StructuredStringToken token4;
+			do
+			{
+				token4 = DotAtomParser.Parse (source, ref parserPos);
+			} while (token4.IsRoundBracketedValue (source));
+
+			// три элемента
+			if (!token4.IsValid &&
+				((token1.TokenType == StructuredStringTokenType.Value) || (token1.IsDoubleQuotedValue (source))) &&
+				token2.IsSeparator (source, '@') &&
+				((token3.TokenType == StructuredStringTokenType.Value) || token3.IsSquareBracketedValue (source)))
+			{
+				/*
+				RFC 5322 part 3.4:
+				There is an alternate simple form of a mailbox where
+				the addr-spec address appears alone, without the recipient's name or
+				the angle brackets.
+				*/
+
+				return new Mailbox (AddrSpec.Parse (source.Slice (token1.Position, token3.Position + token3.Length - token1.Position)), null);
 			}
 
 			// более трёх элементов. считываем как фразу, последний токен которой будет адресом
@@ -150,13 +174,18 @@ namespace Novartment.Base.Net.Mime
 			string displayName;
 			var outPos = 0;
 			var prevIsWordEncoded = false;
-			StructuredHeaderFieldLexicalToken lastToken = default;
+			StructuredStringToken lastToken = default;
 			var outBuf = ArrayPool<char>.Shared.Rent (HeaderDecoder.MaximumHeaderFieldBodySize);
 			try
 			{
 				while (true)
 				{
-					var token = StructuredHeaderFieldLexicalToken.ParseDotAtom (source, ref parserPos);
+					StructuredStringToken token;
+					do
+					{
+						token = DotAtomParser.Parse (source, ref parserPos);
+					} while (token.IsRoundBracketedValue (source));
+
 					if (!token.IsValid)
 					{
 						if (outPos < 1)
@@ -169,7 +198,7 @@ namespace Novartment.Base.Net.Mime
 
 					if (lastToken.IsValid)
 					{
-						if ((lastToken.TokenType != StructuredHeaderFieldLexicalTokenType.QuotedValue) && (lastToken.TokenType != StructuredHeaderFieldLexicalTokenType.Value))
+						if (!lastToken.IsDoubleQuotedValue (source) && (lastToken.TokenType != StructuredStringTokenType.Value))
 						{
 							throw new FormatException ("Value does not conform to format 'mailbox'.");
 						}
@@ -186,7 +215,7 @@ namespace Novartment.Base.Net.Mime
 							outBuf[outPos++] = ' ';
 						}
 
-						outPos += lastToken.Decode (source, outBuf.AsSpan (outPos));
+						outPos += DecodeToken (lastToken, source, outBuf.AsSpan (outPos));
 						prevIsWordEncoded = isWordEncoded;
 					}
 
@@ -204,12 +233,12 @@ namespace Novartment.Base.Net.Mime
 				ArrayPool<char>.Shared.Return (outBuf);
 			}
 
-			if (lastToken.TokenType != StructuredHeaderFieldLexicalTokenType.AngleBracketedValue)
+			if (!lastToken.IsAngleBracketedValue (source))
 			{
 				throw new FormatException ("Value does not conform to format 'mailbox'.");
 			}
 
-			var addr2 = AddrSpec.Parse (source.Slice (lastToken.Position, lastToken.Length));
+			var addr2 = AddrSpec.Parse (source.Slice (lastToken.Position + 1, lastToken.Length - 2));
 			return new Mailbox (addr2, displayName);
 		}
 
@@ -261,6 +290,54 @@ namespace Novartment.Base.Net.Mime
 			}
 
 			return string.Equals (this.Name, other.Name, StringComparison.Ordinal) && this.Address.Equals (other.Address);
+		}
+
+		private static int DecodeToken (StructuredStringToken token, ReadOnlySpan<char> source, Span<char> destination)
+		{
+			switch (token.TokenType)
+			{
+				case StructuredStringTokenType.DelimitedValue when (token.IsSquareBracketedValue (source) || token.IsDoubleQuotedValue (source)):
+					int idx = 0;
+					var endPos = token.Position + token.Length - 1;
+					for (var i = token.Position + 1; i < endPos; i++)
+					{
+						var ch = source[i];
+						if (ch == '\\')
+						{
+							i++;
+							ch = source[i];
+						}
+
+						destination[idx++] = ch;
+					}
+
+					return idx;
+
+				case StructuredStringTokenType.Separator:
+					destination[0] = source[token.Position];
+					return 1;
+
+				case StructuredStringTokenType.Value:
+					var src = source.Slice (token.Position, token.Length);
+					var isWordEncoded = (src.Length > 8) &&
+						(src[0] == '=') &&
+						(src[1] == '?') &&
+						(src[src.Length - 2] == '?') &&
+						(src[src.Length - 1] == '=');
+					if (!isWordEncoded)
+					{
+						src.CopyTo (destination);
+						return src.Length;
+					}
+
+					// декодируем 'encoded-word'
+					var resultSize = Rfc2047EncodedWord.Parse (src, destination);
+					return resultSize;
+
+				default:
+					throw new InvalidOperationException (FormattableString.Invariant (
+						$"Token of type '{token.TokenType}' is complex and can not be decoded to discrete value."));
+			}
 		}
 	}
 }

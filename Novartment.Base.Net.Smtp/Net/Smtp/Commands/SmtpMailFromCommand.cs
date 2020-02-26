@@ -52,24 +52,24 @@ namespace Novartment.Base.Net.Smtp
 		internal static SmtpCommand Parse (ReadOnlySpan<char> value)
 		{
 			/*
-			MAIL FROM:<reverse-path> [SP <esmtp-parameters> ] <CRLF> ; Reverse-path   = "<" Mailbox ">" / "<>"
-
 			RFC 5321:
-			Mail-parameters ::= esmtp-param *(SP esmtp-param)
+			"MAIL FROM:" Reverse-path [SP esmtp-param *(SP esmtp-param)] CRLF
+			Reverse-path   = "<" Mailbox ">" / "<>"
 			esmtp-param    = esmtp-keyword ["=" esmtp-value]
 			esmtp-keyword  = (ALPHA / DIGIT) *(ALPHA / DIGIT / "-")
 			esmtp-value    = 1*(%d33-60 / %d62-126) ; any CHAR excluding "=", SP, and control characters.
 			*/
 
 			var pos = 0;
-			var pathToken = StructuredHeaderFieldLexicalToken.ParseDotAtom (value, ref pos);
-			if (pathToken.TokenType != StructuredHeaderFieldLexicalTokenType.AngleBracketedValue)
+			var dotAtomParser = new StructuredStringParser (AsciiCharClasses.WhiteSpace, AsciiCharClasses.Atom, true, StructuredStringParser.StructuredHeaderFieldBodyFormats);
+			var pathToken = dotAtomParser.Parse (value, ref pos);
+			if (!pathToken.IsAngleBracketedValue (value))
 			{
 				return new SmtpInvalidSyntaxCommand (SmtpCommandType.MailFrom, "Unrecognized 'MAIL FROM' parameter.");
 			}
 
-			var returnPath = pathToken.Length > 0 ?
-				AddrSpec.Parse (value.Slice (pathToken.Position, pathToken.Length)) :
+			var returnPath = pathToken.Length > 2 ?
+				AddrSpec.Parse (value.Slice (pathToken.Position + 1, pathToken.Length - 2)) :
 				null;
 
 			/*

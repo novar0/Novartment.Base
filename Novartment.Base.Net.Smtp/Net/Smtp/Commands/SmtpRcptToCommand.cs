@@ -20,10 +20,15 @@ namespace Novartment.Base.Net.Smtp
 
 		internal static SmtpCommand Parse (ReadOnlySpan<char> value)
 		{
-			// RCPT TO:<forward-path> [ SP <rcpt-parameters> ] <CRLF> ; Forward-path   = "<" Mailbox ">"
+			/*
+			RFC 5321:
+			"RCPT TO:" ( "<Postmaster@" Domain ">" / "<Postmaster>" / Forward-path ) [SP Rcpt-parameters]
+			Forward-path = "<" Mailbox ">"
+			*/
 			var pos = 0;
-			var pathToken = StructuredHeaderFieldLexicalToken.ParseDotAtom (value, ref pos);
-			if (pathToken.TokenType != StructuredHeaderFieldLexicalTokenType.AngleBracketedValue)
+			var dotAtomParser = new StructuredStringParser (AsciiCharClasses.WhiteSpace, AsciiCharClasses.Atom, true, StructuredStringParser.StructuredHeaderFieldBodyFormats);
+			var pathToken = dotAtomParser.Parse (value, ref pos);
+			if (!pathToken.IsAngleBracketedValue (value))
 			{
 				return new SmtpInvalidSyntaxCommand (SmtpCommandType.RcptTo, "Unrecognized 'RCPT TO' parameter.");
 			}
@@ -31,7 +36,7 @@ namespace Novartment.Base.Net.Smtp
 			AddrSpec recepient;
 			try
 			{
-				recepient = AddrSpec.Parse (value.Slice (pathToken.Position, pathToken.Length));
+				recepient = AddrSpec.Parse (value.Slice (pathToken.Position + 1, pathToken.Length - 2));
 			}
 			catch (FormatException excpt)
 			{

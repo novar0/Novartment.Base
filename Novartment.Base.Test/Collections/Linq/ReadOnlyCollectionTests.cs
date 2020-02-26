@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using Novartment.Base.Collections.Linq;
 using Xunit;
 using Enumerable = System.Linq.Enumerable;
 
-namespace Novartment.Base.Collections.Linq.Test
+namespace Novartment.Base.Test
 {
 	public class ReadOnlyCollectionTests
 	{

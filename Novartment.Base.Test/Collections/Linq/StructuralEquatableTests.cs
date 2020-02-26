@@ -1,7 +1,8 @@
 ﻿using System;
+using Novartment.Base.Collections.Linq;
 using Xunit;
 
-namespace Novartment.Base.Collections.Linq.Test
+namespace Novartment.Base.Test
 {
 	public class StructuralEquatableTests
 	{
