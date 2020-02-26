@@ -1,5 +1,4 @@
-﻿using System;
-using Novartment.Base.Text;
+﻿using Novartment.Base.Text;
 using Xunit;
 
 namespace Novartment.Base.Test

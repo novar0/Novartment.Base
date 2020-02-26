@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Buffers;
 using System.Diagnostics;
 using System.Diagnostics.Contracts;
-using System.Text;
 
 namespace Novartment.Base.Text
 {
@@ -14,8 +12,8 @@ namespace Novartment.Base.Text
 	}
 
 	/// <summary>
-	/// Отдельный лексический токен в составе строки типа RFC 5322 'Structured Header Field Body'.
-	/// Содержит тип, позицию и количество знаков, относящиеся к отдельному токену.
+	/// An individual lexical token as part of RFC 5322 'Structured Header Field Body'.
+	/// Contains the type, position, and number of characters of an individual token.
 	/// </summary>
 	[DebuggerDisplay ("{TokenType}: {Position}...{Position+Length}")]
 	public readonly ref struct StructuredHeaderFieldLexicalToken
@@ -99,10 +97,17 @@ namespace Novartment.Base.Text
 		}
 
 		/// <summary>
-		/// Получает лексический токен из указанной позиции в строке типа RFC 5322 'Structured Header Field Body'.
-		/// После получения позиция будет указывать на следующий токен.
+		/// Получает следующий лексический токен начиная с указанной позиции в указанной строке.
+		/// Пробельные символы между токенами игнорируются.
+		/// Токеном считается непрерывная последовательность символов указнного класса,
+		/// либо произвольная последовательность символов в кавычках или скобках (круглых, треугольных или квадратных).
+		/// Любой другой символ будет считаться токеном-разделителем.
+		/// Указанный в typeToSkip тип токенов будет пропущен.
 		/// </summary>
-		/// <param name="source">Строка типа RFC 5322 'Structured Header Field Body'.</param>
+		/// <param name="source">
+		/// Строка типа RFC 5322 'Structured Header Field Body'.
+		/// После получения токена, position будет указывать на позицию, следующую за найденным токеном.
+		/// </param>
 		/// <param name="position">Позиция в source, начиная с которой будет получен токен.</param>
 		/// <param name="valueCharClass">Класс символов, допустимых для токенов типа StructuredHeaderFieldLexicalTokenType.Value.</param>
 		/// <param name="allowDotInsideValue">Признак допустимости символа 'точка' внутри токенов типа StructuredHeaderFieldLexicalTokenType.Value.</param>
@@ -336,9 +341,10 @@ namespace Novartment.Base.Text
 		}
 
 		/// <summary>
-		/// Выделяет в указанном диапазоне байтов поддиапазон, отвечающий указанному ограничению.
+		/// Выделяет в указанной строке поддиапазон, отвечающий указанному ограничению.
 		/// Если диапазон не соответствует требованиям ограничителя, то генерируется исключение.
 		/// </summary>
+		/// <returns>Позиция, следующая за endMarker.</returns>
 		private static int SkipDelimitedToken (ReadOnlySpan<char> source, int pos, char startMarker, char endMarker, IngoreTokenType ignoreToken, bool allowNesting)
 		{
 			// первый символ уже проверен, пропускаем

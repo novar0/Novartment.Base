@@ -86,6 +86,15 @@ namespace Novartment.Base.Text
 		/// <returns>Баланс операции кодирования.</returns>
 		public EncodingBalance Encode (ReadOnlySpan<byte> source, Span<byte> destination, int segmentNumber = 0, bool isLastSegment = false)
 		{
+			var prologLen = 5 + _encoding.WebName.Length; // размер пролога
+			var epilogLen = 2;
+			var maxGroups = (destination.Length - prologLen - epilogLen) / 4;  // уменьшаем лимит на размер эпилога
+			if (maxGroups < 1)
+			{ // ничего кроме пролога не влезет
+				return new EncodingBalance (0, 0);
+			}
+
+			// пролог
 			var outOffset = 0;
 			destination[outOffset++] = (byte)'=';
 			destination[outOffset++] = (byte)'?';
@@ -94,18 +103,15 @@ namespace Novartment.Base.Text
 			destination[outOffset++] = (byte)'?';
 			destination[outOffset++] = (byte)'B';
 			destination[outOffset++] = (byte)'?';
-			var maxGroups = (destination.Length - outOffset - 2) / 4;  // уменьшаем лимит на размер эпилога
-			if (maxGroups < 1)
-			{ // ничего кроме пролога не влезет
-				return new EncodingBalance (0, 0);
-			}
 
 			var groupsRequested = (int)Math.Ceiling (source.Length / 3.0);
 			var groups = Math.Min (groupsRequested, maxGroups);
 			var sourceCount = Math.Min (source.Length, groups * 3);
 			var size = ConvertToBase64Array (source.Slice (0, sourceCount), destination.Slice (outOffset));
 			outOffset += size;
-			destination[outOffset++] = (byte)'?'; // эпилог
+
+			// эпилог
+			destination[outOffset++] = (byte)'?';
 			destination[outOffset++] = (byte)'=';
 			return new EncodingBalance (outOffset, sourceCount);
 		}

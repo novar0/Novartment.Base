@@ -102,14 +102,7 @@ namespace Novartment.Base.Text
 		/// <returns>Баланс операции кодирования.</returns>
 		public EncodingBalance Encode (ReadOnlySpan<byte> source, Span<byte> destination, int segmentNumber, bool isLastSegment)
 		{
-			var outOffset = 0;
-			destination[outOffset++] = (byte)'=';
-			destination[outOffset++] = (byte)'?';
-			AsciiCharSet.GetBytes (_encoding.WebName.AsSpan (), destination.Slice (outOffset));
-			outOffset += _encoding.WebName.Length;
-			destination[outOffset++] = (byte)'?';
-			destination[outOffset++] = (byte)'Q';
-			destination[outOffset++] = (byte)'?';
+			var outOffset = 5 + _encoding.WebName.Length; // размер пролога
 			var maxOutCount = destination.Length - 2; // уменьшаем лимит на размер эпилога
 			if (outOffset >= maxOutCount)
 			{ // ничего кроме пролога не влезет
@@ -156,8 +149,20 @@ namespace Novartment.Base.Text
 				return new EncodingBalance (0, 0);
 			}
 
-			destination[outOffset++] = (byte)'?'; // эпилог
+			// эпилог
+			destination[outOffset++] = (byte)'?';
 			destination[outOffset++] = (byte)'=';
+
+			// пролог
+			var pos = 0;
+			destination[pos++] = (byte)'=';
+			destination[pos++] = (byte)'?';
+			AsciiCharSet.GetBytes (_encoding.WebName.AsSpan (), destination.Slice (pos));
+			pos += _encoding.WebName.Length;
+			destination[pos++] = (byte)'?';
+			destination[pos++] = (byte)'Q';
+			destination[pos++] = (byte)'?';
+
 			return new EncodingBalance (outOffset, srcPos);
 		}
 	}

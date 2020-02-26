@@ -3,7 +3,7 @@ using System.Text;
 using Novartment.Base.Text;
 using Xunit;
 
-namespace Novartment.Base.Net.Mime.Test
+namespace Novartment.Base.Test
 {
 	public class EstimatingEncoderTests
 	{
