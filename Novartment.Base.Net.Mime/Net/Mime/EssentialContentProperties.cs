@@ -32,6 +32,6 @@ namespace Novartment.Base.Net.Mime
 		/// <summary>
 		/// Коллекция дополнительных параметров содержимого, обычно представленных в поле заголовка "Content-Type".
 		/// </summary>
-		public IAdjustableList<HeaderFieldParameter> Parameters { get; } = new ArrayList<HeaderFieldParameter> ();
+		public IAdjustableList<HeaderFieldBodyParameter> Parameters { get; } = new ArrayList<HeaderFieldBodyParameter> ();
 	}
 }

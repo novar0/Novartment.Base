@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
-using System.Threading;
 using Novartment.Base.BinaryStreaming;
 using Xunit;
 using static System.Linq.Enumerable;

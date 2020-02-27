@@ -38,7 +38,7 @@ namespace Novartment.Base.Net.Mime
 		/// </remarks>
 		public static readonly int MaxEncodedWordLength = 75;
 
-		private readonly IAdjustableList<HeaderFieldParameter> _parameters = new ArrayList<HeaderFieldParameter> ();
+		private readonly IAdjustableList<HeaderFieldBodyParameter> _parameters = new ArrayList<HeaderFieldBodyParameter> ();
 		private readonly HeaderFieldName _name;
 
 		/// <summary>
@@ -64,7 +64,7 @@ namespace Novartment.Base.Net.Mime
 		/// <param name="value">Значение параметра.</param>
 		public void AddParameter (string name, string value)
 		{
-			_parameters.Add (new HeaderFieldParameter (name, value));
+			_parameters.Add (new HeaderFieldBodyParameter (name, value));
 		}
 
 		/// <summary>

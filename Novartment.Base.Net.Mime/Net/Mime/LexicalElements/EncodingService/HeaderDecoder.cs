@@ -13,6 +13,76 @@ using Novartment.Base.Text;
 
 namespace Novartment.Base.Net.Mime
 {
+	internal class TokenFormatQuotedString : StructuredStringTokenFormat
+	{
+		internal TokenFormatQuotedString ()
+			: base ('\"', '\"', IngoreTokenType.EscapedChar, false)
+		{
+		}
+
+		public override int DecodeToken (StructuredStringToken token, ReadOnlySpan<char> source, Span<char> buffer)
+		{
+			int idx = 0;
+			var endPos = token.Position + token.Length - 1;
+			for (var i = token.Position + 1; i < endPos; i++)
+			{
+				var ch = source[i];
+				if (ch == '\\')
+				{
+					i++;
+					ch = source[i];
+				}
+
+				buffer[idx++] = ch;
+			}
+
+			return idx;
+		}
+	}
+
+	internal class TokenFormatComment : StructuredStringTokenFormat
+	{
+		internal TokenFormatComment ()
+			: base ('(', ')', IngoreTokenType.EscapedChar, true)
+		{
+		}
+	}
+
+	internal class TokenFormatId : StructuredStringTokenFormat
+	{
+		internal TokenFormatId ()
+			: base ('<', '>', IngoreTokenType.QuotedValue, false)
+		{
+		}
+	}
+
+	internal class TokenFormatLiteral : StructuredStringTokenFormat
+	{
+		internal TokenFormatLiteral ()
+			: base ('[', ']', IngoreTokenType.EscapedChar, false)
+		{
+		}
+
+		public override int DecodeToken (StructuredStringToken token, ReadOnlySpan<char> source, Span<char> buffer)
+		{
+			int idx = 0;
+			var endPos = token.Position + token.Length - 1;
+			for (var i = token.Position + 1; i < endPos; i++)
+			{
+				var ch = source[i];
+				if (ch == '\\')
+				{
+					i++;
+					ch = source[i];
+				}
+
+				buffer[idx++] = ch;
+			}
+
+			return idx;
+		}
+	}
+
 	/// <summary>
 	/// Декодер для семантических элементов MIME-сообщений.
 	/// На входе получает MIME-кодированное текстовое представление,
@@ -78,39 +148,29 @@ namespace Novartment.Base.Net.Mime
 		/// <summary>
 		/// Парсер структурированного значения типа RFC 822 'atom' из его исходного ASCII-строкового представления.
 		/// </summary>
-		internal static readonly StructuredStringParser DotAtomParser = new StructuredStringParser (
+		internal static readonly StructuredStringFormat DotAtomFormat = new StructuredStringFormat (
 			AsciiCharClasses.WhiteSpace,
 			AsciiCharClasses.Atom,
 			true,
-			StructuredStringParser.StructuredHeaderFieldBodyFormats);
+			new StructuredStringTokenFormat[] { new TokenFormatQuotedString (), new TokenFormatComment (), new TokenFormatId (), new TokenFormatLiteral ()});
 
 		/// <summary>
 		/// Парсер структурированного значения типа RFC 822 'dot-atom' из его исходного ASCII-строкового представления.
 		/// </summary>
-		internal static readonly StructuredStringParser AtomParser = new StructuredStringParser (
+		internal static readonly StructuredStringFormat AtomFormat = new StructuredStringFormat (
 			AsciiCharClasses.WhiteSpace,
 			AsciiCharClasses.Atom,
 			false,
-			StructuredStringParser.StructuredHeaderFieldBodyFormats);
+			new StructuredStringTokenFormat[] { new TokenFormatQuotedString (), new TokenFormatComment (), new TokenFormatId (), new TokenFormatLiteral () });
 
 		/// <summary>
 		/// Парсер структурированного значения типа RFC 2045 'token' из его исходного ASCII-строкового представления.
 		/// </summary>
-		internal static readonly StructuredStringParser TokenParser = new StructuredStringParser (
+		internal static readonly StructuredStringFormat TokenFormat = new StructuredStringFormat (
 			AsciiCharClasses.WhiteSpace,
 			AsciiCharClasses.Token,
 			false,
-			StructuredStringParser.StructuredHeaderFieldBodyFormats);
-
-		/// <summary>
-		/// Парсер числа (набора десятичных цифр).
-		/// </summary>
-		internal static readonly StructuredStringParser NumberParser = new StructuredStringParser (
-			AsciiCharClasses.WhiteSpace,
-			AsciiCharClasses.Digit,
-			false,
-			StructuredStringParser.StructuredHeaderFieldBodyFormats);
-
+			new StructuredStringTokenFormat[] { new TokenFormatQuotedString (), new TokenFormatComment (), new TokenFormatId (), new TokenFormatLiteral () });
 
 		/// <summary>
 		/// Decodes 'atom' value from specified representation.
@@ -124,76 +184,21 @@ namespace Novartment.Base.Net.Mime
 			StructuredStringToken token1;
 			do
 			{
-				token1 = TokenParser.Parse (source, ref pos);
-			} while (token1.IsRoundBracketedValue (source));
+				token1 = StructuredStringToken.Parse (TokenFormat, source, ref pos);
+			} while (token1.Format is TokenFormatComment);
 
 			StructuredStringToken token2;
 			do
 			{
-				token2 = TokenParser.Parse (source, ref pos);
-			} while (token2.IsRoundBracketedValue (source));
+				token2 = StructuredStringToken.Parse (TokenFormat, source, ref pos);
+			} while (token2.Format is TokenFormatComment);
 
-			if (token2.IsValid || (token1.TokenType != StructuredStringTokenType.Value))
+			if ((token2.Format != null) || !(token1.Format is StructuredStringTokenFormatValue))
 			{
 				throw new FormatException ("Invalid value for type 'atom'.");
 			}
 
 			return source.Slice (token1.Position, token1.Length);
-		}
-
-		/// <summary>
-		/// Декодирует значение токена в соответствии с его типом.
-		/// </summary>
-		/// <param name="token">Токен для декодирования.</param>
-		/// <param name="source">Строка типа RFC 5322 'Structured Header Field Body', в которой выделен токен.</param>
-		/// <param name="destination">Буфер, куда будет записано декодировенное значение токена.</param>
-		/// <returns>Количество знаков, записанных в buffer.</returns>
-		internal static int DecodeStructuredHeaderFieldBodyToken (StructuredStringToken token, ReadOnlySpan<char> source, Span<char> destination)
-		{
-			switch (token.TokenType)
-			{
-				case StructuredStringTokenType.DelimitedValue when (token.IsSquareBracketedValue (source) || token.IsDoubleQuotedValue (source)):
-					int idx = 0;
-					var endPos = token.Position + token.Length - 1;
-					for (var i = token.Position + 1; i < endPos; i++)
-					{
-						var ch = source[i];
-						if (ch == '\\')
-						{
-							i++;
-							ch = source[i];
-						}
-
-						destination[idx++] = ch;
-					}
-
-					return idx;
-
-				case StructuredStringTokenType.Separator:
-					destination[0] = source[token.Position];
-					return 1;
-
-				case StructuredStringTokenType.Value:
-					var src = source.Slice (token.Position, token.Length);
-					var isWordEncoded = (src.Length > 8) &&
-						(src[0] == '=') &&
-						(src[1] == '?') &&
-						(src[src.Length - 2] == '?') &&
-						(src[src.Length - 1] == '=');
-					if (!isWordEncoded)
-					{
-						src.CopyTo (destination);
-						return src.Length;
-					}
-
-					// декодируем 'encoded-word'
-					var resultSize = Rfc2047EncodedWord.Parse (src, destination);
-					return resultSize;
-
-				default:
-					throw new InvalidOperationException (FormattableString.Invariant (
-						$"Token of type '{token.TokenType}' is complex and can not be decoded to discrete value."));
-			}
 		}
 
 		/// <summary>
@@ -322,10 +327,10 @@ namespace Novartment.Base.Net.Mime
 				StructuredStringToken token;
 				do
 				{
-					token = DotAtomParser.Parse (source, ref parserPos);
-				} while (token.IsRoundBracketedValue (source));
+					token = StructuredStringToken.Parse (DotAtomFormat, source, ref parserPos);
+				} while (token.Format is TokenFormatComment);
 
-				if (!token.IsValid)
+				if (token.Format == null)
 				{
 					if (outPos < 1)
 					{
@@ -338,7 +343,7 @@ namespace Novartment.Base.Net.Mime
 				// RFC 2047 часть 6.2:
 				// When displaying a particular header field that contains multiple 'encoded-word's,
 				// any 'linear-white-space' that separates a pair of adjacent 'encoded-word's is ignored
-				var isWordEncoded = token.IsWordEncoded (source);
+				var isWordEncoded = IsWordEncoded (token, source);
 				if ((outPos > 0) && (!prevIsWordEncoded || !isWordEncoded))
 				{
 					// RFC 5322 часть 3.2.2:
@@ -347,7 +352,7 @@ namespace Novartment.Base.Net.Mime
 					outBuf[outPos++] = ' ';
 				}
 
-				outPos += DecodeStructuredHeaderFieldBodyToken (token, source, outBuf.AsSpan (outPos));
+				outPos += token.Decode (source, outBuf.AsSpan (outPos));
 				prevIsWordEncoded = isWordEncoded;
 			}
 
@@ -369,10 +374,10 @@ namespace Novartment.Base.Net.Mime
 				StructuredStringToken token;
 				do
 				{
-					token = TokenParser.Parse (source, ref parserPos);
-				} while (token.IsRoundBracketedValue (source));
+					token = StructuredStringToken.Parse (TokenFormat, source, ref parserPos);
+				} while (token.Format is TokenFormatComment);
 
-				if (!token.IsValid)
+				if (token.Format == null)
 				{
 					break;
 				}
@@ -389,7 +394,7 @@ namespace Novartment.Base.Net.Mime
 				}
 				else
 				{
-					if (!lastItemIsSeparator || (token.TokenType != StructuredStringTokenType.Value))
+					if (!lastItemIsSeparator || !(token.Format is StructuredStringTokenFormatValue))
 					{
 						throw new FormatException ("Value does not conform to format 'comma-separated atoms'.");
 					}
@@ -422,10 +427,10 @@ namespace Novartment.Base.Net.Mime
 			StructuredStringToken typeToken;
 			do
 			{
-				typeToken = DotAtomParser.Parse (source, ref parserPos);
-			} while (typeToken.IsRoundBracketedValue (source));
+				typeToken = StructuredStringToken.Parse (DotAtomFormat, source, ref parserPos);
+			} while (typeToken.Format is TokenFormatComment);
 
-			if (!typeToken.IsValid)
+			if (typeToken.Format == null)
 			{
 				throw new FormatException ("Value does not conform to format 'type;value'.");
 			}
@@ -440,8 +445,8 @@ namespace Novartment.Base.Net.Mime
 			StructuredStringToken separatorToken;
 			do
 			{
-				separatorToken = DotAtomParser.Parse (source, ref parserPos);
-			} while (separatorToken.IsRoundBracketedValue (source));
+				separatorToken = StructuredStringToken.Parse (DotAtomFormat, source, ref parserPos);
+			} while (separatorToken.Format is TokenFormatComment);
 
 			if (!separatorToken.IsSeparator (source, ';'))
 			{
@@ -511,12 +516,12 @@ namespace Novartment.Base.Net.Mime
 				StructuredStringToken token;
 				do
 				{
-					token = DotAtomParser.Parse (source, ref parserPos);
-				} while (token.IsRoundBracketedValue (source));
+					token = StructuredStringToken.Parse (DotAtomFormat, source, ref parserPos);
+				} while (token.Format is TokenFormatComment);
 
-				if (!token.IsValid)
+				if (token.Format == null)
 				{
-					if ((outPos < 1) && !lastToken.IsValid)
+					if ((outPos < 1) && (lastToken.Format == null))
 					{
 						throw new FormatException ("Value does not conform format 'phrase' + <id>.");
 					}
@@ -524,12 +529,12 @@ namespace Novartment.Base.Net.Mime
 					break;
 				}
 
-				if (lastToken.IsValid)
+				if (lastToken.Format != null)
 				{
 					// RFC 2047 часть 6.2:
 					// When displaying a particular header field that contains multiple 'encoded-word's,
 					// any 'linear-white-space' that separates a pair of adjacent 'encoded-word's is ignored
-					var isWordEncoded = lastToken.IsWordEncoded (source);
+					var isWordEncoded = IsWordEncoded (lastToken, source);
 					if ((outPos > 0) && (!prevIsWordEncoded || !isWordEncoded))
 					{
 						// RFC 5322 часть 3.2.2:
@@ -538,14 +543,14 @@ namespace Novartment.Base.Net.Mime
 						outBuf[outPos++] = ' ';
 					}
 
-					outPos += DecodeStructuredHeaderFieldBodyToken (lastToken, source, outBuf.AsSpan (outPos));
+					outPos += lastToken.Decode (source, outBuf.AsSpan (outPos));
 					prevIsWordEncoded = isWordEncoded;
 				}
 
 				lastToken = token;
 			}
 
-			if (!lastToken.IsAngleBracketedValue (source))
+			if (!(lastToken.Format is TokenFormatId))
 			{
 				throw new FormatException ("Value does not conform format 'phrase' + <id>.");
 			}
@@ -573,10 +578,10 @@ namespace Novartment.Base.Net.Mime
 				StructuredStringToken token;
 				do
 				{
-					token = AtomParser.Parse (source, ref parserPos);
-				} while (token.IsRoundBracketedValue (source));
+					token = StructuredStringToken.Parse (AtomFormat, source, ref parserPos);
+				} while (token.Format is TokenFormatComment);
 
-				if (!token.IsValid)
+				if (token.Format == null)
 				{
 					break;
 				}
@@ -596,7 +601,7 @@ namespace Novartment.Base.Net.Mime
 					// RFC 2047 часть 6.2:
 					// When displaying a particular header field that contains multiple 'encoded-word's,
 					// any 'linear-white-space' that separates a pair of adjacent 'encoded-word's is ignored
-					var isWordEncoded = token.IsWordEncoded (source);
+					var isWordEncoded = IsWordEncoded (token, source);
 					if ((outPos > 0) && (!prevIsWordEncoded || !isWordEncoded))
 					{
 						// RFC 5322 часть 3.2.2:
@@ -605,7 +610,7 @@ namespace Novartment.Base.Net.Mime
 						outBuf[outPos++] = ' ';
 					}
 
-					outPos += DecodeStructuredHeaderFieldBodyToken (token, source, outBuf.AsSpan (outPos));
+					outPos += token.Decode (source, outBuf.AsSpan (outPos));
 					prevIsWordEncoded = isWordEncoded;
 				}
 			}
@@ -632,10 +637,10 @@ namespace Novartment.Base.Net.Mime
 			StructuredStringToken firstToken;
 			do
 			{
-				firstToken = DotAtomParser.Parse (source, ref pos);
-			} while (firstToken.IsRoundBracketedValue (source));
+				firstToken = StructuredStringToken.Parse (DotAtomFormat, source, ref pos);
+			} while (firstToken.Format is TokenFormatComment);
 
-			if (firstToken.IsValid && !firstToken.IsAngleBracketedValue (source))
+			if ((firstToken.Format != null) && !(firstToken.Format is TokenFormatId))
 			{
 				var addr = AddrSpec.Parse (source);
 				return ReadOnlyList.Repeat (addr, 1);
@@ -648,15 +653,15 @@ namespace Novartment.Base.Net.Mime
 				StructuredStringToken token;
 				do
 				{
-					token = DotAtomParser.Parse (source, ref parserPos);
-				} while (token.IsRoundBracketedValue (source));
+					token = StructuredStringToken.Parse (DotAtomFormat, source, ref parserPos);
+				} while (token.Format is TokenFormatComment);
 
-				if (!token.IsValid)
+				if (token.Format == null)
 				{
 					break;
 				}
 
-				if (!token.IsAngleBracketedValue (source))
+				if (!(token.Format is TokenFormatId))
 				{
 					throw new FormatException ("Value does not conform to list of 'angle-addr' format.");
 				}
@@ -670,11 +675,11 @@ namespace Novartment.Base.Net.Mime
 					StructuredStringToken subToken;
 					do
 					{
-						subToken = DotAtomParser.Parse (subSource, ref subParserPos);
-					} while (subToken.IsRoundBracketedValue (subSource));
+						subToken = StructuredStringToken.Parse (DotAtomFormat, subSource, ref subParserPos);
+					} while (subToken.Format is TokenFormatComment);
 
 					// если не нашли значимых токенов (пустое значение), просто пропускаем это значение
-					if (!subToken.IsValid)
+					if (subToken.Format == null)
 					{
 						continue;
 					}
@@ -704,10 +709,10 @@ namespace Novartment.Base.Net.Mime
 				StructuredStringToken token;
 				do
 				{
-					token = DotAtomParser.Parse (source, ref parserPos);
-				} while (token.IsRoundBracketedValue (source));
+					token = StructuredStringToken.Parse (DotAtomFormat, source, ref parserPos);
+				} while (token.Format is TokenFormatComment);
 
-				if (!token.IsValid)
+				if (token.Format == null)
 				{
 					break;
 				}
@@ -768,10 +773,10 @@ namespace Novartment.Base.Net.Mime
 				StructuredStringToken token;
 				do
 				{
-					token = AtomParser.Parse (source, ref parserPos);
-				} while (token.IsRoundBracketedValue (source));
+					token = StructuredStringToken.Parse (AtomFormat, source, ref parserPos);
+				} while (token.Format is TokenFormatComment);
 
-				if (!token.IsValid)
+				if (token.Format == null)
 				{
 					break;
 				}
@@ -788,7 +793,7 @@ namespace Novartment.Base.Net.Mime
 				}
 				else
 				{
-					if (!lastItemIsSeparator || !token.IsAngleBracketedValue (source))
+					if (!lastItemIsSeparator || !(token.Format is TokenFormatId))
 					{
 						break;
 					}
@@ -817,69 +822,22 @@ namespace Novartment.Base.Net.Mime
 			StructuredStringToken valueToken;
 			do
 			{
-				valueToken = AtomParser.Parse (source, ref parserPos);
-			} while (valueToken.IsRoundBracketedValue (source));
+				valueToken = StructuredStringToken.Parse (AtomFormat, source, ref parserPos);
+			} while (valueToken.Format is TokenFormatComment);
+			var atom = source.Slice (valueToken.Position, valueToken.Length);
 
-			var result = new ArrayList<HeaderFieldParameter> ();
-			string parameterName = null;
-			var outPos = 0;
-			Encoding encoding = null;
+			var parameters = new ArrayList<HeaderFieldBodyParameter> ();
 			while (true)
 			{
-				StructuredStringToken token;
-				do
+				var param = HeaderFieldBodyParameter.Parse (source, outBuf, ref parserPos);
+				if (param == null)
 				{
-					token = TokenParser.Parse (source, ref parserPos);
-				} while (token.IsRoundBracketedValue (source));
-
-				if (!token.IsValid)
-				{
-					break;
+					return new StringAndParameters (atom, parameters);
 				}
 
-				var isSeparator = token.IsSeparator (source, ';');
-				if (!isSeparator)
-				{
-					throw new FormatException ("Value does not conform to 'atom *(; parameter)' format.");
-				}
+				parameters.Add (param);
+			};
 
-				var part = HeaderFieldBodyParameterPart.Parse (source, ref parserPos);
-				if (part.IsFirstSection)
-				{
-					// начался новый параметр
-					// возвращаем предыдущий параметр если был
-					if (parameterName != null)
-					{
-						result.Add (new HeaderFieldParameter (parameterName, new string (outBuf, 0, outPos)));
-					}
-
-#if NETSTANDARD2_0
-					parameterName = new string (source.Slice (part.Name.Position, part.Name.Length).ToArray ());
-#else
-					parameterName = new string (source.Slice (part.Name.Position, part.Name.Length));
-#endif
-					outPos = 0;
-					try
-					{
-						encoding = part.Encoding != null ? Encoding.GetEncoding (part.Encoding) : Encoding.ASCII;
-					}
-					catch (ArgumentException excpt)
-					{
-						throw new FormatException (
-							FormattableString.Invariant ($"'{part.Encoding}' is not valid code page name."),
-							excpt);
-					}
-				}
-
-				outPos += part.GetValue (source, encoding, outBuf, outPos);
-			}
-
-			if (parameterName != null)
-			{
-				result.Add (new HeaderFieldParameter (parameterName, new string (outBuf, 0, outPos)));
-			}
-
-			return new StringAndParameters (source.Slice (valueToken.Position, valueToken.Length), result);
 		}
 
 		internal static ThreeStringsAndList DecodeDispositionAction (ReadOnlySpan<char> source)
@@ -888,45 +846,45 @@ namespace Novartment.Base.Net.Mime
 			StructuredStringToken actionModeToken;
 			do
 			{
-				actionModeToken = TokenParser.Parse (source, ref parserPos);
-			} while (actionModeToken.IsRoundBracketedValue (source));
+				actionModeToken = StructuredStringToken.Parse (TokenFormat, source, ref parserPos);
+			} while (actionModeToken.Format is TokenFormatComment);
 
 			StructuredStringToken separatorSlashToken1;
 			do
 			{
-				separatorSlashToken1 = TokenParser.Parse (source, ref parserPos);
-			} while (separatorSlashToken1.IsRoundBracketedValue (source));
+				separatorSlashToken1 = StructuredStringToken.Parse (TokenFormat, source, ref parserPos);
+			} while (separatorSlashToken1.Format is TokenFormatComment);
 
 			StructuredStringToken sendingModeToken;
 			do
 			{
-				sendingModeToken = TokenParser.Parse (source, ref parserPos);
-			} while (sendingModeToken.IsRoundBracketedValue (source));
+				sendingModeToken = StructuredStringToken.Parse (TokenFormat, source, ref parserPos);
+			} while (sendingModeToken.Format is TokenFormatComment);
 
 			StructuredStringToken separatorSemicolonToken;
 			do
 			{
-				separatorSemicolonToken = TokenParser.Parse (source, ref parserPos);
-			} while (separatorSemicolonToken.IsRoundBracketedValue (source));
+				separatorSemicolonToken = StructuredStringToken.Parse (TokenFormat, source, ref parserPos);
+			} while (separatorSemicolonToken.Format is TokenFormatComment);
 
 			StructuredStringToken dispositionTypeToken;
 			do
 			{
-				dispositionTypeToken = TokenParser.Parse (source, ref parserPos);
-			} while (dispositionTypeToken.IsRoundBracketedValue (source));
+				dispositionTypeToken = StructuredStringToken.Parse (TokenFormat, source, ref parserPos);
+			} while (dispositionTypeToken.Format is TokenFormatComment);
 
 			StructuredStringToken separatorSlashToken2;
 			do
 			{
-				separatorSlashToken2 = TokenParser.Parse (source, ref parserPos);
-			} while (separatorSlashToken2.IsRoundBracketedValue (source));
+				separatorSlashToken2 = StructuredStringToken.Parse (TokenFormat, source, ref parserPos);
+			} while (separatorSlashToken2.Format is TokenFormatComment);
 
 			if (
-				(actionModeToken.TokenType != StructuredStringTokenType.Value) ||
+				!(actionModeToken.Format is StructuredStringTokenFormatValue) ||
 				!separatorSlashToken1.IsSeparator (source, '/') ||
-				(sendingModeToken.TokenType != StructuredStringTokenType.Value) ||
+				!(sendingModeToken.Format is StructuredStringTokenFormatValue) ||
 				!separatorSemicolonToken.IsSeparator (source, ';') ||
-				(dispositionTypeToken.TokenType != StructuredStringTokenType.Value))
+				!(dispositionTypeToken.Format is StructuredStringTokenFormatValue))
 			{
 				throw new FormatException ("Specified value does not represent valid 'disposition-action'.");
 			}
@@ -940,7 +898,7 @@ namespace Novartment.Base.Net.Mime
 			var sendingMode = new string (source.Slice (sendingModeToken.Position, sendingModeToken.Length));
 			var dispositionType = new string (source.Slice (dispositionTypeToken.Position, dispositionTypeToken.Length));
 #endif
-			if (separatorSlashToken2.IsValid)
+			if (separatorSlashToken2.Format != null)
 			{
 				var isSlashSeparator = separatorSlashToken2.IsSeparator (source, '/');
 				if (!isSlashSeparator)
@@ -956,10 +914,10 @@ namespace Novartment.Base.Net.Mime
 				StructuredStringToken token;
 				do
 				{
-					token = TokenParser.Parse (source, ref parserPos);
-				} while (token.IsRoundBracketedValue (source));
+					token = StructuredStringToken.Parse (TokenFormat, source, ref parserPos);
+				} while (token.Format is TokenFormatComment);
 
-				if (!token.IsValid)
+				if (token.Format == null)
 				{
 					break;
 				}
@@ -976,7 +934,7 @@ namespace Novartment.Base.Net.Mime
 				}
 				else
 				{
-					if (!lastItemIsSeparator || (token.TokenType != StructuredStringTokenType.Value))
+					if (!lastItemIsSeparator || !(token.Format is StructuredStringTokenFormatValue))
 					{
 						throw new FormatException ("Value does not conform to format 'comma-separated atoms'.");
 					}
@@ -1017,10 +975,10 @@ namespace Novartment.Base.Net.Mime
 				StructuredStringToken attributeToken;
 				do
 				{
-					attributeToken = TokenParser.Parse (source, ref parserPos);
-				} while (attributeToken.IsRoundBracketedValue (source));
+					attributeToken = StructuredStringToken.Parse (TokenFormat, source, ref parserPos);
+				} while (attributeToken.Format is TokenFormatComment);
 
-				if (!attributeToken.IsValid)
+				if (attributeToken.Format == null)
 				{
 					break;
 				}
@@ -1028,19 +986,19 @@ namespace Novartment.Base.Net.Mime
 				StructuredStringToken equalityToken;
 				do
 				{
-					equalityToken = TokenParser.Parse (source, ref parserPos);
-				} while (equalityToken.IsRoundBracketedValue (source));
+					equalityToken = StructuredStringToken.Parse (TokenFormat, source, ref parserPos);
+				} while (equalityToken.Format is TokenFormatComment);
 
 				StructuredStringToken importanceToken;
 				do
 				{
-					importanceToken = TokenParser.Parse (source, ref parserPos);
-				} while (importanceToken.IsRoundBracketedValue (source));
+					importanceToken = StructuredStringToken.Parse (TokenFormat, source, ref parserPos);
+				} while (importanceToken.Format is TokenFormatComment);
 
 				if (
-					(attributeToken.TokenType != StructuredStringTokenType.Value) ||
+					!(attributeToken.Format is StructuredStringTokenFormatValue) ||
 					!equalityToken.IsSeparator (source, '=') ||
-					(importanceToken.TokenType != StructuredStringTokenType.Value))
+					!(importanceToken.Format is StructuredStringTokenFormatValue))
 				{
 					throw new FormatException ("Invalid value of 'disposition-notification' parameter.");
 				}
@@ -1065,11 +1023,11 @@ namespace Novartment.Base.Net.Mime
 					StructuredStringToken separatorToken;
 					do
 					{
-						separatorToken = TokenParser.Parse (source, ref parserPos);
-					} while (separatorToken.IsRoundBracketedValue (source));
+						separatorToken = StructuredStringToken.Parse (TokenFormat, source, ref parserPos);
+					} while (separatorToken.Format is TokenFormatComment);
 
 					// точка-с-запятой означает начало нового параметра если она после элемента значения
-					if (!separatorToken.IsValid || ((values.Count > 0) && separatorToken.IsSeparator (source, ';')))
+					if ((separatorToken.Format == null) || ((values.Count > 0) && separatorToken.IsSeparator (source, ';')))
 					{
 						break;
 					}
@@ -1082,11 +1040,11 @@ namespace Novartment.Base.Net.Mime
 					StructuredStringToken valueToken;
 					do
 					{
-						valueToken = TokenParser.Parse (source, ref parserPos);
-					} while (valueToken.IsRoundBracketedValue (source));
+						valueToken = StructuredStringToken.Parse (TokenFormat, source, ref parserPos);
+					} while (valueToken.Format is TokenFormatComment);
 
-					var isDoubleQuotedValue = valueToken.IsDoubleQuotedValue (source);
-					if ((valueToken.TokenType != StructuredStringTokenType.Value) && !isDoubleQuotedValue)
+					var isDoubleQuotedValue = valueToken.Format is TokenFormatQuotedString;
+					if (!(valueToken.Format is StructuredStringTokenFormatValue) && !isDoubleQuotedValue)
 					{
 						throw new FormatException ("Invalid value of 'disposition-notification' parameter.");
 					}
@@ -1132,10 +1090,10 @@ namespace Novartment.Base.Net.Mime
 				StructuredStringToken separatorToken;
 				do
 				{
-					separatorToken = TokenParser.Parse (source, ref parserPos);
-				} while (separatorToken.IsRoundBracketedValue (source));
+					separatorToken = StructuredStringToken.Parse (TokenFormat, source, ref parserPos);
+				} while (separatorToken.Format is TokenFormatComment);
 
-				if (!separatorToken.IsValid)
+				if (separatorToken.Format == null)
 				{
 					break;
 				}
@@ -1160,31 +1118,31 @@ namespace Novartment.Base.Net.Mime
 			StructuredStringToken numberToken1;
 			do
 			{
-				numberToken1 = AtomParser.Parse (source, ref parserPos);
-			} while (numberToken1.IsRoundBracketedValue (source));
+				numberToken1 = StructuredStringToken.Parse (AtomFormat, source, ref parserPos);
+			} while (numberToken1.Format is TokenFormatComment);
 
 			StructuredStringToken separatorDotToken;
 			do
 			{
-				separatorDotToken = AtomParser.Parse (source, ref parserPos);
-			} while (separatorDotToken.IsRoundBracketedValue (source));
+				separatorDotToken = StructuredStringToken.Parse (AtomFormat, source, ref parserPos);
+			} while (separatorDotToken.Format is TokenFormatComment);
 
 			StructuredStringToken numberToken2;
 			do
 			{
-				numberToken2 = AtomParser.Parse (source, ref parserPos);
-			} while (numberToken2.IsRoundBracketedValue (source));
+				numberToken2 = StructuredStringToken.Parse (AtomFormat, source, ref parserPos);
+			} while (numberToken2.Format is TokenFormatComment);
 
 			StructuredStringToken excessToken;
 			do
 			{
-				excessToken = AtomParser.Parse (source, ref parserPos);
-			} while (excessToken.IsRoundBracketedValue (source));
+				excessToken = StructuredStringToken.Parse (AtomFormat, source, ref parserPos);
+			} while (excessToken.Format is TokenFormatComment);
 
-			if (excessToken.IsValid ||
-				(numberToken1.TokenType != StructuredStringTokenType.Value) ||
+			if ((excessToken.Format != null) ||
+				!(numberToken1.Format is StructuredStringTokenFormatValue) ||
 				!separatorDotToken.IsSeparator (source, '.') ||
-				(numberToken2.TokenType != StructuredStringTokenType.Value))
+				!(numberToken2.Format is StructuredStringTokenFormatValue))
 			{
 				throw new FormatException ("Value does not conform to format 'version'.");
 			}
@@ -1297,6 +1255,18 @@ namespace Novartment.Base.Net.Mime
 			return dstPos;
 		}
 
+		// Проверяет, является ли токен "encoded-word" согласно RFC 2047.
+		internal static bool IsWordEncoded (StructuredStringToken token, ReadOnlySpan<char> source)
+		{
+			var pos = token.Position;
+			var len = token.Length;
+			return (len > 8) &&
+				(source[pos] == '=') &&
+				(source[pos + 1] == '?') &&
+				(source[pos + len - 2] == '?') &&
+				(source[pos + len - 1] == '=');
+		}
+
 		private static async Task<HeaderField> LoadHeaderFieldAsync (IBufferedSource fieldSource, Memory<byte> buffer, CancellationToken cancellationToken)
 		{
 			// загружаем имя поля
@@ -1401,10 +1371,10 @@ namespace Novartment.Base.Net.Mime
 			StructuredStringToken valueToken;
 			do
 			{
-				valueToken = TokenParser.Parse (source, ref parserPos);
-			} while (valueToken.IsRoundBracketedValue (source));
+				valueToken = StructuredStringToken.Parse (TokenFormat, source, ref parserPos);
+			} while (valueToken.Format is TokenFormatComment);
 
-			if (valueToken.TokenType != StructuredStringTokenType.Value)
+			if (!(valueToken.Format is StructuredStringTokenFormatValue))
 			{
 				throw new FormatException ("Value does not conform to format 'language-q'. First item is not 'atom'.");
 			}
@@ -1420,8 +1390,8 @@ namespace Novartment.Base.Net.Mime
 			StructuredStringToken separatorToken;
 			do
 			{
-				separatorToken = TokenParser.Parse (source, ref subParserPos);
-			} while (separatorToken.IsRoundBracketedValue (source));
+				separatorToken = StructuredStringToken.Parse (TokenFormat, source, ref subParserPos);
+			} while (separatorToken.Format is TokenFormatComment);
 
 			var isSemicolon = separatorToken.IsSeparator (source, ';');
 			if (isSemicolon)
@@ -1430,25 +1400,25 @@ namespace Novartment.Base.Net.Mime
 				StructuredStringToken separatorToken1;
 				do
 				{
-					separatorToken1 = TokenParser.Parse (source, ref parserPos);
-				} while (separatorToken1.IsRoundBracketedValue (source));
+					separatorToken1 = StructuredStringToken.Parse (TokenFormat, source, ref parserPos);
+				} while (separatorToken1.Format is TokenFormatComment);
 
 				StructuredStringToken separatorToken2;
 				do
 				{
-					separatorToken2 = TokenParser.Parse (source, ref parserPos);
-				} while (separatorToken2.IsRoundBracketedValue (source));
+					separatorToken2 = StructuredStringToken.Parse (TokenFormat, source, ref parserPos);
+				} while (separatorToken2.Format is TokenFormatComment);
 
 				StructuredStringToken qualityToken;
 				do
 				{
-					qualityToken = TokenParser.Parse (source, ref parserPos);
-				} while (qualityToken.IsRoundBracketedValue (source));
+					qualityToken = StructuredStringToken.Parse (TokenFormat, source, ref parserPos);
+				} while (qualityToken.Format is TokenFormatComment);
 
 				if (
-					(separatorToken1.TokenType != StructuredStringTokenType.Value) || ((source[separatorToken1.Position] != 'q') && (source[separatorToken1.Position] != 'Q')) ||
+					!(separatorToken1.Format is StructuredStringTokenFormatValue) || ((source[separatorToken1.Position] != 'q') && (source[separatorToken1.Position] != 'Q')) ||
 					!separatorToken2.IsSeparator (source, '=') ||
-					(qualityToken.TokenType != StructuredStringTokenType.Value))
+					!(qualityToken.Format is StructuredStringTokenFormatValue))
 				{
 					throw new FormatException ("Value does not conform to format 'language-q'.");
 				}
@@ -1521,9 +1491,9 @@ namespace Novartment.Base.Net.Mime
 		{
 			internal ReadOnlySpan<char> Text { get; }
 
-			internal IReadOnlyList<HeaderFieldParameter> Parameters { get; }
+			internal IReadOnlyList<HeaderFieldBodyParameter> Parameters { get; }
 
-			internal StringAndParameters (ReadOnlySpan<char> text, IReadOnlyList<HeaderFieldParameter> parameters)
+			internal StringAndParameters (ReadOnlySpan<char> text, IReadOnlyList<HeaderFieldBodyParameter> parameters)
 			{
 				this.Text = text;
 				this.Parameters = parameters;

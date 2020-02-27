@@ -46,7 +46,7 @@ namespace Novartment.Base.Net.Mime.Test
 				MediaSubtype = "html",
 				TransferEncoding = ContentTransferEncoding.EightBit,
 			};
-			props.Parameters.Add (new HeaderFieldParameter ("charset", "utf-8"));
+			props.Parameters.Add (new HeaderFieldBodyParameter ("charset", "utf-8"));
 			Assert.IsType<TextEntityBody> (EntityBodyFactory.Create (props));
 
 			props = new EssentialContentProperties ()
@@ -55,7 +55,7 @@ namespace Novartment.Base.Net.Mime.Test
 				MediaSubtype = "mixed",
 				TransferEncoding = ContentTransferEncoding.EightBit,
 			};
-			props.Parameters.Add (new HeaderFieldParameter ("boundary", "--xxxx"));
+			props.Parameters.Add (new HeaderFieldBodyParameter ("boundary", "--xxxx"));
 			Assert.IsAssignableFrom<ICompositeEntityBody> (EntityBodyFactory.Create (props));
 
 			props = new EssentialContentProperties ()
@@ -64,7 +64,7 @@ namespace Novartment.Base.Net.Mime.Test
 				MediaSubtype = "digest",
 				TransferEncoding = ContentTransferEncoding.EightBit,
 			};
-			props.Parameters.Add (new HeaderFieldParameter ("boundary", "--xxxx"));
+			props.Parameters.Add (new HeaderFieldBodyParameter ("boundary", "--xxxx"));
 			Assert.IsType<DigestEntityBody> (EntityBodyFactory.Create (props));
 
 			props = new EssentialContentProperties ()
@@ -73,8 +73,8 @@ namespace Novartment.Base.Net.Mime.Test
 				MediaSubtype = "report",
 				TransferEncoding = ContentTransferEncoding.EightBit,
 			};
-			props.Parameters.Add (new HeaderFieldParameter ("boundary", "--xxxx"));
-			props.Parameters.Add (new HeaderFieldParameter ("report-type", "xxxx"));
+			props.Parameters.Add (new HeaderFieldBodyParameter ("boundary", "--xxxx"));
+			props.Parameters.Add (new HeaderFieldBodyParameter ("report-type", "xxxx"));
 			Assert.IsType<ReportEntityBody> (EntityBodyFactory.Create (props));
 
 			props = new EssentialContentProperties ()

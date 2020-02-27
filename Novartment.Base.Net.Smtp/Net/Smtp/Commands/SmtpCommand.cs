@@ -12,9 +12,9 @@ namespace Novartment.Base.Net.Smtp
 		internal static readonly SmtpCommand CachedCmdQuit = new SmtpCommand (SmtpCommandType.Quit);
 		internal static readonly SmtpCommand CachedCmdRset = new SmtpCommand (SmtpCommandType.Rset);
 		internal static readonly SmtpCommand CachedCmdStartTls = new SmtpCommand (SmtpCommandType.StartTls);
-		internal static readonly StructuredStringParser _TokenParser = new StructuredStringParser (AsciiCharClasses.WhiteSpace, AsciiCharClasses.Token, false, null);
-		internal static readonly StructuredStringParser _NumberParser = new StructuredStringParser (AsciiCharClasses.WhiteSpace, AsciiCharClasses.Digit, false, null);
-		internal static readonly StructuredStringParser _AnyVisibleCharParser = new StructuredStringParser ();
+		internal static readonly StructuredStringFormat _TokenFormat = new StructuredStringFormat (AsciiCharClasses.WhiteSpace, AsciiCharClasses.Token, false, null);
+		internal static readonly StructuredStringFormat _NumberFormat = new StructuredStringFormat (AsciiCharClasses.WhiteSpace, AsciiCharClasses.Digit, false, null);
+		internal static readonly StructuredStringFormat _AnyVisibleCharFormat = new StructuredStringFormat (AsciiCharClasses.WhiteSpace, AsciiCharClasses.Visible, false, null);
 
 		protected SmtpCommand (SmtpCommandType commandType)
 		{

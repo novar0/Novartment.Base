@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics.Contracts;
+using System.Text;
 using Novartment.Base.Text;
 
 namespace Novartment.Base.Net.Mime
@@ -7,9 +8,9 @@ namespace Novartment.Base.Net.Mime
 	/// <summary>
 	/// The parameter of the field of the header of the generic message format defined in RFC 822.
 	/// </summary>
-	public class HeaderFieldParameter :
+	public class HeaderFieldBodyParameter :
 		IValueHolder<string>,
-		IEquatable<HeaderFieldParameter>
+		IEquatable<HeaderFieldBodyParameter>
 	{
 		private string _value;
 
@@ -18,20 +19,20 @@ namespace Novartment.Base.Net.Mime
 		/// </summary>
 		/// <param name="name">The name of the parameter.</param>
 		/// <param name="value">The value of the parameter.</param>
-		public HeaderFieldParameter (string name, string value)
+		public HeaderFieldBodyParameter (string name, string value)
 		{
 			if (name == null)
 			{
-				throw new ArgumentNullException(nameof(name));
+				throw new ArgumentNullException (nameof (name));
 			}
 
 			if ((name.Length < 1) ||
-				!AsciiCharSet.IsAllOfClass(name, AsciiCharClasses.Token))
+				!AsciiCharSet.IsAllOfClass (name, AsciiCharClasses.Token))
 			{
-				throw new ArgumentOutOfRangeException(nameof(name));
+				throw new ArgumentOutOfRangeException (nameof (name));
 			}
 
-			Contract.EndContractBlock();
+			Contract.EndContractBlock ();
 
 			this.Name = name;
 			_value = value;
@@ -57,11 +58,11 @@ namespace Novartment.Base.Net.Mime
 		/// <param name="first">The first segment to compare.</param>
 		/// <param name="second">The second segment to compare.</param>
 		/// <returns>True if the two HeaderFieldParameter objects are equal; otherwise, False.</returns>
-		public static bool operator ==(HeaderFieldParameter first, HeaderFieldParameter second)
+		public static bool operator == (HeaderFieldBodyParameter first, HeaderFieldBodyParameter second)
 		{
 			return first is null ?
 				second is null :
-				first.Equals(second);
+				first.Equals (second);
 		}
 
 		/// <summary>
@@ -70,11 +71,11 @@ namespace Novartment.Base.Net.Mime
 		/// <param name="first">The first segment to compare.</param>
 		/// <param name="second">The second segment to compare.</param>
 		/// <returns>True if the two HeaderFieldParameter objects are not equal; otherwise, False.</returns>
-		public static bool operator !=(HeaderFieldParameter first, HeaderFieldParameter second)
+		public static bool operator != (HeaderFieldBodyParameter first, HeaderFieldBodyParameter second)
 		{
 			return !(first is null ?
 				second is null :
-				first.Equals(second));
+				first.Equals (second));
 		}
 
 		/// <summary>
@@ -106,7 +107,7 @@ namespace Novartment.Base.Net.Mime
 		/// <returns>True if the current object is equal to the other parameter; otherwise, False.</returns>
 		public override bool Equals (object obj)
 		{
-			var typedOther = obj as HeaderFieldParameter;
+			var typedOther = obj as HeaderFieldBodyParameter;
 			return (typedOther != null) && Equals (typedOther);
 		}
 
@@ -115,7 +116,7 @@ namespace Novartment.Base.Net.Mime
 		/// </summary>
 		/// <param name="other">Объект, который требуется сравнить с текущим объектом. </param>
 		/// <returns>True if the current object is equal to the other parameter; otherwise, False.</returns>
-		public bool Equals (HeaderFieldParameter other)
+		public bool Equals (HeaderFieldBodyParameter other)
 		{
 			if (other == null)
 			{
@@ -125,6 +126,72 @@ namespace Novartment.Base.Net.Mime
 			return
 				string.Equals (this.Name, other.Name, StringComparison.OrdinalIgnoreCase) &&
 				string.Equals (_value, other._value, StringComparison.Ordinal);
+		}
+
+		internal static HeaderFieldBodyParameter Parse (ReadOnlySpan<char> source, char[] outBuf, ref int parserPos)
+		{
+			string parameterName = null;
+			var outPos = 0;
+			Encoding encoding = null;
+			while (true)
+			{
+				// запоминам позицию на случай если считанная часть окажется уже для другого параметра (индикации последней части никакой нет)
+				var lastParserPos = parserPos;
+				StructuredStringToken token;
+				do
+				{
+					token = StructuredStringToken.Parse (HeaderDecoder.TokenFormat, source, ref parserPos);
+				} while (token.Format is TokenFormatComment);
+
+				if (token.Format == null)
+				{
+					// строка кончилась, возвращаем накопленные части как параметр
+					if (parameterName == null)
+					{
+						// ничего не накопилось, означает конец строки
+						return null;
+					}
+
+					return new HeaderFieldBodyParameter (parameterName, new string (outBuf, 0, outPos));
+				}
+
+				var isSeparator = token.IsSeparator (source, ';');
+				if (!isSeparator)
+				{
+					throw new FormatException ("Value does not conform to 'atom *(; parameter)' format.");
+				}
+
+				var part = HeaderFieldBodyParameterPart.Parse (source, ref parserPos);
+				if (part.IsFirstSection)
+				{
+					// начался новый параметр, возвращаем предыдущий параметр если был
+					if (parameterName != null)
+					{
+						// поймали первую секцию следующего параметра, поэтому откатываем позицию до его начала
+						parserPos = lastParserPos;
+						return new HeaderFieldBodyParameter (parameterName, new string (outBuf, 0, outPos));
+					}
+
+#if NETSTANDARD2_0
+					parameterName = new string (source.Slice (part.Name.Position, part.Name.Length).ToArray ());
+#else
+					parameterName = new string (source.Slice (part.Name.Position, part.Name.Length));
+#endif
+					outPos = 0;
+					try
+					{
+						encoding = (part.Encoding != null) ? Encoding.GetEncoding (part.Encoding) : Encoding.ASCII;
+					}
+					catch (ArgumentException excpt)
+					{
+						throw new FormatException (
+							FormattableString.Invariant ($"'{part.Encoding}' is not valid code page name."),
+							excpt);
+					}
+				}
+
+				outPos += part.GetValue (source, encoding, outBuf, outPos);
+			}
 		}
 	}
 }

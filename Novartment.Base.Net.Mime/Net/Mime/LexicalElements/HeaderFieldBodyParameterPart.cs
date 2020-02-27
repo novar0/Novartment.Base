@@ -63,17 +63,17 @@ namespace Novartment.Base.Net.Mime
 			StructuredStringToken nameToken;
 			do
 			{
-				nameToken = HeaderDecoder.TokenParser.Parse (source, ref parserPos);
-			} while (nameToken.IsRoundBracketedValue (source));
+				nameToken = StructuredStringToken.Parse (HeaderDecoder.TokenFormat, source, ref parserPos);
+			} while (nameToken.Format is TokenFormatComment);
 
 			StructuredStringToken separatorToken;
 			do
 			{
-				separatorToken = HeaderDecoder.TokenParser.Parse (source, ref parserPos);
-			} while (separatorToken.IsRoundBracketedValue (source));
+				separatorToken = StructuredStringToken.Parse (HeaderDecoder.TokenFormat, source, ref parserPos);
+			} while (separatorToken.Format is TokenFormatComment);
 
-			if ((nameToken.TokenType != StructuredStringTokenType.Value) ||
-				(separatorToken.TokenType != StructuredStringTokenType.Separator))
+			if (!(nameToken.Format is StructuredStringTokenFormatValue) ||
+				!(separatorToken.Format is StructuredStringTokenFormatSeparator))
 			{
 				throw new FormatException ("Invalid format of header field parameter.");
 			}
@@ -85,10 +85,10 @@ namespace Novartment.Base.Net.Mime
 				StructuredStringToken sectionToken;
 				do
 				{
-					sectionToken = HeaderDecoder.TokenParser.Parse (source, ref parserPos);
-				} while (sectionToken.IsRoundBracketedValue (source));
+					sectionToken = StructuredStringToken.Parse (HeaderDecoder.TokenFormat, source, ref parserPos);
+				} while (sectionToken.Format is TokenFormatComment);
 
-				if (sectionToken.TokenType != StructuredStringTokenType.Value)
+				if (!(sectionToken.Format is StructuredStringTokenFormatValue))
 				{
 					throw new FormatException ("Invalid format of header field parameter.");
 				}
@@ -97,10 +97,10 @@ namespace Novartment.Base.Net.Mime
 					((sectionToken.Length == 2) && (source[sectionToken.Position] == '0') && (source[sectionToken.Position + 1] == '0'));
 				do
 				{
-					separatorToken = HeaderDecoder.TokenParser.Parse (source, ref parserPos);
-				} while (separatorToken.IsRoundBracketedValue (source));
+					separatorToken = StructuredStringToken.Parse (HeaderDecoder.TokenFormat, source, ref parserPos);
+				} while (separatorToken.Format is TokenFormatComment);
 
-				if (separatorToken.TokenType != StructuredStringTokenType.Separator)
+				if (!(separatorToken.Format is StructuredStringTokenFormatSeparator))
 				{
 					throw new FormatException ("Invalid format of header field parameter.");
 				}
@@ -123,13 +123,13 @@ namespace Novartment.Base.Net.Mime
 			StructuredStringToken token;
 			do
 			{
-				token = HeaderDecoder.TokenParser.Parse (source, ref parserPos);
-			} while (token.IsRoundBracketedValue (source));
+				token = StructuredStringToken.Parse (HeaderDecoder.TokenFormat, source, ref parserPos);
+			} while (token.Format is TokenFormatComment);
 
 			if (isExtendedInitialValue)
 			{
 				string encoding = null;
-				if (token.TokenType == StructuredStringTokenType.Value)
+				if (token.Format is StructuredStringTokenFormatValue)
 				{
 					// charset
 #if NETSTANDARD2_0
@@ -137,7 +137,7 @@ namespace Novartment.Base.Net.Mime
 #else
 					encoding = new string (source.Slice (token.Position, token.Length));
 #endif
-					token = HeaderDecoder.TokenParser.Parse (source, ref parserPos);
+					token = StructuredStringToken.Parse (HeaderDecoder.TokenFormat, source, ref parserPos);
 				}
 
 				if (!token.IsSeparator (source, '\''))
@@ -147,16 +147,16 @@ namespace Novartment.Base.Net.Mime
 
 				do
 				{
-					token = HeaderDecoder.TokenParser.Parse (source, ref parserPos);
-				} while (token.IsRoundBracketedValue (source));
+					token = StructuredStringToken.Parse (HeaderDecoder.TokenFormat, source, ref parserPos);
+				} while (token.Format is TokenFormatComment);
 
-				if (token.TokenType == StructuredStringTokenType.Value)
+				if (token.Format is StructuredStringTokenFormatValue)
 				{
 					// skip language
 					do
 					{
-						token = HeaderDecoder.TokenParser.Parse (source, ref parserPos);
-					} while (token.IsRoundBracketedValue (source));
+						token = StructuredStringToken.Parse (HeaderDecoder.TokenFormat, source, ref parserPos);
+					} while (token.Format is TokenFormatComment);
 				}
 
 				if (!token.IsSeparator (source, '\''))
@@ -166,9 +166,9 @@ namespace Novartment.Base.Net.Mime
 
 				do
 				{
-					token = HeaderDecoder.TokenParser.Parse (source, ref parserPos);
-				} while (token.IsRoundBracketedValue (source));
-				if (token.TokenType != StructuredStringTokenType.Value)
+					token = StructuredStringToken.Parse (HeaderDecoder.TokenFormat, source, ref parserPos);
+				} while (token.Format is TokenFormatComment);
+				if (!(token.Format is StructuredStringTokenFormatValue))
 				{
 					throw new FormatException ("Invalid format of header field parameter.");
 				}
@@ -178,7 +178,7 @@ namespace Novartment.Base.Net.Mime
 
 			if (isExtendedValue)
 			{
-				if (token.TokenType != StructuredStringTokenType.Value)
+				if (!(token.Format is StructuredStringTokenFormatValue))
 				{
 					throw new FormatException ("Invalid format of header field parameter.");
 				}
@@ -186,7 +186,7 @@ namespace Novartment.Base.Net.Mime
 				return new HeaderFieldBodyParameterPart (nameToken, token, isZeroSection, true);
 			}
 
-			if ((token.TokenType != StructuredStringTokenType.Value) && !token.IsDoubleQuotedValue (source))
+			if (!(token.Format is StructuredStringTokenFormatValue) && !(token.Format is TokenFormatQuotedString))
 			{
 				throw new FormatException ("Invalid format of header field parameter.");
 			}
@@ -200,7 +200,7 @@ namespace Novartment.Base.Net.Mime
 		{
 			if (!_isExtendedValue)
 			{
-				return HeaderDecoder.DecodeStructuredHeaderFieldBodyToken (_value, source, destination.AsSpan (destinationPos));
+				return _value.Decode (source, destination.AsSpan (destinationPos));
 			}
 
 			int offset = 0;

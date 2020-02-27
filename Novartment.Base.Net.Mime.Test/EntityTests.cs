@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using System.Threading;
 using Novartment.Base.BinaryStreaming;
 using Xunit;
 using static System.Linq.Enumerable;

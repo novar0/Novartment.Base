@@ -18,12 +18,6 @@ namespace Novartment.Base.Net.Mime
 		// addr-spec  = local-part "@" domain
 		// display-name = phrase
 
-		private static readonly StructuredStringParser DotAtomParser = new StructuredStringParser (
-			AsciiCharClasses.WhiteSpace,
-			AsciiCharClasses.Atom,
-			true,
-			StructuredStringParser.StructuredHeaderFieldBodyFormats);
-
 		/// <summary>
 		/// Инициализирует новый экземпляр класса Mailbox с указанным адресом и именем.
 		/// </summary>
@@ -114,10 +108,10 @@ namespace Novartment.Base.Net.Mime
 			StructuredStringToken token1;
 			do
 			{
-				token1 = DotAtomParser.Parse (source, ref parserPos);
-			} while (token1.IsRoundBracketedValue (source));
+				token1 = StructuredStringToken.Parse (HeaderDecoder.DotAtomFormat, source, ref parserPos);
+			} while (token1.Format is TokenFormatComment);
 
-			if (!token1.IsValid)
+			if (token1.Format == null)
 			{
 				throw new FormatException ("Value does not conform to format 'mailbox'.");
 			}
@@ -125,13 +119,13 @@ namespace Novartment.Base.Net.Mime
 			StructuredStringToken token2;
 			do
 			{
-				token2 = DotAtomParser.Parse (source, ref parserPos);
-			} while (token2.IsRoundBracketedValue (source));
+				token2 = StructuredStringToken.Parse (HeaderDecoder.DotAtomFormat, source, ref parserPos);
+			} while (token2.Format is TokenFormatComment);
 
 			// один элемент
-			if (token1.IsValid && !token2.IsValid)
+			if ((token1.Format != null) && (token2.Format == null))
 			{
-				if (token1.IsAngleBracketedValue (source) || token1.IsDoubleQuotedValue (source))
+				if (token1.Format is TokenFormatId || token1.Format is TokenFormatQuotedString)
 				{
 					// non-standard form of addr-spec: "addrs@server.com"
 					return new Mailbox (AddrSpec.Parse (source.Slice (token1.Position + 1, token1.Length - 2)), null);
@@ -143,20 +137,20 @@ namespace Novartment.Base.Net.Mime
 			StructuredStringToken token3;
 			do
 			{
-				token3 = DotAtomParser.Parse (source, ref parserPos);
-			} while (token3.IsRoundBracketedValue (source));
+				token3 = StructuredStringToken.Parse (HeaderDecoder.DotAtomFormat, source, ref parserPos);
+			} while (token3.Format is TokenFormatComment);
 
 			StructuredStringToken token4;
 			do
 			{
-				token4 = DotAtomParser.Parse (source, ref parserPos);
-			} while (token4.IsRoundBracketedValue (source));
+				token4 = StructuredStringToken.Parse (HeaderDecoder.DotAtomFormat, source, ref parserPos);
+			} while (token4.Format is TokenFormatComment);
 
 			// три элемента
-			if (!token4.IsValid &&
-				((token1.TokenType == StructuredStringTokenType.Value) || (token1.IsDoubleQuotedValue (source))) &&
+			if ((token4.Format == null) &&
+				((token1.Format is StructuredStringTokenFormatValue) || (token1.Format is TokenFormatQuotedString)) &&
 				token2.IsSeparator (source, '@') &&
-				((token3.TokenType == StructuredStringTokenType.Value) || token3.IsSquareBracketedValue (source)))
+				((token3.Format is StructuredStringTokenFormatValue) || token3.Format is TokenFormatQuotedString))
 			{
 				/*
 				RFC 5322 part 3.4:
@@ -183,10 +177,10 @@ namespace Novartment.Base.Net.Mime
 					StructuredStringToken token;
 					do
 					{
-						token = DotAtomParser.Parse (source, ref parserPos);
-					} while (token.IsRoundBracketedValue (source));
+						token = StructuredStringToken.Parse (HeaderDecoder.DotAtomFormat, source, ref parserPos);
+					} while (token.Format is TokenFormatComment);
 
-					if (!token.IsValid)
+					if (token.Format == null)
 					{
 						if (outPos < 1)
 						{
@@ -196,9 +190,9 @@ namespace Novartment.Base.Net.Mime
 						break;
 					}
 
-					if (lastToken.IsValid)
+					if (lastToken.Format != null)
 					{
-						if (!lastToken.IsDoubleQuotedValue (source) && (lastToken.TokenType != StructuredStringTokenType.Value))
+						if (!(lastToken.Format is TokenFormatQuotedString) && !(lastToken.Format is StructuredStringTokenFormatValue))
 						{
 							throw new FormatException ("Value does not conform to format 'mailbox'.");
 						}
@@ -206,7 +200,7 @@ namespace Novartment.Base.Net.Mime
 						// RFC 2047 часть 6.2:
 						// When displaying a particular header field that contains multiple 'encoded-word's,
 						// any 'linear-white-space' that separates a pair of adjacent 'encoded-word's is ignored
-						var isWordEncoded = lastToken.IsWordEncoded (source);
+						var isWordEncoded = HeaderDecoder.IsWordEncoded (lastToken, source);
 						if ((outPos > 0) && (!prevIsWordEncoded || !isWordEncoded))
 						{
 							// RFC 5322 часть 3.2.2:
@@ -215,7 +209,7 @@ namespace Novartment.Base.Net.Mime
 							outBuf[outPos++] = ' ';
 						}
 
-						outPos += DecodeToken (lastToken, source, outBuf.AsSpan (outPos));
+						outPos += lastToken.Decode (source, outBuf.AsSpan (outPos));
 						prevIsWordEncoded = isWordEncoded;
 					}
 
@@ -233,7 +227,7 @@ namespace Novartment.Base.Net.Mime
 				ArrayPool<char>.Shared.Return (outBuf);
 			}
 
-			if (!lastToken.IsAngleBracketedValue (source))
+			if (!(lastToken.Format is TokenFormatId))
 			{
 				throw new FormatException ("Value does not conform to format 'mailbox'.");
 			}
@@ -290,54 +284,6 @@ namespace Novartment.Base.Net.Mime
 			}
 
 			return string.Equals (this.Name, other.Name, StringComparison.Ordinal) && this.Address.Equals (other.Address);
-		}
-
-		private static int DecodeToken (StructuredStringToken token, ReadOnlySpan<char> source, Span<char> destination)
-		{
-			switch (token.TokenType)
-			{
-				case StructuredStringTokenType.DelimitedValue when (token.IsSquareBracketedValue (source) || token.IsDoubleQuotedValue (source)):
-					int idx = 0;
-					var endPos = token.Position + token.Length - 1;
-					for (var i = token.Position + 1; i < endPos; i++)
-					{
-						var ch = source[i];
-						if (ch == '\\')
-						{
-							i++;
-							ch = source[i];
-						}
-
-						destination[idx++] = ch;
-					}
-
-					return idx;
-
-				case StructuredStringTokenType.Separator:
-					destination[0] = source[token.Position];
-					return 1;
-
-				case StructuredStringTokenType.Value:
-					var src = source.Slice (token.Position, token.Length);
-					var isWordEncoded = (src.Length > 8) &&
-						(src[0] == '=') &&
-						(src[1] == '?') &&
-						(src[src.Length - 2] == '?') &&
-						(src[src.Length - 1] == '=');
-					if (!isWordEncoded)
-					{
-						src.CopyTo (destination);
-						return src.Length;
-					}
-
-					// декодируем 'encoded-word'
-					var resultSize = Rfc2047EncodedWord.Parse (src, destination);
-					return resultSize;
-
-				default:
-					throw new InvalidOperationException (FormattableString.Invariant (
-						$"Token of type '{token.TokenType}' is complex and can not be decoded to discrete value."));
-			}
 		}
 	}
 }
