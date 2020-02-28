@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Buffers;
 using System.Text;
 
 namespace Novartment.Base.Text
@@ -19,29 +18,31 @@ namespace Novartment.Base.Text
 			var (textEncoding, binaryEncoding, valuePos, valueSize) = SplitParts (source.AsSpan ());
 			var valueStr = source.AsSpan ().Slice (valuePos, valueSize);
 
-			byte[] byteBuf = null;
-			try
+			int resultSize;
+			if (binaryEncoding)
 			{
-				int resultSize;
-				if (binaryEncoding)
-				{
-					byteBuf = ArrayPool<byte>.Shared.Rent (((source.Length / 4) * 3) + 2);
-					resultSize = ParseBString (valueStr, byteBuf);
-				}
-				else
-				{
-					byteBuf = ArrayPool<byte>.Shared.Rent (source.Length);
-					resultSize = ParseQString (valueStr, byteBuf);
-				}
-
+				var bufSize = ((source.Length / 4) * 3) + 2;
+#if NETSTANDARD2_0
+				var byteBuf = new byte[bufSize];
+				resultSize = ParseBString (valueStr, byteBuf);
 				return textEncoding.GetString (byteBuf, 0, resultSize);
+#else
+				Span<byte> byteBuf = (bufSize < 1024) ? stackalloc byte[bufSize] : new byte[bufSize];
+				resultSize = ParseBString (valueStr, byteBuf);
+				return textEncoding.GetString (byteBuf.Slice (0, resultSize));
+#endif
 			}
-			finally
+			else
 			{
-				if (byteBuf != null)
-				{
-					ArrayPool<byte>.Shared.Return (byteBuf);
-				}
+#if NETSTANDARD2_0
+				var byteBuf = new byte[source.Length];
+				resultSize = ParseQString (valueStr, byteBuf);
+				return textEncoding.GetString (byteBuf, 0, resultSize);
+#else
+				Span<byte> byteBuf = (source.Length < 1024) ? stackalloc byte[source.Length] : new byte[source.Length];
+				resultSize = ParseQString (valueStr, byteBuf);
+				return textEncoding.GetString (byteBuf.Slice (0, resultSize));
+#endif
 			}
 		}
 
@@ -56,35 +57,34 @@ namespace Novartment.Base.Text
 			var (textEncoding, binaryEncoding, valuePos, valueSize) = SplitParts (source);
 			var valueStr = source.Slice (valuePos, valueSize);
 
-			byte[] byteBuf = null;
-			try
+			if (binaryEncoding)
 			{
-				int resultSize;
-				if (binaryEncoding)
-				{
-					byteBuf = ArrayPool<byte>.Shared.Rent (((source.Length / 4) * 3) + 2);
-					resultSize = ParseBString (valueStr, byteBuf);
-				}
-				else
-				{
-					byteBuf = ArrayPool<byte>.Shared.Rent (source.Length);
-					resultSize = ParseQString (valueStr, byteBuf);
-				}
-
+				var bufSize = ((source.Length / 4) * 3) + 2;
 #if NETSTANDARD2_0
-				var resultStr = textEncoding.GetChars (byteBuf, 0, resultSize);
+				var byteBuf = new byte[bufSize];
+				var byteSize = ParseBString (valueStr, byteBuf);
+				var resultStr = textEncoding.GetChars (byteBuf, 0, byteSize);
 				resultStr.AsSpan ().CopyTo (buffer);
 				return resultStr.Length;
 #else
-				return textEncoding.GetChars (byteBuf.AsSpan ().Slice (0, resultSize), buffer);
+				Span<byte> byteBuf = (bufSize < 1024) ? stackalloc byte[bufSize] : new byte[bufSize];
+				var byteSize = ParseBString (valueStr, byteBuf);
+				return textEncoding.GetChars (byteBuf.Slice (0, byteSize), buffer);
 #endif
 			}
-			finally
+			else
 			{
-				if (byteBuf != null)
-				{
-					ArrayPool<byte>.Shared.Return (byteBuf);
-				}
+#if NETSTANDARD2_0
+				var byteBuf = new byte[source.Length];
+				var byteSize = ParseQString (valueStr, byteBuf);
+				var resultStr = textEncoding.GetChars (byteBuf, 0, byteSize);
+				resultStr.AsSpan ().CopyTo (buffer);
+				return resultStr.Length;
+#else
+				Span<byte> byteBuf = (source.Length < 1024) ? stackalloc byte[source.Length] : new byte[source.Length];
+				var byteSize = ParseQString (valueStr, byteBuf);
+				return textEncoding.GetChars (byteBuf.Slice (0, byteSize), buffer);
+#endif
 			}
 		}
 
