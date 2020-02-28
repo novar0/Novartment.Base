@@ -62,27 +62,5 @@ namespace Novartment.Base.Text
 			: base (default, default, IngoreTokenType.Unspecified, false)
 		{
 		}
-
-		public override int DecodeToken (StructuredStringToken token, ReadOnlySpan<char> source, Span<char> buffer)
-		{
-			// TODO: убрать проверку на encoded-word, перенести её туда где она ожидается
-			var src = source.Slice (token.Position, token.Length);
-			var isWordEncoded =
-				(src.Length > 8) &&
-				(src[0] == '=') &&
-				(src[1] == '?') &&
-				(src[src.Length - 2] == '?') &&
-				(src[src.Length - 1] == '=');
-
-			if (isWordEncoded)
-			{
-				return Rfc2047EncodedWord.Parse (src, buffer);
-			}
-			else
-			{
-				src.CopyTo (buffer);
-				return src.Length;
-			}
-		}
 	}
 }

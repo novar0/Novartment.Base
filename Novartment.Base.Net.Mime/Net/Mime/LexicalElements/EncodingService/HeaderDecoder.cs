@@ -352,7 +352,9 @@ namespace Novartment.Base.Net.Mime
 					outBuf[outPos++] = ' ';
 				}
 
-				outPos += token.Decode (source, outBuf.AsSpan (outPos));
+				outPos += (token.Format is StructuredStringTokenFormatValue) ?
+					DecodeTokenWithEncodedWord (token, source, outBuf.AsSpan (outPos)) :
+					token.Decode (source, outBuf.AsSpan (outPos));
 				prevIsWordEncoded = isWordEncoded;
 			}
 
@@ -543,7 +545,9 @@ namespace Novartment.Base.Net.Mime
 						outBuf[outPos++] = ' ';
 					}
 
-					outPos += lastToken.Decode (source, outBuf.AsSpan (outPos));
+					outPos += (lastToken.Format is StructuredStringTokenFormatValue) ?
+						DecodeTokenWithEncodedWord (lastToken, source, outBuf.AsSpan (outPos)) :
+						lastToken.Decode (source, outBuf.AsSpan (outPos));
 					prevIsWordEncoded = isWordEncoded;
 				}
 
@@ -610,7 +614,9 @@ namespace Novartment.Base.Net.Mime
 						outBuf[outPos++] = ' ';
 					}
 
-					outPos += token.Decode (source, outBuf.AsSpan (outPos));
+					outPos += (token.Format is StructuredStringTokenFormatValue) ?
+						DecodeTokenWithEncodedWord (token, source, outBuf.AsSpan (outPos)) :
+						token.Decode (source, outBuf.AsSpan (outPos));
 					prevIsWordEncoded = isWordEncoded;
 				}
 			}
@@ -1265,6 +1271,27 @@ namespace Novartment.Base.Net.Mime
 				(source[pos + 1] == '?') &&
 				(source[pos + len - 2] == '?') &&
 				(source[pos + len - 1] == '=');
+		}
+
+		private static int DecodeTokenWithEncodedWord (StructuredStringToken token, ReadOnlySpan<char> source, Span<char> buffer)
+		{
+			var src = source.Slice (token.Position, token.Length);
+			var isWordEncoded =
+				(src.Length > 8) &&
+				(src[0] == '=') &&
+				(src[1] == '?') &&
+				(src[src.Length - 2] == '?') &&
+				(src[src.Length - 1] == '=');
+
+			if (isWordEncoded)
+			{
+				return Rfc2047EncodedWord.Parse (src, buffer);
+			}
+			else
+			{
+				src.CopyTo (buffer);
+				return src.Length;
+			}
 		}
 
 		internal static int DecodeParameterExtendedValue (ReadOnlySpan<char> source, Span<char> destination, Encoding encoding)

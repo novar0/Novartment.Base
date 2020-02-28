@@ -209,7 +209,9 @@ namespace Novartment.Base.Net.Mime
 							outBuf[outPos++] = ' ';
 						}
 
-						outPos += lastToken.Decode (source, outBuf.AsSpan (outPos));
+						outPos += isWordEncoded ?
+							Rfc2047EncodedWord.Parse (source.Slice (lastToken.Position, lastToken.Length), outBuf.AsSpan (outPos)) :
+							lastToken.Decode (source, outBuf.AsSpan (outPos));
 						prevIsWordEncoded = isWordEncoded;
 					}
 
