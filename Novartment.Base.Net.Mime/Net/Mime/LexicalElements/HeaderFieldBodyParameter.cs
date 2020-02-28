@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Buffers;
 using System.Diagnostics.Contracts;
 using System.Text;
 using Novartment.Base.Text;
@@ -6,7 +7,7 @@ using Novartment.Base.Text;
 namespace Novartment.Base.Net.Mime
 {
 	/// <summary>
-	/// The parameter of the field of the header of the generic message format defined in RFC 822.
+	/// The parameter of the header field body of the generic message format defined in RFC 822.
 	/// </summary>
 	public class HeaderFieldBodyParameter :
 		IValueHolder<string>,
@@ -130,22 +131,51 @@ namespace Novartment.Base.Net.Mime
 
 		internal static HeaderFieldBodyParameter Parse (ReadOnlySpan<char> source, char[] outBuf, ref int parserPos)
 		{
+			/*
+			RFC 2045 part 5.1:
+			content := "Content-Type" ":" type "/" subtype *(";" parameter)
+
+			RFC 2183 part 2:
+			disposition := "Content-Disposition" ":" disposition-type *(";" disposition-parm)
+
+			RFC 2184 part 7 (extensions to the RFC 2045 media type and RFC 2183):
+
+			parameter              := regular-parameter / extended-parameter
+
+			regular-parameter      := regular-name "=" value
+			extended-parameter     := (extended-initial-name "=" extended-initial-value) / (extended-other-names "=" extended-other-values)
+
+			regular-name           := attribute [section]
+			extended-initial-name  := attribute [initial-section] "*"
+			extended-other-names   := attribute other-sections "*"
+
+			section                := initial-section / other-sections
+			initial-section        := "*0"
+			other-sections         := "*" ("1" / "2" / "3" / "4" / "5" / "6" / "7" / "8" / "9") *DIGIT)
+
+			extended-initial-value := [charset] "'" [language] "'" extended-other-values
+			extended-other-values  := *(ext-octet / attribute-char)
+			ext-octet              := "%" 2(DIGIT / "A" / "B" / "C" / "D" / "E" / "F")
+			*/
+
 			string parameterName = null;
 			var outPos = 0;
-			Encoding encoding = null;
+			var encoding = Encoding.ASCII;
+			// цикл по накоплению секций значения
+			// каждая секция является полноценным параметром, поэтому начинается со знака ';' и содержит имя параметра
+			// значение будет накапливаться в outBuf, а outPos будет содержать текущую позицию
 			while (true)
 			{
-				// запоминам позицию на случай если считанная часть окажется уже для другого параметра (индикации последней части никакой нет)
-				var lastParserPos = parserPos;
-				StructuredStringToken token;
+				var startPos = parserPos;
+				StructuredStringToken semicolonToken;
 				do
 				{
-					token = StructuredStringToken.Parse (HeaderDecoder.TokenFormat, source, ref parserPos);
-				} while (token.Format is TokenFormatComment);
+					semicolonToken = StructuredStringToken.Parse (HeaderDecoder.TokenFormat, source, ref parserPos);
+				} while (semicolonToken.Format is TokenFormatComment);
 
-				if (token.Format == null)
+				if (semicolonToken.Format == null)
 				{
-					// строка кончилась, возвращаем накопленные части как параметр
+					// строка кончилась, возвращаем накопленные секции как параметр
 					if (parameterName == null)
 					{
 						// ничего не накопилось, означает конец строки
@@ -155,43 +185,172 @@ namespace Novartment.Base.Net.Mime
 					return new HeaderFieldBodyParameter (parameterName, new string (outBuf, 0, outPos));
 				}
 
-				var isSeparator = token.IsSeparator (source, ';');
+				var isSeparator = semicolonToken.IsSeparator (source, ';');
 				if (!isSeparator)
 				{
 					throw new FormatException ("Value does not conform to 'atom *(; parameter)' format.");
 				}
 
-				var part = HeaderFieldBodyParameterPart.Parse (source, ref parserPos);
-				if (part.IsFirstSection)
+				StructuredStringToken nameToken;
+				do
 				{
-					// начался новый параметр, возвращаем предыдущий параметр если был
-					if (parameterName != null)
-					{
-						// поймали первую секцию следующего параметра, поэтому откатываем позицию до его начала
-						parserPos = lastParserPos;
-						return new HeaderFieldBodyParameter (parameterName, new string (outBuf, 0, outPos));
-					}
+					nameToken = StructuredStringToken.Parse (HeaderDecoder.TokenFormat, source, ref parserPos);
+				} while (nameToken.Format is TokenFormatComment);
 
-#if NETSTANDARD2_0
-					parameterName = new string (source.Slice (part.Name.Position, part.Name.Length).ToArray ());
-#else
-					parameterName = new string (source.Slice (part.Name.Position, part.Name.Length));
-#endif
-					outPos = 0;
-					try
-					{
-						encoding = (part.Encoding != null) ? Encoding.GetEncoding (part.Encoding) : Encoding.ASCII;
-					}
-					catch (ArgumentException excpt)
-					{
-						throw new FormatException (
-							FormattableString.Invariant ($"'{part.Encoding}' is not valid code page name."),
-							excpt);
-					}
+				if (!(nameToken.Format is StructuredStringTokenFormatValue))
+				{
+					throw new FormatException ("Invalid format of header field parameter.");
 				}
 
-				outPos += part.GetValue (source, encoding, outBuf, outPos);
+#if NETSTANDARD2_0
+				var sectionName = new string (source.Slice (nameToken.Position, nameToken.Length).ToArray ());
+#else
+				var sectionName = new string (source.Slice (nameToken.Position, nameToken.Length));
+#endif
+				if (parameterName == null)
+				{
+					parameterName = sectionName;
+				}
+
+				if (!sectionName.Equals (parameterName, StringComparison.OrdinalIgnoreCase))
+				{
+					// начался новый параметр, возвращаем накопленные секции как параметр
+					parserPos = startPos;
+					return new HeaderFieldBodyParameter (parameterName, new string (outBuf, 0, outPos));
+				}
+
+				outPos += DecodeSection (source, ref parserPos, ref encoding, outBuf, outPos); 
 			}
+		}
+
+		// source должен указывать на знак, следующий после имени параметра (attribute)
+		private static int DecodeSection (
+			ReadOnlySpan<char> source,
+			ref int parserPos,
+			ref Encoding encoding,
+			char[] destination,
+			int destinationPos)
+		{
+			var separatorToken = StructuredStringToken.Parse (HeaderDecoder.TokenFormat, source, ref parserPos);
+			if (!(separatorToken.Format is StructuredStringTokenFormatSeparator))
+			{
+				throw new FormatException ("Invalid format of header field parameter.");
+			}
+
+			bool isZeroSection = true;
+			var isExtendedValue = false;
+			if (source[separatorToken.Position] == '*')
+			{
+				StructuredStringToken sectionToken;
+				do
+				{
+					sectionToken = StructuredStringToken.Parse (HeaderDecoder.TokenFormat, source, ref parserPos);
+				} while (sectionToken.Format is TokenFormatComment);
+
+				if (!(sectionToken.Format is StructuredStringTokenFormatValue))
+				{
+					throw new FormatException ("Invalid format of header field parameter.");
+				}
+
+				isZeroSection = ((sectionToken.Length == 1) && (source[sectionToken.Position] == '0')) ||
+					((sectionToken.Length == 2) && (source[sectionToken.Position] == '0') && (source[sectionToken.Position + 1] == '0'));
+				separatorToken = StructuredStringToken.Parse (HeaderDecoder.TokenFormat, source, ref parserPos);
+				if (!(separatorToken.Format is StructuredStringTokenFormatSeparator))
+				{
+					throw new FormatException ("Invalid format of header field parameter.");
+				}
+			}
+
+			if (source[separatorToken.Position] == '*')
+			{
+				isExtendedValue = true;
+				parserPos++;
+			}
+			else
+			{
+				if (source[separatorToken.Position] != '=')
+				{
+					throw new FormatException ("Invalid format of header field parameter.");
+				}
+			}
+
+			var isExtendedInitialValue = isExtendedValue && isZeroSection;
+			StructuredStringToken token;
+			do
+			{
+				token = StructuredStringToken.Parse (HeaderDecoder.TokenFormat, source, ref parserPos);
+			} while (token.Format is TokenFormatComment);
+
+			if (isExtendedInitialValue)
+			{
+				string encodingName = null;
+				if (token.Format is StructuredStringTokenFormatValue)
+				{
+					// charset
+#if NETSTANDARD2_0
+					encodingName = new string (source.Slice (token.Position, token.Length).ToArray ());
+#else
+					encodingName = new string (source.Slice (token.Position, token.Length));
+#endif
+					encoding = GetEncoding (encodingName);
+					token = StructuredStringToken.Parse (HeaderDecoder.TokenFormat, source, ref parserPos);
+				}
+
+				if (!token.IsSeparator (source, '\''))
+				{
+					throw new FormatException ("Invalid format of header field parameter.");
+				}
+
+				token = StructuredStringToken.Parse (HeaderDecoder.TokenFormat, source, ref parserPos);
+				if (token.Format is StructuredStringTokenFormatValue)
+				{
+					// skip language
+					token = StructuredStringToken.Parse (HeaderDecoder.TokenFormat, source, ref parserPos);
+				}
+
+				if (!token.IsSeparator (source, '\''))
+				{
+					throw new FormatException ("Invalid format of header field parameter.");
+				}
+
+				// value
+				token = StructuredStringToken.Parse (HeaderDecoder.TokenFormat, source, ref parserPos);
+			}
+
+			if (isExtendedValue)
+			{
+				if (!(token.Format is StructuredStringTokenFormatValue))
+				{
+					throw new FormatException ("Invalid format of header field parameter.");
+				}
+
+				return HeaderDecoder.DecodeParameterExtendedValue (source.Slice (token.Position, token.Length), destination.AsSpan (destinationPos), encoding);
+			}
+
+			if (!(token.Format is StructuredStringTokenFormatValue) && !(token.Format is TokenFormatQuotedString))
+			{
+				throw new FormatException ("Invalid format of header field parameter.");
+			}
+
+			// regular-parameter
+			return token.Decode (source, destination.AsSpan (destinationPos));
+		}
+
+		private static Encoding GetEncoding (string name)
+		{
+			Encoding encoding;
+			try
+			{
+				encoding = Encoding.GetEncoding (name);
+			}
+			catch (ArgumentException excpt)
+			{
+				throw new FormatException (
+					FormattableString.Invariant ($"'{name}' is not valid code page name."),
+					excpt);
+			}
+
+			return encoding;
 		}
 	}
 }

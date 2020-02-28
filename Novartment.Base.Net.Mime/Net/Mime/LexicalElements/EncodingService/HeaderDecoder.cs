@@ -1267,6 +1267,45 @@ namespace Novartment.Base.Net.Mime
 				(source[pos + len - 1] == '=');
 		}
 
+		internal static int DecodeParameterExtendedValue (ReadOnlySpan<char> source, Span<char> destination, Encoding encoding)
+		{
+			int offset = 0;
+#if NETSTANDARD2_0
+			var buf = new byte[source.Length];
+#else
+			Span<byte> buf = (source.Length < 1024) ? stackalloc byte[source.Length] : new byte[source.Length];
+#endif
+			var i = 0;
+			while (i < source.Length)
+			{
+				var char1 = source[i++];
+				if (char1 != '%')
+				{
+					buf[offset++] = (byte)char1;
+				}
+				else
+				{
+					if ((i + 1) >= source.Length)
+					{
+						throw new FormatException ("Invalid format of header field parameter.");
+					}
+
+					char1 = source[i++];
+					var char2 = source[i++];
+					buf[offset++] = Hex.ParseByte (char1, char2);
+				}
+			}
+
+#if NETSTANDARD2_0
+			var str = encoding.GetString (buf, 0, offset);
+			str.AsSpan ().CopyTo (destination);
+			var size = str.Length;
+#else
+			var size = encoding.GetChars (buf.Slice (0, offset), destination);
+#endif
+			return size;
+		}
+
 		private static async Task<HeaderField> LoadHeaderFieldAsync (IBufferedSource fieldSource, Memory<byte> buffer, CancellationToken cancellationToken)
 		{
 			// загружаем имя поля

@@ -20,7 +20,7 @@ namespace Novartment.Base.Net.Mime.Test
 			var par = HeaderFieldBodyParameter.Parse (template, buf, ref pos);
 			Assert.Null (par);
 
-			template = ";\tformat=flowed  ";
+			template = "   (Plain text) ;\tformat=flowed   (Plain text)";
 			pos = 0;
 			par = HeaderFieldBodyParameter.Parse (template, buf, ref pos);
 			Assert.NotNull (par);
@@ -31,7 +31,7 @@ namespace Novartment.Base.Net.Mime.Test
 			par = HeaderFieldBodyParameter.Parse (template, buf, ref pos);
 			Assert.Null (par);
 
-			template = ";\tformat=flowed;\tcharset=\"us-ascii\";\treply-type=original";
+			template = ";\tformat=flowed;\tcharset=\"us-ascii\";\treply-type=original (Plain text)";
 			pos = 0;
 			par = HeaderFieldBodyParameter.Parse (template, buf, ref pos);
 			Assert.NotNull (par);
@@ -50,7 +50,7 @@ namespace Novartment.Base.Net.Mime.Test
 			par = HeaderFieldBodyParameter.Parse (template, buf, ref pos);
 			Assert.Null (par);
 
-			template = ";\tfilename*0*=windows-1251''This%20document%20specifies%20an;\tfilename*1=\" Internet standards track protocol for the \";\tfilename*2*=%F4%F3%ED%EA%F6%E8%E8;\tfilename*3=\" and requests discussion and suggestions.txt\";\tmodification-date=\"Thu, 24 Nov 2011 09:48:27 +0700\";\tcreation-date=\"Tue, 10 Jul 2012 10:01:06 +0600\";\tread-date=\"Wed, 11 Jul 2012 10:40:13 +0600\";\tsize=\"318\"";
+			template = ";\tfilename*0*=windows-1251''This%20document%20specifies%20an;\tfilename*1=\" Internet standards track protocol for the \";\tfilename*2*=%F4%F3%ED%EA%F6%E8%E8;\tfilename*3=\" and requests discussion and suggestions.txt\";\tmodification-date=\"Thu, 24 Nov 2011 09:48:27 +0700\";\tcreation-date=\"Tue, 10 Jul 2012 10:01:06 +0600\";\tread-date=\"Wed, 11 Jul 2012 10:40:13 +0600\";\tsize=\"318\" (Plain text)";
 			pos = 0;
 			par = HeaderFieldBodyParameter.Parse (template, buf, ref pos);
 			Assert.NotNull (par);
