@@ -6,22 +6,22 @@ namespace Novartment.Base.Test
 {
 	public class StructuredStringParserTests
 	{
-		internal class TokenFormatQuotedString : StructuredStringTokenFormat
+		internal class TokenFormatQuotedString : StructuredStringTokenDelimitedFormat
 		{
 			internal TokenFormatQuotedString () : base ('\"', '\"', IngoreTokenType.EscapedChar, false) { }
 		}
 
-		internal class TokenFormatComment : StructuredStringTokenFormat
+		internal class TokenFormatComment : StructuredStringTokenDelimitedFormat
 		{
 			internal TokenFormatComment () : base ('(', ')', IngoreTokenType.EscapedChar, true) { }
 		}
 
-		internal class TokenFormatLiteral : StructuredStringTokenFormat
+		internal class TokenFormatLiteral : StructuredStringTokenDelimitedFormat
 		{
 			internal TokenFormatLiteral () : base ('[', ']', IngoreTokenType.EscapedChar, false) { }
 		}
 
-		internal class TokenFormatId : StructuredStringTokenFormat
+		internal class TokenFormatId : StructuredStringTokenDelimitedFormat
 		{
 			internal TokenFormatId () : base ('<', '>', IngoreTokenType.QuotedValue, false) { }
 		}
@@ -30,7 +30,7 @@ namespace Novartment.Base.Test
 		[Trait ("Category", "Text.StructuredStringToken")]
 		public void Parse ()
 		{
-			var allFormats = new StructuredStringTokenFormat[] { new TokenFormatQuotedString (), new TokenFormatComment (), new TokenFormatLiteral (), new TokenFormatId () };
+			var allFormats = new StructuredStringTokenDelimitedFormat[] { new TokenFormatQuotedString (), new TokenFormatComment (), new TokenFormatLiteral (), new TokenFormatId () };
 			ReadOnlySpan<char> src = default;
 			var parserPos = 0;
 			var format = new StructuredStringFormat (AsciiCharClasses.WhiteSpace, AsciiCharClasses.Atom, false, null);
@@ -45,7 +45,7 @@ namespace Novartment.Base.Test
 			Assert.Equal (0, token.Position); // a1
 			Assert.Equal (4, token.Length);
 			token = StructuredStringToken.Parse (format, src, ref parserPos);
-			Assert.IsType<StructuredStringTokenFormatValue> (token.Format);
+			Assert.IsType<StructuredStringValueTokenFormat> (token.Format);
 			Assert.Equal (6, token.Position); // bb2
 			Assert.Equal (3, token.Length);
 			token = StructuredStringToken.Parse (format, src, ref parserPos);
@@ -53,7 +53,7 @@ namespace Novartment.Base.Test
 			Assert.Equal (10, token.Position); // (c3 (d4))
 			Assert.Equal (9, token.Length);
 			token = StructuredStringToken.Parse (format, src, ref parserPos);
-			Assert.IsType<StructuredStringTokenFormatValue> (token.Format);
+			Assert.IsType<StructuredStringValueTokenFormat> (token.Format);
 			Assert.Equal (20, token.Position); // eee5
 			Assert.Equal (4, token.Length);
 			token = StructuredStringToken.Parse (format, src, ref parserPos);
@@ -67,15 +67,15 @@ namespace Novartment.Base.Test
 			src = " a1\\ 1 (bb2\\)2) \"ccc3\\\"3\\ \",";
 			parserPos = 0;
 			token = StructuredStringToken.Parse (format, src, ref parserPos);
-			Assert.IsType<StructuredStringTokenFormatValue> (token.Format);
+			Assert.IsType<StructuredStringValueTokenFormat> (token.Format);
 			Assert.Equal (1, token.Position); // 'a1'
 			Assert.Equal (2, token.Length);
 			token = StructuredStringToken.Parse (format, src, ref parserPos);
-			Assert.IsType<StructuredStringTokenFormatSeparator> (token.Format);
+			Assert.IsType<StructuredStringSeparatorTokenFormat> (token.Format);
 			Assert.Equal (3, token.Position); // '\'
 			Assert.Equal (1, token.Length);
 			token = StructuredStringToken.Parse (format, src, ref parserPos);
-			Assert.IsType<StructuredStringTokenFormatValue> (token.Format);
+			Assert.IsType<StructuredStringValueTokenFormat> (token.Format);
 			Assert.Equal (5, token.Position); // '1'
 			Assert.Equal (1, token.Length);
 			token = StructuredStringToken.Parse (format, src, ref parserPos);
@@ -87,7 +87,7 @@ namespace Novartment.Base.Test
 			Assert.Equal (16, token.Position); // 'ccc3\"3\ '
 			Assert.Equal (11, token.Length);
 			token = StructuredStringToken.Parse (format, src, ref parserPos);
-			Assert.IsType<StructuredStringTokenFormatSeparator> (token.Format);
+			Assert.IsType<StructuredStringSeparatorTokenFormat> (token.Format);
 			Assert.Equal (27, token.Position); // ','
 			Assert.Equal (1, token.Length);
 			token = StructuredStringToken.Parse (format, src, ref parserPos);
@@ -98,23 +98,23 @@ namespace Novartment.Base.Test
 			parserPos = 0;
 			format = new StructuredStringFormat (AsciiCharClasses.WhiteSpace, AsciiCharClasses.Atom, false, allFormats);
 			token = StructuredStringToken.Parse (format, src, ref parserPos);
-			Assert.IsType<StructuredStringTokenFormatValue> (token.Format);
+			Assert.IsType<StructuredStringValueTokenFormat> (token.Format);
 			Assert.Equal (0, token.Position); // abc
 			Assert.Equal (3, token.Length);
 			token = StructuredStringToken.Parse (format, src, ref parserPos);
-			Assert.IsType<StructuredStringTokenFormatSeparator> (token.Format);
+			Assert.IsType<StructuredStringSeparatorTokenFormat> (token.Format);
 			Assert.Equal (3, token.Position); // ,
 			Assert.Equal (1, token.Length);
 			token = StructuredStringToken.Parse (format, src, ref parserPos);
-			Assert.IsType<StructuredStringTokenFormatValue> (token.Format);
+			Assert.IsType<StructuredStringValueTokenFormat> (token.Format);
 			Assert.Equal (4, token.Position); // de
 			Assert.Equal (2, token.Length);
 			token = StructuredStringToken.Parse (format, src, ref parserPos);
-			Assert.IsType<StructuredStringTokenFormatSeparator> (token.Format);
+			Assert.IsType<StructuredStringSeparatorTokenFormat> (token.Format);
 			Assert.Equal (6, token.Position); // ;
 			Assert.Equal (1, token.Length);
 			token = StructuredStringToken.Parse (format, src, ref parserPos);
-			Assert.IsType<StructuredStringTokenFormatValue> (token.Format);
+			Assert.IsType<StructuredStringValueTokenFormat> (token.Format);
 			Assert.Equal (7, token.Position); // fgh
 			Assert.Equal (3, token.Length);
 			token = StructuredStringToken.Parse (format, src, ref parserPos);

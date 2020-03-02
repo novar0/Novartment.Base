@@ -148,9 +148,9 @@ namespace Novartment.Base.Net.Mime
 
 			// три элемента
 			if ((token4.Format == null) &&
-				((token1.Format is StructuredStringTokenFormatValue) || (token1.Format is TokenFormatQuotedString)) &&
+				((token1.Format is StructuredStringValueTokenFormat) || (token1.Format is TokenFormatQuotedString)) &&
 				token2.IsSeparator (source, '@') &&
-				((token3.Format is StructuredStringTokenFormatValue) || token3.Format is TokenFormatQuotedString))
+				((token3.Format is StructuredStringValueTokenFormat) || token3.Format is TokenFormatQuotedString))
 			{
 				/*
 				RFC 5322 part 3.4:
@@ -192,7 +192,7 @@ namespace Novartment.Base.Net.Mime
 
 					if (lastToken.Format != null)
 					{
-						if (!(lastToken.Format is TokenFormatQuotedString) && !(lastToken.Format is StructuredStringTokenFormatValue))
+						if (!(lastToken.Format is TokenFormatQuotedString) && !(lastToken.Format is StructuredStringValueTokenFormat))
 						{
 							throw new FormatException ("Value does not conform to format 'mailbox'.");
 						}

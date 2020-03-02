@@ -6,7 +6,7 @@ namespace Novartment.Base.Net.Smtp
 	internal class SmtpMailFromCommand : SmtpCommand
 	{
 		internal static readonly AddrSpec _emptyAddrSpec = new AddrSpec (Guid.NewGuid ().ToString (), "local");
-		private static readonly StructuredStringFormat _DotAtomFormat = new StructuredStringFormat (AsciiCharClasses.WhiteSpace, AsciiCharClasses.Atom, true, new StructuredStringTokenFormat[] { StructuredStringTokenFormatPath.Instance });
+		private static readonly StructuredStringFormat _DotAtomFormat = new StructuredStringFormat (AsciiCharClasses.WhiteSpace, AsciiCharClasses.Atom, true, new StructuredStringCustomTokenFormat[] { StructuredStringTokenFormatPath.Instance });
 
 		private readonly ContentTransferEncoding _requestedContentTransferEncoding;
 

@@ -2,9 +2,9 @@
 
 namespace Novartment.Base.Net.Smtp
 {
-	internal class StructuredStringTokenFormatPath : StructuredStringTokenFormat
+	internal class StructuredStringTokenFormatPath : StructuredStringTokenDelimitedFormat
 	{
-		internal static readonly StructuredStringTokenFormat Instance = new StructuredStringTokenFormatPath ();
+		internal static readonly StructuredStringTokenDelimitedFormat Instance = new StructuredStringTokenFormatPath ();
 
 		private StructuredStringTokenFormatPath ()
 			: base ('<', '>', IngoreTokenType.QuotedValue, false)

@@ -5,7 +5,7 @@ namespace Novartment.Base.Net.Smtp
 {
 	internal class SmtpRcptToCommand : SmtpCommand
 	{
-		private static readonly StructuredStringFormat _DotAtomParser = new StructuredStringFormat (AsciiCharClasses.WhiteSpace, AsciiCharClasses.Atom, true, new StructuredStringTokenFormat[] { StructuredStringTokenFormatPath.Instance });
+		private static readonly StructuredStringFormat _DotAtomParser = new StructuredStringFormat (AsciiCharClasses.WhiteSpace, AsciiCharClasses.Atom, true, new StructuredStringCustomTokenFormat[] { StructuredStringTokenFormatPath.Instance });
 
 		internal SmtpRcptToCommand (AddrSpec recipient)
 			: base (SmtpCommandType.RcptTo)

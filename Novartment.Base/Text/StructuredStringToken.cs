@@ -11,8 +11,8 @@ namespace Novartment.Base.Text
 	[DebuggerDisplay ("{Format}: {Position}...{Position+Length}")]
 	public readonly ref struct StructuredStringToken
 	{
-		private static readonly StructuredStringTokenFormat _formatSeparator = new StructuredStringTokenFormatSeparator ();
-		private static readonly StructuredStringTokenFormat _formatValue = new StructuredStringTokenFormatValue ();
+		private static readonly StructuredStringTokenFormat _formatSeparator = new StructuredStringSeparatorTokenFormat ();
+		private static readonly StructuredStringTokenFormat _formatValue = new StructuredStringValueTokenFormat ();
 
 		/// <summary>
 		/// Инициализирует новый экземпляр класса StructuredHeaderFieldLexicalToken с указанным типом, позицией и количеством знаков.
@@ -27,7 +27,7 @@ namespace Novartment.Base.Text
 				throw new ArgumentOutOfRangeException (nameof (position));
 			}
 
-			if ((length < 0) || ((format is StructuredStringTokenFormatSeparator) && (length != 1)))
+			if ((length < 0) || ((format is StructuredStringSeparatorTokenFormat) && (length != 1)))
 			{
 				throw new ArgumentOutOfRangeException (nameof (length));
 			}
@@ -78,7 +78,7 @@ namespace Novartment.Base.Text
 		/// <returns>True если токен является указанным символом-сепаратором.</returns>
 		public bool IsSeparator (ReadOnlySpan<char> source, char separator)
 		{
-			return (this.Format is StructuredStringTokenFormatSeparator) && (source[this.Position] == separator);
+			return (this.Format is StructuredStringSeparatorTokenFormat) && (source[this.Position] == separator);
 		}
 
 		/// <summary>
@@ -89,6 +89,7 @@ namespace Novartment.Base.Text
 		/// StructuredStringTokenFormatValue - значение.
 		/// Дополнительные форматы для распознавания указываются в format.CustomTokenFormats.
 		/// </summary>
+		/// <param name="format">.</param>
 		/// <param name="source">Структурированная строка, состоящая из лексических токенов.</param>
 		/// <param name="position">
 		/// Позиция в source, начиная с которой будет получен токен.
@@ -101,7 +102,6 @@ namespace Novartment.Base.Text
 			var whiteSpaceClasses = format.WhiteSpaceClasses;
 			var valueClasses = format.ValueClasses;
 			var allowDotInsideValue = format.AllowDotInsideValue;
-			var customTokenFormats = format.CustomTokenFormats;
 			while (position < source.Length)
 			{
 				char octet;
@@ -121,25 +121,12 @@ namespace Novartment.Base.Text
 					}
 				}
 
-				// TODO: оптимизировать этот цикл проверки, потому что он запускается на каждый символ значения
-				// проверяем все форматы, ограниченные определёнными символами
-				if (customTokenFormats != null)
+				// проверяем все пользовательские форматы
+				var customFormatToken = format.ParseCustomFormats (source, position);
+				if (customFormatToken.Length > 0)
 				{
-					foreach (var tokenFormat in customTokenFormats)
-					{
-						if (octet == tokenFormat.StartMarker)
-						{
-							var startPos = position;
-							position = SkipDelimitedToken (
-								source: source,
-								pos: position,
-								startMarker: tokenFormat.StartMarker,
-								endMarker: tokenFormat.EndMarker,
-								ignoreToken: tokenFormat.IgnoreToken,
-								allowNesting: tokenFormat.AllowNesting);
-							return new StructuredStringToken (tokenFormat, startPos, position - startPos);
-						}
-					}
+					position += customFormatToken.Length;
+					return customFormatToken;
 				}
 
 				var valuePos = position;
@@ -186,68 +173,6 @@ namespace Novartment.Base.Text
 			}
 
 			return default;
-		}
-
-		/// <summary>
-		/// Выделяет в указанной строке поддиапазон, отвечающий указанному ограничению.
-		/// Если диапазон не соответствует требованиям ограничителя, то генерируется исключение.
-		/// </summary>
-		/// <returns>Позиция, следующая за endMarker.</returns>
-		private static int SkipDelimitedToken (ReadOnlySpan<char> source, int pos, char startMarker, char endMarker, IngoreTokenType ignoreToken, bool allowNesting)
-		{
-			// первый символ уже проверен, пропускаем
-			pos++;
-
-			int nestingLevel = 0;
-			while (nestingLevel >= 0)
-			{
-				if (pos >= source.Length)
-				{
-					throw new FormatException (FormattableString.Invariant ($"Ending end marker 0x'{endMarker:x}' not found in source."));
-				}
-
-				var octet = source[pos];
-				switch (ignoreToken)
-				{
-					case IngoreTokenType.QuotedValue when octet == '\"':
-						pos = SkipDelimitedToken (
-							source: source,
-							pos: pos,
-							startMarker: '\"',
-							endMarker: '\"',
-							ignoreToken: IngoreTokenType.EscapedChar,
-							allowNesting: false);
-						break;
-					case IngoreTokenType.EscapedChar when octet == '\\':
-						pos += 2;
-						if (pos > source.Length)
-						{
-							throw new FormatException ("Unexpected end of fixed-length token.");
-						}
-
-						break;
-					case IngoreTokenType.Unspecified:
-					default:
-						var isStartNested = allowNesting && (octet == startMarker);
-						if (isStartNested)
-						{
-							pos++;
-							nestingLevel++;
-						}
-						else
-						{
-							pos++;
-							if (octet == endMarker)
-							{
-								nestingLevel--;
-							}
-						}
-
-						break;
-				}
-			}
-
-			return pos;
 		}
 	}
 }

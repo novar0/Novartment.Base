@@ -13,7 +13,7 @@ using Novartment.Base.Text;
 
 namespace Novartment.Base.Net.Mime
 {
-	internal class TokenFormatQuotedString : StructuredStringTokenFormat
+	internal class TokenFormatQuotedString : StructuredStringTokenDelimitedFormat
 	{
 		internal TokenFormatQuotedString ()
 			: base ('\"', '\"', IngoreTokenType.EscapedChar, false)
@@ -40,7 +40,7 @@ namespace Novartment.Base.Net.Mime
 		}
 	}
 
-	internal class TokenFormatComment : StructuredStringTokenFormat
+	internal class TokenFormatComment : StructuredStringTokenDelimitedFormat
 	{
 		internal TokenFormatComment ()
 			: base ('(', ')', IngoreTokenType.EscapedChar, true)
@@ -48,7 +48,7 @@ namespace Novartment.Base.Net.Mime
 		}
 	}
 
-	internal class TokenFormatId : StructuredStringTokenFormat
+	internal class TokenFormatId : StructuredStringTokenDelimitedFormat
 	{
 		internal TokenFormatId ()
 			: base ('<', '>', IngoreTokenType.QuotedValue, false)
@@ -56,7 +56,7 @@ namespace Novartment.Base.Net.Mime
 		}
 	}
 
-	internal class TokenFormatLiteral : StructuredStringTokenFormat
+	internal class TokenFormatLiteral : StructuredStringTokenDelimitedFormat
 	{
 		internal TokenFormatLiteral ()
 			: base ('[', ']', IngoreTokenType.EscapedChar, false)
@@ -152,7 +152,7 @@ namespace Novartment.Base.Net.Mime
 			AsciiCharClasses.WhiteSpace,
 			AsciiCharClasses.Atom,
 			true,
-			new StructuredStringTokenFormat[] { new TokenFormatQuotedString (), new TokenFormatComment (), new TokenFormatId (), new TokenFormatLiteral ()});
+			new StructuredStringCustomTokenFormat[] { new TokenFormatQuotedString (), new TokenFormatComment (), new TokenFormatId (), new TokenFormatLiteral ()});
 
 		/// <summary>
 		/// Парсер структурированного значения типа RFC 822 'dot-atom' из его исходного ASCII-строкового представления.
@@ -161,7 +161,7 @@ namespace Novartment.Base.Net.Mime
 			AsciiCharClasses.WhiteSpace,
 			AsciiCharClasses.Atom,
 			false,
-			new StructuredStringTokenFormat[] { new TokenFormatQuotedString (), new TokenFormatComment (), new TokenFormatId (), new TokenFormatLiteral () });
+			new StructuredStringCustomTokenFormat[] { new TokenFormatQuotedString (), new TokenFormatComment (), new TokenFormatId (), new TokenFormatLiteral () });
 
 		/// <summary>
 		/// Парсер структурированного значения типа RFC 2045 'token' из его исходного ASCII-строкового представления.
@@ -170,7 +170,7 @@ namespace Novartment.Base.Net.Mime
 			AsciiCharClasses.WhiteSpace,
 			AsciiCharClasses.Token,
 			false,
-			new StructuredStringTokenFormat[] { new TokenFormatQuotedString (), new TokenFormatComment (), new TokenFormatId (), new TokenFormatLiteral () });
+			new StructuredStringCustomTokenFormat[] { new TokenFormatQuotedString (), new TokenFormatComment (), new TokenFormatId (), new TokenFormatLiteral () });
 
 		/// <summary>
 		/// Decodes 'atom' value from specified representation.
@@ -193,7 +193,7 @@ namespace Novartment.Base.Net.Mime
 				token2 = StructuredStringToken.Parse (TokenFormat, source, ref pos);
 			} while (token2.Format is TokenFormatComment);
 
-			if ((token2.Format != null) || !(token1.Format is StructuredStringTokenFormatValue))
+			if ((token2.Format != null) || !(token1.Format is StructuredStringValueTokenFormat))
 			{
 				throw new FormatException ("Invalid value for type 'atom'.");
 			}
@@ -352,7 +352,7 @@ namespace Novartment.Base.Net.Mime
 					outBuf[outPos++] = ' ';
 				}
 
-				outPos += (token.Format is StructuredStringTokenFormatValue) ?
+				outPos += (token.Format is StructuredStringValueTokenFormat) ?
 					DecodeTokenWithEncodedWord (token, source, outBuf.AsSpan (outPos)) :
 					token.Decode (source, outBuf.AsSpan (outPos));
 				prevIsWordEncoded = isWordEncoded;
@@ -396,7 +396,7 @@ namespace Novartment.Base.Net.Mime
 				}
 				else
 				{
-					if (!lastItemIsSeparator || !(token.Format is StructuredStringTokenFormatValue))
+					if (!lastItemIsSeparator || !(token.Format is StructuredStringValueTokenFormat))
 					{
 						throw new FormatException ("Value does not conform to format 'comma-separated atoms'.");
 					}
@@ -545,7 +545,7 @@ namespace Novartment.Base.Net.Mime
 						outBuf[outPos++] = ' ';
 					}
 
-					outPos += (lastToken.Format is StructuredStringTokenFormatValue) ?
+					outPos += (lastToken.Format is StructuredStringValueTokenFormat) ?
 						DecodeTokenWithEncodedWord (lastToken, source, outBuf.AsSpan (outPos)) :
 						lastToken.Decode (source, outBuf.AsSpan (outPos));
 					prevIsWordEncoded = isWordEncoded;
@@ -614,7 +614,7 @@ namespace Novartment.Base.Net.Mime
 						outBuf[outPos++] = ' ';
 					}
 
-					outPos += (token.Format is StructuredStringTokenFormatValue) ?
+					outPos += (token.Format is StructuredStringValueTokenFormat) ?
 						DecodeTokenWithEncodedWord (token, source, outBuf.AsSpan (outPos)) :
 						token.Decode (source, outBuf.AsSpan (outPos));
 					prevIsWordEncoded = isWordEncoded;
@@ -886,11 +886,11 @@ namespace Novartment.Base.Net.Mime
 			} while (separatorSlashToken2.Format is TokenFormatComment);
 
 			if (
-				!(actionModeToken.Format is StructuredStringTokenFormatValue) ||
+				!(actionModeToken.Format is StructuredStringValueTokenFormat) ||
 				!separatorSlashToken1.IsSeparator (source, '/') ||
-				!(sendingModeToken.Format is StructuredStringTokenFormatValue) ||
+				!(sendingModeToken.Format is StructuredStringValueTokenFormat) ||
 				!separatorSemicolonToken.IsSeparator (source, ';') ||
-				!(dispositionTypeToken.Format is StructuredStringTokenFormatValue))
+				!(dispositionTypeToken.Format is StructuredStringValueTokenFormat))
 			{
 				throw new FormatException ("Specified value does not represent valid 'disposition-action'.");
 			}
@@ -940,7 +940,7 @@ namespace Novartment.Base.Net.Mime
 				}
 				else
 				{
-					if (!lastItemIsSeparator || !(token.Format is StructuredStringTokenFormatValue))
+					if (!lastItemIsSeparator || !(token.Format is StructuredStringValueTokenFormat))
 					{
 						throw new FormatException ("Value does not conform to format 'comma-separated atoms'.");
 					}
@@ -1002,9 +1002,9 @@ namespace Novartment.Base.Net.Mime
 				} while (importanceToken.Format is TokenFormatComment);
 
 				if (
-					!(attributeToken.Format is StructuredStringTokenFormatValue) ||
+					!(attributeToken.Format is StructuredStringValueTokenFormat) ||
 					!equalityToken.IsSeparator (source, '=') ||
-					!(importanceToken.Format is StructuredStringTokenFormatValue))
+					!(importanceToken.Format is StructuredStringValueTokenFormat))
 				{
 					throw new FormatException ("Invalid value of 'disposition-notification' parameter.");
 				}
@@ -1050,7 +1050,7 @@ namespace Novartment.Base.Net.Mime
 					} while (valueToken.Format is TokenFormatComment);
 
 					var isDoubleQuotedValue = valueToken.Format is TokenFormatQuotedString;
-					if (!(valueToken.Format is StructuredStringTokenFormatValue) && !isDoubleQuotedValue)
+					if (!(valueToken.Format is StructuredStringValueTokenFormat) && !isDoubleQuotedValue)
 					{
 						throw new FormatException ("Invalid value of 'disposition-notification' parameter.");
 					}
@@ -1146,9 +1146,9 @@ namespace Novartment.Base.Net.Mime
 			} while (excessToken.Format is TokenFormatComment);
 
 			if ((excessToken.Format != null) ||
-				!(numberToken1.Format is StructuredStringTokenFormatValue) ||
+				!(numberToken1.Format is StructuredStringValueTokenFormat) ||
 				!separatorDotToken.IsSeparator (source, '.') ||
-				!(numberToken2.Format is StructuredStringTokenFormatValue))
+				!(numberToken2.Format is StructuredStringValueTokenFormat))
 			{
 				throw new FormatException ("Value does not conform to format 'version'.");
 			}
@@ -1440,7 +1440,7 @@ namespace Novartment.Base.Net.Mime
 				valueToken = StructuredStringToken.Parse (TokenFormat, source, ref parserPos);
 			} while (valueToken.Format is TokenFormatComment);
 
-			if (!(valueToken.Format is StructuredStringTokenFormatValue))
+			if (!(valueToken.Format is StructuredStringValueTokenFormat))
 			{
 				throw new FormatException ("Value does not conform to format 'language-q'. First item is not 'atom'.");
 			}
@@ -1482,9 +1482,9 @@ namespace Novartment.Base.Net.Mime
 				} while (qualityToken.Format is TokenFormatComment);
 
 				if (
-					!(separatorToken1.Format is StructuredStringTokenFormatValue) || ((source[separatorToken1.Position] != 'q') && (source[separatorToken1.Position] != 'Q')) ||
+					!(separatorToken1.Format is StructuredStringValueTokenFormat) || ((source[separatorToken1.Position] != 'q') && (source[separatorToken1.Position] != 'Q')) ||
 					!separatorToken2.IsSeparator (source, '=') ||
-					!(qualityToken.Format is StructuredStringTokenFormatValue))
+					!(qualityToken.Format is StructuredStringValueTokenFormat))
 				{
 					throw new FormatException ("Value does not conform to format 'language-q'.");
 				}

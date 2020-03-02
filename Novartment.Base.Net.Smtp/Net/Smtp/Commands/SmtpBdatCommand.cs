@@ -43,7 +43,7 @@ namespace Novartment.Base.Net.Smtp
 
 			var pos = 0;
 			var sizeTone = StructuredStringToken.Parse (_NumberFormat, value, ref pos);
-			if (!(sizeTone.Format is StructuredStringTokenFormatValue))
+			if (!(sizeTone.Format is StructuredStringValueTokenFormat))
 			{
 				return new SmtpInvalidSyntaxCommand (SmtpCommandType.Bdat, "Unrecognized size parameter in 'BDAT' command.");
 			}

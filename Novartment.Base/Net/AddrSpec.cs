@@ -11,7 +11,7 @@ namespace Novartment.Base.Net
 	public class AddrSpec :
 		IEquatable<AddrSpec>
 	{
-		internal class TokenFormatQuotedString : StructuredStringTokenFormat
+		internal class TokenFormatQuotedString : StructuredStringTokenDelimitedFormat
 		{
 			internal TokenFormatQuotedString ()
 				: base ('\"', '\"', IngoreTokenType.EscapedChar, false)
@@ -38,7 +38,7 @@ namespace Novartment.Base.Net
 			}
 		}
 
-		internal class TokenFormatComment : StructuredStringTokenFormat
+		internal class TokenFormatComment : StructuredStringTokenDelimitedFormat
 		{
 			internal TokenFormatComment ()
 				: base ('(', ')', IngoreTokenType.EscapedChar, true)
@@ -46,7 +46,7 @@ namespace Novartment.Base.Net
 			}
 		}
 
-		internal class TokenFormatLiteral : StructuredStringTokenFormat
+		internal class TokenFormatLiteral : StructuredStringTokenDelimitedFormat
 		{
 			internal TokenFormatLiteral ()
 				: base ('[', ']', IngoreTokenType.EscapedChar, false)
@@ -73,7 +73,7 @@ namespace Novartment.Base.Net
 			}
 		}
 
-		internal class TokenFormatId : StructuredStringTokenFormat
+		internal class TokenFormatId : StructuredStringTokenDelimitedFormat
 		{
 			internal TokenFormatId ()
 				: base ('<', '>', IngoreTokenType.QuotedValue, false)
@@ -85,7 +85,7 @@ namespace Novartment.Base.Net
 			AsciiCharClasses.WhiteSpace,
 			AsciiCharClasses.Atom,
 			true,
-			new StructuredStringTokenFormat[] { new TokenFormatQuotedString (), new TokenFormatComment (), new TokenFormatLiteral (), new TokenFormatId () });
+			new StructuredStringCustomTokenFormat[] { new TokenFormatQuotedString (), new TokenFormatComment (), new TokenFormatLiteral (), new TokenFormatId () });
 
 		/// <summary>
 		/// Initializes a new instance of the AddrSpec class
@@ -233,15 +233,15 @@ namespace Novartment.Base.Net
 				token2 = StructuredStringToken.Parse (DotAtomFormat, source, ref parserPos);
 			} while (token2.Format is TokenFormatComment);
 
-			if ((token1.Format != null) && !(token1.Format is StructuredStringTokenFormatSeparator) && (token2.Format == null))
+			if ((token1.Format != null) && !(token1.Format is StructuredStringSeparatorTokenFormat) && (token2.Format == null))
 			{
 				// особый случай для совместимости со старыми реализациями
 #if NETSTANDARD2_0
-				localPart = token1.Format is StructuredStringTokenFormatValue ?
+				localPart = token1.Format is StructuredStringValueTokenFormat ?
 					new string (source.Slice (token1.Position, token1.Length).ToArray ()) :
 					new string (source.Slice (token1.Position + 1, token1.Length - 2).ToArray ());
 #else
-				localPart = token1.Format is StructuredStringTokenFormatValue ?
+				localPart = token1.Format is StructuredStringValueTokenFormat ?
 					new string (source.Slice (token1.Position, token1.Length)) :
 					new string (source.Slice (token1.Position + 1, token1.Length - 2));
 #endif
@@ -262,9 +262,9 @@ namespace Novartment.Base.Net
 				} while (token4.Format is TokenFormatComment);
 
 				if ((token4.Format != null) ||
-					(!(token1.Format is StructuredStringTokenFormatValue) && !(token1.Format is TokenFormatQuotedString)) ||
+					(!(token1.Format is StructuredStringValueTokenFormat) && !(token1.Format is TokenFormatQuotedString)) ||
 					!token2.IsSeparator (source, '@') ||
-					(!(token3.Format is StructuredStringTokenFormatValue) && !(token3.Format is TokenFormatLiteral)))
+					(!(token3.Format is StructuredStringValueTokenFormat) && !(token3.Format is TokenFormatLiteral)))
 				{
 					throw new FormatException ("Value does not conform to format 'addr-spec'.");
 				}
