@@ -108,7 +108,7 @@ namespace Novartment.Base.Net.Mime
 			StructuredStringToken token1;
 			do
 			{
-				token1 = StructuredStringToken.Parse (HeaderDecoder.DotAtomFormat, source, ref parserPos);
+				token1 = HeaderDecoder.DotAtomFormat.ParseToken (source, ref parserPos);
 			} while (token1.Format is TokenFormatComment);
 
 			if (token1.Format == null)
@@ -119,7 +119,7 @@ namespace Novartment.Base.Net.Mime
 			StructuredStringToken token2;
 			do
 			{
-				token2 = StructuredStringToken.Parse (HeaderDecoder.DotAtomFormat, source, ref parserPos);
+				token2 = HeaderDecoder.DotAtomFormat.ParseToken (source, ref parserPos);
 			} while (token2.Format is TokenFormatComment);
 
 			// один элемент
@@ -137,20 +137,20 @@ namespace Novartment.Base.Net.Mime
 			StructuredStringToken token3;
 			do
 			{
-				token3 = StructuredStringToken.Parse (HeaderDecoder.DotAtomFormat, source, ref parserPos);
+				token3 = HeaderDecoder.DotAtomFormat.ParseToken (source, ref parserPos);
 			} while (token3.Format is TokenFormatComment);
 
 			StructuredStringToken token4;
 			do
 			{
-				token4 = StructuredStringToken.Parse (HeaderDecoder.DotAtomFormat, source, ref parserPos);
+				token4 = HeaderDecoder.DotAtomFormat.ParseToken (source, ref parserPos);
 			} while (token4.Format is TokenFormatComment);
 
 			// три элемента
 			if ((token4.Format == null) &&
-				((token1.Format is StructuredStringValueTokenFormat) || (token1.Format is TokenFormatQuotedString)) &&
+				((token1.Format is StructuredStringTokenValueFormat) || (token1.Format is TokenFormatQuotedString)) &&
 				token2.IsSeparator (source, '@') &&
-				((token3.Format is StructuredStringValueTokenFormat) || token3.Format is TokenFormatQuotedString))
+				((token3.Format is StructuredStringTokenValueFormat) || token3.Format is TokenFormatQuotedString))
 			{
 				/*
 				RFC 5322 part 3.4:
@@ -177,7 +177,7 @@ namespace Novartment.Base.Net.Mime
 					StructuredStringToken token;
 					do
 					{
-						token = StructuredStringToken.Parse (HeaderDecoder.DotAtomFormat, source, ref parserPos);
+						token = HeaderDecoder.DotAtomFormat.ParseToken (source, ref parserPos);
 					} while (token.Format is TokenFormatComment);
 
 					if (token.Format == null)
@@ -192,7 +192,7 @@ namespace Novartment.Base.Net.Mime
 
 					if (lastToken.Format != null)
 					{
-						if (!(lastToken.Format is TokenFormatQuotedString) && !(lastToken.Format is StructuredStringValueTokenFormat))
+						if (!(lastToken.Format is TokenFormatQuotedString) && !(lastToken.Format is StructuredStringTokenValueFormat))
 						{
 							throw new FormatException ("Value does not conform to format 'mailbox'.");
 						}
@@ -211,7 +211,7 @@ namespace Novartment.Base.Net.Mime
 
 						outPos += isWordEncoded ?
 							Rfc2047EncodedWord.Parse (source.Slice (lastToken.Position, lastToken.Length), outBuf.AsSpan (outPos)) :
-							lastToken.Decode (source, outBuf.AsSpan (outPos));
+							lastToken.Format.DecodeToken (lastToken, source, outBuf.AsSpan (outPos));
 						prevIsWordEncoded = isWordEncoded;
 					}
 

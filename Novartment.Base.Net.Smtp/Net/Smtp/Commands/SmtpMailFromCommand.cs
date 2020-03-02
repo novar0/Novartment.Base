@@ -6,7 +6,7 @@ namespace Novartment.Base.Net.Smtp
 	internal class SmtpMailFromCommand : SmtpCommand
 	{
 		internal static readonly AddrSpec _emptyAddrSpec = new AddrSpec (Guid.NewGuid ().ToString (), "local");
-		private static readonly StructuredStringFormat _DotAtomFormat = new StructuredStringFormat (AsciiCharClasses.WhiteSpace, AsciiCharClasses.Atom, true, new StructuredStringCustomTokenFormat[] { StructuredStringTokenFormatPath.Instance });
+		private static readonly StructuredStringFormat _DotAtomFormat = new StructuredStringFormat (AsciiCharClasses.WhiteSpace, AsciiCharClasses.Atom, true, new StructuredStringTokenCustomFormat[] { StructuredStringTokenFormatPath.Instance });
 
 		private readonly ContentTransferEncoding _requestedContentTransferEncoding;
 
@@ -62,7 +62,7 @@ namespace Novartment.Base.Net.Smtp
 			*/
 
 			var pos = 0;
-			var pathToken = StructuredStringToken.Parse (_DotAtomFormat, value, ref pos);
+			var pathToken = _DotAtomFormat.ParseToken (value, ref pos);
 			if (!(pathToken.Format is StructuredStringTokenFormatPath))
 			{
 				return new SmtpInvalidSyntaxCommand (SmtpCommandType.MailFrom, "Unrecognized 'MAIL FROM' parameter.");

@@ -7,7 +7,7 @@ namespace Novartment.Base.Net.Smtp
 		internal static readonly StructuredStringTokenDelimitedFormat Instance = new StructuredStringTokenFormatPath ();
 
 		private StructuredStringTokenFormatPath ()
-			: base ('<', '>', IngoreTokenType.QuotedValue, false)
+			: base ('<', '>', StructuredStringIngoreTokenType.QuotedValue, false)
 		{
 		}
 	}

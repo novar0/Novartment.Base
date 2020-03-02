@@ -42,8 +42,8 @@ namespace Novartment.Base.Net.Smtp
 			*/
 
 			var pos = 0;
-			var sizeTone = StructuredStringToken.Parse (_NumberFormat, value, ref pos);
-			if (!(sizeTone.Format is StructuredStringValueTokenFormat))
+			var sizeTone = _NumberFormat.ParseToken (value, ref pos);
+			if (!(sizeTone.Format is StructuredStringTokenValueFormat))
 			{
 				return new SmtpInvalidSyntaxCommand (SmtpCommandType.Bdat, "Unrecognized size parameter in 'BDAT' command.");
 			}
@@ -66,7 +66,7 @@ namespace Novartment.Base.Net.Smtp
 #endif
 
 				// любые непробельные символы после размера считаем индикатором последней части
-				isLast = StructuredStringToken.Parse (_AnyVisibleCharFormat, value, ref pos).Format != null;
+				isLast = _AnyVisibleCharFormat.ParseToken (value, ref pos).Format != null;
 			}
 			catch (FormatException excpt)
 			{

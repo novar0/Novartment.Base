@@ -14,7 +14,7 @@ namespace Novartment.Base.Net
 		internal class TokenFormatQuotedString : StructuredStringTokenDelimitedFormat
 		{
 			internal TokenFormatQuotedString ()
-				: base ('\"', '\"', IngoreTokenType.EscapedChar, false)
+				: base ('\"', '\"', StructuredStringIngoreTokenType.EscapedChar, false)
 			{
 			}
 
@@ -41,7 +41,7 @@ namespace Novartment.Base.Net
 		internal class TokenFormatComment : StructuredStringTokenDelimitedFormat
 		{
 			internal TokenFormatComment ()
-				: base ('(', ')', IngoreTokenType.EscapedChar, true)
+				: base ('(', ')', StructuredStringIngoreTokenType.EscapedChar, true)
 			{
 			}
 		}
@@ -49,7 +49,7 @@ namespace Novartment.Base.Net
 		internal class TokenFormatLiteral : StructuredStringTokenDelimitedFormat
 		{
 			internal TokenFormatLiteral ()
-				: base ('[', ']', IngoreTokenType.EscapedChar, false)
+				: base ('[', ']', StructuredStringIngoreTokenType.EscapedChar, false)
 			{
 			}
 
@@ -76,7 +76,7 @@ namespace Novartment.Base.Net
 		internal class TokenFormatId : StructuredStringTokenDelimitedFormat
 		{
 			internal TokenFormatId ()
-				: base ('<', '>', IngoreTokenType.QuotedValue, false)
+				: base ('<', '>', StructuredStringIngoreTokenType.QuotedValue, false)
 			{
 			}
 		}
@@ -85,7 +85,7 @@ namespace Novartment.Base.Net
 			AsciiCharClasses.WhiteSpace,
 			AsciiCharClasses.Atom,
 			true,
-			new StructuredStringCustomTokenFormat[] { new TokenFormatQuotedString (), new TokenFormatComment (), new TokenFormatLiteral (), new TokenFormatId () });
+			new StructuredStringTokenCustomFormat[] { new TokenFormatQuotedString (), new TokenFormatComment (), new TokenFormatLiteral (), new TokenFormatId () });
 
 		/// <summary>
 		/// Initializes a new instance of the AddrSpec class
@@ -224,24 +224,24 @@ namespace Novartment.Base.Net
 			StructuredStringToken token1;
 			do
 			{
-				token1 = StructuredStringToken.Parse (DotAtomFormat, source, ref parserPos);
+				token1 = DotAtomFormat.ParseToken (source, ref parserPos);
 			} while (token1.Format is TokenFormatComment);
 
 			StructuredStringToken token2;
 			do
 			{
-				token2 = StructuredStringToken.Parse (DotAtomFormat, source, ref parserPos);
+				token2 = DotAtomFormat.ParseToken (source, ref parserPos);
 			} while (token2.Format is TokenFormatComment);
 
-			if ((token1.Format != null) && !(token1.Format is StructuredStringSeparatorTokenFormat) && (token2.Format == null))
+			if ((token1.Format != null) && !(token1.Format is StructuredStringTokenSeparatorFormat) && (token2.Format == null))
 			{
 				// особый случай для совместимости со старыми реализациями
 #if NETSTANDARD2_0
-				localPart = token1.Format is StructuredStringValueTokenFormat ?
+				localPart = token1.Format is StructuredStringTokenValueFormat ?
 					new string (source.Slice (token1.Position, token1.Length).ToArray ()) :
 					new string (source.Slice (token1.Position + 1, token1.Length - 2).ToArray ());
 #else
-				localPart = token1.Format is StructuredStringValueTokenFormat ?
+				localPart = token1.Format is StructuredStringTokenValueFormat ?
 					new string (source.Slice (token1.Position, token1.Length)) :
 					new string (source.Slice (token1.Position + 1, token1.Length - 2));
 #endif
@@ -252,28 +252,28 @@ namespace Novartment.Base.Net
 				StructuredStringToken token3;
 				do
 				{
-					token3 = StructuredStringToken.Parse (DotAtomFormat, source, ref parserPos);
+					token3 = DotAtomFormat.ParseToken (source, ref parserPos);
 				} while (token3.Format is TokenFormatComment);
 
 				StructuredStringToken token4;
 				do
 				{
-					token4 = StructuredStringToken.Parse (DotAtomFormat, source, ref parserPos);
+					token4 = DotAtomFormat.ParseToken (source, ref parserPos);
 				} while (token4.Format is TokenFormatComment);
 
 				if ((token4.Format != null) ||
-					(!(token1.Format is StructuredStringValueTokenFormat) && !(token1.Format is TokenFormatQuotedString)) ||
+					(!(token1.Format is StructuredStringTokenValueFormat) && !(token1.Format is TokenFormatQuotedString)) ||
 					!token2.IsSeparator (source, '@') ||
-					(!(token3.Format is StructuredStringValueTokenFormat) && !(token3.Format is TokenFormatLiteral)))
+					(!(token3.Format is StructuredStringTokenValueFormat) && !(token3.Format is TokenFormatLiteral)))
 				{
 					throw new FormatException ("Value does not conform to format 'addr-spec'.");
 				}
 
 				// RFC 5321 4.5.3.1.2: The maximum total length of a domain name or number is 255 octets.
 				var buf = new char[255];
-				var len = token1.Decode (source, buf);
+				var len = token1.Format.DecodeToken (token1, source, buf);
 				localPart = new string (buf, 0, len);
-				len = token3.Decode (source, buf);
+				len = token3.Format.DecodeToken (token3, source, buf);
 				domain = new string (buf, 0, len);
 			}
 

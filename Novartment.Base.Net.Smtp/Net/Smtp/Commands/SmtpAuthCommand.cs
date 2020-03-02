@@ -64,8 +64,8 @@ namespace Novartment.Base.Net.Smtp
 			*/
 
 			var pos = 0;
-			var saslMechToken = StructuredStringToken.Parse (_TokenFormat, value, ref pos);
-			if (!(saslMechToken.Format is StructuredStringValueTokenFormat))
+			var saslMechToken = _TokenFormat.ParseToken (value, ref pos);
+			if (!(saslMechToken.Format is StructuredStringTokenValueFormat))
 			{
 				return new SmtpInvalidSyntaxCommand (SmtpCommandType.Auth, "Unrecognized 'AUTH' mechanism parameter.");
 			}
@@ -76,7 +76,7 @@ namespace Novartment.Base.Net.Smtp
 			var mechanism = new string (value.Slice (saslMechToken.Position, saslMechToken.Length));
 #endif
 
-			var initialEesponseToken = StructuredStringToken.Parse (_AnyVisibleCharFormat, value, ref pos);
+			var initialEesponseToken = _AnyVisibleCharFormat.ParseToken (value, ref pos);
 			if ((initialEesponseToken.Format == null) || ((initialEesponseToken.Length == 1) && (value[initialEesponseToken.Position] == '=')))
 			{
 				return new SmtpAuthCommand (mechanism, default);

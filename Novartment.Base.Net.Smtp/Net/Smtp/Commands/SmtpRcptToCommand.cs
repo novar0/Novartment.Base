@@ -5,7 +5,7 @@ namespace Novartment.Base.Net.Smtp
 {
 	internal class SmtpRcptToCommand : SmtpCommand
 	{
-		private static readonly StructuredStringFormat _DotAtomParser = new StructuredStringFormat (AsciiCharClasses.WhiteSpace, AsciiCharClasses.Atom, true, new StructuredStringCustomTokenFormat[] { StructuredStringTokenFormatPath.Instance });
+		private static readonly StructuredStringFormat _DotAtomParser = new StructuredStringFormat (AsciiCharClasses.WhiteSpace, AsciiCharClasses.Atom, true, new StructuredStringTokenCustomFormat[] { StructuredStringTokenFormatPath.Instance });
 
 		internal SmtpRcptToCommand (AddrSpec recipient)
 			: base (SmtpCommandType.RcptTo)
@@ -28,7 +28,7 @@ namespace Novartment.Base.Net.Smtp
 			Forward-path = "<" Mailbox ">"
 			*/
 			var pos = 0;
-			var pathToken = StructuredStringToken.Parse (_DotAtomParser, value, ref pos);
+			var pathToken = _DotAtomParser.ParseToken (value, ref pos);
 			if (!(pathToken.Format is StructuredStringTokenFormatPath))
 			{
 				return new SmtpInvalidSyntaxCommand (SmtpCommandType.RcptTo, "Unrecognized 'RCPT TO' parameter.");
