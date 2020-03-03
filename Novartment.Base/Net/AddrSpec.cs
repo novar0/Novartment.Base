@@ -11,81 +11,45 @@ namespace Novartment.Base.Net
 	public class AddrSpec :
 		IEquatable<AddrSpec>
 	{
-		internal class TokenFormatQuotedString : StructuredStringTokenDelimitedFormat
-		{
-			internal TokenFormatQuotedString ()
-				: base ('\"', '\"', StructuredStringIngoreTokenType.EscapedChar, false)
-			{
-			}
-
-			public override int DecodeToken (StructuredStringToken token, ReadOnlySpan<char> source, Span<char> buffer)
-			{
-				int idx = 0;
-				var endPos = token.Position + token.Length - 1;
-				for (var i = token.Position + 1; i < endPos; i++)
-				{
-					var ch = source[i];
-					if (ch == '\\')
-					{
-						i++;
-						ch = source[i];
-					}
-
-					buffer[idx++] = ch;
-				}
-
-				return idx;
-			}
-		}
-
 		internal class TokenFormatComment : StructuredStringTokenDelimitedFormat
 		{
-			internal TokenFormatComment ()
-				: base ('(', ')', StructuredStringIngoreTokenType.EscapedChar, true)
-			{
-			}
-		}
-
-		internal class TokenFormatLiteral : StructuredStringTokenDelimitedFormat
-		{
-			internal TokenFormatLiteral ()
-				: base ('[', ']', StructuredStringIngoreTokenType.EscapedChar, false)
-			{
-			}
-
-			public override int DecodeToken (StructuredStringToken token, ReadOnlySpan<char> source, Span<char> buffer)
-			{
-				int idx = 0;
-				var endPos = token.Position + token.Length - 1;
-				for (var i = token.Position + 1; i < endPos; i++)
-				{
-					var ch = source[i];
-					if (ch == '\\')
-					{
-						i++;
-						ch = source[i];
-					}
-
-					buffer[idx++] = ch;
-				}
-
-				return idx;
-			}
+			internal TokenFormatComment () : base ('(', ')', StructuredStringIngoreTokenType.EscapedChar, true) { }
 		}
 
 		internal class TokenFormatId : StructuredStringTokenDelimitedFormat
 		{
-			internal TokenFormatId ()
-				: base ('<', '>', StructuredStringIngoreTokenType.QuotedValue, false)
+			internal TokenFormatId () : base ('<', '>', StructuredStringIngoreTokenType.QuotedValue, false) { }
+		}
+
+		internal class TokenFormatLiteral : StructuredStringTokenDelimitedFormat
+		{
+			internal TokenFormatLiteral () : base ('[', ']', StructuredStringIngoreTokenType.EscapedChar, false) { }
+
+			public override int DecodeToken (ReadOnlySpan<char> source, Span<char> buffer)
 			{
+				int dstIdx = 0;
+				var endPos = source.Length - 1;
+				for (var srcIdx = 1; srcIdx < endPos; srcIdx++)
+				{
+					var ch = source[srcIdx];
+					if (ch == '\\')
+					{
+						srcIdx++;
+						ch = source[srcIdx];
+					}
+
+					buffer[dstIdx++] = ch;
+				}
+
+				return dstIdx;
 			}
 		}
 
 		private static readonly StructuredStringFormat DotAtomFormat = new StructuredStringFormat (
 			AsciiCharClasses.WhiteSpace,
 			AsciiCharClasses.Atom,
-			true,
-			new StructuredStringTokenCustomFormat[] { new TokenFormatQuotedString (), new TokenFormatComment (), new TokenFormatLiteral (), new TokenFormatId () });
+			'.',
+			new StructuredStringTokenCustomFormat[] { new StructuredStringTokenQuotedStringFormat (), new TokenFormatComment (), new TokenFormatId (), new TokenFormatLiteral () });
 
 		/// <summary>
 		/// Initializes a new instance of the AddrSpec class
@@ -262,7 +226,7 @@ namespace Novartment.Base.Net
 				} while (token4.Format is TokenFormatComment);
 
 				if ((token4.Format != null) ||
-					(!(token1.Format is StructuredStringTokenValueFormat) && !(token1.Format is TokenFormatQuotedString)) ||
+					(!(token1.Format is StructuredStringTokenValueFormat) && !(token1.Format is StructuredStringTokenQuotedStringFormat)) ||
 					!token2.IsSeparator (source, '@') ||
 					(!(token3.Format is StructuredStringTokenValueFormat) && !(token3.Format is TokenFormatLiteral)))
 				{
@@ -270,11 +234,19 @@ namespace Novartment.Base.Net
 				}
 
 				// RFC 5321 4.5.3.1.2: The maximum total length of a domain name or number is 255 octets.
+#if NETSTANDARD2_0
 				var buf = new char[255];
-				var len = token1.Format.DecodeToken (token1, source, buf);
+				var len = token1.Format.DecodeToken (source.Slice (token1.Position, token1.Length), buf);
 				localPart = new string (buf, 0, len);
-				len = token3.Format.DecodeToken (token3, source, buf);
+				len = token3.Format.DecodeToken (source.Slice (token3.Position, token3.Length), buf);
 				domain = new string (buf, 0, len);
+#else
+				Span<char> buf = stackalloc char[255];
+				var len = token1.Format.DecodeToken (source.Slice (token1.Position, token1.Length), buf);
+				localPart = new string (buf.Slice (0, len));
+				len = token3.Format.DecodeToken (source.Slice (token3.Position, token3.Length), buf);
+				domain = new string (buf.Slice (0, len));
+#endif
 			}
 
 			return new AddrSpec (localPart, domain);

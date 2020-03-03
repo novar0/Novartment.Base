@@ -125,7 +125,7 @@ namespace Novartment.Base.Net.Mime
 			// один элемент
 			if ((token1.Format != null) && (token2.Format == null))
 			{
-				if (token1.Format is TokenFormatId || token1.Format is TokenFormatQuotedString)
+				if (token1.Format is TokenFormatId || token1.Format is StructuredStringTokenQuotedStringFormat)
 				{
 					// non-standard form of addr-spec: "addrs@server.com"
 					return new Mailbox (AddrSpec.Parse (source.Slice (token1.Position + 1, token1.Length - 2)), null);
@@ -148,9 +148,9 @@ namespace Novartment.Base.Net.Mime
 
 			// три элемента
 			if ((token4.Format == null) &&
-				((token1.Format is StructuredStringTokenValueFormat) || (token1.Format is TokenFormatQuotedString)) &&
+				((token1.Format is StructuredStringTokenValueFormat) || (token1.Format is StructuredStringTokenQuotedStringFormat)) &&
 				token2.IsSeparator (source, '@') &&
-				((token3.Format is StructuredStringTokenValueFormat) || token3.Format is TokenFormatQuotedString))
+				((token3.Format is StructuredStringTokenValueFormat) || token3.Format is StructuredStringTokenQuotedStringFormat))
 			{
 				/*
 				RFC 5322 part 3.4:
@@ -192,7 +192,7 @@ namespace Novartment.Base.Net.Mime
 
 					if (lastToken.Format != null)
 					{
-						if (!(lastToken.Format is TokenFormatQuotedString) && !(lastToken.Format is StructuredStringTokenValueFormat))
+						if (!(lastToken.Format is StructuredStringTokenQuotedStringFormat) && !(lastToken.Format is StructuredStringTokenValueFormat))
 						{
 							throw new FormatException ("Value does not conform to format 'mailbox'.");
 						}
@@ -211,7 +211,7 @@ namespace Novartment.Base.Net.Mime
 
 						outPos += isWordEncoded ?
 							Rfc2047EncodedWord.Parse (source.Slice (lastToken.Position, lastToken.Length), outBuf.AsSpan (outPos)) :
-							lastToken.Format.DecodeToken (lastToken, source, outBuf.AsSpan (outPos));
+							lastToken.Format.DecodeToken (source.Slice (lastToken.Position, lastToken.Length), outBuf.AsSpan (outPos));
 						prevIsWordEncoded = isWordEncoded;
 					}
 

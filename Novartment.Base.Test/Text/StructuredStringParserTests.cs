@@ -33,13 +33,13 @@ namespace Novartment.Base.Test
 			var allFormats = new StructuredStringTokenDelimitedFormat[] { new TokenFormatQuotedString (), new TokenFormatComment (), new TokenFormatLiteral (), new TokenFormatId () };
 			ReadOnlySpan<char> src = default;
 			var parserPos = 0;
-			var format = new StructuredStringFormat (AsciiCharClasses.WhiteSpace, AsciiCharClasses.Atom, false, null);
+			var format = new StructuredStringFormat (AsciiCharClasses.WhiteSpace, AsciiCharClasses.Atom, char.MaxValue, null);
 			var token = format.ParseToken (src, ref parserPos);
 			Assert.Null (token.Format);
 
 			src = "(a1)  bb2\t(c3 (d4)) eee5\t\t(ff6)";
 			parserPos = 0;
-			format = new StructuredStringFormat (AsciiCharClasses.WhiteSpace, AsciiCharClasses.Token, false, allFormats);
+			format = new StructuredStringFormat (AsciiCharClasses.WhiteSpace, AsciiCharClasses.Token, char.MaxValue, allFormats);
 			token = format.ParseToken (src, ref parserPos);
 			Assert.IsType<TokenFormatComment> (token.Format);
 			Assert.Equal (0, token.Position); // a1
@@ -96,7 +96,7 @@ namespace Novartment.Base.Test
 			// встречаются все типы
 			src = "abc,de;fgh \"ijkl\" (mnop)   <rst>\t[uvw]";
 			parserPos = 0;
-			format = new StructuredStringFormat (AsciiCharClasses.WhiteSpace, AsciiCharClasses.Atom, false, allFormats);
+			format = new StructuredStringFormat (AsciiCharClasses.WhiteSpace, AsciiCharClasses.Atom, char.MaxValue, allFormats);
 			token = format.ParseToken (src, ref parserPos);
 			Assert.IsType<StructuredStringTokenValueFormat> (token.Format);
 			Assert.Equal (0, token.Position); // abc

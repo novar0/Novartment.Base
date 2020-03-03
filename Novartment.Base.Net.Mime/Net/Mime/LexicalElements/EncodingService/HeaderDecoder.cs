@@ -13,73 +13,37 @@ using Novartment.Base.Text;
 
 namespace Novartment.Base.Net.Mime
 {
-	internal class TokenFormatQuotedString : StructuredStringTokenDelimitedFormat
-	{
-		internal TokenFormatQuotedString ()
-			: base ('\"', '\"', StructuredStringIngoreTokenType.EscapedChar, false)
-		{
-		}
-
-		public override int DecodeToken (StructuredStringToken token, ReadOnlySpan<char> source, Span<char> buffer)
-		{
-			int idx = 0;
-			var endPos = token.Position + token.Length - 1;
-			for (var i = token.Position + 1; i < endPos; i++)
-			{
-				var ch = source[i];
-				if (ch == '\\')
-				{
-					i++;
-					ch = source[i];
-				}
-
-				buffer[idx++] = ch;
-			}
-
-			return idx;
-		}
-	}
-
 	internal class TokenFormatComment : StructuredStringTokenDelimitedFormat
 	{
-		internal TokenFormatComment ()
-			: base ('(', ')', StructuredStringIngoreTokenType.EscapedChar, true)
-		{
-		}
+		internal TokenFormatComment () : base ('(', ')', StructuredStringIngoreTokenType.EscapedChar, true) { }
 	}
 
 	internal class TokenFormatId : StructuredStringTokenDelimitedFormat
 	{
-		internal TokenFormatId ()
-			: base ('<', '>', StructuredStringIngoreTokenType.QuotedValue, false)
-		{
-		}
+		internal TokenFormatId () : base ('<', '>', StructuredStringIngoreTokenType.QuotedValue, false) { }
 	}
 
 	internal class TokenFormatLiteral : StructuredStringTokenDelimitedFormat
 	{
-		internal TokenFormatLiteral ()
-			: base ('[', ']', StructuredStringIngoreTokenType.EscapedChar, false)
-		{
-		}
+		internal TokenFormatLiteral () : base ('[', ']', StructuredStringIngoreTokenType.EscapedChar, false) { }
 
-		public override int DecodeToken (StructuredStringToken token, ReadOnlySpan<char> source, Span<char> buffer)
+		public override int DecodeToken (ReadOnlySpan<char> source, Span<char> buffer)
 		{
-			int idx = 0;
-			var endPos = token.Position + token.Length - 1;
-			for (var i = token.Position + 1; i < endPos; i++)
+			int dstIdx = 0;
+			var endPos = source.Length - 1;
+			for (var srcIdx = 1; srcIdx < endPos; srcIdx++)
 			{
-				var ch = source[i];
+				var ch = source[srcIdx];
 				if (ch == '\\')
 				{
-					i++;
-					ch = source[i];
+					srcIdx++;
+					ch = source[srcIdx];
 				}
 
-				buffer[idx++] = ch;
+				buffer[dstIdx++] = ch;
 			}
 
-			return idx;
+			return dstIdx;
 		}
 	}
 
@@ -151,8 +115,8 @@ namespace Novartment.Base.Net.Mime
 		internal static readonly StructuredStringFormat DotAtomFormat = new StructuredStringFormat (
 			AsciiCharClasses.WhiteSpace,
 			AsciiCharClasses.Atom,
-			true,
-			new StructuredStringTokenCustomFormat[] { new TokenFormatQuotedString (), new TokenFormatComment (), new TokenFormatId (), new TokenFormatLiteral ()});
+			'.',
+			new StructuredStringTokenCustomFormat[] { new StructuredStringTokenQuotedStringFormat (), new TokenFormatComment (), new TokenFormatId (), new TokenFormatLiteral ()});
 
 		/// <summary>
 		/// Парсер структурированного значения типа RFC 822 'dot-atom' из его исходного ASCII-строкового представления.
@@ -160,8 +124,8 @@ namespace Novartment.Base.Net.Mime
 		internal static readonly StructuredStringFormat AtomFormat = new StructuredStringFormat (
 			AsciiCharClasses.WhiteSpace,
 			AsciiCharClasses.Atom,
-			false,
-			new StructuredStringTokenCustomFormat[] { new TokenFormatQuotedString (), new TokenFormatComment (), new TokenFormatId (), new TokenFormatLiteral () });
+			char.MaxValue,
+			new StructuredStringTokenCustomFormat[] { new StructuredStringTokenQuotedStringFormat (), new TokenFormatComment (), new TokenFormatId (), new TokenFormatLiteral () });
 
 		/// <summary>
 		/// Парсер структурированного значения типа RFC 2045 'token' из его исходного ASCII-строкового представления.
@@ -169,8 +133,8 @@ namespace Novartment.Base.Net.Mime
 		internal static readonly StructuredStringFormat TokenFormat = new StructuredStringFormat (
 			AsciiCharClasses.WhiteSpace,
 			AsciiCharClasses.Token,
-			false,
-			new StructuredStringTokenCustomFormat[] { new TokenFormatQuotedString (), new TokenFormatComment (), new TokenFormatId (), new TokenFormatLiteral () });
+			char.MaxValue,
+			new StructuredStringTokenCustomFormat[] { new StructuredStringTokenQuotedStringFormat (), new TokenFormatComment (), new TokenFormatId (), new TokenFormatLiteral () });
 
 		/// <summary>
 		/// Decodes 'atom' value from specified representation.
@@ -354,7 +318,7 @@ namespace Novartment.Base.Net.Mime
 
 				outPos += (token.Format is StructuredStringTokenValueFormat) ?
 					DecodeTokenWithEncodedWord (token, source, outBuf.AsSpan (outPos)) :
-					token.Format.DecodeToken (token, source, outBuf.AsSpan (outPos));
+					token.Decode (source, outBuf, outPos);
 				prevIsWordEncoded = isWordEncoded;
 			}
 
@@ -547,7 +511,7 @@ namespace Novartment.Base.Net.Mime
 
 					outPos += (lastToken.Format is StructuredStringTokenValueFormat) ?
 						DecodeTokenWithEncodedWord (lastToken, source, outBuf.AsSpan (outPos)) :
-						lastToken.Format.DecodeToken (lastToken, source, outBuf.AsSpan (outPos));
+						lastToken.Decode (source, outBuf, outPos);
 					prevIsWordEncoded = isWordEncoded;
 				}
 
@@ -616,7 +580,7 @@ namespace Novartment.Base.Net.Mime
 
 					outPos += (token.Format is StructuredStringTokenValueFormat) ?
 						DecodeTokenWithEncodedWord (token, source, outBuf.AsSpan (outPos)) :
-						token.Format.DecodeToken (token, source, outBuf.AsSpan (outPos));
+						token.Decode (source, outBuf, outPos);
 					prevIsWordEncoded = isWordEncoded;
 				}
 			}
@@ -1049,7 +1013,7 @@ namespace Novartment.Base.Net.Mime
 						valueToken = TokenFormat.ParseToken (source, ref parserPos);
 					} while (valueToken.Format is TokenFormatComment);
 
-					var isDoubleQuotedValue = valueToken.Format is TokenFormatQuotedString;
+					var isDoubleQuotedValue = valueToken.Format is StructuredStringTokenQuotedStringFormat;
 					if (!(valueToken.Format is StructuredStringTokenValueFormat) && !isDoubleQuotedValue)
 					{
 						throw new FormatException ("Invalid value of 'disposition-notification' parameter.");

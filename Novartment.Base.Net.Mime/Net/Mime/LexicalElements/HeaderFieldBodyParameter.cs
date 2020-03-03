@@ -327,13 +327,13 @@ namespace Novartment.Base.Net.Mime
 				return HeaderDecoder.DecodeParameterExtendedValue (source.Slice (token.Position, token.Length), destination.AsSpan (destinationPos), encoding);
 			}
 
-			if (!(token.Format is StructuredStringTokenValueFormat) && !(token.Format is TokenFormatQuotedString))
+			if (!(token.Format is StructuredStringTokenValueFormat) && !(token.Format is StructuredStringTokenQuotedStringFormat))
 			{
 				throw new FormatException ("Invalid format of header field parameter.");
 			}
 
 			// regular-parameter
-			return token.Format.DecodeToken (token, source, destination.AsSpan (destinationPos));
+			return token.Format.DecodeToken (source.Slice (token.Position, token.Length), destination.AsSpan (destinationPos));
 		}
 
 		private static Encoding GetEncoding (string name)

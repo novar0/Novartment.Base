@@ -8,12 +8,11 @@ namespace Novartment.Base.Text
 	public abstract class StructuredStringTokenFormat
 	{
 		/// <summary>
-		/// Декодирует значение токена в соответствии с его типом.
+		/// Декодирует значение лексического токена, помещая его декодированное значение в указанный буфер.
 		/// </summary>
-		/// <param name="token">Токен для декодирования.</param>
-		/// <param name="source">Исходная строка.</param>
-		/// <param name="buffer">Буфер, куда будет записано декодировенное значение токена.</param>
+		/// <param name="source">Лексический токен в исходной строке.</param>
+		/// <param name="buffer">Буфер, куда будет записано декодировенное значение лексического токена.</param>
 		/// <returns>Количество знаков, записанных в buffer.</returns>
-		public abstract int DecodeToken (StructuredStringToken token, ReadOnlySpan<char> source, Span<char> buffer);
+		public abstract int DecodeToken (ReadOnlySpan<char> source, Span<char> buffer);
 	}
 }

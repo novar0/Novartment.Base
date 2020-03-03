@@ -10,7 +10,7 @@ namespace Novartment.Base.Text
 	public class StructuredStringFormat
 	{
 		/// <summary>
-		/// Формат токена-сепаратора (любого символа, недопустимого для значений токена).
+		/// Формат токена-разделителя (любого символа, недопустимого для значений токена).
 		/// </summary>
 		public static readonly StructuredStringTokenFormat SeparatorFormat = new StructuredStringTokenSeparatorFormat ();
 
@@ -32,34 +32,39 @@ namespace Novartment.Base.Text
 		public AsciiCharClasses ValueClasses { get; }
 
 		/// <summary>
-		/// Получает признак допустимости символа 'точка' внутри токенов-значений.
+		/// Получает символ, который допустим только между отдельными частями внутри одного токена-значения,
+		/// но не допустим в начале, в конце или несколько подряд.
 		/// </summary>
-		public bool AllowDotInsideValue { get; }
+		public char TokenValuePartsLinkChar { get; }
 
 
 		/// <param name="whiteSpaceClasses">Класс символов, которые игнорируются между токенами.</param>
 		/// <param name="valueClasses">Класс символов, допустимых для токенов-значений.</param>
-		/// <param name="allowDotInsideValue">Признак допустимости символа 'точка' внутри токенов-значений.</param>
-		/// <param name="customTokenFormats">Дополнительные форматы для распознавания.</param>
+		/// <param name="tokenValuePartsLinkChar">
+		/// Символ, который допустим только между отдельными частями внутри одного токена-значения,
+		/// но не допустим в начале, в конце или несколько подряд.
+		/// Укажите char.MaxValue если не используется.
+		/// </param>
+		/// <param name="customTokenFormats">Дополнительные форматы для распознавания. Укажите null-ссылку если не нужны.</param>
 		public StructuredStringFormat (
 			AsciiCharClasses whiteSpaceClasses,
 			AsciiCharClasses valueClasses,
-			bool allowDotInsideValue,
+			char tokenValuePartsLinkChar = char.MaxValue,
 			IReadOnlyCollection<StructuredStringTokenCustomFormat> customTokenFormats = null)
 		{
 			this.WhiteSpaceClasses = whiteSpaceClasses;
 			this.ValueClasses = valueClasses;
-			this.AllowDotInsideValue = allowDotInsideValue;
+			this.TokenValuePartsLinkChar = tokenValuePartsLinkChar;
 			_customTokenFormats = customTokenFormats?.DuplicateToArray ();
 		}
 
 		/// <summary>
 		/// Получает следующий лексический токен начиная с указанной позиции в указанной строке.
-		/// Встроено распознавание трёх форматов:
+		/// Встроено распознавание трёх форматов токенов:
 		/// null - не удалось считать токен из-за окончания строки,
 		/// StructuredStringTokenSeparatorFormat - любой символ, недопустимый для значений,
 		/// StructuredStringTokenValueFormat - значение.
-		/// Дополнительные форматы для распознавания указаны при создании формата.
+		/// Дополнительные форматы токенов для распознавания указаны при создании.
 		/// </summary>
 		/// <param name="source">Структурированная строка, состоящая из лексических токенов.</param>
 		/// <param name="position">
@@ -69,10 +74,15 @@ namespace Novartment.Base.Text
 		/// <returns>Лексический токен из указанной позиции в source.</returns>
 		public StructuredStringToken ParseToken (ReadOnlySpan<char> source, ref int position)
 		{
+			if ((position < 0) || (position > source.Length))
+			{
+				throw new ArgumentOutOfRangeException (nameof (position));
+			}
+
 			var charClasses = AsciiCharSet.ValueClasses.Span;
 			var whiteSpaceClasses = this.WhiteSpaceClasses;
 			var valueClasses = this.ValueClasses;
-			var allowDotInsideValue = this.AllowDotInsideValue;
+			var linkChar = this.TokenValuePartsLinkChar;
 			var customTokenFormats = _customTokenFormats;
 			while (position < source.Length)
 			{
@@ -98,11 +108,13 @@ namespace Novartment.Base.Text
 				{
 					for (var i = 0; i < customTokenFormats.Length; i++)
 					{
-						if (customTokenFormats[i].StartMarker == octet)
+						var tokenFormat = customTokenFormats[i];
+						if (tokenFormat.StartMarker == octet)
 						{
-							var customFormatToken = customTokenFormats[i].ParseToken (source, position);
-							position += customFormatToken.Length;
-							return customFormatToken;
+							var len = tokenFormat.FindTokenLength (source.Slice (position));
+							var token = new StructuredStringToken (customTokenFormats[i], position, len);
+							position += len;
+							return token;
 						}
 					}
 				}
@@ -129,8 +141,7 @@ namespace Novartment.Base.Text
 				{
 					// continue if dot followed by atom
 					while (((position + 1) < source.Length) &&
-						allowDotInsideValue &&
-						(source[position] == '.') &&
+						(source[position] == linkChar) &&
 						((source[position + 1] < charClasses.Length) && ((charClasses[source[position + 1]] & valueClasses) != 0)))
 					{
 						position++;
