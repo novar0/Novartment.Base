@@ -148,7 +148,7 @@ namespace Novartment.Base.Net.Mime
 
 		// Создаёт коллекцию свойств уведомления об изменении дислокации сообщения
 		// на основе указанной коллекции полей заголовка уведомления об изменении дислокации сообщения.
-		private void ParseHeader (IReadOnlyCollection<HeaderField> fields)
+		private void ParseHeader (IReadOnlyCollection<EncodedHeaderField> fields)
 		{
 			/*
 			disposition-notification-content =

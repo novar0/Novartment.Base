@@ -7,7 +7,7 @@ namespace Novartment.Base.Net
 	/// The field of the header of the generic message format defined in RFC 822,
 	/// for which an extension is required (non-standard field).
 	/// </summary>
-	public class ExtensionHeaderField : HeaderField
+	public class ExtensionHeaderField : EncodedHeaderField
 	{
 		/// <summary>
 		/// Initializes a new instance of the ExtensionHeaderField class with a specified name and a value.

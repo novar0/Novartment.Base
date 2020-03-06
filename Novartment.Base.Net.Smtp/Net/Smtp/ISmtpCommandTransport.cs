@@ -27,14 +27,14 @@ namespace Novartment.Base.Net.Smtp
 		/// <param name="expectedInputType">Режим ожидаемых команд.</param>
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
 		/// <returns>Задача, представляющая операцию.</returns>
-		Task<SmtpCommand> ReceiveCommandAsync (SmtpCommand.ExpectedInputType expectedInputType, CancellationToken cancellationToken);
+		ValueTask<SmtpCommand> ReceiveCommandAsync (SmtpCommand.ExpectedInputType expectedInputType, CancellationToken cancellationToken);
 
 		/// <summary>
 		/// Получает ответ на команду.
 		/// </summary>
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
 		/// <returns>Задача, представляющая операцию.</returns>
-		Task<SmtpReply> ReceiveReplyAsync (CancellationToken cancellationToken);
+		ValueTask<SmtpReply> ReceiveReplyAsync (CancellationToken cancellationToken);
 
 		/// <summary>
 		/// Посылает команду.
@@ -42,7 +42,7 @@ namespace Novartment.Base.Net.Smtp
 		/// <param name="command">Команда для отправки.</param>
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
 		/// <returns>Задача, представляющая операцию.</returns>
-		Task SendCommandAsync (SmtpCommand command, CancellationToken cancellationToken);
+		ValueTask SendCommandAsync (SmtpCommand command, CancellationToken cancellationToken);
 
 		/// <summary>
 		/// Посылает ответ на команду.
@@ -51,7 +51,7 @@ namespace Novartment.Base.Net.Smtp
 		/// <param name="canBeGrouped">Признак возможности группировки с предыдущей командой.</param>
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
 		/// <returns>Задача, представляющая операцию.</returns>
-		Task SendReplyAsync (SmtpReply reply, bool canBeGrouped, CancellationToken cancellationToken);
+		ValueTask SendReplyAsync (SmtpReply reply, bool canBeGrouped, CancellationToken cancellationToken);
 
 		/// <summary>
 		/// Посылает двоичные данные. Используется после команды отправки двоичных данных.

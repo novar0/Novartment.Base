@@ -91,17 +91,17 @@ namespace Novartment.Base.Net.Smtp
 			SetConnection (newConnection);
 		}
 
-		public Task<SmtpCommand> ReceiveCommandAsync (SmtpCommand.ExpectedInputType expectedInputType, CancellationToken cancellationToken = default)
+		public ValueTask<SmtpCommand> ReceiveCommandAsync (SmtpCommand.ExpectedInputType expectedInputType, CancellationToken cancellationToken = default)
 		{
 			if (_reader.Count > 0)
 			{
 				var cmd = GetCommandFromReaderBuffer (expectedInputType);
-				return Task.FromResult (cmd);
+				return new ValueTask<SmtpCommand> (cmd);
 			}
 
 			return ReceiveCommandAsyncStateMachine ();
 
-			async Task<SmtpCommand> ReceiveCommandAsyncStateMachine ()
+			async ValueTask<SmtpCommand> ReceiveCommandAsyncStateMachine ()
 			{
 				await _reader.LoadAsync (cancellationToken).ConfigureAwait (false);
 
@@ -115,7 +115,7 @@ namespace Novartment.Base.Net.Smtp
 			}
 		}
 
-		public async Task<SmtpReply> ReceiveReplyAsync (CancellationToken cancellationToken = default)
+		public async ValueTask<SmtpReply> ReceiveReplyAsync (CancellationToken cancellationToken = default)
 		{
 			if (_reader.Count > 0)
 			{
@@ -131,7 +131,7 @@ namespace Novartment.Base.Net.Smtp
 			return SmtpReply.Parse (_reader, _logger);
 		}
 
-		public Task SendReplyAsync (SmtpReply reply, bool canBeGrouped, CancellationToken cancellationToken = default)
+		public ValueTask SendReplyAsync (SmtpReply reply, bool canBeGrouped, CancellationToken cancellationToken = default)
 		{
 			var replyText = reply.ToString ();
 
@@ -149,10 +149,10 @@ namespace Novartment.Base.Net.Smtp
 				return SendTextAsync (text, cancellationToken);
 			}
 
-			return Task.CompletedTask;
+			return default;
 		}
 
-		public Task SendCommandAsync (SmtpCommand command, CancellationToken cancellationToken = default)
+		public ValueTask SendCommandAsync (SmtpCommand command, CancellationToken cancellationToken = default)
 		{
 			var commandText = command.ToString ();
 			return SendTextAsync (commandText, cancellationToken);
@@ -160,7 +160,7 @@ namespace Novartment.Base.Net.Smtp
 
 		public Task SendBinaryAsync (IBufferedSource source, CancellationToken cancellationToken = default)
 		{
-			return source.WriteToAsync (_writer, cancellationToken);
+			return BufferedSourceExtensions.WriteToAsync (source, _writer, cancellationToken);
 		}
 
 		private static string GetHashAlgorithmName (HashAlgorithmType hashAlgorithmType)
@@ -282,12 +282,8 @@ namespace Novartment.Base.Net.Smtp
 			_connection = connection;
 		}
 
-		private Task SendTextAsync (string text, CancellationToken cancellationToken)
+		private ValueTask SendTextAsync (string text, CancellationToken cancellationToken)
 		{
-			var size = text.Length;
-			var buf = new byte[size];
-			AsciiCharSet.GetBytes (text.AsSpan (), buf);
-
 			if ((_logger != null) && _logger.IsEnabled (LogLevel.Trace))
 			{
 #if NETSTANDARD2_0
@@ -298,8 +294,11 @@ namespace Novartment.Base.Net.Smtp
 				_logger?.LogTrace ($"{_connection.RemoteEndPoint} >>> {safeText}");
 			}
 
+			var size = text.Length;
+			var buf = new byte[size];
+			AsciiCharSet.GetBytes (text.AsSpan (), buf);
 			_pendingReplies = null;
-			return _writer.WriteAsync (buf.AsMemory (0, size), cancellationToken).AsTask ();
+			return _writer.WriteAsync (buf.AsMemory (0, size), cancellationToken);
 		}
 	}
 }

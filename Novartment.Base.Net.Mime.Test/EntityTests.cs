@@ -50,7 +50,7 @@ namespace Novartment.Base.Net.Mime.Test
 			var part1 = rootBody.Parts[0];
 			Assert.Equal (ContentMediaType.Unspecified, part1.MediaType);
 			Assert.Null (part1.MediaSubtype);
-			Assert.Equal (ContentTransferEncoding.SevenBit, part1.TransferEncoding);
+			Assert.Equal (ContentTransferEncoding.SevenBit, part1.RequiredTransferEncoding);
 			Assert.IsType<TextEntityBody> (part1.Body);
 			var body1 = (TextEntityBody)part1.Body;
 			var text1 = body1.GetText ();
@@ -59,7 +59,7 @@ namespace Novartment.Base.Net.Mime.Test
 			var part2 = rootBody.Parts[1];
 			Assert.Equal (ContentMediaType.Unspecified, part2.MediaType);
 			Assert.Null (part2.MediaSubtype);
-			Assert.Equal (ContentTransferEncoding.SevenBit, part2.TransferEncoding);
+			Assert.Equal (ContentTransferEncoding.SevenBit, part2.RequiredTransferEncoding);
 			Assert.IsType<TextEntityBody> (part2.Body);
 			var body2 = (TextEntityBody)part2.Body;
 			var text2 = body2.GetText ();
@@ -94,7 +94,7 @@ namespace Novartment.Base.Net.Mime.Test
 			part1 = rootBody.Parts[0];
 			Assert.Equal (ContentMediaType.Unspecified, part1.MediaType);
 			Assert.Null (part1.MediaSubtype);
-			Assert.Equal (ContentTransferEncoding.SevenBit, part1.TransferEncoding);
+			Assert.Equal (ContentTransferEncoding.SevenBit, part1.RequiredTransferEncoding);
 			Assert.IsType<MessageEntityBody> (part1.Body);
 			var msgBody1 = (MessageEntityBody)part1.Body;
 			Assert.Equal ("testing1", msgBody1.Message.Subject);
@@ -102,7 +102,7 @@ namespace Novartment.Base.Net.Mime.Test
 			part2 = rootBody.Parts[1];
 			Assert.Equal (ContentMediaType.Unspecified, part2.MediaType);
 			Assert.Null (part2.MediaSubtype);
-			Assert.Equal (ContentTransferEncoding.SevenBit, part2.TransferEncoding);
+			Assert.Equal (ContentTransferEncoding.SevenBit, part2.RequiredTransferEncoding);
 			Assert.IsType<MessageEntityBody> (part2.Body);
 			var msgBody2 = (MessageEntityBody)part2.Body;
 			Assert.Equal ("testing2", msgBody2.Message.Subject);
@@ -144,7 +144,7 @@ namespace Novartment.Base.Net.Mime.Test
 			Assert.Equal (ContentDispositionType.Attachment, entity.DispositionType);
 			Assert.Equal ("This document specifies an Internet standards track protocol for the функции and requests discussion and suggestions.txt", entity.FileName);
 			Assert.Equal (318, entity.Size);
-			Assert.Equal (ContentTransferEncoding.EightBit, entity.TransferEncoding);
+			Assert.Equal (ContentTransferEncoding.EightBit, entity.RequiredTransferEncoding);
 			Assert.Equal (634775112660000000L, entity.CreationDate.Value.Ticks);
 			Assert.Equal (634577249070000000L, entity.ModificationDate.Value.Ticks);
 			Assert.Equal (634776000130000000L, entity.ReadDate.Value.Ticks);

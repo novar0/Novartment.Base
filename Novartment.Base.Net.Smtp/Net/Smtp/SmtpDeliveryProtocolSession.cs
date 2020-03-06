@@ -90,7 +90,7 @@ namespace Novartment.Base.Net.Smtp
 			}
 		}
 
-		internal Task StartAsync (CancellationToken cancellationToken)
+		internal ValueTask StartAsync (CancellationToken cancellationToken)
 		{
 			// посылаем приветствие в виде названия и версии сервера
 			// TODO: сделать конфигурируемым имя, используемое в качестве приветствия

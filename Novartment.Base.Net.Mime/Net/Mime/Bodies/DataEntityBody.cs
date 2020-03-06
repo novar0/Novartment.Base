@@ -135,11 +135,13 @@ namespace Novartment.Base.Net.Mime
 			{
 				case ContentTransferEncoding.QuotedPrintable:
 					var transform = new FromQuotedPrintableConverter ();
-					dst = new CryptoTransformingBufferedSource (src, transform, CreateCryptoOutputBuffer (transform, _encodedData.Length));
+					var buf1 = CreateCryptoOutputBuffer (transform, _encodedData.Length);
+					dst = new CryptoTransformingBufferedSource (src, transform, buf1);
 					break;
 				case ContentTransferEncoding.Base64:
 					var transform2 = new FromBase64Converter ();
-					dst = new CryptoTransformingBufferedSource (src, transform2, CreateCryptoOutputBuffer (transform2, _encodedData.Length));
+					var buf2 = CreateCryptoOutputBuffer (transform2, _encodedData.Length);
+					dst = new CryptoTransformingBufferedSource (src, transform2, buf2);
 					break;
 				case ContentTransferEncoding.EightBit:
 				case ContentTransferEncoding.SevenBit:

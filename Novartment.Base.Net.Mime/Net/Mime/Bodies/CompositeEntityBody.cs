@@ -69,7 +69,7 @@ namespace Novartment.Base.Net.Mime
 			{
 				var maxPartsTransferEncoding = (this.Parts.Count < 1) ?
 					ContentTransferEncoding.Unspecified :
-					(ContentTransferEncoding)this.Parts.Max (item => (int)item.TransferEncoding);
+					(ContentTransferEncoding)this.Parts.Max (item => (int)item.RequiredTransferEncoding);
 
 				return maxPartsTransferEncoding.GetSuitableCompositeMediaTypeTransferEncoding ();
 			}
@@ -169,22 +169,19 @@ namespace Novartment.Base.Net.Mime
 			}
 		}
 
-		/// <summary>
-		/// Получает разграничитель частей в виде массива байтов.
-		/// </summary>
-		/// <returns>Разграничитель частей в виде массива байтов.</returns>
+		// Получает разграничитель частей в виде массива байтов.
 		private byte[] GetNextBoundary ()
 		{
 			var nextBoundary = new byte[this.Boundary.Length + 6]; // "\r\n--" + Boundary + "\r\n"
-			int size = 0;
-			nextBoundary[size++] = HeaderDecoder.CarriageReturnLinefeed[0];
-			nextBoundary[size++] = HeaderDecoder.CarriageReturnLinefeed[1];
-			nextBoundary[size++] = (byte)'-';
-			nextBoundary[size++] = (byte)'-';
-			AsciiCharSet.GetBytes (this.Boundary.AsSpan (), nextBoundary.AsSpan (size));
-			size += this.Boundary.Length;
-			nextBoundary[size++] = HeaderDecoder.CarriageReturnLinefeed[0];
-			nextBoundary[size] = HeaderDecoder.CarriageReturnLinefeed[1];
+			int pos = 0;
+			nextBoundary[pos++] = HeaderDecoder.CarriageReturnLinefeed[0];
+			nextBoundary[pos++] = HeaderDecoder.CarriageReturnLinefeed[1];
+			nextBoundary[pos++] = (byte)'-';
+			nextBoundary[pos++] = (byte)'-';
+			AsciiCharSet.GetBytes (this.Boundary.AsSpan (), nextBoundary.AsSpan (pos));
+			pos += this.Boundary.Length;
+			nextBoundary[pos++] = HeaderDecoder.CarriageReturnLinefeed[0];
+			nextBoundary[pos] = HeaderDecoder.CarriageReturnLinefeed[1];
 			return nextBoundary;
 		}
 
@@ -192,12 +189,12 @@ namespace Novartment.Base.Net.Mime
 		private byte[] GetEndBoundary (byte[] nextBoundary)
 		{
 			var endBoundary = new byte[this.Boundary.Length + 8]; // "\r\n--" + Boundary + "--\r\n"
-			var size = this.Boundary.Length + 4;
-			Array.Copy (nextBoundary, endBoundary, size);
-			endBoundary[size++] = (byte)'-';
-			endBoundary[size++] = (byte)'-';
-			endBoundary[size++] = HeaderDecoder.CarriageReturnLinefeed[0];
-			endBoundary[size] = HeaderDecoder.CarriageReturnLinefeed[1];
+			var pos = this.Boundary.Length + 4;
+			Array.Copy (nextBoundary, endBoundary, pos);
+			endBoundary[pos++] = (byte)'-';
+			endBoundary[pos++] = (byte)'-';
+			endBoundary[pos++] = HeaderDecoder.CarriageReturnLinefeed[0];
+			endBoundary[pos] = HeaderDecoder.CarriageReturnLinefeed[1];
 			return endBoundary;
 		}
 	}

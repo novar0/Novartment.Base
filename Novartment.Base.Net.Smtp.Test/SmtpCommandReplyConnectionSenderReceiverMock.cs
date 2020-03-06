@@ -27,18 +27,18 @@ namespace Novartment.Base.Smtp.Test
 
 		internal Queue<SmtpReply> SendedReplies { get; } = new Queue<SmtpReply> ();
 
-		public Task SendCommandAsync (SmtpCommand command, CancellationToken cancellationToken = default)
+		public ValueTask SendCommandAsync (SmtpCommand command, CancellationToken cancellationToken = default)
 		{
 			this.SendedCommands.Enqueue (command);
-			return Task.CompletedTask;
+			return default;
 		}
 
-		public Task SendReplyAsync (SmtpReply reply, bool canBeGrouped, CancellationToken cancellationToken = default)
+		public ValueTask SendReplyAsync (SmtpReply reply, bool canBeGrouped, CancellationToken cancellationToken = default)
 		{
 			// тут вставлять паузу для тестирования экстренной остановки сервера
 			// await Task.Delay (3000, cancellationToken).ConfigureAwait (false);
 			this.SendedReplies.Enqueue (reply);
-			return Task.CompletedTask;
+			return default;
 		}
 
 		public async Task SendBinaryAsync (IBufferedSource source, CancellationToken cancellationToken = default)
@@ -68,14 +68,14 @@ namespace Novartment.Base.Smtp.Test
 			}
 		}
 
-		public Task<SmtpReply> ReceiveReplyAsync (CancellationToken cancellationToken = default)
+		public ValueTask<SmtpReply> ReceiveReplyAsync (CancellationToken cancellationToken = default)
 		{
-			return Task.FromResult (this.ReceivedReplies.Dequeue ());
+			return new ValueTask<SmtpReply> (this.ReceivedReplies.Dequeue ());
 		}
 
-		public Task<SmtpCommand> ReceiveCommandAsync (SmtpCommand.ExpectedInputType expectedInputType, CancellationToken cancellationToken = default)
+		public ValueTask<SmtpCommand> ReceiveCommandAsync (SmtpCommand.ExpectedInputType expectedInputType, CancellationToken cancellationToken = default)
 		{
-			return Task.FromResult (this.ReceivedCommands.Dequeue ());
+			return new ValueTask<SmtpCommand> (this.ReceivedCommands.Dequeue ());
 		}
 
 		public Task StartTlsClientAsync (X509CertificateCollection clientCertificates)

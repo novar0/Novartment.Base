@@ -219,8 +219,7 @@ namespace Novartment.Base.Net.Smtp
 						throw new UnrecoverableProtocolException ("Unexpected end-mark 'CRLF.CRLF' found in data. Data transfer incomplete.");
 					}
 
-					var endMarker = new byte[] { 0x0d, 0x0a, (byte)'.', 0x0d, 0x0a };
-					var endMarkerSrc = new MemoryBufferedSource (endMarker);
+					var endMarkerSrc = new MemoryBufferedSource (SmtpCommand.MessageEndMarker);
 					await _transport.SendBinaryAsync (endMarkerSrc, cancellationToken).ConfigureAwait (false);
 					break;
 				default:

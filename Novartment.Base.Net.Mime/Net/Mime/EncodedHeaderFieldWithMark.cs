@@ -1,18 +1,16 @@
-﻿using System;
-
-namespace Novartment.Base.Net.Mime
+﻿namespace Novartment.Base.Net.Mime
 {
 	/// <summary>
 	/// Обёртка для поля заголовка, позволяющая ставить на нём отметку.
 	/// </summary>
-	public class HeaderFieldWithMark :
+	public class EncodedHeaderFieldWithMark :
 		IMarkHolder
 	{
 		/// <summary>
 		/// Инициализирует новый экземпляр класса HeaderFieldWithMark с указанным полем заголовка.
 		/// </summary>
 		/// <param name="field">Поле заголовка.</param>
-		public HeaderFieldWithMark (HeaderField field)
+		public EncodedHeaderFieldWithMark (EncodedHeaderField field)
 		{
 			this.Field = field;
 		}
@@ -20,7 +18,7 @@ namespace Novartment.Base.Net.Mime
 		/// <summary>
 		/// Получает поле заголовка.
 		/// </summary>
-		public HeaderField Field { get; }
+		public EncodedHeaderField Field { get; }
 
 		/// <summary>
 		/// Получает наличие отметки объекта.

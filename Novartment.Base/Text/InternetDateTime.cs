@@ -220,9 +220,9 @@ namespace Novartment.Base.Text
 		/// Converts a DateTimeOffset object to RFC 5322 string representation of date/time.
 		/// </summary>
 		/// <param name="dateTime">The DateTimeOffset object for converting to a string representation.</param>
-		/// <param name="buf">The buffer where the string representation will be written.</param>
+		/// <param name="buffer">The buffer where the string representation will be written.</param>
 		/// <returns>The number of characters written to the buffer.</returns>
-		public static int ToInternetString (this DateTimeOffset dateTime, Span<char> buf)
+		public static int ToInternetString (this DateTimeOffset dateTime, Span<char> buffer)
 		{
 			if (((int)dateTime.Offset.TotalHours < -12) || ((int)dateTime.Offset.TotalHours) > 12)
 			{
@@ -234,28 +234,28 @@ namespace Novartment.Base.Text
 			var value = dateTime.DateTime;
 			var offset = dateTime.Offset;
 
-			WriteTwoDecimalDigits ((uint)value.Day, buf, 0);
-			buf[2] = ' ';
+			WriteTwoDecimalDigits ((uint)value.Day, buffer, 0);
+			buffer[2] = ' ';
 
 			uint monthAbbrev = _monthAbbreviations[value.Month - 1];
-			buf[3] = (char)(byte)monthAbbrev;
+			buffer[3] = (char)(byte)monthAbbrev;
 			monthAbbrev >>= 8;
-			buf[4] = (char)(byte)monthAbbrev;
+			buffer[4] = (char)(byte)monthAbbrev;
 			monthAbbrev >>= 8;
-			buf[5] = (char)(byte)monthAbbrev;
-			buf[6] = ' ';
+			buffer[5] = (char)(byte)monthAbbrev;
+			buffer[6] = ' ';
 
-			WriteFourDecimalDigits ((uint)value.Year, buf, 7);
-			buf[11] = ' ';
+			WriteFourDecimalDigits ((uint)value.Year, buffer, 7);
+			buffer[11] = ' ';
 
-			WriteTwoDecimalDigits ((uint)value.Hour, buf, 12);
-			buf[14] = ':';
+			WriteTwoDecimalDigits ((uint)value.Hour, buffer, 12);
+			buffer[14] = ':';
 
-			WriteTwoDecimalDigits ((uint)value.Minute, buf, 15);
-			buf[17] = ':';
+			WriteTwoDecimalDigits ((uint)value.Minute, buffer, 15);
+			buffer[17] = ':';
 
-			WriteTwoDecimalDigits ((uint)value.Second, buf, 18);
-			buf[20] = ' ';
+			WriteTwoDecimalDigits ((uint)value.Second, buffer, 18);
+			buffer[20] = ' ';
 
 			char sign;
 
@@ -269,9 +269,9 @@ namespace Novartment.Base.Text
 				sign = '+';
 			}
 
-			buf[21] = sign;
-			WriteTwoDecimalDigits ((uint)offset.Hours, buf, 22);
-			WriteTwoDecimalDigits ((uint)offset.Minutes, buf, 24);
+			buffer[21] = sign;
+			WriteTwoDecimalDigits ((uint)offset.Hours, buffer, 22);
+			WriteTwoDecimalDigits ((uint)offset.Minutes, buffer, 24);
 
 			return 26;
 		}
@@ -365,26 +365,27 @@ namespace Novartment.Base.Text
 
 		private static int GetMonth (ReadOnlySpan<char> monthSpan)
 		{
-#if NETSTANDARD2_0
-			var monthStr = new string (monthSpan.ToArray ());
-#else
-			var monthStr = new string (monthSpan);
-#endif
-			var month = (monthStr.ToUpperInvariant ()) switch
+			if (monthSpan.Length != 3)
 			{
-				"JAN" => 1,
-				"FEB" => 2,
-				"MAR" => 3,
-				"APR" => 4,
-				"MAY" => 5,
-				"JUN" => 6,
-				"JUL" => 7,
-				"AUG" => 8,
-				"SEP" => 9,
-				"OCT" => 10,
-				"NOV" => 11,
-				"DEC" => 12,
-				_ => throw new FormatException ("Invalid string representation of data/time. Invalid month '" + monthStr + "'."),
+				throw new FormatException ("Invalid string representation of data/time. Invalid month '" + monthSpan.ToString () + "'.");
+			}
+
+			var n = char.ToUpperInvariant (monthSpan[0]) + (char.ToUpperInvariant (monthSpan[1]) << 8) + (char.ToUpperInvariant (monthSpan[2]) << 16);
+			var month = n switch
+			{
+				'J' + ('A' << 8) + ('N' << 16) => 1,
+				'F' + ('E' << 8) + ('B' << 16) => 2,
+				'M' + ('A' << 8) + ('R' << 16) => 3,
+				'A' + ('P' << 8) + ('R' << 16) => 4,
+				'M' + ('A' << 8) + ('Y' << 16) => 5,
+				'J' + ('U' << 8) + ('N' << 16) => 6,
+				'J' + ('U' << 8) + ('L' << 16) => 7,
+				'A' + ('U' << 8) + ('G' << 16) => 8,
+				'S' + ('E' << 8) + ('P' << 16) => 9,
+				'O' + ('C' << 8) + ('T' << 16) => 10,
+				'N' + ('O' << 8) + ('V' << 16) => 11,
+				'D' + ('E' << 8) + ('C' << 16) => 12,
+				_ => throw new FormatException ("Invalid string representation of data/time. Invalid month '" + monthSpan.ToString () + "'."),
 			};
 			return month;
 		}

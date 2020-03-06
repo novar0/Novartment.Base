@@ -15,6 +15,7 @@ namespace Novartment.Base.Net.Smtp
 		internal static readonly StructuredStringFormat _TokenFormat = new StructuredStringFormat (AsciiCharClasses.WhiteSpace, AsciiCharClasses.Token, char.MaxValue, null);
 		internal static readonly StructuredStringFormat _NumberFormat = new StructuredStringFormat (AsciiCharClasses.WhiteSpace, AsciiCharClasses.Digit, char.MaxValue, null);
 		internal static readonly StructuredStringFormat _AnyVisibleCharFormat = new StructuredStringFormat (AsciiCharClasses.WhiteSpace, AsciiCharClasses.Visible, char.MaxValue, null);
+		internal static readonly byte[] MessageEndMarker = new byte[] { 0x0d, 0x0a, (byte)'.', 0x0d, 0x0a };
 
 		protected SmtpCommand (SmtpCommandType commandType)
 		{

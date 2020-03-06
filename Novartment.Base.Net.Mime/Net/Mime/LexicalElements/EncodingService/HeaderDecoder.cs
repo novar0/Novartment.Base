@@ -1141,7 +1141,7 @@ namespace Novartment.Base.Net.Mime
 		/// A field name MUST be composed of printable US-ASCII characters (i.e., characters that have values between 33 and 126, inclusive), except colon.
 		/// A field body may be composed of any US-ASCII characters, except for CR and LF.
 		/// </remarks>
-		internal static Task<IReadOnlyList<HeaderField>> LoadHeaderAsync (IBufferedSource headerSource, CancellationToken cancellationToken = default)
+		internal static Task<IReadOnlyList<EncodedHeaderField>> LoadHeaderAsync (IBufferedSource headerSource, CancellationToken cancellationToken = default)
 		{
 			if (headerSource == null)
 			{
@@ -1152,17 +1152,17 @@ namespace Novartment.Base.Net.Mime
 
 			if (cancellationToken.IsCancellationRequested)
 			{
-				return Task.FromCanceled<IReadOnlyList<HeaderField>> (cancellationToken);
+				return Task.FromCanceled<IReadOnlyList<EncodedHeaderField>> (cancellationToken);
 			}
 
 			var isEmpty = headerSource.IsEmpty ();
 			return isEmpty ?
-				Task.FromResult<IReadOnlyList<HeaderField>> (Array.Empty<HeaderField> ()) :
+				Task.FromResult<IReadOnlyList<EncodedHeaderField>> (Array.Empty<EncodedHeaderField> ()) :
 				LoadHeaderAsyncStateMachine ();
 
-			async Task<IReadOnlyList<HeaderField>> LoadHeaderAsyncStateMachine ()
+			async Task<IReadOnlyList<EncodedHeaderField>> LoadHeaderAsyncStateMachine ()
 			{
-				var result = new ArrayList<HeaderField> ();
+				var result = new ArrayList<EncodedHeaderField> ();
 				var buffer = ArrayPool<byte>.Shared.Rent (HeaderDecoder.MaximumHeaderFieldBodySize);
 				try
 				{
@@ -1297,7 +1297,7 @@ namespace Novartment.Base.Net.Mime
 			return size;
 		}
 
-		private static async Task<HeaderField> LoadHeaderFieldAsync (IBufferedSource fieldSource, Memory<byte> buffer, CancellationToken cancellationToken)
+		private static async Task<EncodedHeaderField> LoadHeaderFieldAsync (IBufferedSource fieldSource, Memory<byte> buffer, CancellationToken cancellationToken)
 		{
 			// загружаем имя поля
 			var nameSize = await fieldSource.ReadToMarkerAsync ((byte)':', buffer, cancellationToken).ConfigureAwait (false);
@@ -1334,7 +1334,7 @@ namespace Novartment.Base.Net.Mime
 			}
 
 			var field = isKnown ?
-				new HeaderField (knownName, buffer.Span.Slice (0, valueSize)) :
+				new EncodedHeaderField (knownName, buffer.Span.Slice (0, valueSize)) :
 				new ExtensionHeaderField (name, buffer.Span.Slice (0, valueSize));
 
 			return field;

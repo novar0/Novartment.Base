@@ -24,6 +24,6 @@ namespace Novartment.Base.Net
 		IReadOnlyList<TMailbox> Recipients { get; }
 
 		/// <summary>Gets the content transfer encoding required for message.</summary>
-		ContentTransferEncoding TransferEncoding { get; }
+		ContentTransferEncoding RequiredTransferEncoding { get; }
 	}
 }

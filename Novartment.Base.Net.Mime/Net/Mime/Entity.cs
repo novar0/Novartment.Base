@@ -146,7 +146,7 @@ namespace Novartment.Base.Net.Mime
 
 		/// <summary>Получает или устанавливает кодировку передачи содержимого.
 		/// Соответствует полю заголовка "Content-Transfer-Encoding" определённому в RFC 2045 часть 6.</summary>
-		public ContentTransferEncoding TransferEncoding => _body?.TransferEncoding ?? ContentTransferEncoding.Unspecified;
+		public ContentTransferEncoding RequiredTransferEncoding => _body?.TransferEncoding ?? ContentTransferEncoding.Unspecified;
 
 		/// <summary>Получает или устанавливает базовый URI для использования с относительными URI, заданными в содержимом.
 		/// Соответствует полю заголовка "Content-Base" определённому в RFC 2110 часть 4.2.</summary>
@@ -206,7 +206,7 @@ namespace Novartment.Base.Net.Mime
 		/// Получает коллекцию полей, содержащих дополнительные параметры сущности, значение которых не отражено в свойствах.
 		/// </summary>
 		[DebuggerDisplay ("{ExtraFieldsDebuggerDisplay,nq}")]
-		public IAdjustableList<HeaderField> ExtraFields { get; } = new ArrayList<HeaderField> ();
+		public IAdjustableList<EncodedHeaderField> ExtraFields { get; } = new ArrayList<EncodedHeaderField> ();
 
 		[DebuggerBrowsable (DebuggerBrowsableState.Never)]
 		private string LanguagesDebuggerDisplay => (this.Languages.Count < 1) ? "<empty>" :
@@ -227,7 +227,7 @@ namespace Novartment.Base.Net.Mime
 				FormattableString.Invariant ($"Count={this.ExtraFields.Count}: {this.ExtraFields[0]} ...");
 
 		[DebuggerBrowsable (DebuggerBrowsableState.Never)]
-		private string DebuggerDisplay => FormattableString.Invariant ($"Type: {_type}/{_subtype}, Encoding: {this.TransferEncoding}");
+		private string DebuggerDisplay => FormattableString.Invariant ($"Type: {_type}/{_subtype}, Encoding: {this.RequiredTransferEncoding}");
 
 		/// <summary>
 		/// Загружает сущность из указанного источника данных.
@@ -271,7 +271,7 @@ namespace Novartment.Base.Net.Mime
 				var headerSource = new TemplateSeparatedBufferedSource (source, HeaderDecoder.CarriageReturnLinefeed2, false);
 				var header = await HeaderDecoder.LoadHeaderAsync (headerSource, cancellationToken).ConfigureAwait (false);
 				await headerSource.TrySkipPartAsync (cancellationToken).ConfigureAwait (false);
-				var markedFields = header.Select (item => new HeaderFieldWithMark (item)).DuplicateToArray ();
+				var markedFields = header.Select (item => new EncodedHeaderFieldWithMark (item)).DuplicateToArray ();
 				var contentProperties = LoadPropertiesFromHeader (markedFields, defaultMediaType, defaultMediaSubtype);
 				LoadExtraFields (markedFields);
 				this.ExtraFields.Clear ();
@@ -329,7 +329,7 @@ namespace Novartment.Base.Net.Mime
 		/// </summary>
 		/// <param name="header">Коллекция полей заголовка,
 		/// в которой неотмеченные поля подлежатат обработке и последущей отметке в случае успеха.</param>
-		protected virtual void LoadExtraFields (IReadOnlyList<HeaderFieldWithMark> header)
+		protected virtual void LoadExtraFields (IReadOnlyList<EncodedHeaderFieldWithMark> header)
 		{
 		}
 
@@ -463,7 +463,7 @@ namespace Novartment.Base.Net.Mime
 			return false;
 		}
 
-		private EssentialContentProperties LoadPropertiesFromHeader (IReadOnlyList<HeaderFieldWithMark> header, ContentMediaType defaultMediaType, string defaultMediaSubtype)
+		private EssentialContentProperties LoadPropertiesFromHeader (IReadOnlyList<EncodedHeaderFieldWithMark> header, ContentMediaType defaultMediaType, string defaultMediaSubtype)
 		{
 			if (header == null)
 			{

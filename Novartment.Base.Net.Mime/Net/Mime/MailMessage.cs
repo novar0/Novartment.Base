@@ -381,7 +381,7 @@ namespace Novartment.Base.Net.Mime
 		/// используя только неотмеченные поля и отмечая успешно использованые.
 		/// </summary>
 		/// <param name="header">Коллекция полей заголовка, по которым будут установлены свойства сообщения.</param>
-		protected override void LoadExtraFields (IReadOnlyList<HeaderFieldWithMark> header)
+		protected override void LoadExtraFields (IReadOnlyList<EncodedHeaderFieldWithMark> header)
 		{
 			ResetProperties ();
 

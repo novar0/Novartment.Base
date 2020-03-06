@@ -22,7 +22,7 @@ namespace Novartment.Base.Net.Mime
 		}
 
 		/// <summary>Получает кодировку передачи содержимого тела сущности.</summary>
-		public ContentTransferEncoding TransferEncoding => _nestedMessage?.TransferEncoding.GetSuitableCompositeMediaTypeTransferEncoding () ??
+		public ContentTransferEncoding TransferEncoding => _nestedMessage?.RequiredTransferEncoding.GetSuitableCompositeMediaTypeTransferEncoding () ??
 			ContentTransferEncoding.Unspecified;
 
 		/// <summary>

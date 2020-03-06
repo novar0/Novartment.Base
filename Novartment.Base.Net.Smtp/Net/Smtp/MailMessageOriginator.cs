@@ -56,7 +56,7 @@ namespace Novartment.Base.Net.Smtp
 			// Посредником/медиатором служит канал BufferedChannel.
 			async Task OriginateTransactionStateMachine ()
 			{
-				using var transactionHandler = transactionHandlerFactory.Invoke (message.TransferEncoding);
+				using var transactionHandler = transactionHandlerFactory.Invoke (message.RequiredTransferEncoding);
 				var returnPath = (message.Originators.Count > 0) ? message.Originators[0] : null;
 				await transactionHandler.StartAsync (returnPath, cancellationToken).ConfigureAwait (false);
 				foreach (var recipient in recipients)

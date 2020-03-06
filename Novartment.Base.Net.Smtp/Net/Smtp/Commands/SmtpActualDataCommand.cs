@@ -15,7 +15,7 @@ namespace Novartment.Base.Net.Smtp
 		{
 			this.Source = new TemplateSeparatedBufferedSource (
 				source,
-				new byte[] { 0x0d, 0x0a, (byte)'.', 0x0d, 0x0a },
+				SmtpCommand.MessageEndMarker,
 				throwIfEndMarkerNotFound);
 		}
 	}

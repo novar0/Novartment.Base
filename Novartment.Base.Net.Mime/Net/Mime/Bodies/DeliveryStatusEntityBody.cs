@@ -184,7 +184,7 @@ namespace Novartment.Base.Net.Mime
 
 		// Создаёт коллекцию свойств уведомления о статусе доставки сообщения конкретному адресату
 		// на основе указанной коллекции полей заголовка уведомления о статусе доставки сообщения конкретному адресату.
-		private static RecipientDeliveryStatus ParseHeaderRecipient (IReadOnlyCollection<HeaderField> fields, char[] fieldBodyBuffer, char[] fieldBodyElementBuffer)
+		private static RecipientDeliveryStatus ParseHeaderRecipient (IReadOnlyCollection<EncodedHeaderField> fields, char[] fieldBodyBuffer, char[] fieldBodyElementBuffer)
 		{
 			NotificationFieldValue originalRecipient = null;
 			NotificationFieldValue finalRecipient = null;
@@ -414,7 +414,7 @@ namespace Novartment.Base.Net.Mime
 
 		// Создаёт коллекцию свойств уведомления о статусе доставки сообщения
 		// на основе указанной коллекции полей заголовка уведомления о статусе доставки сообщения.
-		private void ParseHeader (IReadOnlyCollection<HeaderField> header, char[] fieldBodyBuffer, char[] fieldBodyElementBuffer)
+		private void ParseHeader (IReadOnlyCollection<EncodedHeaderField> header, char[] fieldBodyBuffer, char[] fieldBodyElementBuffer)
 		{
 			string originalEnvelopeId = null;
 			NotificationFieldValue reportingMailTransferAgent = null;

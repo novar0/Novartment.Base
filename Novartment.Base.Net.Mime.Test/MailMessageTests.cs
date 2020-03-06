@@ -231,7 +231,7 @@ namespace Novartment.Base.Net.Mime.Test
 			Assert.IsType<TextEntityBody> (msg.Body);
 			Assert.Equal (ContentMediaType.Text, msg.MediaType);
 			Assert.Equal ("plain", msg.MediaSubtype);
-			Assert.Equal (ContentTransferEncoding.EightBit, msg.TransferEncoding);
+			Assert.Equal (ContentTransferEncoding.EightBit, msg.RequiredTransferEncoding);
 			Assert.Equal ("текст сообщения \r\n", ((TextEntityBody)msg.Body).GetText ());
 			Assert.Equal ("koi8-r", ((TextEntityBody)msg.Body).Encoding.WebName);
 		}
@@ -293,7 +293,7 @@ namespace Novartment.Base.Net.Mime.Test
 			Assert.Equal ("text", att.MediaSubtype);
 			Assert.Equal (ContentDispositionType.Attachment, att.DispositionType);
 			Assert.Equal ("This document specifies an Internet standards track protocol for the функции and requests discussion and suggestions.txt", att.FileName);
-			Assert.Equal ("base64", att.TransferEncoding.GetName ());
+			Assert.Equal ("base64", att.RequiredTransferEncoding.GetName ());
 			byte[] hash;
 			var data = ((IDiscreteEntityBody)att.Body).GetDataSource ().ReadAllBytesAsync ().Result;
 			Assert.Equal (70289, data.Length);
