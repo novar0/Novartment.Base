@@ -202,27 +202,35 @@ namespace Novartment.Base.BinaryStreaming
 			var sourceSizeNeededBlockAjusted = _cryptoTransform.CanTransformMultipleBlocks ?
 				sourceSizeNeeded :
 				_cryptoTransform.InputBlockSize;
-			if (_source.IsExhausted || (sourceSizeNeededBlockAjusted <= sourceAvailableSize))
+			if (_source.IsExhausted || (sourceAvailableSize >= sourceSizeNeededBlockAjusted))
 			{
 				sizeTransformed = LoadFromTransformedSource ();
 				_count += sizeTransformed;
 				return new ValueTask<int> (sizeTransformed);
 			}
 
-			return FillBufferChunkAsyncFinalizer (_source.LoadAsync (cancellationToken));
+			return FillBufferChunkAsyncFinalizer ();
 
-			async ValueTask<int> FillBufferChunkAsyncFinalizer (ValueTask task)
+			async ValueTask<int> FillBufferChunkAsyncFinalizer ()
 			{
-				await task.ConfigureAwait (false);
-				if ((_source.Count < _cryptoTransform.InputBlockSize) && !_source.IsExhausted)
+				// запрашивает данные до тех пор, пока не наберём на входной блок или источник не закончится
+				while (true)
 				{
-					throw new InvalidOperationException (FormattableString.Invariant (
-						$"Source (buffer size={_source.BufferMemory.Length}) can't provide enough data to transform single block (size={_cryptoTransform.InputBlockSize})."));
+					var oldCount = _source.Count;
+					await _source.LoadAsync (cancellationToken).ConfigureAwait (false);
+					var newCount = _source.Count;
+					if ((newCount >= _cryptoTransform.InputBlockSize) || _source.IsExhausted)
+					{
+						sizeTransformed = LoadFromTransformedSource ();
+						_count += sizeTransformed;
+						return sizeTransformed;
+					}
+					if (newCount <= oldCount)
+					{
+						throw new InvalidOperationException (FormattableString.Invariant (
+							$"Source (buffer size={_source.BufferMemory.Length}) is not exhausted, but can't provide enough data to transform single block (size={_cryptoTransform.InputBlockSize})."));
+					}
 				}
-
-				sizeTransformed = LoadFromTransformedSource ();
-				_count += sizeTransformed;
-				return sizeTransformed;
 			}
 		}
 
