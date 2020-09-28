@@ -131,6 +131,8 @@ namespace Novartment.Base.BinaryStreaming
 					}
 					while (size > (long)readed);
 
+					CheckIfStreamEnded ();
+
 					// делаем доступным остаток буфера
 					skipped += size;
 					_offset = (int)size;
@@ -167,6 +169,10 @@ namespace Novartment.Base.BinaryStreaming
 					if (readed < 1)
 					{
 						_streamEnded = true;
+					}
+					else
+					{
+						CheckIfStreamEnded ();
 					}
 				}
 			}
@@ -216,6 +222,7 @@ namespace Novartment.Base.BinaryStreaming
 						if (readed > 0)
 						{
 							_count += readed;
+							CheckIfStreamEnded ();
 						}
 						else
 						{
@@ -227,6 +234,14 @@ namespace Novartment.Base.BinaryStreaming
 					{
 						throw new NotEnoughDataException (shortage);
 					}
+				}
+			}
+
+			private void CheckIfStreamEnded ()
+			{
+				if (_stream.CanSeek && (_stream.Position >= _stream.Length))
+				{
+					_streamEnded = true;
 				}
 			}
 
