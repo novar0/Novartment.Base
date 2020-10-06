@@ -76,6 +76,18 @@ namespace Novartment.Base.Net.Mime.Test
 			Assert.Null (par);
 			par = HeaderFieldBodyParameter.Parse (template, buf, ref pos);
 			Assert.Null (par);
+
+			// тест особой ситуации ('encoded-word' внутри 'quoted-string' запрещено правилами) для совместимости с IBM Notes
+			template = "; filename=\"=?KOI8-R?B?79DF0sHUydfO2cog0sHQz9LUIDIwMjAueGxzeA==?=\"";
+			pos = 0;
+			par = HeaderFieldBodyParameter.Parse (template, buf, ref pos);
+			Assert.NotNull (par);
+			Assert.Equal ("filename", par.Name);
+			Assert.Equal ("Оперативный рапорт 2020.xlsx", par.Value);
+			par = HeaderFieldBodyParameter.Parse (template, buf, ref pos);
+			Assert.Null (par);
+			par = HeaderFieldBodyParameter.Parse (template, buf, ref pos);
+			Assert.Null (par);
 		}
 	}
 }

@@ -333,6 +333,24 @@ namespace Novartment.Base.Net.Mime
 			}
 
 			// regular-parameter
+			if (token.Format is StructuredStringTokenQuotedStringFormat)
+			{
+				/*
+				Предусмотрим нестандартный случай когда 'encoded-word' находится внутри 'quoted-string'.
+				Это запрещено в RFC 2047 part 5: An 'encoded-word' MUST NOT appear within a 'quoted-string'.
+				Встречается в почтовых программмах, например IBM Notes.
+				*/
+				var isWordEncoded =
+					(token.Length > 10) && // первый и последний символ это кавычки
+					(source[token.Position + 1] == '=') &&
+					(source[token.Position + 2] == '?') &&
+					(source[token.Position + token.Length - 3] == '?') &&
+					(source[token.Position + token.Length - 2] == '=');
+				if (isWordEncoded)
+				{
+					return Rfc2047EncodedWord.Parse (source.Slice (token.Position + 1, token.Length - 2), destination.AsSpan (destinationPos));
+				}
+			}
 			return token.Format.DecodeToken (source.Slice (token.Position, token.Length), destination.AsSpan (destinationPos));
 		}
 
