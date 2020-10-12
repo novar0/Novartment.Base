@@ -734,7 +734,7 @@ namespace Novartment.Base.Net.Mime
 				{
 					if (tokensEndPosition > tokensStartPosition)
 					{
-						result.Add (Mailbox.Parse (source.Slice (tokensStartPosition, tokensEndPosition - tokensStartPosition)));
+						result.Add (Mailbox.Parse (source[tokensStartPosition..tokensEndPosition]));
 						tokensStartPosition = tokensEndPosition = -1;
 					}
 				}
@@ -751,7 +751,7 @@ namespace Novartment.Base.Net.Mime
 
 			if (tokensEndPosition > tokensStartPosition)
 			{
-				result.Add (Mailbox.Parse (source.Slice (tokensStartPosition, tokensEndPosition - tokensStartPosition)));
+				result.Add (Mailbox.Parse (source[tokensStartPosition..tokensEndPosition]));
 			}
 
 			return result;
@@ -1286,8 +1286,8 @@ namespace Novartment.Base.Net.Mime
 				(src.Length > 8) &&
 				(src[0] == '=') &&
 				(src[1] == '?') &&
-				(src[src.Length - 2] == '?') &&
-				(src[src.Length - 1] == '=');
+				(src[^2] == '?') &&
+				(src[^1] == '=');
 
 			if (isWordEncoded)
 			{

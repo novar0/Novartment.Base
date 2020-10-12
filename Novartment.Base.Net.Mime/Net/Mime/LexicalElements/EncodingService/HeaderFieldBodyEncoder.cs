@@ -197,7 +197,7 @@ namespace Novartment.Base.Net.Mime
 				}
 			}
 
-			var (bytesProduced, _) = encoder.Encode (source.Slice (byteIndex, byteCount), buf.Slice (outPos, buf.Length - outPos), 0, true);
+			var (bytesProduced, _) = encoder.Encode (source.Slice (byteIndex, byteCount), buf[outPos..], 0, true);
 			outPos += bytesProduced;
 
 			prevSequenceIsWordEncoded = mustEncode;

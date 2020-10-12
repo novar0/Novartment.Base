@@ -950,17 +950,17 @@ namespace Novartment.Base.Net.Mime.Test
 			// один параметр
 			var builder = new HeaderFieldBuilderExactValue (HeaderFieldName.Supersedes, "short.value");
 			builder.AddParameter ("charset", "koi8-r");
-			var size = builder.EncodeToBinaryTransportRepresentation (buf, lineBuf, 78);
+			var size = builder.EncodeToBinaryTransportRepresentation (buf, lineBuf);
 			Assert.Equal ("Supersedes: short.value; charset=koi8-r\r\n", Encoding.ASCII.GetString (buf, 0, size));
 
 			builder = new HeaderFieldBuilderExactValue (HeaderFieldName.Supersedes, "short.value");
 			builder.AddParameter ("charset", "koi8 r");
-			size = builder.EncodeToBinaryTransportRepresentation (buf, lineBuf, 78);
+			size = builder.EncodeToBinaryTransportRepresentation (buf, lineBuf);
 			Assert.Equal ("Supersedes: short.value; charset=\"koi8 r\"\r\n", Encoding.ASCII.GetString (buf, 0, size));
 
 			builder = new HeaderFieldBuilderExactValue (HeaderFieldName.Supersedes, "short.value");
 			builder.AddParameter ("charset", "функции");
-			size = builder.EncodeToBinaryTransportRepresentation (buf, lineBuf, 78);
+			size = builder.EncodeToBinaryTransportRepresentation (buf, lineBuf);
 			Assert.Equal ("Supersedes: short.value;\r\n charset*0*=utf-8''%D1%84%D1%83%D0%BD%D0%BA%D1%86%D0%B8%D0%B8\r\n", Encoding.ASCII.GetString (buf, 0, size));
 
 			// несколько параметров
@@ -968,19 +968,38 @@ namespace Novartment.Base.Net.Mime.Test
 			builder.AddParameter ("name1", "value1");
 			builder.AddParameter ("charset", "koi8-r");
 			builder.AddParameter ("name2", "value2");
-			size = builder.EncodeToBinaryTransportRepresentation (buf, lineBuf, 78);
+			size = builder.EncodeToBinaryTransportRepresentation (buf, lineBuf);
 			Assert.Equal ("Supersedes: short.value; name1=value1; charset=koi8-r; name2=value2\r\n", Encoding.ASCII.GetString (buf, 0, size));
 
 			// оптимальное кодирования длинного значения параметра
 			builder = new HeaderFieldBuilderExactValue (HeaderFieldName.Supersedes, "value");
 			builder.AddParameter ("filename", "This document specifies an Internet standards track protocol for the функции and requests discussion and suggestions.txt");
-			size = builder.EncodeToBinaryTransportRepresentation (buf, lineBuf, 78);
+			size = builder.EncodeToBinaryTransportRepresentation (buf, lineBuf);
 			Assert.Equal (
 				"Supersedes: value;\r\n" +
 				" filename*0*=utf-8''This%20document%20specifies%20an%20Internet%20standards;\r\n" +
 				" filename*1*=%20track%20protocol%20for%20the%20%D1%84%D1%83%D0%BD%D0%BA%D1%86;\r\n" +
 				" filename*2*=%D0%B8%D0%B8%20and%20requests%20discussion%20and%20suggestions.t;\r\n" +
-				" filename*3=xt\r\n",
+				" filename*3*=xt\r\n",
+				Encoding.ASCII.GetString (buf, 0, size));
+
+			builder = new HeaderFieldBuilderExactValue (HeaderFieldName.Supersedes, "value");
+			builder.AddParameter ("filename", "ТР-151 от 29.07.2020 О применении утепляющей смеси на основе шамота (ШКВ) взамен люнкерита при разливке по заказам ПАО «Уралкуз» и прокат.pdf");
+			size = builder.EncodeToBinaryTransportRepresentation (buf, lineBuf);
+			Assert.Equal (
+				"Supersedes: value;\r\n" +
+				" filename*0*=utf-8''%D0%A2%D0%A0-151%20%D0%BE%D1%82%2029.07.2020%20%D0%9E%20;\r\n" +
+				" filename*1*=%D0%BF%D1%80%D0%B8%D0%BC%D0%B5%D0%BD%D0%B5%D0%BD%D0%B8%D0%B8%20;\r\n" +
+				" filename*2*=%D1%83%D1%82%D0%B5%D0%BF%D0%BB%D1%8F%D1%8E%D1%89%D0%B5%D0%B9%20;\r\n" +
+				" filename*3*=%D1%81%D0%BC%D0%B5%D1%81%D0%B8%20%D0%BD%D0%B0%20%D0%BE%D1%81;\r\n" +
+				" filename*4*=%D0%BD%D0%BE%D0%B2%D0%B5%20%D1%88%D0%B0%D0%BC%D0%BE%D1%82%D0%B0;\r\n" +
+				" filename*5*=%20%28%D0%A8%D0%9A%D0%92%29%20%D0%B2%D0%B7%D0%B0%D0%BC%D0%B5;\r\n" +
+				" filename*6*=%D0%BD%20%D0%BB%D1%8E%D0%BD%D0%BA%D0%B5%D1%80%D0%B8%D1%82%D0%B0;\r\n" +
+				" filename*7*=%20%D0%BF%D1%80%D0%B8%20%D1%80%D0%B0%D0%B7%D0%BB%D0%B8%D0%B2;\r\n" +
+				" filename*8*=%D0%BA%D0%B5%20%D0%BF%D0%BE%20%D0%B7%D0%B0%D0%BA%D0%B0%D0%B7;\r\n" +
+				" filename*9*=%D0%B0%D0%BC%20%D0%9F%D0%90%D0%9E%20%C2%AB%D0%A3%D1%80%D0%B0;\r\n" +
+				" filename*10*=%D0%BB%D0%BA%D1%83%D0%B7%C2%BB%20%D0%B8%20%D0%BF%D1%80%D0%BE;\r\n" +
+				" filename*11*=%D0%BA%D0%B0%D1%82.pdf\r\n",
 				Encoding.ASCII.GetString (buf, 0, size));
 
 			// всё вместе
@@ -990,13 +1009,13 @@ namespace Novartment.Base.Net.Mime.Test
 			builder.AddParameter ("creation-date", "10 Jul 2012 10:01:06 +0600");
 			builder.AddParameter ("read-date", "11 Jul 2012 10:40:13 +0600");
 			builder.AddParameter ("size", "318");
-			size = builder.EncodeToBinaryTransportRepresentation (buf, lineBuf, 78);
+			size = builder.EncodeToBinaryTransportRepresentation (buf, lineBuf);
 			Assert.Equal (
 				"Content-Disposition: attachment;\r\n" +
 				" filename*0*=utf-8''This%20document%20specifies%20an%20Internet%20standards;\r\n" +
 				" filename*1*=%20track%20protocol%20for%20the%20%D1%84%D1%83%D0%BD%D0%BA%D1%86;\r\n" +
 				" filename*2*=%D0%B8%D0%B8%20and%20requests%20discussion%20and%20suggestions.t;\r\n" +
-				" filename*3=xt; modification-date=\"24 Nov 2011 09:48:27 +0600\";\r\n" +
+				" filename*3*=xt; modification-date=\"24 Nov 2011 09:48:27 +0600\";\r\n" +
 				" creation-date=\"10 Jul 2012 10:01:06 +0600\";\r\n" +
 				" read-date=\"11 Jul 2012 10:40:13 +0600\"; size=318\r\n",
 				Encoding.ASCII.GetString (buf, 0, size));

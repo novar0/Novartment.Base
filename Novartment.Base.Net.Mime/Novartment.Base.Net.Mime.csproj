@@ -3,7 +3,7 @@
   <PropertyGroup>
     <AssemblyName>Novartment.Base.Net.Mime</AssemblyName>
 		<TargetFrameworks>netstandard2.0;netstandard2.1</TargetFrameworks>
-		<Version>4.5.1-beta</Version>
+		<Version>4.6.0-beta</Version>
 		<Description>Base classes for MIME</Description>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
@@ -13,6 +13,10 @@
   <PropertyGroup>
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Stringier.Rune" Version="4.2.0" />
+  </ItemGroup>
 
 	<ItemGroup>
     <ProjectReference Include="..\Novartment.Base\Novartment.Base.csproj" />

@@ -129,7 +129,7 @@ namespace Novartment.Base.Net.Mime
 				string.Equals (_value, other._value, StringComparison.Ordinal);
 		}
 
-		public static HeaderFieldBodyParameter Parse (ReadOnlySpan<char> source, char[] outBuf, ref int parserPos)
+		internal static HeaderFieldBodyParameter Parse (ReadOnlySpan<char> source, char[] outBuf, ref int parserPos)
 		{
 			/*
 			RFC 2045 part 5.1:

@@ -23,48 +23,6 @@ namespace Novartment.Base.Test
 
 		[Fact]
 		[Trait ("Category", "Text.EstimatingEncoder")]
-		public void AsciiCharClass_EstimateEncode ()
-		{
-			var encoding = Encoding.UTF8;
-			var buf = encoding.GetBytes (Template1 + Template2 + Template3);
-			var encoder = new AsciiCharClassEstimatingEncoder (AsciiCharClasses.Token);
-			var encodedBuf = new byte[999];
-
-			// неподходящие элементы в начале
-			var tuple = encoder.Estimate (buf.AsSpan (Template1.Length, buf.Length - Template1.Length), encodedBuf.Length, 0, false);
-			Assert.Equal (0, tuple.BytesProduced);
-			Assert.Equal (0, tuple.BytesConsumed);
-			tuple = encoder.Encode (buf.AsSpan (Template1.Length, buf.Length - Template1.Length), encodedBuf, 0, false);
-			Assert.Equal (0, tuple.BytesProduced);
-			Assert.Equal (0, tuple.BytesConsumed);
-
-			// полная строка, неподходящие начинаются с середины
-			tuple = encoder.Estimate (buf, 99999, 0, false);
-			Assert.Equal (Template1.Length, tuple.BytesProduced);
-			Assert.Equal (Template1.Length, tuple.BytesConsumed);
-			tuple = encoder.Encode (buf, encodedBuf, 0, false);
-			Assert.Equal (Template1, Encoding.UTF8.GetString (encodedBuf, 0, tuple.BytesProduced));
-			Assert.Equal (Template1.Length, tuple.BytesConsumed);
-
-			// ограничение по размеру входа
-			tuple = encoder.Estimate (buf.AsSpan (0, 7), 99999, 0, false);
-			Assert.Equal (7, tuple.BytesProduced);
-			Assert.Equal (7, tuple.BytesConsumed);
-			tuple = encoder.Encode (buf.AsSpan (0, 7), encodedBuf, 0, false);
-			Assert.Equal (Template1.Substring (0, 7), Encoding.UTF8.GetString (encodedBuf, 0, tuple.BytesProduced));
-			Assert.Equal (7, tuple.BytesConsumed);
-
-			// ограничение по размеру выхода
-			tuple = encoder.Estimate (buf, 7, 0, false);
-			Assert.Equal (7, tuple.BytesProduced);
-			Assert.Equal (7, tuple.BytesConsumed);
-			tuple = encoder.Encode (buf, encodedBuf.AsSpan (0, 7), 0, false);
-			Assert.Equal (Template1.Substring (0, 7), Encoding.UTF8.GetString (encodedBuf, 0, tuple.BytesProduced));
-			Assert.Equal (7, tuple.BytesConsumed);
-		}
-
-		[Fact]
-		[Trait ("Category", "Text.EstimatingEncoder")]
 		public void QuotedString_EstimateEncode ()
 		{
 			var encoding = Encoding.UTF8;

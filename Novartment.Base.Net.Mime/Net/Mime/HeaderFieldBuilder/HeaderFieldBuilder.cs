@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
@@ -13,7 +14,7 @@ namespace Novartment.Base.Net.Mime
 {
 	/// <summary>
 	/// Построитель поля заголовка из отдельных частей значения и параметров.
-	/// Наследованные классы хранят нужные им значения и возвращаеют их частями в методе GetNextPart().
+	/// Наследованные классы хранят нужные им значения и возвращаеют их частями в методе EncodeNextPart().
 	/// </summary>
 	public abstract class HeaderFieldBuilder
 	{
@@ -73,9 +74,8 @@ namespace Novartment.Base.Net.Mime
 		/// </summary>
 		/// <param name="destination">Буфер куда будет сгнерировано тело.</param>
 		/// <param name="oneLineBuffer">Буфер для временного сохранения одной строки (максимально MaxLineLengthRequired байт).</param>
-		/// <param name="maxLineLength">Максимальная длина строки, по которой будет производиться фолдинг значения поля заголовка.</param>
 		/// <returns>Количество байт, записанных в буфер.</returns>
-		public int EncodeToBinaryTransportRepresentation (Span<byte> destination, byte[] oneLineBuffer, int maxLineLength)
+		public int EncodeToBinaryTransportRepresentation (Span<byte> destination, byte[] oneLineBuffer)
 		{
 			// RFC 5322:
 			// 1) FWS (the folding white space token) indicates a place where folding may take place.
@@ -108,7 +108,7 @@ namespace Novartment.Base.Net.Mime
 						bufSlice[partSize++] = (byte)';';
 					}
 
-					var foldedPartSize = FoldPartByLength (bufSlice, partSize, maxLineLength, ref lineLen);
+					var foldedPartSize = FoldPartByLength (bufSlice, partSize, ref lineLen);
 					outPos += foldedPartSize;
 				}
 			}
@@ -118,33 +118,26 @@ namespace Novartment.Base.Net.Mime
 			for (var idx = 0; idx < _parameters.Count; idx++)
 			{
 				var parameter = _parameters[idx];
+				var isLastParameter = idx >= (_parameters.Count - 1);
 
 				// кодируем все сегменты параметра
-				var oneLineBufferSize = Encoding.UTF8.GetBytes (parameter.Value, 0, parameter.Value.Length, oneLineBuffer, 0);
-
-				var segmentPos = 0;
-				var segmentIdx = 0;
-				while (true)
+				var isOneLine = false;
+				var isToken = false;
+				var isAscii = AsciiCharSet.IsAllOfClass (parameter.Value, AsciiCharClasses.Visible | AsciiCharClasses.WhiteSpace);
+				if (isAscii)
 				{
-					var bufSlice = destination.Slice (outPos);
-					var partSize = HeaderFieldBodyParameterEncoder.GetNextSegment (parameter.Name, oneLineBuffer.AsSpan (0, oneLineBufferSize), bufSlice, segmentIdx, ref segmentPos);
-					segmentIdx++;
-					if (partSize < 1)
+					var maxOneLineChars = MaxLineLengthRecommended - parameter.Name.Length - " =".Length;
+					isToken = AsciiCharSet.IsAllOfClass (parameter.Value, AsciiCharClasses.Token);
+					if (!isToken)
 					{
-						break;
+						maxOneLineChars -= "\"\"".Length;
 					}
-
-					var isLastSegment = segmentPos >= oneLineBufferSize;
-
-					// дополняем знаком ';' все сегменты всех параметров кроме последнего
-					if (isLastSegment && (idx != (_parameters.Count - 1)))
-					{
-						bufSlice[partSize++] = (byte)';';
-					}
-
-					var foldedPartSize = FoldPartByLength (bufSlice, partSize, maxLineLength, ref lineLen);
-					outPos += foldedPartSize;
+					isOneLine = parameter.Value.Length <= maxOneLineChars;
 				}
+
+				outPos += (isOneLine) ?
+					EncodeRegularParameter  (parameter, isToken, isLastParameter, destination.Slice (outPos), ref lineLen) :
+					EncodeExtendedParameter (parameter,          isLastParameter, destination.Slice (outPos), ref lineLen);
 			}
 
 			destination[outPos++] = (byte)'\r';
@@ -187,7 +180,7 @@ namespace Novartment.Base.Net.Mime
 					foreach (var fieldBuilder in fields)
 					{
 						cancellationToken.ThrowIfCancellationRequested ();
-						var size = fieldBuilder.EncodeToBinaryTransportRepresentation (fieldBuffer, oneLineBuffer, HeaderFieldBuilder.MaxLineLengthRecommended);
+						var size = fieldBuilder.EncodeToBinaryTransportRepresentation (fieldBuffer, oneLineBuffer);
 						await destination.WriteAsync (fieldBuffer.AsMemory (0, size), cancellationToken).ConfigureAwait (false);
 						totalSize += size;
 					}
@@ -220,8 +213,133 @@ namespace Novartment.Base.Net.Mime
 		/// <returns>Количество байтов, записанных в буфер.</returns>
 		protected abstract int EncodeNextPart (Span<byte> buf, out bool isLast);
 
+		// кодируем простое одностроковое значение (в кавычках если не токен)
+		private int EncodeRegularParameter (HeaderFieldBodyParameter parameter, bool isToken, bool isLastParameter, Span<byte> destination, ref int lineLen)
+		{
+			AsciiCharSet.GetBytes (parameter.Name.AsSpan (), destination);
+			var outOffset = parameter.Name.Length;
+			destination[outOffset++] = (byte)'=';
+			if (!isToken)
+			{
+				destination[outOffset++] = (byte)'"';
+			}
+
+			AsciiCharSet.GetBytes (parameter.Value.AsSpan (), destination.Slice (outOffset));
+			outOffset += parameter.Value.Length;
+			if (!isToken)
+			{
+				destination[outOffset++] = (byte)'"';
+			}
+
+			// дополняем знаком ';' все параметры кроме последнего
+			if (!isLastParameter)
+			{
+				destination[outOffset++] = (byte)';';
+			}
+
+			return FoldPartByLength (destination, outOffset, ref lineLen);
+		}
+
+		// кодируем сложное (требующее кодирования или многостроковое) значение согласно RFC 2231
+		private int EncodeExtendedParameter (HeaderFieldBodyParameter parameter, bool isLastParameter, Span<byte> destination, ref int lineLen)
+		{
+			/*
+			RFC 2231 часть 4.1:
+			1. Language and character set information only appear at the beginning of a given parameter value.
+			2. Continuations do not provide a facility for using more than one character set or language in the same parameter value.
+			3. A value presented using multiple continuations may contain a mixture of encoded and unencoded segments.
+			4. The first segment of a continuation MUST be encoded if language and character set information are given.
+			5. If the first segment of a continued parameter value is encoded the language and character set field delimiters MUST be present even when the fields are left blank.
+			*/
+
+			var encodingName = "utf-8";
+			var hexOctets = Hex.OctetsUpper.Span;
+			var asciiClasses = AsciiCharSet.ValueClasses.Span;
+
+			var outPos = 0;
+			var segmentIdx = 0;
+			var maxOutCount = MaxLineLengthRecommended - " ;".Length;
+			var outOffset = 0;
+			AsciiCharSet.GetBytes (parameter.Name.AsSpan (), destination);
+			outOffset += parameter.Name.Length;
+			destination[outOffset++] = (byte)'*';
+			var idxStr = segmentIdx.ToString (CultureInfo.InvariantCulture);
+			AsciiCharSet.GetBytes (idxStr.AsSpan (), destination.Slice (outOffset));
+			outOffset += idxStr.Length;
+			destination[outOffset++] = (byte)'*';
+			destination[outOffset++] = (byte)'=';
+			AsciiCharSet.GetBytes (encodingName.AsSpan (), destination.Slice (outOffset));
+			outOffset += encodingName.Length;
+			destination[outOffset++] = (byte)'\'';
+			destination[outOffset++] = (byte)'\'';
+
+			// проходим по рунам чтобы не разрезать суррогатные пары
+			// проходя по char, может получиться что суррогатная пара окажется разрезана и разнесена в разные сегменты
+			Span<byte> buffer = stackalloc byte[8];
+			foreach (var rune in parameter.Value.EnumerateRunes ())
+			{
+				var runeSize = rune.EncodeToUtf8 (buffer);
+				var runePos = 0;
+				var runeStartOffset = outOffset;
+				while (runePos < runeSize)
+				{
+					var octet = buffer[runePos];
+					var isToken = (octet != '%') && (octet < asciiClasses.Length) && ((asciiClasses[octet] & AsciiCharClasses.Token) != 0);
+					var octetSize = isToken ? 1 : 3;
+
+					// если очередной octet не влезает, то завершаем сегмент до начала руны и потом начинаем новый
+					if ((outOffset + octetSize) > maxOutCount)
+					{
+						// дополняем знаком ';' все сегменты всех параметров кроме последнего
+						destination[runeStartOffset++] = (byte)';';
+						var foldedPartSize = FoldPartByLength (destination, runeStartOffset, ref lineLen);
+						outPos += foldedPartSize;
+						segmentIdx++;
+						destination = destination.Slice (foldedPartSize);
+						outOffset = 0;
+						AsciiCharSet.GetBytes (parameter.Name.AsSpan (), destination.Slice (outOffset));
+						outOffset += parameter.Name.Length;
+						destination[outOffset++] = (byte)'*';
+						idxStr = segmentIdx.ToString (CultureInfo.InvariantCulture);
+						AsciiCharSet.GetBytes (idxStr.AsSpan (), destination.Slice (outOffset));
+						outOffset += idxStr.Length;
+						destination[outOffset++] = (byte)'*';
+						destination[outOffset++] = (byte)'=';
+						runePos = 0;
+						continue;
+					}
+
+					if (isToken)
+					{
+						destination[outOffset++] = octet;
+					}
+					else
+					{
+						// знак процента вместо символа, потом два шест.знака
+						destination[outOffset++] = (byte)'%';
+						var hex = hexOctets[octet];
+						destination[outOffset++] = (byte)hex[0];
+						destination[outOffset++] = (byte)hex[1];
+					}
+
+					runePos++;
+				}
+			}
+
+			// дополняем знаком ';' все параметры кроме последнего
+			if (!isLastParameter)
+			{
+				destination[outOffset++] = (byte)';';
+			}
+
+			var foldedPartSize2 = FoldPartByLength (destination, outOffset, ref lineLen);
+			outPos += foldedPartSize2;
+
+			return outPos;
+		}
+
 		// вставляет пробелы и переводы строки по мере фолдинга по указанной длине
-		private static int FoldPartByLength (Span<byte> part, int partLength, int maxLineLength, ref int lineLen)
+		private static int FoldPartByLength (Span<byte> part, int partLength, ref int lineLen)
 		{
 			var needWhiteSpace = (part[0] != (byte)' ') && (part[0] != (byte)'\t');
 			if (needWhiteSpace)
@@ -232,7 +350,7 @@ namespace Novartment.Base.Net.Mime
 			}
 
 			lineLen += partLength;
-			if (lineLen > maxLineLength)
+			if (lineLen > MaxLineLengthRecommended)
 			{
 				// если накопленная строка с добавлением новой части превысит maxLineLength, то перед новой частью добавляем перевод строки
 				lineLen = partLength + 1; // плюс пробел

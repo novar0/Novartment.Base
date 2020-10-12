@@ -258,7 +258,7 @@ namespace Novartment.Base.Net.Mime.Test
 				" filename*0*=utf-8''This%20document%20specifies%20an%20Internet%20standards;\r\n" +
 				" filename*1*=%20track%20protocol%20for%20the%20%D1%84%D1%83%D0%BD%D0%BA%D1%86;\r\n" +
 				" filename*2*=%D0%B8%D0%B8%20and%20requests%20discussion%20and%20suggestions.t;\r\n" +
-				" filename*3=xt; modification-date=\"24 Nov 2011 09:48:27 +0600\";\r\n" +
+				" filename*3*=xt; modification-date=\"24 Nov 2011 09:48:27 +0600\";\r\n" +
 				" creation-date=\"10 Jul 2012 10:01:06 +0600\";\r\n" +
 				" read-date=\"11 Jul 2012 10:40:13 +0600\"; size=318",
 				headers[4]);
