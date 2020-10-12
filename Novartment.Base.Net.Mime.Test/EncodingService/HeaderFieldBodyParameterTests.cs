@@ -88,6 +88,17 @@ namespace Novartment.Base.Net.Mime.Test
 			Assert.Null (par);
 			par = HeaderFieldBodyParameter.Parse (template, buf, ref pos);
 			Assert.Null (par);
+
+			template = "; filename=\"=?UTF-8?B?0KLQoC0xNTEg0L7RgiAyOS4wNy4yMDIwINCe?= =?UTF-8?B?INC/0YDQuNC80LXQvdC10L3QuNC4INGD0YLQtdC/0LvRj9GO0YnQtdC5?= =?UTF-8?B?INGB0LzQtdGB0Lgg0L3QsCDQvtGB0L3QvtCy0LUg0YjQsNC80L7RgtCwICg=?= =?UTF-8?B?0KjQmtCSKSDQstC30LDQvNC10L0g0LvRjtC90LrQtdGA0LjRgtCw?= =?UTF-8?B?INC/0YDQuCDRgNCw0LfQu9C40LLQutC1INC/0L4g0LfQsNC60LDQt9Cw0Lw=?= =?UTF-8?B?INCf0JDQniDCq9Cj0YDQsNC70LrRg9C3wrsg0Lgg0L/RgNC+0LrQsNGC0LAu?= =?UTF-8?B?c3Fs?=\"";
+			pos = 0;
+			par = HeaderFieldBodyParameter.Parse (template, buf, ref pos);
+			Assert.NotNull (par);
+			Assert.Equal ("filename", par.Name);
+			Assert.Equal ("ТР-151 от 29.07.2020 О применении утепляющей смеси на основе шамота (ШКВ) взамен люнкерита при разливке по заказам ПАО «Уралкуз» и проката.sql", par.Value);
+			par = HeaderFieldBodyParameter.Parse (template, buf, ref pos);
+			Assert.Null (par);
+			par = HeaderFieldBodyParameter.Parse (template, buf, ref pos);
+			Assert.Null (par);
 		}
 	}
 }

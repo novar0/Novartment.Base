@@ -129,7 +129,7 @@ namespace Novartment.Base.Net.Mime
 				string.Equals (_value, other._value, StringComparison.Ordinal);
 		}
 
-		internal static HeaderFieldBodyParameter Parse (ReadOnlySpan<char> source, char[] outBuf, ref int parserPos)
+		public static HeaderFieldBodyParameter Parse (ReadOnlySpan<char> source, char[] outBuf, ref int parserPos)
 		{
 			/*
 			RFC 2045 part 5.1:
@@ -336,7 +336,7 @@ namespace Novartment.Base.Net.Mime
 			if (token.Format is StructuredStringTokenQuotedStringFormat)
 			{
 				/*
-				Предусмотрим нестандартный случай когда 'encoded-word' находится внутри 'quoted-string'.
+				Предусмотрим нестандартный случай когда внутри 'quoted-string' находятся 'encoded-word'.
 				Это запрещено в RFC 2047 part 5: An 'encoded-word' MUST NOT appear within a 'quoted-string'.
 				Встречается в почтовых программмах, например IBM Notes.
 				*/
@@ -348,7 +348,7 @@ namespace Novartment.Base.Net.Mime
 					(source[token.Position + token.Length - 2] == '=');
 				if (isWordEncoded)
 				{
-					return Rfc2047EncodedWord.Parse (source.Slice (token.Position + 1, token.Length - 2), destination.AsSpan (destinationPos));
+					return HeaderDecoder.DecodeEncodedWords (source.Slice (token.Position + 1, token.Length - 2), destination, destinationPos);
 				}
 			}
 			return token.Format.DecodeToken (source.Slice (token.Position, token.Length), destination.AsSpan (destinationPos));

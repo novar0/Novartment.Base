@@ -137,6 +137,15 @@ namespace Novartment.Base.Net.Mime
 			new StructuredStringTokenCustomFormat[] { new StructuredStringTokenQuotedStringFormat (), new TokenFormatComment (), new TokenFormatId (), new TokenFormatLiteral () });
 
 		/// <summary>
+		/// Парсер произвольных наборов символов, разделённых пробелами.
+		/// </summary>
+		private static readonly StructuredStringFormat _AnyVisibleCharFormat = new StructuredStringFormat (
+			AsciiCharClasses.WhiteSpace,
+			AsciiCharClasses.Visible,
+			char.MaxValue,
+			null);
+
+		/// <summary>
 		/// Decodes 'atom' value from specified representation.
 		/// </summary>
 		/// <param name="source">Representation of atom.</param>
@@ -323,6 +332,39 @@ namespace Novartment.Base.Net.Mime
 			}
 
 			return new string (outBuf, 0, outPos);
+		}
+
+		/// <summary>
+		/// Decodes sequence of encoded-words into resulting string.
+		/// </summary>
+		internal static int DecodeEncodedWords (ReadOnlySpan<char> source, char[] outBuf, int outStart)
+		{
+			var parserPos = 0;
+			var outPos = 0;
+			var prevIsWordEncoded = false;
+			while (true)
+			{
+				var token = _AnyVisibleCharFormat.ParseToken (source, ref parserPos);
+				if (token.Format == null)
+				{
+					break;
+				}
+
+				// RFC 2047 часть 6.2:
+				// When displaying a particular header field that contains multiple 'encoded-word's,
+				// any 'linear-white-space' that separates a pair of adjacent 'encoded-word's is ignored
+				var isWordEncoded = IsWordEncoded (token, source);
+				if ((outPos > 0) && (!prevIsWordEncoded || !isWordEncoded))
+				{
+					outBuf[outStart + outPos] = ' ';
+					outPos++;
+				}
+
+				outPos += DecodeTokenWithEncodedWord (token, source, outBuf.AsSpan (outStart + outPos));
+				prevIsWordEncoded = isWordEncoded;
+			}
+
+			return outPos;
 		}
 
 		/// <summary>
