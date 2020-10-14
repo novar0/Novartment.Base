@@ -75,25 +75,6 @@ namespace Novartment.Base.Net.Mime.Test
 
 		[Fact]
 		[Trait ("Category", "Mime.HeaderDecoder")]
-		public void DecodePhrase ()
-		{
-			var buf = new char[1000];
-			Assert.Equal ("source", HeaderDecoder.DecodePhrase ("source", buf));
-			Assert.Equal ("source one", HeaderDecoder.DecodePhrase ("source one", buf));
-			Assert.Equal ("source one", HeaderDecoder.DecodePhrase ("source  one", buf));
-			Assert.Equal ("source one", HeaderDecoder.DecodePhrase (" source \t one  ", buf));
-			Assert.Equal ("source source.net Один", HeaderDecoder.DecodePhrase ("source (dd klk 2012) source.net =?utf-8?B?0J7QtNC40L0=?=", buf));
-			Assert.Equal (
-				"Join your peers at Eloqua Experience 2013 при best practices and road-tested дисплеем с разрешением порядка",
-				HeaderDecoder.DecodePhrase (
-					"Join your peers at Eloqua Experience 2013 =?utf-8?B?0L/RgNC4?= best practices " +
-					"and road-tested (strategies (that) get results) " +
-					"=?utf-8?B?0LTQuNGB0L/Qu9C10LXQvA==?= =?utf-8?B?INGB?= " +
-					"=?utf-8?B?INGA0LDQt9GA0LXRiNC10L3QuNC10Lw=?= =?utf-8?B?INC/0L7RgNGP0LTQutCw?=", buf));
-		}
-
-		[Fact]
-		[Trait ("Category", "Mime.HeaderDecoder")]
 		public void DecodeAtomList ()
 		{
 			var arr = HeaderDecoder.DecodeAtomList ("ru-ru");

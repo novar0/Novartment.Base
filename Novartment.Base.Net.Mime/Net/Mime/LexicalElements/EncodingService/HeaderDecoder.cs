@@ -287,54 +287,6 @@ namespace Novartment.Base.Net.Mime
 		}
 
 		/// <summary>
-		/// Decodes 'phrase' into resulting string.
-		/// Only supports tokens of type Separator, Atom and Quoted.
-		/// </summary>
-		internal static string DecodePhrase (ReadOnlySpan<char> source, char[] outBuf)
-		{
-			var parserPos = 0;
-			var outPos = 0;
-			var prevIsWordEncoded = false;
-			while (true)
-			{
-				StructuredStringToken token;
-				do
-				{
-					token = DotAtomFormat.ParseToken (source, ref parserPos);
-				} while (token.Format is TokenFormatComment);
-
-				if (token.Format == null)
-				{
-					if (outPos < 1)
-					{
-						throw new FormatException ("Empty value is invalid for format 'phrase'.");
-					}
-
-					break;
-				}
-
-				// RFC 2047 часть 6.2:
-				// When displaying a particular header field that contains multiple 'encoded-word's,
-				// any 'linear-white-space' that separates a pair of adjacent 'encoded-word's is ignored
-				var isWordEncoded = IsWordEncoded (token, source);
-				if ((outPos > 0) && (!prevIsWordEncoded || !isWordEncoded))
-				{
-					// RFC 5322 часть 3.2.2:
-					// Runs of FWS, comment, or CFWS that occur between lexical tokens in a structured header field
-					// are semantically interpreted as a single space character.
-					outBuf[outPos++] = ' ';
-				}
-
-				outPos += (token.Format is StructuredStringTokenValueFormat) ?
-					DecodeTokenWithEncodedWord (token, source, outBuf.AsSpan (outPos)) :
-					token.Decode (source, outBuf, outPos);
-				prevIsWordEncoded = isWordEncoded;
-			}
-
-			return new string (outBuf, 0, outPos);
-		}
-
-		/// <summary>
 		/// Decodes sequence of encoded-words into resulting string.
 		/// </summary>
 		internal static int DecodeEncodedWords (ReadOnlySpan<char> source, char[] outBuf, int outStart)
