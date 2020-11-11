@@ -8,9 +8,9 @@ namespace Novartment.Base.Text
 	/// </summary>
 	public class StructuredStringTokenDelimitedFormat : StructuredStringTokenCustomFormat
 	{
-		private char _endMarker;
-		private StructuredStringIngoreTokenType _ignoreToken;
-		private bool _allowNesting;
+		private readonly char _endMarker;
+		private readonly StructuredStringIngoreTokenType _ignoreToken;
+		private readonly bool _allowNesting;
 
 		/// <summary>
 		/// Инициализирует новый экземпляр класса StructuredStringTokenDelimitedFormat с указанными маркерами,
@@ -53,7 +53,7 @@ namespace Novartment.Base.Text
 		{
 			// по умолчанию берём исходную строку отрезая начальный и конечный символы-маркеры
 			// наследники могут переопределить это поведение
-			var src = source.Slice (1, source.Length - 2);
+			var src = source[1..^1];
 			src.CopyTo (buffer);
 			return src.Length;
 		}
