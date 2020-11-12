@@ -5,7 +5,7 @@ using Xunit;
 
 namespace Novartment.Base.Net.Mime.Test
 {
-	public class HeaderDecoderTests
+	public sealed class HeaderDecoderTests
 	{
 		public HeaderDecoderTests ()
 		{

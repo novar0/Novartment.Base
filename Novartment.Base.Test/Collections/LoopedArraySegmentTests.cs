@@ -3,7 +3,7 @@ using Xunit;
 
 namespace Novartment.Base.Test
 {
-	public class LoopedArraySegmentTests
+	public sealed class LoopedArraySegmentTests
 	{
 		[Fact]
 		[Trait ("Category", "Collections.LoopedArraySegment")]

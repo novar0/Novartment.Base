@@ -3,7 +3,7 @@ using Xunit;
 
 namespace Novartment.Base.Net.Mime.Test
 {
-	public class HeaderFieldBodyEncoderTests
+	public sealed class HeaderFieldBodyEncoderTests
 	{
 		[Fact]
 		[Trait ("Category", "Mime")]

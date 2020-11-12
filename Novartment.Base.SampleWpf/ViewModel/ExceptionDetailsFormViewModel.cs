@@ -5,7 +5,7 @@ using Novartment.Base.UI.Wpf;
 
 namespace Novartment.Base.SampleWpf
 {
-	public class ExceptionDetailsFormViewModel : BaseViewModel,
+	public sealed class ExceptionDetailsFormViewModel : BaseViewModel,
 		IDialogViewModel<bool?>
 	{
 		private readonly string exceptionStringSeparator = Environment.NewLine + "------------------------------" + Environment.NewLine;
@@ -40,7 +40,7 @@ namespace Novartment.Base.SampleWpf
 		{
 			var fullDetails = string.Join (exceptionStringSeparator, _data.Exception.GetFullInfo (ComponentApplication.Current.SourceDirectory));
 			return
-				$"Время: {DateTime.Now:yyyy-MM-dd HH:mm:ss}\r\nПользователь: {FailedUser}\r\nСистема: {FailedFramework}\r\nПрограмма: {FailedAssemblyName} {FailedAssemblyVersion}\r\nОперация: {FailedAction}\r\nИсключения:{exceptionStringSeparator}{fullDetails}";
+				$"Время: {DateTime.Now:yyyy-MM-dd HH:mm:ss}\r\nПользователь: {this.FailedUser}\r\nСистема: {this.FailedFramework}\r\nПрограмма: {this.FailedAssemblyName} {this.FailedAssemblyVersion}\r\nОперация: {this.FailedAction}\r\nИсключения:{exceptionStringSeparator}{fullDetails}";
 		}
 	}
 }

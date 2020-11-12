@@ -10,7 +10,7 @@ using Xunit;
 
 namespace Novartment.Base.Smtp.Test
 {
-	public class SmtpOriginatorProtocolTests
+	public sealed class SmtpOriginatorProtocolTests
 	{
 		[Fact]
 		[Trait ("Category", "Net.Smtp")]
@@ -104,7 +104,7 @@ namespace Novartment.Base.Smtp.Test
 			connection.Dispose ();
 		}
 
-		internal class SmtpTransactionOriginatorMock
+		internal sealed class SmtpTransactionOriginatorMock
 		{
 			internal int CallCount { get; private set; } = 0;
 

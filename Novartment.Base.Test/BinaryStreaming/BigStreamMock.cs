@@ -5,7 +5,7 @@ namespace Novartment.Base.Test
 {
 	// имитирует поток большого размера без выделения ресурсов
 	// чтение заполняет буфер путем вызова указанной функции, в которую передается абсолютная позиция в потоке
-	internal class BigStreamMock : Stream
+	internal sealed class BigStreamMock : Stream
 	{
 		private readonly bool _canSeek;
 		private readonly long _length;

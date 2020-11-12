@@ -3,16 +3,16 @@ using System.IO;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
+using System.Threading.Channels;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Novartment.Base.BinaryStreaming;
 using Novartment.Base.Collections;
 using Novartment.Base.Tasks;
-using System.Threading.Channels;
 
 namespace Novartment.Base.Net.Smtp
 {
-	internal class SmtpDeliveryProtocolSession :
+	internal sealed class SmtpDeliveryProtocolSession :
 		IDisposable
 	{
 		private static readonly string[] SupportedExtensions =
@@ -712,7 +712,7 @@ namespace Novartment.Base.Net.Smtp
 			_expectedInput = SmtpCommand.ExpectedInputType.Command;
 		}
 
-		private class TwoTaskFinalizer
+		private sealed class TwoTaskFinalizer
 		{
 			private readonly TaskCompletionSource<int> _tcs;
 			private readonly Task _otherTask;

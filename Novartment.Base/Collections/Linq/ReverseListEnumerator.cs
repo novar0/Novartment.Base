@@ -8,7 +8,7 @@ namespace Novartment.Base.Collections.Linq
 	/// An iterator over a list in reverse order.
 	/// </summary>
 	/// <typeparam name="TSource">The type of the elements.</typeparam>
-	internal class ReverseListEnumerator<TSource> :
+	internal sealed class ReverseListEnumerator<TSource> :
 		IEnumerator<TSource>
 	{
 		private readonly IReadOnlyList<TSource> _source;

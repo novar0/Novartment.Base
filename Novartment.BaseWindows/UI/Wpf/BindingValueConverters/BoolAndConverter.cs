@@ -8,7 +8,7 @@ namespace Novartment.Base.UI.Wpf
 	/// <summary>
 	/// объединяет несколько булевых значений по закону AND.
 	/// </summary>
-	public class BoolAndConverter :
+	public sealed class BoolAndConverter :
 		IMultiValueConverter
 	{
 		/// <summary>Преобразует исходные значения в значение для цели связывания.</summary>

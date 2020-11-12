@@ -7,7 +7,7 @@ namespace Novartment.Base.Net.Mime
 	/// Уведомление о статусе доставки сообщения одному адресату.
 	/// Определено в RFC 3464.
 	/// </summary>
-	public class RecipientDeliveryStatus
+	public sealed class RecipientDeliveryStatus
 	{
 		// TODO: добавить валидацию при установке свойств
 

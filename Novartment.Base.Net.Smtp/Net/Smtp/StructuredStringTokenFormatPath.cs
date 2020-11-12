@@ -2,7 +2,7 @@
 
 namespace Novartment.Base.Net.Smtp
 {
-	internal class StructuredStringTokenFormatPath : StructuredStringTokenDelimitedFormat
+	internal sealed class StructuredStringTokenFormatPath : StructuredStringTokenDelimitedFormat
 	{
 		internal static readonly StructuredStringTokenDelimitedFormat Instance = new StructuredStringTokenFormatPath ();
 

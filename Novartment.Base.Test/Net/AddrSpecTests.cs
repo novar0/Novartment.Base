@@ -4,7 +4,7 @@ using Novartment.Base.Net;
 
 namespace Novartment.Base.Test
 {
-	public class AddrSpecTests
+	public sealed class AddrSpecTests
 	{
 		[Fact]
 		[Trait ("Category", "Net")]

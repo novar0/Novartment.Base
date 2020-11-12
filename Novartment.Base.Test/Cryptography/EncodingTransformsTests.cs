@@ -4,7 +4,7 @@ using Xunit;
 
 namespace Novartment.Base.Test
 {
-	public class EncodingTransformsTests
+	public sealed class EncodingTransformsTests
 	{
 		// шаблон неструктурированных данных, передаваемых как application, image, audio или video
 		private static readonly string Template1Html = "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">\r\n<html xmlns=\"http://www.w3.org/1999/xhtml\">\r\n<head>\r\n	<meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\" />\r\n	<title>Главная страница сайта ИТЦ</title>\r\n	<link href=\"/style/homepage.css\" rel=\"stylesheet\" type=\"text/css\" media=\"screen\" />\r\n</head>\r\n<body>\r\n	<h1><a href=\"#\">Исследовательско-технологический  центр</a></h1>\r\n	<p class=\"links\"><a href=\"/about/\">Подробнее<span style=\"color: #336699\">...</span></a></p>\r\n</body>\r\n</html>";

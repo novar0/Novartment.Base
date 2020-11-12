@@ -8,7 +8,7 @@ using Xunit;
 
 namespace Novartment.Base.Test
 {
-	public class BufferedChannelTests
+	public sealed class BufferedChannelTests
 	{
 		[Fact]
 		[Trait ("Category", "BufferedSource")]

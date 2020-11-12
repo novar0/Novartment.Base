@@ -6,7 +6,7 @@ using Novartment.Base.Net;
 
 namespace Novartment.Base.Smtp.Test
 {
-	internal class TcpConnectionMock :
+	internal sealed class TcpConnectionMock :
 		ITcpConnection
 	{
 		private readonly IPHostEndPoint _localEndpoint;

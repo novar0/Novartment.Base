@@ -14,7 +14,7 @@ namespace Novartment.Base.Net.Mime
 	/// Тело MIME-сущности, содержащее уведомление о статусе доставки сообщения.
 	/// Определено в 3464.
 	/// </summary>
-	public class DeliveryStatusEntityBody :
+	public sealed class DeliveryStatusEntityBody :
 		IEntityBody
 	{
 		/// <summary>

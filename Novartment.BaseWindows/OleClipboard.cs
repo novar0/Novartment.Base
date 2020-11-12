@@ -17,7 +17,7 @@ namespace Novartment.Base
 	/// полной асинхронности субъектов, использующих буфер обмена и
 	/// его недоступности для других пока он используется.
 	/// </remarks>
-	public class OleClipboard :
+	public sealed class OleClipboard :
 		IClipboard
 	{
 		/// <summary>Количество попыток выполнения запрошенных операций.</summary>

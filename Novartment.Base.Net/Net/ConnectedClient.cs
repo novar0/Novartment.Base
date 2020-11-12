@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace Novartment.Base.Net
 {
-	internal class ConnectedClient :
+	internal sealed class ConnectedClient :
 		IDisposable
 	{
 		private readonly ITcpConnection _connection = null;

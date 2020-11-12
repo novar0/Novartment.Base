@@ -5,7 +5,7 @@ using Xunit;
 
 namespace Novartment.Base.Net.Mime.Test
 {
-	public class EntityExtensionsTests
+	public sealed class EntityExtensionsTests
 	{
 		[Fact]
 		[Trait ("Category", "Mime")]

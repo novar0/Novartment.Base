@@ -6,7 +6,7 @@ using Xunit;
 
 namespace Novartment.Base.Media.Test
 {
-	public class EbmlParserTests
+	public sealed class EbmlParserTests
 	{
 		[Fact]
 		[Trait ("Category", "Media.EbmlParser")]

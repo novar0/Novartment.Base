@@ -2,7 +2,7 @@
 
 namespace Novartment.Base.Net.Smtp
 {
-	internal class SmtpHeloCommand : SmtpCommand
+	internal sealed class SmtpHeloCommand : SmtpCommand
 	{
 		internal SmtpHeloCommand (ReadOnlySpan<char> clientIdentification)
 			: base (SmtpCommandType.Helo)

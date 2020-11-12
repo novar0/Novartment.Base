@@ -9,7 +9,7 @@ using static System.Linq.Enumerable;
 
 namespace Novartment.Base.Net.Mime.Test
 {
-	public class MailMessageTests
+	public sealed class MailMessageTests
 	{
 		public MailMessageTests ()
 		{

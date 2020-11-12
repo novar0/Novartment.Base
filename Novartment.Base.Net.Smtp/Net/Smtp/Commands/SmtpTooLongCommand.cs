@@ -1,6 +1,6 @@
 ﻿namespace Novartment.Base.Net.Smtp
 {
-	internal class SmtpTooLongCommand : SmtpCommand
+	internal sealed class SmtpTooLongCommand : SmtpCommand
 	{
 		internal SmtpTooLongCommand ()
 			: base (SmtpCommandType.Unknown)

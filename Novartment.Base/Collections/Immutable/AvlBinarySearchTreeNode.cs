@@ -25,7 +25,7 @@ namespace Novartment.Base.Collections.Immutable
 		public T Value => _value;
 
 		[DebuggerTypeProxy (typeof (AvlBinarySearchTreeNode<>.DebugView))]
-		internal class IntermediateNode : AvlBinarySearchTreeNode<T>
+		internal sealed class IntermediateNode : AvlBinarySearchTreeNode<T>
 		{
 			private readonly AvlBinarySearchTreeNode<T> _leftSubtree;
 			private readonly AvlBinarySearchTreeNode<T> _rightSubtree;
@@ -48,7 +48,7 @@ namespace Novartment.Base.Collections.Immutable
 		}
 
 		[DebuggerDisplay ("Value = {Value}")]
-		internal class EndNode : AvlBinarySearchTreeNode<T>
+		internal sealed class EndNode : AvlBinarySearchTreeNode<T>
 		{
 			internal EndNode (T value)
 				: base (value)

@@ -6,7 +6,7 @@ using Xunit;
 
 namespace Novartment.Base.Test
 {
-	public class RepeatableTaskTests
+	public sealed class RepeatableTaskTests
 	{
 		[Fact]
 		[Trait ("Category", "Tasks")]

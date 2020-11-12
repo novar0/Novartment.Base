@@ -6,7 +6,7 @@ using static System.Linq.Enumerable;
 
 namespace Novartment.Base.Test
 {
-	public class AvlHashTreeSetTests
+	public sealed class AvlHashTreeSetTests
 	{
 
 #pragma warning disable xUnit2013 // Do not use equality check to check for collection size.
@@ -162,7 +162,7 @@ namespace Novartment.Base.Test
 		}
 
 		// Обёртка для int имеющая высокую вероятность коллизии хэша.
-		internal class MockStr2 :
+		internal sealed class MockStr2 :
 			IEquatable<MockStr2>
 		{
 			private readonly double _hashMod;

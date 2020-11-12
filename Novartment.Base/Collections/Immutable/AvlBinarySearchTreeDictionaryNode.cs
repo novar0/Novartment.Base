@@ -32,7 +32,7 @@ namespace Novartment.Base.Collections.Immutable
 		public TValue Value { get; set; }
 
 		[DebuggerTypeProxy (typeof (AvlBinarySearchTreeDictionaryNode<,>.DebugView))]
-		internal class IntermediateNode : AvlBinarySearchTreeDictionaryNode<TKey, TValue>
+		internal sealed class IntermediateNode : AvlBinarySearchTreeDictionaryNode<TKey, TValue>
 		{
 			internal IntermediateNode (
 				TKey key,
@@ -55,7 +55,7 @@ namespace Novartment.Base.Collections.Immutable
 		}
 
 		[DebuggerDisplay ("Key={Key}, Value = {Value}")]
-		internal class EndNode : AvlBinarySearchTreeDictionaryNode<TKey, TValue>
+		internal sealed class EndNode : AvlBinarySearchTreeDictionaryNode<TKey, TValue>
 		{
 			internal EndNode (TKey key, TValue value)
 				: base (key, value)

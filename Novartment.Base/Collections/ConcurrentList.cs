@@ -28,7 +28,7 @@ namespace Novartment.Base.Collections
 	/// </remarks>
 	[DebuggerDisplay ("{DebuggerDisplay,nq}")]
 	[DebuggerTypeProxy (typeof (ConcurrentList<>.DebugView))]
-	public class ConcurrentList<T> :
+	public sealed class ConcurrentList<T> :
 		IAdjustableList<T>,
 		IReservedCapacityCollection<T>,
 		IArrayDuplicableCollection<T>,

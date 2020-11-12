@@ -6,7 +6,7 @@ using Xunit;
 
 namespace Novartment.Base.Test
 {
-	public class ConcurrentListTests
+	public sealed class ConcurrentListTests
 	{
 
 #pragma warning disable xUnit2013 // Do not use equality check to check for collection size.

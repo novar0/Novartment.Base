@@ -4,7 +4,7 @@ using Novartment.Base.Text;
 
 namespace Novartment.Base.Net.Mime
 {
-	internal class BodyPartSource : EvaluatorPartitionedBufferedSourceBase
+	internal sealed class BodyPartSource : EvaluatorPartitionedBufferedSourceBase
 	{
 		private readonly byte[] _dashBoundary;
 		private readonly IBufferedSource _source;

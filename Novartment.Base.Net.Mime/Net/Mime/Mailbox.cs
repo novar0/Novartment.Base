@@ -8,7 +8,7 @@ namespace Novartment.Base.Net.Mime
 	/// <summary>
 	/// Почтовый ящик согласно спецификации в RFC 5322 часть 3.4.
 	/// </summary>
-	public class Mailbox :
+	public sealed class Mailbox :
 		IEquatable<Mailbox>
 	{
 		// RFC 5322 3.4.

@@ -3,7 +3,7 @@
 	/// <summary>
 	/// Информация о присоединённом файле.
 	/// </summary>
-	public class MatroskaAttachedFileInfo
+	public sealed class MatroskaAttachedFileInfo
 	{
 		/// <summary>
 		/// Инициализирует новый экземпляр класса MatroskaAttachedFileInfo с указанным именем и медиа-типом.

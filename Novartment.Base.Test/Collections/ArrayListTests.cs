@@ -5,7 +5,7 @@ using Xunit;
 
 namespace Novartment.Base.Test
 {
-	public class ArrayListTests
+	public sealed class ArrayListTests
 	{
 
 #pragma warning disable xUnit2013 // Do not use equality check to check for collection size.
@@ -354,7 +354,7 @@ namespace Novartment.Base.Test
 		}
 
 		[DebuggerDisplay ("#{Number} Prop1 = {Prop1} Prop2 = {Prop2}")]
-		internal class Mock4
+		internal sealed class Mock4
 		{
 			public int Number { get; set; }
 

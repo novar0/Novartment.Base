@@ -10,7 +10,7 @@ namespace Novartment.Base.Collections.Linq
 	/// <typeparam name="TFirst">The type of the elements of first list.</typeparam>
 	/// <typeparam name="TSecond">The type of the elements of second list.</typeparam>
 	/// <typeparam name="TResult">The type of the elements of resulting list.</typeparam>
-	internal class TwoListZipEnumerator<TFirst, TSecond, TResult> :
+	internal sealed class TwoListZipEnumerator<TFirst, TSecond, TResult> :
 		IEnumerator<TResult>
 	{
 		private readonly IReadOnlyList<TFirst> _first;

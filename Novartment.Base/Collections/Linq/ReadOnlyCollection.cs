@@ -457,7 +457,7 @@ namespace Novartment.Base.Collections.Linq
 			return array;
 		}
 
-		private class SkipReadOnlyCollection<TSource> :
+		private sealed class SkipReadOnlyCollection<TSource> :
 			IReadOnlyCollection<TSource>
 		{
 			private readonly IReadOnlyCollection<TSource> _source;
@@ -495,7 +495,7 @@ namespace Novartment.Base.Collections.Linq
 			}
 		}
 
-		private class TakeReadOnlyCollection<TSource> :
+		private sealed class TakeReadOnlyCollection<TSource> :
 			IReadOnlyCollection<TSource>
 		{
 			private readonly IReadOnlyCollection<TSource> _source;
@@ -528,7 +528,7 @@ namespace Novartment.Base.Collections.Linq
 			}
 		}
 
-		private class SelectReadOnlyCollection<TSource, TResult> :
+		private sealed class SelectReadOnlyCollection<TSource, TResult> :
 			IReadOnlyCollection<TResult>
 		{
 			private readonly IReadOnlyCollection<TSource> _source;
@@ -556,7 +556,7 @@ namespace Novartment.Base.Collections.Linq
 			}
 		}
 
-		private class SelectIndexReadOnlyCollection<TSource, TResult> :
+		private sealed class SelectIndexReadOnlyCollection<TSource, TResult> :
 			IReadOnlyCollection<TResult>
 		{
 			private readonly IReadOnlyCollection<TSource> _source;
@@ -585,7 +585,7 @@ namespace Novartment.Base.Collections.Linq
 			}
 		}
 
-		private class ReverseReadOnlyCollection<TSource> :
+		private sealed class ReverseReadOnlyCollection<TSource> :
 			IReadOnlyCollection<TSource>
 		{
 			private readonly IReadOnlyCollection<TSource> _source;
@@ -616,7 +616,7 @@ namespace Novartment.Base.Collections.Linq
 			}
 		}
 
-		private class ConcatReadOnlyCollection<TSource> :
+		private sealed class ConcatReadOnlyCollection<TSource> :
 			IReadOnlyCollection<TSource>
 		{
 			private readonly IReadOnlyCollection<TSource> _first;
@@ -649,7 +649,7 @@ namespace Novartment.Base.Collections.Linq
 			}
 		}
 
-		private class ZipReadOnlyCollection<TFirst, TSecond, TResult> :
+		private sealed class ZipReadOnlyCollection<TFirst, TSecond, TResult> :
 			IReadOnlyCollection<TResult>
 		{
 			private readonly IReadOnlyCollection<TFirst> _first;
@@ -738,7 +738,7 @@ namespace Novartment.Base.Collections.Linq
 			internal abstract CollectionSorter<TElement> CreateSorter (CollectionSorter<TElement> next);
 		}
 
-		private class OrderedReadOnlyCollection<TElement, TKey> : OrderedReadOnlyCollection<TElement>
+		private sealed class OrderedReadOnlyCollection<TElement, TKey> : OrderedReadOnlyCollection<TElement>
 		{
 			private readonly OrderedReadOnlyCollection<TElement> _parent = null;
 			private readonly Func<TElement, TKey> _keySelector;

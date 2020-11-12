@@ -4,7 +4,7 @@
 	/// Тело MIME-сущности, содержащей отчет о событиях, связанных с сообщением согласно RFC 6522.
 	/// </summary>
 	// TODO: вместо наследованного свойства Parts надо сделать свойства IEntity Description, Entity Status, IMailMessage ReturnedMessage.
-	public class ReportEntityBody : CompositeEntityBody,
+	public sealed class ReportEntityBody : CompositeEntityBody,
 		ICompositeEntityBody
 	{
 		/*

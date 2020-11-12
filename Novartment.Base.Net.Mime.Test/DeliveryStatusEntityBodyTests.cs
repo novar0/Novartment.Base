@@ -7,7 +7,7 @@ using static System.Linq.Enumerable;
 
 namespace Novartment.Base.Net.Mime.Test
 {
-	public class DeliveryStatusEntityBodyTests
+	public sealed class DeliveryStatusEntityBodyTests
 	{
 		private static readonly string Template1 =
 			"Reporting-MTA: dns;itc-serv01.chmk.mechelgroup.ru\r\n" +

@@ -7,7 +7,7 @@ namespace Novartment.Base.Test
 {
 	// имитирует источник данных большого размера без выделения ресурсов
 	// заполняет буфер путем вызова указанной функции, в которую передается абсолютная позиция в источнике
-	public class BigBufferedSourceMock :
+	public sealed class BigBufferedSourceMock :
 		IFastSkipBufferedSource
 	{
 		private readonly Memory<byte> _buffer;

@@ -10,7 +10,7 @@ namespace Novartment.Base.BinaryStreaming
 		/// <content>
 		/// Класс-обёртка StreamBinaryDestination для представления Stream в виде IBinaryDestination.
 		/// </content>
-		internal class StreamBinaryDestination :
+		internal sealed class StreamBinaryDestination :
 			IBinaryDestination
 		{
 			private readonly Stream _stream;

@@ -16,7 +16,7 @@ namespace Novartment.Base.BinaryStreaming
 	/// Similar to the library classes System.Threading.Channels.Channel and System.Threading.Tasks.Dataflow.BufferBlock,
 	/// but not for fixed elements, but for arbitrary sequences of bytes.
 	/// </remarks>
-	public class BufferedChannel :
+	public sealed class BufferedChannel :
 		IFastSkipBufferedSource,
 		IBinaryDestination
 	{

@@ -23,7 +23,7 @@ namespace Novartment.Base.UI.Wpf
 		/// </summary>
 		public SplitButton ()
 		{
-			DefaultStyleKey = typeof (SplitButton);
+			this.DefaultStyleKey = typeof (SplitButton);
 		}
 
 		/// <summary>
@@ -80,7 +80,7 @@ namespace Novartment.Base.UI.Wpf
 		/// </summary>
 		protected override void OnClick ()
 		{
-			if (IsMouseOverSplitElement)
+			if (this.IsMouseOverSplitElement)
 			{
 				OpenButtonMenu ();
 			}
@@ -104,7 +104,7 @@ namespace Novartment.Base.UI.Wpf
 			if ((e.Key == Key.Down) || (e.Key == Key.Up))
 			{
 				// WPF requires this to happen via BeginInvoke
-				Dispatcher.BeginInvoke ((Action)OpenButtonMenu);
+				this.Dispatcher.BeginInvoke ((Action)OpenButtonMenu);
 			}
 			else
 			{
@@ -132,7 +132,7 @@ namespace Novartment.Base.UI.Wpf
 		/// <param name="e">Event arguments.</param>
 		private void SplitElement_MouseEnter (object sender, MouseEventArgs e)
 		{
-			IsMouseOverSplitElement = true;
+			this.IsMouseOverSplitElement = true;
 		}
 
 		/// <summary>
@@ -142,7 +142,7 @@ namespace Novartment.Base.UI.Wpf
 		/// <param name="e">Event arguments.</param>
 		private void SplitElement_MouseLeave (object sender, MouseEventArgs e)
 		{
-			IsMouseOverSplitElement = false;
+			this.IsMouseOverSplitElement = false;
 		}
 
 		/// <summary>
@@ -153,7 +153,7 @@ namespace Novartment.Base.UI.Wpf
 		private void ContextMenu_Opened (object sender, RoutedEventArgs e)
 		{
 			// Offset the ContextMenu correctly
-			_contextMenuInitialOffset = TranslatePoint (new Point (0, ActualHeight), _contextMenu);
+			_contextMenuInitialOffset = TranslatePoint (new Point (0, this.ActualHeight), _contextMenu);
 			UpdateContextMenuOffsets ();
 
 			// Hook LayoutUpdated to handle application resize and zoom changes

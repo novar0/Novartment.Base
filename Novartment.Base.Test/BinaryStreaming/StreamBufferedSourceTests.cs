@@ -6,7 +6,7 @@ using Xunit;
 
 namespace Novartment.Base.Test
 {
-	public class StreamBufferedSourceTests
+	public sealed class StreamBufferedSourceTests
 	{
 		[Theory]
 		[Trait ("Category", "BufferedSource")]

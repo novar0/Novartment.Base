@@ -8,7 +8,7 @@ namespace Novartment.Base.Collections.Linq
 	/// An iterator over two lists one after the other.
 	/// </summary>
 	/// <typeparam name="TSource">The type of the elements.</typeparam>
-	internal class TwoListConcatEnumerator<TSource> :
+	internal sealed class TwoListConcatEnumerator<TSource> :
 		IEnumerator<TSource>
 	{
 		private readonly IReadOnlyList<TSource> _first;

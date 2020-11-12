@@ -8,7 +8,7 @@ namespace Novartment.Base.UI.Wpf
 	/// <summary>
 	/// Объект для обмена данными между приложениями на основе System.Windows.DataObject.
 	/// </summary>
-	public class WpfDataContainer :
+	public sealed class WpfDataContainer :
 		IDataContainer
 	{
 		private readonly DataObject _dataObject;

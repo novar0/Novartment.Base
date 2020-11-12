@@ -6,7 +6,7 @@ namespace Novartment.Base.Net.Smtp
 	/// <summary>
 	/// Недопустимый почтовый ящик.
 	/// </summary>
-	public class UnacceptableSmtpMailboxException : InvalidOperationException
+	public sealed class UnacceptableSmtpMailboxException : InvalidOperationException
 	{
 		/// <summary>
 		/// Инициализирует новый экземпляр класса UnacceptableSmtpMailboxException с указанным почтовым ящиком.

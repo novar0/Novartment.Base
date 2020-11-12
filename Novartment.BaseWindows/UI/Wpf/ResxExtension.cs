@@ -61,7 +61,7 @@ namespace Novartment.Base.UI.Wpf
 	/// </summary>
 	[MarkupExtensionReturnType (typeof (object))]
 	[ContentProperty ("Children")]
-	public class ResxExtension : TargetsTrackingExtensionBase
+	public sealed class ResxExtension : TargetsTrackingExtensionBase
 	{
 		/// <summary>
 		/// The ResxName attached property.
@@ -516,7 +516,7 @@ namespace Novartment.Base.UI.Wpf
 		/// <summary>
 		/// Is this ResxExtension being used inside another Resx Extension for multi-binding.
 		/// </summary>
-		private bool IsMultiBindingChild => TargetPropertyType == typeof (Collection<ResxExtension>);
+		private bool IsMultiBindingChild => this.TargetPropertyType == typeof (Collection<ResxExtension>);
 
 		/// <summary>
 		/// Use the Markup Manager to update all targets.
@@ -599,7 +599,7 @@ namespace Novartment.Base.UI.Wpf
 
 			// if the extension is used in a template or as a child of another
 			// resx extension (for multi-binding) then return this
-			if (TargetProperty == null || this.IsMultiBindingChild)
+			if (this.TargetProperty == null || this.IsMultiBindingChild)
 			{
 				result = this;
 			}
@@ -687,7 +687,7 @@ namespace Novartment.Base.UI.Wpf
 				if (el != null)
 				{
 					var multiBinding = CreateMultiBinding ();
-					el.SetBinding (TargetProperty as DependencyProperty, multiBinding);
+					el.SetBinding (this.TargetProperty as DependencyProperty, multiBinding);
 				}
 			}
 			else
@@ -698,7 +698,7 @@ namespace Novartment.Base.UI.Wpf
 					if (el != null)
 					{
 						var binding = CreateBinding ();
-						el.SetBinding (TargetProperty as DependencyProperty, binding);
+						el.SetBinding (this.TargetProperty as DependencyProperty, binding);
 					}
 				}
 				else
@@ -840,7 +840,7 @@ namespace Novartment.Base.UI.Wpf
 				// ensure the child has a resx name
 				if (child.ResxName == null)
 				{
-					child.ResxName = ResxName;
+					child.ResxName = this.ResxName;
 				}
 
 				result.Bindings.Add (child.CreateBinding ());
@@ -891,7 +891,7 @@ namespace Novartment.Base.UI.Wpf
 					name.StartsWith ("WindowsBase,", StringComparison.Ordinal);
 				if (!isSystemAssembly)
 				{
-					var isAssemblyHasEmbeddedResx = HasEmbeddedResx (searchAssembly, ResxName);
+					var isAssemblyHasEmbeddedResx = HasEmbeddedResx (searchAssembly, this.ResxName);
 					if (isAssemblyHasEmbeddedResx)
 					{
 						return searchAssembly;
@@ -953,7 +953,7 @@ namespace Novartment.Base.UI.Wpf
 			var result = value;
 
 			// allow for resources to either contain simple strings or typed data
-			var targetType = TargetPropertyType;
+			var targetType = this.TargetPropertyType;
 			if (targetType != null)
 			{
 				if (value is string strValue && (targetType != typeof (string)) && (targetType != typeof (object)))

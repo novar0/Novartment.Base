@@ -10,7 +10,7 @@ namespace Novartment.Base.Net
 	/// <summary>
 	/// Получатель двоичных данных для последовательной записи в сокет.
 	/// </summary>
-	public class SocketBinaryDestination :
+	public sealed class SocketBinaryDestination :
 		IBinaryDestination
 	{
 		private readonly Socket _socket;

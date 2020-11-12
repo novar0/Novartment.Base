@@ -7,7 +7,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Novartment.Base.BinaryStreaming;
 using Novartment.Base.Collections;
-using Novartment.Base.Collections.Immutable;
 using Novartment.Base.Collections.Linq;
 using static System.Linq.Enumerable;
 
@@ -553,7 +552,7 @@ namespace Novartment.Base.Net.Mime
 			}
 		}
 
-		private class SizeCalculator :
+		private sealed class SizeCalculator :
 			IProgress<long>
 		{
 			internal long Size { get; set; }

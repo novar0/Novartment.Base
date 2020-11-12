@@ -16,7 +16,7 @@ namespace Novartment.Base.Media
 	/// Базовый блок, из которых состоят такие файлы как AVI, ANI, WAV и WebP.
 	/// </remarks>
 	[DebuggerDisplay ("{DebuggerDisplay,nq}")]
-	public class RiffChunk
+	public sealed class RiffChunk
 	{
 		/// <summary>
 		/// Инициализирует новый экземпляр класса RiffChunk на основе указанных данных.

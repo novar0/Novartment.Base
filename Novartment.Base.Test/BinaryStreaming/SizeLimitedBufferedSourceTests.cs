@@ -4,7 +4,7 @@ using Xunit;
 
 namespace Novartment.Base.Test
 {
-	public class SizeLimitedBufferedSourceTests
+	public sealed class SizeLimitedBufferedSourceTests
 	{
 		[Fact]
 		[Trait ("Category", "BufferedSource")]

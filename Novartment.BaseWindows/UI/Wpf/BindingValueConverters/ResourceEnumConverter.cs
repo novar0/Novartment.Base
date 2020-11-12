@@ -350,7 +350,7 @@ namespace Novartment.Base.UI.Wpf
 			return Enum.ToObject (this.EnumType, result);
 		}
 
-		private class LookupTable : Dictionary<string, object>
+		private sealed class LookupTable : Dictionary<string, object>
 		{
 		}
 	}

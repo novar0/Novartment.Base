@@ -52,7 +52,7 @@ namespace Novartment.Base
 			return new ObserverToProgressTranslator<T> (observer);
 		}
 
-		internal class ProgressToObserverTranslator<T> :
+		internal sealed class ProgressToObserverTranslator<T> :
 			IObserver<T>
 		{
 			private readonly IProgress<T> _progressProvider;
@@ -76,7 +76,7 @@ namespace Novartment.Base
 			}
 		}
 
-		internal class ObserverToProgressTranslator<T> :
+		internal sealed class ObserverToProgressTranslator<T> :
 			IProgress<T>
 		{
 			private readonly IObserver<T> _observer;

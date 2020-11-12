@@ -7,7 +7,7 @@ namespace Novartment.Base.Text
 	/// <summary>
 	/// Кодирует 'encoded-word' способом 'Q' согласно RFC 2047.
 	/// </summary>
-	public class EncodedWordQEstimatingEncoder :
+	public sealed class EncodedWordQEstimatingEncoder :
 		IEstimatingEncoder
 	{
 		private readonly Encoding _encoding;

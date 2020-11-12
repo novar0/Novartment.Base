@@ -7,7 +7,7 @@ using static System.Linq.Enumerable;
 
 namespace Novartment.Base.Net.Mime.Test
 {
-	public class EntityTests
+	public sealed class EntityTests
 	{
 		public EntityTests ()
 		{

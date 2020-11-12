@@ -3,7 +3,7 @@ using Novartment.Base.Text;
 
 namespace Novartment.Base.Net.Smtp
 {
-	internal class SmtpMailFromCommand : SmtpCommand
+	internal sealed class SmtpMailFromCommand : SmtpCommand
 	{
 		internal static readonly AddrSpec _emptyAddrSpec = new AddrSpec (Guid.NewGuid ().ToString (), "local");
 		private static readonly StructuredStringFormat _DotAtomFormat = new StructuredStringFormat (AsciiCharClasses.WhiteSpace, AsciiCharClasses.Atom, '.', new StructuredStringTokenCustomFormat[] { StructuredStringTokenFormatPath.Instance });

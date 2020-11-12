@@ -4,7 +4,7 @@ using Xunit;
 
 namespace Novartment.Base.Smtp.Test
 {
-	public class SmtpOriginatorProtocolSessionTests
+	public sealed class SmtpOriginatorProtocolSessionTests
 	{
 		[Fact]
 		[Trait ("Category", "Net.Smtp")]

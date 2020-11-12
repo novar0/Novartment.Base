@@ -6,7 +6,7 @@ using Xunit;
 
 namespace Novartment.Base.Test
 {
-	public class ReadOnlyListTests
+	public sealed class ReadOnlyListTests
 	{
 		[Fact]
 		[Trait ("Category", "Collections.Linq")]
@@ -400,7 +400,7 @@ namespace Novartment.Base.Test
 			Assert.Equal ("12.2", list[2]);
 		}
 
-		private class StringLenComparer :
+		private sealed class StringLenComparer :
 			IComparer<string>
 		{
 			public int Compare (string x, string y)

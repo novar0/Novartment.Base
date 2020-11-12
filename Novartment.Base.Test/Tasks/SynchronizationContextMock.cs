@@ -4,7 +4,7 @@ using System.Threading;
 
 namespace Novartment.Base.Test
 {
-	internal class SynchronizationContextMock : SynchronizationContext, IDisposable
+	internal sealed class SynchronizationContextMock : SynchronizationContext, IDisposable
 	{
 		private readonly Thread _thread;
 		private readonly BlockingCollection<Tuple<SendOrPostCallback, object>> _tasks = new BlockingCollection<Tuple<SendOrPostCallback, object>> ();

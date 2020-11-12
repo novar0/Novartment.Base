@@ -177,7 +177,7 @@ namespace Novartment.Base
 			_reportingInProgress = 0;
 		}
 
-		private class ReportEvent
+		private sealed class ReportEvent
 		{
 			internal DateTime Time { get; set; }
 

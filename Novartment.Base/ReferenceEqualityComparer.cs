@@ -6,7 +6,7 @@ namespace Novartment.Base
 	/// <summary>
 	/// Поддержка операций сравнения объектов по ссылке.
 	/// </summary>
-	public class ReferenceEqualityComparer :
+	public sealed class ReferenceEqualityComparer :
 		IEqualityComparer<object>
 	{
 		private static readonly IEqualityComparer<object> _default = new ReferenceEqualityComparer ();

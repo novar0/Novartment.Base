@@ -5,7 +5,7 @@ namespace Novartment.Base.Tasks
 	/// <summary>
 	/// Provides data for a task starting event.
 	/// </summary>
-	public class TaskStartingEventArgs : CancelEventArgs
+	public sealed class TaskStartingEventArgs : CancelEventArgs
 	{
 		/// <summary>
 		///  Initializes a new instance of the TaskStartingEventArgs class

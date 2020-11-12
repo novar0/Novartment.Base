@@ -5,7 +5,7 @@ namespace Novartment.Base.Net
 	/// <summary>
 	/// The exception that is thrown in case of a critical violation of the protocol in which it cannot continue.
 	/// </summary>
-	public class UnrecoverableProtocolException : InvalidOperationException
+	public sealed class UnrecoverableProtocolException : InvalidOperationException
 	{
 		/// Initializes a new instance of the UnrecoverableProtocolException class.
 		public UnrecoverableProtocolException ()

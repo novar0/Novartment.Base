@@ -5,7 +5,7 @@ using Novartment.Base.BinaryStreaming;
 
 namespace Novartment.Base.Net.Mime.Test
 {
-	internal class BinaryDestinationMock :
+	internal sealed class BinaryDestinationMock :
 		IBinaryDestination
 	{
 		private readonly byte[] _buffer;

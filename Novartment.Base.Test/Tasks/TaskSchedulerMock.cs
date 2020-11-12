@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Novartment.Base.Test
 {
-	internal class TaskSchedulerMock : TaskScheduler, IDisposable
+	internal sealed class TaskSchedulerMock : TaskScheduler, IDisposable
 	{
 		private readonly Thread _thread;
 		private readonly BlockingCollection<Task> _tasks = new BlockingCollection<Task> ();

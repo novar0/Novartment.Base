@@ -15,7 +15,7 @@ namespace Novartment.Base.Shell
 	/// Элемент оболочки.
 	/// </summary>
 	[DebuggerDisplay ("{DisplayNameRelative}")]
-	public class ShellItem
+	public sealed class ShellItem
 	{
 		private static readonly Guid _guidIShellItem = new Guid ("43826D1E-E718-42EE-BC55-A1E261C37BFE");
 		private static readonly ShellPropertyKey _shellPropertyKeySize = new ShellPropertyKey (new Guid ("B725F130-47EF-101A-A5F1-02608C9EEBAC"), 12);
@@ -499,7 +499,7 @@ namespace Novartment.Base.Shell
 			return hr == 0;
 		}
 
-		internal class ShellItemsEnumerable :
+		internal sealed class ShellItemsEnumerable :
 			IEnumerable<IShellItem>
 		{
 			private static readonly string _guidIEnumShellItems = "70629033-e363-4a28-a567-0db78006e6d7";

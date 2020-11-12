@@ -38,7 +38,7 @@ namespace Novartment.Base.Media
 	/// </summary>
 	[DebuggerDisplay ("{DebuggerDisplay,nq}")]
 	[CLSCompliant (false)]
-	public class MatroskaSegmentInfo
+	public sealed class MatroskaSegmentInfo
 	{
 		/// <summary>
 		/// Инициализирует новый экземпляр класса MatroskaSegmentInfo на основе указанных данных.

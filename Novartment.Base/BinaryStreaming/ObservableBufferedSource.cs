@@ -11,7 +11,7 @@ namespace Novartment.Base.BinaryStreaming
 	/// and sends notifications of consumed data.
 	/// </summary>
 	[DebuggerDisplay ("{Offset}...{Offset+Count} ({BufferMemory.Length}) exhausted={IsExhausted}")]
-	public class ObservableBufferedSource :
+	public sealed class ObservableBufferedSource :
 		IFastSkipBufferedSource
 	{
 		private readonly IBufferedSource _source;

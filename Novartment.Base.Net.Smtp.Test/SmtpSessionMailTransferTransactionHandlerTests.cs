@@ -8,7 +8,7 @@ using Xunit;
 
 namespace Novartment.Base.Smtp.Test
 {
-	public class SmtpSessionMailTransferTransactionHandlerTests
+	public sealed class SmtpSessionMailTransferTransactionHandlerTests
 	{
 		private static readonly AddrSpec Mailbox0 = new AddrSpec ("someone", "server.org");
 		private static readonly AddrSpec Mailbox1 = new AddrSpec ("postmaster", "github.org");

@@ -2,7 +2,7 @@
 
 namespace Novartment.Base.Net.Smtp
 {
-	internal class SmtpActualDataCommand : SmtpCommand
+	internal sealed class SmtpActualDataCommand : SmtpCommand
 	{
 		internal SmtpActualDataCommand ()
 			: base (SmtpCommandType.ActualData)

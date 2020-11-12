@@ -5,7 +5,7 @@ namespace Novartment.Base.Net.Smtp
 	/// <summary>
 	/// Отсутствуют подтверждённые получатели.
 	/// </summary>
-	public class NoValidRecipientsException : InvalidOperationException
+	public sealed class NoValidRecipientsException : InvalidOperationException
 	{
 		/// <summary>Инициализирует новый экземпляр класса NoValidRecipientsException.</summary>
 		public NoValidRecipientsException ()

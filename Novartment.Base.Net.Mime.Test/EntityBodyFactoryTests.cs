@@ -2,7 +2,7 @@
 
 namespace Novartment.Base.Net.Mime.Test
 {
-	public class EntityBodyFactoryTests
+	public sealed class EntityBodyFactoryTests
 	{
 		[Fact]
 		[Trait ("Category", "Mime")]

@@ -7,7 +7,7 @@ namespace Novartment.Base.Tasks
 	/// <summary>
 	/// A completed task parameters.
 	/// </summary>
-	public class CompletedTaskData
+	public sealed class CompletedTaskData
 	{
 		/// <summary>
 		/// Initializes a new instance of the CompletedTaskData class

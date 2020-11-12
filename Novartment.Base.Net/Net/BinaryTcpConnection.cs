@@ -110,7 +110,7 @@ namespace Novartment.Base.Net
 		{
 		}
 
-		private class Reporter :
+		private sealed class Reporter :
 			IProgress<long>,
 			IDisposable
 		{

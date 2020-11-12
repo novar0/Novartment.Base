@@ -8,7 +8,7 @@ using Novartment.Base.Text;
 
 namespace Novartment.Base.Net.Smtp
 {
-	internal class SmtpReply
+	internal sealed class SmtpReply
 	{
 		internal static readonly SmtpReply ReadyToStartTls = new SmtpReply (
 			220, new string[] { "Ready to start TLS" });

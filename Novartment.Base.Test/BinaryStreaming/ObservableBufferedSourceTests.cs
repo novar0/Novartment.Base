@@ -6,9 +6,9 @@ using Xunit;
 namespace Novartment.Base.Test
 {
 #pragma warning disable CA2012 // Use ValueTasks correctly
-	public class ObservableBufferedSourceTests
+	public sealed class ObservableBufferedSourceTests
 	{
-		internal class ProgressHistory :
+		internal sealed class ProgressHistory :
 			IProgress<long>
 		{
 			public List<long> History { get; } = new List<long> ();

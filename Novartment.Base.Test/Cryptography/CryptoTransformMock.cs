@@ -9,7 +9,7 @@ namespace Novartment.Base.Test
 	/// В случае если выходной блок меньше входного, то данные каждого входного блока обрезаются.
 	/// В случае если выходной блок больше входного, то данные каждого входного блока повторяются.
 	/// </summary>
-	internal class CryptoTransformMock :
+	internal sealed class CryptoTransformMock :
 		ISpanCryptoTransform
 	{
 		private readonly bool _canTransformMultipleBlocks;

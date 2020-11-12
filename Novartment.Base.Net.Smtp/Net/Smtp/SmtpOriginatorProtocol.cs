@@ -18,7 +18,7 @@ namespace Novartment.Base.Net.Smtp
 	/// Протокол внесения/отправки почты по стандарту SMTP.
 	/// </summary>
 	/// <remarks>Соответствует роли 'Originator' из RFC 5321 часть 2.3.10.</remarks>
-	public class SmtpOriginatorProtocol :
+	public sealed class SmtpOriginatorProtocol :
 		ITcpConnectionProtocol
 	{
 		private readonly Func<TransactionHandlerFactory, CancellationToken, Task> _transactionOriginator;

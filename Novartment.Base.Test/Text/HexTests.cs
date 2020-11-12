@@ -4,7 +4,7 @@ using Xunit;
 
 namespace Novartment.Base.Test
 {
-	public class HexTests
+	public sealed class HexTests
 	{
 		[Fact]
 		[Trait ("Category", "Text.Hex")]

@@ -7,7 +7,7 @@ using Xunit;
 
 namespace Novartment.Base.Net.Test
 {
-	public class TcpServerTests
+	public sealed class TcpServerTests
 	{
 		[Fact]
 		[Trait ("Category", "Net")]

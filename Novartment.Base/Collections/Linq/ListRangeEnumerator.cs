@@ -8,7 +8,7 @@ namespace Novartment.Base.Collections.Linq
 	/// An iterator over a range of a list.
 	/// </summary>
 	/// <typeparam name="TSource">The type of the elements.</typeparam>
-	internal class ListRangeEnumerator<TSource> :
+	internal sealed class ListRangeEnumerator<TSource> :
 		IEnumerator<TSource>
 	{
 		private readonly IReadOnlyList<TSource> _source;

@@ -12,7 +12,7 @@ namespace Novartment.Base
 	/// производимое программой действие, приведшее к исключению и
 	/// действия, рекомендуемые пользователю.
 	/// </remarks>
-	public class UserLevelExceptionData
+	public sealed class UserLevelExceptionData
 	{
 		/// <summary>
 		/// Инициализирует новый экземпляр UserLevelExceptionData на основе описаиня исключения, указанной сборки и действий.

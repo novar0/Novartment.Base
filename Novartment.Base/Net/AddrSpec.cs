@@ -8,20 +8,20 @@ namespace Novartment.Base.Net
 	/// An Internet identifier of the form 'local-part@domain'
 	/// in accordance with the "addr-spec" format described in RFC 5322 part 3.4.1.
 	/// </summary>
-	public class AddrSpec :
+	public sealed class AddrSpec :
 		IEquatable<AddrSpec>
 	{
-		internal class TokenFormatComment : StructuredStringTokenDelimitedFormat
+		internal sealed class TokenFormatComment : StructuredStringTokenDelimitedFormat
 		{
 			internal TokenFormatComment () : base ('(', ')', StructuredStringIngoreTokenType.EscapedChar, true) { }
 		}
 
-		internal class TokenFormatId : StructuredStringTokenDelimitedFormat
+		internal sealed class TokenFormatId : StructuredStringTokenDelimitedFormat
 		{
 			internal TokenFormatId () : base ('<', '>', StructuredStringIngoreTokenType.QuotedValue, false) { }
 		}
 
-		internal class TokenFormatLiteral : StructuredStringTokenDelimitedFormat
+		internal sealed class TokenFormatLiteral : StructuredStringTokenDelimitedFormat
 		{
 			internal TokenFormatLiteral () : base ('[', ']', StructuredStringIngoreTokenType.EscapedChar, false) { }
 

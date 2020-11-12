@@ -14,7 +14,7 @@ namespace Novartment.Base.Media
 	/// </summary>
 	[DebuggerDisplay ("{DebuggerDisplay,nq}")]
 	[CLSCompliant (false)]
-	public class AviStreamInfo
+	public sealed class AviStreamInfo
 	{
 		/// <summary>
 		/// Инициализирует новый экземпляр класса AviStreamInfo на основе указанных данных.

@@ -7,7 +7,7 @@ namespace Novartment.Base
 	/// A wrapper for passing information about exceptions of various kinds
 	/// (not represented by the System.Exception type) where the System.Exception type is expected.
 	/// </summary>
-	public class CustomErrorException : Exception
+	public sealed class CustomErrorException : Exception
 	{
 		/// <summary>
 		/// Initializes a new instance of the CustomErrorException class with a specified name.

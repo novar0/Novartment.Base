@@ -12,7 +12,7 @@ namespace Novartment.Base.Net.Smtp
 	/// Обработчик транзакции по передаче почтового сообщения.
 	/// Все вызовы транзакции преобразуются в SmtpCommand для указанной при создании SmtpOriginatorProtocolSession.
 	/// </summary>
-	internal class SmtpSessionMailTransferTransactionHandler :
+	internal sealed class SmtpSessionMailTransferTransactionHandler :
 		IMailTransferTransactionHandler
 	{
 		private readonly SmtpOriginatorProtocolSession _session;

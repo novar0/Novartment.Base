@@ -5,7 +5,7 @@ namespace Novartment.Base
 	/// <summary>
 	/// The exception that is thrown when a application requires elevation of privilege to continue.
 	/// </summary>
-	public class ElevationRequiredException : Exception
+	public sealed class ElevationRequiredException : Exception
 	{
 		/// <summary>
 		/// Initializes a new instance of the ElevationRequiredException class.

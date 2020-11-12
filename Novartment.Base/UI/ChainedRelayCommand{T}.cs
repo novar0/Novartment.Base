@@ -8,7 +8,7 @@ namespace Novartment.Base.UI
 	/// Может быть частью цепи связанных команд.
 	/// </summary>
 	/// <typeparam name="T">Тип параметра команды.</typeparam>
-	public class ChainedRelayCommand<T> : ChainedCommandBase
+	public sealed class ChainedRelayCommand<T> : ChainedCommandBase
 	{
 		private readonly Action<T> _execute;
 		private readonly Func<T, bool> _canExecute;

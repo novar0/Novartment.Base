@@ -6,7 +6,7 @@ using Enumerable = System.Linq.Enumerable;
 
 namespace Novartment.Base.Test
 {
-	public class ReadOnlyFiniteSetTests
+	public sealed class ReadOnlyFiniteSetTests
 	{
 		[Fact]
 		[Trait ("Category", "Collections.Linq")]
@@ -254,7 +254,7 @@ namespace Novartment.Base.Test
 			return Enumerable.ToArray (enumerable);
 		}
 
-		internal class TestSet<T> : HashSet<T>, IReadOnlyFiniteSet<T>
+		internal sealed class TestSet<T> : HashSet<T>, IReadOnlyFiniteSet<T>
 		{
 			internal TestSet ()
 				: base ()

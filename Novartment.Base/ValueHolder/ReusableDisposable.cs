@@ -42,7 +42,7 @@ namespace Novartment.Base
 		/// <summary>Производит освобождение (вызов Dispose()) хранимого объекта.</summary>
 		public void Dispose ()
 		{
-			Value = null;
+			this.Value = null;
 		}
 	}
 }

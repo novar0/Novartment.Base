@@ -4,7 +4,7 @@ using System.Windows.Input;
 namespace Novartment.Base.UI.Wpf
 {
 	/// <summary>Класс, добавляющий к System.Windows.Controls.TextBox обновление свойства Text по нажатию клавиши Enter.</summary>
-	public class ByEnterUpdateTextBox : TextBox
+	public sealed class ByEnterUpdateTextBox : TextBox
 	{
 		/// <summary>Вызывается, когда происходит событие <see cref="System.Windows.UIElement.KeyDown" />.</summary>
 		/// <param name="e">Данные события.</param>

@@ -7,7 +7,7 @@ namespace Novartment.Base.UI
 	/// <summary>
 	/// Цепь связанных команд.
 	/// </summary>
-	public class CommandChain
+	public sealed class CommandChain
 	{
 		private SingleLinkedListNode<ChainedCommandBase> _firstCommand = null;
 

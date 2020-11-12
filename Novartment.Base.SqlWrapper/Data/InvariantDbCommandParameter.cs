@@ -7,7 +7,7 @@ namespace Novartment.Base.Data.SqlWrapper
 	/// <summary>
 	/// Параметр команды.
 	/// </summary>
-	public class InvariantDbCommandParameter :
+	public sealed class InvariantDbCommandParameter :
 		IValueHolder<object>
 	{
 		/// <summary>

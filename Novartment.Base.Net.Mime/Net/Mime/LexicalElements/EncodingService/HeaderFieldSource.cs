@@ -5,7 +5,7 @@ namespace Novartment.Base.Net.Mime
 	/// <summary>
 	/// Служит разделяющей функцией для чтения заголовка в виде отдельных полей.
 	/// </summary>
-	internal class HeaderFieldSource : EvaluatorPartitionedBufferedSourceBase
+	internal sealed class HeaderFieldSource : EvaluatorPartitionedBufferedSourceBase
 	{
 		private readonly IBufferedSource _source;
 		private int _foundSeparatorLength = -1;

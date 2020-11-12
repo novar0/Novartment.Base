@@ -5,7 +5,7 @@ using Xunit;
 
 namespace Novartment.Base.Test
 {
-	public class EstimatingEncoderTests
+	public sealed class EstimatingEncoderTests
 	{
 		private static readonly string Template1 = "token#numer_one2001";
 		private static readonly string Template2 = " two\tthree";

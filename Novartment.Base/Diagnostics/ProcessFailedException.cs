@@ -5,7 +5,7 @@ namespace Novartment.Base
 	/// <summary>
 	/// Error starting the application process.
 	/// </summary>
-	public class ProcessFailedException : Exception
+	public sealed class ProcessFailedException : Exception
 	{
 		/// <summary>
 		/// Initializes a new instance of the ProcessFailedException class with a specified exit code.

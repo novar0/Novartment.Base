@@ -7,7 +7,7 @@ namespace Novartment.Base.Net.Mime
 	/// Значение поля уведомления, состоящее из типа и собственно значения.
 	/// Определено в RFC 3464 часть 2.1.2.
 	/// </summary>
-	public class NotificationFieldValue :
+	public sealed class NotificationFieldValue :
 		IValueHolder<string>,
 		IEquatable<NotificationFieldValue>
 	{

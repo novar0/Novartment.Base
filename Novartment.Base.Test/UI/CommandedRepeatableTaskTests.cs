@@ -7,7 +7,7 @@ using Xunit;
 
 namespace Novartment.Base.Test
 {
-	public class CommandedRepeatableTaskTests
+	public sealed class CommandedRepeatableTaskTests
 	{
 		private static ManualResetEvent _taskEndedSignaler;
 		private static int _propertyChangedCount1;

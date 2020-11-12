@@ -5,7 +5,7 @@ using Xunit;
 
 namespace Novartment.Base.Test
 {
-	public class AvlBinarySearchTreeDictionaryTests
+	public sealed class AvlBinarySearchTreeDictionaryTests
 	{
 		[Fact]
 		[Trait ("Category", "Collections.AvlBinarySearchTreeDictionary")]

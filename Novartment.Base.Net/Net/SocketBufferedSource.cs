@@ -12,9 +12,8 @@ namespace Novartment.Base.Net
 	/// Источник данных, представленный байтовым буфером,
 	/// предоставляющий данные, считанные из указанного сокета.
 	/// </summary>
-	// TODO: переделать чтобы _buffer был Memory<byte> (мешает то, что его нельзя передать в _socket.ReceiveAsync)
 	[DebuggerDisplay ("{Offset}...{Offset+Count} ({BufferMemory.Length}) exhausted={IsExhausted}")]
-	public class SocketBufferedSource :
+	public sealed class SocketBufferedSource :
 		IBufferedSource
 	{
 		private readonly Socket _socket;
@@ -148,11 +147,11 @@ namespace Novartment.Base.Net
 
 				if (readed > 0)
 				{
-					AcceptChunk (readed);
+					_count += readed;
 				}
 				else
 				{
-					SetStreamEnded ();
+					_socketClosed = true;
 				}
 			}
 		}
@@ -223,11 +222,11 @@ namespace Novartment.Base.Net
 					shortage -= readed;
 					if (readed > 0)
 					{
-						AcceptChunk (readed);
+						_count += readed;
 					}
 					else
 					{
-						SetStreamEnded ();
+						_socketClosed = true;
 					}
 				}
 
@@ -239,27 +238,9 @@ namespace Novartment.Base.Net
 		}
 
 		/// <summary>
-		/// Принимает в буфер указанное количество считанных из сокета данных.
-		/// Добавленные данные должны располагаться в буфере начиная с позиции Count.
-		/// </summary>
-		/// <param name="count">Количество байтов, добавленных в буфер.</param>
-		protected void AcceptChunk (int count)
-		{
-			_count += count;
-		}
-
-		/// <summary>
-		/// Устанавливет признак исчерпания сокета.
-		/// </summary>
-		protected void SetStreamEnded ()
-		{
-			_socketClosed = true;
-		}
-
-		/// <summary>
 		/// Обеспечивает чтобы данные в буфере начинались с позиции ноль.
 		/// </summary>
-		protected void Defragment ()
+		private void Defragment ()
 		{
 			// сдвигаем в начало данные буфера
 			if (_offset > 0)

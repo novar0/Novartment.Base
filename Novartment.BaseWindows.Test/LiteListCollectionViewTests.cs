@@ -10,7 +10,7 @@ using Xunit;
 
 namespace Novartment.BaseWindows.Test
 {
-	public class LiteListCollectionViewTests
+	public sealed class LiteListCollectionViewTests
 	{
 		private int _eventN;
 
@@ -728,7 +728,7 @@ namespace Novartment.BaseWindows.Test
 		}
 
 		[DebuggerDisplay ("#{Number} Prop1 = {Prop1} Prop2 = {Prop2}")]
-		internal class Mock4
+		internal sealed class Mock4
 		{
 			public int Number { get; set; }
 

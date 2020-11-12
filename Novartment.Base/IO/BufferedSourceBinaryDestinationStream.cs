@@ -10,7 +10,7 @@ namespace Novartment.Base.BinaryStreaming
 	/// A stream that reads data from the data source represented by a byte buffer
 	/// and transfers all written data to the binary data destination.
 	/// </summary>
-	public class BufferedSourceBinaryDestinationStream : Stream
+	public sealed class BufferedSourceBinaryDestinationStream : Stream
 	{
 		private readonly IBufferedSource _source;
 		private readonly IBinaryDestination _destination;

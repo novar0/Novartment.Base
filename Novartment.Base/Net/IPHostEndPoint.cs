@@ -7,7 +7,7 @@ namespace Novartment.Base.Net
 	/// <summary>
 	/// Represents a network endpoint as an IP address, a port number and a host name.
 	/// </summary>
-	public class IPHostEndPoint : IPEndPoint
+	public sealed class IPHostEndPoint : IPEndPoint
 	{
 		/// <summary>
 		/// Initializes a new instance of the AddrSpec class based on the specified IPEndPoint.

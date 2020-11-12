@@ -7,7 +7,7 @@ namespace Novartment.Base.Text
 	/// <summary>
 	/// Данные о структуре строки, позволяющие получить из неё отдельные лексические токены.
 	/// </summary>
-	public class StructuredStringFormat
+	public sealed class StructuredStringFormat
 	{
 		/// <summary>
 		/// Формат токена-разделителя (любого символа, недопустимого для значений токена).

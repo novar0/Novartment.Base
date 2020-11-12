@@ -1,9 +1,8 @@
 ﻿using System;
-using Novartment.Base.Text;
 
 namespace Novartment.Base.Net.Smtp
 {
-	internal class SmtpEhloCommand : SmtpCommand
+	internal sealed class SmtpEhloCommand : SmtpCommand
 	{
 		internal SmtpEhloCommand (ReadOnlySpan<char> clientIdentification)
 			: base (SmtpCommandType.Ehlo)

@@ -7,7 +7,7 @@ using Enumerable = System.Linq.Enumerable;
 
 namespace Novartment.Base.Test
 {
-	public class ReadOnlyCollectionTests
+	public sealed class ReadOnlyCollectionTests
 	{
 		[Fact]
 		[Trait ("Category", "Collections.Linq")]
@@ -315,7 +315,7 @@ namespace Novartment.Base.Test
 			return Enumerable.ToArray (enumerable);
 		}
 
-		private class StringLenComparer :
+		private sealed class StringLenComparer :
 			IComparer<string>
 		{
 			public int Compare (string x, string y)

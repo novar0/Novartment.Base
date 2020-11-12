@@ -14,7 +14,7 @@ namespace Novartment.Base.Net.Smtp
 	/// Транспорт, доставляющий SmtpCommand-ы и ответы на них через TCP-подключение
 	/// с возможностью организации безопасной доставки.
 	/// </summary>
-	internal class TcpConnectionSmtpCommandTransport :
+	internal sealed class TcpConnectionSmtpCommandTransport :
 		ISmtpCommandTransport
 	{
 		// RFC 5321 part 4.5.3.1.4: The maximum total length of a command line including the command word and the <CRLF> is 512 octets.

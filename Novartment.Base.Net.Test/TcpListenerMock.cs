@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Novartment.Base.Net.Test
 {
-	internal class TcpListenerMock :
+	internal sealed class TcpListenerMock :
 		ITcpListener
 	{
 		private readonly AutoResetEvent _stopedEvent = new AutoResetEvent (false);
@@ -55,7 +55,7 @@ namespace Novartment.Base.Net.Test
 			_incomingConnections.Enqueue (remoteEndpoint);
 		}
 
-		internal class AsyncQueue<TItem>
+		internal sealed class AsyncQueue<TItem>
 		{
 			private readonly Queue<TItem> _producers = new Queue<TItem> ();
 			private readonly Queue<TaskCompletionSource<TItem>> _consumers = new Queue<TaskCompletionSource<TItem>> ();

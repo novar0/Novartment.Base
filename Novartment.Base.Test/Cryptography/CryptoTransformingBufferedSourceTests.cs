@@ -6,7 +6,7 @@ using Xunit;
 
 namespace Novartment.Base.Test
 {
-	public class CryptoTransformingBufferedSourceTests
+	public sealed class CryptoTransformingBufferedSourceTests
 	{
 		[Theory]
 		[Trait ("Category", "BufferedSourceCrypto")]

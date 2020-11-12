@@ -3,7 +3,7 @@ using Xunit;
 
 namespace Novartment.Base.Net.Mime.Test
 {
-	public class HeaderFieldBodyParameterTests
+	public sealed class HeaderFieldBodyParameterTests
 	{
 		public HeaderFieldBodyParameterTests ()
 		{

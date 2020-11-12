@@ -47,7 +47,7 @@ namespace Novartment.Base
 		/// </summary>
 		public void Dispose ()
 		{
-			if (IsOriginal)
+			if (this.IsOriginal)
 			{
 				_isInstanceOriginal = false;
 				_mutex.Dispose ();

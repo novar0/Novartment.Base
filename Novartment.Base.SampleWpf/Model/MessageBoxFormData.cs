@@ -1,6 +1,6 @@
 ﻿namespace Novartment.Base.SampleWpf
 {
-	public class MessageBoxFormData
+	public sealed class MessageBoxFormData
 	{
 		public MessageBoxFormData (string title, string message)
 		{

@@ -8,7 +8,7 @@ namespace Novartment.Base.Media
 	/// </summary>
 	[DebuggerDisplay ("{DebuggerDisplay,nq}")]
 	[CLSCompliant (false)]
-	public class MatroskaTrackInfoVideoFormat
+	public sealed class MatroskaTrackInfoVideoFormat
 	{
 		/// <summary>
 		/// Инициализирует новый экземпляр класса MatroskaTrackInfoVideoFormat на основе указанных данных.

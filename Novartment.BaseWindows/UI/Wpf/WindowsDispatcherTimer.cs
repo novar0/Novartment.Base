@@ -8,7 +8,7 @@ namespace Novartment.Base.UI.Wpf
 	/// Реализация таймера на основе System.Windows.Threading.DispatcherTimer.
 	/// При срабатывании вызывает указанный делегат.
 	/// </summary>
-	public class WindowsDispatcherTimer : WindowsDispatcherTimer<Action>
+	public sealed class WindowsDispatcherTimer : WindowsDispatcherTimer<Action>
 	{
 		/// <summary>
 		/// Инициализирует новый экземпляр WindowsFormsTimer, вызывающий при срабатывании указанный делегат.

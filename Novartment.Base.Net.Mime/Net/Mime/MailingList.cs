@@ -5,7 +5,7 @@ namespace Novartment.Base.Net.Mime
 	/// <summary>
 	/// Список рассылки согласно RFC 2369 и RFC 2919.
 	/// </summary>
-	public class MailingList
+	public sealed class MailingList
 	{
 		/// <summary>
 		/// Инициализирует новый экземпляр класса MailingList.

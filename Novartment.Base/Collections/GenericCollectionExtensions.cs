@@ -12,10 +12,10 @@ namespace Novartment.Base.Collections
 	/// </summary>
 	public static class GenericCollectionExtensions
 	{
-		private class AsyncEnumerable<TItem> :
+		private sealed class AsyncEnumerable<TItem> :
 			IAsyncEnumerable<TItem>
 		{
-			private class AsyncEnumerator :
+			private sealed class AsyncEnumerator :
 				IAsyncEnumerator<TItem>
 			{
 				private readonly IEnumerator<TItem> _source;

@@ -6,7 +6,7 @@ namespace Novartment.Base.Text
 	/// Формат quoted-string лексического токена структурированной строки,
 	/// согласно RFC 5322 part 3.2.4.
 	/// </summary>
-	public class StructuredStringTokenQuotedStringFormat : StructuredStringTokenDelimitedFormat
+	public sealed class StructuredStringTokenQuotedStringFormat : StructuredStringTokenDelimitedFormat
 	{
 		/// <summary>
 		/// Инициализирует новый экземпляр класса StructuredStringTokenQuotedStringFormat.

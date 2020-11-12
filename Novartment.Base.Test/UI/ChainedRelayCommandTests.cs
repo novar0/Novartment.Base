@@ -4,7 +4,7 @@ using Xunit;
 
 namespace Novartment.Base.Test
 {
-	public class ChainedRelayCommandTests
+	public sealed class ChainedRelayCommandTests
 	{
 		private int _canExecuteCount;
 		private int _executeCount;

@@ -5,7 +5,7 @@ using Novartment.Base.BinaryStreaming;
 
 namespace Novartment.Base.Net.Test
 {
-	internal class NullDestination :
+	internal sealed class NullDestination :
 		IBinaryDestination
 	{
 		public void SetComplete ()

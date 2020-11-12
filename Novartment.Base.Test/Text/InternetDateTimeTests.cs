@@ -5,7 +5,7 @@ using Xunit;
 
 namespace Novartment.Base.Test
 {
-	public class InternetDateTimeTests
+	public sealed class InternetDateTimeTests
 	{
 		[Fact]
 		[Trait ("Category", "Text.InternetDateTime")]

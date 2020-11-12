@@ -11,7 +11,7 @@ namespace Novartment.Base.BinaryStreaming
 	/// that applies cryptographic transformation to data from another source.
 	/// </summary>
 	[DebuggerDisplay ("{Offset}...{Offset+Count} ({BufferMemory.Length}) exhausted={IsExhausted}")]
-	public class CryptoTransformingBufferedSource :
+	public sealed class CryptoTransformingBufferedSource :
 		IBufferedSource
 	{
 		private readonly IBufferedSource _source;

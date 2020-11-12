@@ -310,7 +310,7 @@ namespace Novartment.Base.Collections.Linq
 			return new UnionReadOnlyFiniteSet<TSource> (first, second, count);
 		}
 
-		private class ReverseReadOnlyFiniteSet<TSource> :
+		private sealed class ReverseReadOnlyFiniteSet<TSource> :
 			IReadOnlyFiniteSet<TSource>
 		{
 			private readonly IReadOnlyFiniteSet<TSource> _source;
@@ -346,7 +346,7 @@ namespace Novartment.Base.Collections.Linq
 			}
 		}
 
-		private class OneItemReadOnlyFiniteSet<T> :
+		private sealed class OneItemReadOnlyFiniteSet<T> :
 			IReadOnlyFiniteSet<T>
 		{
 			private readonly T[] _item = new T[1];
@@ -376,7 +376,7 @@ namespace Novartment.Base.Collections.Linq
 			}
 		}
 
-		private class ExceptReadOnlyFiniteSet<TSource> :
+		private sealed class ExceptReadOnlyFiniteSet<TSource> :
 			IReadOnlyFiniteSet<TSource>
 		{
 			private readonly IReadOnlyFiniteSet<TSource> _first;
@@ -418,7 +418,7 @@ namespace Novartment.Base.Collections.Linq
 			}
 		}
 
-		private class SymmetricExceptReadOnlyFiniteSet<TSource> :
+		private sealed class SymmetricExceptReadOnlyFiniteSet<TSource> :
 			IReadOnlyFiniteSet<TSource>
 		{
 			private readonly IReadOnlyFiniteSet<TSource> _first;
@@ -469,7 +469,7 @@ namespace Novartment.Base.Collections.Linq
 			}
 		}
 
-		private class IntersectReadOnlyFiniteSet<TSource> :
+		private sealed class IntersectReadOnlyFiniteSet<TSource> :
 			IReadOnlyFiniteSet<TSource>
 		{
 			private readonly IReadOnlyFiniteSet<TSource> _first;
@@ -511,7 +511,7 @@ namespace Novartment.Base.Collections.Linq
 			}
 		}
 
-		private class UnionReadOnlyFiniteSet<TSource> :
+		private sealed class UnionReadOnlyFiniteSet<TSource> :
 			IReadOnlyFiniteSet<TSource>
 		{
 			private readonly IReadOnlyFiniteSet<TSource> _first;

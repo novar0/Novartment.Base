@@ -10,7 +10,7 @@ using Xunit;
 
 namespace Novartment.Base.Smtp.Test
 {
-	public class SmtpDeliveryProtocolSessionTests
+	public sealed class SmtpDeliveryProtocolSessionTests
 	{
 		private TransactionBehavior _transactionBehavior = TransactionBehavior.Normal;
 

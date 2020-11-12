@@ -138,7 +138,7 @@ namespace Novartment.Base
 			return procData.Task;
 		}
 
-		internal class ProcessTaskCompletionSourceWrapper : TaskCompletionSource<object>,
+		internal sealed class ProcessTaskCompletionSourceWrapper : TaskCompletionSource<object>,
 			IDisposable
 		{
 			private static readonly TimeSpan _mutexCheckPeriod = new TimeSpan (0, 0, 0, 0, 100);

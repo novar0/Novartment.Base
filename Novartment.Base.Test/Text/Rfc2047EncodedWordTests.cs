@@ -5,7 +5,7 @@ using Xunit;
 
 namespace Novartment.Base.Test
 {
-	public class Rfc2047EncodedWordTests
+	public sealed class Rfc2047EncodedWordTests
 	{
 		public Rfc2047EncodedWordTests ()
 		{

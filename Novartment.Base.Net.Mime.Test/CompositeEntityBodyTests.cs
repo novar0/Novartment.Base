@@ -7,7 +7,7 @@ using Xunit;
 
 namespace Novartment.Base.Net.Mime.Test
 {
-	public class CompositeEntityBodyTests
+	public sealed class CompositeEntityBodyTests
 	{
 		private readonly string[] _bodySample1 = new string[]
 		{

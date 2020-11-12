@@ -5,7 +5,7 @@ using Novartment.Base.Text;
 
 namespace Novartment.Base.Net.Smtp
 {
-	internal class SmtpBdatCommand : SmtpCommand
+	internal sealed class SmtpBdatCommand : SmtpCommand
 	{
 		internal SmtpBdatCommand (long size, bool isLast)
 			: base (SmtpCommandType.Bdat)

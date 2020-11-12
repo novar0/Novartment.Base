@@ -16,7 +16,7 @@ namespace Novartment.Base.Collections
 	/// В дереве могут содержаться дупликаты (хэшей, но не значений), так как хэш-функция может порождать совпадающие хэши для разных значений.
 	/// </remarks>
 	[DebuggerDisplay ("{DebuggerDisplay,nq}")]
-	public class AvlHashTreeSet<T> :
+	public sealed class AvlHashTreeSet<T> :
 		IAdjustableFiniteSet<T>
 	{
 		private readonly IEqualityComparer<T> _comparer;

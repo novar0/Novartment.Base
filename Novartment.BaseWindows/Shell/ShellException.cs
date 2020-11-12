@@ -5,7 +5,7 @@ namespace Novartment.Base.Shell
 	/// <summary>
 	/// Исключение при работе оболочки.
 	/// </summary>
-	public class ShellException : Exception
+	public sealed class ShellException : Exception
 	{
 		/// <summary>
 		/// Инициализирует новый экземпляр ShellException.

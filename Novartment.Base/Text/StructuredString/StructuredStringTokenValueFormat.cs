@@ -5,7 +5,7 @@ namespace Novartment.Base.Text
 	/// <summary>
 	/// Формат лексического токена-значения структурированной строки.
 	/// </summary>
-	public class StructuredStringTokenValueFormat : StructuredStringTokenFormat
+	public sealed class StructuredStringTokenValueFormat : StructuredStringTokenFormat
 	{
 		/// <summary>
 		/// Декодирует значение лексического токена, помещая его декодированное значение в указанный буфер.

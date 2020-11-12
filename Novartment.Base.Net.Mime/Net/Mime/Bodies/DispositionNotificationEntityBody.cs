@@ -14,7 +14,7 @@ namespace Novartment.Base.Net.Mime
 	/// Тело MIME-сущности, содержащее уведомление об изменении дислокации сообщения.
 	/// Определено в RFC 3798.
 	/// </summary>
-	public class DispositionNotificationEntityBody :
+	public sealed class DispositionNotificationEntityBody :
 		IEntityBody
 	{
 		/// <summary>

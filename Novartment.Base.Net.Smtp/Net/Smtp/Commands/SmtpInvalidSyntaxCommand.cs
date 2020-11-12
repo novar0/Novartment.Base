@@ -1,6 +1,6 @@
 ﻿namespace Novartment.Base.Net.Smtp
 {
-	internal class SmtpInvalidSyntaxCommand : SmtpCommand
+	internal sealed class SmtpInvalidSyntaxCommand : SmtpCommand
 	{
 		internal SmtpInvalidSyntaxCommand (SmtpCommandType commandType, string message)
 			: base (commandType)

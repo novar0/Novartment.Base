@@ -11,7 +11,7 @@ namespace Novartment.Base.BinaryStreaming
 		/// <content>
 		/// Класс-обёртка StreamBufferedSource для представления Stream в виде IFastSkipBufferedSource.
 		/// </content>
-		private class StreamBufferedSource :
+		private sealed class StreamBufferedSource :
 			IFastSkipBufferedSource
 		{
 			private readonly Stream _stream;

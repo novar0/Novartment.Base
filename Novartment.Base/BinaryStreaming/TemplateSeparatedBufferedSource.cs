@@ -12,7 +12,7 @@ namespace Novartment.Base.BinaryStreaming
 	/// according to the specified separator pattern.
 	/// </summary>
 	[DebuggerDisplay ("{Offset}...{Offset+Count} ({BufferMemory.Length}) exhausted={IsExhausted}")]
-	public class TemplateSeparatedBufferedSource :
+	public sealed class TemplateSeparatedBufferedSource :
 		IPartitionedBufferedSource
 	{
 		private readonly IBufferedSource _source;

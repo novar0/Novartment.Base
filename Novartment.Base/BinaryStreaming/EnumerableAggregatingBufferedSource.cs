@@ -11,7 +11,7 @@ namespace Novartment.Base.BinaryStreaming
 	/// A data source for sequential reading, represented by a byte buffer,
 	/// that represents data from collection of other sources.
 	/// </summary>
-	public class EnumerableAggregatingBufferedSource
+	public sealed class EnumerableAggregatingBufferedSource
 		: IFastSkipBufferedSource
 	{
 		private readonly Memory<byte> _buffer;

@@ -21,7 +21,7 @@ namespace Novartment.Base.Collections
 	/// No synchronization is required for concurrent access.
 	/// Does not implement ICollection interface due to incompatibility of its contract with concurrent access.
 	/// </remarks>
-	public class ConcurrentTreeSet<T> :
+	public sealed class ConcurrentTreeSet<T> :
 		IAdjustableFiniteSet<T>
 	{
 		/*

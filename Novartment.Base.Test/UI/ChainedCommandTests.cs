@@ -4,7 +4,7 @@ using Xunit;
 
 namespace Novartment.Base.Test
 {
-	public class ChainedCommandTests
+	public sealed class ChainedCommandTests
 	{
 		[Fact]
 		[Trait ("Category", "UI")]
@@ -526,7 +526,7 @@ namespace Novartment.Base.Test
 			Assert.Equal (6 + 6 + 6 + 6, cmd1.CanExecutes.Count + cmd2.CanExecutes.Count + cmd3.CanExecutes.Count);
 		}
 
-		internal class ChainedCommandMock : ChainedCommandBase
+		internal sealed class ChainedCommandMock : ChainedCommandBase
 		{
 			internal ChainedCommandMock (CommandChain commandChain)
 				: base (commandChain)
@@ -539,13 +539,13 @@ namespace Novartment.Base.Test
 
 			protected override bool CanExecuteThis (object parameter)
 			{
-				CanExecutes.Add (parameter);
+				this.CanExecutes.Add (parameter);
 				return parameter != null;
 			}
 
 			protected override void ExecuteThis (object parameter)
 			{
-				Executes.Add (parameter);
+				this.Executes.Add (parameter);
 			}
 		}
 	}

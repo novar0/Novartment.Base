@@ -7,7 +7,7 @@ namespace Novartment.Base.UI.Wpf
 	/// Данные о контексте-коллекции, для которого вызвана команда.
 	/// </summary>
 	/// <typeparam name="T">Тип элементов коллекции.</typeparam>
-	public class ContextCollectionData<T>
+	public sealed class ContextCollectionData<T>
 	{
 		/// <summary>
 		/// Инициализирует новый экземпляр ContextCollectionData на основе указанных данных.

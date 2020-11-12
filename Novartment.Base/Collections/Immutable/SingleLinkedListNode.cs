@@ -5,7 +5,7 @@
 	/// </summary>
 	/// <typeparam name="TItem">The type of the value of the node.</typeparam>
 	/// <remarks>A null-value is correct and means an empty list.</remarks>
-	public class SingleLinkedListNode<TItem> :
+	public sealed class SingleLinkedListNode<TItem> :
 		IValueHolder<TItem>
 	{
 		/// <summary>

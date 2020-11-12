@@ -5,7 +5,7 @@ namespace Novartment.Base.BinaryStreaming
 	/// <summary>
 	/// The exception that is thrown when a source could not provide the requested amount of data.
 	/// </summary>
-	public class NotEnoughDataException : Exception
+	public sealed class NotEnoughDataException : Exception
 	{
 		/// <summary>
 		/// Initializes a new instance of the NotEnoughDataException class with a specified amount of missing data.

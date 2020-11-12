@@ -9,7 +9,7 @@ using Novartment.Base.Collections;
 
 namespace Novartment.Base.Net
 {
-	internal class ListenerBinding :
+	internal sealed class ListenerBinding :
 		IDisposable
 	{
 		private readonly ITcpListener _listener;

@@ -9,7 +9,7 @@ namespace Novartment.Base.IO
 	/// <summary>
 	/// A signaler for sending signals between components that uses named channels.
 	/// </summary>
-	public class NamedPipeSignaler :
+	public sealed class NamedPipeSignaler :
 		ISignaler
 	{
 		private readonly string _pipeName;

@@ -12,7 +12,7 @@ namespace Novartment.Base.UI.Wpf
 	/// Конвертирует любой список в коллекцию System.Double значений.
 	/// </summary>
 	[ValueConversion (typeof (IEnumerable), typeof (DoubleCollection))]
-	public class EnumerableToDoubleCollectionConverter :
+	public sealed class EnumerableToDoubleCollectionConverter :
 		IValueConverter
 	{
 		/// <summary>Преобразует значение.</summary>

@@ -7,7 +7,7 @@ using Novartment.Base.BinaryStreaming;
 
 namespace Novartment.Base.Smtp.Test
 {
-	internal class StringWritingStream :
+	internal sealed class StringWritingStream :
 		IBinaryDestination
 	{
 		private readonly Queue<string> _queue = new Queue<string> ();

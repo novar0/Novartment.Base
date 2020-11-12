@@ -7,21 +7,21 @@ namespace Novartment.Base.Net.Mime.Test
 {
 	#region класс-обёртки чтобы получить доступ к protected-методам PrepareToEncode() и EncodeNextPart()
 
-	internal class ExposedHeaderFieldBuilderUnstructured : HeaderFieldBuilderUnstructuredValue
+	internal sealed class ExposedHeaderFieldBuilderUnstructured : HeaderFieldBuilderUnstructuredValue
 	{
 		internal ExposedHeaderFieldBuilderUnstructured (HeaderFieldName name, string text) : base (name, text) { }
 		internal void PrepareToEncodeExposed (byte[] oneLineBuffer) => base.PrepareToEncode (oneLineBuffer);
 		internal int GetNextPartExposed (Span<byte> buf, out bool isLast) => base.EncodeNextPart (buf, out isLast);
 	}
 
-	internal class ExposedHeaderFieldBuilderPhrase : HeaderFieldBuilderStructuredValue
+	internal sealed class ExposedHeaderFieldBuilderPhrase : HeaderFieldBuilderStructuredValue
 	{
 		internal ExposedHeaderFieldBuilderPhrase (HeaderFieldName name, string text) : base (name, text) { }
 		internal void PrepareToEncodeExposed (byte[] oneLineBuffer) => base.PrepareToEncode (oneLineBuffer);
 		internal int GetNextPartExposed (Span<byte> buf, out bool isLast) => base.EncodeNextPart (buf, out isLast);
 	}
 
-	internal class ExposedHeaderFieldBuilderMailbox : HeaderFieldBuilderMailbox
+	internal sealed class ExposedHeaderFieldBuilderMailbox : HeaderFieldBuilderMailbox
 	{
 		internal ExposedHeaderFieldBuilderMailbox (HeaderFieldName name, Mailbox mailbox) : base (name, mailbox) { }
 		internal void PrepareToEncodeExposed (byte[] oneLineBuffer) => base.PrepareToEncode (oneLineBuffer);
@@ -29,77 +29,77 @@ namespace Novartment.Base.Net.Mime.Test
 	}
 
 
-	internal class ExposedHeaderFieldBuilderLanguageList : HeaderFieldBuilderLanguageCollection
+	internal sealed class ExposedHeaderFieldBuilderLanguageList : HeaderFieldBuilderLanguageCollection
 	{
 		internal ExposedHeaderFieldBuilderLanguageList (HeaderFieldName name, IReadOnlyList<string> languages) : base (name, languages) { }
 		internal void PrepareToEncodeExposed (byte[] oneLineBuffer) => base.PrepareToEncode (oneLineBuffer);
 		internal int GetNextPartExposed (Span<byte> buf, out bool isLast) => base.EncodeNextPart (buf, out isLast);
 	}
 
-	internal class ExposedHeaderFieldBuilderAddrSpecList : HeaderFieldBuilderAddrSpecCollection
+	internal sealed class ExposedHeaderFieldBuilderAddrSpecList : HeaderFieldBuilderAddrSpecCollection
 	{
 		internal ExposedHeaderFieldBuilderAddrSpecList (HeaderFieldName name, IReadOnlyList<AddrSpec> addrSpecs) : base (name, addrSpecs) { }
 		internal void PrepareToEncodeExposed (byte[] oneLineBuffer) => base.PrepareToEncode (oneLineBuffer);
 		internal int GetNextPartExposed (Span<byte> buf, out bool isLast) => base.EncodeNextPart (buf, out isLast);
 	}
 
-	internal class ExposedHeaderFieldBuilderAtomAndUnstructured : HeaderFieldBuilderAtomAndUnstructuredValue
+	internal sealed class ExposedHeaderFieldBuilderAtomAndUnstructured : HeaderFieldBuilderAtomAndUnstructuredValue
 	{
 		internal ExposedHeaderFieldBuilderAtomAndUnstructured (HeaderFieldName name, string type, string value) : base (name, type, value) { }
 		internal void PrepareToEncodeExposed (byte[] oneLineBuffer) => base.PrepareToEncode (oneLineBuffer);
 		internal int GetNextPartExposed (Span<byte> buf, out bool isLast) => base.EncodeNextPart (buf, out isLast);
 	}
 
-	internal class ExposedHeaderFieldBuilderUnstructuredPair : HeaderFieldBuilderUnstructuredValuePair
+	internal sealed class ExposedHeaderFieldBuilderUnstructuredPair : HeaderFieldBuilderUnstructuredValuePair
 	{
 		internal ExposedHeaderFieldBuilderUnstructuredPair (HeaderFieldName name, string value1, string value2) : base (name, value1, value2) { }
 		internal void PrepareToEncodeExposed (byte[] oneLineBuffer) => base.PrepareToEncode (oneLineBuffer);
 		internal int GetNextPartExposed (Span<byte> buf, out bool isLast) => base.EncodeNextPart (buf, out isLast);
 	}
 
-	internal class ExposedHeaderFieldBuilderTokensAndDate : HeaderFieldBuilderTokensAndDate
+	internal sealed class ExposedHeaderFieldBuilderTokensAndDate : HeaderFieldBuilderTokensAndDate
 	{
 		internal ExposedHeaderFieldBuilderTokensAndDate (HeaderFieldName name, string value, DateTimeOffset dateTimeOffset) : base (name, value, dateTimeOffset) { }
 		internal void PrepareToEncodeExposed (byte[] oneLineBuffer) => base.PrepareToEncode (oneLineBuffer);
 		internal int GetNextPartExposed (Span<byte> buf, out bool isLast) => base.EncodeNextPart (buf, out isLast);
 	}
 
-	internal class ExposedHeaderFieldBuilderPhraseAndId : HeaderFieldBuilderStructuredValueAndId
+	internal sealed class ExposedHeaderFieldBuilderPhraseAndId : HeaderFieldBuilderStructuredValueAndId
 	{
 		internal ExposedHeaderFieldBuilderPhraseAndId (HeaderFieldName name, string id, string phrase) : base (name, id, phrase) { }
 		internal void PrepareToEncodeExposed (byte[] oneLineBuffer) => base.PrepareToEncode (oneLineBuffer);
 		internal int GetNextPartExposed (Span<byte> buf, out bool isLast) => base.EncodeNextPart (buf, out isLast);
 	}
 
-	internal class ExposedHeaderFieldBuilderPhraseList : HeaderFieldBuilderStructuredValueCollection
+	internal sealed class ExposedHeaderFieldBuilderPhraseList : HeaderFieldBuilderStructuredValueCollection
 	{
 		internal ExposedHeaderFieldBuilderPhraseList (HeaderFieldName name, IReadOnlyList<string> values) : base (name, values) { }
 		internal void PrepareToEncodeExposed (byte[] oneLineBuffer) => base.PrepareToEncode (oneLineBuffer);
 		internal int GetNextPartExposed (Span<byte> buf, out bool isLast) => base.EncodeNextPart (buf, out isLast);
 	}
 
-	internal class ExposedHeaderFieldBuilderMailboxList : HeaderFieldBuilderMailboxCollection
+	internal sealed class ExposedHeaderFieldBuilderMailboxList : HeaderFieldBuilderMailboxCollection
 	{
 		internal ExposedHeaderFieldBuilderMailboxList (HeaderFieldName name, IReadOnlyList<Mailbox> mailboxes) : base (name, mailboxes) { }
 		internal void PrepareToEncodeExposed (byte[] oneLineBuffer) => base.PrepareToEncode (oneLineBuffer);
 		internal int GetNextPartExposed (Span<byte> buf, out bool isLast) => base.EncodeNextPart (buf, out isLast);
 	}
 
-	internal class ExposedHeaderFieldBuilderAngleBracketedList : HeaderFieldBuilderAngleBracketedList
+	internal sealed class ExposedHeaderFieldBuilderAngleBracketedList : HeaderFieldBuilderAngleBracketedList
 	{
 		internal ExposedHeaderFieldBuilderAngleBracketedList (HeaderFieldName name, IReadOnlyList<string> urls) : base (name, urls) { }
 		internal void PrepareToEncodeExposed (byte[] oneLineBuffer) => base.PrepareToEncode (oneLineBuffer);
 		internal int GetNextPartExposed (Span<byte> buf, out bool isLast) => base.EncodeNextPart (buf, out isLast);
 	}
 
-	internal class ExposedHeaderFieldBuilderDispositionNotificationParameterList : HeaderFieldBuilderDispositionNotificationParameterCollection
+	internal sealed class ExposedHeaderFieldBuilderDispositionNotificationParameterList : HeaderFieldBuilderDispositionNotificationParameterCollection
 	{
 		internal ExposedHeaderFieldBuilderDispositionNotificationParameterList (HeaderFieldName name, IReadOnlyList<DispositionNotificationParameter> parameters) : base (name, parameters) { }
 		internal void PrepareToEncodeExposed (byte[] oneLineBuffer) => base.PrepareToEncode (oneLineBuffer);
 		internal int GetNextPartExposed (Span<byte> buf, out bool isLast) => base.EncodeNextPart (buf, out isLast);
 	}
 
-	internal class ExposedHeaderFieldBuilderDisposition : HeaderFieldBuilderDisposition
+	internal sealed class ExposedHeaderFieldBuilderDisposition : HeaderFieldBuilderDisposition
 	{
 		internal ExposedHeaderFieldBuilderDisposition (HeaderFieldName name, string actionMode, string sendingMode, string type, IReadOnlyList<string> modifiers) : base (name, actionMode, sendingMode, type, modifiers) { }
 		internal void PrepareToEncodeExposed (byte[] oneLineBuffer) => base.PrepareToEncode (oneLineBuffer);
@@ -108,7 +108,7 @@ namespace Novartment.Base.Net.Mime.Test
 
 	#endregion
 
-	public class HeaderFieldBuilderTests
+	public sealed class HeaderFieldBuilderTests
 	{
 		// добавить тестирование HeaderFieldBuilderExactValue
 

@@ -3,7 +3,7 @@ using Xunit;
 
 namespace Novartment.Base.Test
 {
-	public class EnumerableAggregatingBufferedSourceTests
+	public sealed class EnumerableAggregatingBufferedSourceTests
 	{
 		[Fact]
 		[Trait ("Category", "BufferedSource")]

@@ -13,17 +13,17 @@ using Novartment.Base.Text;
 
 namespace Novartment.Base.Net.Mime
 {
-	internal class TokenFormatComment : StructuredStringTokenDelimitedFormat
+	internal sealed class TokenFormatComment : StructuredStringTokenDelimitedFormat
 	{
 		internal TokenFormatComment () : base ('(', ')', StructuredStringIngoreTokenType.EscapedChar, true) { }
 	}
 
-	internal class TokenFormatId : StructuredStringTokenDelimitedFormat
+	internal sealed class TokenFormatId : StructuredStringTokenDelimitedFormat
 	{
 		internal TokenFormatId () : base ('<', '>', StructuredStringIngoreTokenType.QuotedValue, false) { }
 	}
 
-	internal class TokenFormatLiteral : StructuredStringTokenDelimitedFormat
+	internal sealed class TokenFormatLiteral : StructuredStringTokenDelimitedFormat
 	{
 		internal TokenFormatLiteral () : base ('[', ']', StructuredStringIngoreTokenType.EscapedChar, false) { }
 

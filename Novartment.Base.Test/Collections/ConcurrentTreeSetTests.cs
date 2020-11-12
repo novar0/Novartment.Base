@@ -3,7 +3,7 @@ using Xunit;
 
 namespace Novartment.Base.Test
 {
-	public class ConcurrentTreeSetTests
+	public sealed class ConcurrentTreeSetTests
 	{
 
 #pragma warning disable xUnit2013 // Do not use equality check to check for collection size.

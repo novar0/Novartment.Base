@@ -5,7 +5,7 @@ namespace Novartment.Base.UI.Wpf
 	/// <summary>
 	/// Значение перечисления, связанное со строковым представлением.
 	/// </summary>
-	public class EnumeratedKeyAndValue
+	public sealed class EnumeratedKeyAndValue
 	{
 		/// <summary>
 		/// Инициализирует новый экземпляр класса EnumeratedKeyAndValue с указанным значением и строковым представлением.

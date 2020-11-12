@@ -9,7 +9,7 @@ namespace Novartment.Base.UI.Wpf
 	/// Конвертирует в обе стороны число / табличная длина.
 	/// </summary>
 	[ValueConversion (typeof (int), typeof (GridLength))]
-	public class NumberToGridLengthConverter :
+	public sealed class NumberToGridLengthConverter :
 		IValueConverter
 	{
 		/// <summary>Преобразует значение.</summary>

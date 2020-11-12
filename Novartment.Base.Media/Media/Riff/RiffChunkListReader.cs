@@ -12,7 +12,7 @@ namespace Novartment.Base.Media
 	/// Коллекция RIFF-порций.
 	/// </summary>
 	[DebuggerDisplay ("{DebuggerDisplay,nq}")]
-	public class RiffChunkListReader
+	public sealed class RiffChunkListReader
 	{
 		private readonly IBufferedSource _source;
 		private RiffChunk _current;

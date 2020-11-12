@@ -12,7 +12,7 @@ using Novartment.Base.Collections;
 
 namespace Novartment.Base.Net.Smtp
 {
-	internal class SmtpOriginatorProtocolSession :
+	internal sealed class SmtpOriginatorProtocolSession :
 		IDisposable
 	{
 		private readonly ISmtpCommandTransport _transport;

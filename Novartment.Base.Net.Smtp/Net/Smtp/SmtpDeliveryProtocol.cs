@@ -11,7 +11,7 @@ namespace Novartment.Base.Net.Smtp
 	/// Протокол получения почты по стандарту SMTP.
 	/// </summary>
 	/// <remarks>Соответствует роли 'Delivery' из RFC 5321 часть 2.3.10.</remarks>
-	public class SmtpDeliveryProtocol :
+	public sealed class SmtpDeliveryProtocol :
 		ITcpConnectionProtocol
 	{
 		private readonly Func<MailDeliverySourceData, IMailTransferTransactionHandler> _mailHandlerFactory;

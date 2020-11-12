@@ -6,7 +6,7 @@ using Xunit;
 namespace Novartment.Base.Test
 {
 	[DefaultValue (typeof (DateTime), "Много не связанных тестов")] // этот аттрибут не удалять, он используется тестом
-	public class ReflectionServiceTests
+	public sealed class ReflectionServiceTests
 	{
 		[Fact]
 		[Trait ("Category", "ReflectionService")]
@@ -44,7 +44,7 @@ namespace Novartment.Base.Test
 		TestVal3,
 	}
 
-	public class Mock5<T1, T2>
+	public sealed class Mock5<T1, T2>
 	{
 		public T1 Prop1 { get; set; }
 

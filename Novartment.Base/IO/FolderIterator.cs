@@ -10,7 +10,7 @@ namespace Novartment.Base.IO
 	/// <summary>
 	/// An e\Enumerator of directory objects, including the contents of nested directories.
 	/// </summary>
-	public class FolderIterator :
+	public sealed class FolderIterator :
 		IEnumerable<FileData>
 	{
 		private readonly string _baseFolder;

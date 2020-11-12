@@ -4,7 +4,7 @@ using Xunit;
 
 namespace Novartment.Base.Test
 {
-	public class StructuralEquatableTests
+	public sealed class StructuralEquatableTests
 	{
 		[Fact]
 		[Trait ("Category", "Collections.Linq")]

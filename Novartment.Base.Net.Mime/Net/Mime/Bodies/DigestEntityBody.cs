@@ -4,7 +4,7 @@
 	/// Тело MIME-сущности, содержащей дайджест (коллецию интернет-сообщений)
 	/// согласно RFC 2046 часть 5.1.5.
 	/// </summary>
-	public class DigestEntityBody : CompositeEntityBody
+	public sealed class DigestEntityBody : CompositeEntityBody
 	{
 		// TODO: вместо наследованного свойства Parts надо сделать свойство IAjustableList<IMailMessage> Messages.
 

@@ -2,7 +2,7 @@
 
 namespace Novartment.Base.Net.Smtp
 {
-	internal class SmtpVrfyCommand : SmtpCommand
+	internal sealed class SmtpVrfyCommand : SmtpCommand
 	{
 		internal SmtpVrfyCommand (ReadOnlySpan<char> parameters)
 			: base (SmtpCommandType.Vrfy)

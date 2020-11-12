@@ -12,7 +12,7 @@ namespace Novartment.Base.Data.SqlWrapper
 	/// <summary>
 	/// Действие, позволяюще удобно выполнять операции в БД без знания синтаксиса SQL и специфики конкретной СУБД.
 	/// </summary>
-	public class InvariantDbAction :
+	public sealed class InvariantDbAction :
 		IDbAction
 	{
 		private readonly IAdjustableCollection<InvariantDbCommandParameter> _parameters = new ArrayList<InvariantDbCommandParameter> ();

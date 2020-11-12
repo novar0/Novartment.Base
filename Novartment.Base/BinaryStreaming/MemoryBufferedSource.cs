@@ -10,7 +10,7 @@ namespace Novartment.Base.BinaryStreaming
 	/// A data source for sequential reading, represented by a provided region of memory.
 	/// </summary>
 	[DebuggerDisplay ("{Offset}...{Offset+Count} ({BufferMemory.Length}) exhausted={IsExhausted}")]
-	public class MemoryBufferedSource :
+	public sealed class MemoryBufferedSource :
 		IFastSkipBufferedSource
 	{
 		/// <summary>

@@ -12,7 +12,7 @@ namespace Novartment.Base.UI.Wpf
 	/// defined in a View Model by exposing a Command dependency property.
 	/// The class derives from Freezable to work around a limitation in WPF when data-binding from XAML.
 	/// </remarks>
-	public class CommandReference : Freezable,
+	public sealed class CommandReference : Freezable,
 		ICommand
 	{
 		/// <summary>

@@ -162,14 +162,14 @@ namespace Novartment.Base.Sample
 			}
 		}
 
-		internal class MailMessageData
+		internal sealed class MailMessageData
 		{
 			internal AddrSpec ReturnPath { get; set; }
 
 			internal ArrayList<AddrSpec> Recipients { get; } = new ArrayList<AddrSpec> (1);
 		}
 
-		internal class DeliveryToFileDataTransferTransaction :
+		internal sealed class DeliveryToFileDataTransferTransaction :
 			IMailTransferTransactionHandler
 		{
 			private readonly string _mailDropDirectory;

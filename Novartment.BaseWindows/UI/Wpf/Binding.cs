@@ -6,7 +6,7 @@ namespace Novartment.Base.UI.Wpf
 	/// Дублирует System.Windows.Data.Binding,
 	/// но устанавливает текущую культуру для конвертеров.
 	/// </summary>
-	public class Binding : System.Windows.Data.Binding
+	public sealed class Binding : System.Windows.Data.Binding
 	{
 		/// <summary>
 		/// <summary>Инициализирует новый экземпляр класса Binding.</summary>

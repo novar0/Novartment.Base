@@ -6,7 +6,7 @@ namespace Novartment.Base
 	/// Данные о событии.
 	/// </summary>
 	/// <typeparam name="T">Тип значения-начинки, содержащей данные о событии.</typeparam>
-	public class DataEventArgs<T> : EventArgs,
+	public sealed class DataEventArgs<T> : EventArgs,
 		IValueHolder<T>
 	{
 		/// <summary>

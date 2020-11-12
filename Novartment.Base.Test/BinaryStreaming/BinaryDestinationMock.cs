@@ -5,7 +5,7 @@ using Novartment.Base.BinaryStreaming;
 
 namespace Novartment.Base.Test
 {
-	public class BinaryDestinationMock :
+	public sealed class BinaryDestinationMock :
 		IBinaryDestination
 	{
 		private readonly byte[] _buffer;

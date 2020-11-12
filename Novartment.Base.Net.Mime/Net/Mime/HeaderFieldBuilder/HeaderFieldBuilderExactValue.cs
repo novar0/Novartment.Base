@@ -6,7 +6,7 @@ namespace Novartment.Base.Net.Mime
 	/// <summary>
 	/// Построитель поля заголовка из указанного заранее приготовленного значения.
 	/// </summary>
-	public class HeaderFieldBuilderExactValue : HeaderFieldBuilder
+	public sealed class HeaderFieldBuilderExactValue : HeaderFieldBuilder
 	{
 		private readonly string _value;
 		private bool _finished = false;

@@ -7,7 +7,7 @@ namespace Novartment.Base
 	/// A textual representation of all the properties of the exception,
 	/// supplemented by data on its position in the hierarchy of exceptions.
 	/// </summary>
-	public class ExceptionDescriptionAndNestingData : ExceptionDescription
+	public sealed class ExceptionDescriptionAndNestingData : ExceptionDescription
 	{
 		/// <summary>
 		/// Initializes a new instance of the ExceptionDescriptionAndNestingData class with all specified properies.
@@ -68,7 +68,7 @@ namespace Novartment.Base
 		/// <returns>The string representation of the current exception.</returns>
 		public override string ToString (bool detailed, string tracePatternToHide = null)
 		{
-			var nestingInfo = ((this.NestingLevel > 0) || ((InnerExceptions != null) && (InnerExceptions.Count > 0))) ?
+			var nestingInfo = ((this.NestingLevel > 0) || ((this.InnerExceptions != null) && (this.InnerExceptions.Count > 0))) ?
 				FormattableString.Invariant ($"Level {this.NestingLevel} ") :
 				string.Empty;
 			if (this.TotalInLevel > 1)

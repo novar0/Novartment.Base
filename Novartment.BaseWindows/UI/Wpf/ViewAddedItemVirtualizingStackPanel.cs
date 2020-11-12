@@ -10,7 +10,7 @@ namespace Novartment.Base.UI.Wpf
 	/// <remarks>
 	/// Можно использовать как панель в списочных элементах чтобы отображать последнюю запись.
 	/// </remarks>
-	public class ViewAddedItemVirtualizingStackPanel : VirtualizingStackPanel
+	public sealed class ViewAddedItemVirtualizingStackPanel : VirtualizingStackPanel
 	{
 		/// <summary>
 		/// <summary>Инициализирует новый экземпляр класса ViewAddedItemVirtualizingStackPanel.</summary>

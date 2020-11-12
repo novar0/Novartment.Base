@@ -9,7 +9,7 @@ namespace Novartment.Base.UI.Wpf
 	/// <summary>
 	/// Конвертирует (базовое имя + идентификатор) ресурса из директории в ресурс.
 	/// </summary>
-	public class ParameterToResourceConverter :
+	public sealed class ParameterToResourceConverter :
 		IMultiValueConverter
 	{
 		/// <summary>Преобразует исходные значения в значение для цели связывания.</summary>

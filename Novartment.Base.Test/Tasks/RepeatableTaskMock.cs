@@ -15,7 +15,7 @@ namespace Novartment.Base.Test
 		ProcessingCancel = 6,
 	}
 
-	internal class RepeatableTaskMock
+	internal sealed class RepeatableTaskMock
 	{
 		private const int MaxCount = 256;
 		private readonly TaskCompletionSource<int>[] _taskCreated = new TaskCompletionSource<int>[MaxCount];

@@ -13,7 +13,7 @@ namespace Novartment.Base
 	/// Similar to the library class System.IO.MemoryStream,
 	/// but exposes written content as ReadOnlyMemory&lt;byte&gt;.
 	/// </remarks>
-	public class MemoryBinaryDestination :
+	public sealed class MemoryBinaryDestination :
 		IBinaryDestination
 	{
 		private const int MaxByteArrayLength = 0x7FFFFFC7;

@@ -11,7 +11,7 @@ namespace Novartment.Base.BinaryStreaming
 	/// that provides a specified number of bytes from another data source.
 	/// </summary>
 	[DebuggerDisplay ("{Offset}...{Offset+Count} ({BufferMemory.Length}) exhausted={IsExhausted}")]
-	public class SizeLimitedBufferedSource :
+	public sealed class SizeLimitedBufferedSource :
 		IFastSkipBufferedSource
 	{
 		private readonly IBufferedSource _source;

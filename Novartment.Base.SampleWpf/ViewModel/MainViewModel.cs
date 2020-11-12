@@ -24,7 +24,7 @@ namespace Novartment.Base.SampleWpf
 		Error = 3,
 	}
 
-	public class MainViewModel : BaseViewModel,
+	public sealed class MainViewModel : BaseViewModel,
 		IDragDropSource,
 		IDragDropTarget
 	{

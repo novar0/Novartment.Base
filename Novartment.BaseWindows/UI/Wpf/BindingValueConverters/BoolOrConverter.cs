@@ -8,7 +8,7 @@ namespace Novartment.Base.UI.Wpf
 	/// <summary>
 	/// объединяет несколько булевых значений по закону OR.
 	/// </summary>
-	public class BoolOrConverter :
+	public sealed class BoolOrConverter :
 		IMultiValueConverter
 	{
 		/// <summary>Преобразует исходные значения в значение для цели связывания.</summary>

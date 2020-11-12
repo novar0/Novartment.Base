@@ -4,7 +4,7 @@ using Xunit;
 
 namespace Novartment.Base.Test
 {
-	public class AsciiCharSetTests
+	public sealed class AsciiCharSetTests
 	{
 		[Fact]
 		[Trait ("Category", "Text.AsciiCharSet")]

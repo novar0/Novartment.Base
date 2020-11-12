@@ -76,7 +76,7 @@ namespace Novartment.Base
 			return sorter;
 		}
 
-		internal class InternalSorter<TItem, TKey> :
+		internal sealed class InternalSorter<TItem, TKey> :
 			IComparer,
 			IComparer<TItem>,
 			ISortDirectionVariable

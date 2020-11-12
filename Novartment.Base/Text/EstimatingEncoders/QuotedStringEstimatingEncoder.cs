@@ -6,7 +6,7 @@ namespace Novartment.Base.Text
 	/// <summary>
 	/// Кодирует строку в кавычках, предваряя префиксом '\' символы '\' и '"'.
 	/// </summary>
-	public class QuotedStringEstimatingEncoder :
+	public sealed class QuotedStringEstimatingEncoder :
 		IEstimatingEncoder
 	{
 		private readonly AsciiCharClasses _enabledClasses;

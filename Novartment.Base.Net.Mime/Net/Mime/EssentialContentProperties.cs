@@ -5,7 +5,7 @@ namespace Novartment.Base.Net.Mime
 	/// <summary>
 	/// Основные параметры содержимого.
 	/// </summary>
-	public class EssentialContentProperties
+	public sealed class EssentialContentProperties
 	{
 		/// <summary>
 		/// Инициализирует новый экземпляр класса EssentialContentProperties.

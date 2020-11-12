@@ -5,7 +5,7 @@ using Novartment.Base.BinaryStreaming;
 
 namespace Novartment.Base.Net.Test
 {
-	internal class TcpConnectionMock :
+	internal sealed class TcpConnectionMock :
 		ITcpConnection
 	{
 		private readonly IPHostEndPoint _localEndpoint;

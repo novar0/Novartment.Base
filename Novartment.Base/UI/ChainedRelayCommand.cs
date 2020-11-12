@@ -7,7 +7,7 @@ namespace Novartment.Base.UI
 	/// Команда, выполняющая указанный делегат.
 	/// Может быть частью цепи связанных команд.
 	/// </summary>
-	public class ChainedRelayCommand : ChainedCommandBase
+	public sealed class ChainedRelayCommand : ChainedCommandBase
 	{
 		private readonly Action _execute;
 		private readonly Func<bool> _canExecute;

@@ -5,7 +5,7 @@ using Novartment.Base.BinaryStreaming;
 
 namespace Novartment.Base.Net.Test
 {
-	internal class EndlessSource :
+	internal sealed class EndlessSource :
 		IBufferedSource
 	{
 		public ReadOnlyMemory<byte> BufferMemory => new byte[20];

@@ -4,7 +4,7 @@ using Xunit;
 
 namespace Novartment.Base.Net.Mime.Test
 {
-	public class MailboxTests
+	public sealed class MailboxTests
 	{
 		public MailboxTests ()
 		{

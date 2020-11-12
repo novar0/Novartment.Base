@@ -10,7 +10,7 @@ using Novartment.Base.Net.Smtp;
 
 namespace Novartment.Base.Smtp.Test
 {
-	internal class SmtpCommandReplyConnectionSenderReceiverMock :
+	internal sealed class SmtpCommandReplyConnectionSenderReceiverMock :
 		ISmtpCommandTransport
 	{
 		public bool TlsEstablished => false;

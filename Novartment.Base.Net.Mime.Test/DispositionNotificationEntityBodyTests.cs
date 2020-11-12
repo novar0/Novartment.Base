@@ -7,7 +7,7 @@ using static System.Linq.Enumerable;
 
 namespace Novartment.Base.Net.Mime.Test
 {
-	public class DispositionNotificationEntityBodyTests
+	public sealed class DispositionNotificationEntityBodyTests
 	{
 		private static readonly string Template1 =
 "Reporting-UA: joes-pc.cs.example.com; Foomail 97.1\r\n" +

@@ -5,7 +5,7 @@ using Xunit;
 
 namespace Novartment.Base.Media.Test
 {
-	public class RiffParserTests
+	public sealed class RiffParserTests
 	{
 		[Fact]
 		[Trait ("Category", "Media.RiffParser")]

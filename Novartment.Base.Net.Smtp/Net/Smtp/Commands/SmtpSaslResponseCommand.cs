@@ -2,7 +2,7 @@
 
 namespace Novartment.Base.Net.Smtp
 {
-	internal class SmtpSaslResponseCommand : SmtpCommand
+	internal sealed class SmtpSaslResponseCommand : SmtpCommand
 	{
 		private readonly byte[] _response;
 

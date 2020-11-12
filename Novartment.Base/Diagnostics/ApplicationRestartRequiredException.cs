@@ -5,7 +5,7 @@ namespace Novartment.Base
 	/// <summary>
 	/// The exception that is thrown when a application requires restart to continue.
 	/// </summary>
-	public class ApplicationRestartRequiredException : Exception
+	public sealed class ApplicationRestartRequiredException : Exception
 	{
 		/// <summary>
 		/// Initializes a new instance of the ApplicationRestartRequiredException class.

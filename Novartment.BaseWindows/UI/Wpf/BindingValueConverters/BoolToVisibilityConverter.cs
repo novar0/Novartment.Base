@@ -9,7 +9,7 @@ namespace Novartment.Base.UI.Wpf
 	/// конвертирует в обе стороны bool / System.Windows.Visibility, параметр (любое значение) указывает на инверсную логику.
 	/// </summary>
 	[ValueConversion (typeof (bool), typeof (Visibility))]
-	public class BoolToVisibilityConverter :
+	public sealed class BoolToVisibilityConverter :
 		IValueConverter
 	{
 		/// <summary>Преобразует значение.</summary>

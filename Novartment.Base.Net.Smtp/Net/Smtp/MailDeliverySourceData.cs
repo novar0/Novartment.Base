@@ -5,7 +5,7 @@ namespace Novartment.Base.Net.Smtp
 	/// <summary>
 	/// Данные об источнике, отправившем почту.
 	/// </summary>
-	public class MailDeliverySourceData
+	public sealed class MailDeliverySourceData
 	{
 		/// <summary>
 		/// Инициализирует новый экземпляр MailDeliverySourceData, содержащий указанную конечную точку подключения, сертификат и пользователя.

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Novartment.Base.Net.Test
 {
-	internal class TcpConnectionProtocolMock :
+	internal sealed class TcpConnectionProtocolMock :
 		ITcpConnectionProtocol,
 		IDisposable
 	{

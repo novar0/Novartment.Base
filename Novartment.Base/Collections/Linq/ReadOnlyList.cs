@@ -557,7 +557,7 @@ namespace Novartment.Base.Collections.Linq
 				return _instance;
 			}
 
-			internal class EmptySetImplementation :
+			internal sealed class EmptySetImplementation :
 				IReadOnlyFiniteSet<T>,
 				IReadOnlyList<T>
 			{
@@ -579,7 +579,7 @@ namespace Novartment.Base.Collections.Linq
 			}
 		}
 
-		internal class RangeReadOnlyList :
+		internal sealed class RangeReadOnlyList :
 			IReadOnlyList<int>,
 			IReadOnlyFiniteSet<int>
 		{
@@ -627,7 +627,7 @@ namespace Novartment.Base.Collections.Linq
 			}
 		}
 
-		private class RepeatReadOnlyList<TResult> :
+		private sealed class RepeatReadOnlyList<TResult> :
 			IReadOnlyList<TResult>
 		{
 			private readonly TResult _element;
@@ -669,7 +669,7 @@ namespace Novartment.Base.Collections.Linq
 			}
 		}
 
-		private class SkipReadOnlyList<TSource> :
+		private sealed class SkipReadOnlyList<TSource> :
 			IReadOnlyList<TSource>
 		{
 			private readonly IReadOnlyList<TSource> _source;
@@ -708,7 +708,7 @@ namespace Novartment.Base.Collections.Linq
 			}
 		}
 
-		private class TakeReadOnlyList<TSource> :
+		private sealed class TakeReadOnlyList<TSource> :
 			IReadOnlyList<TSource>
 		{
 			private readonly IReadOnlyList<TSource> _source;
@@ -747,7 +747,7 @@ namespace Novartment.Base.Collections.Linq
 			}
 		}
 
-		private class SelectReadOnlyList<TSource, TResult> :
+		private sealed class SelectReadOnlyList<TSource, TResult> :
 			IReadOnlyList<TResult>
 		{
 			private readonly IReadOnlyList<TSource> _source;
@@ -789,7 +789,7 @@ namespace Novartment.Base.Collections.Linq
 			}
 		}
 
-		private class SelectIndexReadOnlyList<TSource, TResult> :
+		private sealed class SelectIndexReadOnlyList<TSource, TResult> :
 			IReadOnlyList<TResult>
 		{
 			private readonly IReadOnlyList<TSource> _source;
@@ -832,7 +832,7 @@ namespace Novartment.Base.Collections.Linq
 			}
 		}
 
-		private class ReverseReadOnlyList<TSource> :
+		private sealed class ReverseReadOnlyList<TSource> :
 			IReadOnlyList<TSource>
 		{
 			private readonly IReadOnlyList<TSource> _source;
@@ -869,7 +869,7 @@ namespace Novartment.Base.Collections.Linq
 			}
 		}
 
-		private class ConcatReadOnlyList<TSource> :
+		private sealed class ConcatReadOnlyList<TSource> :
 			IReadOnlyList<TSource>
 		{
 			private readonly IReadOnlyList<TSource> _first;
@@ -908,7 +908,7 @@ namespace Novartment.Base.Collections.Linq
 			}
 		}
 
-		private class ZipReadOnlyList<TFirst, TSecond, TResult> :
+		private sealed class ZipReadOnlyList<TFirst, TSecond, TResult> :
 			IReadOnlyList<TResult>
 		{
 			private readonly IReadOnlyList<TFirst> _first;
@@ -1019,7 +1019,7 @@ namespace Novartment.Base.Collections.Linq
 			internal abstract CollectionSorter<TElement> CreateSorter (CollectionSorter<TElement> next);
 		}
 
-		private class OrderedReadOnlyList<TElement, TKey> : OrderedReadOnlyList<TElement>
+		private sealed class OrderedReadOnlyList<TElement, TKey> : OrderedReadOnlyList<TElement>
 		{
 			private readonly OrderedReadOnlyList<TElement> _parent = null;
 			private readonly Func<TElement, TKey> _keySelector;

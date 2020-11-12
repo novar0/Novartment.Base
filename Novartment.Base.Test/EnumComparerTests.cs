@@ -3,7 +3,7 @@ using Xunit;
 
 namespace Novartment.Base.Test
 {
-	public class EnumComparerTests
+	public sealed class EnumComparerTests
 	{
 		[Fact]
 		[Trait ("Category", "EnumComparer")]

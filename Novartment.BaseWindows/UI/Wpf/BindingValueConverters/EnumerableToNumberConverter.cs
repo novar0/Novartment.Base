@@ -8,7 +8,7 @@ namespace Novartment.Base.UI.Wpf
 	/// Конвертирует в обе стороны enum / номер.
 	/// </summary>
 	[ValueConversion (typeof (Enum), typeof (IConvertible))]
-	public class EnumerableToNumberConverter :
+	public sealed class EnumerableToNumberConverter :
 		IValueConverter
 	{
 		/// <summary>Преобразует значение.</summary>

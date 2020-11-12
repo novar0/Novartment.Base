@@ -6,7 +6,7 @@ namespace Novartment.Base.Text
 	/// Формат лексического токена структурированной строки,
 	/// представляющий символ-разделитель (любой символ, недопустимый для значений).
 	/// </summary>
-	public class StructuredStringTokenSeparatorFormat : StructuredStringTokenFormat
+	public sealed class StructuredStringTokenSeparatorFormat : StructuredStringTokenFormat
 	{
 		/// <summary>
 		/// Декодирует значение лексического токена, помещая его декодированное значение в указанный буфер.

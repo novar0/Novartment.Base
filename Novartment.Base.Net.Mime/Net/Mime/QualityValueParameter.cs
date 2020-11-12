@@ -7,7 +7,7 @@ namespace Novartment.Base.Net
 	/// Параметр с характеризующей его относительной важностью
 	/// согласно спецификации "qvalue" в RFC 2616 часть 3.9.
 	/// </summary>
-	public class QualityValueParameter :
+	public sealed class QualityValueParameter :
 		IValueHolder<string>,
 		IEquatable<QualityValueParameter>
 	{

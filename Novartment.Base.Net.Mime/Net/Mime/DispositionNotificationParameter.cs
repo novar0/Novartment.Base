@@ -10,7 +10,7 @@ namespace Novartment.Base.Net.Mime
 	/// Параметр сообщения, определяющий доставку уведомления об изменении его дислокации у получателя.
 	/// Определено в RFC 3798 часть 2.2.
 	/// </summary>
-	public class DispositionNotificationParameter
+	public sealed class DispositionNotificationParameter
 	{
 		// RFC 3798 part 2.2:
 		// parameter = attribute "=" importance "," value *("," value)

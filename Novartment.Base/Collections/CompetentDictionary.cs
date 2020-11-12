@@ -353,7 +353,7 @@ namespace Novartment.Base.Collections
 			internal TValue Value;
 		}
 
-		internal class KeyValuePairEnumerator :
+		internal sealed class KeyValuePairEnumerator :
 			IEnumerator<KeyValuePair<TKey, TValue>>
 		{
 			private readonly CompetentDictionary<TKey, TValue> _dictionary;
@@ -429,7 +429,7 @@ namespace Novartment.Base.Collections
 		}
 
 		[StructLayout (LayoutKind.Sequential)]
-		internal class KeyEnumerator :
+		internal sealed class KeyEnumerator :
 			IEnumerator<TKey>
 		{
 			private readonly CompetentDictionary<TKey, TValue> _dictionary;
@@ -504,7 +504,7 @@ namespace Novartment.Base.Collections
 			}
 		}
 
-		internal class ValueEnumerator :
+		internal sealed class ValueEnumerator :
 			IEnumerator<TValue>
 		{
 			private readonly CompetentDictionary<TKey, TValue> _dictionary;

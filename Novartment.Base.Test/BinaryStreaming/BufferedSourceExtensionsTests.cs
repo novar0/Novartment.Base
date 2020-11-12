@@ -4,7 +4,7 @@ using Xunit;
 
 namespace Novartment.Base.Test
 {
-	public class BinaryStreamingStreamExtensionsTests
+	public sealed class BinaryStreamingStreamExtensionsTests
 	{
 		[Fact]
 		[Trait ("Category", "BufferedSource")]

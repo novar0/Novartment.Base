@@ -3,7 +3,7 @@ using Xunit;
 
 namespace Novartment.Base.Test
 {
-	public class ByteArrayExtensionsTests
+	public sealed class ByteArrayExtensionsTests
 	{
 		[Fact]
 		[Trait ("Category", "ByteArrayExtensions")]

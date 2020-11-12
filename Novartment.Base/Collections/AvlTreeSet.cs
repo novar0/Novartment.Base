@@ -14,7 +14,7 @@ namespace Novartment.Base.Collections
 	/// If the value comparer is not available, use AvlHashTreeSet.
 	/// </remarks>
 	[DebuggerDisplay ("{DebuggerDisplay,nq}")]
-	public class AvlTreeSet<T> :
+	public sealed class AvlTreeSet<T> :
 		IAdjustableFiniteSet<T>
 	{
 		private readonly IComparer<T> _comparer;

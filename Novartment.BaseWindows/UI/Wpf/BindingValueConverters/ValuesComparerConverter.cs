@@ -9,7 +9,7 @@ namespace Novartment.Base.UI.Wpf
 	/// Конвертирует два значения в результат их сравнения.
 	/// </summary>
 	[ValueConversion (typeof (string), typeof (BitmapImage))]
-	public class ValuesComparerConverter :
+	public sealed class ValuesComparerConverter :
 		IMultiValueConverter
 	{
 		/// <summary>Преобразует исходные значения в значение для цели связывания.</summary>

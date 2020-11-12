@@ -4,24 +4,24 @@ using Xunit;
 
 namespace Novartment.Base.Test
 {
-	public class StructuredStringParserTests
+	public sealed class StructuredStringParserTests
 	{
-		internal class TokenFormatQuotedString : StructuredStringTokenDelimitedFormat
+		internal sealed class TokenFormatQuotedString : StructuredStringTokenDelimitedFormat
 		{
 			internal TokenFormatQuotedString () : base ('\"', '\"', StructuredStringIngoreTokenType.EscapedChar, false) { }
 		}
 
-		internal class TokenFormatComment : StructuredStringTokenDelimitedFormat
+		internal sealed class TokenFormatComment : StructuredStringTokenDelimitedFormat
 		{
 			internal TokenFormatComment () : base ('(', ')', StructuredStringIngoreTokenType.EscapedChar, true) { }
 		}
 
-		internal class TokenFormatLiteral : StructuredStringTokenDelimitedFormat
+		internal sealed class TokenFormatLiteral : StructuredStringTokenDelimitedFormat
 		{
 			internal TokenFormatLiteral () : base ('[', ']', StructuredStringIngoreTokenType.EscapedChar, false) { }
 		}
 
-		internal class TokenFormatId : StructuredStringTokenDelimitedFormat
+		internal sealed class TokenFormatId : StructuredStringTokenDelimitedFormat
 		{
 			internal TokenFormatId () : base ('<', '>', StructuredStringIngoreTokenType.QuotedValue, false) { }
 		}

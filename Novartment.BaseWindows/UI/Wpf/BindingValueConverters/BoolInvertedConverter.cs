@@ -8,7 +8,7 @@ namespace Novartment.Base.UI.Wpf
 	/// Инвертирует в обе стороны булевые значение.
 	/// </summary>
 	[ValueConversion (typeof (bool), typeof (bool))]
-	public class BoolInvertedConverter :
+	public sealed class BoolInvertedConverter :
 		IValueConverter
 	{
 		/// <summary>Преобразует значение.</summary>

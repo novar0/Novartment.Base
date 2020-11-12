@@ -6,9 +6,9 @@ using static System.Linq.Enumerable;
 
 namespace Novartment.Base.Test
 {
-	public class GenericCollectionExtensionsTests
+	public sealed class GenericCollectionExtensionsTests
 	{
-		internal class TestSet<T> : HashSet<T>, IReadOnlyFiniteSet<T>
+		internal sealed class TestSet<T> : HashSet<T>, IReadOnlyFiniteSet<T>
 		{
 			internal TestSet ()
 				: base ()
@@ -190,7 +190,7 @@ namespace Novartment.Base.Test
 		}
 
 		// Тривиальная обёртка чтобы реализовать поддержку IAdjustableList
-		internal class AdjustableList_<T> : System.Collections.Generic.List<T>,
+		internal sealed class AdjustableList_<T> : System.Collections.Generic.List<T>,
 			IAdjustableList<T>,
 			IArrayDuplicableCollection<T>
 		{

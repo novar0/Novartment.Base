@@ -10,7 +10,7 @@ namespace Novartment.Base.Media
 	/// Перечислитель дочерних элементов EBML-элемента.
 	/// </summary>
 	[CLSCompliant (false)]
-	public class EbmlElementCollectionEnumerator
+	public sealed class EbmlElementCollectionEnumerator
 	{
 		private readonly IBufferedSource _source;
 		private EbmlElement _current;

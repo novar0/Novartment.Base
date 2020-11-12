@@ -6,7 +6,7 @@ namespace Novartment.Base
 	/// <summary>
 	/// Event log record.
 	/// </summary>
-	public class SimpleEventRecord
+	public sealed class SimpleEventRecord
 	{
 		/// <summary>
 		/// Initializes a new instance of the SimpleEventLog class with a specified level of detail and a message.

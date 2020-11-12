@@ -77,7 +77,7 @@ namespace Novartment.Base
 			return new ExceptionDescriptionHierarchyEnumerator (exceptionDescription, skipAggregate);
 		}
 
-		internal class ExceptionDescriptionHierarchyEnumerator :
+		internal sealed class ExceptionDescriptionHierarchyEnumerator :
 			IEnumerable<ExceptionDescriptionAndNestingData>
 		{
 			private readonly ExceptionDescription _rootException;

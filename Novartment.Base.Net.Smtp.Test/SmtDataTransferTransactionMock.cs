@@ -20,7 +20,7 @@ namespace Novartment.Base.Smtp.Test
 		SlowProcessData,
 	}
 
-	public class SmtDataTransferTransactionMock :
+	public sealed class SmtDataTransferTransactionMock :
 		IMailTransferTransactionHandler
 	{
 		private readonly List<AddrSpec> _recipients = new List<AddrSpec> ();

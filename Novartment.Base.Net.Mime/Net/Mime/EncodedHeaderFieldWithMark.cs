@@ -3,7 +3,7 @@
 	/// <summary>
 	/// Обёртка для поля заголовка, позволяющая ставить на нём отметку.
 	/// </summary>
-	public class EncodedHeaderFieldWithMark :
+	public sealed class EncodedHeaderFieldWithMark :
 		IMarkHolder
 	{
 		/// <summary>

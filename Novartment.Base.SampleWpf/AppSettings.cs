@@ -2,7 +2,7 @@
 
 namespace Novartment.Base.SampleWpf
 {
-	public class AppSettings : Novartment.Base.FailsafeApplicationSettingsBase
+	public sealed class AppSettings : Novartment.Base.FailsafeApplicationSettingsBase
 	{
 		public AppSettings ()
 		{
@@ -12,11 +12,11 @@ namespace Novartment.Base.SampleWpf
 		[DefaultSettingValue ("0")]
 		public int IntParameter
 		{
-			get => (int)this[nameof (IntParameter)];
+			get => (int)this[nameof (this.IntParameter)];
 
 			set
 			{
-				this[nameof (IntParameter)] = value;
+				this[nameof (this.IntParameter)] = value;
 			}
 		}
 
@@ -24,11 +24,11 @@ namespace Novartment.Base.SampleWpf
 		[DefaultSettingValue ("Строковое значение")]
 		public string StringParameter
 		{
-			get => (string)this[nameof (StringParameter)];
+			get => (string)this[nameof (this.StringParameter)];
 
 			set
 			{
-				this[nameof (StringParameter)] = value;
+				this[nameof (this.StringParameter)] = value;
 			}
 		}
 	}

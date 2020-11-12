@@ -3,7 +3,7 @@ using Novartment.Base.Text;
 
 namespace Novartment.Base.Net.Smtp
 {
-	internal class SmtpAuthCommand : SmtpCommand
+	internal sealed class SmtpAuthCommand : SmtpCommand
 	{
 		internal SmtpAuthCommand (string mechanism, ReadOnlySpan<byte> initialResponse)
 			: base (SmtpCommandType.Auth)

@@ -11,7 +11,7 @@ namespace Novartment.Base.BinaryStreaming
 		/// <content>
 		/// Класс-обёртка BufferedSourceStream для представления IBufferedSource в виде Stream.
 		/// </content>
-		private class BufferedSourceStream : Stream
+		private sealed class BufferedSourceStream : Stream
 		{
 			private readonly IBufferedSource _source;
 

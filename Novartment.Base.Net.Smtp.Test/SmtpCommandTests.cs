@@ -7,7 +7,7 @@ using Xunit;
 
 namespace Novartment.Base.Smtp.Test
 {
-	public class SmtpCommandTests
+	public sealed class SmtpCommandTests
 	{
 		[Fact]
 		[Trait ("Category", "Net.Smtp")]

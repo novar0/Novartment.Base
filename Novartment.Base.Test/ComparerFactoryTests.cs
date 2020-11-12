@@ -3,7 +3,7 @@ using Xunit;
 
 namespace Novartment.Base.Test
 {
-	public class ComparerFactoryTests
+	public sealed class ComparerFactoryTests
 	{
 		[Fact]
 		[Trait ("Category", "ComparerFactory")]
@@ -75,7 +75,7 @@ namespace Novartment.Base.Test
 		}
 
 		[DebuggerDisplay ("#{Number} Prop1 = {Prop1} Prop2 = {Prop2}")]
-		internal class Mock5
+		internal sealed class Mock5
 		{
 			public int Number { get; set; }
 

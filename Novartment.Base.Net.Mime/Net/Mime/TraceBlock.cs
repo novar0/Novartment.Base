@@ -6,7 +6,7 @@ namespace Novartment.Base.Net.Mime
 	/// <summary>
 	/// Блок трассировки, добавляемый каждым узлом в процессе пересылки сообщения.
 	/// </summary>
-	public class TraceBlock
+	public sealed class TraceBlock
 	{
 		// According to RFC 5322:
 		// trace-block = trace *optional-field / *(resent-date / resent-from / resent-sender / resent-to / resent-cc / resent-bcc / resent-msg-id

@@ -6,7 +6,7 @@ namespace Novartment.Base.UI.Wpf
 	/// Дублирует System.Windows.Data.MultiBinding,
 	/// но устанавливает текущую культуру для конвертеров.
 	/// </summary>
-	public class MultiBinding : System.Windows.Data.MultiBinding
+	public sealed class MultiBinding : System.Windows.Data.MultiBinding
 	{
 		/// <summary>
 		/// <summary>Инициализирует новый экземпляр класса MultiBinding.</summary>

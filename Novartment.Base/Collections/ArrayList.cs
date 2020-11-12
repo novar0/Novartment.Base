@@ -24,7 +24,7 @@ namespace Novartment.Base.Collections
 	/// Does not contain methods with implicit resource costs.
 	/// </remarks>
 	[DebuggerDisplay ("{DebuggerDisplay,nq}")]
-	public class ArrayList<T> :
+	public sealed class ArrayList<T> :
 		IAdjustableList<T>,
 		IReservedCapacityCollection<T>,
 		IArrayDuplicableCollection<T>,

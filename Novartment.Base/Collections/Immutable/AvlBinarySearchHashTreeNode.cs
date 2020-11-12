@@ -55,7 +55,7 @@ namespace Novartment.Base.Collections.Immutable
 		}
 
 		[DebuggerTypeProxy (typeof (AvlBinarySearchHashTreeNode<>.DebugView))]
-		internal class IntermediateNode : AvlBinarySearchHashTreeNode<T>
+		internal sealed class IntermediateNode : AvlBinarySearchHashTreeNode<T>
 		{
 			private readonly AvlBinarySearchHashTreeNode<T> _leftSubtree;
 			private readonly AvlBinarySearchHashTreeNode<T> _rightSubtree;

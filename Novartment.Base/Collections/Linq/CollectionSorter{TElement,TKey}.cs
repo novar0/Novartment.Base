@@ -8,7 +8,7 @@ namespace Novartment.Base.Collections.Linq
 	/// </summary>
 	/// <typeparam name="TElement">The type of the elements.</typeparam>
 	/// <typeparam name="TKey">The type of the sorting key.</typeparam>
-	internal class CollectionSorter<TElement, TKey> : CollectionSorter<TElement>
+	internal sealed class CollectionSorter<TElement, TKey> : CollectionSorter<TElement>
 	{
 		private readonly Func<TElement, TKey> _keySelector;
 		private readonly IComparer<TKey> _comparer;

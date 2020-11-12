@@ -9,7 +9,7 @@ namespace Novartment.Base.Net.Mime
 	/// <summary>
 	/// Тело MIME-сущности, содержащее вложенное интернет-сообщение.
 	/// </summary>
-	public class MessageEntityBody :
+	public sealed class MessageEntityBody :
 		IEntityBody
 	{
 		private MailMessage _nestedMessage = null;

@@ -5,7 +5,7 @@ namespace Novartment.Base.Net.Smtp
 	/// <summary>
 	/// Неверная последовательность команд SMTP.
 	/// </summary>
-	public class BadSequenceOfSmtpCommandsException : InvalidOperationException
+	public sealed class BadSequenceOfSmtpCommandsException : InvalidOperationException
 	{
 		/// <summary>Инициализирует новый экземпляр класса BadSequenceOfSmtpCommandsException.</summary>
 		public BadSequenceOfSmtpCommandsException ()

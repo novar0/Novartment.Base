@@ -13,7 +13,7 @@ namespace Novartment.Base
 	/// Calls the specified callback with the specified parameter when triggered.
 	/// </summary>
 	/// <typeparam name="TState">Type of the state object, passed to the callback.</typeparam>
-	public class AppDomainQueueTimer<TState> :
+	public sealed class AppDomainQueueTimer<TState> :
 		BaseTimer<TState>
 	{
 		private readonly Timer _timer;

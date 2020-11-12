@@ -13,7 +13,7 @@ namespace Novartment.Base.UI.Wpf
 	/// Конвертирует части строки пути к изображению по формату в параметре -> BitmapImage.
 	/// </summary>
 	[ValueConversion (typeof (string), typeof (BitmapImage))]
-	public class MultiValuePathToBitmapImageConverter :
+	public sealed class MultiValuePathToBitmapImageConverter :
 		IMultiValueConverter
 	{
 		/// <summary>Преобразует исходные значения в значение для цели связывания.</summary>

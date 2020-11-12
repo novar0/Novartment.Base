@@ -10,7 +10,7 @@ namespace Novartment.Base.IO
 	/// <remarks>
 	/// Unlike System.IO.FileInfo additionally contains a base and relative path.
 	/// </remarks>
-	public class FileData
+	public sealed class FileData
 	{
 		/// <summary>
 		/// Initializes a new instance of the FileData class

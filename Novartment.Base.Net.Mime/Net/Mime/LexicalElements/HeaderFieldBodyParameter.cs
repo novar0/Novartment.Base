@@ -8,7 +8,7 @@ namespace Novartment.Base.Net.Mime
 	/// <summary>
 	/// The parameter of the header field body of the generic message format defined in RFC 822.
 	/// </summary>
-	public class HeaderFieldBodyParameter :
+	public sealed class HeaderFieldBodyParameter :
 		IValueHolder<string>,
 		IEquatable<HeaderFieldBodyParameter>
 	{

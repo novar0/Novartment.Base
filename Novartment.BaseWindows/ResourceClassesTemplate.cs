@@ -19,7 +19,7 @@ namespace Novartment.Base.UI.Wpf
 	[System.CodeDom.Compiler.GeneratedCodeAttribute ("System.Resources.Tools.StronglyTypedResourceBuilder", "4.0.0.0")]
 	[System.Diagnostics.DebuggerNonUserCodeAttribute ()]
 	[System.Runtime.CompilerServices.CompilerGeneratedAttribute ()]
-	public class Resources
+	public sealed class Resources
 	{
 		private static Lazy<System.Resources.ResourceManager> _resourceMan = new Lazy<System.Resources.ResourceManager> (CreateResourceManager);
 
