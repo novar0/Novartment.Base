@@ -16,7 +16,7 @@ namespace Novartment.Base.Test
 		{
 			// пропуск больше чем записано
 			var channel = new BufferedChannel (new byte[99]);
-			var skipTask = channel.SkipWihoutBufferingAsync (long.MaxValue);
+			var skipTask = channel.SkipWihoutBufferingAsync (long.MaxValue).AsTask ();
 			Assert.False (skipTask.IsCompleted);
 			Memory<byte> buf = new byte[0x4000000];
 			var writeTask = channel.WriteAsync (buf);
@@ -37,7 +37,7 @@ namespace Novartment.Base.Test
 		{
 			// пропуск больше чем 32битное число байтов через крохотный буфер
 			var channel = new BufferedChannel (new byte[9]);
-			var skipTask = channel.SkipWihoutBufferingAsync (0x100000000L);
+			var skipTask = channel.SkipWihoutBufferingAsync (0x100000000L).AsTask ();
 			Assert.False (skipTask.IsCompleted);
 			ValueTask writeTask;
 			var buf = new byte[0x4000000];
@@ -72,7 +72,7 @@ namespace Novartment.Base.Test
 			Assert.Equal (192, channel.BufferMemory.Span[8]);
 			Assert.False (writeTask.IsCompleted);
 			channel.Skip (9);
-			skipTask = channel.SkipWihoutBufferingAsync (7L);
+			skipTask = channel.SkipWihoutBufferingAsync (7L).AsTask ();
 			Assert.True (skipTask.IsCompleted);
 			Assert.Equal (7L, skipTask.Result);
 			Thread.Sleep (50);

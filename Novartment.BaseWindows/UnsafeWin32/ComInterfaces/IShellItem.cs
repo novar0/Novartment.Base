@@ -4,7 +4,6 @@ using System.Runtime.InteropServices;
 
 namespace Novartment.Base.UnsafeWin32
 {
-#pragma warning disable SA1600 // Elements must be documented
 	[Guid ("43826D1E-E718-42EE-BC55-A1E261C37BFE")]
 	[ComImport]
 	[InterfaceType (ComInterfaceType.InterfaceIsIUnknown)]
@@ -39,5 +38,4 @@ namespace Novartment.Base.UnsafeWin32
 			[In] ShellItemComparisonType hint,
 			out int piOrder);
 	}
-#pragma warning restore SA1600 // Elements must be documented
 }

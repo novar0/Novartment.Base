@@ -1,11 +1,9 @@
 ﻿namespace Novartment.Base.UI
 {
-#pragma warning disable CA1815 // Override equals and operator equals on value types
 	/// <summary>
 	/// The data for the start of the drag-and-drop.
 	/// </summary>
 	public readonly struct DragStartData
-#pragma warning restore CA1815 // Override equals and operator equals on value types
 	{
 		/// <summary>
 		///  Initializes a new instance of the DragStartData class

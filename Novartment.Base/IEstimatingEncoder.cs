@@ -39,12 +39,10 @@ namespace Novartment.Base
 		EncodingBalance Encode (ReadOnlySpan<byte> source, Span<byte> destination, int segmentNumber, bool isLastSegment);
 	}
 
-#pragma warning disable CA1815 // Override equals and operator equals on value types
 	/// <summary>
 	/// Баланс операции кодирования в виде количества использованных и произведённых байтов.
 	/// </summary>
 	public readonly struct EncodingBalance
-#pragma warning restore CA1815 // Override equals and operator equals on value types
 	{
 		/// <summary>
 		/// Инициализирует новый экземпляр EncodingBalance с указанным

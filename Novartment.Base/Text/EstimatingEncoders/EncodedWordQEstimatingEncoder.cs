@@ -157,7 +157,7 @@ namespace Novartment.Base.Text
 			var pos = 0;
 			destination[pos++] = (byte)'=';
 			destination[pos++] = (byte)'?';
-			AsciiCharSet.GetBytes (_encoding.WebName.AsSpan (), destination.Slice (pos));
+			AsciiCharSet.GetBytes (_encoding.WebName.AsSpan (), destination[pos..]);
 			pos += _encoding.WebName.Length;
 			destination[pos++] = (byte)'?';
 			destination[pos++] = (byte)'Q';

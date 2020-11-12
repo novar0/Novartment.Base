@@ -283,7 +283,7 @@ namespace Novartment.Base.BinaryStreaming
 				var outputAvailableSize = _buffer.Length - _offset - _count;
 				var cacheAvailableSize = _cacheEndOffset - _cacheStartOffset;
 				size = Math.Min (outputAvailableSize, cacheAvailableSize);
-				_cache.Slice (_cacheStartOffset, size).CopyTo (_buffer.Slice (_offset + _count));
+				_cache.Slice (_cacheStartOffset, size).CopyTo (_buffer[(_offset + _count)..]);
 				_cacheStartOffset += size;
 				if (_cacheStartOffset >= _cacheEndOffset)
 				{
@@ -324,7 +324,7 @@ namespace Novartment.Base.BinaryStreaming
 					var sourceSizeNeeded = sourceBlocksNeeded * _cryptoTransform.InputBlockSize;
 					sizeTransformed = _cryptoTransform.TransformBlock (
 						_source.BufferMemory.Span.Slice (_source.Offset, sourceSizeNeeded),
-						_buffer.Span.Slice (_offset + _count));
+						_buffer.Span[(_offset + _count)..]);
 					_source.Skip (sourceSizeNeeded);
 				}
 				else
@@ -344,7 +344,7 @@ namespace Novartment.Base.BinaryStreaming
 						sizeTransformed = outputAvailableSize;
 					}
 
-					cache.AsSpan (0, sizeTransformed).CopyTo (_buffer.Span.Slice (_offset + _count));
+					cache.AsSpan (0, sizeTransformed).CopyTo (_buffer.Span[(_offset + _count)..]);
 				}
 			}
 			else
@@ -371,7 +371,7 @@ namespace Novartment.Base.BinaryStreaming
 					_isExhausted = true;
 				}
 
-				finalBlock.Slice (0, sizeTransformed).CopyTo (_buffer.Slice (_offset + _count));
+				finalBlock.Slice (0, sizeTransformed).CopyTo (_buffer[(_offset + _count)..]);
 			}
 
 			return sizeTransformed;

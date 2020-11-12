@@ -111,7 +111,7 @@ namespace Novartment.Base.Text
 						var tokenFormat = customTokenFormats[i];
 						if (tokenFormat.StartMarker == octet)
 						{
-							var len = tokenFormat.FindTokenLength (source.Slice (position));
+							var len = tokenFormat.FindTokenLength (source[position..]);
 							var token = new StructuredStringToken (customTokenFormats[i], position, len);
 							position += len;
 							return token;

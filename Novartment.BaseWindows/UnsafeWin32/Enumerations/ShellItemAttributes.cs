@@ -118,19 +118,10 @@ namespace Novartment.Base.UnsafeWin32
 		/// </summary>
 		FileSystem = 0x40000000,
 
-#pragma warning disable SA1139 // Use literal suffix notation instead of casting
-
 		/// <summary>
 		/// The specified folders have subfolders.
 		/// </summary>
 		HasSubFolder = unchecked ((int)0x80000000),
-
-		/// <summary>
-		/// This flag is a mask for the contents attributes.
-		/// </summary>
-		ContentsMask = unchecked ((int)0x80000000),
-
-#pragma warning restore SA1139 // Use literal suffix notation instead of casting
 
 		/// <summary>
 		/// When specified as input, instructs the folder to validate that the items exist.
@@ -165,11 +156,6 @@ namespace Novartment.Base.UnsafeWin32
 		NewContent = 0x00200000,
 
 		/// <summary>
-		/// It is possible to create monikers for the specified file objects or folders.
-		/// </summary>
-		CanMoniker = 0x00400000,
-
-		/// <summary>
 		/// Indicates that the item has a stream associated with it.
 		/// </summary>
 		Stream = 0x00400000,
@@ -184,12 +170,10 @@ namespace Novartment.Base.UnsafeWin32
 		/// </summary>
 		StorageCapabilityMask = 0x70C50008,
 
-#pragma warning disable SA1139 // Use literal suffix notation instead of casting
 		/// <summary>
 		/// Mask used to remove certain values that are considered
 		/// to cause slow calculations or lack context.
 		/// </summary>
 		PkeyMask = unchecked ((int)0x81044000),
-#pragma warning restore SA1139 // Use literal suffix notation instead of casting
 	}
 }

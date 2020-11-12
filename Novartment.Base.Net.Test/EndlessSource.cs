@@ -16,7 +16,7 @@ namespace Novartment.Base.Net.Test
 
 		public int Offset => 0;
 
-		public ValueTask EnsureAvailableAsync (int size, CancellationToken cancellationToken) => new ValueTask (Task.Delay (100));
+		public ValueTask EnsureAvailableAsync (int size, CancellationToken cancellationToken) => new ValueTask (Task.Delay (100, cancellationToken));
 
 		public ValueTask LoadAsync (CancellationToken cancellationToken) => default;
 

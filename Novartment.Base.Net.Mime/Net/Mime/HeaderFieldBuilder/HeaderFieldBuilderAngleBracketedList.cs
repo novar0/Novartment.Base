@@ -60,7 +60,7 @@ namespace Novartment.Base.Net.Mime
 			var url = _urls[_idx];
 			var outPos = 0;
 			buf[outPos++] = (byte)'<';
-			AsciiCharSet.GetBytes (url.AsSpan (), buf.Slice (outPos));
+			AsciiCharSet.GetBytes (url.AsSpan (), buf[outPos..]);
 			outPos += url.Length;
 			buf[outPos++] = (byte)'>';
 			isLast = _idx == (_urls.Count - 1);

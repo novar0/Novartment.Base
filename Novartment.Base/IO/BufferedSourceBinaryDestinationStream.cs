@@ -173,7 +173,7 @@ namespace Novartment.Base.BinaryStreaming
 		public override Task FlushAsync (CancellationToken cancellationToken = default)
 		{
 			return (_destination is BinaryStreamingStreamExtensions.StreamBinaryDestination streamBinaryDestination) ?
-				streamBinaryDestination.BaseStream.FlushAsync () :
+				streamBinaryDestination.BaseStream.FlushAsync (cancellationToken) :
 				Task.CompletedTask;
 		}
 
@@ -395,7 +395,7 @@ namespace Novartment.Base.BinaryStreaming
 					}
 
 					var toCopy = Math.Min (_source.Count, count);
-					_source.BufferMemory.Slice (_source.Offset, toCopy).CopyTo (buffer.Slice (offset));
+					_source.BufferMemory.Slice (_source.Offset, toCopy).CopyTo (buffer[offset..]);
 					offset += toCopy;
 					count -= toCopy;
 					resultSize += toCopy;

@@ -295,7 +295,7 @@ namespace Novartment.Base.Net.Mime.Test
 			Assert.Equal ("This document specifies an Internet standards track protocol for the функции and requests discussion and suggestions.txt", att.FileName);
 			Assert.Equal ("base64", att.RequiredTransferEncoding.GetName ());
 			byte[] hash;
-			var data = ((IDiscreteEntityBody)att.Body).GetDataSource ().ReadAllBytesAsync ().Result;
+			var data = ((IDiscreteEntityBody)att.Body).GetDataSource ().ReadAllBytesAsync ().AsTask ().Result;
 			Assert.Equal (70289, data.Length);
 #pragma warning disable CA5351 // Do not use insecure cryptographic algorithm MD5.
 			using (var prov = MD5.Create ())
@@ -555,7 +555,7 @@ namespace Novartment.Base.Net.Mime.Test
 			Assert.Equal ('-', parts[3][0]);
 			Assert.Equal ('-', parts[3][1]);
 
-			var subElements1 = SplitToElements (parts[1].Substring (2));
+			var subElements1 = SplitToElements (parts[1][2..]);
 			Assert.Equal (3, subElements1.Count);
 			var subHeaders1 = subElements1.Take (2).OrderBy (item => item, StringComparer.OrdinalIgnoreCase).ToArray ();
 			var subBody1 = subElements1[2];
@@ -563,7 +563,7 @@ namespace Novartment.Base.Net.Mime.Test
 			Assert.Equal ("Content-Type: text/plain; charset=utf-8", subHeaders1[1]);
 			Assert.Equal ("\r\n\r\n0YLQtdC60YHRgiDRgdC+0L7QsdGJ0LXQvdC40Y8=\r\n", subBody1);
 
-			var subElements2 = SplitToElements (parts[2].Substring (2));
+			var subElements2 = SplitToElements (parts[2][2..]);
 			Assert.Equal (4, subElements2.Count);
 			var subHeaders2 = subElements2.Take (3).OrderBy (item => item, StringComparer.OrdinalIgnoreCase).ToArray ();
 			var subBody2 = subElements2[3];
@@ -620,7 +620,7 @@ namespace Novartment.Base.Net.Mime.Test
 				pos++;
 			}
 
-			result.Add (source.Substring (pos));
+			result.Add (source[pos..]);
 			return result;
 		}
 
@@ -641,7 +641,7 @@ namespace Novartment.Base.Net.Mime.Test
 				pos = idx + delimiter.Length;
 			}
 			while (true);
-			result.Add (source.Substring (pos));
+			result.Add (source[pos..]);
 			return result;
 		}
 	}

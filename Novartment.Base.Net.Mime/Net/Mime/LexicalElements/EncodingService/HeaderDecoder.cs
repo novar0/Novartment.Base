@@ -413,7 +413,7 @@ namespace Novartment.Base.Net.Mime
 				throw new FormatException ("Value does not conform to format 'type;value'.");
 			}
 
-			var valueStr = DecodeUnstructured (source.Slice (separatorToken.Position + 1), true, outBuf);
+			var valueStr = DecodeUnstructured (source[(separatorToken.Position + 1)..], true, outBuf);
 
 			return new NotificationFieldValue (valueType, valueStr);
 		}
@@ -426,7 +426,7 @@ namespace Novartment.Base.Net.Mime
 			// коменты не распознаются. допускаем что в кодированных словах нет ';'
 			var idx = source.IndexOf (';');
 			var text1 = (idx >= 0) ? DecodeUnstructured (source.Slice (0, idx), true, outBuf) : DecodeUnstructured (source, true, outBuf);
-			var text2 = (idx >= 0) ? DecodeUnstructured (source.Slice (idx + 1), true, outBuf) : null;
+			var text2 = (idx >= 0) ? DecodeUnstructured (source[(idx + 1)..], true, outBuf) : null;
 
 			return new TwoStrings (text1, text2);
 		}
@@ -457,7 +457,7 @@ namespace Novartment.Base.Net.Mime
 #else
 			var str = new string (source.Slice (0, parametersPos - 1));
 #endif
-			var date = InternetDateTime.Parse (source.Slice (parametersPos));
+			var date = InternetDateTime.Parse (source[parametersPos..]);
 
 			return new TextAndTime (str, date);
 		}

@@ -21,7 +21,7 @@ namespace Novartment.Base.Net.Mime.Test
 			var templateBytes = Encoding.UTF8.GetBytes (template1Html);
 			var result = new byte[templateBytes.Length];
 			body.LoadAsync (new MemoryBufferedSource (Encoding.UTF8.GetBytes (template1Html)), null).Wait ();
-			var buf1 = body.GetDataSource ().ReadAllBytesAsync ().Result;
+			var buf1 = body.GetDataSource ().ReadAllBytesAsync ().AsTask ().Result;
 			Assert.Equal (templateBytes.Length, buf1.Length);
 			for (int i = 0; i < templateBytes.Length; i++)
 			{
@@ -32,7 +32,7 @@ namespace Novartment.Base.Net.Mime.Test
 			body = new DataEntityBody (ContentTransferEncoding.QuotedPrintable);
 			body.LoadAsync (new MemoryBufferedSource (Encoding.ASCII.GetBytes (template1QuotedPrintable)), null).Wait ();
 			Array.Clear (result, 0, result.Length);
-			var buf2 = body.GetDataSource ().ReadAllBytesAsync ().Result;
+			var buf2 = body.GetDataSource ().ReadAllBytesAsync ().AsTask ().Result;
 			Assert.Equal (templateBytes.Length, buf2.Length);
 			for (int i = 0; i < templateBytes.Length; i++)
 			{
@@ -43,7 +43,7 @@ namespace Novartment.Base.Net.Mime.Test
 			body = new DataEntityBody (ContentTransferEncoding.Base64);
 			body.LoadAsync (new MemoryBufferedSource (Encoding.ASCII.GetBytes (template1Base64)), null).Wait ();
 			Array.Clear (result, 0, result.Length);
-			var buf3 = body.GetDataSource ().ReadAllBytesAsync ().Result;
+			var buf3 = body.GetDataSource ().ReadAllBytesAsync ().AsTask ().Result;
 			Assert.Equal (templateBytes.Length, buf3.Length);
 			for (int i = 0; i < templateBytes.Length; i++)
 			{
@@ -97,7 +97,7 @@ namespace Novartment.Base.Net.Mime.Test
 			// application/octet-stream в кодировке base64
 			var body = new DataEntityBody (ContentTransferEncoding.Base64);
 			body.SetDataAsync (srcStream).Wait ();
-			var buf = body.GetDataSource ().ReadAllBytesAsync ().Result;
+			var buf = body.GetDataSource ().ReadAllBytesAsync ().AsTask ().Result;
 			Assert.Equal (template.Length, buf.Length);
 			for (int i = 0; i < template.Length; i++)
 			{
@@ -108,7 +108,7 @@ namespace Novartment.Base.Net.Mime.Test
 			body = new DataEntityBody (ContentTransferEncoding.QuotedPrintable);
 			srcStream = new MemoryBufferedSource (template);
 			body.SetDataAsync (srcStream).Wait ();
-			buf = body.GetDataSource ().ReadAllBytesAsync ().Result;
+			buf = body.GetDataSource ().ReadAllBytesAsync ().AsTask ().Result;
 			Assert.Equal (template.Length, buf.Length);
 			for (int i = 0; i < template.Length; i++)
 			{
@@ -119,7 +119,7 @@ namespace Novartment.Base.Net.Mime.Test
 			body = new DataEntityBody (ContentTransferEncoding.Binary);
 			srcStream = new MemoryBufferedSource (template);
 			body.SetDataAsync (srcStream).Wait ();
-			buf = body.GetDataSource ().ReadAllBytesAsync ().Result;
+			buf = body.GetDataSource ().ReadAllBytesAsync ().AsTask ().Result;
 			Assert.Equal (template.Length, buf.Length);
 			for (int i = 0; i < template.Length; i++)
 			{

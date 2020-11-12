@@ -179,9 +179,9 @@ namespace Novartment.Base.UI.Wpf
 				}
 				else
 				{
-					if (InternalChildren.Count > 0)
+					if (this.InternalChildren.Count > 0)
 					{
-						this.ExpandedItem = InternalChildren[0];
+						this.ExpandedItem = this.InternalChildren[0];
 					}
 				}
 			}
@@ -202,7 +202,7 @@ namespace Novartment.Base.UI.Wpf
 			var isVertical = this.Orientation == Orientation.Vertical;
 
 			// даём пределы и меряем все элементы кроме распахнутого в надежде что они не попросят слишком много
-			for (var i = 0; i < InternalChildren.Count; i++)
+			for (var i = 0; i < this.InternalChildren.Count; i++)
 			{
 				if (i == this.ExpandedIndex)
 				{
@@ -344,9 +344,7 @@ namespace Novartment.Base.UI.Wpf
 			accordeon.UpdateChildrenExpandedProperty (idx);
 		}
 
-#pragma warning disable CA1801 // Review unused parameters
 		private static object CoerceIsExpanded (DependencyObject notUsed, object value)
-#pragma warning restore CA1801 // Review unused parameters
 		{
 			// var accordeon = (AccordionPanel)obj;
 			return value;
@@ -389,7 +387,7 @@ namespace Novartment.Base.UI.Wpf
 		private void UIElementCollectionChanged (object sender, NotifyCollectionChangedEventArgs e)
 		{
 			// вызывать только после первичного наполенния коллекции
-			if (IsLoaded)
+			if (this.IsLoaded)
 			{
 				EnsureSomethingSelected ();
 			}

@@ -80,7 +80,7 @@ namespace Novartment.Base
 				Array.Copy (buf, bufStart + bufLen, _cache, 0, _cachedCount);
 
 				var base64chars = Convert.FromBase64CharArray (buf, bufStart, bufLen);
-				base64chars.AsSpan (0, base64chars.Length).CopyTo (outputBuffer.Slice (outputOffset));
+				base64chars.AsSpan (0, base64chars.Length).CopyTo (outputBuffer[outputOffset..]);
 				return base64chars.Length;
 			}
 		}

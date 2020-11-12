@@ -43,28 +43,26 @@ namespace Novartment.Base.Smtp.Test
 
 		public async Task SendBinaryAsync (IBufferedSource source, CancellationToken cancellationToken = default)
 		{
-			using (var strm = new MemoryStream ())
+			using var strm = new MemoryStream ();
+			try
 			{
-				try
+				while (true)
 				{
-					while (true)
+					await source.LoadAsync (cancellationToken).ConfigureAwait (false);
+					if (source.Count <= 0)
 					{
-						await source.LoadAsync ().ConfigureAwait (false);
-						if (source.Count <= 0)
-						{
-							break;
-						}
-
-						strm.Write (source.BufferMemory.Span.Slice (source.Offset, source.Count));
-						source.Skip (source.Count);
+						break;
 					}
+
+					strm.Write (source.BufferMemory.Span.Slice (source.Offset, source.Count));
+					source.Skip (source.Count);
 				}
-				finally
-				{
-					strm.TryGetBuffer (out ArraySegment<byte> buf);
-					var str = Encoding.ASCII.GetString (buf.Array, buf.Offset, (int)strm.Length);
-					this.SendedDataBlocks.Enqueue (str);
-				}
+			}
+			finally
+			{
+				strm.TryGetBuffer (out ArraySegment<byte> buf);
+				var str = Encoding.ASCII.GetString (buf.Array, buf.Offset, (int)strm.Length);
+				this.SendedDataBlocks.Enqueue (str);
 			}
 		}
 

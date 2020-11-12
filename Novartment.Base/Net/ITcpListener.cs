@@ -25,12 +25,10 @@ namespace Novartment.Base.Net
 		/// </summary>
 		void Start ();
 
-#pragma warning disable CA1716 // Identifiers should not match keywords
 		/// <summary>
 		/// Closes the listener.
 		/// </summary>
 		void Stop ();
-#pragma warning restore CA1716 // Identifiers should not match keywords
 
 		/// <summary>
 		/// Accepts a pending connection request as an asynchronous operation.

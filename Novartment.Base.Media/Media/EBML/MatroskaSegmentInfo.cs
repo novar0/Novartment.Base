@@ -108,9 +108,7 @@ namespace Novartment.Base.Media
 		/// суммарная информация о сегменте matroska-файла на основе указанной коллекции EBML-элементов.</returns>
 		public static Task<MatroskaSegmentInfo> ParseAsync (
 			EbmlElementCollectionEnumerator source,
-#pragma warning disable CA1801 // Review unused parameters
 			CancellationToken cancellationToken = default)
-#pragma warning restore CA1801 // Review unused parameters
 		{
 			if (source == null)
 			{

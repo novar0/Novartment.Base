@@ -181,11 +181,7 @@ namespace Novartment.Base.Test
 
 			public bool Equals (MockStr other)
 			{
-				return object.ReferenceEquals (this, other) ?
-					true :
-					other is null ?
-						false :
-						(this.Value == other.Value);
+				return ReferenceEquals (this, other) || (other is not null && (this.Value == other.Value));
 			}
 
 			public override bool Equals (object obj)

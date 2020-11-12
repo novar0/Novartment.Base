@@ -213,9 +213,7 @@ namespace Novartment.Base.Net
 			return Math.Min (1000, Math.Max (1, (int)inverval));
 		}
 
-#pragma warning disable CA1801 // Review unused parameters
 		private void WatchdogTimerCallback (object state)
-#pragma warning restore CA1801 // Review unused parameters
 		{
 			if (_connectionTotalTimeout == Timeout.InfiniteTimeSpan)
 			{

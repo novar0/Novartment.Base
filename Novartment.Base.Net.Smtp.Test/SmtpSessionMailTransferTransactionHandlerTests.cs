@@ -184,7 +184,7 @@ namespace Novartment.Base.Smtp.Test
 			transaction.Dispose ();
 		}
 
-		private SmtpSessionMailTransferTransactionHandler PrepareSessionForDataTransfer (
+		private static SmtpSessionMailTransferTransactionHandler PrepareSessionForDataTransfer (
 			SmtpCommandReplyConnectionSenderReceiverMock sender,
 			HashSet<string> serverSupportedExtensions)
 		{

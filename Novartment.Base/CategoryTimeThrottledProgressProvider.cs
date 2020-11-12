@@ -94,7 +94,7 @@ namespace Novartment.Base
 		/// <param name="value">Значение параметра для уведомления.</param>
 		public void Report (T value)
 		{
-			var category = (!(value is ICategory categorizedData)) ? 0 : categorizedData.Category;
+			var category = (value is not ICategory categorizedData) ? 0 : categorizedData.Category;
 			bool needReport = false;
 			lock (_dictionaryLocker)
 			{

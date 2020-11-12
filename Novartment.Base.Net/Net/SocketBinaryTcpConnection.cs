@@ -43,10 +43,8 @@ namespace Novartment.Base.Net
 		/// <returns>Задача, результатом которой будет установленное TCP-подключение.</returns>
 		public static Task<ITcpConnection> CreateAsync (
 			Uri remoteUri,
-#pragma warning disable CA1801 // Review unused parameters
 			AddressFamily addressFamily,
 			CancellationToken cancellationToken = default)
-#pragma warning restore CA1801 // Review unused parameters
 		{
 			if (remoteUri == null)
 			{
@@ -130,7 +128,11 @@ namespace Novartment.Base.Net
 				ipProps.HostName + "." + ipProps.DomainName;
 			try
 			{
+#if NETSTANDARD2_0
 				var task = socket.ConnectAsync (remoteEndpoint);
+#else
+				var task = socket.ConnectAsync (remoteEndpoint, cancellationToken).AsTask ();
+#endif
 				return CreateAsyncFinalizer (task);
 			}
 			catch (ObjectDisposedException)

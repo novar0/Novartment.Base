@@ -3,7 +3,6 @@ using System.Runtime.InteropServices;
 
 namespace Novartment.Base.UnsafeWin32
 {
-#pragma warning disable SA1600 // Elements must be documented
 	[ComImport]
 	[Guid ("973510DB-7D7F-452B-8975-74A85828D354")]
 	[InterfaceType (ComInterfaceType.InterfaceIsIUnknown)]
@@ -47,5 +46,4 @@ namespace Novartment.Base.UnsafeWin32
 			[In, MarshalAs (UnmanagedType.Interface)] IShellItem psi,
 			out ShellFileDialogEventResponse pResponse);
 	}
-#pragma warning restore SA1600 // Elements must be documented
 }

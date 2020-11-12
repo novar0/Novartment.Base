@@ -270,9 +270,7 @@ namespace Novartment.Base.Net.Mime
 			get
 			{
 				var date = this.OriginationDate.HasValue ?
-#pragma warning disable CA1305 // Specify IFormatProvider
 					this.OriginationDate.Value.LocalDateTime.ToString () :
-#pragma warning restore CA1305 // Specify IFormatProvider
 					string.Empty;
 				return FormattableString.Invariant ($"{date} From: {string.Join (", ", this.From)}, To: {string.Join (", ", this.RecipientTo)}, Subject: {this.Subject}");
 			}
@@ -336,9 +334,7 @@ namespace Novartment.Base.Net.Mime
 			// The "Message-ID:" field provides a unique message identifier that refers to a particular version of a particular message.
 			// The uniqueness of the message identifier is guaranteed by the host that generates it (see below).
 			// This message identifier is intended to be machine readable and not necessarily meaningful to humans.
-#pragma warning disable CA1305 // Specify IFormatProvider
 			this.MessageId = new AddrSpec (Guid.NewGuid ().ToString ("N"), "global");
-#pragma warning restore CA1305 // Specify IFormatProvider
 		}
 
 		/// <summary>

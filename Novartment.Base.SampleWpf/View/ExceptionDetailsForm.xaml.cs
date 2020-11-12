@@ -34,7 +34,7 @@ namespace Novartment.Base.SampleWpf
 		private void InitCore (IDialogViewModel<bool?> viewModel)
 		{
 			this.DataContext = viewModel;
-			ViewModel = viewModel;
+			this.ViewModel = viewModel;
 			InitializeComponent ();
 			System.Drawing.Icon icon = System.Drawing.SystemIcons.Error;
 			InformationalImage.Source = System.Windows.Interop.Imaging.CreateBitmapSourceFromHIcon (icon.Handle, Int32Rect.Empty, System.Windows.Media.Imaging.BitmapSizeOptions.FromEmptyOptions ());

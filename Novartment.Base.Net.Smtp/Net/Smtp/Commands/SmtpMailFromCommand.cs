@@ -78,7 +78,7 @@ namespace Novartment.Base.Net.Smtp
 			associated with a particular MAIL FROM or RCPT TO command, it will return code 555.
 			*/
 
-			value = value.Slice (pos);
+			value = value[pos..];
 			pos = 0;
 
 			var bodyType = ContentTransferEncoding.SevenBit;
@@ -98,7 +98,7 @@ namespace Novartment.Base.Net.Smtp
 				}
 
 				// ограничиваем параметр пробелом перед следующим параметром
-				var posEnd = value.Slice (pos).IndexOf (' ');
+				var posEnd = value[pos..].IndexOf (' ');
 				if (posEnd < 0)
 				{
 					posEnd = value.Length;
@@ -108,7 +108,7 @@ namespace Novartment.Base.Net.Smtp
 					posEnd += pos;
 				}
 
-				var valuePos = value.Slice (pos, posEnd - pos).IndexOf ('=');
+				var valuePos = value[pos..posEnd].IndexOf ('=');
 				if (valuePos < 0)
 				{
 					return new SmtpInvalidSyntaxCommand (SmtpCommandType.MailFrom, "Unrecognized 'MAIL FROM' AUTH parameter.");
@@ -153,7 +153,7 @@ namespace Novartment.Base.Net.Smtp
 				{
 					if ("AUTH".AsSpan ().Equals (parameterName, StringComparison.OrdinalIgnoreCase))
 					{
-						if ((parameterValue.Length < 2) || (parameterValue[0] != '<') || (parameterValue[parameterValue.Length - 1] != '>'))
+						if ((parameterValue.Length < 2) || (parameterValue[0] != '<') || (parameterValue[^1] != '>'))
 						{
 							return new SmtpInvalidSyntaxCommand (SmtpCommandType.MailFrom, "Unrecognized 'MAIL FROM' AUTH parameter.");
 						}
@@ -166,7 +166,7 @@ namespace Novartment.Base.Net.Smtp
 						{
 							try
 							{
-								associatedMailbox = AddrSpec.Parse (parameterValue.Slice (1, parameterValue.Length - 2));
+								associatedMailbox = AddrSpec.Parse (parameterValue[1..^1]);
 							}
 							catch (FormatException)
 							{

@@ -47,29 +47,23 @@ namespace Novartment.Base
 		/// </summary>
 		public abstract void Start ();
 
-#pragma warning disable CA1716 // Identifiers should not match keywords
 		/// <summary>
 		/// Stops the timer.
 		/// </summary>
 		public abstract void Stop ();
-#pragma warning restore CA1716 // Identifiers should not match keywords
 
-#pragma warning disable CA1063 // Implement IDisposable Correctly
 		/// <summary>
 		/// Performs freeing and releasing resources.
 		/// </summary>
 		public abstract void Dispose ();
-#pragma warning restore CA1063 // Implement IDisposable Correctly
 
 #pragma warning disable IDE0060 // Remove unused parameter
-#pragma warning disable CA1801 // Review unused parameters
 		/// <summary>
 		/// Invokes the timer callback.
 		/// Can be used for a TimerCallback type delegate.
 		/// </summary>
 		/// <param name="notUsed">Not used. Required to generate a signature similar to some other timers.</param>
 		protected void DoCallback (object notUsed)
-#pragma warning restore CA1801 // Review unused parameters
 #pragma warning restore IDE0060 // Remove unused parameter
 		{
 			_callback.Invoke (_state);

@@ -97,7 +97,7 @@ namespace Novartment.Base.Net.Mime
 			{
 				buf[pos++] = (byte)'<';
 				var addrStr = _mailboxAddr.ToString ();
-				AsciiCharSet.GetBytes (addrStr.AsSpan (), buf.Slice (pos));
+				AsciiCharSet.GetBytes (addrStr.AsSpan (), buf[pos..]);
 				pos += addrStr.Length;
 				buf[pos++] = (byte)'>';
 				isLast = _idx == (_mailboxes.Count - 1);

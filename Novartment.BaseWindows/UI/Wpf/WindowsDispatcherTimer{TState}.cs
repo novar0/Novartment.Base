@@ -75,6 +75,7 @@ namespace Novartment.Base.UI.Wpf
 		{
 			_timer.Stop ();
 			_timer.Tick -= base.DoCallback;
+			GC.SuppressFinalize (this);
 		}
 	}
 }

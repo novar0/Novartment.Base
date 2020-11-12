@@ -104,9 +104,7 @@ namespace Novartment.Base.Collections
 			{
 				if (key == null)
 				{
-#pragma warning disable CA1065 // Do not raise exceptions in unexpected locations
 					throw new ArgumentNullException (nameof (key));
-#pragma warning restore CA1065 // Do not raise exceptions in unexpected locations
 				}
 
 				Contract.EndContractBlock ();
@@ -422,12 +420,10 @@ namespace Novartment.Base.Collections
 				return false;
 			}
 
-#pragma warning disable CA1063 // Implement IDisposable Correctly
 			/// <summary>
 			/// Does nothing.
 			/// </summary>
 			public void Dispose ()
-#pragma warning restore CA1063 // Implement IDisposable Correctly
 			{
 			}
 		}
@@ -469,12 +465,10 @@ namespace Novartment.Base.Collections
 				}
 			}
 
-#pragma warning disable CA1063 // Implement IDisposable Correctly
 			/// <summary>
 			/// Does nothing.
 			/// </summary>
 			public void Dispose ()
-#pragma warning restore CA1063 // Implement IDisposable Correctly
 			{
 			}
 
@@ -546,12 +540,10 @@ namespace Novartment.Base.Collections
 				}
 			}
 
-#pragma warning disable CA1063 // Implement IDisposable Correctly
 			/// <summary>
 			/// Does nothing.
 			/// </summary>
 			public void Dispose ()
-#pragma warning restore CA1063 // Implement IDisposable Correctly
 			{
 			}
 

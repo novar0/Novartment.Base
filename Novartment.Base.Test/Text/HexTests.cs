@@ -59,7 +59,7 @@ namespace Novartment.Base.Test
 			buf[3] = 'y';
 			buf[4] = 'z';
 
-			Assert.Equal (0, Hex.ToHexStringUpper (new byte[] { }, buf));
+			Assert.Equal (0, Hex.ToHexStringUpper (Array.Empty<byte> (), buf));
 			Assert.Equal ('v', buf[0]);
 
 			Assert.Equal (2, Hex.ToHexStringUpper (new byte[] { 0 }, buf));

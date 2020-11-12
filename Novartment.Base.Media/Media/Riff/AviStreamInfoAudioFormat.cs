@@ -118,12 +118,12 @@ namespace Novartment.Base.Media
 				*/
 
 				var sourceBuf = source.BufferMemory;
-				var formatTag = BinaryPrimitives.ReadUInt16LittleEndian (sourceBuf.Span.Slice (source.Offset));
-				var channels = BinaryPrimitives.ReadUInt16LittleEndian (sourceBuf.Span.Slice (source.Offset + 2));
-				var samplesPerSec = BinaryPrimitives.ReadUInt32LittleEndian (sourceBuf.Span.Slice (source.Offset + 4));
-				var averageBytesPerSecond = BinaryPrimitives.ReadUInt32LittleEndian (sourceBuf.Span.Slice (source.Offset + 8));
-				var blockAlign = BinaryPrimitives.ReadUInt16LittleEndian (sourceBuf.Span.Slice (source.Offset + 12));
-				var bitsPerSample = BinaryPrimitives.ReadUInt16LittleEndian (sourceBuf.Span.Slice (source.Offset + 14));
+				var formatTag = BinaryPrimitives.ReadUInt16LittleEndian (sourceBuf.Span[source.Offset..]);
+				var channels = BinaryPrimitives.ReadUInt16LittleEndian (sourceBuf.Span[(source.Offset + 2)..]);
+				var samplesPerSec = BinaryPrimitives.ReadUInt32LittleEndian (sourceBuf.Span[(source.Offset + 4)..]);
+				var averageBytesPerSecond = BinaryPrimitives.ReadUInt32LittleEndian (sourceBuf.Span[(source.Offset + 8)..]);
+				var blockAlign = BinaryPrimitives.ReadUInt16LittleEndian (sourceBuf.Span[(source.Offset + 12)..]);
+				var bitsPerSample = BinaryPrimitives.ReadUInt16LittleEndian (sourceBuf.Span[(source.Offset + 14)..]);
 
 				return new AviStreamInfoAudioFormat (
 					formatTag,

@@ -129,9 +129,7 @@ namespace Novartment.Base.Collections
 			{
 				if (index < 0)
 				{
-#pragma warning disable CA1065 // Do not raise exceptions in unexpected locations
 					throw new ArgumentOutOfRangeException (nameof (index));
-#pragma warning restore CA1065 // Do not raise exceptions in unexpected locations
 				}
 
 				Contract.EndContractBlock ();
@@ -849,7 +847,7 @@ namespace Novartment.Base.Collections
 				return true;
 			}
 
-			if (!(other is ConcurrentList<T> list))
+			if (other is not ConcurrentList<T> list)
 			{
 				return false;
 			}
@@ -917,9 +915,7 @@ namespace Novartment.Base.Collections
 			return arraySegment;
 		}
 
-#pragma warning disable CA1812 // Avoid uninstantiated internal classes
 		internal sealed class DebugView
-#pragma warning restore CA1812 // Avoid uninstantiated internal classes
 		{
 			private readonly ConcurrentList<T> _list;
 

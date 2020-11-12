@@ -20,9 +20,7 @@ namespace Novartment.Base.Media
 		/// <returns>Коллекция сегментов matroska-файла, представленном указанным источником данных.</returns>
 		public static Task<MatroskaSegmentInfo> ParseSegmentInformationAsync (
 			IBufferedSource source,
-#pragma warning disable CA1801 // Review unused parameters
 			CancellationToken cancellationToken = default)
-#pragma warning restore CA1801 // Review unused parameters
 		{
 			if (source == null)
 			{

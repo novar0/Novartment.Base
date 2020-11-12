@@ -11,9 +11,6 @@ namespace Novartment.Base
 	/// </remarks>
 	public static class DelegateExtensions
 	{
-#pragma warning disable SA1618 // Generic type parameters must be documented
-#pragma warning disable SA1615 // Element return value must be documented
-#pragma warning disable SA1611 // Element parameters must be documented
 		/// <summary>
 		/// Меняет тип параметра указанного делегата на базовый, от которого он наследован.
 		/// Создает Action&lt;TBase&gt; из Action&lt;TInherited&gt;,
@@ -112,9 +109,7 @@ namespace Novartment.Base
 		public static void AddParameter<T> (
 			this Action action,
 #pragma warning disable IDE0060 // Remove unused parameter
-#pragma warning disable CA1801 // Remove unused parameter
 			T parameter)
-#pragma warning restore CA1801 // Remove unused parameter
 #pragma warning restore IDE0060 // Remove unused parameter
 		{
 			action.Invoke ();
@@ -128,15 +123,10 @@ namespace Novartment.Base
 		public static TResult AddParameter<T, TResult> (
 			this Func<TResult> function,
 #pragma warning disable IDE0060 // Remove unused parameter
-#pragma warning disable CA1801 // Remove unused parameter
 			T parameter)
-#pragma warning restore CA1801 // Remove unused parameter
 #pragma warning restore IDE0060 // Remove unused parameter
 		{
 			return function.Invoke ();
 		}
-#pragma warning restore SA1611 // Element parameters must be documented
-#pragma warning restore SA1615 // Element return value must be documented
-#pragma warning restore SA1618 // Generic type parameters must be documented
 	}
 }

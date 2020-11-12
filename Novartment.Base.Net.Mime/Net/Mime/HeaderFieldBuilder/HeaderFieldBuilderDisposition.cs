@@ -102,7 +102,7 @@ namespace Novartment.Base.Net.Mime
 				AsciiCharSet.GetBytes (_actionMode.AsSpan (), buf);
 				var outPos2 = _actionMode.Length;
 				buf[outPos2++] = (byte)'/';
-				AsciiCharSet.GetBytes (_sendingMode.AsSpan (), buf.Slice (outPos2));
+				AsciiCharSet.GetBytes (_sendingMode.AsSpan (), buf[outPos2..]);
 				outPos2 += _sendingMode.Length;
 				buf[outPos2++] = (byte)';';
 				_transitionedToType = true;
@@ -124,7 +124,7 @@ namespace Novartment.Base.Net.Mime
 						throw new FormatException (FormattableString.Invariant ($"Invalid value for type 'atom': \"{modifier}\"."));
 					}
 
-					AsciiCharSet.GetBytes (modifier.AsSpan (), buf.Slice (outPos));
+					AsciiCharSet.GetBytes (modifier.AsSpan (), buf[outPos..]);
 					outPos += modifier.Length;
 					if (idx != (_modifiers.Count - 1))
 					{

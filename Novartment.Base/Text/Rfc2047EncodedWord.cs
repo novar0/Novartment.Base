@@ -103,7 +103,7 @@ namespace Novartment.Base.Text
 				throw new FormatException ("Specified 'encoded-word' value does not contain required start chars '=?'.");
 			}
 
-			source = source.Slice (2);
+			source = source[2..];
 
 			// пропускаем все символы класса RFC 2047 'token'
 			var charsetAndLangStrLength = 0;
@@ -148,27 +148,18 @@ namespace Novartment.Base.Text
 			}
 
 			var textEncodingChar = source[charsetAndLangStrLength + 1];
-			bool binaryEncoding;
-			switch (textEncodingChar)
+			var binaryEncoding = textEncodingChar switch
 			{
-				case 'q':
-				case 'Q':
-					binaryEncoding = false;
-					break;
-				case 'b':
-				case 'B':
-					binaryEncoding = true;
-					break;
-				default:
-					throw new FormatException ("Unsupported value of 'textEncoding' in 'encoded-word' value. Expected 'Q' or 'B'.");
-			}
-
+				'q' or 'Q' => false,
+				'b' or 'B' => true,
+				_ => throw new FormatException ("Unsupported value of 'textEncoding' in 'encoded-word' value. Expected 'Q' or 'B'."),
+			};
 			if (source[charsetAndLangStrLength + 2] != '?')
 			{
 				throw new FormatException ("Char '?' not found after 'textEncoding' in 'encoded-word' value.");
 			}
 
-			if ((source[source.Length - 2] != '?') || (source[source.Length - 1] != '='))
+			if ((source[^2] != '?') || (source[^1] != '='))
 			{
 				throw new FormatException ("Ending '?=' chars not found in 'encoded-word' value.");
 			}

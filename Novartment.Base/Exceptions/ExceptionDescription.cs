@@ -12,6 +12,7 @@ namespace Novartment.Base
 	[DataContract]
 	public class ExceptionDescription
 	{
+#pragma warning disable IDE0044 // Add readonly modifier
 		[DataMember (Name = "Name")]
 		private string _name;
 		[DataMember (Name = "Message")]
@@ -22,6 +23,7 @@ namespace Novartment.Base
 		private string _trace;
 		[DataMember (Name = "InnerExceptions")]
 		private ICollection<ExceptionDescription> _innerExceptions;
+#pragma warning restore IDE0044 // Add readonly modifier
 
 		/// <summary>
 		/// Initializes a new instance of the ExceptionDescription class with all specified properies.
@@ -121,7 +123,7 @@ namespace Novartment.Base
 			{
 				var idxOfLastDot = _name.LastIndexOf ('.');
 				var shortName = ((idxOfLastDot >= 0) && (idxOfLastDot < (_name.Length - 1))) ?
-					_name.Substring (idxOfLastDot + 1) :
+					_name[(idxOfLastDot + 1)..] :
 					_name;
 				var sb = new StringBuilder (FormattableString.Invariant ($"{shortName}: {_message} ({_details})"));
 				for (var idx = 0; idx < sb.Length; idx++)

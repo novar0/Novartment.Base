@@ -6,9 +6,7 @@ namespace Novartment.Base.Text
 	/// Classes that an ASCII character belongs to, such as a number, an alphabet letter, or a token.
 	/// </summary>
 	[Flags]
-#pragma warning disable CA1028 // Enum Storage should be Int32
 	public enum AsciiCharClasses : short
-#pragma warning restore CA1028 // Enum Storage should be Int32
 	{
 		/// <summary>
 		/// None.

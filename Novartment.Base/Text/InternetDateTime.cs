@@ -79,7 +79,7 @@ namespace Novartment.Base.Text
 			}
 
 			// Skip optional [ day-of-week "," ]
-			if (token[token.Length - 1] == ',')
+			if (token[^1] == ',')
 			{
 				SkipWhiteSpace (source, ref pos);
 				token = ReadNonWhiteSpace (source, ref pos);
@@ -170,7 +170,7 @@ namespace Novartment.Base.Text
 #if NETSTANDARD2_0
 				var isValidSecond = int.TryParse (new string (token.ToArray (), 6, token.Length - 6), out second);
 #else
-				var isValidSecond = int.TryParse (token.Slice (6), out second);
+				var isValidSecond = int.TryParse (token[6..], out second);
 #endif
 				if (!isValidSecond)
 				{
@@ -360,7 +360,7 @@ namespace Novartment.Base.Text
 				pos++;
 			}
 
-			return source.Slice (startPos, pos - startPos);
+			return source[startPos..pos];
 		}
 
 		private static int GetMonth (ReadOnlySpan<char> monthSpan)

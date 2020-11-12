@@ -241,11 +241,9 @@ namespace Novartment.Base.Net.Mime
 		public Task LoadAsync (
 			IBufferedSource source,
 			Func<EssentialContentProperties, IEntityBody> bodyFactory,
-#pragma warning disable CA1801 // Review unused parameters
 			ContentMediaType defaultMediaType,
 			string defaultMediaSubtype,
 			CancellationToken cancellationToken = default)
-#pragma warning restore CA1801 // Review unused parameters
 		{
 			if (source == null)
 			{
@@ -610,9 +608,9 @@ namespace Novartment.Base.Net.Mime
 				}
 
 #if NETSTANDARD2_0
-				_subtype = new string (data.Text.Slice (idx + 1).ToArray ());
+				_subtype = new string (data.Text[(idx + 1)..].ToArray ());
 #else
-				_subtype = new string (data.Text.Slice (idx + 1));
+				_subtype = new string (data.Text[(idx + 1)..]);
 #endif
 				contentProperties.Parameters.AddRange (data.Parameters);
 				foreach (var parameter in data.Parameters)

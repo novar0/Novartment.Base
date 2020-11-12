@@ -153,9 +153,7 @@ namespace Novartment.Base.Collections
 				// Following trick can reduce the range check by one
 				if ((uint)index >= (uint)this.Count)
 				{
-#pragma warning disable CA1065 // Do not raise exceptions in unexpected locations
 					throw new ArgumentOutOfRangeException (nameof (index));
-#pragma warning restore CA1065 // Do not raise exceptions in unexpected locations
 				}
 
 				Contract.EndContractBlock ();
@@ -891,7 +889,7 @@ namespace Novartment.Base.Collections
 			var isOtherEqualsThis = ReferenceEquals (this, other);
 			if (!isOtherEqualsThis)
 			{
-				if (!(other is ArrayList<T> list))
+				if (other is not ArrayList<T> list)
 				{
 					return false;
 				}

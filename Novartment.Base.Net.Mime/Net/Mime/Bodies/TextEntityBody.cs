@@ -50,7 +50,7 @@ namespace Novartment.Base.Net.Mime
 				var isExtendedCharset = charset.StartsWith ("x-", StringComparison.OrdinalIgnoreCase);
 				if (isExtendedCharset)
 				{
-					charset = charset.Substring (2);
+					charset = charset[2..];
 				}
 
 				// Cp1252 is not IANA registered, some mail clients send it, it equal to windows-1252.
@@ -85,7 +85,7 @@ namespace Novartment.Base.Net.Mime
 		public string GetText ()
 		{
 			var dataSrc = GetDataSource ();
-			return BufferedSourceExtensions.ReadAllTextAsync (dataSrc, this.Encoding, default).Result;
+			return BufferedSourceExtensions.ReadAllTextAsync (dataSrc, this.Encoding, default).AsTask ().Result;
 		}
 
 		/// <summary>

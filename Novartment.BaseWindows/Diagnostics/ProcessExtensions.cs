@@ -168,12 +168,10 @@ namespace Novartment.Base
 				process.Exited += ProcessExited;
 			}
 
-#pragma warning disable CA1063 // Implement IDisposable Correctly
 			/// <summary>
 			/// Освобождает занятые объектом ресурсы.
 			/// </summary>
 			public void Dispose ()
-#pragma warning restore CA1063 // Implement IDisposable Correctly
 			{
 				_mutexQueryTimer.Dispose ();
 				_cTokenReg.Dispose ();
@@ -222,9 +220,7 @@ namespace Novartment.Base
 				}
 			}
 
-#pragma warning disable CA1801 // Review unused parameters
 			private void TimerTick (bool notUsed)
-#pragma warning restore CA1801 // Review unused parameters
 			{
 				if (this.Task.IsCompleted)
 				{

@@ -10,8 +10,6 @@ namespace Novartment.Base.Text
 	{
 		private static readonly ReadOnlyMemory<int> Chars = new int[]
 		{
-#pragma warning disable SA1001 // Commas must be spaced correctly
-#pragma warning disable SA1021 // Negative signs must be spaced correctly
 			-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,
 			0,1,2,3,4,5,6,7,8,9,
 			-1,-1,-1,-1,-1,-1,-1,
@@ -19,8 +17,6 @@ namespace Novartment.Base.Text
 			-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,
 			10,11,12,13,14,15,
 		};
-#pragma warning restore SA1021 // Negative signs must be spaced correctly
-#pragma warning restore SA1001 // Commas must be spaced correctly
 
 		/// <summary>
 		/// A table of hexadecimal string representations of 8-bit numbers.

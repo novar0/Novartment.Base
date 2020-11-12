@@ -93,7 +93,7 @@ namespace Novartment.Base.Media
 
 				var id = AsciiCharSet.GetString (source.BufferMemory.Span.Slice (source.Offset, 4));
 
-				var size = (long)BinaryPrimitives.ReadUInt32LittleEndian (source.BufferMemory.Span.Slice (source.Offset + 4));
+				var size = (long)BinaryPrimitives.ReadUInt32LittleEndian (source.BufferMemory.Span[(source.Offset + 4)..]);
 				source.Skip (8);
 
 				var data = new SizeLimitedBufferedSource (source, size);

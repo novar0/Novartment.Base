@@ -2,12 +2,10 @@
 
 namespace Novartment.Base.Data.SqlWrapper
 {
-#pragma warning disable CA1815 // Override equals and operator equals on value types
 	/// <summary>
 	/// Значение и его тип для обмена с БД.
 	/// </summary>
 	public readonly struct DbValue
-#pragma warning restore CA1815 // Override equals and operator equals on value types
 	{
 		/// <summary>
 		/// Инициализирует новый экземпляр класса DbValue с указанным значением и типом.

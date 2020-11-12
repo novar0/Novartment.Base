@@ -603,7 +603,7 @@ namespace Novartment.Base.Smtp.Test
 			var mailBodyChunk2 = "Tell me please how you feel about last meeting.";
 			Memory<byte> bytes = Encoding.ASCII.GetBytes (mailBodyChunk1 + mailBodyChunk2);
 			var src1 = new MemoryBufferedSource (bytes.Slice (0, mailBodyChunk1.Length));
-			var src2 = new MemoryBufferedSource (bytes.Slice (mailBodyChunk1.Length));
+			var src2 = new MemoryBufferedSource (bytes[mailBodyChunk1.Length..]);
 
 			var cmd = new SmtpBdatCommand (mailBodyChunk1.Length, false);
 			cmd.SetSource (src1);
@@ -912,7 +912,7 @@ namespace Novartment.Base.Smtp.Test
 			session.Dispose ();
 		}
 
-		private SmtDataTransferTransactionMock SetUpTransaction (
+		private static SmtDataTransferTransactionMock SetUpTransaction (
 			SmtpDeliveryProtocolSession session,
 			SmtpCommandReplyConnectionSenderReceiverMock sender)
 		{

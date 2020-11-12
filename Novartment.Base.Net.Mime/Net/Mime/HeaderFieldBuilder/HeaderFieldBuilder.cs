@@ -95,7 +95,7 @@ namespace Novartment.Base.Net.Mime
 			bool isLast;
 			do
 			{
-				var bufSlice = destination.Slice (outPos);
+				var bufSlice = destination[outPos..];
 
 				// тут наследованные классы вернут все содержащиеся в них части
 				var partSize = EncodeNextPart (bufSlice, out isLast);
@@ -136,8 +136,8 @@ namespace Novartment.Base.Net.Mime
 				}
 
 				outPos += (isOneLine) ?
-					EncodeRegularParameter  (parameter, isToken, isLastParameter, destination.Slice (outPos), ref lineLen) :
-					EncodeExtendedParameter (parameter,          isLastParameter, destination.Slice (outPos), ref lineLen);
+					EncodeRegularParameter (parameter, isToken, isLastParameter, destination[outPos..], ref lineLen) :
+					EncodeExtendedParameter (parameter,         isLastParameter, destination[outPos..], ref lineLen);
 			}
 
 			destination[outPos++] = (byte)'\r';
@@ -214,7 +214,7 @@ namespace Novartment.Base.Net.Mime
 		protected abstract int EncodeNextPart (Span<byte> buf, out bool isLast);
 
 		// кодируем простое одностроковое значение (в кавычках если не токен)
-		private int EncodeRegularParameter (HeaderFieldBodyParameter parameter, bool isToken, bool isLastParameter, Span<byte> destination, ref int lineLen)
+		private static int EncodeRegularParameter (HeaderFieldBodyParameter parameter, bool isToken, bool isLastParameter, Span<byte> destination, ref int lineLen)
 		{
 			AsciiCharSet.GetBytes (parameter.Name.AsSpan (), destination);
 			var outOffset = parameter.Name.Length;
@@ -224,7 +224,7 @@ namespace Novartment.Base.Net.Mime
 				destination[outOffset++] = (byte)'"';
 			}
 
-			AsciiCharSet.GetBytes (parameter.Value.AsSpan (), destination.Slice (outOffset));
+			AsciiCharSet.GetBytes (parameter.Value.AsSpan (), destination[outOffset..]);
 			outOffset += parameter.Value.Length;
 			if (!isToken)
 			{
@@ -241,7 +241,7 @@ namespace Novartment.Base.Net.Mime
 		}
 
 		// кодируем сложное (требующее кодирования или многостроковое) значение согласно RFC 2231
-		private int EncodeExtendedParameter (HeaderFieldBodyParameter parameter, bool isLastParameter, Span<byte> destination, ref int lineLen)
+		private static int EncodeExtendedParameter (HeaderFieldBodyParameter parameter, bool isLastParameter, Span<byte> destination, ref int lineLen)
 		{
 			/*
 			RFC 2231 часть 4.1:
@@ -264,11 +264,11 @@ namespace Novartment.Base.Net.Mime
 			outOffset += parameter.Name.Length;
 			destination[outOffset++] = (byte)'*';
 			var idxStr = segmentIdx.ToString (CultureInfo.InvariantCulture);
-			AsciiCharSet.GetBytes (idxStr.AsSpan (), destination.Slice (outOffset));
+			AsciiCharSet.GetBytes (idxStr.AsSpan (), destination[outOffset..]);
 			outOffset += idxStr.Length;
 			destination[outOffset++] = (byte)'*';
 			destination[outOffset++] = (byte)'=';
-			AsciiCharSet.GetBytes (encodingName.AsSpan (), destination.Slice (outOffset));
+			AsciiCharSet.GetBytes (encodingName.AsSpan (), destination[outOffset..]);
 			outOffset += encodingName.Length;
 			destination[outOffset++] = (byte)'\'';
 			destination[outOffset++] = (byte)'\'';
@@ -295,13 +295,13 @@ namespace Novartment.Base.Net.Mime
 						var foldedPartSize = FoldPartByLength (destination, runeStartOffset, ref lineLen);
 						outPos += foldedPartSize;
 						segmentIdx++;
-						destination = destination.Slice (foldedPartSize);
+						destination = destination[foldedPartSize..];
 						outOffset = 0;
-						AsciiCharSet.GetBytes (parameter.Name.AsSpan (), destination.Slice (outOffset));
+						AsciiCharSet.GetBytes (parameter.Name.AsSpan (), destination[outOffset..]);
 						outOffset += parameter.Name.Length;
 						destination[outOffset++] = (byte)'*';
 						idxStr = segmentIdx.ToString (CultureInfo.InvariantCulture);
-						AsciiCharSet.GetBytes (idxStr.AsSpan (), destination.Slice (outOffset));
+						AsciiCharSet.GetBytes (idxStr.AsSpan (), destination[outOffset..]);
 						outOffset += idxStr.Length;
 						destination[outOffset++] = (byte)'*';
 						destination[outOffset++] = (byte)'=';
@@ -344,7 +344,7 @@ namespace Novartment.Base.Net.Mime
 			var needWhiteSpace = (part[0] != (byte)' ') && (part[0] != (byte)'\t');
 			if (needWhiteSpace)
 			{
-				part.Slice (0, partLength).CopyTo (part.Slice (1));
+				part.Slice (0, partLength).CopyTo (part[1..]);
 				part[0] = (byte)' ';
 				partLength++;
 			}
@@ -354,7 +354,7 @@ namespace Novartment.Base.Net.Mime
 			{
 				// если накопленная строка с добавлением новой части превысит maxLineLength, то перед новой частью добавляем перевод строки
 				lineLen = partLength + 1; // плюс пробел
-				part.Slice (0, partLength).CopyTo (part.Slice (2));
+				part.Slice (0, partLength).CopyTo (part[2..]);
 				part[0] = (byte)'\r';
 				part[1] = (byte)'\n';
 				partLength += 2;

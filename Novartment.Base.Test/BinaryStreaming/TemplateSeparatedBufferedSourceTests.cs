@@ -26,7 +26,7 @@ namespace Novartment.Base.Test
 
 			// части в середине источника
 			var subSrc = new BigBufferedSourceMock (long.MaxValue, srcBufSize, FillFunction);
-			subSrc.SkipWihoutBufferingAsync (skipBeforeLimitingSize);
+			subSrc.SkipWihoutBufferingAsync (skipBeforeLimitingSize).AsTask ().Wait ();
 			var src = new TemplateSeparatedBufferedSource (subSrc, separator, false);
 			var vTask = src.EnsureAvailableAsync (skipBufferSize + 3);
 			Assert.True (vTask.IsCompletedSuccessfully);
@@ -37,7 +37,7 @@ namespace Novartment.Base.Test
 			Assert.Equal (FillFunction (skipBeforeLimitingSize + skipBufferSize), src.BufferMemory.Span[src.Offset]);
 			Assert.Equal (FillFunction (skipBeforeLimitingSize + skipBufferSize + 1), src.BufferMemory.Span[src.Offset + 1]);
 			Assert.Equal (FillFunction (skipBeforeLimitingSize + skipBufferSize + 2), src.BufferMemory.Span[src.Offset + 2]);
-			Assert.True (src.TrySkipPartAsync ().Result);
+			Assert.True (src.TrySkipPartAsync ().AsTask ().Result);
 			vTask = src.EnsureAvailableAsync (3);
 			Assert.True (vTask.IsCompletedSuccessfully);
 			Assert.Equal (FillFunction (secondPartPos), src.BufferMemory.Span[src.Offset]);
@@ -48,11 +48,11 @@ namespace Novartment.Base.Test
 			// части в конце источника
 			long size = 4611686018427387904L;
 			subSrc = new BigBufferedSourceMock (size, srcBufSize, FillFunction);
-			subSrc.SkipWihoutBufferingAsync (size - 256 - 256 - 20); // отступаем так чтобы осталось две части с хвостиком
+			subSrc.SkipWihoutBufferingAsync (size - 256 - 256 - 20).AsTask ().Wait (); // отступаем так чтобы осталось две части с хвостиком
 			src = new TemplateSeparatedBufferedSource (subSrc, separator, false);
-			Assert.True (src.TrySkipPartAsync ().Result);
-			Assert.True (src.TrySkipPartAsync ().Result);
-			Assert.False (src.TrySkipPartAsync ().Result);
+			Assert.True (src.TrySkipPartAsync ().AsTask ().Result);
+			Assert.True (src.TrySkipPartAsync ().AsTask ().Result);
+			Assert.False (src.TrySkipPartAsync ().AsTask ().Result);
 
 			// разделитель в конце источника
 			separator = new byte[]
@@ -63,10 +63,10 @@ namespace Novartment.Base.Test
 			};
 			subSrc = new BigBufferedSourceMock (768, srcBufSize, FillFunction);
 			src = new TemplateSeparatedBufferedSource (subSrc, separator, false);
-			Assert.True (src.TrySkipPartAsync ().Result);
-			Assert.True (src.TrySkipPartAsync ().Result);
-			Assert.True (src.TrySkipPartAsync ().Result);
-			Assert.False (src.TrySkipPartAsync ().Result);
+			Assert.True (src.TrySkipPartAsync ().AsTask ().Result);
+			Assert.True (src.TrySkipPartAsync ().AsTask ().Result);
+			Assert.True (src.TrySkipPartAsync ().AsTask ().Result);
+			Assert.False (src.TrySkipPartAsync ().AsTask ().Result);
 		}
 
 		private static void SkipToEnd (IBufferedSource source, int size)

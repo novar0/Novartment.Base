@@ -59,9 +59,7 @@ namespace Novartment.Base.Net.Smtp
 
 		internal IMailTransferTransactionHandler CurrentTransaction => _currentTransaction;
 
-#pragma warning disable CA1063 // Implement IDisposable Correctly
 		public void Dispose ()
-#pragma warning restore CA1063 // Implement IDisposable Correctly
 		{
 			Interlocked.Exchange (ref _currentTransaction, null)?.Dispose ();
 			var oldValue = Interlocked.Exchange (ref _completed, 1);
@@ -73,7 +71,7 @@ namespace Novartment.Base.Net.Smtp
 				// посылка прощального ответа необязательна, поэтому игнорируем исключения если связи уже нет
 				try
 				{
-					_transport.SendReplyAsync (SmtpReply.ServiceNotAvailable, false, default).GetAwaiter ().GetResult ();
+					_transport.SendReplyAsync (SmtpReply.ServiceNotAvailable, false, default).AsTask ().GetAwaiter ().GetResult ();
 				}
 				catch (IOException)
 				{
@@ -195,15 +193,15 @@ namespace Novartment.Base.Net.Smtp
 				return Task.FromResult (SmtpReply.LineTooLong.DisallowGrouping ());
 			}
 
-			if (command is SmtpInvalidSyntaxCommand)
+			if (command is SmtpInvalidSyntaxCommand command1)
 			{
-				_logger?.LogWarning ("Invalid syntax in command. " + ((SmtpInvalidSyntaxCommand)command).Message);
+				_logger?.LogWarning ("Invalid syntax in command. " + command1.Message);
 				if (command.CommandType == SmtpCommandType.Bdat)
 				{
 					ResetTransaction ();
 
 					// клиент будет слать данные не дожидаясь ответа об ошибке, а мы не знаем сколько будет этих данных
-					throw new UnrecoverableProtocolException (((SmtpInvalidSyntaxCommand)command).Message);
+					throw new UnrecoverableProtocolException (command1.Message);
 				}
 
 				return Task.FromResult (SmtpReply.SyntaxErrorInParameter.DisallowGrouping ());
@@ -239,22 +237,20 @@ namespace Novartment.Base.Net.Smtp
 			return SmtpReply.OK.AllowGrouping ();
 		}
 
-#pragma warning disable CA1822 // Mark members as static
-		private SmtpReplyWithGroupingMark ProcessCommandVrfy ()
+		private static SmtpReplyWithGroupingMark ProcessCommandVrfy ()
 		{
 			return SmtpReply.CannotVerifyUser.DisallowGrouping ();
 		}
 
-		private SmtpReplyWithGroupingMark ProcessCommandNoop ()
+		private static SmtpReplyWithGroupingMark ProcessCommandNoop ()
 		{
 			return SmtpReply.OK.DisallowGrouping ();
 		}
 
-		private SmtpReplyWithGroupingMark ProcessCommandQuit ()
+		private static SmtpReplyWithGroupingMark ProcessCommandQuit ()
 		{
 			return SmtpReply.Disconnect.DisallowGrouping ();
 		}
-#pragma warning restore CA1822 // Mark members as static
 
 		private SmtpReplyWithGroupingMark ProcessCommandHelo (SmtpHeloCommand command)
 		{
@@ -524,7 +520,7 @@ namespace Novartment.Base.Net.Smtp
 				return bdatCommand.SourceData
 					.SkipToEndAsync (cancellationToken).AsTask () // пропускаем все данные (предотвратить их передачу невозможно)
 					.ContinueWith<SmtpReplyWithGroupingMark> (
-						notUsed => { throw new BadSequenceOfSmtpCommandsException (); },
+						_ => { throw new BadSequenceOfSmtpCommandsException (); },
 						default,
 						TaskContinuationOptions.DenyChildAttach | TaskContinuationOptions.ExecuteSynchronously,
 						TaskScheduler.Default);
@@ -537,7 +533,7 @@ namespace Novartment.Base.Net.Smtp
 				return bdatCommand.SourceData
 					.SkipToEndAsync (cancellationToken).AsTask () // пропускаем все данные (предотвратить их передачу невозможно)
 					.ContinueWith<SmtpReplyWithGroupingMark> (
-						notUsed => { throw new NoValidRecipientsException (); },
+						_ => { throw new NoValidRecipientsException (); },
 						default,
 						TaskContinuationOptions.DenyChildAttach | TaskContinuationOptions.ExecuteSynchronously,
 						TaskScheduler.Default);
@@ -602,12 +598,12 @@ namespace Novartment.Base.Net.Smtp
 				var tcs = new TaskCompletionSource<int> ();
 				var finalizer1 = new TwoTaskFinalizer (tcs, _chunkingDataTransferTask);
 				var finalizer2 = new TwoTaskFinalizer (tcs, chunkCompletionTask);
-				var notUsed1 = chunkCompletionTask.ContinueWith (
+				_ = chunkCompletionTask.ContinueWith (
 					finalizer1.TaskContinuation,
 					default,
 					TaskContinuationOptions.DenyChildAttach | TaskContinuationOptions.ExecuteSynchronously,
 					TaskScheduler.Default);
-				var notUsed2 = _chunkingDataTransferTask.ContinueWith (
+				_ = _chunkingDataTransferTask.ContinueWith (
 					finalizer2.TaskContinuation,
 					default,
 					TaskContinuationOptions.DenyChildAttach | TaskContinuationOptions.ExecuteSynchronously,
@@ -657,7 +653,7 @@ namespace Novartment.Base.Net.Smtp
 				return Task.FromResult<object> (null);
 			}
 
-			var idx2 = userPasswordData.Slice (idx1 + 1).IndexOf ((byte)0);
+			var idx2 = userPasswordData[(idx1 + 1)..].IndexOf ((byte)0);
 			if (idx2 < 0)
 			{
 				return Task.FromResult<object> (null);
@@ -666,10 +662,10 @@ namespace Novartment.Base.Net.Smtp
 			/*var authorizationIdentity = (idx1 > 0) ? Encoding.UTF8.GetString (userPasswordData.Slice (0, idx1)) : null;*/
 #if NETSTANDARD2_0
 			var authenticationIdentity = Encoding.UTF8.GetString (userPasswordData.Slice (idx1 + 1, idx2 - idx1 - 1).ToArray ());
-			var password = Encoding.UTF8.GetString (userPasswordData.Slice (idx2 + 1).ToArray ());
+			var password = Encoding.UTF8.GetString (userPasswordData[(idx2 + 1)..].ToArray ());
 #else
 			var authenticationIdentity = Encoding.UTF8.GetString (userPasswordData.Slice (idx1 + 1, idx2 - idx1 - 1));
-			var password = Encoding.UTF8.GetString (userPasswordData.Slice (idx2 + 1));
+			var password = Encoding.UTF8.GetString (userPasswordData[(idx2 + 1)..]);
 #endif
 			return _securityParameters.ClientAuthenticator.Invoke (authenticationIdentity, password);
 		}

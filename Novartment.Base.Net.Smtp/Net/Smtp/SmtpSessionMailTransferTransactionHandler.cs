@@ -36,9 +36,7 @@ namespace Novartment.Base.Net.Smtp
 			_logger = logger;
 		}
 
-#pragma warning disable CA1717 // Only FlagsAttribute enums should have plural names
 		private enum TransactionStatus
-#pragma warning restore CA1717 // Only FlagsAttribute enums should have plural names
 		{
 			NotStarted = 0,
 			Started = 1,
@@ -46,9 +44,7 @@ namespace Novartment.Base.Net.Smtp
 			Finished = 5,
 		}
 
-#pragma warning disable CA1063 // Implement IDisposable Correctly
 		public void Dispose ()
-#pragma warning restore CA1063 // Implement IDisposable Correctly
 		{
 			_acceptedRecipients.Clear ();
 			_startingReturnPath = null;

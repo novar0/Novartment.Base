@@ -159,7 +159,7 @@ namespace Novartment.Base.Net.Mime
 				the angle brackets.
 				*/
 
-				return new Mailbox (AddrSpec.Parse (source.Slice (token1.Position, token3.Position + token3.Length - token1.Position)), null);
+				return new Mailbox (AddrSpec.Parse (source[token1.Position..(token3.Position + token3.Length)]), null);
 			}
 
 			// более трёх элементов. считываем как фразу, последний токен которой будет адресом

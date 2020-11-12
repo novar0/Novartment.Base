@@ -4,7 +4,6 @@ using System.Runtime.InteropServices;
 
 namespace Novartment.Base.UnsafeWin32
 {
-#pragma warning disable SA1600 // Elements must be documented
 	[ComImport]
 	[Guid ("B63EA76D-1F85-456F-A19C-48159EFA858B")]
 	[InterfaceType (ComInterfaceType.InterfaceIsIUnknown)]
@@ -55,5 +54,4 @@ namespace Novartment.Base.UnsafeWin32
 		[MethodImpl (MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
 		int EnumItems ([MarshalAs (UnmanagedType.Interface)] out IntPtr ppenumShellItems);
 	}
-#pragma warning restore SA1600 // Elements must be documented
 }

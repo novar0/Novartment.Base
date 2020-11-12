@@ -13,7 +13,7 @@ namespace Novartment.Base.SampleWpf
 			: base ()
 		{
 			this.DataContext = viewModel;
-			ViewModel = viewModel;
+			this.ViewModel = viewModel;
 			InitializeComponent ();
 		}
 
@@ -21,7 +21,7 @@ namespace Novartment.Base.SampleWpf
 			: base (owner)
 		{
 			this.DataContext = viewModel;
-			ViewModel = viewModel;
+			this.ViewModel = viewModel;
 			InitializeComponent ();
 		}
 

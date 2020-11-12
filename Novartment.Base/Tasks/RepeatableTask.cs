@@ -20,9 +20,7 @@ namespace Novartment.Base.Tasks
 	/// Official documentaion of the Task.Dispose method:
 	/// «if your app targets the .NET Framework 4.5 or later, there is no need to call Dispose».
 	/// Therefore, for objects of type such as Task and CancellationTokenSource, no release is performed that would greatly complicate the class.
-#pragma warning disable CA1063 // Implement IDisposable Correctly
 	public class RepeatableTask :
-#pragma warning restore CA1063 // Implement IDisposable Correctly
 		IDisposable
 	{
 		private readonly Func<object, CancellationToken, Task> _createTaskFunc;
@@ -157,17 +155,16 @@ namespace Novartment.Base.Tasks
 			Interlocked.Exchange (ref _cancellationTokenSource, null)?.Cancel ();
 		}
 
-#pragma warning disable CA1063 // Implement IDisposable Correctly
 		/// <summary>
 		/// Performs freeing and releasing resources.
 		/// </summary>
 		public void Dispose ()
-#pragma warning restore CA1063 // Implement IDisposable Correctly
 		{
 			TaskStarting = null;
 			TaskStarted = null;
 			TaskEnded = null;
 			Cancel ();
+			GC.SuppressFinalize (this);
 		}
 
 		/// <summary>

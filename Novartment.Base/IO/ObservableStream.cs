@@ -356,14 +356,12 @@ namespace Novartment.Base.IO
 			}
 		}
 
-#pragma warning disable CA1801 // Review unused parameters
 		private void ReportProgressInternal1 (Task task)
 		{
 			ReportProgressInternal ();
 		}
 
 		private void ReportProgressInternal2 (Task task)
-#pragma warning restore CA1801 // Review unused parameters
 		{
 			_length = _stream.Length;
 			ReportProgressInternal ();

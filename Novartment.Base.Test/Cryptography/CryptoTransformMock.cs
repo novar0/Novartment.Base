@@ -96,7 +96,7 @@ namespace Novartment.Base.Test
 					var blocksFromCache = Math.Min (_cachedBlocks, inputBlocks);
 
 					// преобразуем часть кэша в выход
-					Transform (_cache, outputBuffer.Slice (outputOffset), blocksFromCache);
+					Transform (_cache, outputBuffer[outputOffset..], blocksFromCache);
 
 					// сдвигаем остаток кэша в начало
 					Array.Copy (_cache, blocksFromCache * _inputBlockSize, _cache, 0, (_cachedBlocks - blocksFromCache) * _inputBlockSize);
@@ -106,7 +106,7 @@ namespace Novartment.Base.Test
 				}
 
 				// заполняем оставшийся выход из входа
-				Transform (inputBuffer, outputBuffer.Slice (outputOffset), outputBlocks);
+				Transform (inputBuffer, outputBuffer[outputOffset..], outputBlocks);
 				var inputOffset = outputBlocks * _inputBlockSize;
 
 				// остаток входа сохраняем в кэш
@@ -133,7 +133,7 @@ namespace Novartment.Base.Test
 			var outputOffset = _cachedBlocks * _outputBlockSize;
 
 			// данные входа кратно блокам
-			Transform (inputBuffer.Slice (inputOffset), result.AsSpan (outputOffset), inputBlocks);
+			Transform (inputBuffer[inputOffset..], result.AsSpan (outputOffset), inputBlocks);
 			inputOffset += inputBlocks * _inputBlockSize;
 			outputOffset += inputBlocks * _outputBlockSize;
 

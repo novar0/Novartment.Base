@@ -310,7 +310,7 @@ namespace Novartment.Base.BinaryStreaming
 			var size = Math.Min (_buffer.Length - _count, _currentSource.Count);
 			if (size > 0)
 			{
-				_currentSource.BufferMemory.Slice (_currentSource.Offset, size).CopyTo (_buffer.Slice (_offset + _count));
+				_currentSource.BufferMemory.Slice (_currentSource.Offset, size).CopyTo (_buffer[(_offset + _count)..]);
 				_currentSource.Skip (size);
 				_count += size;
 			}

@@ -75,7 +75,7 @@ namespace Novartment.Base.UI.Wpf
 				throw new InvalidOperationException ("Required property control.ItemsSource not specified.");
 			}
 
-			if (!(src is IList list))
+			if (src is not IList list)
 			{
 				throw new InvalidOperationException("control.ItemsSource does not implements IList.");
 			}
@@ -99,8 +99,10 @@ namespace Novartment.Base.UI.Wpf
 			Contract.EndContractBlock ();
 
 			var collection = control.ItemsSource;
+#pragma warning disable IDE0019 // Use pattern matching
 			var view = collection as ICollectionView;
-			if (!(collection is IList list))
+#pragma warning restore IDE0019 // Use pattern matching
+			if (collection is not IList list)
 			{
 				if (view == null)
 				{
@@ -128,7 +130,7 @@ namespace Novartment.Base.UI.Wpf
 				}
 			}
 
-			if (!(view?.SourceCollection is ICollection col))
+			if (view?.SourceCollection is not ICollection col)
 			{
 				list.Remove(item);
 			}

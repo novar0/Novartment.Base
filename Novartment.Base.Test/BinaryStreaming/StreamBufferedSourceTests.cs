@@ -22,7 +22,7 @@ namespace Novartment.Base.Test
 			var vTask = src.LoadAsync (default);
 			Assert.True (vTask.IsCompletedSuccessfully);
 			Assert.Equal (0, src.Count);
-			Assert.Equal (0, src.SkipWihoutBufferingAsync (1, default).Result);
+			Assert.Equal (0, src.SkipWihoutBufferingAsync (1, default).AsTask ().Result);
 			vTask = src.LoadAsync (default);
 			Assert.True (vTask.IsCompletedSuccessfully);
 			Assert.True (src.IsExhausted);
@@ -56,7 +56,7 @@ namespace Novartment.Base.Test
 			vTask = src.LoadAsync (default);
 			Assert.True (vTask.IsCompletedSuccessfully);
 			Assert.Equal (nnn, src.BufferMemory.Span[src.Offset]);
-			Assert.Equal (1, src.SkipWihoutBufferingAsync (bufSize, default).Result);
+			Assert.Equal (1, src.SkipWihoutBufferingAsync (bufSize, default).AsTask ().Result);
 			vTask = src.LoadAsync (default);
 			Assert.True (vTask.IsCompletedSuccessfully);
 			Assert.True (src.IsExhausted);
@@ -86,45 +86,45 @@ namespace Novartment.Base.Test
 		{
 			var strm = new BigStreamMock (dataSize, canSeek, FillFunction);
 			var src = strm.AsBufferedSource (new byte[bufSize]);
-			var vTask = src.EnsureAvailableAsync (3, default);
+			var vTask = src.EnsureAvailableAsync (3, default).AsTask ();
 			if (!vTask.IsCompletedSuccessfully)
 			{
-				vTask.AsTask ().GetAwaiter ().GetResult ();
+				vTask.GetAwaiter ().GetResult ();
 			}
 			Assert.Equal (FillFunction(0), src.BufferMemory.Span[src.Offset]);
 			Assert.Equal (FillFunction(1), src.BufferMemory.Span[src.Offset + 1]);
 			Assert.Equal (FillFunction(2), src.BufferMemory.Span[src.Offset + 2]);
-			Assert.Equal (skipOverall1, src.SkipWihoutBufferingAsync (skipOverall1, default).Result);
-			vTask = src.EnsureAvailableAsync (skipBuffer1, default);
+			Assert.Equal (skipOverall1, src.SkipWihoutBufferingAsync (skipOverall1, default).AsTask ().Result);
+			vTask = src.EnsureAvailableAsync (skipBuffer1, default).AsTask ();
 			if (!vTask.IsCompletedSuccessfully)
 			{
-				vTask.AsTask ().GetAwaiter ().GetResult ();
+				vTask.GetAwaiter ().GetResult ();
 			}
 			src.Skip (skipBuffer1);
-			vTask = src.EnsureAvailableAsync (3, default);
+			vTask = src.EnsureAvailableAsync (3, default).AsTask ();
 			if (!vTask.IsCompletedSuccessfully)
 			{
-				vTask.AsTask ().GetAwaiter ().GetResult ();
+				vTask.GetAwaiter ().GetResult ();
 			}
 			Assert.Equal (FillFunction(skipOverall1 + skipBuffer1), src.BufferMemory.Span[src.Offset]);
 			Assert.Equal (FillFunction(skipOverall1 + skipBuffer1 + 1), src.BufferMemory.Span[src.Offset + 1]);
 			Assert.Equal (FillFunction(skipOverall1 + skipBuffer1 + 2), src.BufferMemory.Span[src.Offset + 2]);
-			Assert.Equal (skipOverall2, src.SkipWihoutBufferingAsync (skipOverall2, default).Result);
-			vTask = src.EnsureAvailableAsync (skipBuffer2, default);
+			Assert.Equal (skipOverall2, src.SkipWihoutBufferingAsync (skipOverall2, default).AsTask ().Result);
+			vTask = src.EnsureAvailableAsync (skipBuffer2, default).AsTask ();
 			if (!vTask.IsCompletedSuccessfully)
 			{
-				vTask.AsTask ().GetAwaiter ().GetResult ();
+				vTask.GetAwaiter ().GetResult ();
 			}
 			src.Skip (skipBuffer2);
-			vTask = src.EnsureAvailableAsync (3, default);
+			vTask = src.EnsureAvailableAsync (3, default).AsTask ();
 			if (!vTask.IsCompletedSuccessfully)
 			{
-				vTask.AsTask ().GetAwaiter ().GetResult ();
+				vTask.GetAwaiter ().GetResult ();
 			}
 			Assert.Equal (FillFunction(skipOverall1 + skipOverall2 + skipBuffer1 + skipBuffer2), src.BufferMemory.Span[src.Offset]);
 			Assert.Equal (FillFunction(skipOverall1 + skipOverall2 + skipBuffer1 + skipBuffer2 + 1), src.BufferMemory.Span[src.Offset + 1]);
 			Assert.Equal (FillFunction(skipOverall1 + skipOverall2 + skipBuffer1 + skipBuffer2 + 2), src.BufferMemory.Span[src.Offset + 2]);
-			Assert.Equal (dataSize - skipOverall1 - skipOverall2 - skipBuffer1 - skipBuffer2, src.SkipWihoutBufferingAsync (skipOverEnd, default).Result);
+			Assert.Equal (dataSize - skipOverall1 - skipOverall2 - skipBuffer1 - skipBuffer2, src.SkipWihoutBufferingAsync (skipOverEnd, default).AsTask ().Result);
 			Assert.True (src.IsExhausted);
 			Assert.Equal (0, src.Count);
 		}

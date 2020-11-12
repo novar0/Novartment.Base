@@ -3,7 +3,6 @@ using System.Runtime.InteropServices;
 
 namespace Novartment.Base.UnsafeWin32
 {
-#pragma warning disable SA1600 // Elements must be documented
 	[Guid ("70629033-e363-4a28-a567-0db78006e6d7")]
 	[ComImport]
 	[InterfaceType (ComInterfaceType.InterfaceIsIUnknown)]
@@ -25,5 +24,4 @@ namespace Novartment.Base.UnsafeWin32
 		[MethodImpl (MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
 		int Clone ([MarshalAs (UnmanagedType.Interface)] out IEnumShellItems ppenum);
 	}
-#pragma warning restore SA1600 // Elements must be documented
 }

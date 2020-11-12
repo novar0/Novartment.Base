@@ -24,7 +24,7 @@ namespace Novartment.Base.Net.Smtp
 		internal static SmtpCommandType Parse (ReadOnlySpan<char> source, ref int pos)
 		{
 			var firstWordStartPos = pos;
-			var firstWordEndPos = source.Slice (pos).IndexOf (' ');
+			var firstWordEndPos = source[pos..].IndexOf (' ');
 			if (firstWordEndPos < 1)
 			{
 				firstWordEndPos = source.Length - pos;
@@ -39,7 +39,7 @@ namespace Novartment.Base.Net.Smtp
 			{
 				// если команда из двух слов, то добавляем второе
 				// ищем второе слово оканчивающееся на ':'
-				var secondWordEndPos = source.Slice (pos + 1).IndexOf (':');
+				var secondWordEndPos = source[(pos + 1)..].IndexOf (':');
 				if (secondWordEndPos < 1)
 				{
 					return SmtpCommandType.Unknown;

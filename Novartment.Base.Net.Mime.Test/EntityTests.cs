@@ -316,7 +316,7 @@ namespace Novartment.Base.Net.Mime.Test
 				pos++;
 			}
 
-			result.Add (source.Substring (pos));
+			result.Add (source[pos..]);
 			return result;
 		}
 	}

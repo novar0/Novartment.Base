@@ -4,7 +4,6 @@ using System.Runtime.InteropServices;
 
 namespace Novartment.Base.UnsafeWin32
 {
-#pragma warning disable SA1600 // Elements must be documented
 	[Guid ("7E9FB0D3-919F-4307-AB2E-9B1860310C93")]
 	[ComImport]
 	[InterfaceType (ComInterfaceType.InterfaceIsIUnknown)]
@@ -90,5 +89,4 @@ namespace Novartment.Base.UnsafeWin32
 		[MethodImpl (MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
 		int GetBool ([In] ref ShellPropertyKey key, out int pf);
 	}
-#pragma warning restore SA1600 // Elements must be documented
 }

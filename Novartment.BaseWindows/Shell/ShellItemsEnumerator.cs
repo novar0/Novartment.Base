@@ -45,12 +45,10 @@ namespace Novartment.Base.Shell
 
 		object IEnumerator.Current => _current;
 
-#pragma warning disable CA1063 // Implement IDisposable Correctly
 		/// <summary>
 		/// Освобождает занятые объектом ресурсы.
 		/// </summary>
 		public void Dispose ()
-#pragma warning restore CA1063 // Implement IDisposable Correctly
 		{
 			var oldValue = Interlocked.Exchange (ref _nativeEnumShellItems, null);
 			if (oldValue != null)

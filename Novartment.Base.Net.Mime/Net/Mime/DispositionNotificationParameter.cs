@@ -100,7 +100,7 @@ namespace Novartment.Base.Net.Mime
 		/// <returns>Новый параметр у которого важность изменена на указанное значение.</returns>
 		public DispositionNotificationParameter ChangeImportance (DispositionNotificationParameterImportance importance)
 		{
-			return new DispositionNotificationParameter (this.Name, importance, Values);
+			return new DispositionNotificationParameter (this.Name, importance, this.Values);
 		}
 
 		/// <summary>
@@ -145,14 +145,14 @@ namespace Novartment.Base.Net.Mime
 			var outPos = this.Name.Length;
 			buf[outPos++] = (byte)'=';
 			var importanceStr = this.Importance.GetName ();
-			AsciiCharSet.GetBytes (importanceStr.AsSpan (), buf.Slice (outPos));
+			AsciiCharSet.GetBytes (importanceStr.AsSpan (), buf[outPos..]);
 			outPos += importanceStr.Length;
 			buf[outPos++] = (byte)',';
 
 			for (var idx = 0; idx < _values.Count; idx++)
 			{
 				var value = _values[idx];
-				AsciiCharSet.GetBytes (value.AsSpan (), buf.Slice (outPos));
+				AsciiCharSet.GetBytes (value.AsSpan (), buf[outPos..]);
 				outPos += value.Length;
 
 				if (idx != (_values.Count - 1))

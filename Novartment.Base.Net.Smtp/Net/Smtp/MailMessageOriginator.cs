@@ -23,9 +23,7 @@ namespace Novartment.Base.Net.Smtp
 		public static Task PerformTransferTransaction (
 			this IMailMessage<AddrSpec> message,
 			TransactionHandlerFactory transactionHandlerFactory,
-#pragma warning disable CA1801 // Review unused parameters
 			CancellationToken cancellationToken = default)
-#pragma warning restore CA1801 // Review unused parameters
 		{
 			// TODO: предусмотреть отправку писем не подразумевающих ответ (уведомлений о доставке), то есть без указания returnPath
 			if (message == null)

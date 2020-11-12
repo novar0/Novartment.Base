@@ -90,7 +90,7 @@ namespace Novartment.Base.Net.Mime
 
 			var outPos = 0;
 			buf[outPos++] = (byte)'<';
-			AsciiCharSet.GetBytes (_id.AsSpan (), buf.Slice (outPos));
+			AsciiCharSet.GetBytes (_id.AsSpan (), buf[outPos..]);
 			outPos += _id.Length;
 			buf[outPos++] = (byte)'>';
 			_finished = true;

@@ -12,9 +12,9 @@ namespace Novartment.Base.Test
 			int srcBufSize = 20;
 			var src1 = new BigBufferedSourceMock (3L, srcBufSize, FillFunction);
 			var src2 = new BigBufferedSourceMock ((long)int.MaxValue + 56L, srcBufSize, FillFunction);
-			src2.SkipWihoutBufferingAsync (54);
+			src2.SkipWihoutBufferingAsync (54).AsTask ().Wait ();
 			var src3 = new BigBufferedSourceMock (24L, srcBufSize, FillFunction);
-			src3.SkipWihoutBufferingAsync (20);
+			src3.SkipWihoutBufferingAsync (20).AsTask ().Wait ();
 			var sources = new IBufferedSource[]
 			{
 				src1,
@@ -43,7 +43,7 @@ namespace Novartment.Base.Test
 			Assert.Equal (FillFunction (56), src.BufferMemory.Span[src.Offset + 5]);
 			src.Skip (6);
 
-			Assert.Equal ((long)int.MaxValue, src.SkipWihoutBufferingAsync ((long)int.MaxValue).Result);
+			Assert.Equal ((long)int.MaxValue, src.SkipWihoutBufferingAsync ((long)int.MaxValue).AsTask ().Result);
 			Assert.False (src.IsExhausted);
 			Assert.True (sources[0].IsEmpty ());
 			Assert.True (sources[1].IsEmpty ());

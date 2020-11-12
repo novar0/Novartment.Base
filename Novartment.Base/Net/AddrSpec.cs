@@ -292,7 +292,7 @@ namespace Novartment.Base.Net
 				buf[pos++] = '[';
 			}
 
-			this.Domain.AsSpan ().CopyTo (buf.Slice (pos));
+			this.Domain.AsSpan ().CopyTo (buf[pos..]);
 			pos += this.Domain.Length;
 			if (!isValidDomain)
 			{
@@ -337,9 +337,8 @@ namespace Novartment.Base.Net
 		{
 			// RFC 3798 part 2.1:
 			// The comparison MUST be case-sensitive for the local-part and case-insensitive for the domain part.
-			return other == null
-				? false
-				: string.Equals (this.LocalPart, other.LocalPart, StringComparison.Ordinal) &&
+			return (other != null) &&
+				string.Equals (this.LocalPart, other.LocalPart, StringComparison.Ordinal) &&
 				string.Equals (this.Domain, other.Domain, StringComparison.OrdinalIgnoreCase);
 		}
 	}

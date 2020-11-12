@@ -5,7 +5,6 @@ using System.Reflection;
 
 namespace Novartment.Base
 {
-#pragma warning disable CA1063 // Implement IDisposable Correctly
 	/// <summary>
 	/// Базовый класс для моделей при использовании шаблона Model-View-*.
 	/// </summary>
@@ -22,12 +21,11 @@ namespace Novartment.Base
 		/// Освобождает ресурсы, занимаемые моделью.
 		/// </summary>
 		public virtual void Dispose ()
-#pragma warning restore CA1063 // Implement IDisposable Correctly
 		{
 			PropertyChanged = null;
+			GC.SuppressFinalize (this);
 		}
 
-#pragma warning disable CA1030 // Use events where appropriate
 		/// <summary>
 		/// Инициирует событие PropertyChanged с указанными аргументами.
 		/// </summary>
@@ -52,7 +50,6 @@ namespace Novartment.Base
 		/// </summary>
 		/// <param name="propertyName">Имя свойства для события PropertyChanged.</param>
 		protected void RaisePropertyChanged (string propertyName)
-#pragma warning restore CA1030 // Use events where appropriate
 		{
 			if (propertyName == null)
 			{

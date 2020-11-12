@@ -397,7 +397,7 @@ namespace Novartment.Base.BinaryStreaming
 				{
 					var size = Math.Min (sizeToSkip, (long)_pendingData.Length);
 					skipped += size;
-					_pendingData = _pendingData.Slice ((int)size);
+					_pendingData = _pendingData[(int)size..];
 				}
 
 				var isDataProcessed = ReserveData (_pendingData);
@@ -444,7 +444,7 @@ namespace Novartment.Base.BinaryStreaming
 		{
 			// резервируем сколько влезет в конец главного буфера
 			var chunkSize = Math.Min (source.Length, _buffer.Length - _destinationTailOffset - _destinationReservedCount);
-			source.Slice (0, chunkSize).CopyTo (_buffer.Slice (_destinationTailOffset + _destinationReservedCount));
+			source.Slice (0, chunkSize).CopyTo (_buffer[(_destinationTailOffset + _destinationReservedCount)..]);
 			_destinationReservedCount += chunkSize;
 
 			if (chunkSize >= source.Length)
@@ -455,7 +455,7 @@ namespace Novartment.Base.BinaryStreaming
 			}
 
 			// то, что не влезло, откладываем
-			_pendingData = source.Slice (chunkSize);
+			_pendingData = source[chunkSize..];
 			return false;
 		}
 	}

@@ -55,7 +55,7 @@ namespace Novartment.Base.Net.Smtp
 			// If, after having issued the STARTTLS command,
 			// the client finds out that some failure prevents it from actually starting a TLS handshake,
 			// then it SHOULD abort the connection.
-			if (!(_connection is ITlsCapableConnection tlsCapableConnection))
+			if (_connection is not ITlsCapableConnection tlsCapableConnection)
 			{
 				throw new UnrecoverableProtocolException("Connection is not TLS-capable.");
 			}
@@ -74,7 +74,7 @@ namespace Novartment.Base.Net.Smtp
 
 		public async Task StartTlsServerAsync (X509Certificate serverCertificate, bool clientCertificateRequired)
 		{
-			if (!(_connection is ITlsCapableConnection tlsCapableConnection))
+			if (_connection is not ITlsCapableConnection tlsCapableConnection)
 			{
 				throw new InvalidOperationException("Connection is not TLS-capable.");
 			}

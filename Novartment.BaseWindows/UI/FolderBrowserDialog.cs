@@ -9,9 +9,7 @@ namespace Novartment.Base.UI
 	/// </summary>
 	public sealed class FolderBrowserDialog : Microsoft.Win32.CommonDialog
 	{
-#pragma warning disable SA1139 // Use literal suffix notation instead of casting
 		private const int _errorCancelledCode = unchecked ((int)0x800704C7);
-#pragma warning restore SA1139 // Use literal suffix notation instead of casting
 		private FolderBrowserDialogTypeFilter _filter;
 		private Shell.ShellItem _selectedFolder;
 

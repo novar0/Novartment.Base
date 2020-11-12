@@ -346,7 +346,7 @@ namespace Novartment.Base.Smtp.Test
 			cmd.SetSource (src);
 			Assert.NotNull (cmd.SourceData);
 			Assert.Equal (10, cmd.SourceData.Count);
-			cmd.SourceData.LoadAsync ();
+			cmd.SourceData.LoadAsync ().AsTask ().Wait ();
 			Assert.True (cmd.SourceData.IsExhausted);
 
 			// размер источника меньше указанного
@@ -355,7 +355,7 @@ namespace Novartment.Base.Smtp.Test
 			cmd.SetSource (src);
 			Assert.NotNull (cmd.SourceData);
 			Assert.Equal (1, cmd.SourceData.Count);
-			cmd.SourceData.LoadAsync ();
+			cmd.SourceData.LoadAsync ().AsTask ().Wait ();
 			cmd.SourceData.Skip (cmd.SourceData.Count);
 			Assert.ThrowsAsync<NotEnoughDataException> (() => cmd.SourceData.LoadAsync ().AsTask ());
 
@@ -365,7 +365,7 @@ namespace Novartment.Base.Smtp.Test
 			cmd.SetSource (src);
 			Assert.NotNull (cmd.SourceData);
 			Assert.Equal (8, cmd.SourceData.Count);
-			cmd.SourceData.LoadAsync ();
+			cmd.SourceData.LoadAsync ().AsTask ().Wait ();
 			Assert.Equal (8, cmd.SourceData.UnusedSize);
 		}
 	}

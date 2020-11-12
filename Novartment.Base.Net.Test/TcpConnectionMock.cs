@@ -27,7 +27,7 @@ namespace Novartment.Base.Net.Test
 			_inData = new MemoryBufferedSource (inData);
 		}
 
-		public string RemoteHostName => null;
+		public static string RemoteHostName => null;
 
 		public IPHostEndPoint LocalEndPoint => _localEndpoint;
 
@@ -63,9 +63,9 @@ namespace Novartment.Base.Net.Test
 
 		public TimeSpan IdleDuration => TimeSpan.FromTicks (_stopwatch.ElapsedTicks - _lastActivity);
 
-		public bool IsAuthenticated => false;
+		public static bool IsAuthenticated => false;
 
-		public bool IsEncrypted => false;
+		public static bool IsEncrypted => false;
 
 		internal StringWritingStream OutData => _outData;
 

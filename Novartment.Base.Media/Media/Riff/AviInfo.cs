@@ -76,9 +76,7 @@ namespace Novartment.Base.Media
 		/// <returns>Суммарные данные об AVI-файле, считанные из указанного буфера.</returns>
 		public static Task<AviInfo> ParseAsync (
 			IBufferedSource source,
-#pragma warning disable CA1801 // Review unused parameters
 			CancellationToken cancellationToken = default)
-#pragma warning restore CA1801 // Review unused parameters
 		{
 			if (source == null)
 			{
@@ -157,11 +155,11 @@ namespace Novartment.Base.Media
 						await chunk.Source.EnsureAvailableAsync (56, cancellationToken).ConfigureAwait (false); // "To small size of RIFF-chunk 'avih'. Expected minimum 56 bytes.");
 
 						var sourceBuf = chunk.Source.BufferMemory;
-						microSecPerFrame = BinaryPrimitives.ReadUInt32LittleEndian (sourceBuf.Span.Slice (chunk.Source.Offset));
-						flags = BinaryPrimitives.ReadUInt32LittleEndian (sourceBuf.Span.Slice (chunk.Source.Offset + 12));
-						totalFrames = BinaryPrimitives.ReadUInt32LittleEndian (sourceBuf.Span.Slice (chunk.Source.Offset + 16));
-						width = BinaryPrimitives.ReadUInt32LittleEndian (sourceBuf.Span.Slice (chunk.Source.Offset + 32));
-						height = BinaryPrimitives.ReadUInt32LittleEndian (sourceBuf.Span.Slice (chunk.Source.Offset + 36));
+						microSecPerFrame = BinaryPrimitives.ReadUInt32LittleEndian (sourceBuf.Span[chunk.Source.Offset..]);
+						flags = BinaryPrimitives.ReadUInt32LittleEndian (sourceBuf.Span[(chunk.Source.Offset + 12)..]);
+						totalFrames = BinaryPrimitives.ReadUInt32LittleEndian (sourceBuf.Span[(chunk.Source.Offset + 16)..]);
+						width = BinaryPrimitives.ReadUInt32LittleEndian (sourceBuf.Span[(chunk.Source.Offset + 32)..]);
+						height = BinaryPrimitives.ReadUInt32LittleEndian (sourceBuf.Span[(chunk.Source.Offset + 36)..]);
 					}
 
 					if (chunk.IsSubChunkList)

@@ -39,8 +39,8 @@ namespace Novartment.Base.Net.Smtp
 			}
 
 			byte[] response = null;
-			int responseSize = 0;
 #if NETSTANDARD2_0
+			int responseSize = 0;
 			try
 			{
 				response = Convert.FromBase64String (new string (responseSrc.ToArray ()));
@@ -52,7 +52,7 @@ namespace Novartment.Base.Net.Smtp
 			}
 #else
 			response = new byte[(responseSrc.Length / 4 * 3) + 2];
-			if (!Convert.TryFromBase64Chars (responseSrc, response, out responseSize))
+			if (!Convert.TryFromBase64Chars (responseSrc, response, out int responseSize))
 			{
 				return new SmtpInvalidSyntaxCommand (SmtpCommandType.SaslResponse, "Unrecognized authentication response.");
 			}

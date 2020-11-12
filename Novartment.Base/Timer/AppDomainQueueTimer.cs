@@ -116,6 +116,7 @@ namespace Novartment.Base
 				_timer.Dispose ();
 				_enabled = false;
 			}
+			GC.SuppressFinalize (this);
 		}
 	}
 }

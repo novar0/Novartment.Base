@@ -84,20 +84,16 @@ namespace Novartment.Base.Net.Mime
 			// According to RFC 2045 part 6.4:
 			// it is EXPRESSLY FORBIDDEN to use any encodings other than "7bit", "8bit", or "binary" with any composite media type,
 			// i.e. one that recursively includes other Content-Type fields.
-			switch (value)
+			return value switch
 			{
-				case ContentTransferEncoding.Unspecified: // по умолчанию означает "7bit"
-				case ContentTransferEncoding.QuotedPrintable:
-				case ContentTransferEncoding.Base64:
-				case ContentTransferEncoding.SevenBit:
-					return ContentTransferEncoding.SevenBit;
-				case ContentTransferEncoding.EightBit:
-					return ContentTransferEncoding.EightBit;
-				case ContentTransferEncoding.Binary:
-					return ContentTransferEncoding.Binary;
-				default:
-					throw new NotSupportedException ("Unsupported value of ContentTransferEncoding '" + value + "'.");
-			}
+				ContentTransferEncoding.Unspecified or // по умолчанию означает "7bit"
+				ContentTransferEncoding.QuotedPrintable or
+				ContentTransferEncoding.Base64 or
+				ContentTransferEncoding.SevenBit => ContentTransferEncoding.SevenBit,
+				ContentTransferEncoding.EightBit => ContentTransferEncoding.EightBit,
+				ContentTransferEncoding.Binary => ContentTransferEncoding.Binary,
+				_ => throw new NotSupportedException ("Unsupported value of ContentTransferEncoding '" + value + "'."),
+			};
 		}
 	}
 }

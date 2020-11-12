@@ -1,7 +1,5 @@
 ﻿namespace Novartment.Base.Net.Mime
 {
-#pragma warning disable SA1402 // File may only contain a single class
-#pragma warning disable SA1649 // File name must match first type name
 	// Content-Type header field media subtype names.
 	// Full IANA registered list can be found from: http://www.iana.org/assignments/media-types.
 
@@ -143,12 +141,10 @@
 		/// </summary>
 		public static readonly string Digest = "digest";
 
-#pragma warning disable CA1720 // Identifier contains type name
 		/// <summary>
 		/// "multipart/signed". Определено в RFC 1847.
 		/// </summary>
 		public static readonly string Signed = "signed";
-#pragma warning restore CA1720 // Identifier contains type name
 
 		/// <summary>
 		/// "multipart/encrypted". Определено в RFC 1847.
@@ -196,6 +192,4 @@
 		/// </summary>
 		public static readonly string DeliveryStatus = "delivery-status";
 	}
-#pragma warning restore SA1649 // File name must match first type name
-#pragma warning restore SA1402 // File may only contain a single class
 }

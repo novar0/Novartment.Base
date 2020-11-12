@@ -5,7 +5,6 @@
 	/// </summary>
 	internal static class HeaderFieldNames
 	{
-#pragma warning disable SA1124 // Do not use regions
 		#region RFC 4021 part 2.1. Permanent Mail Header Field Registrations
 
 		/// <summary>Message date and time. "Date" header field in RFC 2822.</summary>
@@ -331,6 +330,5 @@
 		internal static readonly string Warning = "Warning";
 
 		#endregion
-#pragma warning restore SA1124 // Do not use regions
 	}
 }

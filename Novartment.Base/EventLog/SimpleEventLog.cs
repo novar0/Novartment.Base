@@ -203,6 +203,7 @@ namespace Novartment.Base
 			CollectionChanged = null;
 			PropertyChanged = null;
 			LoggerReconfigured = null;
+			GC.SuppressFinalize (this);
 		}
 
 		/// <summary>

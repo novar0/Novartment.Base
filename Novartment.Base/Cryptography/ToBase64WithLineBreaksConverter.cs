@@ -81,7 +81,7 @@ namespace Novartment.Base
 						$"Wrong size of chunk of base64-encoded data. Specified {size}, expected {MaxLineLen}."));
 				}
 
-				AsciiCharSet.GetBytes (_outArray.AsSpan (0, size), outputBuffer.Slice (outputOffset));
+				AsciiCharSet.GetBytes (_outArray.AsSpan (0, size), outputBuffer[outputOffset..]);
 				outputBuffer[outputOffset + size++] = 0x0d;
 				outputBuffer[outputOffset + size++] = 0x0a;
 				outputSize += size;

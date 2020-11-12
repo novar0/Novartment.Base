@@ -59,7 +59,7 @@ namespace Novartment.Base.Net.Mime
 			var pos = 0;
 			buf[pos++] = (byte)'<';
 			var addrStr = _addrSpecs[_idx].ToString ();
-			AsciiCharSet.GetBytes (addrStr.AsSpan (), buf.Slice (pos));
+			AsciiCharSet.GetBytes (addrStr.AsSpan (), buf[pos..]);
 			pos += addrStr.Length;
 			buf[pos++] = (byte)'>';
 			isLast = _idx == (_addrSpecs.Count - 1);

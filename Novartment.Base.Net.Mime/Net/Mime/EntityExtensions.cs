@@ -150,7 +150,7 @@ namespace Novartment.Base.Net.Mime
 
 			Contract.EndContractBlock ();
 
-			if (!(entity.Body is ICompositeEntityBody compositeEntityBody))
+			if (entity.Body is not ICompositeEntityBody compositeEntityBody)
 			{
 				throw new InvalidOperationException ("Can not add part to entity with discrete content. Parts can be added only to composite entities.");
 			}
@@ -179,7 +179,7 @@ namespace Novartment.Base.Net.Mime
 
 			Contract.EndContractBlock ();
 
-			if (!(entity.Body is ICompositeEntityBody compositeEntityBody))
+			if (entity.Body is not ICompositeEntityBody compositeEntityBody)
 			{
 				throw new InvalidOperationException ("Can not add part to entity with discrete content. Parts can be added only to composite entities.");
 			}
@@ -204,7 +204,7 @@ namespace Novartment.Base.Net.Mime
 
 			Contract.EndContractBlock ();
 
-			if (!(entity.Body is ICompositeEntityBody compositeEntityBody))
+			if (entity.Body is not ICompositeEntityBody compositeEntityBody)
 			{
 				throw new InvalidOperationException ("Can not add part to entity with discrete content. Parts can be added only to composite entities.");
 			}
@@ -237,7 +237,7 @@ namespace Novartment.Base.Net.Mime
 
 			Contract.EndContractBlock ();
 
-			if (!(entity.Body is ICompositeEntityBody compositeEntityBody))
+			if (entity.Body is not ICompositeEntityBody compositeEntityBody)
 			{
 				throw new InvalidOperationException ("Can not add part to entity with discrete content. Parts can be added only to composite entities.");
 			}
@@ -268,7 +268,7 @@ namespace Novartment.Base.Net.Mime
 
 			Contract.EndContractBlock ();
 
-			if (!(entity.Body is ICompositeEntityBody compositeEntityBody))
+			if (entity.Body is not ICompositeEntityBody compositeEntityBody)
 			{
 				throw new InvalidOperationException ("Can not add part to entity with discrete content. Parts can be added only to composite entities.");
 			}
@@ -303,7 +303,7 @@ namespace Novartment.Base.Net.Mime
 
 			Contract.EndContractBlock ();
 
-			if (!(entity.Body is ICompositeEntityBody compositeEntityBody))
+			if (entity.Body is not ICompositeEntityBody compositeEntityBody)
 			{
 				throw new InvalidOperationException ("Can not add part to entity with discrete content. Parts can be added only to composite entities.");
 			}
@@ -348,7 +348,7 @@ namespace Novartment.Base.Net.Mime
 
 			Contract.EndContractBlock ();
 
-			if (!(entity.Body is ICompositeEntityBody compositeEntityBody))
+			if (entity.Body is not ICompositeEntityBody compositeEntityBody)
 			{
 				throw new InvalidOperationException ("Can not add part to entity with discrete content. Parts can be added only to composite entities.");
 			}
@@ -409,7 +409,7 @@ namespace Novartment.Base.Net.Mime
 				return Task.FromCanceled<Entity> (cancellationToken);
 			}
 
-			if (!(entity.Body is ICompositeEntityBody compositeEntityBody))
+			if (entity.Body is not ICompositeEntityBody compositeEntityBody)
 			{
 				throw new InvalidOperationException ("Can not add part to entity with discrete content. Parts can be added only to composite entities.");
 			}
@@ -464,7 +464,7 @@ namespace Novartment.Base.Net.Mime
 
 			Contract.EndContractBlock ();
 
-			if (!(entity.Body is ICompositeEntityBody compositeEntityBody))
+			if (entity.Body is not ICompositeEntityBody compositeEntityBody)
 			{
 				throw new InvalidOperationException ("Can not add part to entity with discrete content. Parts can be added only to composite entities.");
 			}

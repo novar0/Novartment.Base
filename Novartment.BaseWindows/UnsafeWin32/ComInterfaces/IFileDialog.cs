@@ -4,7 +4,6 @@ using System.Runtime.InteropServices;
 
 namespace Novartment.Base.UnsafeWin32
 {
-#pragma warning disable SA1600 // Elements must be documented
 	[ComImport]
 	[Guid ("42F85136-DB7E-439C-85F1-E4075D135FC8")]
 	[InterfaceType (ComInterfaceType.InterfaceIsIUnknown)]
@@ -90,5 +89,4 @@ namespace Novartment.Base.UnsafeWin32
 		[MethodImpl (MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
 		void SetFilter ([MarshalAs (UnmanagedType.Interface)] IntPtr pFilter);
 	}
-#pragma warning restore SA1600 // Elements must be documented
 }

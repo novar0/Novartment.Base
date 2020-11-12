@@ -98,6 +98,7 @@ namespace Novartment.Base.SampleWpf
 			_clearItemsTask.Dispose ();
 			_copyItemTask.Dispose ();
 			_refreshDataTask.Dispose ();
+			GC.SuppressFinalize (this);
 		}
 
 		DragStartData IDragDropSource.DragStart (double x, double y, DragControl mouseButton)
@@ -219,9 +220,7 @@ namespace Novartment.Base.SampleWpf
 			return DragDropEffects.None;
 		}
 
-#pragma warning disable CA1801 // Review unused parameters
 		private void CopyItem (ContextCollectionData<SimpleEventRecord> data, CancellationToken notUsed)
-#pragma warning restore CA1801 // Review unused parameters
 		{
 			var items = data.ContextCollectionSelectedItems.OrderBy (item => item.Time);
 			string report = string.Join (Environment.NewLine, items);
@@ -230,9 +229,7 @@ namespace Novartment.Base.SampleWpf
 			_clipBoardService.SetData (clipboardObject);
 		}
 
-#pragma warning disable CA1801 // Review unused parameters
 		private void ClearItems (ContextCollectionData<SimpleEventRecord> notUsed1, CancellationToken notUsed2)
-#pragma warning restore CA1801 // Review unused parameters
 		{
 			_eventLog.Clear ();
 		}
@@ -241,7 +238,7 @@ namespace Novartment.Base.SampleWpf
 		{
 			// выполнение фоновых работ, в том числе вызов сервисов типа _dataSerivce.DoSomeWork ();
 			_eventLog.LogInformation ($"Запуск задачи с параметром {state}");
-			Task.Delay (1000, cancellationToken).Wait ();
+			Task.Delay (1000, cancellationToken).Wait (cancellationToken);
 			throw new ArgumentException ("Имитация исключительной ситуации", nameof (state));
 		}
 

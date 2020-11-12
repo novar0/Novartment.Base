@@ -83,9 +83,9 @@ namespace Novartment.Base.Net.Smtp
 			}
 
 			byte[] initialResponse;
-			int responseSize;
 			var initialResponseBase64 = value.Slice (initialEesponseToken.Position, initialEesponseToken.Length);
 #if NETSTANDARD2_0
+			int responseSize;
 			try
 			{
 				initialResponse = Convert.FromBase64String (new string (initialResponseBase64.ToArray ()));
@@ -98,7 +98,7 @@ namespace Novartment.Base.Net.Smtp
 			}
 #else
 			initialResponse = new byte[(initialResponseBase64.Length / 4 * 3) + 2];
-			if (!Convert.TryFromBase64Chars (initialResponseBase64, initialResponse, out responseSize))
+			if (!Convert.TryFromBase64Chars (initialResponseBase64, initialResponse, out int responseSize))
 			{
 				return new SmtpInvalidSyntaxCommand (SmtpCommandType.Auth, FormattableString.Invariant (
 					$"Unrecognized 'AUTH' initial-response parameter."));

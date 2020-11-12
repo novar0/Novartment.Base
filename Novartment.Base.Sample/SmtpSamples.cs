@@ -129,7 +129,7 @@ namespace Novartment.Base.Sample
 					originatorLogger);
 				using var connection = await SocketBinaryTcpConnection.CreateAsync (serverNameAndAddr, cancellationToken)
 					.ConfigureAwait (false);
-				await Task.Delay (1000).ConfigureAwait (false); // имитация задержки при установке соединения
+				await Task.Delay (1000, cancellationToken).ConfigureAwait (false); // имитация задержки при установке соединения
 				await originatorProtocol.StartAsync (connection, cancellationToken).ConfigureAwait (false);
 			}
 		}

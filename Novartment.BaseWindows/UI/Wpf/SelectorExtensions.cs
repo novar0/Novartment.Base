@@ -76,7 +76,7 @@ namespace Novartment.Base.UI.Wpf
 
 		private static void MoveCurrentToFirstIfNoSelection (object sender, NotifyCollectionChangedEventArgs e)
 		{
-			if (!(sender is ICollectionView collectionView))
+			if (sender is not ICollectionView collectionView)
 			{
 				return;
 			}

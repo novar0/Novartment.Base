@@ -59,6 +59,7 @@ namespace Novartment.Base.Smtp.Test
 		{
 			_disposed = true;
 			_slowOperationInProgressEvent.Dispose ();
+			GC.SuppressFinalize (this);
 		}
 
 		public async Task StartAsync (AddrSpec returnPath, CancellationToken cancellationToken = default)
@@ -85,7 +86,7 @@ namespace Novartment.Base.Smtp.Test
 				for (int i = 0; i < 100; i++)
 				{
 					cancellationToken.ThrowIfCancellationRequested ();
-					await Task.Delay (20).ConfigureAwait (false);
+					await Task.Delay (20, cancellationToken).ConfigureAwait (false);
 				}
 
 				throw new InvalidOperationException ();
@@ -116,7 +117,7 @@ namespace Novartment.Base.Smtp.Test
 				for (int i = 0; i < 100; i++)
 				{
 					cancellationToken.ThrowIfCancellationRequested ();
-					await Task.Delay (20).ConfigureAwait (false);
+					await Task.Delay (20, cancellationToken).ConfigureAwait (false);
 				}
 
 				throw new InvalidOperationException ();
@@ -143,7 +144,7 @@ namespace Novartment.Base.Smtp.Test
 				for (int i = 0; i < 100; i++)
 				{
 					cancellationToken.ThrowIfCancellationRequested ();
-					await Task.Delay (20).ConfigureAwait (false);
+					await Task.Delay (20, cancellationToken).ConfigureAwait (false);
 				}
 
 				throw new InvalidOperationException ();

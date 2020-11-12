@@ -75,14 +75,14 @@ namespace Novartment.Base.Smtp.Test
 			for (i = 0; i < (group.Length - 2); i++)
 			{
 				Assert.StartsWith ("250-", group[i], StringComparison.OrdinalIgnoreCase);
-				if (group[i].Substring (4) == "PIPELINING")
+				if (group[i][4..] == "PIPELINING")
 				{
 					keywordFound = true;
 				}
 			}
 
 			Assert.StartsWith ("250 ", group[i], StringComparison.OrdinalIgnoreCase);
-			if (group[i].Substring (4) == "PIPELINING")
+			if (group[i][4..] == "PIPELINING")
 			{
 				keywordFound = true;
 			}

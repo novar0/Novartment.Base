@@ -32,7 +32,7 @@ namespace Novartment.Base.Text
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static int Decode (this StructuredStringToken token, ReadOnlySpan<char> source, Span<char> buffer, int bufferPosition)
 		{
-			return token.Format.DecodeToken (source.Slice (token.Position, token.Length), buffer.Slice (bufferPosition));
+			return token.Format.DecodeToken (source.Slice (token.Position, token.Length), buffer[bufferPosition..]);
 		}
 	}
 }

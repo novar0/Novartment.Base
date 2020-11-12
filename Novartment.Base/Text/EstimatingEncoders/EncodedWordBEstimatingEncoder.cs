@@ -98,7 +98,7 @@ namespace Novartment.Base.Text
 			var outOffset = 0;
 			destination[outOffset++] = (byte)'=';
 			destination[outOffset++] = (byte)'?';
-			AsciiCharSet.GetBytes (_encoding.WebName.AsSpan (), destination.Slice (outOffset));
+			AsciiCharSet.GetBytes (_encoding.WebName.AsSpan (), destination[outOffset..]);
 			outOffset += _encoding.WebName.Length;
 			destination[outOffset++] = (byte)'?';
 			destination[outOffset++] = (byte)'B';
@@ -107,7 +107,7 @@ namespace Novartment.Base.Text
 			var groupsRequested = (int)Math.Ceiling (source.Length / 3.0);
 			var groups = Math.Min (groupsRequested, maxGroups);
 			var sourceCount = Math.Min (source.Length, groups * 3);
-			var size = ConvertToBase64Array (source.Slice (0, sourceCount), destination.Slice (outOffset));
+			var size = ConvertToBase64Array (source.Slice (0, sourceCount), destination[outOffset..]);
 			outOffset += size;
 
 			// эпилог

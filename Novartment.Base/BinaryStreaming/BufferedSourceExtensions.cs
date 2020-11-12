@@ -195,7 +195,7 @@ namespace Novartment.Base.BinaryStreaming
 				totalSize = Math.Min (buffer.Length, source.Count);
 				source.BufferMemory.Slice (source.Offset, totalSize).CopyTo (buffer);
 				source.Skip (totalSize);
-				buffer = buffer.Slice (totalSize);
+				buffer = buffer[totalSize..];
 			}
 
 			if ((buffer.Length < 1) || source.IsExhausted)
@@ -227,7 +227,7 @@ namespace Novartment.Base.BinaryStreaming
 							break;
 						}
 
-						buffer = buffer.Slice (size);
+						buffer = buffer[size..];
 					}
 				}
 				while (!source.IsExhausted);
@@ -285,7 +285,7 @@ namespace Novartment.Base.BinaryStreaming
 				return new ValueTask<int> (totalOutCount);
 			}
 
-			buffer = buffer.Slice (totalOutCount);
+			buffer = buffer[totalOutCount..];
 
 			// продолжение поиска с предварительным вызовом заполнения буфера
 			return CopyToBufferUntilMarkerStateMachine ();
@@ -315,7 +315,7 @@ namespace Novartment.Base.BinaryStreaming
 					{
 						source.BufferMemory.Slice (source.Offset, outCount).CopyTo (buffer);
 						source.Skip (outCount);
-						buffer = buffer.Slice (outCount);
+						buffer = buffer[outCount..];
 						totalOutCount += outCount;
 					}
 				}

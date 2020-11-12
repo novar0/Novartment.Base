@@ -81,7 +81,7 @@ namespace Novartment.Base
 					if (_outArraySizes[idx] == 2)
 					{
 						totalSize += _outArraySizes[idx];
-						_outArray.AsSpan (0, totalSize).CopyTo (outputBuffer.Slice (outputOffset));
+						_outArray.AsSpan (0, totalSize).CopyTo (outputBuffer[outputOffset..]);
 						outputSize += totalSize;
 						outputOffset += totalSize;
 						_outArrayCount -= totalSize;
@@ -110,7 +110,7 @@ namespace Novartment.Base
 						// данных хватает на целую строку, выводим её
 						if ((totalSize + _outArraySizes[idx]) > MaximumLineLen)
 						{
-							_outArray.AsSpan (0, totalSize).CopyTo (outputBuffer.Slice (outputOffset));
+							_outArray.AsSpan (0, totalSize).CopyTo (outputBuffer[outputOffset..]);
 							outputSize += totalSize;
 							outputOffset += totalSize;
 							_outArrayCount -= totalSize;

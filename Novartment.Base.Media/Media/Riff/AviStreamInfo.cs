@@ -133,9 +133,7 @@ namespace Novartment.Base.Media
 		/// <returns>Параметры потока AVI-файла.</returns>
 		public static Task<AviStreamInfo> ParseAsync (
 			RiffChunkListReader chunkListReader,
-#pragma warning disable CA1801 // Review unused parameters
 			CancellationToken cancellationToken = default)
-#pragma warning restore CA1801 // Review unused parameters
 		{
 			if (chunkListReader == null)
 			{
@@ -208,22 +206,22 @@ namespace Novartment.Base.Media
 							type = AsciiCharSet.GetString (chunk.Source.BufferMemory.Span.Slice (chunk.Source.Offset, 4));
 
 							var sourceBuf = chunk.Source.BufferMemory;
-							var handlerNumber = BinaryPrimitives.ReadUInt32LittleEndian (sourceBuf.Span.Slice (chunk.Source.Offset + 4));
+							var handlerNumber = BinaryPrimitives.ReadUInt32LittleEndian (sourceBuf.Span[(chunk.Source.Offset + 4)..]);
 							handler = (handlerNumber == 0) ? null : (handlerNumber >= 0x20202020) ?
 									AsciiCharSet.GetString (sourceBuf.Span.Slice (chunk.Source.Offset + 4, 4)) :
 									handlerNumber.ToString (CultureInfo.InvariantCulture);
-							options = BinaryPrimitives.ReadUInt32LittleEndian (sourceBuf.Span.Slice (chunk.Source.Offset + 8));
-							priority = BinaryPrimitives.ReadUInt16LittleEndian (sourceBuf.Span.Slice (chunk.Source.Offset + 12));
-							language = BinaryPrimitives.ReadUInt16LittleEndian (sourceBuf.Span.Slice (chunk.Source.Offset + 14));
-							scale = BinaryPrimitives.ReadUInt32LittleEndian (sourceBuf.Span.Slice (chunk.Source.Offset + 20));
-							rate = BinaryPrimitives.ReadUInt32LittleEndian (sourceBuf.Span.Slice (chunk.Source.Offset + 24));
-							start = BinaryPrimitives.ReadUInt32LittleEndian (sourceBuf.Span.Slice (chunk.Source.Offset + 28));
-							length = BinaryPrimitives.ReadUInt32LittleEndian (sourceBuf.Span.Slice (chunk.Source.Offset + 32));
-							sampleSize = BinaryPrimitives.ReadUInt32LittleEndian (sourceBuf.Span.Slice (chunk.Source.Offset + 44));
-							left = BinaryPrimitives.ReadUInt16LittleEndian (sourceBuf.Span.Slice (chunk.Source.Offset + 48));
-							top = BinaryPrimitives.ReadUInt16LittleEndian (sourceBuf.Span.Slice (chunk.Source.Offset + 50));
-							right = BinaryPrimitives.ReadUInt16LittleEndian (sourceBuf.Span.Slice (chunk.Source.Offset + 52));
-							bottom = BinaryPrimitives.ReadUInt16LittleEndian (sourceBuf.Span.Slice (chunk.Source.Offset + 54));
+							options = BinaryPrimitives.ReadUInt32LittleEndian (sourceBuf.Span[(chunk.Source.Offset + 8)..]);
+							priority = BinaryPrimitives.ReadUInt16LittleEndian (sourceBuf.Span[(chunk.Source.Offset + 12)..]);
+							language = BinaryPrimitives.ReadUInt16LittleEndian (sourceBuf.Span[(chunk.Source.Offset + 14)..]);
+							scale = BinaryPrimitives.ReadUInt32LittleEndian (sourceBuf.Span[(chunk.Source.Offset + 20)..]);
+							rate = BinaryPrimitives.ReadUInt32LittleEndian (sourceBuf.Span[(chunk.Source.Offset + 24)..]);
+							start = BinaryPrimitives.ReadUInt32LittleEndian (sourceBuf.Span[(chunk.Source.Offset + 28)..]);
+							length = BinaryPrimitives.ReadUInt32LittleEndian (sourceBuf.Span[(chunk.Source.Offset + 32)..]);
+							sampleSize = BinaryPrimitives.ReadUInt32LittleEndian (sourceBuf.Span[(chunk.Source.Offset + 44)..]);
+							left = BinaryPrimitives.ReadUInt16LittleEndian (sourceBuf.Span[(chunk.Source.Offset + 48)..]);
+							top = BinaryPrimitives.ReadUInt16LittleEndian (sourceBuf.Span[(chunk.Source.Offset + 50)..]);
+							right = BinaryPrimitives.ReadUInt16LittleEndian (sourceBuf.Span[(chunk.Source.Offset + 52)..]);
+							bottom = BinaryPrimitives.ReadUInt16LittleEndian (sourceBuf.Span[(chunk.Source.Offset + 54)..]);
 						}
 					}
 				}

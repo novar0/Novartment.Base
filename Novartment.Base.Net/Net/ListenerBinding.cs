@@ -30,9 +30,7 @@ namespace Novartment.Base.Net
 
 		internal ICollection<ConnectedClient> ConnectedClients => _connections.Values;
 
-#pragma warning disable CA1063 // Implement IDisposable Correctly
 		public void Dispose ()
-#pragma warning restore CA1063 // Implement IDisposable Correctly
 		{
 			SafeMethods.TryDispose (_listener);
 			foreach (var client in _connections.Values)

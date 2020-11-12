@@ -212,9 +212,7 @@ namespace Novartment.Base.UI
 			this.PropertyChanged?.Invoke (this, args);
 		}
 
-#pragma warning disable CA1801 // Review unused parameters
 		private bool CanStart (object notUsed)
-#pragma warning restore CA1801 // Review unused parameters
 		{
 			return !this.IsRunning;
 		}

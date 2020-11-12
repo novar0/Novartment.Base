@@ -124,12 +124,12 @@ namespace Novartment.Base.Media
 				*/
 
 				var sourceBuf = source.BufferMemory;
-				var compressionNumber = BinaryPrimitives.ReadUInt32LittleEndian (sourceBuf.Span.Slice (source.Offset + 16));
-				var width = BinaryPrimitives.ReadUInt32LittleEndian (sourceBuf.Span.Slice (source.Offset + 4));
-				var height = BinaryPrimitives.ReadUInt32LittleEndian (sourceBuf.Span.Slice (source.Offset + 8));
-				var planes = BinaryPrimitives.ReadUInt32LittleEndian (sourceBuf.Span.Slice (source.Offset + 12));
-				var bitCount = BinaryPrimitives.ReadUInt32LittleEndian (sourceBuf.Span.Slice (source.Offset + 14));
-				var sizeImage = BinaryPrimitives.ReadUInt32LittleEndian (sourceBuf.Span.Slice (source.Offset + 20));
+				var compressionNumber = BinaryPrimitives.ReadUInt32LittleEndian (sourceBuf.Span[(source.Offset + 16)..]);
+				var width = BinaryPrimitives.ReadUInt32LittleEndian (sourceBuf.Span[(source.Offset + 4)..]);
+				var height = BinaryPrimitives.ReadUInt32LittleEndian (sourceBuf.Span[(source.Offset + 8)..]);
+				var planes = BinaryPrimitives.ReadUInt32LittleEndian (sourceBuf.Span[(source.Offset + 12)..]);
+				var bitCount = BinaryPrimitives.ReadUInt32LittleEndian (sourceBuf.Span[(source.Offset + 14)..]);
+				var sizeImage = BinaryPrimitives.ReadUInt32LittleEndian (sourceBuf.Span[(source.Offset + 20)..]);
 				var codecId = (compressionNumber >= 0x20202020) ?
 					AsciiCharSet.GetString (source.BufferMemory.Span.Slice (source.Offset + 16, 4)) :
 					compressionNumber.ToString (CultureInfo.InvariantCulture);

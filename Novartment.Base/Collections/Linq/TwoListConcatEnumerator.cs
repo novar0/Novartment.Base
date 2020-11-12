@@ -45,7 +45,7 @@ namespace Novartment.Base.Collections.Linq
 			}
 		}
 
-		object IEnumerator.Current => Current;
+		object IEnumerator.Current => this.Current;
 
 		/// <summary>
 		/// Advances the enumerator to the next element of the list.

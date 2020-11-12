@@ -83,9 +83,7 @@ namespace Novartment.Base
 			{
 				if (propertyName == null)
 				{
-#pragma warning disable CA1065 // Do not raise exceptions in unexpected locations
 					throw new ArgumentNullException (nameof (propertyName));
-#pragma warning restore CA1065 // Do not raise exceptions in unexpected locations
 				}
 
 				Contract.EndContractBlock ();

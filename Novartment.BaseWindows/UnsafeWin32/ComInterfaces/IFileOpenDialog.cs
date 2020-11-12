@@ -4,7 +4,6 @@ using System.Runtime.InteropServices;
 
 namespace Novartment.Base.UnsafeWin32
 {
-#pragma warning disable SA1600 // Elements must be documented
 	[ComImport]
 	[Guid ("42f85136-db7e-439c-85f1-e4075d135fc8")]
 	[InterfaceType (ComInterfaceType.InterfaceIsIUnknown)]
@@ -99,5 +98,4 @@ namespace Novartment.Base.UnsafeWin32
 		[return: MarshalAs (UnmanagedType.Interface)]
 		IShellItemArray GetSelectedItems ();
 	}
-#pragma warning restore SA1600 // Elements must be documented
 }

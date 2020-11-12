@@ -59,11 +59,9 @@ namespace Novartment.Base.Net.Mime
 		/// <returns>Строковое представление объекта.</returns>
 		public override string ToString ()
 		{
-#pragma warning disable CA1305 // Specify IFormatProvider
 			return (this.ReceivedTime.HasValue ? this.ReceivedTime.Value.LocalDateTime.ToString () : string.Empty) +
 				" " +
 				this.ReceivedParameters;
-#pragma warning restore CA1305 // Specify IFormatProvider
 		}
 	}
 }

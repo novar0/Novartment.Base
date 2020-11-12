@@ -165,7 +165,7 @@ namespace Novartment.Base.Shell
 		{
 			get
 			{
-				if (!(_nativeShellItem is IShellItem2 shellItem))
+				if (_nativeShellItem is not IShellItem2 shellItem)
 				{
 					throw new NotSupportedException("Failed to get properties of shell item because it does not implements required IShellItem2 interface.");
 				}
@@ -185,7 +185,7 @@ namespace Novartment.Base.Shell
 		{
 			get
 			{
-				if (!(_nativeShellItem is IShellItem2 shellItem))
+				if (_nativeShellItem is not IShellItem2 shellItem)
 				{
 					throw new NotSupportedException("Failed to get properties of shell item because it does not implements required IShellItem2 interface.");
 				}
@@ -205,7 +205,7 @@ namespace Novartment.Base.Shell
 		{
 			get
 			{
-				if (!(_nativeShellItem is IShellItem2 shellItem))
+				if (_nativeShellItem is not IShellItem2 shellItem)
 				{
 					throw new NotSupportedException("Failed to get properties of shell item because it does not implements required IShellItem2 interface.");
 				}
@@ -225,7 +225,7 @@ namespace Novartment.Base.Shell
 		{
 			get
 			{
-				if (!(_nativeShellItem is IShellItem2 shellItem))
+				if (_nativeShellItem is not IShellItem2 shellItem)
 				{
 					throw new NotSupportedException("Failed to get properties of shell item because it does not implements required IShellItem2 interface.");
 				}
@@ -245,7 +245,7 @@ namespace Novartment.Base.Shell
 		{
 			get
 			{
-				if (!(_nativeShellItem is IShellItem2 shellItem))
+				if (_nativeShellItem is not IShellItem2 shellItem)
 				{
 					throw new NotSupportedException("Failed to get properties of shell item because it does not implements required IShellItem2 interface.");
 				}
@@ -364,7 +364,7 @@ namespace Novartment.Base.Shell
 			}
 
 			var data = dataContainer.GetData(DataContainerFormats.ShellIdList, true);
-			if (!(data is MemoryStream memStream))
+			if (data is not MemoryStream memStream)
 			{
 				return null;
 			}

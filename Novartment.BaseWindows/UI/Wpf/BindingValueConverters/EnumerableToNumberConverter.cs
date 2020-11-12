@@ -19,7 +19,7 @@ namespace Novartment.Base.UI.Wpf
 		/// <returns>Преобразованное значение.</returns>
 		public object Convert (object value, Type targetType, object parameter, CultureInfo culture)
 		{
-			if (!(value is IConvertible conv))
+			if (value is not IConvertible conv)
 			{
 				throw new ArgumentOutOfRangeException(nameof(value));
 			}
@@ -35,7 +35,7 @@ namespace Novartment.Base.UI.Wpf
 		/// <returns>Преобразованное значение.</returns>
 		public object ConvertBack (object value, Type targetType, object parameter, CultureInfo culture)
 		{
-			if (!(value is IConvertible conv))
+			if (value is not IConvertible conv)
 			{
 				throw new ArgumentOutOfRangeException(nameof(value));
 			}
