@@ -17,7 +17,7 @@ namespace Novartment.Base
 		/// <returns>Строковое описание окружения.</returns>
 		public static string Framework =>
 			FormattableString.Invariant (
-				$"{Environment.OSVersion} {(Environment.Is64BitOperatingSystem ? "x64" : "x86")} CLR {Environment.Version}");
+				$"{Environment.OSVersion} {(Environment.Is64BitOperatingSystem ? "64-bit" : "32-bit")} CLR {Environment.Version}");
 
 		/// <summary>
 		/// Создаёт строковое описание текущего пользователя,
@@ -43,7 +43,7 @@ namespace Novartment.Base
 				}
 
 				var principal = new WindowsPrincipal (user);
-				var roles = new ArrayList<string> ();
+				var roles = new ArrayList<string> (3);
 				var isAdmin = principal.IsInRole (WindowsBuiltInRole.Administrator);
 				if (isAdmin)
 				{
