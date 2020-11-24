@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Novartment.Base.Shell;
 using Novartment.Base.Tasks;
 using Novartment.Base.UI;
@@ -33,7 +34,7 @@ namespace Novartment.Base.SampleWpf
 		private readonly IClipboard _clipBoardService;
 		private readonly Func<IDataContainer> _clipboardObjectFactory;
 		private readonly ComponentApplication _application;
-		private readonly AppSettings _appSettings;
+		private readonly IOptions<AppSettings> _appSettings;
 		private readonly Func<MessageBoxFormData, Autofac.Features.OwnedInstances.Owned<IDialogView<System.Windows.MessageBoxResult>>> _messageBoxFactory;
 		private readonly TaskScheduler _taskSchedulerShell = new OleStaTaskScheduler (1);
 		private readonly CommandedRepeatableTask _refreshDataTask;
@@ -43,7 +44,7 @@ namespace Novartment.Base.SampleWpf
 
 		public MainViewModel (
 			ComponentApplication application,
-			AppSettings appSettings,
+			IOptions<AppSettings> appSettings,
 			SimpleEventLog eventLog,
 			IClipboard clipBoardService,
 			Func<IDataContainer> clipboardObjectFactory,
@@ -78,7 +79,7 @@ namespace Novartment.Base.SampleWpf
 			_copyItemTask = new CollectionContextCommandedRepeatableTask<SimpleEventRecord> (CopyItem, _taskSchedulerShell); // , Properties.Resources.TaskCopyEventLogTitle);
 			_clearItemsTask = new CollectionContextCommandedRepeatableTask<SimpleEventRecord> (ClearItems, TaskScheduler.Default); // , Properties.Resources.TaskClearEventLogTitle);
 
-			_eventLog.LogInformation (string.Format ("Запущена программа версии {0}", Version));
+			_eventLog.LogInformation ($"Запущена программа версии {Version}. IntParameter={_appSettings.Value.IntParameter} StringParameter={_appSettings.Value.StringParameter}");
 		}
 
 		public static string Version => ComponentApplication.Current.Version;

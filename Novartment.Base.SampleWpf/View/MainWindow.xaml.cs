@@ -1,4 +1,5 @@
 ﻿using System;
+using Microsoft.Extensions.Options;
 using Novartment.Base.UI;
 using Novartment.Base.UI.Wpf;
 
@@ -17,13 +18,13 @@ namespace Novartment.Base.SampleWpf
 	/// </summary>
 	public partial class MainWindow : System.Windows.Window
 	{
-		private readonly AppSettings _appSettings;
+		private readonly IOptions<AppSettings> _appSettings;
 		private readonly IDisposable _dropSourceRegistration;
 		private readonly IDisposable _dropTargetRegistration;
 
 		public MainWindow (
 			BaseViewModel viewModel,
-			AppSettings appSettings,
+			IOptions<AppSettings> appSettings,
 			IDragDropSource dragDropSourceHandler,
 			IDragDropTarget dragDropTargetHandler)
 		{

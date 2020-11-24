@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <AssemblyName>Novartment.Base.Media</AssemblyName>
+	<PropertyGroup>
+		<AssemblyName>Novartment.Base.Media</AssemblyName>
 		<TargetFrameworks>netstandard2.0;net5.0</TargetFrameworks>
 		<Version>4.5.0-beta</Version>
 		<Description>Base classes for Media</Description>
@@ -12,7 +12,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-    <ProjectReference Include="..\Novartment.Base\Novartment.Base.csproj" />
-  </ItemGroup>
+		<ProjectReference Include="..\Novartment.Base\Novartment.Base.csproj" />
+	</ItemGroup>
 
 </Project>
