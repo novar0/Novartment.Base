@@ -114,9 +114,7 @@ namespace Novartment.Base.Test
 					channel.Skip (channel.Count);
 				}
 				dstData.Seek (0L, SeekOrigin.Begin);
-#pragma warning disable CA5350 // Do not use insecure cryptographic algorithm SHA1.
 				var dstHasher = SHA1.Create ();
-#pragma warning restore CA5350 // Do not use insecure cryptographic algorithm SHA1.
 				Assert.True (dstData.TryGetBuffer (out ArraySegment<byte> buf2));
 				return dstHasher.ComputeHash (buf2.Array, buf2.Offset, buf2.Count);
 			});
@@ -136,9 +134,7 @@ namespace Novartment.Base.Test
 			readTask.Wait ();
 
 			srcData.Seek (0L, SeekOrigin.Begin);
-#pragma warning disable CA5350 // Do not use insecure cryptographic algorithm SHA1.
 			var srcHasher = SHA1.Create ();
-#pragma warning restore CA5350 // Do not use insecure cryptographic algorithm SHA1.
 			Assert.True (srcData.TryGetBuffer (out ArraySegment<byte> buf));
 			var srcHash = srcHasher.ComputeHash (buf.Array, buf.Offset, buf.Count);
 			var dstHash = readTask.Result;

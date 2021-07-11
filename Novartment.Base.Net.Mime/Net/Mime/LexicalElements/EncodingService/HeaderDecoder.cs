@@ -107,12 +107,12 @@ namespace Novartment.Base.Net.Mime
 		- MUST NOT be used in any structured field body except within a 'comment' or 'phrase'.
 		*/
 
-		private static readonly NumberFormatInfo _numberFormatDot = new NumberFormatInfo { NumberDecimalSeparator = ".", NumberGroupSeparator = "," };
+		private static readonly NumberFormatInfo _numberFormatDot = new () { NumberDecimalSeparator = ".", NumberGroupSeparator = "," };
 
 		/// <summary>
 		/// Парсер структурированного значения типа RFC 822 'atom' из его исходного ASCII-строкового представления.
 		/// </summary>
-		internal static readonly StructuredStringFormat DotAtomFormat = new StructuredStringFormat (
+		internal static readonly StructuredStringFormat DotAtomFormat = new (
 			AsciiCharClasses.WhiteSpace,
 			AsciiCharClasses.Atom,
 			'.',
@@ -121,7 +121,7 @@ namespace Novartment.Base.Net.Mime
 		/// <summary>
 		/// Парсер структурированного значения типа RFC 822 'dot-atom' из его исходного ASCII-строкового представления.
 		/// </summary>
-		internal static readonly StructuredStringFormat AtomFormat = new StructuredStringFormat (
+		internal static readonly StructuredStringFormat AtomFormat = new (
 			AsciiCharClasses.WhiteSpace,
 			AsciiCharClasses.Atom,
 			char.MaxValue,
@@ -130,7 +130,7 @@ namespace Novartment.Base.Net.Mime
 		/// <summary>
 		/// Парсер структурированного значения типа RFC 2045 'token' из его исходного ASCII-строкового представления.
 		/// </summary>
-		internal static readonly StructuredStringFormat TokenFormat = new StructuredStringFormat (
+		internal static readonly StructuredStringFormat TokenFormat = new (
 			AsciiCharClasses.WhiteSpace,
 			AsciiCharClasses.Token,
 			char.MaxValue,
@@ -139,7 +139,7 @@ namespace Novartment.Base.Net.Mime
 		/// <summary>
 		/// Парсер произвольных наборов символов, разделённых пробелами.
 		/// </summary>
-		private static readonly StructuredStringFormat _AnyVisibleCharFormat = new StructuredStringFormat (
+		private static readonly StructuredStringFormat _AnyVisibleCharFormat = new (
 			AsciiCharClasses.WhiteSpace,
 			AsciiCharClasses.Visible,
 			char.MaxValue,

@@ -13,7 +13,7 @@ namespace Novartment.Base.UI.Wpf
 	public class SplitButton : Button
 	{
 		private const string SplitElementName = "SplitElement";
-		private readonly ObservableCollection<object> _buttonMenuItemsSource = new ObservableCollection<object> ();
+		private readonly ObservableCollection<object> _buttonMenuItemsSource = new ();
 		private UIElement _splitElement;
 		private ContextMenu _contextMenu;
 		private Point _contextMenuInitialOffset;

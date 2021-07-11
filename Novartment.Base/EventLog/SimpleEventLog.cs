@@ -27,7 +27,7 @@ namespace Novartment.Base
 		INotifyPropertyChanged,
 		IDisposable
 	{
-		private readonly ConcurrentList<SimpleEventRecord> _events = new ConcurrentList<SimpleEventRecord> ();
+		private readonly ConcurrentList<SimpleEventRecord> _events = new ();
 		private SingleLinkedListNode<Regex> _templatesToHide = null;
 		private int _recordLimit = 1000;
 		private bool _replacementEnabled;

@@ -15,7 +15,7 @@ namespace Novartment.Base.Net
 		private readonly ITcpListener _listener;
 		private readonly ITcpConnectionProtocol _protocol;
 		private readonly ILogger _logger;
-		private readonly ConcurrentDictionary<IPEndPoint, ConnectedClient> _connections = new ConcurrentDictionary<IPEndPoint, ConnectedClient> ();
+		private readonly ConcurrentDictionary<IPEndPoint, ConnectedClient> _connections = new ();
 		private CancellationTokenSource _acceptConnectionsLoopCancellation = null;
 		private Task _processingTask = Task.CompletedTask;
 

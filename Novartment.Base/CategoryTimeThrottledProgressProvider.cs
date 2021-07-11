@@ -26,7 +26,7 @@ namespace Novartment.Base
 		IDisposable
 	{
 		private readonly IProgress<T> _progress;
-		private readonly object _dictionaryLocker = new object ();
+		private readonly object _dictionaryLocker = new ();
 		private readonly IComparer<int> _categoryComparer = Comparer<int>.Default;
 		private readonly Func<Action, ITimer> _timerFactory;
 		private readonly TimeSpan _intervalToSendProgressUpdates;

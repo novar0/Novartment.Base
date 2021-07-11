@@ -17,12 +17,12 @@ namespace Novartment.Base.Shell
 	[DebuggerDisplay ("{DisplayNameRelative}")]
 	public sealed class ShellItem
 	{
-		private static readonly Guid _guidIShellItem = new Guid ("43826D1E-E718-42EE-BC55-A1E261C37BFE");
-		private static readonly ShellPropertyKey _shellPropertyKeySize = new ShellPropertyKey (new Guid ("B725F130-47EF-101A-A5F1-02608C9EEBAC"), 12);
-		private static readonly ShellPropertyKey _shellPropertyKeyFileAttributes = new ShellPropertyKey (new Guid ("B725F130-47EF-101A-A5F1-02608C9EEBAC"), 13);
-		private static readonly ShellPropertyKey _shellPropertyKeyDateModified = new ShellPropertyKey (new Guid ("B725F130-47EF-101A-A5F1-02608C9EEBAC"), 14);
-		private static readonly ShellPropertyKey _shellPropertyKeyDateCreated = new ShellPropertyKey (new Guid ("B725F130-47EF-101A-A5F1-02608C9EEBAC"), 15);
-		private static readonly ShellPropertyKey _shellPropertyKeyDateAccessed = new ShellPropertyKey (new Guid ("B725F130-47EF-101A-A5F1-02608C9EEBAC"), 16);
+		private static readonly Guid _guidIShellItem = new ("43826D1E-E718-42EE-BC55-A1E261C37BFE");
+		private static readonly ShellPropertyKey _shellPropertyKeySize = new (new Guid ("B725F130-47EF-101A-A5F1-02608C9EEBAC"), 12);
+		private static readonly ShellPropertyKey _shellPropertyKeyFileAttributes = new (new Guid ("B725F130-47EF-101A-A5F1-02608C9EEBAC"), 13);
+		private static readonly ShellPropertyKey _shellPropertyKeyDateModified = new (new Guid ("B725F130-47EF-101A-A5F1-02608C9EEBAC"), 14);
+		private static readonly ShellPropertyKey _shellPropertyKeyDateCreated = new (new Guid ("B725F130-47EF-101A-A5F1-02608C9EEBAC"), 15);
+		private static readonly ShellPropertyKey _shellPropertyKeyDateAccessed = new (new Guid ("B725F130-47EF-101A-A5F1-02608C9EEBAC"), 16);
 		private readonly IShellItem _nativeShellItem;
 
 		/// <summary>

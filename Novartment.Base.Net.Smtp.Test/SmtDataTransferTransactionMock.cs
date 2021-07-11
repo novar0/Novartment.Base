@@ -23,11 +23,11 @@ namespace Novartment.Base.Smtp.Test
 	public sealed class SmtDataTransferTransactionMock :
 		IMailTransferTransactionHandler
 	{
-		private readonly List<AddrSpec> _recipients = new List<AddrSpec> ();
+		private readonly List<AddrSpec> _recipients = new ();
 		private readonly AddrSpec _forbiddenReversePath;
 		private readonly AddrSpec _forbiddenRecipient;
 		private readonly TransactionBehavior _transactionBehavior;
-		private readonly AutoResetEvent _slowOperationInProgressEvent = new AutoResetEvent (false);
+		private readonly AutoResetEvent _slowOperationInProgressEvent = new (false);
 		private AddrSpec _returnPath;
 		private string _readedData = null;
 		private bool _completed = false;

@@ -10,7 +10,7 @@ namespace Novartment.Base.Net.Test
 	internal sealed class StringWritingStream :
 		IBinaryDestination
 	{
-		private readonly Queue<string> _queue = new Queue<string> ();
+		private readonly Queue<string> _queue = new ();
 
 		internal Queue<string> Queue => _queue;
 

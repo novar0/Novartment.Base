@@ -10,9 +10,9 @@ namespace Novartment.Base.Net.Test
 		ITcpConnectionProtocol,
 		IDisposable
 	{
-		private readonly AutoResetEvent _startedEvent = new AutoResetEvent (false);
-		private readonly List<ITcpConnection> _connections = new List<ITcpConnection> ();
-		private readonly Dictionary<IPEndPoint, TaskCompletionSource<int>> _stopSignalers = new Dictionary<IPEndPoint, TaskCompletionSource<int>> ();
+		private readonly AutoResetEvent _startedEvent = new (false);
+		private readonly List<ITcpConnection> _connections = new ();
+		private readonly Dictionary<IPEndPoint, TaskCompletionSource<int>> _stopSignalers = new ();
 
 		internal TcpConnectionProtocolMock ()
 		{

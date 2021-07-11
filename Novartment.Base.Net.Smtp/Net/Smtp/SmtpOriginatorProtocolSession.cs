@@ -16,7 +16,7 @@ namespace Novartment.Base.Net.Smtp
 		IDisposable
 	{
 		private readonly ISmtpCommandTransport _transport;
-		private readonly AvlHashTreeSet<string> _serverSupportedExtensions = new AvlHashTreeSet<string> (StringComparer.OrdinalIgnoreCase);
+		private readonly AvlHashTreeSet<string> _serverSupportedExtensions = new (StringComparer.OrdinalIgnoreCase);
 		private readonly string _hostFqdn;
 		private int _completed = 0;
 

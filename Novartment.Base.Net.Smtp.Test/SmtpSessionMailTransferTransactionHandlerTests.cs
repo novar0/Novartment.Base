@@ -10,9 +10,9 @@ namespace Novartment.Base.Smtp.Test
 {
 	public sealed class SmtpSessionMailTransferTransactionHandlerTests
 	{
-		private static readonly AddrSpec Mailbox0 = new AddrSpec ("someone", "server.org");
-		private static readonly AddrSpec Mailbox1 = new AddrSpec ("postmaster", "github.org");
-		private static readonly AddrSpec Mailbox2 = new AddrSpec ("admin", "sender.org");
+		private static readonly AddrSpec Mailbox0 = new ("someone", "server.org");
+		private static readonly AddrSpec Mailbox1 = new ("postmaster", "github.org");
+		private static readonly AddrSpec Mailbox2 = new ("admin", "sender.org");
 		private static readonly string MailBody = "Hello!!\r\n\r\nPlese reply me.\r\n";
 		private static readonly string InvalidMailBodyPart1 = "Hello!!";
 		private static readonly string InvalidMailBodyPart2 = "\r\n.\r\nPlese reply me.\r\n";

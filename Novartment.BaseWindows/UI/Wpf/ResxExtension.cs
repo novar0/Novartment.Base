@@ -74,16 +74,16 @@ namespace Novartment.Base.UI.Wpf
 			new FrameworkPropertyMetadata (null, FrameworkPropertyMetadataOptions.AffectsRender | FrameworkPropertyMetadataOptions.Inherits, OnDefaultResxNamePropertyChanged));
 
 		/// <summary>Cached resource managers.</summary>
-		private static readonly Dictionary<string, WeakReference> _resourceManagers = new Dictionary<string, WeakReference> ();
+		private static readonly Dictionary<string, WeakReference> _resourceManagers = new ();
 
 		/// <summary>The manager for resx extensions.</summary>
-		private static readonly MarkupExtensionManager _markupManager = new MarkupExtensionManager (40);
+		private static readonly MarkupExtensionManager _markupManager = new (40);
 
 		/// <summary>The binding (if any) used to store the binding properties for the extension.</summary>
 		private readonly ILazyValueHolder<Binding> _binding = new LazyValueHolder<Binding> ();
 
 		/// <summary>The child ResxExtensions (if any) when using MultiBinding expressions.</summary>
-		private readonly Collection<ResxExtension> _children = new Collection<ResxExtension> ();
+		private readonly Collection<ResxExtension> _children = new ();
 
 		/// <summary>The explicitly set embedded Resx Name (if any).</summary>
 		private string _resxName;
@@ -655,9 +655,7 @@ namespace Novartment.Base.UI.Wpf
 
 				if (_resourceManager != null)
 				{
-#pragma warning disable CA1304 // Specify CultureInfo
 					result = _resourceManager.GetObject (_key/*, CultureManager.UICulture*/);
-#pragma warning restore CA1304 // Specify CultureInfo
 				}
 
 				if (!this.IsMultiBindingChild)

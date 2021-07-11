@@ -43,7 +43,7 @@ namespace Novartment.Base.Collections
 		private readonly string _lockWriteTimeoutMessage = "Elapsed timeout waiting acquiring lock for write data operation. Probably it is deadlock.";
 		private readonly IEqualityComparer<TKey> _comparer;
 		private readonly Func<TKey, TValue> _valueFactory;
-		private readonly ReaderWriterLockSlim _bucketsLock = new ReaderWriterLockSlim ();
+		private readonly ReaderWriterLockSlim _bucketsLock = new ();
 		private readonly KeyEnumerationProvider _keyEnumerationProvider; // ссылка на внутренний класс
 		private readonly ValueEnumerationProvider _valueEnumerationProvider; // ссылка на внутренний класс
 		private Entry[] _entries;

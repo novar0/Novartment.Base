@@ -20,7 +20,7 @@ namespace Novartment.Base.BinaryStreaming
 		IFastSkipBufferedSource,
 		IBinaryDestination
 	{
-		private readonly object _integrityLocker = new object ();
+		private readonly object _integrityLocker = new ();
 		private readonly Memory<byte> _buffer;
 		private int _offset = 0;
 		private int _count = 0;
@@ -28,12 +28,12 @@ namespace Novartment.Base.BinaryStreaming
 		// Задача, завершение которой означает, что с момента последнего запроса данных при отсутствии отложенных данных записи,
 		// произошла запись новых данных.
 		// Завершённая заменяется на новую при любом запросе данных если отсутствуют отложенные данные записи.
-		private TaskCompletionSource<int> _pendingDataArrival = new TaskCompletionSource<int> ();
+		private TaskCompletionSource<int> _pendingDataArrival = new ();
 
 		// Задача, завершение которой означает, что с момента последней записи для которой не хватило места в буфере,
 		// произошло освобождение места в буфере и копирование туда всех ожидающих данных.
 		// Заменяется на новую при записи, для которой не хватило места в буфере.
-		private TaskCompletionSource<int> _pendingDataConsumption = new TaskCompletionSource<int> ();
+		private TaskCompletionSource<int> _pendingDataConsumption = new ();
 
 		// следующие поля требуют синхронизации (через _integrityLocker) ЛЮБОГО доступа (в том числе при чтении)
 		// потому что могут изменяться конкурентно

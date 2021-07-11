@@ -9,9 +9,9 @@ namespace Novartment.Base.Net.Test
 	internal sealed class TcpListenerMock :
 		ITcpListener
 	{
-		private readonly AutoResetEvent _stopedEvent = new AutoResetEvent (false);
+		private readonly AutoResetEvent _stopedEvent = new (false);
 		private readonly IPEndPoint _endpoint;
-		private readonly AsyncQueue<IPEndPoint> _incomingConnections = new AsyncQueue<IPEndPoint> ();
+		private readonly AsyncQueue<IPEndPoint> _incomingConnections = new ();
 		private bool _isStarted = false;
 
 		internal TcpListenerMock (IPEndPoint endpoint)
@@ -57,8 +57,8 @@ namespace Novartment.Base.Net.Test
 
 		internal sealed class AsyncQueue<TItem>
 		{
-			private readonly Queue<TItem> _producers = new Queue<TItem> ();
-			private readonly Queue<TaskCompletionSource<TItem>> _consumers = new Queue<TaskCompletionSource<TItem>> ();
+			private readonly Queue<TItem> _producers = new ();
+			private readonly Queue<TaskCompletionSource<TItem>> _consumers = new ();
 
 			internal void Enqueue (TItem item)
 			{

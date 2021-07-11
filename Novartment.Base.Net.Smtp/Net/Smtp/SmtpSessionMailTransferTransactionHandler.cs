@@ -18,7 +18,7 @@ namespace Novartment.Base.Net.Smtp
 		private readonly SmtpOriginatorProtocolSession _session;
 		private readonly ContentTransferEncoding _requiredEncodingSupport;
 		private readonly ILogger _logger;
-		private readonly ArrayList<AddrSpec> _acceptedRecipients = new ArrayList<AddrSpec> (1);
+		private readonly ArrayList<AddrSpec> _acceptedRecipients = new (1);
 		private string _startingReturnPath = null;
 		private TransactionStatus _status = TransactionStatus.NotStarted;
 

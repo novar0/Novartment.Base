@@ -5,12 +5,10 @@ using Novartment.Base.Collections;
 
 namespace Novartment.Base.UI.Wpf
 {
-#pragma warning disable CA1010 // Collections should implement generic interface
 	/// <summary>
 	/// Коллекция из UIElement, поддерживающая уведомления об изменениях.
 	/// </summary>
 	public class ObservableUIElementCollection : UIElementCollection,
-#pragma warning restore CA1010 // Collections should implement generic interface
 		INotifyCollectionChanged
 	{
 		/// <summary>

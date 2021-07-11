@@ -11,9 +11,9 @@ namespace Novartment.Base.Net.Test
 		private readonly IPHostEndPoint _localEndpoint;
 		private readonly IPHostEndPoint _remoteEndpoint;
 		private readonly IBufferedSource _inData;
-		private readonly StringWritingStream _outData = new StringWritingStream ();
+		private readonly StringWritingStream _outData = new ();
 		private readonly Stopwatch _stopwatch = Stopwatch.StartNew ();
-		private readonly ManualResetEvent _disposedEvent = new ManualResetEvent (false);
+		private readonly ManualResetEvent _disposedEvent = new (false);
 		private bool _disposed = false;
 		private long _lastActivity;
 

@@ -17,7 +17,7 @@ namespace Novartment.Base
 		BaseTimer<TState>
 	{
 		private readonly Timer _timer;
-		private readonly object _integrityLocker = new object ();
+		private readonly object _integrityLocker = new ();
 		private TimeSpan _interval;
 		private bool _enabled;
 

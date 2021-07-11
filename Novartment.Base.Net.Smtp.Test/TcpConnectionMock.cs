@@ -12,7 +12,7 @@ namespace Novartment.Base.Smtp.Test
 		private readonly IPHostEndPoint _localEndpoint;
 		private readonly IPHostEndPoint _remoteEndpoint;
 		private readonly IBufferedSource _inData;
-		private readonly StringWritingStream _outData = new StringWritingStream ();
+		private readonly StringWritingStream _outData = new ();
 		private readonly Stopwatch _stopwatch = Stopwatch.StartNew ();
 		private bool _disposed = false;
 		private long _lastActivity;

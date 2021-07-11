@@ -23,10 +23,10 @@ namespace Novartment.Base.Data.SqlWrapper
 		private readonly int _commandTimeOut;
 		private readonly IDictionary<DbType, DbType> _dbTypeReplacements = new Dictionary<DbType, DbType> ();
 
-		private readonly object _connectionLocker = new object ();
-		private readonly object _transactionLocker = new object ();
+		private readonly object _connectionLocker = new ();
+		private readonly object _transactionLocker = new ();
 
-		private readonly ReusableDisposable<DbTransaction> _activeTransaction = new ReusableDisposable<DbTransaction> ();
+		private readonly ReusableDisposable<DbTransaction> _activeTransaction = new ();
 		private readonly ILogger _logger;
 		private int _globalParamNumber; // номера параметров для sql server должны быть уникальными в пределах транзакции
 

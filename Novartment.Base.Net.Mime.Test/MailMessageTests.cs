@@ -297,9 +297,7 @@ namespace Novartment.Base.Net.Mime.Test
 			byte[] hash;
 			var data = ((IDiscreteEntityBody)att.Body).GetDataSource ().ReadAllBytesAsync ().AsTask ().Result;
 			Assert.Equal (70289, data.Length);
-#pragma warning disable CA5351 // Do not use insecure cryptographic algorithm MD5.
 			using (var prov = MD5.Create ())
-#pragma warning restore CA5351 // Do not use insecure cryptographic algorithm MD5.
 			{
 				hash = prov.ComputeHash (data.ToArray ());
 			}

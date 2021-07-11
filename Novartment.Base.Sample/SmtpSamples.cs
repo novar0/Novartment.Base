@@ -176,7 +176,7 @@ namespace Novartment.Base.Sample
 			private readonly string _mailPickupDirectory;
 			private readonly ISet<string> _localDomains;
 			private readonly MailDeliverySourceData _deliverySourceAttributes;
-			private readonly ArrayList<AddrSpec> _recipients = new ArrayList<AddrSpec> (1);
+			private readonly ArrayList<AddrSpec> _recipients = new (1);
 			private AddrSpec _returnPath = null;
 
 			internal DeliveryToFileDataTransferTransaction (

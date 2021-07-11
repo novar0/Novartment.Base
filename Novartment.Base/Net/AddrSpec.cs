@@ -45,7 +45,7 @@ namespace Novartment.Base.Net
 			}
 		}
 
-		private static readonly StructuredStringFormat DotAtomFormat = new StructuredStringFormat (
+		private static readonly StructuredStringFormat DotAtomFormat = new (
 			AsciiCharClasses.WhiteSpace,
 			AsciiCharClasses.Atom,
 			'.',

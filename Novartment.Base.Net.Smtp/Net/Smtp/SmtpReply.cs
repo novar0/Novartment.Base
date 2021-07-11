@@ -10,76 +10,76 @@ namespace Novartment.Base.Net.Smtp
 {
 	internal sealed class SmtpReply
 	{
-		internal static readonly SmtpReply ReadyToStartTls = new SmtpReply (
+		internal static readonly SmtpReply ReadyToStartTls = new (
 			220, new string[] { "Ready to start TLS" });
 
-		internal static readonly SmtpReply Disconnect = new SmtpReply (
+		internal static readonly SmtpReply Disconnect = new (
 			221, new string[] { "Bye" });
 
-		internal static readonly SmtpReply AuthenticationSucceeded = new SmtpReply (
+		internal static readonly SmtpReply AuthenticationSucceeded = new (
 			235, new string[] { "Authentication Succeeded" });
 
-		internal static readonly SmtpReply OK = new SmtpReply (
+		internal static readonly SmtpReply OK = new (
 			250, new string[] { "OK" });
 
-		internal static readonly SmtpReply CannotVerifyUser = new SmtpReply (
+		internal static readonly SmtpReply CannotVerifyUser = new (
 			252, new string[] { "Cannot VRFY user, but will accept message" });
 
-		internal static readonly SmtpReply DataStart = new SmtpReply (
+		internal static readonly SmtpReply DataStart = new (
 			354, new string[] { "OK" });
 
-		internal static readonly SmtpReply ServiceNotAvailable = new SmtpReply (
+		internal static readonly SmtpReply ServiceNotAvailable = new (
 			421, new string[] { "Service shutting down and closing transmission channel" });
 
-		internal static readonly SmtpReply MailboxTemporarilyUnavailable = new SmtpReply (
+		internal static readonly SmtpReply MailboxTemporarilyUnavailable = new (
 			450, new string[] { "Mailbox temporarily unavailable (busy or temporarily blocked for policy reasons)" });
 
-		internal static readonly SmtpReply LocalError = new SmtpReply (
+		internal static readonly SmtpReply LocalError = new (
 			451, new string[] { "Local error in processing" });
 
-		internal static readonly SmtpReply TooManyRecipients = new SmtpReply (
+		internal static readonly SmtpReply TooManyRecipients = new (
 			452, new string[] { "Too many recipients" });
 
-		internal static readonly SmtpReply TlsNotAvailable = new SmtpReply (
+		internal static readonly SmtpReply TlsNotAvailable = new (
 			454, new string[] { "TLS not available due to temporary reason" });
 
-		internal static readonly SmtpReply NotImplemented = new SmtpReply (
+		internal static readonly SmtpReply NotImplemented = new (
 			500, new string[] { "Syntax error, command unrecognized" });
 
-		internal static readonly SmtpReply LineTooLong = new SmtpReply (
+		internal static readonly SmtpReply LineTooLong = new (
 			500, new string[] { "Syntax error, line too long" });
 
-		internal static readonly SmtpReply SyntaxErrorInParameter = new SmtpReply (
+		internal static readonly SmtpReply SyntaxErrorInParameter = new (
 			501, new string[] { "Syntax error in parameters or arguments" });
 
-		internal static readonly SmtpReply BadSequenceOfCommands = new SmtpReply (
+		internal static readonly SmtpReply BadSequenceOfCommands = new (
 			503, new string[] { "Bad sequence of commands" });
 
-		internal static readonly SmtpReply UnrecognizedAuthenticationType = new SmtpReply (
+		internal static readonly SmtpReply UnrecognizedAuthenticationType = new (
 			504, new string[] { "504 Unrecognized authentication type." });
 
-		internal static readonly SmtpReply MustUseStartTlsFirst = new SmtpReply (
+		internal static readonly SmtpReply MustUseStartTlsFirst = new (
 			530, new string[] { "Must issue a STARTTLS command first." });
 
-		internal static readonly SmtpReply AuthenticationRequired = new SmtpReply (
+		internal static readonly SmtpReply AuthenticationRequired = new (
 			530, new string[] { "Authentication required." });
 
-		internal static readonly SmtpReply AuthenticationCredentialsInvalid = new SmtpReply (
+		internal static readonly SmtpReply AuthenticationCredentialsInvalid = new (
 			535, new string[] { "Authentication credentials invalid." });
 
-		internal static readonly SmtpReply EncryptionRequiredForAuthentication = new SmtpReply (
+		internal static readonly SmtpReply EncryptionRequiredForAuthentication = new (
 			538, new string[] { "Encryption required for requested authentication mechanism." });
 
-		internal static readonly SmtpReply MailboxUnavailable = new SmtpReply (
+		internal static readonly SmtpReply MailboxUnavailable = new (
 			550, new string[] { "Mailbox unavailable (not found, no access, or rejected for policy reasons)" });
 
-		internal static readonly SmtpReply MailboxNotAllowed = new SmtpReply (
+		internal static readonly SmtpReply MailboxNotAllowed = new (
 			553, new string[] { "Requested action not taken: mailbox name not allowed" });
 
-		internal static readonly SmtpReply UnableToInitializeSecurity = new SmtpReply (
+		internal static readonly SmtpReply UnableToInitializeSecurity = new (
 			554, new string[] { "Unable to initialize security subsystem" });
 
-		internal static readonly SmtpReply NoValidRecipients = new SmtpReply (
+		internal static readonly SmtpReply NoValidRecipients = new (
 			554, new string[] { "No valid recipients" });
 
 		private SmtpReply (int code, IReadOnlyList<string> text)

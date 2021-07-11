@@ -7,7 +7,7 @@ namespace Novartment.Base.Test
 	internal sealed class SynchronizationContextMock : SynchronizationContext, IDisposable
 	{
 		private readonly Thread _thread;
-		private readonly BlockingCollection<Tuple<SendOrPostCallback, object>> _tasks = new BlockingCollection<Tuple<SendOrPostCallback, object>> ();
+		private readonly BlockingCollection<Tuple<SendOrPostCallback, object>> _tasks = new ();
 
 		public SynchronizationContextMock ()
 		{

@@ -27,7 +27,7 @@ namespace Novartment.Base.Collections
 
 				public TItem Current => _source.Current;
 
-				public ValueTask<bool> MoveNextAsync () => new ValueTask<bool> (_source.MoveNext ());
+				public ValueTask<bool> MoveNextAsync () => new (_source.MoveNext ());
 
 				public ValueTask DisposeAsync ()
 				{

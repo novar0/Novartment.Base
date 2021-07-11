@@ -9,7 +9,7 @@ namespace Novartment.Base.Test
 	internal sealed class TaskSchedulerMock : TaskScheduler, IDisposable
 	{
 		private readonly Thread _thread;
-		private readonly BlockingCollection<Task> _tasks = new BlockingCollection<Task> ();
+		private readonly BlockingCollection<Task> _tasks = new ();
 
 		internal TaskSchedulerMock ()
 		{

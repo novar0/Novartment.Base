@@ -17,7 +17,7 @@ namespace Novartment.Base.Net
 	{
 		private readonly Func<IPEndPoint, ITcpListener> _listenerFactory;
 		private readonly ILogger _logger;
-		private readonly ConcurrentDictionary<IPEndPoint, ListenerBinding> _bindings = new ConcurrentDictionary<IPEndPoint, ListenerBinding> ();
+		private readonly ConcurrentDictionary<IPEndPoint, ListenerBinding> _bindings = new ();
 		private readonly Timer _watchdogTimer;
 
 		private int _timerCallbackRunnig = 0;

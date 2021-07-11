@@ -11,7 +11,7 @@ namespace Novartment.Base
 		/// <summary>
 		/// Get the singleton instance of SimpleEventLog.
 		/// </summary>
-		public static readonly SimpleEventLog Logger = new SimpleEventLog ();
+		public static readonly SimpleEventLog Logger = new ();
 
 		/// <summary>
 		/// Initializes a new instance of the SimpleEventLogProvider class.

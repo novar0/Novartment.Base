@@ -17,7 +17,7 @@ namespace Novartment.Base.Media
 	[CLSCompliant (false)]
 	public sealed class EbmlElement
 	{
-		private static readonly DateTime MilleniumStart = new DateTime (2001, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+		private static readonly DateTime MilleniumStart = new (2001, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 		private static readonly sbyte[] ExtraBytesSize = { 4, 3, 2, 2, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0 };
 		private static readonly ulong[] DataBitsMask =
 		{

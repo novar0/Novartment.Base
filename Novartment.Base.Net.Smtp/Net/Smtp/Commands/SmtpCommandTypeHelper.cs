@@ -5,7 +5,7 @@ namespace Novartment.Base.Net.Smtp
 {
 	internal static class SmtpCommandTypeHelper
 	{
-		private static readonly ArrayList<Tuple<string, SmtpCommandType>> NameDictionary = new ArrayList<Tuple<string, SmtpCommandType>>
+		private static readonly ArrayList<Tuple<string, SmtpCommandType>> NameDictionary = new ()
 		{
 			Tuple.Create ("DATA", SmtpCommandType.Data),
 			Tuple.Create ("NOOP", SmtpCommandType.Noop),
