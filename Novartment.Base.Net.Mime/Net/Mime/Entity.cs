@@ -267,16 +267,11 @@ namespace Novartment.Base.Net.Mime
 		/// <param name="destination">The binary data destination, in which this entity will be saved.</param>
 		/// <param name="cancellationToken">The token to monitor for cancellation requests. The default value is System.Threading.CancellationToken.None.</param>
 		/// <returns>A task that represents the operation.</returns>
-		public Task SaveAsync (IBinaryDestination destination, CancellationToken cancellationToken = default)
+		public async Task SaveAsync (IBinaryDestination destination, CancellationToken cancellationToken = default)
 		{
 			if (destination == null)
 			{
 				throw new ArgumentNullException (nameof (destination));
-			}
-
-			if (cancellationToken.IsCancellationRequested)
-			{
-				return Task.FromCanceled (cancellationToken);
 			}
 
 			var header = new ArrayList<HeaderFieldBuilder> ();
@@ -286,16 +281,11 @@ namespace Novartment.Base.Net.Mime
 				header.Add (new HeaderFieldBuilderExactValue (field.Name, AsciiCharSet.GetString (field.Body.Span)));
 			}
 
-			return SaveAsyncStateMachine ();
-
-			async Task SaveAsyncStateMachine ()
+			await HeaderFieldBuilder.SaveHeaderAsync (header, destination, cancellationToken).ConfigureAwait (false);
+			await destination.WriteAsync (HeaderDecoder.CarriageReturnLinefeed, cancellationToken).ConfigureAwait (false);
+			if (_body != null)
 			{
-				await HeaderFieldBuilder.SaveHeaderAsync (header, destination, cancellationToken).ConfigureAwait (false);
-				await destination.WriteAsync (HeaderDecoder.CarriageReturnLinefeed, cancellationToken).ConfigureAwait (false);
-				if (_body != null)
-				{
-					await _body.SaveAsync (destination, cancellationToken).ConfigureAwait (false);
-				}
+				await _body.SaveAsync (destination, cancellationToken).ConfigureAwait (false);
 			}
 		}
 

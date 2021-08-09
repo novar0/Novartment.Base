@@ -66,7 +66,7 @@ namespace Novartment.Base.Media
 		/// <param name="source">Буфер данных содержащий подробности аудио-формата потока AVI-файла.</param>
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
 		/// <returns>Подробности аудио-формата потока AVI-файла, считанные из указанного буфера.</returns>
-		public static Task<AviStreamInfoAudioFormat> ParseAsync (IBufferedSource source, CancellationToken cancellationToken = default)
+		public static async Task<AviStreamInfoAudioFormat> ParseAsync (IBufferedSource source, CancellationToken cancellationToken = default)
 		{
 			if (source == null)
 			{
@@ -78,10 +78,9 @@ namespace Novartment.Base.Media
 				throw new ArgumentOutOfRangeException (nameof (source));
 			}
 
-			Task task;
 			try
 			{
-				task = source.EnsureAvailableAsync (18, cancellationToken).AsTask ();
+				await source.EnsureAvailableAsync (18, cancellationToken).ConfigureAwait (false);
 			}
 			catch (NotEnoughDataException exception)
 			{
@@ -90,46 +89,30 @@ namespace Novartment.Base.Media
 					exception);
 			}
 
-			return ParseAsyncFinalizer ();
+			/*  WORD	wFormatTag;
+				WORD	nChannels;
+				DWORD	nSamplesPerSec;
+				DWORD	nAvgBytesPerSec;
+				WORD	nBlockAlign;
+				WORD	wBitsPerSample;
+				WORD	cbSize;
+			*/
 
-			async Task<AviStreamInfoAudioFormat> ParseAsyncFinalizer ()
-			{
-				try
-				{
-					await task.ConfigureAwait (false);
-				}
-				catch (NotEnoughDataException exception)
-				{
-					throw new FormatException (
-						"Insuficient size of RIFF-chunk 'strf' for stream of type 'auds'. Expected minimum 18 bytes.",
-						exception);
-				}
+			var sourceBuf = source.BufferMemory;
+			var formatTag = BinaryPrimitives.ReadUInt16LittleEndian (sourceBuf.Span[source.Offset..]);
+			var channels = BinaryPrimitives.ReadUInt16LittleEndian (sourceBuf.Span[(source.Offset + 2)..]);
+			var samplesPerSec = BinaryPrimitives.ReadUInt32LittleEndian (sourceBuf.Span[(source.Offset + 4)..]);
+			var averageBytesPerSecond = BinaryPrimitives.ReadUInt32LittleEndian (sourceBuf.Span[(source.Offset + 8)..]);
+			var blockAlign = BinaryPrimitives.ReadUInt16LittleEndian (sourceBuf.Span[(source.Offset + 12)..]);
+			var bitsPerSample = BinaryPrimitives.ReadUInt16LittleEndian (sourceBuf.Span[(source.Offset + 14)..]);
 
-				/*  WORD	wFormatTag;
-					WORD	nChannels;
-					DWORD	nSamplesPerSec;
-					DWORD	nAvgBytesPerSec;
-					WORD	nBlockAlign;
-					WORD	wBitsPerSample;
-					WORD	cbSize;
-				*/
-
-				var sourceBuf = source.BufferMemory;
-				var formatTag = BinaryPrimitives.ReadUInt16LittleEndian (sourceBuf.Span[source.Offset..]);
-				var channels = BinaryPrimitives.ReadUInt16LittleEndian (sourceBuf.Span[(source.Offset + 2)..]);
-				var samplesPerSec = BinaryPrimitives.ReadUInt32LittleEndian (sourceBuf.Span[(source.Offset + 4)..]);
-				var averageBytesPerSecond = BinaryPrimitives.ReadUInt32LittleEndian (sourceBuf.Span[(source.Offset + 8)..]);
-				var blockAlign = BinaryPrimitives.ReadUInt16LittleEndian (sourceBuf.Span[(source.Offset + 12)..]);
-				var bitsPerSample = BinaryPrimitives.ReadUInt16LittleEndian (sourceBuf.Span[(source.Offset + 14)..]);
-
-				return new AviStreamInfoAudioFormat (
-					formatTag,
-					channels,
-					samplesPerSec,
-					averageBytesPerSecond,
-					blockAlign,
-					bitsPerSample);
-			}
+			return new AviStreamInfoAudioFormat (
+				formatTag,
+				channels,
+				samplesPerSec,
+				averageBytesPerSecond,
+				blockAlign,
+				bitsPerSample);
 		}
 	}
 }

@@ -95,24 +95,19 @@ namespace Novartment.Base.BinaryStreaming
 		/// <returns>A task that represents the asynchronous load operation.
 		/// If Count property equals zero after completion,
 		/// this means that the source is exhausted and there will be no more data in the buffer.</returns>
-		public ValueTask LoadAsync (CancellationToken cancellationToken = default)
+		public async ValueTask LoadAsync (CancellationToken cancellationToken = default)
 		{
 			Defragment ();
 
 			if (_count >= _buffer.Length)
 			{
-				return default;
+				return;
 			}
 
-			return FillBufferAsyncFinalizer (EnsureSomethingInSourceAsync (cancellationToken));
-
-			async ValueTask FillBufferAsyncFinalizer (ValueTask<bool> task)
+			var isSomethingInSource = await EnsureSomethingInSourceAsync (cancellationToken).ConfigureAwait (false);
+			if (isSomethingInSource)
 			{
-				var isSomethingInSource = await task.ConfigureAwait (false);
-				if (isSomethingInSource)
-				{
-					FillBufferFromSource ();
-				}
+				FillBufferFromSource ();
 			}
 		}
 

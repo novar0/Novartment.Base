@@ -162,7 +162,7 @@ namespace Novartment.Base.Net
 		/// <param name="clientCertificates">The X509CertificateCollection that contains client certificates.</param>
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
 		/// <returns>Новое соединение, защищённое по протоколу TLS.</returns>
-		public Task<ITlsConnection> StartTlsClientAsync (X509CertificateCollection clientCertificates, CancellationToken cancellationToken = default)
+		public async Task<ITlsConnection> StartTlsClientAsync (X509CertificateCollection clientCertificates, CancellationToken cancellationToken = default)
 		{
 			if (this.Writer is SslStream)
 			{
@@ -174,11 +174,6 @@ namespace Novartment.Base.Net
 				throw new InvalidOperationException ("Remote host name not specified. Host name required for starting TLS as client.");
 			}
 
-			if (cancellationToken.IsCancellationRequested)
-			{
-				return Task.FromCanceled<ITlsConnection> (cancellationToken);
-			}
-
 			var insecureStream = new BufferedSourceBinaryDestinationStream (this.Reader, this.Writer);
 			var secureStream = new SslStream (
 				insecureStream,
@@ -188,33 +183,20 @@ namespace Novartment.Base.Net
 				EncryptionPolicy.RequireEncryption);
 			try
 			{
-				var task = secureStream.AuthenticateAsClientAsync (
+				await secureStream.AuthenticateAsClientAsync (
 					this.RemoteEndPoint.HostName,
 					clientCertificates,
 					SslProtocols.Tls | SslProtocols.Tls11 | SslProtocols.Tls12, // TODO: get value from configuration
-					true); // TODO: get value from configuration
-				return StartTlsClientAsyncFinalizer ();
-
-				async Task<ITlsConnection> StartTlsClientAsyncFinalizer ()
-				{
-					try
-					{
-						await task.ConfigureAwait (false);
-						var buf = new byte[this.Reader.BufferMemory.Length];
-						return new SslStreamBinaryConnection (this.LocalEndPoint, this.RemoteEndPoint, secureStream, buf);
-					}
-					catch
-					{
-						secureStream.Dispose ();
-						throw;
-					}
-				}
+					true).ConfigureAwait (false);
 			}
 			catch
 			{
 				secureStream.Dispose ();
 				throw;
 			}
+	
+			var buf = new byte[this.Reader.BufferMemory.Length];
+			return new SslStreamBinaryConnection (this.LocalEndPoint, this.RemoteEndPoint, secureStream, buf);
 		}
 
 		/// <summary>
@@ -226,7 +208,7 @@ namespace Novartment.Base.Net
 		/// <param name="clientCertificateRequired">A Boolean value that specifies whether the client must supply a certificate for authentication.</param>
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
 		/// <returns>Новое соединение, защищённое по протоколу TLS.</returns>
-		public Task<ITlsConnection> StartTlsServerAsync (
+		public async Task<ITlsConnection> StartTlsServerAsync (
 			X509Certificate serverCertificate,
 			bool clientCertificateRequired,
 			CancellationToken cancellationToken = default)
@@ -241,11 +223,6 @@ namespace Novartment.Base.Net
 				throw new InvalidOperationException ("TLS already started in this connection.");
 			}
 
-			if (cancellationToken.IsCancellationRequested)
-			{
-				return Task.FromCanceled<ITlsConnection> (cancellationToken);
-			}
-
 			_authenticateAsServerClientCertificateRequired = clientCertificateRequired;
 			var insecureStream = new BufferedSourceBinaryDestinationStream (this.Reader, this.Writer);
 			var secureStream = new SslStream (
@@ -256,33 +233,20 @@ namespace Novartment.Base.Net
 				EncryptionPolicy.RequireEncryption);
 			try
 			{
-				var task = secureStream.AuthenticateAsServerAsync (
+				await secureStream.AuthenticateAsServerAsync (
 					serverCertificate,
 					clientCertificateRequired,
 					SslProtocols.Tls | SslProtocols.Tls11 | SslProtocols.Tls12, // TODO: get value from configuration
-					true); // TODO: get value from configuration
-				return StartTlsServerAsyncFinalizer ();
-
-				async Task<ITlsConnection> StartTlsServerAsyncFinalizer ()
-				{
-					try
-					{
-						await task.ConfigureAwait (false);
-						var buf = new byte[this.Reader.BufferMemory.Length];
-						return new SslStreamBinaryConnection (this.LocalEndPoint, this.RemoteEndPoint, secureStream, buf);
-					}
-					catch
-					{
-						secureStream.Dispose ();
-						throw;
-					}
-				}
+					true).ConfigureAwait (false);
 			}
 			catch
 			{
 				secureStream.Dispose ();
 				throw;
 			}
+
+			var buf = new byte[this.Reader.BufferMemory.Length];
+			return new SslStreamBinaryConnection (this.LocalEndPoint, this.RemoteEndPoint, secureStream, buf);
 		}
 
 		/// <summary>

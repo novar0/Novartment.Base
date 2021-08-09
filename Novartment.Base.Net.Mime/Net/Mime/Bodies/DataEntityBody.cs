@@ -143,7 +143,7 @@ namespace Novartment.Base.Net.Mime
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
 		/// <returns>Задача, результатом которой является количество байтов,
 		/// которое заняли данные в теле сущности в закодированном виде.</returns>
-		public Task<int> SetDataAsync (IBufferedSource data, CancellationToken cancellationToken = default)
+		public async Task<int> SetDataAsync (IBufferedSource data, CancellationToken cancellationToken = default)
 		{
 			if (data == null)
 			{
@@ -175,17 +175,10 @@ namespace Novartment.Base.Net.Mime
 						FormattableString.Invariant ($"Content-Transfer-Encoding '{this.TransferEncoding}' not supported."));
 			}
 
-			var task = BufferedSourceExtensions.ReadAllBytesAsync (data, cancellationToken);
+			var result = await BufferedSourceExtensions.ReadAllBytesAsync (data, cancellationToken).ConfigureAwait (false);
 
-			return SetDataAsyncFinalizer ();
-
-			async Task<int> SetDataAsyncFinalizer ()
-			{
-				var result = await task.ConfigureAwait (false);
-
-				_encodedData = result;
-				return result.Length;
-			}
+			_encodedData = result;
+			return result.Length;
 		}
 
 		/// <summary>

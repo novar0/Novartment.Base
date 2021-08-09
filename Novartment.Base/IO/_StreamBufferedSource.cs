@@ -136,39 +136,35 @@ namespace Novartment.Base.BinaryStreaming
 				}
 			}
 
-			public ValueTask LoadAsync (CancellationToken cancellationToken = default)
+			public async ValueTask LoadAsync (CancellationToken cancellationToken = default)
 			{
 				if (_streamEnded || (_count >= _buffer.Length))
 				{
-					return default;
+					return;
 				}
 
 				Defragment ();
 
 #if NETSTANDARD2_0
-				return FillBufferAsyncFinalizer (new ValueTask<int> (_stream.ReadAsync (
+				var readed = await _stream.ReadAsync (
 					_buffer.ToArray (),
 					_offset + _count,
 					_buffer.Length - _offset - _count,
-					cancellationToken)));
+					cancellationToken).ConfigureAwait (false);
 #else
-				return FillBufferAsyncFinalizer (_stream.ReadAsync (
+				var readed = await _stream.ReadAsync (
 					_buffer.Slice (_offset + _count, _buffer.Length - _offset - _count),
-					cancellationToken));
+					cancellationToken).ConfigureAwait (false);
 #endif
 
-				async ValueTask FillBufferAsyncFinalizer (ValueTask<int> task)
+				_count += readed;
+				if (readed < 1)
 				{
-					var readed = await task.ConfigureAwait (false);
-					_count += readed;
-					if (readed < 1)
-					{
-						_streamEnded = true;
-					}
-					else
-					{
-						CheckIfStreamEnded ();
-					}
+					_streamEnded = true;
+				}
+				else
+				{
+					CheckIfStreamEnded ();
 				}
 			}
 

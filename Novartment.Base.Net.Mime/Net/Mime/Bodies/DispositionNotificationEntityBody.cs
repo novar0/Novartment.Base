@@ -84,7 +84,7 @@ namespace Novartment.Base.Net.Mime
 		/// <param name="subBodyFactory">Фабрика, позволяющая создавать тело вложенных сущностей с указанными параметрами.</param>
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
 		/// <returns>Задача, представляющая операцию загрузки.</returns>
-		public Task LoadAsync (
+		public async Task LoadAsync (
 			IBufferedSource source,
 			Func<EssentialContentProperties, IEntityBody> subBodyFactory,
 			CancellationToken cancellationToken = default)
@@ -95,15 +95,8 @@ namespace Novartment.Base.Net.Mime
 			}
 
 			var headerSource = new TemplateSeparatedBufferedSource (source, HeaderDecoder.CarriageReturnLinefeed2, false);
-			var task = HeaderDecoder.LoadHeaderAsync (headerSource, cancellationToken);
-
-			return LoadAsyncFinalizer ();
-
-			async Task LoadAsyncFinalizer ()
-			{
-				var fields = await task.ConfigureAwait (false);
-				ParseHeader (fields);
-			}
+			var fields = await HeaderDecoder.LoadHeaderAsync (headerSource, cancellationToken).ConfigureAwait (false);
+			ParseHeader (fields);
 		}
 
 		/// <summary>
@@ -112,7 +105,7 @@ namespace Novartment.Base.Net.Mime
 		/// <param name="destination">The binary data destination, in which this entity will be saved.</param>
 		/// <param name="cancellationToken">The token to monitor for cancellation requests. The default value is System.Threading.CancellationToken.None.</param>
 		/// <returns>A task that represents the operation.</returns>
-		public Task SaveAsync (IBinaryDestination destination, CancellationToken cancellationToken = default)
+		public async Task SaveAsync (IBinaryDestination destination, CancellationToken cancellationToken = default)
 		{
 			if (destination == null)
 			{
@@ -131,14 +124,8 @@ namespace Novartment.Base.Net.Mime
 
 			var header = new ArrayList<HeaderFieldBuilder> ();
 			CreateHeader (header);
-
-			return SaveAsyncStateMachine ();
-
-			async Task SaveAsyncStateMachine ()
-			{
-				await HeaderFieldBuilder.SaveHeaderAsync (header, destination, cancellationToken).ConfigureAwait (false);
-				await destination.WriteAsync (HeaderDecoder.CarriageReturnLinefeed, cancellationToken).ConfigureAwait (false);
-			}
+			await HeaderFieldBuilder.SaveHeaderAsync (header, destination, cancellationToken).ConfigureAwait (false);
+			await destination.WriteAsync (HeaderDecoder.CarriageReturnLinefeed, cancellationToken).ConfigureAwait (false);
 		}
 
 		// Создаёт коллекцию свойств уведомления об изменении дислокации сообщения

@@ -365,7 +365,7 @@ namespace Novartment.Base.Net.Smtp
 			return SmtpReply.AuthenticationSucceeded.DisallowGrouping ();
 		}
 
-		private Task<SmtpReplyWithGroupingMark> ProcessCommandMailFrom (SmtpMailFromCommand mailFromCommand, CancellationToken cancellationToken)
+		private async Task<SmtpReplyWithGroupingMark> ProcessCommandMailFrom (SmtpMailFromCommand mailFromCommand, CancellationToken cancellationToken)
 		{
 			if ((!_clientIdentified) || (_currentTransaction != null))
 			{
@@ -376,13 +376,13 @@ namespace Novartment.Base.Net.Smtp
 			if ((_securityParameters.ServerCertificate != null) && !_transport.TlsEstablished)
 			{
 				// требуется шифрование, а соединение не TLS
-				return Task.FromResult (SmtpReply.MustUseStartTlsFirst.AllowGrouping ());
+				return SmtpReply.MustUseStartTlsFirst.AllowGrouping ();
 			}
 
 			if ((_securityParameters.ClientAuthenticator != null) && (_authenticatedUser == null))
 			{
 				// требуется аутентификация, а клиент не аутентифицировался
-				return Task.FromResult (SmtpReply.AuthenticationRequired.AllowGrouping ());
+				return SmtpReply.AuthenticationRequired.AllowGrouping ();
 			}
 
 			ResetTransaction ();
@@ -390,13 +390,10 @@ namespace Novartment.Base.Net.Smtp
 				_remoteEndPoint,
 				_transport.RemoteCertificate,
 				_authenticatedUser));
-			Task task;
 			try
 			{
 				// тут может возникнуть UnacceptableSmtpMailboxException или другое исключение
-				task = mailHandler.StartAsync (mailFromCommand.ReturnPath, cancellationToken);
-
-				return ProcessCommandMailFromFinalizer ();
+				await mailHandler.StartAsync (mailFromCommand.ReturnPath, cancellationToken).ConfigureAwait (false);
 			}
 			catch
 			{
@@ -404,25 +401,12 @@ namespace Novartment.Base.Net.Smtp
 				throw;
 			}
 
-			async Task<SmtpReplyWithGroupingMark> ProcessCommandMailFromFinalizer ()
-			{
-				try
-				{
-					await task.ConfigureAwait (false);
-				}
-				catch
-				{
-					mailHandler.Dispose ();
-					throw;
-				}
+			_currentTransaction = mailHandler;
+			_currentTransactionRequestedEncoding = mailFromCommand.RequestedContentTransferEncoding;
 
-				_currentTransaction = mailHandler;
-				_currentTransactionRequestedEncoding = mailFromCommand.RequestedContentTransferEncoding;
-
-				// RFC 2920:
-				// RSET, MAIL FROM, RCPT TO can all appear anywhere in a pipelined command group
-				return SmtpReply.OK.AllowGrouping ();
-			}
+			// RFC 2920:
+			// RSET, MAIL FROM, RCPT TO can all appear anywhere in a pipelined command group
+			return SmtpReply.OK.AllowGrouping ();
 		}
 
 		private async Task<SmtpReplyWithGroupingMark> ProcessCommandRcptTo (SmtpRcptToCommand rcptToCommand, CancellationToken cancellationToken)

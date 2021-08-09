@@ -138,7 +138,7 @@ namespace Novartment.Base.Net.Mime
 		/// <param name="destination">The binary data destination, in which this entity will be saved.</param>
 		/// <param name="cancellationToken">The token to monitor for cancellation requests. The default value is System.Threading.CancellationToken.None.</param>
 		/// <returns>A task that represents the operation.</returns>
-		public Task SaveAsync (IBinaryDestination destination, CancellationToken cancellationToken = default)
+		public async Task SaveAsync (IBinaryDestination destination, CancellationToken cancellationToken = default)
 		{
 			if (destination == null)
 			{
@@ -153,22 +153,17 @@ namespace Novartment.Base.Net.Mime
 			var header = new ArrayList<HeaderFieldBuilder> ();
 			CreateHeader (header);
 
-			return SaveAsyncStateMachine ();
-
-			async Task SaveAsyncStateMachine ()
+			await HeaderFieldBuilder.SaveHeaderAsync (header, destination, cancellationToken)
+				.ConfigureAwait (false);
+			await destination.WriteAsync (HeaderDecoder.CarriageReturnLinefeed, cancellationToken)
+				.ConfigureAwait (false);
+			foreach (var recipientBlock in this.Recipients)
 			{
-				await HeaderFieldBuilder.SaveHeaderAsync (header, destination, cancellationToken)
+				var headerFields = CreateHeaderRecipient (recipientBlock);
+				await HeaderFieldBuilder.SaveHeaderAsync (headerFields, destination, cancellationToken)
 					.ConfigureAwait (false);
 				await destination.WriteAsync (HeaderDecoder.CarriageReturnLinefeed, cancellationToken)
 					.ConfigureAwait (false);
-				foreach (var recipientBlock in this.Recipients)
-				{
-					var headerFields = CreateHeaderRecipient (recipientBlock);
-					await HeaderFieldBuilder.SaveHeaderAsync (headerFields, destination, cancellationToken)
-						.ConfigureAwait (false);
-					await destination.WriteAsync (HeaderDecoder.CarriageReturnLinefeed, cancellationToken)
-						.ConfigureAwait (false);
-				}
 			}
 		}
 

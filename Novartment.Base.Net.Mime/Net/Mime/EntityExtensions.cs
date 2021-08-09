@@ -307,7 +307,7 @@ namespace Novartment.Base.Net.Mime
 		/// <param name="data">Источник данных, содержащий изображение.</param>
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
 		/// <returns>Задача, результатом которой является созданная сущность.</returns>
-		public static Task<Entity> AddImagePartAsync (
+		public static async Task<Entity> AddImagePartAsync (
 			this Entity entity,
 			string imageType,
 			IBufferedSource data,
@@ -334,18 +334,11 @@ namespace Novartment.Base.Net.Mime
 			}
 
 			var newBody = new DataEntityBody (ContentTransferEncoding.Base64);
-			var task = newBody.SetDataAsync (data, cancellationToken);
+			await newBody.SetDataAsync (data, cancellationToken).ConfigureAwait (false);
 
-			return AddImagePartAsyncFinalizer ();
-
-			async Task<Entity> AddImagePartAsyncFinalizer ()
-			{
-				await task.ConfigureAwait (false);
-
-				var newEntity = new Entity (newBody, ContentMediaType.Image, imageType);
-				compositeEntityBody.Parts.Add (newEntity);
-				return newEntity;
-			}
+			var newEntity = new Entity (newBody, ContentMediaType.Image, imageType);
+			compositeEntityBody.Parts.Add (newEntity);
+			return newEntity;
 		}
 
 		/// <summary>
@@ -360,7 +353,7 @@ namespace Novartment.Base.Net.Mime
 		/// Укажите ContentTransferEncoding.Unspecified чтобы использовать универсальную (возможно неоптимальную) кодировку.</param>
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
 		/// <returns>Задача, результатом которой является созданная сущность.</returns>
-		public static Task<Entity> AddApplicationPartAsync (
+		public static async Task<Entity> AddApplicationPartAsync (
 			this Entity entity,
 			string applicationType,
 			IBufferedSource data,
@@ -382,11 +375,6 @@ namespace Novartment.Base.Net.Mime
 				throw new ArgumentNullException (nameof (data));
 			}
 
-			if (cancellationToken.IsCancellationRequested)
-			{
-				return Task.FromCanceled<Entity> (cancellationToken);
-			}
-
 			if (entity.Body is not ICompositeEntityBody compositeEntityBody)
 			{
 				throw new InvalidOperationException ("Can not add part to entity with discrete content. Parts can be added only to composite entities.");
@@ -396,18 +384,11 @@ namespace Novartment.Base.Net.Mime
 				(transferEncoding != ContentTransferEncoding.Unspecified) ?
 					transferEncoding :
 					ContentTransferEncoding.Base64);
-			var task = newBody.SetDataAsync (data, cancellationToken);
+			await newBody.SetDataAsync (data, cancellationToken).ConfigureAwait (false);
 
-			return AddApplicationPartAsyncFinalizer ();
-
-			async Task<Entity> AddApplicationPartAsyncFinalizer ()
-			{
-				await task.ConfigureAwait (false);
-
-				var newEntity = new Entity (newBody, ContentMediaType.Application, applicationType);
-				compositeEntityBody.Parts.Add (newEntity);
-				return newEntity;
-			}
+			var newEntity = new Entity (newBody, ContentMediaType.Application, applicationType);
+			compositeEntityBody.Parts.Add (newEntity);
+			return newEntity;
 		}
 
 		/// <summary>
@@ -419,7 +400,7 @@ namespace Novartment.Base.Net.Mime
 		/// <param name="fileName">Имя, которое будет указано в качестве имени файла вложения.</param>
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
 		/// <returns>Задача, результатом которой является созданное вложение в сообщение.</returns>
-		public static Task<Entity> AddAttachmentAsync (
+		public static async Task<Entity> AddAttachmentAsync (
 			this Entity entity,
 			IBufferedSource data,
 			string fileName,
@@ -449,23 +430,16 @@ namespace Novartment.Base.Net.Mime
 			var observer = new SizeCalculator ();
 			var dataObservable = new ObservableBufferedSource (data, observer);
 
-			var task = attachmentBody.SetDataAsync (dataObservable, cancellationToken);
+			await attachmentBody.SetDataAsync (dataObservable, cancellationToken).ConfigureAwait (false);
 
-			return AddAttachmentAsyncFinalizer ();
-
-			async Task<Entity> AddAttachmentAsyncFinalizer ()
+			var attachment = new Entity (attachmentBody, ContentMediaType.Application, ApplicationMediaSubtypeNames.OctetStream)
 			{
-				await task.ConfigureAwait (false);
-
-				var attachment = new Entity (attachmentBody, ContentMediaType.Application, ApplicationMediaSubtypeNames.OctetStream)
-				{
-					DispositionType = ContentDispositionType.Attachment,
-					FileName = fileName,
-					Size = observer.Size,
-				};
-				compositeEntityBody.Parts.Add (attachment);
-				return attachment;
-			}
+				DispositionType = ContentDispositionType.Attachment,
+				FileName = fileName,
+				Size = observer.Size,
+			};
+			compositeEntityBody.Parts.Add (attachment);
+			return attachment;
 		}
 
 		/// <summary>
@@ -476,7 +450,7 @@ namespace Novartment.Base.Net.Mime
 		/// <param name="fileName">Путь к файлу.</param>
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
 		/// <returns>Задача, результатом которой является созданная сущность.</returns>
-		public static Task<Entity> AddAttachmentAsync (this Entity entity, string fileName, CancellationToken cancellationToken = default)
+		public static async Task<Entity> AddAttachmentAsync (this Entity entity, string fileName, CancellationToken cancellationToken = default)
 		{
 			if (entity == null)
 			{
@@ -489,42 +463,20 @@ namespace Novartment.Base.Net.Mime
 			}
 
 			var fileInfo = new FileInfo (fileName);
-			var stream = fileInfo.OpenRead ();
-			Task<Entity> task;
-			try
+			Entity attachment;
+			using (var stream = fileInfo.OpenRead ())
 			{
-				// TODO: размер буфера сделать конфигурируемым
-				task = AddAttachmentAsync (
+				attachment = await AddAttachmentAsync (
 					entity,
 					stream.AsBufferedSource (new byte[Math.Min (fileInfo.Length, 4096L)]),
 					fileInfo.Name,
-					cancellationToken);
-
-				return AddAttachmentAsyncFinalizer ();
-			}
-			catch
-			{
-				stream?.Dispose ();
-				throw;
+					cancellationToken).ConfigureAwait (false);
 			}
 
-			async Task<Entity> AddAttachmentAsyncFinalizer ()
-			{
-				Entity attachment;
-				try
-				{
-					attachment = await task.ConfigureAwait (false);
-				}
-				finally
-				{
-					stream?.Dispose ();
-				}
-
-				attachment.CreationDate = fileInfo.CreationTime;
-				attachment.ModificationDate = fileInfo.LastWriteTime;
-				attachment.ReadDate = fileInfo.LastAccessTime;
-				return attachment;
-			}
+			attachment.CreationDate = fileInfo.CreationTime;
+			attachment.ModificationDate = fileInfo.LastWriteTime;
+			attachment.ReadDate = fileInfo.LastAccessTime;
+			return attachment;
 		}
 
 		private sealed class SizeCalculator :

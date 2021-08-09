@@ -68,7 +68,7 @@ namespace Novartment.Base.Net.Smtp
 		/// Происходит когда в протоколе возникла неустранимое противоречие, делающее его дальнейшую работу невозможным.
 		/// Настоятельно рекомендуется закрыть соединение.
 		/// </exception>
-		public Task StartAsync (ITcpConnection connection, CancellationToken cancellationToken = default)
+		public async Task StartAsync (ITcpConnection connection, CancellationToken cancellationToken = default)
 		{
 			if (connection == null)
 			{
@@ -84,57 +84,51 @@ namespace Novartment.Base.Net.Smtp
 					connection.RemoteEndPoint.HostName,
 					connection.RemoteEndPoint.Port,
 					"PLAIN");
-
-			return StartAsyncStateMachine ();
-
-			async Task StartAsyncStateMachine ()
+			var transport = new TcpConnectionSmtpCommandTransport (connection, _logger);
+			using var session = new SmtpOriginatorProtocolSession (transport, connection.LocalEndPoint.HostName);
+			try
 			{
-				var transport = new TcpConnectionSmtpCommandTransport (connection, _logger);
-				using var session = new SmtpOriginatorProtocolSession (transport, connection.LocalEndPoint.HostName);
-				try
+				await session.ReceiveGreetingAndStartAsync (cancellationToken).ConfigureAwait (false);
+
+				if (_securityParameters.EncryptionRequired && !(connection is ITlsConnection))
 				{
-					await session.ReceiveGreetingAndStartAsync (cancellationToken).ConfigureAwait (false);
-
-					if (_securityParameters.EncryptionRequired && !(connection is ITlsConnection))
-					{
-						await session.RestartWithTlsAsync (_securityParameters.ClientCertificates, cancellationToken).ConfigureAwait (false);
-					}
-
-					if (credential != null)
-					{
-						await session.AuthenticateAsync (credential, cancellationToken).ConfigureAwait (false);
-					}
-
-					// отрабатывает инициатор транзакций
-					await _transactionOriginator.Invoke (
-						requiredEncoding => new SmtpSessionMailTransferTransactionHandler (
-							session,
-							requiredEncoding,
-							_logger),
-						cancellationToken).ConfigureAwait (false);
-
-					await session.FinishAsync (default).ConfigureAwait (false);
+					await session.RestartWithTlsAsync (_securityParameters.ClientCertificates, cancellationToken).ConfigureAwait (false);
 				}
-				catch (OperationCanceledException)
+
+				if (credential != null)
+				{
+					await session.AuthenticateAsync (credential, cancellationToken).ConfigureAwait (false);
+				}
+
+				// отрабатывает инициатор транзакций
+				await _transactionOriginator.Invoke (
+					requiredEncoding => new SmtpSessionMailTransferTransactionHandler (
+						session,
+						requiredEncoding,
+						_logger),
+					cancellationToken).ConfigureAwait (false);
+
+				await session.FinishAsync (default).ConfigureAwait (false);
+			}
+			catch (OperationCanceledException)
+			{
+				_logger?.LogWarning ($"Canceling protocol with {connection.RemoteEndPoint}.");
+				throw;
+			}
+			catch (Exception excpt)
+			{
+				// Отдельно отслеживаем запрос отмены при ObjectDisposedException.
+				// Такая комбинация означает отмену операции с объектом, не поддерживающим отмену отдельных операций.
+				if (cancellationToken.IsCancellationRequested &&
+					((excpt is ObjectDisposedException) ||
+					((excpt is IOException) && (excpt.InnerException is ObjectDisposedException))))
 				{
 					_logger?.LogWarning ($"Canceling protocol with {connection.RemoteEndPoint}.");
-					throw;
 				}
-				catch (Exception excpt)
-				{
-					// Отдельно отслеживаем запрос отмены при ObjectDisposedException.
-					// Такая комбинация означает отмену операции с объектом, не поддерживающим отмену отдельных операций.
-					if (cancellationToken.IsCancellationRequested &&
-						((excpt is ObjectDisposedException) ||
-						((excpt is IOException) && (excpt.InnerException is ObjectDisposedException))))
-					{
-						_logger?.LogWarning ($"Canceling protocol with {connection.RemoteEndPoint}.");
-					}
 
-					_logger?.LogWarning (
-						$"Aborting protocol with {connection.RemoteEndPoint}. {ExceptionDescriptionProvider.CreateDescription (excpt).GetShortInfo ()}");
-					throw;
-				}
+				_logger?.LogWarning (
+					$"Aborting protocol with {connection.RemoteEndPoint}. {ExceptionDescriptionProvider.CreateDescription (excpt).GetShortInfo ()}");
+				throw;
 			}
 		}
 	}

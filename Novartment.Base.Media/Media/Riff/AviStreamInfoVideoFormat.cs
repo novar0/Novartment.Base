@@ -68,7 +68,7 @@ namespace Novartment.Base.Media
 		/// <param name="source">Буфер данных содержащий подробности видео-формата потока AVI-файла.</param>
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
 		/// <returns>Подробности видео-формата потока AVI-файла, считанные из указанного буфера.</returns>
-		public static Task<AviStreamInfoVideoFormat> ParseAsync (IBufferedSource source, CancellationToken cancellationToken = default)
+		public static async Task<AviStreamInfoVideoFormat> ParseAsync (IBufferedSource source, CancellationToken cancellationToken = default)
 		{
 			if (source == null)
 			{
@@ -80,10 +80,9 @@ namespace Novartment.Base.Media
 				throw new ArgumentOutOfRangeException (nameof (source));
 			}
 
-			Task task;
 			try
 			{
-				task = source.EnsureAvailableAsync (36, cancellationToken).AsTask ();
+				await source.EnsureAvailableAsync (36, cancellationToken).ConfigureAwait (false);
 			}
 			catch (NotEnoughDataException exception)
 			{
@@ -92,46 +91,30 @@ namespace Novartment.Base.Media
 					exception);
 			}
 
-			return ParseAsyncFinalizer ();
+			/*
+				LONG	biWidth;
+				LONG	biHeight;
+				WORD	biPlanes;
+				WORD	biBitCount;
+				DWORD	biCompression;
+				DWORD	biSizeImage;
+				LONG	biXPelsPerMeter;
+				LONG	biYPelsPerMeter;
+				DWORD	biClrUsed;
+				DWORD	biClrImportant;
+			*/
 
-			async Task<AviStreamInfoVideoFormat> ParseAsyncFinalizer ()
-			{
-				try
-				{
-					await task.ConfigureAwait (false);
-				}
-				catch (NotEnoughDataException exception)
-				{
-					throw new FormatException (
-						"Insuficient size of RIFF-chunk 'strf' for stream of type 'vids'. Expected minimum 36 bytes.",
-						exception);
-				}
-
-				/*
-					LONG	biWidth;
-					LONG	biHeight;
-					WORD	biPlanes;
-					WORD	biBitCount;
-					DWORD	biCompression;
-					DWORD	biSizeImage;
-					LONG	biXPelsPerMeter;
-					LONG	biYPelsPerMeter;
-					DWORD	biClrUsed;
-					DWORD	biClrImportant;
-				*/
-
-				var sourceBuf = source.BufferMemory;
-				var compressionNumber = BinaryPrimitives.ReadUInt32LittleEndian (sourceBuf.Span[(source.Offset + 16)..]);
-				var width = BinaryPrimitives.ReadUInt32LittleEndian (sourceBuf.Span[(source.Offset + 4)..]);
-				var height = BinaryPrimitives.ReadUInt32LittleEndian (sourceBuf.Span[(source.Offset + 8)..]);
-				var planes = BinaryPrimitives.ReadUInt32LittleEndian (sourceBuf.Span[(source.Offset + 12)..]);
-				var bitCount = BinaryPrimitives.ReadUInt32LittleEndian (sourceBuf.Span[(source.Offset + 14)..]);
-				var sizeImage = BinaryPrimitives.ReadUInt32LittleEndian (sourceBuf.Span[(source.Offset + 20)..]);
-				var codecId = (compressionNumber >= 0x20202020) ?
-					AsciiCharSet.GetString (source.BufferMemory.Span.Slice (source.Offset + 16, 4)) :
-					compressionNumber.ToString (CultureInfo.InvariantCulture);
-				return new AviStreamInfoVideoFormat (width, height, planes, bitCount, codecId, sizeImage);
-			}
+			var sourceBuf = source.BufferMemory;
+			var compressionNumber = BinaryPrimitives.ReadUInt32LittleEndian (sourceBuf.Span[(source.Offset + 16)..]);
+			var width = BinaryPrimitives.ReadUInt32LittleEndian (sourceBuf.Span[(source.Offset + 4)..]);
+			var height = BinaryPrimitives.ReadUInt32LittleEndian (sourceBuf.Span[(source.Offset + 8)..]);
+			var planes = BinaryPrimitives.ReadUInt32LittleEndian (sourceBuf.Span[(source.Offset + 12)..]);
+			var bitCount = BinaryPrimitives.ReadUInt32LittleEndian (sourceBuf.Span[(source.Offset + 14)..]);
+			var sizeImage = BinaryPrimitives.ReadUInt32LittleEndian (sourceBuf.Span[(source.Offset + 20)..]);
+			var codecId = (compressionNumber >= 0x20202020) ?
+				AsciiCharSet.GetString (source.BufferMemory.Span.Slice (source.Offset + 16, 4)) :
+				compressionNumber.ToString (CultureInfo.InvariantCulture);
+			return new AviStreamInfoVideoFormat (width, height, planes, bitCount, codecId, sizeImage);
 		}
 	}
 }

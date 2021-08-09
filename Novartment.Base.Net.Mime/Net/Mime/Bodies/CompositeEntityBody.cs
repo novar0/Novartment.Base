@@ -92,7 +92,7 @@ namespace Novartment.Base.Net.Mime
 		/// <param name="subBodyFactory">Фабрика, позволяющая создавать тело вложенных сущностей с указанными параметрами.</param>
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
 		/// <returns>Задача, представляющая операцию.</returns>
-		public Task LoadAsync (
+		public async Task LoadAsync (
 			IBufferedSource source,
 			Func<EssentialContentProperties, IEntityBody> subBodyFactory,
 			CancellationToken cancellationToken = default)
@@ -108,27 +108,21 @@ namespace Novartment.Base.Net.Mime
 			}
 
 			this.Parts.Clear ();
-
-			return LoadAsyncStateMachine ();
-
-			async Task LoadAsyncStateMachine ()
+			var bodyPartsSource = new BodyPartSource (this.Boundary, source);
+			while (await bodyPartsSource.TrySkipPartAsync (cancellationToken).ConfigureAwait (false))
 			{
-				var bodyPartsSource = new BodyPartSource (this.Boundary, source);
-				while (await bodyPartsSource.TrySkipPartAsync (cancellationToken).ConfigureAwait (false))
+				var entity = new Entity ();
+				await entity.LoadAsync (
+					bodyPartsSource,
+					subBodyFactory,
+					_defaultPartsMediaType,
+					_defaultPartsMediaSubtype,
+					cancellationToken).ConfigureAwait (false);
+				this.Parts.Add (entity);
+				if (bodyPartsSource.LastBoundaryClosed)
 				{
-					var entity = new Entity ();
-					await entity.LoadAsync (
-						bodyPartsSource,
-						subBodyFactory,
-						_defaultPartsMediaType,
-						_defaultPartsMediaSubtype,
-						cancellationToken).ConfigureAwait (false);
-					this.Parts.Add (entity);
-					if (bodyPartsSource.LastBoundaryClosed)
-					{
-						await bodyPartsSource.TrySkipPartAsync (cancellationToken).ConfigureAwait (false);
-						return;
-					}
+					await bodyPartsSource.TrySkipPartAsync (cancellationToken).ConfigureAwait (false);
+					return;
 				}
 			}
 		}

@@ -94,55 +94,43 @@ namespace Novartment.Base.Net
 		/// <returns>A task that represents the asynchronous load operation.
 		/// If Count property equals zero after completion,
 		/// this means that the source is exhausted and there will be no more data in the buffer.</returns>
-		public ValueTask LoadAsync (CancellationToken cancellationToken = default)
+		public async ValueTask LoadAsync (CancellationToken cancellationToken = default)
 		{
-			if (cancellationToken.IsCancellationRequested)
-			{
-				return new ValueTask (Task.FromCanceled (cancellationToken));
-			}
-
 			if (_socketClosed || (_count >= _buffer.Length))
 			{
-				return default;
+				return;
 			}
 
 			Defragment ();
 
-
-#if NETSTANDARD2_0
-			var bufSegment = new ArraySegment<byte> (_buffer.ToArray (), _offset + _count, _buffer.Length - _offset - _count);
-			return FillBufferAsyncFinalizer (new ValueTask<int> (_socket.ReceiveAsync (bufSegment, SocketFlags.None)));
-#else
-			return FillBufferAsyncFinalizer (_socket.ReceiveAsync (_buffer.Slice (_offset + _count, _buffer.Length - _offset - _count), SocketFlags.None, cancellationToken));
-#endif
-
-			async ValueTask FillBufferAsyncFinalizer (ValueTask<int> task)
-			{
-				int readed;
+			int readed = 0;
 #if NETSTANDARD2_0
 				try
 				{
-					readed = await task.ConfigureAwait (false);
+					var bufSegment = new ArraySegment<byte> (_buffer.ToArray (), _offset + _count, _buffer.Length - _offset - _count);
+					readed = await _socket.ReceiveAsync (bufSegment, SocketFlags.None).ConfigureAwait (false);
 				}
 				catch (ObjectDisposedException) when (cancellationToken.IsCancellationRequested)
 				{
 					// Когда операции с сокетами не поддерживают отмену, в случае отмены обычно сокет просто закрывают,
 					// что вызывает ObjectDisposedException.
-					// В таком случае мы проглатываем ObjectDisposedException и генерируем вместо него TaskCanceledException.
-					throw new TaskCanceledException (task.AsTask ());
+					// В таком случае мы проглатываем ObjectDisposedException и генерируем вместо него OperationsCanceledException.
+					cancellationToken.ThrowIfCancellationRequested ();
 				}
 #else
-				readed = await task.ConfigureAwait (false);
+			readed = await _socket.ReceiveAsync (
+				_buffer.Slice (_offset + _count, _buffer.Length - _offset - _count),
+				SocketFlags.None,
+				cancellationToken).ConfigureAwait (false);
 #endif
 
-				if (readed > 0)
-				{
-					_count += readed;
-				}
-				else
-				{
-					_socketClosed = true;
-				}
+			if (readed > 0)
+			{
+				_count += readed;
+			}
+			else
+			{
+				_socketClosed = true;
 			}
 		}
 

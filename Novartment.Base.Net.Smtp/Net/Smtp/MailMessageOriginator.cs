@@ -19,7 +19,7 @@ namespace Novartment.Base.Net.Smtp
 		/// <param name="transactionHandlerFactory">Фабрика для создания обработчиков транзакций.</param>
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
 		/// <returns>Задача, представляющая процесс выполнения транзакций.</returns>
-		public static Task PerformTransferTransaction (
+		public static async Task PerformTransferTransaction (
 			this IMailMessage<AddrSpec> message,
 			TransactionHandlerFactory transactionHandlerFactory,
 			CancellationToken cancellationToken = default)
@@ -35,35 +35,27 @@ namespace Novartment.Base.Net.Smtp
 				throw new ArgumentNullException (nameof (transactionHandlerFactory));
 			}
 
-			var recipients = new ArrayList<AddrSpec> ();
-			foreach (var recipient in message.Recipients)
+			if (message.Recipients.Count < 1)
 			{
-				recipients.Add (recipient);
+				throw new InvalidOperationException ("No recipients specified.");
 			}
-
-			return (recipients.Count > 0) ?
-				OriginateTransactionStateMachine () :
-				Task.CompletedTask;
 
 			// Парралельно идут два асинхронных процесса:
 			// 1. Запись данных в message.SaveAsync().
 			// 3. Чтение этих же данных в transaction.TransferDataAndFinishAsync().
 			// Посредником/медиатором служит канал BufferedChannel.
-			async Task OriginateTransactionStateMachine ()
+			using var transactionHandler = transactionHandlerFactory.Invoke (message.RequiredTransferEncoding);
+			var returnPath = (message.Originators.Count > 0) ? message.Originators[0] : null;
+			await transactionHandler.StartAsync (returnPath, cancellationToken).ConfigureAwait (false);
+			foreach (var recipient in message.Recipients)
 			{
-				using var transactionHandler = transactionHandlerFactory.Invoke (message.RequiredTransferEncoding);
-				var returnPath = (message.Originators.Count > 0) ? message.Originators[0] : null;
-				await transactionHandler.StartAsync (returnPath, cancellationToken).ConfigureAwait (false);
-				foreach (var recipient in recipients)
-				{
-					await transactionHandler.TryAddRecipientAsync (recipient, cancellationToken).ConfigureAwait (false);
-				}
-
-				var channel = new BufferedChannel (new byte[8192]); // TcpClient.SendBufferSize default value is 8192 bytes
-				var writeTask = SaveSerializableEntityToDestinationAsync (message, channel, cancellationToken);
-				var readTask = TransferSourceToTransactionAsync (transactionHandler, channel, cancellationToken);
-				await Task.WhenAll (writeTask, readTask).ConfigureAwait (false);
+				await transactionHandler.TryAddRecipientAsync (recipient, cancellationToken).ConfigureAwait (false);
 			}
+
+			var channel = new BufferedChannel (new byte[8192]); // TcpClient.SendBufferSize default value is 8192 bytes
+			var writeTask = SaveSerializableEntityToDestinationAsync (message, channel, cancellationToken);
+			var readTask = TransferSourceToTransactionAsync (transactionHandler, channel, cancellationToken);
+			await Task.WhenAll (writeTask, readTask).ConfigureAwait (false);
 		}
 
 		private static async Task SaveSerializableEntityToDestinationAsync (IBinarySerializable entity, IBinaryDestination destination, CancellationToken cancellationToken)

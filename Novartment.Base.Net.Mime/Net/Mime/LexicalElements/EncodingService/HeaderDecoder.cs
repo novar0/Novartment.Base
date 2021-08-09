@@ -1132,55 +1132,47 @@ namespace Novartment.Base.Net.Mime
 		/// A field name MUST be composed of printable US-ASCII characters (i.e., characters that have values between 33 and 126, inclusive), except colon.
 		/// A field body may be composed of any US-ASCII characters, except for CR and LF.
 		/// </remarks>
-		internal static Task<IReadOnlyList<EncodedHeaderField>> LoadHeaderAsync (IBufferedSource headerSource, CancellationToken cancellationToken = default)
+		internal static async Task<IReadOnlyList<EncodedHeaderField>> LoadHeaderAsync (IBufferedSource headerSource, CancellationToken cancellationToken = default)
 		{
 			if (headerSource == null)
 			{
 				throw new ArgumentNullException (nameof (headerSource));
 			}
 
-			if (cancellationToken.IsCancellationRequested)
+			if (headerSource.IsEmpty ())
 			{
-				return Task.FromCanceled<IReadOnlyList<EncodedHeaderField>> (cancellationToken);
+				return Array.Empty<EncodedHeaderField> ();
 			}
 
-			var isEmpty = headerSource.IsEmpty ();
-			return isEmpty ?
-				Task.FromResult<IReadOnlyList<EncodedHeaderField>> (Array.Empty<EncodedHeaderField> ()) :
-				LoadHeaderAsyncStateMachine ();
-
-			async Task<IReadOnlyList<EncodedHeaderField>> LoadHeaderAsyncStateMachine ()
+			var result = new ArrayList<EncodedHeaderField> ();
+			var buffer = ArrayPool<byte>.Shared.Rent (MaximumHeaderFieldBodySize);
+			try
 			{
-				var result = new ArrayList<EncodedHeaderField> ();
-				var buffer = ArrayPool<byte>.Shared.Rent (HeaderDecoder.MaximumHeaderFieldBodySize);
-				try
+				var fieldSource = new HeaderFieldSource (headerSource);
+				bool nextFieldFound;
+				do
 				{
-					var fieldSource = new HeaderFieldSource (headerSource);
-					bool nextFieldFound;
-					do
+					try
 					{
-						try
-						{
-							var field = await LoadHeaderFieldAsync (fieldSource, buffer, cancellationToken).ConfigureAwait (false);
-							result.Add (field);
-						}
-
-						// ignore incorrect result
-						catch (FormatException)
-						{
-						}
-
-						nextFieldFound = await fieldSource.TrySkipPartAsync (cancellationToken).ConfigureAwait (false);
+						var field = await LoadHeaderFieldAsync (fieldSource, buffer, cancellationToken).ConfigureAwait (false);
+						result.Add (field);
 					}
-					while (nextFieldFound);
-				}
-				finally
-				{
-					ArrayPool<byte>.Shared.Return (buffer);
-				}
 
-				return result;
+					// ignore incorrect result
+					catch (FormatException)
+					{
+					}
+
+					nextFieldFound = await fieldSource.TrySkipPartAsync (cancellationToken).ConfigureAwait (false);
+				}
+				while (nextFieldFound);
 			}
+			finally
+			{
+				ArrayPool<byte>.Shared.Return (buffer);
+			}
+
+			return result;
 		}
 
 		internal static int CopyWithUnfold (ReadOnlySpan<byte> body, Span<char> buffer)

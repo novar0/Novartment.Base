@@ -98,7 +98,7 @@ namespace Novartment.Base.BinaryStreaming
 		/// It may be less than specified if the source is exhausted.
 		/// Upon completion of a task, regardless of the result, the source will provide data coming right after skipped.
 		/// </returns>
-		public ValueTask<long> SkipWihoutBufferingAsync (long size, CancellationToken cancellationToken = default)
+		public async ValueTask<long> SkipWihoutBufferingAsync (long size, CancellationToken cancellationToken = default)
 		{
 			if (size < 0L)
 			{
@@ -107,19 +107,13 @@ namespace Novartment.Base.BinaryStreaming
 
 			if (size == 0L)
 			{
-				return new ValueTask<long> (0L);
+				return 0L;
 			}
 
-			var limit = (long)_countInBuffer + _countRemainder;
-			var task = _source.TrySkipAsync ((size < limit) ? size : limit, cancellationToken);
-			return TrySkipAsyncFinalizer ();
-
-			async ValueTask<long> TrySkipAsyncFinalizer ()
-			{
-				var skipped = await task.ConfigureAwait (false);
-				UpdateLimits (limit - skipped);
-				return skipped;
-			}
+			var limit = _countInBuffer + _countRemainder;
+			var skipped = await _source.TrySkipAsync ((size < limit) ? size : limit, cancellationToken).ConfigureAwait (false);
+			UpdateLimits (limit - skipped);
+			return skipped;
 		}
 
 		/// <summary>
@@ -132,29 +126,22 @@ namespace Novartment.Base.BinaryStreaming
 		/// <returns>A task that represents the asynchronous load operation.
 		/// If Count property equals zero after completion,
 		/// this means that the source is exhausted and there will be no more data in the buffer.</returns>
-		public ValueTask LoadAsync (CancellationToken cancellationToken = default)
+		public async ValueTask LoadAsync (CancellationToken cancellationToken = default)
 		{
 			if (_countRemainder <= 0)
 			{
-				return default;
+				return;
 			}
 
-			var task = _source.LoadAsync (cancellationToken);
-
-			return FillBufferAsyncFinalizer ();
-
-			async ValueTask FillBufferAsyncFinalizer ()
+			await _source.LoadAsync (cancellationToken).ConfigureAwait (false);
+			if ((_source.Count < 1) && (_countInBuffer < 1))
 			{
-				await task.ConfigureAwait (false);
-				if ((_source.Count < 1) && (_countInBuffer < 1))
-				{
-					throw new NotEnoughDataException (
-						"Source exhausted before reaching specified limit.",
-						_countRemainder);
-				}
-
-				UpdateLimits ((long)_countInBuffer + _countRemainder);
+				throw new NotEnoughDataException (
+					"Source exhausted before reaching specified limit.",
+					_countRemainder);
 			}
+
+			UpdateLimits ((long)_countInBuffer + _countRemainder);
 		}
 
 		/// <summary>

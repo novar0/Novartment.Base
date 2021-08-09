@@ -46,7 +46,7 @@ namespace Novartment.Base.Media
 		/// <param name="source">Буфер данных содержащий RIFF-порцию.</param>
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
 		/// <returns>RIFF-порция, считанный из указанного буфера.</returns>
-		public static Task<RiffChunk> ParseAsync (IBufferedSource source, CancellationToken cancellationToken = default)
+		public static async Task<RiffChunk> ParseAsync (IBufferedSource source, CancellationToken cancellationToken = default)
 		{
 			if (source == null)
 			{
@@ -58,38 +58,23 @@ namespace Novartment.Base.Media
 				throw new ArgumentOutOfRangeException (nameof (source));
 			}
 
-			Task task;
 			try
 			{
-				task = source.EnsureAvailableAsync (8, cancellationToken).AsTask ();
+				await source.EnsureAvailableAsync (8, cancellationToken).ConfigureAwait (false);
 			}
 			catch (NotEnoughDataException exception)
 			{
 				throw new FormatException ("Specified source is too small for Riff-chunk. Expected minimum 8 bytes.", exception);
 			}
 
-			return ParseAsyncFinalizer ();
+			var id = AsciiCharSet.GetString (source.BufferMemory.Span.Slice (source.Offset, 4));
 
-			async Task<RiffChunk> ParseAsyncFinalizer ()
-			{
-				try
-				{
-					await task.ConfigureAwait (false);
-				}
-				catch (NotEnoughDataException exception)
-				{
-					throw new FormatException ("Specified source is too small for Riff-chunk. Expected minimum 8 bytes.", exception);
-				}
+			var size = (long)BinaryPrimitives.ReadUInt32LittleEndian (source.BufferMemory.Span[(source.Offset + 4)..]);
+			source.Skip (8);
 
-				var id = AsciiCharSet.GetString (source.BufferMemory.Span.Slice (source.Offset, 4));
+			var data = new SizeLimitedBufferedSource (source, size);
 
-				var size = (long)BinaryPrimitives.ReadUInt32LittleEndian (source.BufferMemory.Span[(source.Offset + 4)..]);
-				source.Skip (8);
-
-				var data = new SizeLimitedBufferedSource (source, size);
-
-				return new RiffChunk (id, data);
-			}
+			return new RiffChunk (id, data);
 		}
 	}
 }
