@@ -36,9 +36,9 @@ namespace Novartment.Base.BinaryStreaming
 
 		// следующие поля требуют синхронизации (через _integrityLocker) ЛЮБОГО доступа (в том числе при чтении)
 		// потому что могут изменяться конкурентно
-		private ReadOnlyMemory<byte> _pendingData = default;
-		private int _destinationReservedCount = 0;
-		private int _destinationTailOffset;
+		private ReadOnlyMemory<byte> _pendingData = default; // данные, которые переданы на запись, но ещё не помещены в _buffer
+		private int _destinationReservedCount = 0; // количество байтов, которые зарезервированы в конце _buffer
+		private int _destinationTailOffset; // позиция окончания данных в _buffer
 		private bool _isCompleted = false;
 		private long _sizeToSkipOnWrite = 0L;
 
@@ -120,7 +120,7 @@ namespace Novartment.Base.BinaryStreaming
 		/// <param name="size">Size of data to skip, including data already available in the buffer.</param>
 		/// <param name="cancellationToken">
 		/// The cancellation request token is not used.
-		/// To unblock the pending skip operation, call the SetComplete() method.
+		/// To unblock the pending operation, call the SetComplete() method.
 		/// </param>
 		/// <returns>
 		/// A task that represents the asynchronous skip operation.
@@ -194,7 +194,7 @@ namespace Novartment.Base.BinaryStreaming
 		/// </summary>
 		/// <param name="cancellationToken">
 		/// The cancellation request token is not used.
-		/// To unblock the pending fill buffer operation, call the SetComplete() method.
+		/// To unblock the pending operation, call the SetComplete() method.
 		/// </param>
 		/// <returns>A task that represents the asynchronous load operation.
 		/// If Count property equals zero after completion,
@@ -220,7 +220,7 @@ namespace Novartment.Base.BinaryStreaming
 		/// <param name="size">Amount of data required in the buffer.</param>
 		/// <param name="cancellationToken">
 		/// The cancellation request token is not used.
-		/// To unblock the pending fill buffer operation, call the SetComplete() method.
+		/// To unblock the pending operation, call the SetComplete() method.
 		/// </param>
 		/// <returns>A task that represents the operation.</returns>
 		public ValueTask EnsureAvailableAsync (int size, CancellationToken cancellationToken = default)
@@ -276,12 +276,12 @@ namespace Novartment.Base.BinaryStreaming
 
 		/// <summary>
 		/// Asynchronously writes specified region of memory to this channel.
-		/// Запись можно вызывать одновременно и независимо от операций чтения.
+		/// You can write simultaneously and independently of reading.
 		/// </summary>
-		/// <param name="buffer">The region of memory to write to this destination.</param>
+		/// <param name="buffer">The region of memory to write to this channel.</param>
 		/// <param name="cancellationToken">
 		/// The cancellation request token is not used.
-		/// To unblock the pending write operation, call the SkipWihoutBufferingAsync() method and specify a size of at least buffer.Length.
+		/// To unblock the pending operation, call the SkipWihoutBufferingAsync() method and specify a size of at least buffer.Length.
 		/// </param>
 		/// <returns>A task that represents the write operation.</returns>
 		/// <remarks>
@@ -405,8 +405,9 @@ namespace Novartment.Base.BinaryStreaming
 			return skipped;
 		}
 
-		// Метод вызывается конкурентно, поэтому требуется внешняя синхронизация.
+		// Делает доступными данные, которые зарезервированы в конце _buffer.
 		// Возвращает true если остались неиспользованные предложенные для записи данные.
+		// Метод вызывается конкурентно, поэтому требуется внешняя синхронизация.
 		private bool AcceptReservedData ()
 		{
 			// утверждаем данные, ранее зарезервированные в основном буфере
@@ -431,8 +432,10 @@ namespace Novartment.Base.BinaryStreaming
 			return true;
 		}
 
-		// Метод вызывается конкурентно, поэтому требуется внешняя синхронизация.
+		// Пытается зарезервировать (положить в свободную часть в конце _buffer) указанные данные.
+		// Невлезшую часть запоминает в _pendingData.
 		// Возвращает true если все входные данные обработаны и их можно освобождать.
+		// Метод вызывается конкурентно, поэтому требуется внешняя синхронизация.
 		private bool ReserveData (ReadOnlyMemory<byte> source)
 		{
 			// резервируем сколько влезет в конец главного буфера
