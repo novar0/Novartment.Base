@@ -761,7 +761,7 @@ namespace Novartment.Base.Smtp.Test
 			Assert.NotNull (currentTransaction);
 			Assert.True (currentTransaction.SlowOperationInProgressEvent.WaitOne ());
 			cts.Cancel ();
-			Assert.ThrowsAsync<OperationCanceledException> (() => task).Wait ();
+			Assert.ThrowsAnyAsync<OperationCanceledException> (() => task).Wait ();
 			Assert.Equal (1, createdTransactionsCount);
 			Assert.Empty (sender.SendedReplies);
 			Assert.False (currentTransaction.Completed);
@@ -858,7 +858,7 @@ namespace Novartment.Base.Smtp.Test
 			var task = session.ReceiveCommandSendReplyAsync (cts.Token);
 			Assert.True (trctn.SlowOperationInProgressEvent.WaitOne ());
 			cts.Cancel ();
-			Assert.ThrowsAsync<OperationCanceledException> (() => task).Wait ();
+			Assert.ThrowsAnyAsync<OperationCanceledException> (() => task).Wait ();
 			Assert.Equal (1, createdTransactionsCount);
 			Assert.False (trctn.Completed);
 			Assert.True (trctn.Disposed);
