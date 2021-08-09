@@ -44,7 +44,7 @@ namespace Novartment.Base.BinaryStreaming
 		/// Properties Offset, Count and IsExhausted may be changed in the process.
 		/// </summary>
 		/// <param name="cancellationToken">The token to monitor for cancellation requests. The default value is System.Threading.CancellationToken.None.</param>
-		/// <returns>A task that represents the asynchronous fill operation.
+		/// <returns>A task that represents the asynchronous load operation.
 		/// If Count property equals zero after completion,
 		/// this means that the source is exhausted and there will be no more data in the buffer.</returns>
 		ValueTask LoadAsync (CancellationToken cancellationToken = default);

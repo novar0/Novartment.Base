@@ -7,13 +7,12 @@ using System.Threading.Tasks;
 namespace Novartment.Base.BinaryStreaming
 {
 	/// <summary>
-	/// Методы расширения для IBufferedSource.
+	/// Extension methods for IBufferedSource.
 	/// </summary>
 	public static class BufferedSourceExtensions
 	{
 		/// <summary>
 		/// Checks that the specified source is exhausted and contains no data.
-		/// Проверяет что указанный источник исчерпан и не содержит данных.
 		/// </summary>
 		/// <param name="source">The data source to check.</param>
 		/// <returns>True if the specified source is exhausted and contains no data.</returns>
@@ -43,7 +42,7 @@ namespace Novartment.Base.BinaryStreaming
 		/// Upon completion of a task, regardless of the result, the source will provide data coming right after skipped.
 		/// </returns>
 		/// <remarks>
-		/// Work is delegated to the method TryFastSkipAsync() if source implements IFastSkipBufferedSource.
+		/// Work is delegated to the method SkipWihoutBufferingAsync() if source implements IFastSkipBufferedSource.
 		/// </remarks>
 		public static ValueTask<long> TrySkipAsync (this IBufferedSource source, long size, CancellationToken cancellationToken = default)
 		{

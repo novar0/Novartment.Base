@@ -203,7 +203,7 @@ namespace Novartment.Base.BinaryStreaming
 		/// The cancellation request token is not used.
 		/// To unblock the pending fill buffer operation, call the SetComplete() method.
 		/// </param>
-		/// <returns>A task that represents the asynchronous fill operation.
+		/// <returns>A task that represents the asynchronous load operation.
 		/// If Count property equals zero after completion,
 		/// this means that the channel is exhausted and there will be no more data in the buffer.</returns>
 		/// <remarks>
