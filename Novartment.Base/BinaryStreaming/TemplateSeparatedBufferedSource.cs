@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Diagnostics.Contracts;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -42,8 +41,6 @@ namespace Novartment.Base.BinaryStreaming
 			{
 				throw new ArgumentOutOfRangeException (nameof (separator));
 			}
-
-			Contract.EndContractBlock ();
 
 			_source = source;
 			_template = separator;
@@ -90,8 +87,6 @@ namespace Novartment.Base.BinaryStreaming
 			{
 				throw new ArgumentOutOfRangeException (nameof (size));
 			}
-
-			Contract.EndContractBlock ();
 
 			if (size > 0)
 			{
@@ -153,8 +148,6 @@ namespace Novartment.Base.BinaryStreaming
 			{
 				throw new ArgumentOutOfRangeException (nameof (size));
 			}
-
-			Contract.EndContractBlock ();
 
 			if ((size <= (_foundTemplateOffset - _source.Offset)) || _source.IsExhausted || (_foundTemplateLength >= _template.Length))
 			{

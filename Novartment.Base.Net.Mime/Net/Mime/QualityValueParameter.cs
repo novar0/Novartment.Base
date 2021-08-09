@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.Contracts;
 
 namespace Novartment.Base.Net
 {
@@ -18,20 +17,13 @@ namespace Novartment.Base.Net
 		/// <param name="importance">Относительная важность параметра в диапазоне от 0…1.</param>
 		public QualityValueParameter (string value, decimal importance)
 		{
-			if (value == null)
-			{
-				throw new ArgumentNullException (nameof (value));
-			}
-
 			if (importance <= 0.0m || importance > 1.0m)
 			{
 				throw new ArgumentOutOfRangeException (nameof (importance));
 			}
 
-			Contract.EndContractBlock ();
-
+			this.Value = value ?? throw new ArgumentNullException (nameof (value));
 			this.Importance = importance;
-			this.Value = value;
 		}
 
 		/// <summary>
@@ -82,8 +74,6 @@ namespace Novartment.Base.Net
 				throw new ArgumentOutOfRangeException (nameof (importance));
 			}
 
-			Contract.EndContractBlock ();
-
 			return new QualityValueParameter (this.Value, importance);
 		}
 
@@ -98,8 +88,6 @@ namespace Novartment.Base.Net
 			{
 				throw new ArgumentNullException (nameof (value));
 			}
-
-			Contract.EndContractBlock ();
 
 			return new QualityValueParameter (value, this.Importance);
 		}

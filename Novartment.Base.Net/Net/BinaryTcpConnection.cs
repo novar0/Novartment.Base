@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Diagnostics.Contracts;
 using System.Threading;
 using Novartment.Base.BinaryStreaming;
 
@@ -31,16 +30,6 @@ namespace Novartment.Base.Net
 			IBufferedSource reader,
 			IBinaryDestination writer)
 		{
-			if (localEndPoint == null)
-			{
-				throw new ArgumentNullException (nameof (localEndPoint));
-			}
-
-			if (remoteEndPoint == null)
-			{
-				throw new ArgumentNullException (nameof (remoteEndPoint));
-			}
-
 			if (reader == null)
 			{
 				throw new ArgumentNullException (nameof (reader));
@@ -51,10 +40,8 @@ namespace Novartment.Base.Net
 				throw new ArgumentNullException (nameof (writer));
 			}
 
-			Contract.EndContractBlock ();
-
-			this.LocalEndPoint = localEndPoint;
-			this.RemoteEndPoint = remoteEndPoint;
+			this.LocalEndPoint = localEndPoint ?? throw new ArgumentNullException (nameof (localEndPoint));
+			this.RemoteEndPoint = remoteEndPoint ?? throw new ArgumentNullException (nameof (remoteEndPoint));
 			_reporter = new Reporter (this);
 			this.Reader = new ObservableBufferedSource (reader, _reporter);
 			this.Writer = writer;

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.Contracts;
 using System.Globalization;
 using System.IO;
 using System.Windows;
@@ -33,8 +32,6 @@ namespace Novartment.Base.UI.Wpf
 			{
 				throw new ArgumentNullException (nameof (parameter));
 			}
-
-			Contract.EndContractBlock ();
 
 			var isContainsNull = values.Contains (null);
 			if (isContainsNull)

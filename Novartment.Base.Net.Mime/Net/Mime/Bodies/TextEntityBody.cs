@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.Contracts;
 using System.Text;
 using System.Threading;
 using Novartment.Base.BinaryStreaming;
@@ -98,8 +97,6 @@ namespace Novartment.Base.Net.Mime
 			{
 				throw new ArgumentNullException (nameof (value));
 			}
-
-			Contract.EndContractBlock ();
 
 			var bytes = this.Encoding.GetBytes (value);
 			var dataSrc = new MemoryBufferedSource (bytes);

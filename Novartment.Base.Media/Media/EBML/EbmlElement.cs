@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Buffers.Binary;
 using System.Diagnostics;
-using System.Diagnostics.Contracts;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -50,16 +49,9 @@ namespace Novartment.Base.Media
 				throw new ArgumentOutOfRangeException (nameof (size));
 			}
 
-			if (source == null)
-			{
-				throw new ArgumentNullException (nameof (source));
-			}
-
-			Contract.EndContractBlock ();
-
+			_source = source ?? throw new ArgumentNullException (nameof (source));
 			this.Id = id;
 			_size = size;
-			_source = source;
 			_allDataBuffered = size <= (ulong)source.Count;
 		}
 
@@ -75,24 +67,17 @@ namespace Novartment.Base.Media
 		/// <param name="source">Источник, содержащий EBML-элемент.</param>
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
 		/// <returns>EBML-элемент, считанный из указанного источника.</returns>
-		public static Task<EbmlElement> ParseAsync (IBufferedSource source, CancellationToken cancellationToken = default)
+		public static async Task<EbmlElement> ParseAsync (IBufferedSource source, CancellationToken cancellationToken = default)
 		{
 			if (source == null)
 			{
 				throw new ArgumentNullException (nameof (source));
 			}
 
-			Contract.EndContractBlock ();
-
-			return ParseAsyncStateMachine ();
-
-			async Task<EbmlElement> ParseAsyncStateMachine ()
-			{
-				var id = await ReadVIntAsync (source, cancellationToken).ConfigureAwait (false);
-				var size = await ReadVIntValueAsync (source, cancellationToken).ConfigureAwait (false);
-				await source.LoadAsync (cancellationToken).ConfigureAwait (false);
-				return new EbmlElement (id, size, source);
-			}
+			var id = await ReadVIntAsync (source, cancellationToken).ConfigureAwait (false);
+			var size = await ReadVIntValueAsync (source, cancellationToken).ConfigureAwait (false);
+			await source.LoadAsync (cancellationToken).ConfigureAwait (false);
+			return new EbmlElement (id, size, source);
 		}
 
 		/// <summary>

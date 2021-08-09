@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.Contracts;
 using Novartment.Base.Collections.Immutable;
 
 namespace Novartment.Base.UI
@@ -54,8 +53,6 @@ namespace Novartment.Base.UI
 			{
 				throw new ArgumentNullException (nameof (command));
 			}
-
-			Contract.EndContractBlock ();
 
 			_firstCommand = new SingleLinkedListNode<ChainedCommandBase> (command, _firstCommand);
 		}

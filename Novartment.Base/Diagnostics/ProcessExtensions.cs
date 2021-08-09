@@ -1,7 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Diagnostics.Contracts;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -32,8 +31,6 @@ namespace Novartment.Base
 			{
 				throw new ArgumentOutOfRangeException (nameof (timeoutMilliseconds));
 			}
-
-			Contract.EndContractBlock ();
 
 			if (process.HasExited)
 			{
@@ -70,8 +67,6 @@ namespace Novartment.Base
 				throw new ArgumentNullException (nameof (process));
 			}
 
-			Contract.EndContractBlock ();
-
 			try
 			{
 				return !process.HasExited && (process.Id != 0);
@@ -99,8 +94,6 @@ namespace Novartment.Base
 				throw new ArgumentNullException (nameof (process));
 			}
 
-			Contract.EndContractBlock ();
-
 			if (cancellationToken.IsCancellationRequested)
 			{
 				return Task.FromCanceled (cancellationToken);
@@ -125,8 +118,6 @@ namespace Novartment.Base
 			{
 				throw new ArgumentNullException (nameof (process));
 			}
-
-			Contract.EndContractBlock ();
 
 			if (cancellationToken.IsCancellationRequested)
 			{

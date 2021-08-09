@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Diagnostics;
-using System.Diagnostics.Contracts;
 using System.Threading;
 using Novartment.Base.Collections.Immutable;
 using Novartment.Base.Reflection;
@@ -88,8 +87,6 @@ namespace Novartment.Base.Collections
 				throw new ArgumentNullException (nameof (arraySegment));
 			}
 
-			Contract.EndContractBlock ();
-
 			var isAtomicallyAssignable = ReflectionService.IsAtomicallyAssignable (typeof (T));
 			if (!isAtomicallyAssignable)
 			{
@@ -132,8 +129,6 @@ namespace Novartment.Base.Collections
 					throw new ArgumentOutOfRangeException (nameof (index));
 				}
 
-				Contract.EndContractBlock ();
-
 				return _state[index];
 			}
 
@@ -143,8 +138,6 @@ namespace Novartment.Base.Collections
 				{
 					throw new ArgumentOutOfRangeException (nameof (index));
 				}
-
-				Contract.EndContractBlock ();
 
 				var handler = this.CollectionChanged;
 				if (handler == null)
@@ -343,8 +336,6 @@ namespace Novartment.Base.Collections
 				throw new ArgumentOutOfRangeException (nameof (index));
 			}
 
-			Contract.EndContractBlock ();
-
 			SpinWait spinWait = default;
 			while (true)
 			{
@@ -433,8 +424,6 @@ namespace Novartment.Base.Collections
 				throw new ArgumentOutOfRangeException (nameof (count));
 			}
 
-			Contract.EndContractBlock ();
-
 			if (count == 0)
 			{
 				return;
@@ -516,8 +505,6 @@ namespace Novartment.Base.Collections
 			{
 				throw new ArgumentOutOfRangeException (nameof (index));
 			}
-
-			Contract.EndContractBlock ();
 
 			SpinWait spinWait = default;
 			while (true)
@@ -601,8 +588,6 @@ namespace Novartment.Base.Collections
 			{
 				throw new ArgumentOutOfRangeException (nameof (count));
 			}
-
-			Contract.EndContractBlock ();
 
 			if (count == 0)
 			{
@@ -708,8 +693,6 @@ namespace Novartment.Base.Collections
 				throw new ArgumentOutOfRangeException (nameof (min));
 			}
 
-			Contract.EndContractBlock ();
-
 			SpinWait spinWait = default;
 			while (true)
 			{
@@ -799,8 +782,6 @@ namespace Novartment.Base.Collections
 				throw new ArgumentOutOfRangeException (nameof (arrayIndex));
 			}
 
-			Contract.EndContractBlock ();
-
 			_state.CopyTo (array, arrayIndex);
 		}
 
@@ -815,8 +796,6 @@ namespace Novartment.Base.Collections
 			{
 				throw new ArgumentNullException (nameof (comparer));
 			}
-
-			Contract.EndContractBlock ();
 
 			return ((IStructuralEquatable)_state).GetHashCode (comparer);
 		}
@@ -833,8 +812,6 @@ namespace Novartment.Base.Collections
 			{
 				throw new ArgumentNullException (nameof (comparer));
 			}
-
-			Contract.EndContractBlock ();
 
 			if (other == null)
 			{
@@ -873,8 +850,6 @@ namespace Novartment.Base.Collections
 			{
 				throw new ArgumentNullException (nameof (accessMethod));
 			}
-
-			Contract.EndContractBlock ();
 
 			SpinWait spinWait = default;
 			while (true)

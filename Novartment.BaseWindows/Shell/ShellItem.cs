@@ -2,7 +2,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.Contracts;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -35,8 +34,6 @@ namespace Novartment.Base.Shell
 			{
 				throw new ArgumentNullException (nameof (nativeShellItem));
 			}
-
-			Contract.EndContractBlock ();
 
 			var currentThreadApartmentState = Thread.CurrentThread.GetApartmentState ();
 			if (currentThreadApartmentState != ApartmentState.STA)
@@ -277,8 +274,6 @@ namespace Novartment.Base.Shell
 				throw new ArgumentNullException (nameof (path));
 			}
 
-			Contract.EndContractBlock ();
-
 			var currentThreadApartmentState = Thread.CurrentThread.GetApartmentState ();
 			if (currentThreadApartmentState != ApartmentState.STA)
 			{
@@ -354,8 +349,6 @@ namespace Novartment.Base.Shell
 			{
 				throw new ArgumentNullException (nameof (dataContainer));
 			}
-
-			Contract.EndContractBlock ();
 
 			var currentThreadApartmentState = Thread.CurrentThread.GetApartmentState ();
 			if (currentThreadApartmentState != ApartmentState.STA)

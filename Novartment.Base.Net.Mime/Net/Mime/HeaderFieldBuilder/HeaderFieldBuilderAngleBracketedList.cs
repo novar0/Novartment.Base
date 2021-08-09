@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
 using Novartment.Base.Text;
 
 namespace Novartment.Base.Net.Mime
@@ -21,14 +20,7 @@ namespace Novartment.Base.Net.Mime
 		public HeaderFieldBuilderAngleBracketedList (HeaderFieldName name, IReadOnlyList<string> urls)
 			: base (name)
 		{
-			if (urls == null)
-			{
-				throw new ArgumentNullException (nameof (urls));
-			}
-
-			Contract.EndContractBlock ();
-
-			_urls = urls;
+			_urls = urls ?? throw new ArgumentNullException (nameof (urls));
 		}
 
 		/// <summary>

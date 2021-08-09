@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.Contracts;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Net.Security;
@@ -41,7 +40,7 @@ namespace Novartment.Base.Net
 		/// <param name="addressFamily">Схема адресации для подключения.</param>
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
 		/// <returns>Задача, результатом которой будет установленное TCP-подключение.</returns>
-		public static Task<ITcpConnection> CreateAsync (
+		public static async Task<ITcpConnection> CreateAsync (
 			Uri remoteUri,
 			AddressFamily addressFamily,
 			CancellationToken cancellationToken = default)
@@ -62,37 +61,28 @@ namespace Novartment.Base.Net
 				throw new ArgumentOutOfRangeException (nameof (remoteUri));
 			}
 
-			Contract.EndContractBlock ();
-
-			var task = Dns.GetHostAddressesAsync (remoteUri.Host);
-
-			return CreateAsyncUriFinalizer ();
-
-			async Task<ITcpConnection> CreateAsyncUriFinalizer ()
+			var addrs = await Dns.GetHostAddressesAsync (remoteUri.Host).ConfigureAwait (false);
+			IPAddress ipAddress = null;
+			foreach (var addr in addrs)
 			{
-				var addrs = await task.ConfigureAwait (false);
-				IPAddress ipAddress = null;
-				foreach (var addr in addrs)
+				if (addr.AddressFamily == addressFamily)
 				{
-					if (addr.AddressFamily == addressFamily)
-					{
-						ipAddress = addr;
-						break;
-					}
+					ipAddress = addr;
+					break;
 				}
-
-				if (ipAddress == null)
-				{
-					throw new InvalidOperationException (FormattableString.Invariant (
-						$"Host {remoteUri.Host} does not have any IP-addresses of {addressFamily} family."));
-				}
-
-				var remoteEndpoint = new IPHostEndPoint (ipAddress, remoteUri.Port)
-				{
-					HostName = remoteUri.Host,
-				};
-				return await CreateAsync (remoteEndpoint, cancellationToken).ConfigureAwait (false);
 			}
+
+			if (ipAddress == null)
+			{
+				throw new InvalidOperationException (FormattableString.Invariant (
+					$"Host {remoteUri.Host} does not have any IP-addresses of {addressFamily} family."));
+			}
+
+			var remoteEndpoint = new IPHostEndPoint (ipAddress, remoteUri.Port)
+			{
+				HostName = remoteUri.Host,
+			};
+			return await CreateAsync (remoteEndpoint, cancellationToken).ConfigureAwait (false);
 		}
 
 		/// <summary>
@@ -107,8 +97,6 @@ namespace Novartment.Base.Net
 			{
 				throw new ArgumentNullException (nameof (remoteEndpoint));
 			}
-
-			Contract.EndContractBlock ();
 
 			if (cancellationToken.IsCancellationRequested)
 			{
@@ -247,8 +235,6 @@ namespace Novartment.Base.Net
 			{
 				throw new ArgumentNullException (nameof (serverCertificate));
 			}
-
-			Contract.EndContractBlock ();
 
 			if (this.Writer is SslStream)
 			{

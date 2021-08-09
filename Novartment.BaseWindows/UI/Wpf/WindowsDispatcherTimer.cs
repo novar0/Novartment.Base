@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.Contracts;
 using System.Windows.Threading;
 
 namespace Novartment.Base.UI.Wpf
@@ -23,8 +22,6 @@ namespace Novartment.Base.UI.Wpf
 			{
 				throw new ArgumentNullException (nameof (callback));
 			}
-
-			Contract.EndContractBlock ();
 		}
 
 		private static void DoCallbackWithParam (Action callback)

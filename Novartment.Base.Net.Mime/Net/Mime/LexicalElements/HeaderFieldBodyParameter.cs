@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.Contracts;
 using System.Text;
 using Novartment.Base.Text;
 
@@ -31,8 +30,6 @@ namespace Novartment.Base.Net.Mime
 			{
 				throw new ArgumentOutOfRangeException (nameof (name));
 			}
-
-			Contract.EndContractBlock ();
 
 			this.Name = name;
 			_value = value;

@@ -2,7 +2,6 @@
 using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.Contracts;
 using System.Text;
 using Novartment.Base.Collections;
 using Novartment.Base.Collections.Linq;
@@ -506,8 +505,6 @@ namespace Novartment.Base.Net.Mime
 			{
 				throw new ArgumentNullException (nameof (header));
 			}
-
-			Contract.EndContractBlock ();
 
 			// The origination date specifies the date and time at which the creator of the message indicated
 			// that the message was complete and ready to enter the mail delivery system.

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.Contracts;
 using System.Threading;
 using System.Threading.Tasks;
 using Novartment.Base.BinaryStreaming;
@@ -28,8 +27,6 @@ namespace Novartment.Base.Net.Mime
 				throw new ArgumentOutOfRangeException (nameof (transferEncoding));
 			}
 
-			Contract.EndContractBlock ();
-
 			this.TransferEncoding = transferEncoding;
 		}
 
@@ -52,7 +49,7 @@ namespace Novartment.Base.Net.Mime
 		/// <param name="subBodyFactory">Фабрика, позволяющая создавать тело вложенных сущностей с указанными параметрами.</param>
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
 		/// <returns>Задача, представляющая операцию.</returns>
-		public Task LoadAsync (
+		public async Task LoadAsync (
 			IBufferedSource source,
 			Func<EssentialContentProperties, IEntityBody> subBodyFactory,
 			CancellationToken cancellationToken = default)
@@ -62,17 +59,8 @@ namespace Novartment.Base.Net.Mime
 				throw new ArgumentNullException (nameof (source));
 			}
 
-			Contract.EndContractBlock ();
-
-			var task = source.ReadAllBytesAsync (cancellationToken);
-
-			return LoadAsyncFinalizer ();
-
-			async Task LoadAsyncFinalizer ()
-			{
-				var result = await task.ConfigureAwait (false);
-				_encodedData = result;
-			}
+			var result = await source.ReadAllBytesAsync (cancellationToken).ConfigureAwait (false);
+			_encodedData = result;
 		}
 
 		/// <summary>
@@ -81,36 +69,29 @@ namespace Novartment.Base.Net.Mime
 		/// <param name="destination">The binary data destination, in which this entity will be saved.</param>
 		/// <param name="cancellationToken">The token to monitor for cancellation requests. The default value is System.Threading.CancellationToken.None.</param>
 		/// <returns>A task that represents the operation.</returns>
-		public Task SaveAsync (IBinaryDestination destination, CancellationToken cancellationToken = default)
+		public async Task SaveAsync (IBinaryDestination destination, CancellationToken cancellationToken = default)
 		{
 			if (destination == null)
 			{
 				throw new ArgumentNullException (nameof (destination));
 			}
 
-			Contract.EndContractBlock ();
-
-			return SaveAsyncStateMachine ();
-
-			async Task SaveAsyncStateMachine ()
+			var isEmptyBody = _encodedData.Length < 1;
+			if (!isEmptyBody)
 			{
-				var isEmptyBody = _encodedData.Length < 1;
-				if (!isEmptyBody)
-				{
-					await destination.WriteAsync (_encodedData, cancellationToken).ConfigureAwait (false);
-				}
+				await destination.WriteAsync (_encodedData, cancellationToken).ConfigureAwait (false);
+			}
 
-				// RFC 5321 part 4.1.1.4:
-				// ... if the message body were passed to the originating SMTP-sender with a final "line" that did not end in <CRLF>;
-				// in that case, the originating SMTP system MUST either reject the message as invalid or
-				// add <CRLF> in order to have the receiving SMTP server recognize the "end of data" condition.
-				if (isEmptyBody ||
-					(_encodedData.Length < 2) ||
-					(_encodedData.Span[_encodedData.Length - 2] != HeaderDecoder.CarriageReturnLinefeed[0]) ||
-					(_encodedData.Span[_encodedData.Length - 1] != HeaderDecoder.CarriageReturnLinefeed[1]))
-				{
-					await destination.WriteAsync (HeaderDecoder.CarriageReturnLinefeed, cancellationToken).ConfigureAwait (false);
-				}
+			// RFC 5321 part 4.1.1.4:
+			// ... if the message body were passed to the originating SMTP-sender with a final "line" that did not end in <CRLF>;
+			// in that case, the originating SMTP system MUST either reject the message as invalid or
+			// add <CRLF> in order to have the receiving SMTP server recognize the "end of data" condition.
+			if (isEmptyBody ||
+				(_encodedData.Length < 2) ||
+				(_encodedData.Span[_encodedData.Length - 2] != HeaderDecoder.CarriageReturnLinefeed[0]) ||
+				(_encodedData.Span[_encodedData.Length - 1] != HeaderDecoder.CarriageReturnLinefeed[1]))
+			{
+				await destination.WriteAsync (HeaderDecoder.CarriageReturnLinefeed, cancellationToken).ConfigureAwait (false);
 			}
 		}
 
@@ -169,8 +150,6 @@ namespace Novartment.Base.Net.Mime
 				throw new ArgumentNullException (nameof (data));
 			}
 
-			Contract.EndContractBlock ();
-
 			switch (this.TransferEncoding)
 			{
 				case ContentTransferEncoding.QuotedPrintable:
@@ -222,8 +201,6 @@ namespace Novartment.Base.Net.Mime
 			{
 				throw new ArgumentNullException (nameof (cryptoTransform));
 			}
-
-			Contract.EndContractBlock ();
 
 			int blocks;
 			if (inputSizeHint < 1)

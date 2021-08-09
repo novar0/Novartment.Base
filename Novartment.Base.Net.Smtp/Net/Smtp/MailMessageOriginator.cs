@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.Contracts;
 using System.Threading;
 using System.Threading.Tasks;
 using Novartment.Base.BinaryStreaming;
@@ -35,8 +34,6 @@ namespace Novartment.Base.Net.Smtp
 			{
 				throw new ArgumentNullException (nameof (transactionHandlerFactory));
 			}
-
-			Contract.EndContractBlock ();
 
 			var recipients = new ArrayList<AddrSpec> ();
 			foreach (var recipient in message.Recipients)

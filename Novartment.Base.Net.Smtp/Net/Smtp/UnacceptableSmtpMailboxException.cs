@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.Contracts;
 
 namespace Novartment.Base.Net.Smtp
 {
@@ -15,14 +14,7 @@ namespace Novartment.Base.Net.Smtp
 		public UnacceptableSmtpMailboxException (AddrSpec mailbox)
 			: base ("Mailbox not allowed.")
 		{
-			if (mailbox == null)
-			{
-				throw new ArgumentNullException (nameof (mailbox));
-			}
-
-			Contract.EndContractBlock ();
-
-			this.Mailbox = mailbox;
+			this.Mailbox = mailbox ?? throw new ArgumentNullException (nameof (mailbox));
 		}
 
 		/// <summary>
@@ -33,14 +25,7 @@ namespace Novartment.Base.Net.Smtp
 		public UnacceptableSmtpMailboxException (string message, AddrSpec mailbox)
 			: base (message)
 		{
-			if (mailbox == null)
-			{
-				throw new ArgumentNullException (nameof (mailbox));
-			}
-
-			Contract.EndContractBlock ();
-
-			this.Mailbox = mailbox;
+			this.Mailbox = mailbox ?? throw new ArgumentNullException (nameof (mailbox));
 		}
 
 		/// <summary>
@@ -52,14 +37,7 @@ namespace Novartment.Base.Net.Smtp
 		public UnacceptableSmtpMailboxException (string message, AddrSpec mailbox, Exception innerException)
 			: base (message, innerException)
 		{
-			if (mailbox == null)
-			{
-				throw new ArgumentNullException (nameof (mailbox));
-			}
-
-			Contract.EndContractBlock ();
-
-			this.Mailbox = mailbox;
+			this.Mailbox = mailbox ?? throw new ArgumentNullException (nameof (mailbox));
 		}
 
 		/// <summary>Получает почтовый ящик, вызвавший исключение.</summary>

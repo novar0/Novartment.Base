@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
 using System.IO;
 using System.Text;
 using System.Threading;
@@ -32,8 +31,6 @@ namespace Novartment.Base.Net.Mime
 			{
 				throw new ArgumentNullException (nameof (entity));
 			}
-
-			Contract.EndContractBlock ();
 
 			if (!recursive)
 			{
@@ -107,8 +104,6 @@ namespace Novartment.Base.Net.Mime
 				throw new ArgumentNullException (nameof (entity));
 			}
 
-			Contract.EndContractBlock ();
-
 			return entity.GetChildContentParts (true, includeNestedMessages)
 				.Where (e => (e != null) &&
 					((e.DispositionType == ContentDispositionType.Attachment) ||
@@ -147,8 +142,6 @@ namespace Novartment.Base.Net.Mime
 				throw new ArgumentNullException (nameof (text));
 			}
 
-			Contract.EndContractBlock ();
-
 			if (entity.Body is not ICompositeEntityBody compositeEntityBody)
 			{
 				throw new InvalidOperationException ("Can not add part to entity with discrete content. Parts can be added only to composite entities.");
@@ -176,8 +169,6 @@ namespace Novartment.Base.Net.Mime
 				throw new ArgumentNullException (nameof (entity));
 			}
 
-			Contract.EndContractBlock ();
-
 			if (entity.Body is not ICompositeEntityBody compositeEntityBody)
 			{
 				throw new InvalidOperationException ("Can not add part to entity with discrete content. Parts can be added only to composite entities.");
@@ -200,8 +191,6 @@ namespace Novartment.Base.Net.Mime
 			{
 				throw new ArgumentNullException (nameof (entity));
 			}
-
-			Contract.EndContractBlock ();
 
 			if (entity.Body is not ICompositeEntityBody compositeEntityBody)
 			{
@@ -234,8 +223,6 @@ namespace Novartment.Base.Net.Mime
 				throw new ArgumentNullException (nameof (message));
 			}
 
-			Contract.EndContractBlock ();
-
 			if (entity.Body is not ICompositeEntityBody compositeEntityBody)
 			{
 				throw new InvalidOperationException ("Can not add part to entity with discrete content. Parts can be added only to composite entities.");
@@ -264,8 +251,6 @@ namespace Novartment.Base.Net.Mime
 			{
 				throw new ArgumentNullException (nameof (entity));
 			}
-
-			Contract.EndContractBlock ();
 
 			if (entity.Body is not ICompositeEntityBody compositeEntityBody)
 			{
@@ -299,8 +284,6 @@ namespace Novartment.Base.Net.Mime
 			{
 				throw new ArgumentNullException (nameof (recipient));
 			}
-
-			Contract.EndContractBlock ();
 
 			if (entity.Body is not ICompositeEntityBody compositeEntityBody)
 			{
@@ -344,8 +327,6 @@ namespace Novartment.Base.Net.Mime
 			{
 				throw new ArgumentNullException (nameof (data));
 			}
-
-			Contract.EndContractBlock ();
 
 			if (entity.Body is not ICompositeEntityBody compositeEntityBody)
 			{
@@ -400,8 +381,6 @@ namespace Novartment.Base.Net.Mime
 			{
 				throw new ArgumentNullException (nameof (data));
 			}
-
-			Contract.EndContractBlock ();
 
 			if (cancellationToken.IsCancellationRequested)
 			{
@@ -461,8 +440,6 @@ namespace Novartment.Base.Net.Mime
 				throw new ArgumentNullException (nameof (fileName));
 			}
 
-			Contract.EndContractBlock ();
-
 			if (entity.Body is not ICompositeEntityBody compositeEntityBody)
 			{
 				throw new InvalidOperationException ("Can not add part to entity with discrete content. Parts can be added only to composite entities.");
@@ -510,8 +487,6 @@ namespace Novartment.Base.Net.Mime
 			{
 				throw new ArgumentNullException (nameof (fileName));
 			}
-
-			Contract.EndContractBlock ();
 
 			var fileInfo = new FileInfo (fileName);
 			var stream = fileInfo.OpenRead ();

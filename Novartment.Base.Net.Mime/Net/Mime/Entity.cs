@@ -2,7 +2,6 @@
 using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.Contracts;
 using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
@@ -72,26 +71,14 @@ namespace Novartment.Base.Net.Mime
 		/// <param name="subtype">Медиа подтип.</param>
 		public Entity (IEntityBody body, ContentMediaType type, string subtype)
 		{
-			if (body == null)
-			{
-				throw new ArgumentNullException (nameof (body));
-			}
-
 			if (type == ContentMediaType.Unspecified)
 			{
 				throw new ArgumentOutOfRangeException (nameof (type));
 			}
 
-			if (subtype == null)
-			{
-				throw new ArgumentNullException (nameof (subtype));
-			}
-
-			Contract.EndContractBlock ();
-
+			_body = body ?? throw new ArgumentNullException (nameof (body));
+			_subtype = subtype ?? throw new ArgumentNullException (nameof (subtype));
 			_type = type;
-			_subtype = subtype;
-			_body = body;
 		}
 
 		/// <summary>Получает тело сущности. Возвращает null если тело ещ­­­ё не создано.</summary>
@@ -238,7 +225,7 @@ namespace Novartment.Base.Net.Mime
 		/// <param name="defaultMediaSubtype">Медиа подтип по-умолчанию.</param>
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
 		/// <returns>Задача, представляющая операцию.</returns>
-		public Task LoadAsync (
+		public async Task LoadAsync (
 			IBufferedSource source,
 			Func<EssentialContentProperties, IEntityBody> bodyFactory,
 			ContentMediaType defaultMediaType,
@@ -255,30 +242,23 @@ namespace Novartment.Base.Net.Mime
 				throw new ArgumentNullException (nameof (bodyFactory));
 			}
 
-			Contract.EndContractBlock ();
-
 			if (_body != null)
 			{
 				throw new InvalidOperationException ("Unable to load already created body.");
 			}
 
-			return LoadAsyncStateMachine ();
+			var headerSource = new TemplateSeparatedBufferedSource (source, HeaderDecoder.CarriageReturnLinefeed2, false);
+			var header = await HeaderDecoder.LoadHeaderAsync (headerSource, cancellationToken).ConfigureAwait (false);
+			await headerSource.TrySkipPartAsync (cancellationToken).ConfigureAwait (false);
+			var markedFields = header.Select (item => new EncodedHeaderFieldWithMark (item)).DuplicateToArray ();
+			var contentProperties = LoadPropertiesFromHeader (markedFields, defaultMediaType, defaultMediaSubtype);
+			LoadExtraFields (markedFields);
+			this.ExtraFields.Clear ();
+			this.ExtraFields.AddRange (markedFields.Where (item => !item.IsMarked).Select (item => item.Field));
 
-			async Task LoadAsyncStateMachine ()
-			{
-				var headerSource = new TemplateSeparatedBufferedSource (source, HeaderDecoder.CarriageReturnLinefeed2, false);
-				var header = await HeaderDecoder.LoadHeaderAsync (headerSource, cancellationToken).ConfigureAwait (false);
-				await headerSource.TrySkipPartAsync (cancellationToken).ConfigureAwait (false);
-				var markedFields = header.Select (item => new EncodedHeaderFieldWithMark (item)).DuplicateToArray ();
-				var contentProperties = LoadPropertiesFromHeader (markedFields, defaultMediaType, defaultMediaSubtype);
-				LoadExtraFields (markedFields);
-				this.ExtraFields.Clear ();
-				this.ExtraFields.AddRange (markedFields.Where (item => !item.IsMarked).Select (item => item.Field));
+			_body = bodyFactory.Invoke (contentProperties);
 
-				_body = bodyFactory.Invoke (contentProperties);
-
-				await _body.LoadAsync (source, bodyFactory, cancellationToken).ConfigureAwait (false);
-			}
+			await _body.LoadAsync (source, bodyFactory, cancellationToken).ConfigureAwait (false);
 		}
 
 		/// <summary>
@@ -293,8 +273,6 @@ namespace Novartment.Base.Net.Mime
 			{
 				throw new ArgumentNullException (nameof (destination));
 			}
-
-			Contract.EndContractBlock ();
 
 			if (cancellationToken.IsCancellationRequested)
 			{
@@ -341,8 +319,6 @@ namespace Novartment.Base.Net.Mime
 			{
 				throw new ArgumentNullException (nameof (header));
 			}
-
-			Contract.EndContractBlock ();
 
 			if ((_type != ContentMediaType.Unspecified) && (_subtype != null))
 			{
@@ -467,8 +443,6 @@ namespace Novartment.Base.Net.Mime
 			{
 				throw new ArgumentNullException (nameof (header));
 			}
-
-			Contract.EndContractBlock ();
 
 			ResetProperties ();
 

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Diagnostics.Contracts;
 
 namespace Novartment.Base.Text
 {
@@ -28,8 +27,6 @@ namespace Novartment.Base.Text
 			{
 				throw new ArgumentOutOfRangeException (nameof (length));
 			}
-
-			Contract.EndContractBlock ();
 
 			this.Format = format;
 			this.Position = position;

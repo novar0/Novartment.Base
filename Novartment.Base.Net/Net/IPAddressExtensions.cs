@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
@@ -46,8 +45,6 @@ namespace Novartment.Base.Net
 				throw new ArgumentNullException (nameof (address));
 			}
 
-			Contract.EndContractBlock ();
-
 			return
 				!IPAddress.IsLoopback (address) &&
 				!address.Equals (IPAddress.Any) &&
@@ -67,8 +64,6 @@ namespace Novartment.Base.Net
 			{
 				throw new ArgumentNullException (nameof (hostName));
 			}
-
-			Contract.EndContractBlock ();
 
 			try
 			{

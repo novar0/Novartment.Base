@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -104,8 +103,6 @@ namespace Novartment.Base.Collections
 				throw new ArgumentOutOfRangeException (nameof (count));
 			}
 
-			Contract.EndContractBlock ();
-
 			index += segmentOffset;
 			if (index >= segmentItems.Length)
 			{
@@ -180,8 +177,6 @@ namespace Novartment.Base.Collections
 			{
 				throw new ArgumentOutOfRangeException (nameof (count));
 			}
-
-			Contract.EndContractBlock ();
 
 			var srcIndex = sourceIndex + segmentOffset;
 			if (srcIndex >= segmentItems.Length)
@@ -273,8 +268,6 @@ namespace Novartment.Base.Collections
 				throw new ArgumentNullException (nameof (items));
 			}
 
-			Contract.EndContractBlock ();
-
 			if (collection is IReservedCapacityCollection<T> reservableCapacityCollection)
 			{
 				var isCounted = TryGetCount (items, out int count);
@@ -314,8 +307,6 @@ namespace Novartment.Base.Collections
 			{
 				throw new ArgumentOutOfRangeException (nameof (index));
 			}
-
-			Contract.EndContractBlock ();
 
 			var isCounted = items.TryGetCount (out int count);
 			if (isCounted)
@@ -358,8 +349,6 @@ namespace Novartment.Base.Collections
 				throw new ArgumentNullException (nameof (collectionToRemove));
 			}
 
-			Contract.EndContractBlock ();
-
 			if (list.Count < 1)
 			{
 				return 0;
@@ -401,8 +390,6 @@ namespace Novartment.Base.Collections
 			{
 				throw new ArgumentNullException (nameof (indexes));
 			}
-
-			Contract.EndContractBlock ();
 
 			var count = indexes.Count;
 			if ((count < 1) || (list.Count < 1))
@@ -460,8 +447,6 @@ namespace Novartment.Base.Collections
 			{
 				throw new ArgumentNullException (nameof (source));
 			}
-
-			Contract.EndContractBlock ();
 
 			if (source is IFifoCollection<T> fifoCollection)
 			{
@@ -524,8 +509,6 @@ namespace Novartment.Base.Collections
 			{
 				throw new ArgumentNullException (nameof (source));
 			}
-
-			Contract.EndContractBlock ();
 
 			if (source is ILifoCollection<T> lifoCollection)
 			{
@@ -594,8 +577,6 @@ namespace Novartment.Base.Collections
 				throw new ArgumentNullException (nameof (source));
 			}
 
-			Contract.EndContractBlock ();
-
 			if (source is IReadOnlyCollection<T> countable1)
 			{
 				count = countable1.Count;
@@ -630,8 +611,6 @@ namespace Novartment.Base.Collections
 			{
 				throw new ArgumentNullException (nameof (source));
 			}
-
-			Contract.EndContractBlock ();
 
 			T[] array;
 			int length;
@@ -729,8 +708,6 @@ namespace Novartment.Base.Collections
 			{
 				throw new ArgumentNullException (nameof (source));
 			}
-
-			Contract.EndContractBlock ();
 
 			T[] array;
 			int length;

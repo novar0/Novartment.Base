@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.Contracts;
 using System.Threading;
 
 namespace Novartment.Base.UI
@@ -22,8 +21,6 @@ namespace Novartment.Base.UI
 			{
 				throw new ArgumentNullException (nameof (view));
 			}
-
-			Contract.EndContractBlock ();
 
 			if (cancellationToken.IsCancellationRequested)
 			{
@@ -66,8 +63,6 @@ namespace Novartment.Base.UI
 			{
 				throw new ArgumentNullException (nameof (successAction));
 			}
-
-			Contract.EndContractBlock ();
 
 			var dialogResult = ShowDialog (view, cancellationToken);
 			if (dialogResult == true)

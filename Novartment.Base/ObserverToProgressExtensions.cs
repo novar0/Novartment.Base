@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.Contracts;
 
 namespace Novartment.Base
 {
@@ -25,8 +24,6 @@ namespace Novartment.Base
 				throw new ArgumentNullException (nameof (progressProvider));
 			}
 
-			Contract.EndContractBlock ();
-
 			return new ProgressToObserverTranslator<T> (progressProvider);
 		}
 
@@ -46,8 +43,6 @@ namespace Novartment.Base
 			{
 				throw new ArgumentNullException (nameof (observer));
 			}
-
-			Contract.EndContractBlock ();
 
 			return new ObserverToProgressTranslator<T> (observer);
 		}

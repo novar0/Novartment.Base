@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
 using Novartment.Base.Collections;
 using static System.Linq.Enumerable;
 
@@ -24,8 +23,6 @@ namespace Novartment.Base
 				throw new ArgumentNullException (nameof (exceptionDescription));
 			}
 
-			Contract.EndContractBlock ();
-
 			var elements = exceptionDescription
 				.EnumerateHierarchy (true)
 				.Select (item => item.ToString (false, null));
@@ -47,8 +44,6 @@ namespace Novartment.Base
 			{
 				throw new ArgumentNullException (nameof (exceptionDescription));
 			}
-
-			Contract.EndContractBlock ();
 
 			return exceptionDescription
 				.EnumerateHierarchy (false)
@@ -73,7 +68,6 @@ namespace Novartment.Base
 				throw new ArgumentNullException (nameof (exceptionDescription));
 			}
 
-			Contract.EndContractBlock ();
 			return new ExceptionDescriptionHierarchyEnumerator (exceptionDescription, skipAggregate);
 		}
 

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
 using System.Reflection;
 using static System.Linq.Enumerable;
 
@@ -32,8 +31,6 @@ namespace Novartment.Base
 				throw new ArgumentNullException (nameof (propertySelector));
 			}
 
-			Contract.EndContractBlock ();
-
 			var sorter = new InternalSorter<TItem, TKey> (propertySelector);
 			((ISortDirectionVariable)sorter).DescendingOrder = descendingOrder;
 			return sorter;
@@ -54,8 +51,6 @@ namespace Novartment.Base
 			{
 				throw new ArgumentNullException (nameof (propertyName));
 			}
-
-			Contract.EndContractBlock ();
 
 			var itemType = typeof (TItem);
 			var sortingPropertyInfo = itemType.GetRuntimeProperty (propertyName);

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
 using Novartment.Base.Collections.Linq;
 using Novartment.Base.Text;
 
@@ -28,11 +27,6 @@ namespace Novartment.Base.Net.Mime
 		/// <param name="value">Значение параметра.</param>
 		public DispositionNotificationParameter (string name, DispositionNotificationParameterImportance importance, string value)
 		{
-			if (name == null)
-			{
-				throw new ArgumentNullException (nameof (name));
-			}
-
 			if (value == null)
 			{
 				throw new ArgumentNullException (nameof (value));
@@ -44,9 +38,7 @@ namespace Novartment.Base.Net.Mime
 				throw new ArgumentOutOfRangeException (nameof (value));
 			}
 
-			Contract.EndContractBlock ();
-
-			this.Name = name;
+			this.Name = name ?? throw new ArgumentNullException (nameof (name));
 			this.Importance = importance;
 			_values = ReadOnlyList.Repeat (value, 1);
 		}
@@ -60,22 +52,9 @@ namespace Novartment.Base.Net.Mime
 		/// <param name="values">Список значений параметра.</param>
 		public DispositionNotificationParameter (string name, DispositionNotificationParameterImportance importance, IReadOnlyList<string> values)
 		{
-			if (name == null)
-			{
-				throw new ArgumentNullException (nameof (name));
-			}
-
-			if (values == null)
-			{
-				throw new ArgumentNullException (nameof (values));
-			}
-
-			Contract.Requires (Contract.ForAll (values, value => AsciiCharSet.IsAllOfClass (value, AsciiCharClasses.Token)));
-			Contract.EndContractBlock ();
-
-			this.Name = name;
+			this.Name = name ?? throw new ArgumentNullException (nameof (name));
+			_values = values ?? throw new ArgumentNullException (nameof (values));
 			this.Importance = importance;
-			_values = values;
 		}
 
 		/// <summary>

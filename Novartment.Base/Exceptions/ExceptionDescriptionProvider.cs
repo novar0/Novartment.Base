@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
 using System.Globalization;
 using System.IO;
 using System.Reflection;
@@ -41,8 +40,6 @@ namespace Novartment.Base
 				throw new ArgumentNullException (nameof (exception));
 			}
 
-			Contract.EndContractBlock ();
-
 			if (exception is CustomErrorException customErrorException)
 			{
 				return customErrorException.InnerExceptions ?? ReadOnlyList.Empty<Exception> ();
@@ -80,8 +77,6 @@ namespace Novartment.Base
 				throw new ArgumentNullException (nameof (exception));
 			}
 
-			Contract.EndContractBlock ();
-
 			return (exception is CustomErrorException customErrorException) ?
 				customErrorException.Name :
 				ReflectionService.GetDisplayName(exception.GetType());
@@ -99,8 +94,6 @@ namespace Novartment.Base
 				throw new ArgumentNullException (nameof (exception));
 			}
 
-			Contract.EndContractBlock ();
-
 			return (exception is CustomErrorException customErrorException) ?
 				customErrorException.Trace :
 				exception.StackTrace;
@@ -117,8 +110,6 @@ namespace Novartment.Base
 			{
 				throw new ArgumentNullException (nameof (exception));
 			}
-
-			Contract.EndContractBlock ();
 
 			if (exception is CustomErrorException customErrorException)
 			{
@@ -150,8 +141,6 @@ namespace Novartment.Base
 			{
 				throw new ArgumentNullException (nameof (exception));
 			}
-
-			Contract.EndContractBlock ();
 
 			if (exception is CustomErrorException customErrorException)
 			{
@@ -211,8 +200,6 @@ namespace Novartment.Base
 				throw new ArgumentNullException (nameof (exception));
 			}
 
-			Contract.EndContractBlock ();
-
 			return CreateDescription (exception)
 				.EnumerateHierarchy (false)
 				.Select (item => item.ToString (true, tracePatternToHide))
@@ -233,8 +220,6 @@ namespace Novartment.Base
 			{
 				throw new ArgumentNullException (nameof (exception));
 			}
-
-			Contract.EndContractBlock ();
 
 			var innerExceptions = GetInnerExceptions (exception);
 			var innerDescriptions = (innerExceptions != null) ?

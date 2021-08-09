@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
-using System.Diagnostics.Contracts;
 using System.Windows.Data;
 using System.Windows.Input;
 using Novartment.Base.Collections;
@@ -193,8 +192,6 @@ namespace Novartment.Base.UI.Wpf
 					throw new ArgumentOutOfRangeException (nameof (index));
 				}
 
-				Contract.EndContractBlock ();
-
 				if (this.NeedsRefresh)
 				{
 					throw new InvalidOperationException ("Access to view denied while it needs refresh.");
@@ -298,8 +295,6 @@ namespace Novartment.Base.UI.Wpf
 				throw new ArgumentOutOfRangeException (nameof (index));
 			}
 
-			Contract.EndContractBlock ();
-
 			if (this.NeedsRefresh)
 			{
 				throw new InvalidOperationException ("Access to view denied while it needs refresh.");
@@ -379,8 +374,6 @@ namespace Novartment.Base.UI.Wpf
 			{
 				throw new ArgumentNullException (nameof (args));
 			}
-
-			Contract.EndContractBlock ();
 
 			if (this.NeedsRefresh)
 			{
@@ -549,15 +542,7 @@ namespace Novartment.Base.UI.Wpf
 		}
 
 		private static IReadOnlyList<TItem> ValidateListArgument (IReadOnlyList<TItem> list)
-		{
-			if (list == null)
-			{
-				throw new ArgumentNullException (nameof (list));
-			}
-
-			Contract.EndContractBlock ();
-			return list;
-		}
+			=> list ?? throw new ArgumentNullException (nameof (list));
 
 		private int IndexOfWithoutChecks (object item)
 		{
@@ -1011,8 +996,6 @@ namespace Novartment.Base.UI.Wpf
 				{
 					throw new ArgumentOutOfRangeException (nameof (y));
 				}
-
-				Contract.EndContractBlock ();
 
 				return _comparer.Compare (_source[x], _source[y]);
 			}

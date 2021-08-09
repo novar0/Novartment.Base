@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
 
 namespace Novartment.Base.Collections.Linq
 {
@@ -33,8 +32,6 @@ namespace Novartment.Base.Collections.Linq
 			{
 				throw new ArgumentNullException (nameof (second));
 			}
-
-			Contract.EndContractBlock ();
 
 			return first.Equals (second, comparer ?? EqualityComparer<TSource>.Default);
 		}

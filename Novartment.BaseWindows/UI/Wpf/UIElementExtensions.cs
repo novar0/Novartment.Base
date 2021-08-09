@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.Contracts;
 using System.Windows;
 using System.Windows.Input;
 using BclDragDropAction = Novartment.Base.UI.DragDropAction;
@@ -39,8 +38,6 @@ namespace Novartment.Base.UI.Wpf
 				throw new ArgumentNullException (nameof (handler));
 			}
 
-			Contract.EndContractBlock ();
-
 			return new DragDropSourceUIElementHandler (element, handler);
 		}
 
@@ -66,8 +63,6 @@ namespace Novartment.Base.UI.Wpf
 			{
 				throw new ArgumentNullException (nameof (handler));
 			}
-
-			Contract.EndContractBlock ();
 
 			return new DragDropTargetUIElementHandler (element, handler);
 		}

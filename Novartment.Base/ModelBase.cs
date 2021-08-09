@@ -1,6 +1,5 @@
 ﻿using System;
 using System.ComponentModel;
-using System.Diagnostics.Contracts;
 using System.Reflection;
 
 namespace Novartment.Base
@@ -37,11 +36,6 @@ namespace Novartment.Base
 				throw new ArgumentNullException (nameof (propertyChangedEventArgs));
 			}
 
-			Contract.EndContractBlock ();
-
-			Contract.Assert (
-				this.GetType ().GetRuntimeProperty (propertyChangedEventArgs.PropertyName) != null,
-				"Property [" + propertyChangedEventArgs.PropertyName + "] not found");
 			this.PropertyChanged?.Invoke (this, propertyChangedEventArgs);
 		}
 
@@ -55,8 +49,6 @@ namespace Novartment.Base
 			{
 				throw new ArgumentNullException (nameof (propertyName));
 			}
-
-			Contract.EndContractBlock ();
 
 			RaisePropertyChanged (new PropertyChangedEventArgs (propertyName));
 		}

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.Contracts;
 
 namespace Novartment.Base
 {
@@ -33,14 +32,7 @@ namespace Novartment.Base
 			string failedAction,
 			string recommendedSolution)
 		{
-			if (exceptionDescription == null)
-			{
-				throw new ArgumentNullException(nameof(exceptionDescription));
-			}
-
-			Contract.EndContractBlock();
-
-			this.Exception = exceptionDescription;
+			this.Exception = exceptionDescription ?? throw new ArgumentNullException (nameof (exceptionDescription));
 			this.FailedUser = failedUser;
 			this.FailedFramework = failedFramework;
 			this.FailedAssemblyName = failedAssemblyName;

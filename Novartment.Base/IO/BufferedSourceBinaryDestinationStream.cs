@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.Contracts;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -88,8 +87,6 @@ namespace Novartment.Base.BinaryStreaming
 				throw new ArgumentOutOfRangeException (nameof (count));
 			}
 
-			Contract.EndContractBlock ();
-
 			if (_destination is BinaryStreamingStreamExtensions.StreamBinaryDestination streamBinaryDestination)
 			{
 				streamBinaryDestination.BaseStream.Write (buffer, offset, count);
@@ -128,8 +125,6 @@ namespace Novartment.Base.BinaryStreaming
 			{
 				throw new ArgumentOutOfRangeException (nameof (count));
 			}
-
-			Contract.EndContractBlock ();
 
 			return (_destination is BinaryStreamingStreamExtensions.StreamBinaryDestination streamBinaryDestination) ?
 				streamBinaryDestination.BaseStream.WriteAsync (buffer, offset, count, cancellationToken) :
@@ -204,8 +199,6 @@ namespace Novartment.Base.BinaryStreaming
 			{
 				throw new ArgumentOutOfRangeException (nameof (count));
 			}
-
-			Contract.EndContractBlock ();
 
 			int resultSize = 0;
 			var available = _source.Count;
@@ -299,8 +292,6 @@ namespace Novartment.Base.BinaryStreaming
 			{
 				throw new ArgumentOutOfRangeException (nameof (count));
 			}
-
-			Contract.EndContractBlock ();
 
 			var available = _source.Count;
 			if ((count <= available) || _source.IsExhausted)

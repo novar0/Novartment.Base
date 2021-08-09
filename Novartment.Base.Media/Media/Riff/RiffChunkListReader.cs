@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Diagnostics.Contracts;
 using System.Threading;
 using System.Threading.Tasks;
 using Novartment.Base.BinaryStreaming;
@@ -32,8 +31,6 @@ namespace Novartment.Base.Media
 			{
 				throw new ArgumentOutOfRangeException (nameof (source));
 			}
-
-			Contract.EndContractBlock ();
 
 			_source = source;
 

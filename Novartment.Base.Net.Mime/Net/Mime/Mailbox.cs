@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Buffers;
-using System.Diagnostics.Contracts;
 using Novartment.Base.Text;
 
 namespace Novartment.Base.Net.Mime
@@ -25,14 +24,7 @@ namespace Novartment.Base.Net.Mime
 		/// <param name="displayName">Имя почтового ящика. Может быть не указано (значение null).</param>
 		public Mailbox (AddrSpec address, string displayName = null)
 		{
-			if (address == null)
-			{
-				throw new ArgumentNullException (nameof (address));
-			}
-
-			Contract.EndContractBlock ();
-
-			this.Address = address;
+			this.Address = address ?? throw new ArgumentNullException (nameof (address));
 			this.Name = displayName;
 		}
 
@@ -47,8 +39,6 @@ namespace Novartment.Base.Net.Mime
 			{
 				throw new ArgumentNullException (nameof (address));
 			}
-
-			Contract.EndContractBlock ();
 
 			this.Address = AddrSpec.Parse (address.AsSpan ());
 			this.Name = displayName;

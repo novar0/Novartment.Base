@@ -2,7 +2,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.Contracts;
 using SystemArray = System.Array;
 
 namespace Novartment.Base.Collections.Immutable
@@ -62,8 +61,6 @@ namespace Novartment.Base.Collections.Immutable
 				throw new ArgumentOutOfRangeException (nameof (count));
 			}
 
-			Contract.EndContractBlock ();
-
 			_items = array;
 			_capacity = array.Length;
 			_offset = (count > 0) ? offset : 0;
@@ -112,8 +109,6 @@ namespace Novartment.Base.Collections.Immutable
 					throw new ArgumentOutOfRangeException (nameof (index));
 				}
 
-				Contract.EndContractBlock ();
-
 				index += _offset;
 				if (index >= _capacity)
 				{
@@ -129,8 +124,6 @@ namespace Novartment.Base.Collections.Immutable
 				{
 					throw new ArgumentOutOfRangeException (nameof (index));
 				}
-
-				Contract.EndContractBlock ();
 
 				index += _offset;
 				if (index >= _capacity)
@@ -210,8 +203,6 @@ namespace Novartment.Base.Collections.Immutable
 			{
 				throw new ArgumentOutOfRangeException (nameof (arrayIndex));
 			}
-
-			Contract.EndContractBlock ();
 
 			if (_count > 0)
 			{
@@ -297,8 +288,6 @@ namespace Novartment.Base.Collections.Immutable
 				throw new ArgumentNullException (nameof (comparer));
 			}
 
-			Contract.EndContractBlock ();
-
 			int hash = 0;
 
 			// макс. 8 элементов с конца для вычисления хэша всей коллекции
@@ -323,8 +312,6 @@ namespace Novartment.Base.Collections.Immutable
 			{
 				throw new ArgumentNullException (nameof (comparer));
 			}
-
-			Contract.EndContractBlock ();
 
 			if (other == null)
 			{

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.Contracts;
 
 namespace Novartment.Base.Net
 {
@@ -20,8 +19,6 @@ namespace Novartment.Base.Net
 			{
 				throw new ArgumentOutOfRangeException (nameof (name));
 			}
-
-			Contract.EndContractBlock ();
 
 			this.Name = name;
 			var buf = new byte[body.Length];

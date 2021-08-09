@@ -2,7 +2,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics.Contracts;
 using System.Windows.Controls;
 using static System.Linq.Enumerable;
 
@@ -24,8 +23,6 @@ namespace Novartment.Base.UI.Wpf
 			{
 				throw new ArgumentNullException (nameof (control));
 			}
-
-			Contract.EndContractBlock ();
 
 			var src = control.ItemsSource;
 			if (src is ICollectionView colView)
@@ -61,8 +58,6 @@ namespace Novartment.Base.UI.Wpf
 				throw new ArgumentNullException (nameof (control));
 			}
 
-			Contract.EndContractBlock ();
-
 			var src = control.ItemsSource;
 			var colView = src as ICollectionView;
 			if (colView != null)
@@ -95,8 +90,6 @@ namespace Novartment.Base.UI.Wpf
 			{
 				throw new ArgumentNullException (nameof (control));
 			}
-
-			Contract.EndContractBlock ();
 
 			var collection = control.ItemsSource;
 #pragma warning disable IDE0019 // Use pattern matching

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.Contracts;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -37,8 +36,6 @@ namespace Novartment.Base.IO
 			{
 				throw new ArgumentOutOfRangeException (nameof (stream));
 			}
-
-			Contract.EndContractBlock ();
 
 			_stream = stream;
 			_state = state;
@@ -308,8 +305,6 @@ namespace Novartment.Base.IO
 			{
 				throw new ArgumentNullException (nameof (observer));
 			}
-
-			Contract.EndContractBlock ();
 
 			SpinWait spinWait = default;
 			while (true)

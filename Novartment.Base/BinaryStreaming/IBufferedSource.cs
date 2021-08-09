@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.Contracts;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -8,7 +7,6 @@ namespace Novartment.Base.BinaryStreaming
 	/// <summary>
 	/// A data source for sequential reading, represented by a byte buffer.
 	/// </summary>
-	[ContractClass (typeof (IBufferedSourceContracts))]
 	public interface IBufferedSource
 	{
 		/// <summary>
@@ -77,6 +75,7 @@ namespace Novartment.Base.BinaryStreaming
 		void Skip (int size);
 	}
 
+/*
 	/// <summary>
 	/// Metadata for contracts of IBufferedSource.
 	/// </summary>
@@ -124,4 +123,5 @@ namespace Novartment.Base.BinaryStreaming
 			Contract.EndContractBlock ();
 		}
 	}
+*/
 }

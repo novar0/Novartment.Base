@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.Contracts;
 using System.Globalization;
 using System.Text.RegularExpressions;
 using System.Windows;
@@ -27,8 +26,6 @@ namespace Novartment.Base.UI.Wpf
 			{
 				throw new ArgumentNullException (nameof (document));
 			}
-
-			Contract.EndContractBlock ();
 
 			var links = GetLinksInDocument (document);
 			foreach (var item in links)

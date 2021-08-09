@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.Contracts;
 
 namespace Novartment.Base.UI
 {
@@ -24,14 +23,7 @@ namespace Novartment.Base.UI
 		public ChainedRelayCommand (Action<T> execute, Func<T, bool> canExecute = null)
 			: base (null)
 		{
-			if (execute == null)
-			{
-				throw new ArgumentNullException (nameof (execute));
-			}
-
-			Contract.EndContractBlock ();
-
-			_execute = execute;
+			_execute = execute ?? throw new ArgumentNullException (nameof (execute)); ;
 			_canExecute = canExecute;
 		}
 

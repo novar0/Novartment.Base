@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Buffers.Binary;
 using System.Diagnostics;
-using System.Diagnostics.Contracts;
 using System.Threading;
 using System.Threading.Tasks;
 using Novartment.Base.BinaryStreaming;
@@ -25,15 +24,8 @@ namespace Novartment.Base.Media
 		/// <param name="data">Исходные данные порции.</param>
 		public RiffChunk (string id, IBufferedSource data)
 		{
-			if (data == null)
-			{
-				throw new ArgumentNullException (nameof (data));
-			}
-
-			Contract.EndContractBlock ();
-
+			this.Source = data ?? throw new ArgumentNullException (nameof (data));
 			this.Id = id;
-			this.Source = data;
 		}
 
 		/// <summary>Получает FOURCC-код, идентифицирующий тип данных порции.</summary>
@@ -65,8 +57,6 @@ namespace Novartment.Base.Media
 			{
 				throw new ArgumentOutOfRangeException (nameof (source));
 			}
-
-			Contract.EndContractBlock ();
 
 			Task task;
 			try

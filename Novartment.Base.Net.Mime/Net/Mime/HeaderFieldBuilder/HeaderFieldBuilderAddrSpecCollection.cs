@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
 using Novartment.Base.Text;
 
 namespace Novartment.Base.Net.Mime
@@ -21,14 +20,7 @@ namespace Novartment.Base.Net.Mime
 		public HeaderFieldBuilderAddrSpecCollection (HeaderFieldName name, IReadOnlyList<AddrSpec> addrSpecs)
 			: base (name)
 		{
-			if (addrSpecs == null)
-			{
-				throw new ArgumentNullException (nameof (addrSpecs));
-			}
-
-			Contract.EndContractBlock ();
-
-			_addrSpecs = addrSpecs;
+			_addrSpecs = addrSpecs ?? throw new ArgumentNullException (nameof (addrSpecs));
 		}
 
 		/// <summary>

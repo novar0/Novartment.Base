@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.Contracts;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -65,8 +64,6 @@ namespace Novartment.Base.BinaryStreaming
 					throw new ArgumentOutOfRangeException (nameof (count));
 				}
 
-				Contract.EndContractBlock ();
-
 				var vTask = _destination.WriteAsync (buffer.AsMemory (offset, count), default);
 				if (vTask.IsCompletedSuccessfully)
 				{
@@ -91,8 +88,6 @@ namespace Novartment.Base.BinaryStreaming
 				{
 					throw new ArgumentOutOfRangeException (nameof (count));
 				}
-
-				Contract.EndContractBlock ();
 
 				return _destination.WriteAsync (buffer.AsMemory (offset, count), cancellationToken).AsTask ();
 			}

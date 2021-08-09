@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
 using Novartment.Base.Text;
 
 namespace Novartment.Base.Net.Mime
@@ -62,8 +61,6 @@ namespace Novartment.Base.Net.Mime
 			{
 				throw new ArgumentOutOfRangeException (nameof (type));
 			}
-
-			Contract.EndContractBlock ();
 
 			_actionMode = actionMode;
 			_sendingMode = sendingMode;

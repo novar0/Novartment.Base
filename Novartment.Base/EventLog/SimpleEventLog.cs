@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
-using System.Diagnostics.Contracts;
 using System.Text.RegularExpressions;
 using System.Threading;
 using Microsoft.Extensions.Logging;
@@ -72,8 +71,6 @@ namespace Novartment.Base
 				{
 					throw new ArgumentOutOfRangeException (nameof (value));
 				}
-
-				Contract.EndContractBlock ();
 
 				if (_recordLimit != value)
 				{
@@ -148,8 +145,6 @@ namespace Novartment.Base
 				throw new ArgumentNullException (nameof (pattern));
 			}
 
-			Contract.EndContractBlock ();
-
 			AddReplacementRegexPattern (Regex.Escape (pattern));
 		}
 
@@ -163,8 +158,6 @@ namespace Novartment.Base
 			{
 				throw new ArgumentNullException (nameof (pattern));
 			}
-
-			Contract.EndContractBlock ();
 
 			var newRegex = new Regex (pattern, RegexOptions.ExplicitCapture);
 
@@ -269,8 +262,6 @@ namespace Novartment.Base
 			{
 				throw new ArgumentNullException (nameof (formatter));
 			}
-
-			Contract.EndContractBlock ();
 
 			var message = formatter.Invoke (state, exception);
 

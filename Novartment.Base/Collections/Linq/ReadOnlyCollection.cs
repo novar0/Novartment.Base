@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
 using System.Linq;
 
 namespace Novartment.Base.Collections.Linq
@@ -24,8 +23,6 @@ namespace Novartment.Base.Collections.Linq
 				throw new ArgumentNullException (nameof (source));
 			}
 
-			Contract.EndContractBlock ();
-
 			return source.Count > 0;
 		}
 
@@ -42,8 +39,6 @@ namespace Novartment.Base.Collections.Linq
 				throw new ArgumentNullException (nameof (source));
 			}
 
-			Contract.EndContractBlock ();
-
 			return source.Count;
 		}
 
@@ -59,8 +54,6 @@ namespace Novartment.Base.Collections.Linq
 			{
 				throw new ArgumentNullException (nameof (source));
 			}
-
-			Contract.EndContractBlock ();
 
 			return source.Count;
 		}
@@ -79,8 +72,6 @@ namespace Novartment.Base.Collections.Linq
 			{
 				throw new ArgumentNullException (nameof (source));
 			}
-
-			Contract.EndContractBlock ();
 
 			return (source.Count > 0) ? source : ReadOnlyList.Repeat<TSource> (defaultValue, 1);
 		}
@@ -103,8 +94,6 @@ namespace Novartment.Base.Collections.Linq
 			{
 				throw new ArgumentOutOfRangeException (nameof (count));
 			}
-
-			Contract.EndContractBlock ();
 
 			if (source.Count < 1)
 			{
@@ -137,8 +126,6 @@ namespace Novartment.Base.Collections.Linq
 			{
 				throw new ArgumentOutOfRangeException (nameof (count));
 			}
-
-			Contract.EndContractBlock ();
 
 			if ((source.Count < 1) || (count < 1))
 			{
@@ -173,10 +160,8 @@ namespace Novartment.Base.Collections.Linq
 				throw new ArgumentNullException (nameof (selector));
 			}
 
-			Contract.EndContractBlock ();
-
 			return (source.Count < 1) ?
-				(IReadOnlyCollection<TResult>)ReadOnlyList.Empty<TResult> () :
+				ReadOnlyList.Empty<TResult> () :
 				new SelectReadOnlyCollection<TSource, TResult> (source, selector);
 		}
 
@@ -203,10 +188,8 @@ namespace Novartment.Base.Collections.Linq
 				throw new ArgumentNullException (nameof (selector));
 			}
 
-			Contract.EndContractBlock ();
-
 			return (source.Count < 1) ?
-				(IReadOnlyCollection<TResult>)ReadOnlyList.Empty<TResult> () :
+				ReadOnlyList.Empty<TResult> () :
 				new SelectIndexReadOnlyCollection<TSource, TResult> (source, selector);
 		}
 
@@ -222,8 +205,6 @@ namespace Novartment.Base.Collections.Linq
 			{
 				throw new ArgumentNullException (nameof (source));
 			}
-
-			Contract.EndContractBlock ();
 
 			if (source.Count < 2)
 			{
@@ -257,8 +238,6 @@ namespace Novartment.Base.Collections.Linq
 				throw new ArgumentNullException (nameof (keySelector));
 			}
 
-			Contract.EndContractBlock ();
-
 			return new OrderedReadOnlyCollection<TSource, TKey> (source, keySelector, comparer, false, null);
 		}
 
@@ -286,8 +265,6 @@ namespace Novartment.Base.Collections.Linq
 				throw new ArgumentNullException (nameof (keySelector));
 			}
 
-			Contract.EndContractBlock ();
-
 			return new OrderedReadOnlyCollection<TSource, TKey> (source, keySelector, comparer, true, null);
 		}
 
@@ -309,8 +286,6 @@ namespace Novartment.Base.Collections.Linq
 			{
 				throw new ArgumentNullException (nameof (source));
 			}
-
-			Contract.EndContractBlock ();
 
 			if (source.Count < 2)
 			{
@@ -338,8 +313,6 @@ namespace Novartment.Base.Collections.Linq
 			{
 				throw new ArgumentNullException (nameof (source));
 			}
-
-			Contract.EndContractBlock ();
 
 			if (source.Count < 2)
 			{
@@ -369,8 +342,6 @@ namespace Novartment.Base.Collections.Linq
 			{
 				throw new ArgumentNullException (nameof (second));
 			}
-
-			Contract.EndContractBlock ();
 
 			if (first.Count < 1)
 			{
@@ -415,10 +386,8 @@ namespace Novartment.Base.Collections.Linq
 				throw new ArgumentNullException (nameof (selector));
 			}
 
-			Contract.EndContractBlock ();
-
 			return ((first.Count < 1) || (second.Count < 1)) ?
-				(IReadOnlyCollection<TResult>)ReadOnlyList.Empty<TResult> () :
+				ReadOnlyList.Empty<TResult> () :
 				new ZipReadOnlyCollection<TFirst, TSecond, TResult> (first, second, selector);
 		}
 
@@ -434,8 +403,6 @@ namespace Novartment.Base.Collections.Linq
 			{
 				throw new ArgumentNullException (nameof (source));
 			}
-
-			Contract.EndContractBlock ();
 
 			var array = new TSource[source.Count];
 			if (source.Count > 0)

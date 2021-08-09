@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Data;
-using System.Diagnostics.Contracts;
 
 namespace Novartment.Base.Data.SqlWrapper
 {
@@ -17,13 +16,7 @@ namespace Novartment.Base.Data.SqlWrapper
 		/// <param name="value">Значение параметра.</param>
 		public InvariantDbCommandParameter (string name, object value)
 		{
-			if (name == null)
-			{
-				throw new ArgumentNullException(nameof(name));
-			}
-
-			Contract.EndContractBlock();
-			this.Name = name;
+			this.Name = name ?? throw new ArgumentNullException (nameof (name)); ;
 			this.Value = value;
 		}
 

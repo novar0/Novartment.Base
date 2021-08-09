@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.Contracts;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -43,11 +42,6 @@ namespace Novartment.Base.Net.Smtp
 			SmtpClientSecurityParameters securityParameters,
 			ILogger<SmtpOriginatorProtocol> logger = null)
 		{
-			if (transactionOriginator == null)
-			{
-				throw new ArgumentNullException (nameof (transactionOriginator));
-			}
-
 			if (securityParameters == null)
 			{
 				throw new ArgumentNullException (nameof (securityParameters));
@@ -59,9 +53,7 @@ namespace Novartment.Base.Net.Smtp
 				throw new ArgumentOutOfRangeException (nameof (securityParameters));
 			}
 
-			Contract.EndContractBlock ();
-
-			_transactionOriginator = transactionOriginator;
+			_transactionOriginator = transactionOriginator ?? throw new ArgumentNullException (nameof (transactionOriginator));
 			_securityParameters = securityParameters;
 			_logger = logger;
 		}
@@ -87,8 +79,6 @@ namespace Novartment.Base.Net.Smtp
 			{
 				throw new ArgumentOutOfRangeException (nameof (connection));
 			}
-
-			Contract.EndContractBlock ();
 
 			var credential = _securityParameters.ClientCredentials?.GetCredential (
 					connection.RemoteEndPoint.HostName,

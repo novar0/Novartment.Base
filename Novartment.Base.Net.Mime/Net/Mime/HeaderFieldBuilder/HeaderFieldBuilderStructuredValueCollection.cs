@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
 using System.Text;
 
 namespace Novartment.Base.Net.Mime
@@ -25,14 +24,7 @@ namespace Novartment.Base.Net.Mime
 		public HeaderFieldBuilderStructuredValueCollection (HeaderFieldName name, IReadOnlyList<string> values)
 			: base (name)
 		{
-			if (values == null)
-			{
-				throw new ArgumentNullException (nameof (values));
-			}
-
-			Contract.EndContractBlock ();
-
-			_values = values;
+			_values = values ?? throw new ArgumentNullException (nameof (values));
 		}
 
 		/// <summary>

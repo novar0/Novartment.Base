@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.Contracts;
 using System.Windows.Controls;
 
 namespace Novartment.Base.UI.Wpf
@@ -19,8 +18,6 @@ namespace Novartment.Base.UI.Wpf
 			{
 				throw new ArgumentNullException (nameof (control));
 			}
-
-			Contract.EndContractBlock ();
 
 			var itemsPresenter = control.FindVisualAncestor<ItemsPresenter> ();
 			if (itemsPresenter == null)

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.Contracts;
 
 namespace Novartment.Base.Net.Mime
 {
@@ -29,8 +28,6 @@ namespace Novartment.Base.Net.Mime
 		/// <returns>True was value parsed successfully; otherwise, false.</returns>
 		internal static bool TryParse (ReadOnlySpan<char> source, out ContentDispositionType result)
 		{
-			Contract.EndContractBlock ();
-
 			var isInline = DispositionTypeNames.Inline.AsSpan ().SequenceEqual (source);
 			if (isInline)
 			{

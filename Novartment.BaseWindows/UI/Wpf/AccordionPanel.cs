@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Specialized;
 using System.ComponentModel;
-using System.Diagnostics.Contracts;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -127,8 +126,6 @@ namespace Novartment.Base.UI.Wpf
 				throw new ArgumentNullException (nameof (expander));
 			}
 
-			Contract.EndContractBlock ();
-
 			return (bool)expander.GetValue (IsExpandedProperty);
 		}
 
@@ -143,8 +140,6 @@ namespace Novartment.Base.UI.Wpf
 			{
 				throw new ArgumentNullException (nameof (expander));
 			}
-
-			Contract.EndContractBlock ();
 
 			expander.SetValue (IsExpandedProperty, value);
 		}

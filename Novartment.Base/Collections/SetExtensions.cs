@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
 
 namespace Novartment.Base.Collections
 {
@@ -29,8 +28,6 @@ namespace Novartment.Base.Collections
 				throw new ArgumentNullException (nameof (other));
 			}
 
-			Contract.EndContractBlock ();
-
 			foreach (var item in other)
 			{
 				set.Remove (item);
@@ -55,8 +52,6 @@ namespace Novartment.Base.Collections
 			{
 				throw new ArgumentNullException (nameof (other));
 			}
-
-			Contract.EndContractBlock ();
 
 			foreach (var item in other)
 			{
@@ -91,8 +86,6 @@ namespace Novartment.Base.Collections
 				throw new ArgumentNullException (nameof (other));
 			}
 
-			Contract.EndContractBlock ();
-
 			set.Clear ();
 			foreach (var item in other)
 			{
@@ -119,8 +112,6 @@ namespace Novartment.Base.Collections
 				throw new ArgumentNullException (nameof (other));
 			}
 
-			Contract.EndContractBlock ();
-
 			foreach (var item in other)
 			{
 				set.Add (item);
@@ -145,8 +136,6 @@ namespace Novartment.Base.Collections
 			{
 				throw new ArgumentNullException (nameof (other));
 			}
-
-			Contract.EndContractBlock ();
 
 			int otherCount = 0;
 			int containsCount = 0;
@@ -187,8 +176,6 @@ namespace Novartment.Base.Collections
 				throw new ArgumentNullException (nameof (other));
 			}
 
-			Contract.EndContractBlock ();
-
 			int containsCount = 0;
 			foreach (var item in other)
 			{
@@ -224,8 +211,6 @@ namespace Novartment.Base.Collections
 			{
 				throw new ArgumentNullException (nameof (other));
 			}
-
-			Contract.EndContractBlock ();
 
 			int otherCount = 0;
 			foreach (var item in other)
@@ -265,8 +250,6 @@ namespace Novartment.Base.Collections
 				throw new ArgumentNullException (nameof (other));
 			}
 
-			Contract.EndContractBlock ();
-
 			foreach (var item in other)
 			{
 				var setContainsItem = set.Contains (item);
@@ -298,8 +281,6 @@ namespace Novartment.Base.Collections
 				throw new ArgumentNullException (nameof (other));
 			}
 
-			Contract.EndContractBlock ();
-
 			foreach (var item in other)
 			{
 				var setContainsItem = set.Contains (item);
@@ -330,8 +311,6 @@ namespace Novartment.Base.Collections
 			{
 				throw new ArgumentNullException (nameof (other));
 			}
-
-			Contract.EndContractBlock ();
 
 			int otherCount = 0;
 			int containsCount = 0;

@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
 using System.Threading;
 
 namespace Novartment.Base
@@ -42,14 +41,7 @@ namespace Novartment.Base
 		/// <param name="disposables">Последовательность объектов, которые будут освобождёны при освобождении этого экземпляра.</param>
 		public AggregateDisposable (IReadOnlyCollection<IDisposable> disposables)
 		{
-			if (disposables == null)
-			{
-				throw new ArgumentNullException (nameof (disposables));
-			}
-
-			Contract.EndContractBlock ();
-
-			_disposables = disposables;
+			_disposables = disposables ?? throw new ArgumentNullException (nameof (disposables));
 		}
 
 		/// <summary>Производит освобождение (вызов Dispose()) для всех хранимых объектов.</summary>

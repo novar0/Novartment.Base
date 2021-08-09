@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
 using System.Windows.Documents;
 using Novartment.Base.Collections;
 
@@ -14,13 +13,7 @@ namespace Novartment.Base.UI.Wpf
 
 		internal InlineCollectionRunsIterator (InlineCollection collection)
 		{
-			if (collection == null)
-			{
-				throw new ArgumentNullException (nameof (collection));
-			}
-
-			Contract.EndContractBlock ();
-			_collection = collection;
+			_collection = collection ?? throw new ArgumentNullException (nameof (collection));
 		}
 
 		IEnumerator IEnumerable.GetEnumerator ()

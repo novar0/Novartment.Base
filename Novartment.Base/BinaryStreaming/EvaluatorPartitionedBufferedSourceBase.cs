@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Diagnostics.Contracts;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -26,14 +25,7 @@ namespace Novartment.Base.BinaryStreaming
 		/// <param name="source">The source of data, which will be didived into parts.</param>
 		protected EvaluatorPartitionedBufferedSourceBase (IBufferedSource source)
 		{
-			if (source == null)
-			{
-				throw new ArgumentNullException (nameof (source));
-			}
-
-			Contract.EndContractBlock ();
-
-			_source = source;
+			_source = source ?? throw new ArgumentNullException (nameof (source));
 		}
 
 		/// <summary>
@@ -88,8 +80,6 @@ namespace Novartment.Base.BinaryStreaming
 				throw new ArgumentOutOfRangeException (nameof (size));
 			}
 
-			Contract.EndContractBlock ();
-
 			if (size > 0)
 			{
 				_source.Skip (size);
@@ -130,8 +120,6 @@ namespace Novartment.Base.BinaryStreaming
 			{
 				throw new ArgumentOutOfRangeException (nameof (size));
 			}
-
-			Contract.EndContractBlock ();
 
 			if ((size <= _partValidatedLength) || this.IsEndOfPartFound || _source.IsExhausted)
 			{

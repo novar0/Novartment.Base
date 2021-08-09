@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.Contracts;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 
@@ -55,8 +54,6 @@ namespace Novartment.Base.Net
 				throw new ArgumentNullException (nameof (serverCertificate));
 			}
 
-			Contract.EndContractBlock ();
-
 			return new SmtpServerSecurityParameters (serverCertificate, false, null);
 		}
 
@@ -74,8 +71,6 @@ namespace Novartment.Base.Net
 			{
 				throw new ArgumentNullException (nameof (serverCertificate));
 			}
-
-			Contract.EndContractBlock ();
 
 			return new SmtpServerSecurityParameters (serverCertificate, true, null);
 		}
@@ -103,8 +98,6 @@ namespace Novartment.Base.Net
 			{
 				throw new ArgumentNullException (nameof (clientAuthenticator));
 			}
-
-			Contract.EndContractBlock ();
 
 			return new SmtpServerSecurityParameters (serverCertificate, false, clientAuthenticator);
 		}

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.Contracts;
 using System.Text;
 using Novartment.Base.Text;
 
@@ -36,8 +35,6 @@ namespace Novartment.Base.Net.Mime
 			{
 				throw new ArgumentOutOfRangeException (nameof (id), FormattableString.Invariant ($"Invalid value for type 'atom': \"{id}\"."));
 			}
-
-			Contract.EndContractBlock ();
 
 			_id = id;
 			_phrase = phrase;

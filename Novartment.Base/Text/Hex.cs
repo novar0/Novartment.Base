@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.Contracts;
 
 namespace Novartment.Base.Text
 {
@@ -78,8 +77,6 @@ namespace Novartment.Base.Text
 				throw new ArgumentNullException (nameof (source));
 			}
 
-			Contract.EndContractBlock ();
-
 			var result = new byte[source.Length / 2];
 			ParseArray (source.AsSpan (), result);
 			return result;
@@ -114,8 +111,6 @@ namespace Novartment.Base.Text
 			{
 				throw new ArgumentOutOfRangeException (nameof (buffer));
 			}
-
-			Contract.EndContractBlock ();
 
 			var octets = OctetsUpper.Span;
 			for (var index = 0; index < source.Length; index++)

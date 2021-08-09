@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Diagnostics.Contracts;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
@@ -37,8 +36,6 @@ namespace Novartment.Base.Net
 			{
 				throw new ArgumentNullException (nameof (listenerFactory));
 			}
-
-			Contract.EndContractBlock ();
 
 			_listenerFactory = listenerFactory;
 			_logger = logger;
@@ -124,8 +121,6 @@ namespace Novartment.Base.Net
 			{
 				throw new ArgumentNullException (nameof (protocol));
 			}
-
-			Contract.EndContractBlock ();
 
 			// TODO: добавить проверку чтобы не стартовала пока идёт остановка в методе Stop()
 			ITcpListener listener = _listenerFactory.Invoke (endPoint);

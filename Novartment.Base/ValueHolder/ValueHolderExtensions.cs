@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.Contracts;
 
 namespace Novartment.Base
 {
@@ -23,8 +22,6 @@ namespace Novartment.Base
 			{
 				throw new ArgumentNullException (nameof (holder));
 			}
-
-			Contract.EndContractBlock ();
 
 			if ((holder is not ILazyValueHolder<T> lazy) || lazy.IsValueCreated)
 			{

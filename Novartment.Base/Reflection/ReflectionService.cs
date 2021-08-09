@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.Contracts;
 using System.Reflection;
 using Novartment.Base.Collections.Linq;
 using static System.Linq.Enumerable;
@@ -21,8 +20,6 @@ namespace Novartment.Base.Reflection
 				throw new ArgumentNullException (nameof (type));
 			}
 
-			Contract.EndContractBlock ();
-
 			if (type.IsConstructedGenericType)
 			{
 				var arguments = type.GenericTypeArguments.Select (GetDisplayName);
@@ -41,8 +38,6 @@ namespace Novartment.Base.Reflection
 			{
 				throw new ArgumentNullException (nameof (assembly));
 			}
-
-			Contract.EndContractBlock ();
 
 			// у текущей сборки ищем атрибут AssemblyFileVersionAttribute
 			// если не удалось найти, то берём просто версию сборки
@@ -74,8 +69,6 @@ namespace Novartment.Base.Reflection
 			{
 				throw new ArgumentNullException (nameof (type));
 			}
-
-			Contract.EndContractBlock ();
 
 			if (!type.IsValueType)
 			{

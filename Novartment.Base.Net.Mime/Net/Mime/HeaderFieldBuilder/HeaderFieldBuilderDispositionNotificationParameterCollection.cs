@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
 
 namespace Novartment.Base.Net.Mime
 {
@@ -25,14 +24,7 @@ namespace Novartment.Base.Net.Mime
 				throw new ArgumentOutOfRangeException (nameof (name));
 			}
 
-			if (parameters == null)
-			{
-				throw new ArgumentNullException (nameof (parameters));
-			}
-
-			Contract.EndContractBlock ();
-
-			_parameters = parameters;
+			_parameters = parameters ?? throw new ArgumentNullException (nameof (parameters));
 		}
 
 		/// <summary>

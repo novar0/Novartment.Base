@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Specialized;
 using System.ComponentModel;
-using System.Diagnostics.Contracts;
 using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 
@@ -24,8 +23,6 @@ namespace Novartment.Base.UI.Wpf
 				throw new ArgumentNullException (nameof (selector));
 			}
 
-			Contract.EndContractBlock ();
-
 			var view = selector.ItemsSource as ICollectionView ?? CollectionViewSource.GetDefaultView (selector.ItemsSource);
 			if (view != null)
 			{
@@ -45,8 +42,6 @@ namespace Novartment.Base.UI.Wpf
 				throw new ArgumentNullException (nameof (selector));
 			}
 
-			Contract.EndContractBlock ();
-
 			var view = selector.ItemsSource as ICollectionView ?? CollectionViewSource.GetDefaultView (selector.ItemsSource);
 			if (view != null)
 			{
@@ -64,8 +59,6 @@ namespace Novartment.Base.UI.Wpf
 			{
 				throw new ArgumentNullException (nameof (selector));
 			}
-
-			Contract.EndContractBlock ();
 
 			var selectedItem = selector.SelectedItem;
 			if ((selector.ItemsSource != null) && (selectedItem != null))

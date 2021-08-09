@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.Contracts;
 using System.Windows;
 using System.Windows.Threading;
 
@@ -21,8 +20,6 @@ namespace Novartment.Base.UI.Wpf
 				throw new ArgumentNullException (nameof (window));
 			}
 
-			Contract.EndContractBlock ();
-
 			if (!window.IsLoaded)
 			{
 				return;
@@ -42,8 +39,6 @@ namespace Novartment.Base.UI.Wpf
 			{
 				throw new ArgumentNullException (nameof (window));
 			}
-
-			Contract.EndContractBlock ();
 
 			if (!window.IsLoaded)
 			{

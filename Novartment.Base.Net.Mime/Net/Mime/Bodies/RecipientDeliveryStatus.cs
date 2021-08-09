@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.Contracts;
 
 namespace Novartment.Base.Net.Mime
 {
@@ -19,26 +18,14 @@ namespace Novartment.Base.Net.Mime
 		/// <param name="status">Транспорт-независимый код соответствующий статусу доставки сообщения адресату.</param>
 		public RecipientDeliveryStatus (NotificationFieldValue recipient, DeliveryAttemptResult action, string status)
 		{
-			if (recipient == null)
-			{
-				throw new ArgumentNullException (nameof (recipient));
-			}
-
 			if (action == DeliveryAttemptResult.Unspecified)
 			{
 				throw new ArgumentOutOfRangeException (nameof (action));
 			}
 
-			if (status == null)
-			{
-				throw new ArgumentNullException (nameof (status));
-			}
-
-			Contract.EndContractBlock ();
-
-			this.FinalRecipient = recipient;
+			this.FinalRecipient = recipient ?? throw new ArgumentNullException (nameof (recipient));
+			this.Status = status ?? throw new ArgumentNullException (nameof (status));
 			this.Action = action;
-			this.Status = status;
 		}
 
 		/// <summary>Gets or sets original recipient address as specified by the sender of the message for which the DSN is being issued.</summary>

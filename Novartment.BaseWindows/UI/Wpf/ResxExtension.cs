@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Diagnostics.Contracts;
 using System.Globalization;
 using System.Reflection;
 using System.Resources;
@@ -557,8 +556,6 @@ namespace Novartment.Base.UI.Wpf
 				throw new ArgumentNullException (nameof (target));
 			}
 
-			Contract.EndContractBlock ();
-
 			return (string)target.GetValue (DefaultResxNameProperty);
 		}
 
@@ -573,8 +570,6 @@ namespace Novartment.Base.UI.Wpf
 			{
 				throw new ArgumentNullException (nameof (target));
 			}
-
-			Contract.EndContractBlock ();
 
 			target.SetValue (DefaultResxNameProperty, value);
 		}

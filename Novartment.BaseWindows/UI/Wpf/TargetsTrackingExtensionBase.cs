@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.Contracts;
 using System.Reflection;
 using System.Threading;
 using System.Windows;
@@ -35,8 +34,6 @@ namespace Novartment.Base.UI.Wpf
 			{
 				throw new ArgumentNullException (nameof (manager));
 			}
-
-			Contract.EndContractBlock ();
 
 			manager.RegisterExtension (this);
 		}
@@ -197,8 +194,6 @@ namespace Novartment.Base.UI.Wpf
 			{
 				throw new ArgumentNullException (nameof (serviceProvider));
 			}
-
-			Contract.EndContractBlock ();
 
 			var provideValueTarget = serviceProvider.GetService (typeof (IProvideValueTarget)) as IProvideValueTarget;
 			var target = provideValueTarget.TargetObject;

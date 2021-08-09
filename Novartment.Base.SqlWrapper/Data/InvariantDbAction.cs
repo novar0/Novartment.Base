@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Data;
 using System.Data.Common;
-using System.Diagnostics.Contracts;
 using System.Globalization;
 using Microsoft.Extensions.Logging;
 using Novartment.Base.Collections;
@@ -33,8 +32,6 @@ namespace Novartment.Base.Data.SqlWrapper
 				throw new ArgumentNullException (nameof (connectionManager));
 			}
 
-			Contract.EndContractBlock ();
-
 			_connectionManager = connectionManager;
 			_logger = logger;
 			this.CommandTimeout = 30;
@@ -57,8 +54,6 @@ namespace Novartment.Base.Data.SqlWrapper
 				throw new ArgumentNullException (nameof (name));
 			}
 
-			Contract.EndContractBlock ();
-
 			_parameters.Add (new InvariantDbCommandParameter (name, value));
 		}
 
@@ -73,8 +68,6 @@ namespace Novartment.Base.Data.SqlWrapper
 			{
 				throw new ArgumentNullException (nameof (name));
 			}
-
-			Contract.EndContractBlock ();
 
 			if ((value != null) && (value != DBNull.Value))
 			{
@@ -93,8 +86,6 @@ namespace Novartment.Base.Data.SqlWrapper
 			{
 				throw new ArgumentNullException (nameof (name));
 			}
-
-			Contract.EndContractBlock ();
 
 			if ((value == null) || (value == DBNull.Value))
 			{
@@ -116,8 +107,6 @@ namespace Novartment.Base.Data.SqlWrapper
 			{
 				throw new ArgumentNullException (nameof (tableName));
 			}
-
-			Contract.EndContractBlock ();
 
 			var dbCommand = _connectionManager.CreateCommand (_parameters, false);
 			dbCommand.CommandTimeout = this.CommandTimeout;
@@ -154,8 +143,6 @@ namespace Novartment.Base.Data.SqlWrapper
 			{
 				throw new ArgumentNullException (nameof (tableName));
 			}
-
-			Contract.EndContractBlock ();
 
 			if ((_parameters.Count == 0) && (_keyParameters.Count == 0))
 			{
@@ -199,8 +186,6 @@ namespace Novartment.Base.Data.SqlWrapper
 				throw new ArgumentNullException (nameof (tableName));
 			}
 
-			Contract.EndContractBlock ();
-
 			if ((_parameters.Count + _plusParameters.Count) == 0)
 			{
 				return;
@@ -240,8 +225,6 @@ namespace Novartment.Base.Data.SqlWrapper
 				throw new ArgumentNullException (nameof (tableName));
 			}
 
-			Contract.EndContractBlock ();
-
 			if (_keyParameters.Count == 0)
 			{
 				return null;
@@ -274,8 +257,6 @@ namespace Novartment.Base.Data.SqlWrapper
 				throw new ArgumentNullException (nameof (tableName));
 			}
 
-			Contract.EndContractBlock ();
-
 			using var dbCommand = _connectionManager.CreateCommand (_keyParameters, false);
 			dbCommand.CommandTimeout = this.CommandTimeout;
 			var columnList = string.Join (
@@ -303,8 +284,6 @@ namespace Novartment.Base.Data.SqlWrapper
 			{
 				throw new ArgumentNullException (nameof (tableName));
 			}
-
-			Contract.EndContractBlock ();
 
 			if (_keyParameters.Count == 0)
 			{
@@ -339,8 +318,6 @@ namespace Novartment.Base.Data.SqlWrapper
 				throw new ArgumentNullException (nameof (procedureName));
 			}
 
-			Contract.EndContractBlock ();
-
 			_logger?.LogTrace (FormattableString.Invariant ($"Executing procedure: {procedureName}"));
 			using var dbCommand = _connectionManager.CreateCommand (_parameters, true);
 			dbCommand.CommandTimeout = this.CommandTimeout;
@@ -361,8 +338,6 @@ namespace Novartment.Base.Data.SqlWrapper
 			{
 				throw new ArgumentNullException (nameof (procedureName));
 			}
-
-			Contract.EndContractBlock ();
 
 			if ((_logger != null) && _logger.IsEnabled (LogLevel.Trace))
 			{
@@ -389,8 +364,6 @@ namespace Novartment.Base.Data.SqlWrapper
 			{
 				throw new ArgumentNullException (nameof (functionName));
 			}
-
-			Contract.EndContractBlock ();
 
 			if ((_logger != null) && _logger.IsEnabled (LogLevel.Trace))
 			{

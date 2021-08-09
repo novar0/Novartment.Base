@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.Contracts;
 using System.Text;
 
 namespace Novartment.Base.Text
@@ -25,14 +24,7 @@ namespace Novartment.Base.Text
 		/// <param name="encoding">Кодировка, используемая для двоичного представления символов.</param>
 		public EncodedWordBEstimatingEncoder(Encoding encoding)
 		{
-			if (encoding == null)
-			{
-				throw new ArgumentNullException(nameof(encoding));
-			}
-
-			Contract.EndContractBlock();
-
-			_encoding = encoding;
+			_encoding = encoding ?? throw new ArgumentNullException (nameof (encoding));
 		}
 
 		/// <summary>
@@ -59,8 +51,6 @@ namespace Novartment.Base.Text
 			{
 				throw new ArgumentOutOfRangeException (nameof (maxOutCount));
 			}
-
-			Contract.EndContractBlock ();
 
 			// The encoding process represents 24-bit groups of input bits as output strings of 4 encoded characters.
 			var maxGroups = (maxOutCount - this.PrologSize - this.EpilogSize) / 4;

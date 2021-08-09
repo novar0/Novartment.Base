@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Diagnostics.Contracts;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -26,21 +25,14 @@ namespace Novartment.Base.BinaryStreaming
 		/// <param name="limit">A number of bytes that limits the data source.</param>
 		public SizeLimitedBufferedSource (IBufferedSource source, long limit)
 		{
-			if (source == null)
-			{
-				throw new ArgumentNullException(nameof(source));
-			}
-
 			if (limit < 0L)
 			{
 				throw new ArgumentOutOfRangeException(nameof(limit));
 			}
 
-			Contract.EndContractBlock();
+			_source = source ?? throw new ArgumentNullException (nameof (source));
 
-			_source = source;
-
-			UpdateLimits(limit);
+			UpdateLimits (limit);
 		}
 
 		/// <summary>
@@ -87,8 +79,6 @@ namespace Novartment.Base.BinaryStreaming
 				throw new ArgumentOutOfRangeException (nameof (size));
 			}
 
-			Contract.EndContractBlock ();
-
 			if (size > 0)
 			{
 				_source.Skip (size);
@@ -114,8 +104,6 @@ namespace Novartment.Base.BinaryStreaming
 			{
 				throw new ArgumentOutOfRangeException (nameof (size));
 			}
-
-			Contract.EndContractBlock ();
 
 			if (size == 0L)
 			{
@@ -183,8 +171,6 @@ namespace Novartment.Base.BinaryStreaming
 			{
 				throw new ArgumentOutOfRangeException (nameof (size));
 			}
-
-			Contract.EndContractBlock ();
 
 			if ((size <= _countInBuffer) || _source.IsExhausted || (_countRemainder <= 0))
 			{

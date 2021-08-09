@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.Contracts;
 using System.Text;
 using Novartment.Base.Text;
 
@@ -26,10 +25,7 @@ namespace Novartment.Base.Net.Mime
 		public HeaderFieldBuilderAtomAndUnstructuredValue (HeaderFieldName name, string type, string value)
 			: base (name)
 		{
-			if (type == null)
-			{
-				throw new ArgumentNullException (nameof (type));
-			}
+			_type = type ?? throw new ArgumentNullException (nameof (type));
 
 			var isValidAtom = AsciiCharSet.IsAllOfClass (type, AsciiCharClasses.Atom);
 			if (!isValidAtom)
@@ -37,9 +33,6 @@ namespace Novartment.Base.Net.Mime
 				throw new ArgumentOutOfRangeException (nameof (type));
 			}
 
-			Contract.EndContractBlock ();
-
-			_type = type;
 			_value = value;
 		}
 

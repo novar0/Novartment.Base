@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.Contracts;
 using System.IO;
 
 namespace Novartment.Base.IO
@@ -34,26 +33,9 @@ namespace Novartment.Base.IO
 			DateTime lastAccessTime,
 			DateTime lastWriteTime)
 		{
-			if (basePath == null)
-			{
-				throw new ArgumentNullException (nameof (basePath));
-			}
-
-			if (relativeName == null)
-			{
-				throw new ArgumentNullException (nameof (relativeName));
-			}
-
-			if (fullPath == null)
-			{
-				throw new ArgumentNullException (nameof (fullPath));
-			}
-
-			Contract.EndContractBlock ();
-
-			this.BasePath = basePath;
-			this.RelativeName = relativeName;
-			this.FullPath = fullPath;
+			this.BasePath = basePath ?? throw new ArgumentNullException (nameof (basePath));
+			this.RelativeName = relativeName ?? throw new ArgumentNullException (nameof (relativeName));
+			this.FullPath = fullPath ?? throw new ArgumentNullException (nameof (fullPath));
 			this.Attributes = attributes;
 			this.Length = length;
 			this.CreationTime = creationTime;

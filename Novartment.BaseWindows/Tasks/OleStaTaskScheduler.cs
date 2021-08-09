@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -33,8 +32,6 @@ namespace Novartment.Base.Tasks
 			{
 				throw new ArgumentOutOfRangeException (nameof (numberOfThreads));
 			}
-
-			Contract.EndContractBlock ();
 
 			_tasks = new BlockingCollection<Task> ();
 

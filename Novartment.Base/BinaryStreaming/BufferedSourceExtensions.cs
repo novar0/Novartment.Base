@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.Contracts;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -22,8 +21,6 @@ namespace Novartment.Base.BinaryStreaming
 			{
 				throw new ArgumentNullException (nameof (source));
 			}
-
-			Contract.EndContractBlock ();
 
 			return (source.Count < 1) && source.IsExhausted;
 		}
@@ -55,8 +52,6 @@ namespace Novartment.Base.BinaryStreaming
 			{
 				throw new ArgumentOutOfRangeException (nameof (size));
 			}
-
-			Contract.EndContractBlock ();
 
 			if (source is IFastSkipBufferedSource fastSkipSource)
 			{
@@ -124,8 +119,6 @@ namespace Novartment.Base.BinaryStreaming
 				throw new ArgumentNullException (nameof (source));
 			}
 
-			Contract.EndContractBlock ();
-
 			if (source is IFastSkipBufferedSource fastSkipSource)
 			{
 				return fastSkipSource.SkipWihoutBufferingAsync(long.MaxValue, cancellationToken);
@@ -179,8 +172,6 @@ namespace Novartment.Base.BinaryStreaming
 			{
 				throw new ArgumentNullException (nameof (source));
 			}
-
-			Contract.EndContractBlock ();
 
 			if (buffer.Length < 1)
 			{
@@ -256,8 +247,6 @@ namespace Novartment.Base.BinaryStreaming
 			{
 				throw new ArgumentNullException (nameof (source));
 			}
-
-			Contract.EndContractBlock ();
 
 			// проверяем то, что уже есть в буфере
 			var idx = source.BufferMemory.Span.Slice (source.Offset, source.Count).IndexOf (marker);
@@ -340,8 +329,6 @@ namespace Novartment.Base.BinaryStreaming
 				throw new ArgumentNullException (nameof (source));
 			}
 
-			Contract.EndContractBlock ();
-
 			if (source.IsExhausted)
 			{
 				var sizeExhausted = source.Count;
@@ -388,7 +375,7 @@ namespace Novartment.Base.BinaryStreaming
 		/// A task that represents the asynchronous read operation,
 		/// which wraps the text readed from the source.
 		/// </returns>
-		public static ValueTask<string> ReadAllTextAsync (this IBufferedSource source, Encoding encoding, CancellationToken cancellationToken = default)
+		public static async ValueTask<string> ReadAllTextAsync (this IBufferedSource source, Encoding encoding, CancellationToken cancellationToken = default)
 		{
 			if (source == null)
 			{
@@ -400,22 +387,15 @@ namespace Novartment.Base.BinaryStreaming
 				throw new ArgumentNullException (nameof (encoding));
 			}
 
-			Contract.EndContractBlock ();
-
 			// нельзя декодировать частями, потому что неизвестно сколько байт занимают отдельные символы
-			return ReadAllTextAsyncFinalizer (ReadAllBytesAsync (source, cancellationToken), encoding, encoding);
-
-			static async ValueTask<string> ReadAllTextAsyncFinalizer (ValueTask<ReadOnlyMemory<byte>> task, Encoding enc, Encoding encoding)
-			{
-				var buf = await task.ConfigureAwait (false);
+			var buf = await ReadAllBytesAsync (source, cancellationToken).ConfigureAwait (false);
 #if NETSTANDARD2_0
-				var tempBuf = new byte[buf.Length];
-				buf.CopyTo (tempBuf);
-				return encoding.GetString (tempBuf);
+			var tempBuf = new byte[buf.Length];
+			buf.CopyTo (tempBuf);
+			return encoding.GetString (tempBuf);
 #else
-				return enc.GetString (buf.Span);
+			return encoding.GetString (buf.Span);
 #endif
-			}
 		}
 
 		/// <summary>
@@ -428,7 +408,7 @@ namespace Novartment.Base.BinaryStreaming
 		/// A task that represents the asynchronous read/write operation.
 		/// The result of a task will indicate the number of bytes written to the destination.
 		/// </returns>
-		public static Task<long> WriteToAsync (this IBufferedSource source, IBinaryDestination destination, CancellationToken cancellationToken = default)
+		public static async Task<long> WriteToAsync (this IBufferedSource source, IBinaryDestination destination, CancellationToken cancellationToken = default)
 		{
 			if (source == null)
 			{
@@ -440,30 +420,23 @@ namespace Novartment.Base.BinaryStreaming
 				throw new ArgumentNullException (nameof (destination));
 			}
 
-			Contract.EndContractBlock ();
-
-			return WriteToAsyncStateMachine ();
-
-			async Task<long> WriteToAsyncStateMachine ()
+			long resultSize = 0;
+			while (true)
 			{
-				long resultSize = 0;
-				while (true)
+				await source.LoadAsync (cancellationToken).ConfigureAwait (false);
+				var available = source.Count;
+				if (available <= 0)
 				{
-					await source.LoadAsync (cancellationToken).ConfigureAwait (false);
-					var available = source.Count;
-					if (available <= 0)
-					{
-						break;
-					}
-
-					cancellationToken.ThrowIfCancellationRequested ();
-					await destination.WriteAsync (source.BufferMemory.Slice (source.Offset, available), cancellationToken).ConfigureAwait (false);
-					resultSize += available;
-					source.Skip (available);
+					break;
 				}
 
-				return resultSize;
+				cancellationToken.ThrowIfCancellationRequested ();
+				await destination.WriteAsync (source.BufferMemory.Slice (source.Offset, available), cancellationToken).ConfigureAwait (false);
+				resultSize += available;
+				source.Skip (available);
 			}
+
+			return resultSize;
 		}
 	}
 }

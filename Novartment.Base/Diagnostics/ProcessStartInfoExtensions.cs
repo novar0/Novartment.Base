@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Diagnostics.Contracts;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -23,8 +22,6 @@ namespace Novartment.Base
 			{
 				throw new ArgumentNullException (nameof (startInfo));
 			}
-
-			Contract.EndContractBlock ();
 
 			if (cancellationToken.IsCancellationRequested)
 			{
@@ -57,8 +54,6 @@ namespace Novartment.Base
 			{
 				throw new ArgumentNullException (nameof (completionMutexName));
 			}
-
-			Contract.EndContractBlock ();
 
 			if (cancellationToken.IsCancellationRequested)
 			{

@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
-using System.Diagnostics.Contracts;
 using System.Globalization;
 using Microsoft.Extensions.Logging;
 
@@ -57,8 +56,6 @@ namespace Novartment.Base.Data.SqlWrapper
 			{
 				throw new ArgumentOutOfRangeException (nameof (commandTimeout));
 			}
-
-			Contract.EndContractBlock ();
 
 			var factoryTypeName = factory.GetType ().FullName;
 			switch (factoryTypeName)
@@ -140,8 +137,6 @@ namespace Novartment.Base.Data.SqlWrapper
 			{
 				throw new ArgumentNullException (nameof (objectName));
 			}
-
-			Contract.EndContractBlock ();
 
 			return (schemaName == null) ?
 				string.Format (CultureInfo.InvariantCulture, _namePlaceholder1, objectName) :

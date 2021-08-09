@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
 using System.Runtime.InteropServices;
 using System.Threading;
 using Novartment.Base.UnsafeWin32;
@@ -23,19 +22,7 @@ namespace Novartment.Base.Shell
 		/// <param name="nativeEnumShellItems">Перечислитель IEnumShellItems.</param>
 		internal ShellItemsEnumerator (IEnumShellItems nativeEnumShellItems)
 		{
-			if (nativeEnumShellItems == null)
-			{
-				throw new ArgumentNullException (nameof (nativeEnumShellItems));
-			}
-
-			Contract.EndContractBlock ();
-
-			if (nativeEnumShellItems == null)
-			{
-				throw new ArgumentNullException (nameof (nativeEnumShellItems));
-			}
-
-			_nativeEnumShellItems = nativeEnumShellItems;
+			_nativeEnumShellItems = nativeEnumShellItems ?? throw new ArgumentNullException (nameof (nativeEnumShellItems));
 		}
 
 		/// <summary>

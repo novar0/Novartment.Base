@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Buffers;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
 using System.Threading;
 using System.Threading.Tasks;
 using Novartment.Base.BinaryStreaming;
@@ -67,7 +66,7 @@ namespace Novartment.Base.Net.Mime
 		/// <param name="subBodyFactory">Фабрика, позволяющая создавать тело вложенных сущностей с указанными параметрами.</param>
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
 		/// <returns>Задача, представляющая операцию загрузки.</returns>
-		public Task LoadAsync (
+		public async Task LoadAsync (
 			IBufferedSource source,
 			Func<EssentialContentProperties, IEntityBody> subBodyFactory,
 			CancellationToken cancellationToken = default)
@@ -77,66 +76,59 @@ namespace Novartment.Base.Net.Mime
 				throw new ArgumentNullException (nameof (source));
 			}
 
-			Contract.EndContractBlock ();
+			// delivery-status-content = per-message-fields 1*( CarriageReturnLinefeed per-recipient-fields )
+			// per-message-fields =
+			//  [ original-envelope-id-field CarriageReturnLinefeed ]
+			//  reporting-mta-field CarriageReturnLinefeed
+			//  [ dsn-gateway-field CarriageReturnLinefeed ]
+			//  [ received-from-mta-field CarriageReturnLinefeed ]
+			//  [ arrival-date-field CarriageReturnLinefeed ]
+			//  *( extension-field CarriageReturnLinefeed )
+			// per-recipient-fields =
+			//  [ original-recipient-field CarriageReturnLinefeed ]
+			//  final-recipient-field CarriageReturnLinefeed
+			//  action-field CarriageReturnLinefeed
+			//  status-field CarriageReturnLinefeed
+			//  [ remote-mta-field CarriageReturnLinefeed ]
+			//  [ diagnostic-code-field CarriageReturnLinefeed ]
+			//  [ last-attempt-date-field CarriageReturnLinefeed ]
+			//  [ final-log-id-field CarriageReturnLinefeed ]
+			//  [ will-retry-until-field CarriageReturnLinefeed ]
+			//  *( extension-field CarriageReturnLinefeed )
 
-			return LoadAsyncStateMachine ();
+			// Parse per-message fields.
+			var headerSource = new TemplateSeparatedBufferedSource (source, HeaderDecoder.CarriageReturnLinefeed2, false);
+			var header = await HeaderDecoder.LoadHeaderAsync (headerSource, cancellationToken).ConfigureAwait (false);
 
-			async Task LoadAsyncStateMachine ()
+			var fieldBodyBuffer = ArrayPool<char>.Shared.Rent (HeaderDecoder.MaximumHeaderFieldBodySize);
+			var fieldBodyElementBuffer = ArrayPool<char>.Shared.Rent (HeaderDecoder.MaximumHeaderFieldBodySize);
+			try
 			{
-				// delivery-status-content = per-message-fields 1*( CarriageReturnLinefeed per-recipient-fields )
-				// per-message-fields =
-				//  [ original-envelope-id-field CarriageReturnLinefeed ]
-				//  reporting-mta-field CarriageReturnLinefeed
-				//  [ dsn-gateway-field CarriageReturnLinefeed ]
-				//  [ received-from-mta-field CarriageReturnLinefeed ]
-				//  [ arrival-date-field CarriageReturnLinefeed ]
-				//  *( extension-field CarriageReturnLinefeed )
-				// per-recipient-fields =
-				//  [ original-recipient-field CarriageReturnLinefeed ]
-				//  final-recipient-field CarriageReturnLinefeed
-				//  action-field CarriageReturnLinefeed
-				//  status-field CarriageReturnLinefeed
-				//  [ remote-mta-field CarriageReturnLinefeed ]
-				//  [ diagnostic-code-field CarriageReturnLinefeed ]
-				//  [ last-attempt-date-field CarriageReturnLinefeed ]
-				//  [ final-log-id-field CarriageReturnLinefeed ]
-				//  [ will-retry-until-field CarriageReturnLinefeed ]
-				//  *( extension-field CarriageReturnLinefeed )
+				ParseHeader (header, fieldBodyBuffer, fieldBodyElementBuffer);
 
-				// Parse per-message fields.
-				var headerSource = new TemplateSeparatedBufferedSource (source, HeaderDecoder.CarriageReturnLinefeed2, false);
-				var header = await HeaderDecoder.LoadHeaderAsync (headerSource, cancellationToken).ConfigureAwait (false);
-
-				var fieldBodyBuffer = ArrayPool<char>.Shared.Rent (HeaderDecoder.MaximumHeaderFieldBodySize);
-				var fieldBodyElementBuffer = ArrayPool<char>.Shared.Rent (HeaderDecoder.MaximumHeaderFieldBodySize);
-				try
+				// Parse per-recipient fields.
+				this.Recipients.Clear ();
+				while (true)
 				{
-					ParseHeader (header, fieldBodyBuffer, fieldBodyElementBuffer);
-
-					// Parse per-recipient fields.
-					this.Recipients.Clear ();
-					while (true)
+					var crlfFound = await headerSource.TrySkipPartAsync (cancellationToken).ConfigureAwait (false);
+					if (!crlfFound || headerSource.IsEmpty ())
 					{
-						var crlfFound = await headerSource.TrySkipPartAsync (cancellationToken).ConfigureAwait (false);
-						if (!crlfFound || headerSource.IsEmpty ())
-						{
-							break;
-						}
-
-						header = await HeaderDecoder.LoadHeaderAsync (headerSource, cancellationToken).ConfigureAwait (false);
-						if (header.Count < 1)
-						{
-							break;
-						}
-
-						this.Recipients.Add (ParseHeaderRecipient (header, fieldBodyBuffer, fieldBodyElementBuffer));
+						break;
 					}
+
+					header = await HeaderDecoder.LoadHeaderAsync (headerSource, cancellationToken).ConfigureAwait (false);
+					if (header.Count < 1)
+					{
+						break;
+					}
+
+					this.Recipients.Add (ParseHeaderRecipient (header, fieldBodyBuffer, fieldBodyElementBuffer));
 				}
-				finally
-				{
-					ArrayPool<char>.Shared.Return (fieldBodyElementBuffer);
-					ArrayPool<char>.Shared.Return (fieldBodyBuffer);
-				}
+			}
+			finally
+			{
+				ArrayPool<char>.Shared.Return (fieldBodyElementBuffer);
+				ArrayPool<char>.Shared.Return (fieldBodyBuffer);
 			}
 		}
 
@@ -152,8 +144,6 @@ namespace Novartment.Base.Net.Mime
 			{
 				throw new ArgumentNullException (nameof (destination));
 			}
-
-			Contract.EndContractBlock ();
 
 			if (this.MailTransferAgent == null)
 			{

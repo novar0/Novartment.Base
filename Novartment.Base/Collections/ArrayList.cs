@@ -2,7 +2,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.Contracts;
 using SystemArray = System.Array;
 
 namespace Novartment.Base.Collections
@@ -54,8 +53,6 @@ namespace Novartment.Base.Collections
 				throw new ArgumentOutOfRangeException (nameof (capacity));
 			}
 
-			Contract.EndContractBlock ();
-
 			_items = new T[capacity];
 		}
 
@@ -69,8 +66,6 @@ namespace Novartment.Base.Collections
 			{
 				throw new ArgumentNullException (nameof (array));
 			}
-
-			Contract.EndContractBlock ();
 
 			_items = array;
 			_head = 0;
@@ -105,8 +100,6 @@ namespace Novartment.Base.Collections
 			{
 				throw new ArgumentOutOfRangeException (nameof (count));
 			}
-
-			Contract.EndContractBlock ();
 
 			_items = array;
 			_head = (count > 0) ? offset : 0;
@@ -156,8 +149,6 @@ namespace Novartment.Base.Collections
 					throw new ArgumentOutOfRangeException (nameof (index));
 				}
 
-				Contract.EndContractBlock ();
-
 				index += _head;
 				if (index >= _items.Length)
 				{
@@ -174,8 +165,6 @@ namespace Novartment.Base.Collections
 				{
 					throw new ArgumentOutOfRangeException (nameof (index));
 				}
-
-				Contract.EndContractBlock ();
 
 				index += _head;
 				if (index >= _items.Length)
@@ -207,8 +196,6 @@ namespace Novartment.Base.Collections
 			{
 				throw new ArgumentOutOfRangeException (nameof (length));
 			}
-
-			Contract.EndContractBlock ();
 
 			start += _head;
 			if (start >= _items.Length)
@@ -365,8 +352,6 @@ namespace Novartment.Base.Collections
 				throw new ArgumentOutOfRangeException (nameof (index));
 			}
 
-			Contract.EndContractBlock ();
-
 			EnsureCapacity (_count + 1);
 
 			if (index <= (_count / 2))
@@ -423,8 +408,6 @@ namespace Novartment.Base.Collections
 				throw new ArgumentOutOfRangeException (nameof (count));
 			}
 
-			Contract.EndContractBlock ();
-
 			if (count < 1)
 			{
 				return;
@@ -473,8 +456,6 @@ namespace Novartment.Base.Collections
 			{
 				throw new ArgumentOutOfRangeException (nameof (index));
 			}
-
-			Contract.EndContractBlock ();
 
 			var lastIndex = _count - 1;
 
@@ -531,8 +512,6 @@ namespace Novartment.Base.Collections
 			{
 				throw new ArgumentOutOfRangeException (nameof (count));
 			}
-
-			Contract.EndContractBlock ();
 
 			if (_count == 0)
 			{
@@ -621,8 +600,6 @@ namespace Novartment.Base.Collections
 				throw new ArgumentOutOfRangeException (nameof (count));
 			}
 
-			Contract.EndContractBlock ();
-
 			index += _head;
 			if (index >= _items.Length)
 			{
@@ -672,8 +649,6 @@ namespace Novartment.Base.Collections
 			{
 				throw new ArgumentOutOfRangeException (nameof (arrayIndex));
 			}
-
-			Contract.EndContractBlock ();
 
 			if (_count > 0)
 			{
@@ -800,8 +775,6 @@ namespace Novartment.Base.Collections
 				throw new ArgumentOutOfRangeException (nameof (min));
 			}
 
-			Contract.EndContractBlock ();
-
 			if (_items.Length < min)
 			{
 				var newCapacity = (_items.Length < (int.MaxValue / 2)) ?
@@ -852,8 +825,6 @@ namespace Novartment.Base.Collections
 				throw new ArgumentNullException (nameof (comparer));
 			}
 
-			Contract.EndContractBlock ();
-
 			int hash = 0;
 
 			// макс. 8 элементов с конца для вычисления хэша всего списка
@@ -878,8 +849,6 @@ namespace Novartment.Base.Collections
 			{
 				throw new ArgumentNullException (nameof (comparer));
 			}
-
-			Contract.EndContractBlock ();
 
 			if (other == null)
 			{

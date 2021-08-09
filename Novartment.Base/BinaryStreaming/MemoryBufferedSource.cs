@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Diagnostics.Contracts;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -68,8 +67,6 @@ namespace Novartment.Base.BinaryStreaming
 				throw new ArgumentOutOfRangeException (nameof (size));
 			}
 
-			Contract.EndContractBlock ();
-
 			if (size > 0)
 			{
 				_offset += size;
@@ -100,8 +97,6 @@ namespace Novartment.Base.BinaryStreaming
 				throw new ArgumentOutOfRangeException (nameof (size));
 			}
 
-			Contract.EndContractBlock ();
-
 			if (size > _count)
 			{
 				throw new NotEnoughDataException (size - _count);
@@ -126,8 +121,6 @@ namespace Novartment.Base.BinaryStreaming
 			{
 				throw new ArgumentOutOfRangeException (nameof (size));
 			}
-
-			Contract.EndContractBlock ();
 
 			var available = _count;
 			if (size > (long)available)

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.Contracts;
 using System.Text;
 using Novartment.Base.Text;
 
@@ -25,14 +24,7 @@ namespace Novartment.Base.Net.Mime
 		public HeaderFieldBuilderMailbox (HeaderFieldName name, Mailbox mailbox)
 			: base (name)
 		{
-			if (mailbox == null)
-			{
-				throw new ArgumentNullException (nameof (mailbox));
-			}
-
-			Contract.EndContractBlock ();
-
-			_mailbox = mailbox;
+			_mailbox = mailbox ?? throw new ArgumentNullException (nameof (mailbox));
 		}
 
 		/// <summary>

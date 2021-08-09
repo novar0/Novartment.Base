@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.Contracts;
 using System.Net;
 using System.Security.Cryptography.X509Certificates;
 
@@ -66,8 +65,6 @@ namespace Novartment.Base.Net
 				throw new ArgumentOutOfRangeException (nameof (clientCertificates));
 			}
 
-			Contract.EndContractBlock ();
-
 			return new SmtpClientSecurityParameters (true, null, clientCertificates);
 		}
 
@@ -84,8 +81,6 @@ namespace Novartment.Base.Net
 			{
 				throw new ArgumentNullException (nameof (credentials));
 			}
-
-			Contract.EndContractBlock ();
 
 			return new SmtpClientSecurityParameters (true, credentials, null);
 		}

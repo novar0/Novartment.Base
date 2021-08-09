@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.Contracts;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -24,14 +23,7 @@ namespace Novartment.Base.Net.Smtp
 
 		internal SmtpSessionMailTransferTransactionHandler (SmtpOriginatorProtocolSession session, ContentTransferEncoding requiredEncodingSupport, ILogger logger = null)
 		{
-			if (session == null)
-			{
-				throw new ArgumentNullException (nameof (session));
-			}
-
-			Contract.EndContractBlock ();
-
-			_session = session;
+			_session = session ?? throw new ArgumentNullException (nameof (session));
 			_requiredEncodingSupport = requiredEncodingSupport;
 			_logger = logger;
 		}
@@ -86,8 +78,6 @@ namespace Novartment.Base.Net.Smtp
 				throw new ArgumentNullException (nameof (recipient));
 			}
 
-			Contract.EndContractBlock ();
-
 			if ((_status != TransactionStatus.Started) &&
 				(_status != TransactionStatus.RecipientsSpecified))
 			{
@@ -131,8 +121,6 @@ namespace Novartment.Base.Net.Smtp
 			{
 				throw new ArgumentNullException (nameof (data));
 			}
-
-			Contract.EndContractBlock ();
 
 			if (_status == TransactionStatus.Started)
 			{

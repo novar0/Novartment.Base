@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.Contracts;
 using System.Text;
 
 namespace Novartment.Base.Net.Mime
@@ -23,14 +22,7 @@ namespace Novartment.Base.Net.Mime
 		public HeaderFieldBuilderStructuredValue (HeaderFieldName name, string text)
 			: base (name)
 		{
-			if (text == null)
-			{
-				throw new ArgumentNullException (nameof (text));
-			}
-
-			Contract.EndContractBlock ();
-
-			_text = text;
+			_text = text ?? throw new ArgumentNullException (nameof (text));
 		}
 
 		/// <summary>

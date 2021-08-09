@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.Contracts;
 using Novartment.Base.Collections;
 
 namespace Novartment.Base.Net.Mime
@@ -27,8 +26,6 @@ namespace Novartment.Base.Net.Mime
 			{
 				throw new ArgumentNullException (nameof (address));
 			}
-
-			Contract.EndContractBlock ();
 
 #if NETSTANDARD2_0
 			var mailBox = new Mailbox (AddrSpec.Parse (address.AsSpan ()), displayName);
@@ -58,8 +55,6 @@ namespace Novartment.Base.Net.Mime
 			{
 				throw new ArgumentNullException (nameof (address));
 			}
-
-			Contract.EndContractBlock ();
 
 			var mailBox = new Mailbox (address, displayName);
 			collection.Add (mailBox);

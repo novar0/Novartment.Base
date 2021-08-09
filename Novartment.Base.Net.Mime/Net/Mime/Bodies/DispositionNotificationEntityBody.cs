@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Buffers;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
 using System.Threading;
 using System.Threading.Tasks;
 using Novartment.Base.BinaryStreaming;
@@ -95,8 +94,6 @@ namespace Novartment.Base.Net.Mime
 				throw new ArgumentNullException (nameof (source));
 			}
 
-			Contract.EndContractBlock ();
-
 			var headerSource = new TemplateSeparatedBufferedSource (source, HeaderDecoder.CarriageReturnLinefeed2, false);
 			var task = HeaderDecoder.LoadHeaderAsync (headerSource, cancellationToken);
 
@@ -121,8 +118,6 @@ namespace Novartment.Base.Net.Mime
 			{
 				throw new ArgumentNullException (nameof (destination));
 			}
-
-			Contract.EndContractBlock ();
 
 			if (this.FinalRecipient == null)
 			{

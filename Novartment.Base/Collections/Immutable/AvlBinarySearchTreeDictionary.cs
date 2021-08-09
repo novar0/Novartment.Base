@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
 
 namespace Novartment.Base.Collections.Immutable
 {
@@ -45,8 +44,6 @@ namespace Novartment.Base.Collections.Immutable
 			{
 				throw new ArgumentNullException (nameof (comparer));
 			}
-
-			Contract.EndContractBlock ();
 
 			if (treeNode == null)
 			{
@@ -98,8 +95,6 @@ namespace Novartment.Base.Collections.Immutable
 			{
 				throw new ArgumentNullException (nameof (comparer));
 			}
-
-			Contract.EndContractBlock ();
 
 			if (treeNode == null)
 			{
@@ -154,8 +149,6 @@ namespace Novartment.Base.Collections.Immutable
 				throw new ArgumentNullException (nameof (comparer));
 			}
 
-			Contract.EndContractBlock ();
-
 			bool existsBefore = false;
 			return SetValueInternal (treeNode, key, value, comparer, ref existsBefore);
 		}
@@ -181,8 +174,6 @@ namespace Novartment.Base.Collections.Immutable
 			{
 				throw new ArgumentNullException (nameof (comparer));
 			}
-
-			Contract.EndContractBlock ();
 
 			bool existsBefore = false;
 			return RemoveKeyInternal (treeNode, key, comparer, ref existsBefore);

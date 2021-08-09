@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Diagnostics.Contracts;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
@@ -30,19 +29,12 @@ namespace Novartment.Base.Net
 		/// <param name="buffer">Байтовый буфер, в котором будут содержаться считанные из сокета данные.</param>
 		public SocketBufferedSource (Socket socket, Memory<byte> buffer)
 		{
-			if (socket == null)
-			{
-				throw new ArgumentNullException (nameof (socket));
-			}
-
 			if (buffer.Length < 1)
 			{
 				throw new ArgumentOutOfRangeException (nameof (buffer));
 			}
 
-			Contract.EndContractBlock ();
-
-			_socket = socket;
+			_socket = socket ?? throw new ArgumentNullException (nameof (socket));
 			_buffer = buffer;
 		}
 
@@ -84,8 +76,6 @@ namespace Novartment.Base.Net
 			{
 				throw new ArgumentOutOfRangeException (nameof (size));
 			}
-
-			Contract.EndContractBlock ();
 
 			if (size > 0)
 			{
@@ -170,8 +160,6 @@ namespace Novartment.Base.Net
 			{
 				throw new ArgumentOutOfRangeException (nameof (size));
 			}
-
-			Contract.EndContractBlock ();
 
 			if (cancellationToken.IsCancellationRequested)
 			{

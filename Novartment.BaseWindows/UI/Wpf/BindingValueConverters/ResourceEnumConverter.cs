@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics.Contracts;
 using System.Globalization;
 using System.Resources;
 using System.Windows.Data;
@@ -56,8 +55,6 @@ namespace Novartment.Base.UI.Wpf
 				throw new ArgumentNullException (nameof (resourceManager));
 			}
 
-			Contract.EndContractBlock ();
-
 			_resourceManager = resourceManager;
 			var flagAttributes = type.GetCustomAttributes (typeof (FlagsAttribute), true);
 			_isFlagEnum = flagAttributes.Length > 0;
@@ -78,8 +75,6 @@ namespace Novartment.Base.UI.Wpf
 			{
 				throw new ArgumentNullException (nameof (value));
 			}
-
-			Contract.EndContractBlock ();
 
 			var converter = TypeDescriptor.GetConverter (value.GetType ());
 			return converter.ConvertToString (value);
@@ -219,8 +214,6 @@ namespace Novartment.Base.UI.Wpf
 			{
 				throw new ArgumentNullException (nameof (value));
 			}
-
-			Contract.EndContractBlock ();
 
 			return value.GetType ().Name + "_" + value;
 		}

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.Contracts;
 
 namespace Novartment.Base.Net.Mime
 {
@@ -28,15 +27,8 @@ namespace Novartment.Base.Net.Mime
 				throw new ArgumentOutOfRangeException (nameof (kind));
 			}
 
-			if (value == null)
-			{
-				throw new ArgumentNullException (nameof (value));
-			}
-
-			Contract.EndContractBlock ();
-
+			this.Value = value ?? throw new ArgumentNullException (nameof (value));
 			this.Kind = kind;
-			this.Value = value;
 		}
 
 		/// <summary>
@@ -87,8 +79,6 @@ namespace Novartment.Base.Net.Mime
 				throw new ArgumentOutOfRangeException (nameof (type));
 			}
 
-			Contract.EndContractBlock ();
-
 			return new NotificationFieldValue (type, this.Value);
 		}
 
@@ -103,8 +93,6 @@ namespace Novartment.Base.Net.Mime
 			{
 				throw new ArgumentNullException (nameof (value));
 			}
-
-			Contract.EndContractBlock ();
 
 			return new NotificationFieldValue (this.Kind, value);
 		}

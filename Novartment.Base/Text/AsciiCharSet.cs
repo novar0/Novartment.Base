@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.Contracts;
 using System.Text;
 
 namespace Novartment.Base.Text
@@ -163,8 +162,6 @@ namespace Novartment.Base.Text
 				throw new ArgumentNullException (nameof (value));
 			}
 
-			Contract.EndContractBlock ();
-
 			return IsAllOfClass (value.AsSpan (), characterClass);
 		}
 
@@ -180,8 +177,6 @@ namespace Novartment.Base.Text
 			{
 				throw new ArgumentOutOfRangeException (nameof (characterClass));
 			}
-
-			Contract.EndContractBlock ();
 
 			var currentPos = 0;
 			var classes = ValueClasses.Span;
@@ -218,8 +213,6 @@ namespace Novartment.Base.Text
 				throw new ArgumentOutOfRangeException (nameof (characterClass));
 			}
 
-			Contract.EndContractBlock ();
-
 			return IsAnyOfClass (value.AsSpan (), characterClass);
 		}
 
@@ -235,8 +228,6 @@ namespace Novartment.Base.Text
 			{
 				throw new ArgumentOutOfRangeException (nameof (characterClass));
 			}
-
-			Contract.EndContractBlock ();
 
 			int currentPos = 0;
 			var asciiClasses = ValueClasses.Span;
@@ -276,8 +267,6 @@ namespace Novartment.Base.Text
 			{
 				throw new ArgumentOutOfRangeException (nameof (buffer));
 			}
-
-			Contract.EndContractBlock ();
 
 			for (var idx = 0; idx < value.Length; idx++)
 			{
@@ -338,8 +327,6 @@ namespace Novartment.Base.Text
 				throw new ArgumentNullException (nameof (text));
 			}
 
-			Contract.EndContractBlock ();
-
 			if (text.Length < 1)
 			{
 				return "\"\"";
@@ -387,8 +374,6 @@ namespace Novartment.Base.Text
 				throw new ArgumentOutOfRangeException (nameof (buf));
 			}
 
-			Contract.EndContractBlock ();
-
 			var outPos = 0;
 			buf[outPos++] = '"'; // начальная кавычка
 			var charClasses = ValueClasses.Span;
@@ -429,8 +414,6 @@ namespace Novartment.Base.Text
 			{
 				throw new ArgumentNullException (nameof (name));
 			}
-
-			Contract.EndContractBlock ();
 
 			if (name.Length < 1)
 			{

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.Contracts;
 using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
@@ -32,8 +31,6 @@ namespace Novartment.Base.Net.Mime
 				throw new ArgumentNullException (nameof (message));
 			}
 
-			Contract.EndContractBlock ();
-
 			return message.LoadAsync (source, bodyFactory, Entity.DefaultType, Entity.DefaultSubtype, cancellationToken);
 		}
 
@@ -56,8 +53,6 @@ namespace Novartment.Base.Net.Mime
 			{
 				throw new ArgumentNullException (nameof (message));
 			}
-
-			Contract.EndContractBlock ();
 
 			// RFC 3464:
 			// 2. Format of a Delivery Status Notification (DSN)
@@ -153,8 +148,6 @@ namespace Novartment.Base.Net.Mime
 				throw new ArgumentOutOfRangeException (nameof (dispositionType));
 			}
 
-			Contract.EndContractBlock ();
-
 			if (message.DispositionNotificationTo.Count < 1)
 			{
 				throw new InvalidOperationException ("Unable to create Disposition Notification when it not requested.");
@@ -206,8 +199,6 @@ namespace Novartment.Base.Net.Mime
 			{
 				throw new ArgumentNullException (nameof (message));
 			}
-
-			Contract.EndContractBlock ();
 
 			var newMsg = MailMessage.CreateComposite ();
 			newMsg.RecipientTo.AddRange (message.ReplyTo);

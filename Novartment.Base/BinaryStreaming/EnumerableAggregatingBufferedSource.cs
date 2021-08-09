@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
 using System.Threading;
 using System.Threading.Tasks;
 using Novartment.Base.Collections;
@@ -36,8 +35,6 @@ namespace Novartment.Base.BinaryStreaming
 				throw new ArgumentNullException (nameof (sources));
 			}
 
-			Contract.EndContractBlock ();
-
 			_buffer = buffer;
 			_currentSource = MemoryBufferedSource.Empty;
 			_sourceProvider = sources.AsAsyncEnumerable ().GetAsyncEnumerator ();
@@ -55,8 +52,6 @@ namespace Novartment.Base.BinaryStreaming
 			{
 				throw new ArgumentNullException (nameof (sources));
 			}
-
-			Contract.EndContractBlock ();
 
 			_buffer = buffer;
 			_currentSource = MemoryBufferedSource.Empty;
@@ -136,8 +131,6 @@ namespace Novartment.Base.BinaryStreaming
 				throw new ArgumentOutOfRangeException (nameof (size));
 			}
 
-			Contract.EndContractBlock ();
-
 			var shortage = size - _count;
 
 			return (shortage > 0) ? EnsureBufferAsyncStateMachine () : default;
@@ -178,8 +171,6 @@ namespace Novartment.Base.BinaryStreaming
 				throw new ArgumentOutOfRangeException (nameof (size));
 			}
 
-			Contract.EndContractBlock ();
-
 			if (size > 0)
 			{
 				_offset += size;
@@ -205,8 +196,6 @@ namespace Novartment.Base.BinaryStreaming
 			{
 				throw new ArgumentOutOfRangeException (nameof (size));
 			}
-
-			Contract.EndContractBlock ();
 
 			// достаточно доступных данных буфера
 			if (size <= (long)_count)

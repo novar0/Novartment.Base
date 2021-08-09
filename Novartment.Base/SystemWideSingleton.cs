@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.Contracts;
 using System.Threading;
 
 namespace Novartment.Base
@@ -30,8 +29,6 @@ namespace Novartment.Base
 			{
 				throw new ArgumentOutOfRangeException(nameof(uniqueName), "Specified name is not enough unique.");
 			}
-
-			Contract.EndContractBlock();
 
 			_mutex = new Mutex(false, uniqueName, out _isInstanceOriginal);
 		}

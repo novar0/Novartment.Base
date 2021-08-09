@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.Contracts;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -60,8 +59,6 @@ namespace Novartment.Base.BinaryStreaming
 				{
 					throw new ArgumentOutOfRangeException (nameof (count));
 				}
-
-				Contract.EndContractBlock ();
 
 				if ((count <= _source.Count) || _source.IsExhausted)
 				{
@@ -140,8 +137,6 @@ namespace Novartment.Base.BinaryStreaming
 				{
 					throw new ArgumentOutOfRangeException (nameof (count));
 				}
-
-				Contract.EndContractBlock ();
 
 				if ((count <= _source.Count) || _source.IsExhausted)
 				{

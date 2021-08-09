@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.Contracts;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -32,11 +31,6 @@ namespace Novartment.Base.Net.Smtp
 			SmtpServerSecurityParameters securityParameters,
 			ILogger<SmtpDeliveryProtocol> logger = null)
 		{
-			if (mailHandlerFactory == null)
-			{
-				throw new ArgumentNullException (nameof (mailHandlerFactory));
-			}
-
 			if (securityParameters == null)
 			{
 				throw new ArgumentNullException (nameof (securityParameters));
@@ -48,9 +42,7 @@ namespace Novartment.Base.Net.Smtp
 				throw new ArgumentOutOfRangeException (nameof (securityParameters));
 			}
 
-			Contract.EndContractBlock ();
-
-			_mailHandlerFactory = mailHandlerFactory;
+			_mailHandlerFactory = mailHandlerFactory ?? throw new ArgumentNullException (nameof (mailHandlerFactory));
 			_securityParameters = securityParameters;
 			_logger = logger;
 		}
@@ -65,7 +57,7 @@ namespace Novartment.Base.Net.Smtp
 		/// Происходит когда в протоколе возникло неустранимое противоречие, делающее его дальнейшую работу невозможным.
 		/// Настоятельно рекомендуется закрыть соединение.
 		/// </exception>
-		public Task StartAsync (ITcpConnection connection, CancellationToken cancellationToken = default)
+		public async Task StartAsync (ITcpConnection connection, CancellationToken cancellationToken = default)
 		{
 			if (connection == null)
 			{
@@ -86,63 +78,56 @@ namespace Novartment.Base.Net.Smtp
 						$"Aborting protocol because of insufficient connection.Reader.Buffer.Length ({connection.Reader.BufferMemory.Length}). Required minimum 6 bytes."));
 			}
 
-			Contract.EndContractBlock ();
-
-			return StartAsyncStateMachine ();
-
-			async Task StartAsyncStateMachine ()
+			var transport = new TcpConnectionSmtpCommandTransport (connection, _logger);
+			using var session = new SmtpDeliveryProtocolSession (
+				transport,
+				connection.RemoteEndPoint,
+				_mailHandlerFactory,
+				connection.LocalEndPoint.HostName,
+				_securityParameters,
+				_logger);
+			if (cancellationToken.CanBeCanceled)
 			{
-				var transport = new TcpConnectionSmtpCommandTransport (connection, _logger);
-				using var session = new SmtpDeliveryProtocolSession (
-					transport,
-					connection.RemoteEndPoint,
-					_mailHandlerFactory,
-					connection.LocalEndPoint.HostName,
-					_securityParameters,
-					_logger);
-				if (cancellationToken.CanBeCanceled)
-				{
-					cancellationToken.ThrowIfCancellationRequested ();
+				cancellationToken.ThrowIfCancellationRequested ();
 
-					// на отмену регистрируем посылку прощального ответа
-					cancellationToken.Register (session.Dispose, false);
-				}
-
-				await session.StartAsync (cancellationToken).ConfigureAwait (false);
-
-				// запускаем цикл обработки команд
-				var continueProcesssing = false;
-				do
-				{
-					try
-					{
-						continueProcesssing = await session.ReceiveCommandSendReplyAsync (cancellationToken).ConfigureAwait (false);
-					}
-					catch (OperationCanceledException)
-					{
-						_logger?.LogWarning ($"Canceling protocol with {connection.RemoteEndPoint}.");
-						throw;
-					}
-					// Отдельно отслеживаем запрос отмены при ObjectDisposedException.
-					// Такая комбинация означает отмену операции с объектом, не поддерживающим отмену отдельных операций.
-					catch (ObjectDisposedException) when (cancellationToken.IsCancellationRequested)
-					{
-						_logger?.LogWarning ($"Canceling protocol with {connection.RemoteEndPoint}.");
-						cancellationToken.ThrowIfCancellationRequested ();
-					}
-					catch (IOException excpt) when (cancellationToken.IsCancellationRequested && excpt.InnerException is ObjectDisposedException)
-					{
-						_logger?.LogWarning ($"Canceling protocol with {connection.RemoteEndPoint}.");
-						cancellationToken.ThrowIfCancellationRequested ();
-					}
-					catch (Exception excpt)
-					{
-						_logger?.LogWarning (
-							$"Aborting protocol with {connection.RemoteEndPoint}. {ExceptionDescriptionProvider.CreateDescription (excpt).GetShortInfo ()}");
-						throw;
-					}
-				} while (continueProcesssing);
+				// на отмену регистрируем посылку прощального ответа
+				cancellationToken.Register (session.Dispose, false);
 			}
+
+			await session.StartAsync (cancellationToken).ConfigureAwait (false);
+
+			// запускаем цикл обработки команд
+			var continueProcesssing = false;
+			do
+			{
+				try
+				{
+					continueProcesssing = await session.ReceiveCommandSendReplyAsync (cancellationToken).ConfigureAwait (false);
+				}
+				catch (OperationCanceledException)
+				{
+					_logger?.LogWarning ($"Canceling protocol with {connection.RemoteEndPoint}.");
+					throw;
+				}
+				// Отдельно отслеживаем запрос отмены при ObjectDisposedException.
+				// Такая комбинация означает отмену операции с объектом, не поддерживающим отмену отдельных операций.
+				catch (ObjectDisposedException) when (cancellationToken.IsCancellationRequested)
+				{
+					_logger?.LogWarning ($"Canceling protocol with {connection.RemoteEndPoint}.");
+					cancellationToken.ThrowIfCancellationRequested ();
+				}
+				catch (IOException excpt) when (cancellationToken.IsCancellationRequested && excpt.InnerException is ObjectDisposedException)
+				{
+					_logger?.LogWarning ($"Canceling protocol with {connection.RemoteEndPoint}.");
+					cancellationToken.ThrowIfCancellationRequested ();
+				}
+				catch (Exception excpt)
+				{
+					_logger?.LogWarning (
+						$"Aborting protocol with {connection.RemoteEndPoint}. {ExceptionDescriptionProvider.CreateDescription (excpt).GetShortInfo ()}");
+					throw;
+				}
+			} while (continueProcesssing);
 		}
 	}
 }

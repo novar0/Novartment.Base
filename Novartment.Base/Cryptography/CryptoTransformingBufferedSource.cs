@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Diagnostics.Contracts;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -59,8 +58,6 @@ namespace Novartment.Base.BinaryStreaming
 					$"buffer.Length ({buffer.Length}) less than cryptoTransform.OutputBlockSize ({cryptoTransform.OutputBlockSize})."));
 			}
 
-			Contract.EndContractBlock ();
-
 			_source = source;
 			_cryptoTransform = cryptoTransform;
 			_inputMaxBlocks = _source.BufferMemory.Length / _cryptoTransform.InputBlockSize;
@@ -105,8 +102,6 @@ namespace Novartment.Base.BinaryStreaming
 			{
 				throw new ArgumentOutOfRangeException (nameof (size));
 			}
-
-			Contract.EndContractBlock ();
 
 			if (size > 0)
 			{
@@ -154,8 +149,6 @@ namespace Novartment.Base.BinaryStreaming
 			{
 				throw new ArgumentOutOfRangeException (nameof (size));
 			}
-
-			Contract.EndContractBlock ();
 
 			if ((size <= _count) || _isExhausted)
 			{

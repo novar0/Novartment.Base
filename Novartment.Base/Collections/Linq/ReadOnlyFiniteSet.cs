@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
 
 namespace Novartment.Base.Collections.Linq
 {
@@ -33,8 +32,6 @@ namespace Novartment.Base.Collections.Linq
 				throw new ArgumentOutOfRangeException (nameof (count));
 			}
 
-			Contract.EndContractBlock ();
-
 			if (count < 1)
 			{
 				return ReadOnlyList.EmptyReadOnlyList<int>.GetInstance ();
@@ -57,8 +54,6 @@ namespace Novartment.Base.Collections.Linq
 				throw new ArgumentNullException (nameof (source));
 			}
 
-			Contract.EndContractBlock ();
-
 			return (source.Count > 0) ? source : new OneItemReadOnlyFiniteSet<TSource> (defaultValue, null);
 		}
 
@@ -74,8 +69,6 @@ namespace Novartment.Base.Collections.Linq
 			{
 				throw new ArgumentNullException (nameof (source));
 			}
-
-			Contract.EndContractBlock ();
 
 			if (source.Count < 2)
 			{
@@ -104,8 +97,6 @@ namespace Novartment.Base.Collections.Linq
 			{
 				throw new ArgumentNullException (nameof (second));
 			}
-
-			Contract.EndContractBlock ();
 
 			if ((first.Count < 1) || (second.Count < 1))
 			{
@@ -164,8 +155,6 @@ namespace Novartment.Base.Collections.Linq
 				throw new ArgumentNullException (nameof (second));
 			}
 
-			Contract.EndContractBlock ();
-
 			if (first.Count < 1)
 			{
 				return second;
@@ -223,8 +212,6 @@ namespace Novartment.Base.Collections.Linq
 				throw new ArgumentNullException (nameof (second));
 			}
 
-			Contract.EndContractBlock ();
-
 			if ((first.Count < 1) || (first == second))
 			{
 				return first;
@@ -275,8 +262,6 @@ namespace Novartment.Base.Collections.Linq
 			{
 				throw new ArgumentNullException (nameof (second));
 			}
-
-			Contract.EndContractBlock ();
 
 			if (first.Count < 1)
 			{

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.Contracts;
 using Novartment.Base.Collections;
 using static System.Linq.Enumerable;
 
@@ -28,8 +27,6 @@ namespace Novartment.Base.Net
 			{
 				throw new ArgumentNullException (nameof (value));
 			}
-
-			Contract.EndContractBlock ();
 
 			QualityValueParameter data;
 			if (collection.Count < 1)

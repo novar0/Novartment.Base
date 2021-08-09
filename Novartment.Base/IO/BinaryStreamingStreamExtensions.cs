@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.Contracts;
 using System.IO;
 
 namespace Novartment.Base.BinaryStreaming
@@ -16,16 +15,11 @@ namespace Novartment.Base.BinaryStreaming
 		/// <param name="buffer">A byte buffer that will contain the data read from the stream.</param>
 		/// <returns>The data source represented by a byte buffer,
 		/// when requesting data from which, data will be read from the specified stream.</returns>
-		public static IFastSkipBufferedSource AsBufferedSource (this Stream readableStream, byte[] buffer)
+		public static IFastSkipBufferedSource AsBufferedSource (this Stream readableStream, Memory<byte> buffer)
 		{
 			if (readableStream == null)
 			{
 				throw new ArgumentNullException (nameof (readableStream));
-			}
-
-			if (buffer == null)
-			{
-				throw new ArgumentNullException (nameof (buffer));
 			}
 
 			if (!readableStream.CanRead)
@@ -37,8 +31,6 @@ namespace Novartment.Base.BinaryStreaming
 			{
 				throw new ArgumentOutOfRangeException (nameof (buffer));
 			}
-
-			Contract.EndContractBlock ();
 
 			// нельзя использовать (readableStream as _BufferedSourceStream).BaseStream, потому что не будет использован указанный buffer
 			return new StreamBufferedSource (readableStream, buffer);
@@ -62,8 +54,6 @@ namespace Novartment.Base.BinaryStreaming
 				throw new ArgumentOutOfRangeException (nameof (writableStream));
 			}
 
-			Contract.EndContractBlock ();
-
 			return (writableStream is BinaryDestinationStream destinaton) ?
 				destinaton.BaseBinaryDestination :
 				new StreamBinaryDestination (writableStream);
@@ -81,8 +71,6 @@ namespace Novartment.Base.BinaryStreaming
 				throw new ArgumentNullException (nameof (source));
 			}
 
-			Contract.EndContractBlock ();
-
 			// нельзя использовать (source as _StreamBufferedSource).BaseStream, потому что у потока должен быть только один считыватель
 			return new BufferedSourceStream (source);
 		}
@@ -99,8 +87,6 @@ namespace Novartment.Base.BinaryStreaming
 			{
 				throw new ArgumentNullException (nameof (destination));
 			}
-
-			Contract.EndContractBlock ();
 
 			return (destination is StreamBinaryDestination strm) ?
 				strm.BaseStream :

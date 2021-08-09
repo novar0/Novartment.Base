@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.Contracts;
 using System.Threading;
 
 namespace Novartment.Base
@@ -32,8 +31,6 @@ namespace Novartment.Base
 				throw new ArgumentNullException (nameof (disposeAction));
 			}
 
-			Contract.EndContractBlock ();
-
 			return new DisposeActionHolder (disposeAction);
 		}
 
@@ -54,8 +51,6 @@ namespace Novartment.Base
 			{
 				throw new ArgumentNullException (nameof (disposeAction));
 			}
-
-			Contract.EndContractBlock ();
 
 			return new DisposeActionHolderWithState<TState> (disposeAction, state);
 		}

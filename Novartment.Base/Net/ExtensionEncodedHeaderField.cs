@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.Contracts;
 
 namespace Novartment.Base.Net
 {
@@ -17,14 +16,7 @@ namespace Novartment.Base.Net
 		public ExtensionHeaderField (string extensionName, ReadOnlySpan<byte> body)
 			: base (HeaderFieldName.Extension, body)
 		{
-			if (extensionName == null)
-			{
-				throw new ArgumentNullException (nameof (extensionName));
-			}
-
-			Contract.EndContractBlock ();
-
-			this.ExtensionName = extensionName;
+			this.ExtensionName = extensionName ?? throw new ArgumentNullException (nameof (extensionName));
 		}
 
 		/// <summary>

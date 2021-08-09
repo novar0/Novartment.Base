@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.Contracts;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -54,8 +53,6 @@ namespace Novartment.Base.BinaryStreaming
 			{
 				throw new ArgumentOutOfRangeException (nameof (buffer));
 			}
-
-			Contract.EndContractBlock ();
 
 			_buffer = buffer;
 			_pendingDataConsumption.SetResult (0);
@@ -112,8 +109,6 @@ namespace Novartment.Base.BinaryStreaming
 				throw new ArgumentOutOfRangeException (nameof (size));
 			}
 
-			Contract.EndContractBlock ();
-
 			_offset += size;
 			_count -= size;
 		}
@@ -139,8 +134,6 @@ namespace Novartment.Base.BinaryStreaming
 			{
 				throw new ArgumentOutOfRangeException (nameof (size));
 			}
-
-			Contract.EndContractBlock ();
 
 			long skipped = 0L;
 
@@ -237,9 +230,9 @@ namespace Novartment.Base.BinaryStreaming
 				throw new ArgumentOutOfRangeException (nameof (size));
 			}
 
-			Contract.EndContractBlock ();
-
-			return size <= _count ? default : EnsureBufferAsyncStateMachine ();
+			return (size <= _count) ?
+				default :
+				EnsureBufferAsyncStateMachine ();
 
 			async ValueTask EnsureBufferAsyncStateMachine ()
 			{

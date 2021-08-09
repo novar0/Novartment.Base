@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.Contracts;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -39,14 +38,7 @@ namespace Novartment.Base.Tasks
 		/// </param>
 		public RepeatableTask (Func<object, CancellationToken, Task> taskFactory)
 		{
-			if (taskFactory == null)
-			{
-				throw new ArgumentNullException (nameof (taskFactory));
-			}
-
-			Contract.EndContractBlock ();
-
-			_createTaskFunc = taskFactory;
+			_createTaskFunc = taskFactory ?? throw new ArgumentNullException (nameof (taskFactory));
 		}
 
 		/// <summary>
@@ -63,15 +55,8 @@ namespace Novartment.Base.Tasks
 		/// </param>
 		public RepeatableTask (Action<object, CancellationToken> taskAction, TaskScheduler taskScheduler = null)
 		{
-			if (taskAction == null)
-			{
-				throw new ArgumentNullException (nameof (taskAction));
-			}
-
-			Contract.EndContractBlock ();
-
+			_taskAction = taskAction ?? throw new ArgumentNullException (nameof (taskAction));
 			_taskScheduler = taskScheduler ?? TaskScheduler.Default;
-			_taskAction = taskAction;
 		}
 
 		/// <summary>Occurs before the task starts.</summary>

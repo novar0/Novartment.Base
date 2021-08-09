@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.Contracts;
 using System.Threading;
 using System.Threading.Tasks;
 using Novartment.Base.Collections;
@@ -106,7 +105,7 @@ namespace Novartment.Base.Media
 		/// <returns>
 		/// Задача, представляющая операцию. Результатом будет выполнения задачи
 		/// суммарная информация о сегменте matroska-файла на основе указанной коллекции EBML-элементов.</returns>
-		public static Task<MatroskaSegmentInfo> ParseAsync (
+		public static async Task<MatroskaSegmentInfo> ParseAsync (
 			EbmlElementCollectionEnumerator source,
 			CancellationToken cancellationToken = default)
 		{
@@ -115,78 +114,71 @@ namespace Novartment.Base.Media
 				throw new ArgumentNullException (nameof (source));
 			}
 
-			Contract.EndContractBlock ();
-
-			return ParseAsyncStateMachine ();
-
-			async Task<MatroskaSegmentInfo> ParseAsyncStateMachine ()
+			string title = null;
+			DateTime? date = null;
+			double? duration = null;
+			ulong? timeCodeScale = null;
+			var tracks = new ArrayList<MatroskaTrackInfo> ();
+			var attachments = new ArrayList<MatroskaAttachedFileInfo> ();
+			bool clusterFound = false; // признак начала данных (окончания заголовка)
+			do
 			{
-				string title = null;
-				DateTime? date = null;
-				double? duration = null;
-				ulong? timeCodeScale = null;
-				var tracks = new ArrayList<MatroskaTrackInfo> ();
-				var attachments = new ArrayList<MatroskaAttachedFileInfo> ();
-				bool clusterFound = false; // признак начала данных (окончания заголовка)
-				do
+				var isMovedToNext = await source.MoveNextAsync (cancellationToken).ConfigureAwait (false);
+				if (!isMovedToNext)
 				{
-					var isMovedToNext = await source.MoveNextAsync (cancellationToken).ConfigureAwait (false);
-					if (!isMovedToNext)
-					{
+					break;
+				}
+
+				switch (source.Current.Id)
+				{
+					case 0x1f43b675UL: // Cluster
+						clusterFound = true; // начались данные, просмотр заголовка оканчиваем
 						break;
-					}
-
-					switch (source.Current.Id)
-					{
-						case 0x1f43b675UL: // Cluster
-							clusterFound = true; // начались данные, просмотр заголовка оканчиваем
-							break;
-						case 0x1549a966L: // Info
-							var reader = source.Current.ReadSubElements ();
-							while (true)
+					case 0x1549a966L: // Info
+						var reader = source.Current.ReadSubElements ();
+						while (true)
+						{
+							var isMovedToNext2 = await reader.MoveNextAsync (cancellationToken).ConfigureAwait (false);
+							if (!isMovedToNext2)
 							{
-								var isMovedToNext2 = await reader.MoveNextAsync (cancellationToken).ConfigureAwait (false);
-								if (!isMovedToNext2)
-								{
-									break;
-								}
-
-								switch (reader.Current.Id)
-								{
-									case 0x2ad7b1UL: // TimeCodeScale
-										timeCodeScale = reader.Current.ReadUInt ();
-										break;
-									case 0x4489UL: // Duration
-										duration = reader.Current.ReadFloat ();
-										break;
-									case 0x4461UL: // DateUTC
-										date = reader.Current.ReadDate ();
-										break;
-									case 0x7ba9UL: // Title
-										title = reader.Current.ReadUtf ();
-										break;
-								}
+								break;
 							}
 
-							break;
-						case 0x1654ae6bUL: // Tracks
-							await ProcessTracksEntryAsync (source.Current.ReadSubElements (), tracks, cancellationToken).ConfigureAwait (false);
-							break;
-						case 0x1941a469UL: // Attachments
-							await ProcessAttachmentsEntryAsync (source.Current.ReadSubElements (), attachments, cancellationToken).ConfigureAwait (false);
-							break;
-					}
-				}
-				while (!clusterFound);
+							switch (reader.Current.Id)
+							{
+								case 0x2ad7b1UL: // TimeCodeScale
+									timeCodeScale = reader.Current.ReadUInt ();
+									break;
+								case 0x4489UL: // Duration
+									duration = reader.Current.ReadFloat ();
+									break;
+								case 0x4461UL: // DateUTC
+									date = reader.Current.ReadDate ();
+									break;
+								case 0x7ba9UL: // Title
+									title = reader.Current.ReadUtf ();
+									break;
+							}
+						}
 
-				return new MatroskaSegmentInfo (
-					title,
-					date,
-					duration,
-					timeCodeScale,
-					tracks,
-					attachments);
+						break;
+					case 0x1654ae6bUL: // Tracks
+						await ProcessTracksEntryAsync (source.Current.ReadSubElements (), tracks, cancellationToken).ConfigureAwait (false);
+						break;
+					case 0x1941a469UL: // Attachments
+						await ProcessAttachmentsEntryAsync (source.Current.ReadSubElements (), attachments, cancellationToken).ConfigureAwait (false);
+						break;
+				}
 			}
+			while (!clusterFound);
+
+			return new MatroskaSegmentInfo (
+				title,
+				date,
+				duration,
+				timeCodeScale,
+				tracks,
+				attachments);
 		}
 
 		private static async Task ProcessAttachmentsEntryAsync (

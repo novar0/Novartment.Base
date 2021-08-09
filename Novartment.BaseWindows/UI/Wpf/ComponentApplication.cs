@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections;
-using System.Diagnostics.Contracts;
 using System.Globalization;
 using System.IO;
 using System.Reflection;
@@ -45,14 +44,7 @@ namespace Novartment.Base.UI.Wpf
 		public ComponentApplication (Func<Window> mainWindowFactory, Func<UserLevelExceptionData, IDialogView<bool?>> exceptionDialogFactory = null)
 			: base ()
 		{
-			if (mainWindowFactory == null)
-			{
-				throw new ArgumentNullException (nameof (mainWindowFactory));
-			}
-
-			Contract.EndContractBlock ();
-
-			_mainWindowFactory = mainWindowFactory;
+			_mainWindowFactory = mainWindowFactory ?? throw new ArgumentNullException (nameof (mainWindowFactory));
 			_exceptionDialogFactory = exceptionDialogFactory;
 			_version = ReflectionService.GetDisplayVersion (Assembly.GetEntryAssembly () ?? Assembly.GetCallingAssembly ());
 		}
@@ -131,8 +123,6 @@ namespace Novartment.Base.UI.Wpf
 				throw new ArgumentNullException (nameof (collection));
 			}
 
-			Contract.EndContractBlock ();
-
 			BindingOperations.EnableCollectionSynchronization (collection, null, (nu1, nu2, action, nu3) => action.Invoke ());
 		}
 
@@ -156,8 +146,6 @@ namespace Novartment.Base.UI.Wpf
 				throw new ArgumentNullException (nameof (callback));
 			}
 
-			Contract.EndContractBlock ();
-
 			return new WindowsDispatcherTimer<TState> (callback, state, this.Dispatcher, priority);
 		}
 
@@ -175,8 +163,6 @@ namespace Novartment.Base.UI.Wpf
 			{
 				throw new ArgumentNullException (nameof (callback));
 			}
-
-			Contract.EndContractBlock ();
 
 			return new WindowsDispatcherTimer (callback, this.Dispatcher, priority);
 		}
@@ -256,8 +242,6 @@ namespace Novartment.Base.UI.Wpf
 			{
 				throw new ArgumentNullException (nameof (exception));
 			}
-
-			Contract.EndContractBlock ();
 
 			var assembly = failedAssembly ?? Assembly.GetEntryAssembly () ?? Assembly.GetCallingAssembly ();
 			ReportException (new UserLevelExceptionData (

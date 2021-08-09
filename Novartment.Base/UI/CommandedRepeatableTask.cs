@@ -1,6 +1,5 @@
 ﻿using System;
 using System.ComponentModel;
-using System.Diagnostics.Contracts;
 using System.Threading;
 using System.Threading.Tasks;
 using Novartment.Base.Tasks;
@@ -25,8 +24,6 @@ namespace Novartment.Base.UI
 			{
 				throw new ArgumentNullException (nameof (taskFactory));
 			}
-
-			Contract.EndContractBlock ();
 
 			var startChain = new CommandChain (false, ExecutionAbilityChainBehavior.WhenAll);
 			this.StartCommand = new ChainedRelayCommand<object> (startChain, StartInternal, CanStart);
@@ -53,8 +50,6 @@ namespace Novartment.Base.UI
 				throw new ArgumentNullException (nameof (taskScheduler));
 			}
 
-			Contract.EndContractBlock ();
-
 			var startChain = new CommandChain (false, ExecutionAbilityChainBehavior.WhenAll);
 			this.StartCommand = new ChainedRelayCommand<object> (startChain, StartInternal, CanStart);
 
@@ -80,8 +75,6 @@ namespace Novartment.Base.UI
 			{
 				throw new ArgumentNullException (nameof (previousTask));
 			}
-
-			Contract.EndContractBlock ();
 
 			this.StartCommand = new ChainedRelayCommand<object> (previousTask.StartCommand.Chain, StartInternal, CanStart);
 			this.StopCommand = new ChainedRelayCommand (previousTask.StopCommand.Chain, Cancel, CanCancel);
@@ -114,8 +107,6 @@ namespace Novartment.Base.UI
 				throw new ArgumentNullException (nameof (previousTask));
 			}
 
-			Contract.EndContractBlock ();
-
 			this.StartCommand = new ChainedRelayCommand<object> (previousTask.StartCommand.Chain, StartInternal, CanStart);
 			this.StopCommand = new ChainedRelayCommand (previousTask.StopCommand.Chain, Cancel, CanCancel);
 		}
@@ -142,8 +133,6 @@ namespace Novartment.Base.UI
 				throw new ArgumentNullException (nameof (taskFactory));
 			}
 
-			Contract.EndContractBlock ();
-
 			return new CommandedRepeatableTask (taskFactory, this);
 		}
 
@@ -164,8 +153,6 @@ namespace Novartment.Base.UI
 			{
 				throw new ArgumentNullException (nameof (taskScheduler));
 			}
-
-			Contract.EndContractBlock ();
 
 			return new CommandedRepeatableTask (taskAction, taskScheduler, this);
 		}

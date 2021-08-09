@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Buffers.Binary;
 using System.Diagnostics;
-using System.Diagnostics.Contracts;
 using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
@@ -131,7 +130,7 @@ namespace Novartment.Base.Media
 		/// <param name="chunkListReader">Коллеции RIFF-порций, содержащая параметры потока AVI-файла.</param>
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
 		/// <returns>Параметры потока AVI-файла.</returns>
-		public static Task<AviStreamInfo> ParseAsync (
+		public static async Task<AviStreamInfo> ParseAsync (
 			RiffChunkListReader chunkListReader,
 			CancellationToken cancellationToken = default)
 		{
@@ -140,110 +139,103 @@ namespace Novartment.Base.Media
 				throw new ArgumentNullException (nameof (chunkListReader));
 			}
 
-			Contract.EndContractBlock ();
-
-			return ParseAsyncStateMachine ();
-
-			async Task<AviStreamInfo> ParseAsyncStateMachine ()
+			string type = null;
+			string handler = null;
+			uint options = 0;
+			ushort priority = 0;
+			ushort language = 0;
+			uint scale = 0;
+			uint rate = 0;
+			uint start = 0;
+			uint length = 0;
+			uint sampleSize = 0;
+			ushort left = 0;
+			ushort top = 0;
+			ushort right = 0;
+			ushort bottom = 0;
+			AviStreamInfoVideoFormat videoInfo = null;
+			AviStreamInfoAudioFormat audioInfo = null;
+			while (await chunkListReader.MoveNextAsync (cancellationToken).ConfigureAwait (false))
 			{
-				string type = null;
-				string handler = null;
-				uint options = 0;
-				ushort priority = 0;
-				ushort language = 0;
-				uint scale = 0;
-				uint rate = 0;
-				uint start = 0;
-				uint length = 0;
-				uint sampleSize = 0;
-				ushort left = 0;
-				ushort top = 0;
-				ushort right = 0;
-				ushort bottom = 0;
-				AviStreamInfoVideoFormat videoInfo = null;
-				AviStreamInfoAudioFormat audioInfo = null;
-				while (await chunkListReader.MoveNextAsync (cancellationToken).ConfigureAwait (false))
+				var chunk = chunkListReader.Current;
+				if (chunk.Id == "strf")
 				{
-					var chunk = chunkListReader.Current;
-					if (chunk.Id == "strf")
+					if (type == "vids")
 					{
-						if (type == "vids")
-						{
-							videoInfo = await AviStreamInfoVideoFormat.ParseAsync (chunk.Source, cancellationToken).ConfigureAwait (false);
-						}
-						else
-						{
-							if (type == "auds")
-							{
-								audioInfo = await AviStreamInfoAudioFormat.ParseAsync (chunk.Source, cancellationToken).ConfigureAwait (false);
-							}
-						}
+						videoInfo = await AviStreamInfoVideoFormat.ParseAsync (chunk.Source, cancellationToken).ConfigureAwait (false);
 					}
 					else
 					{
-						if (chunk.Id == "strh")
+						if (type == "auds")
 						{
-							/*
-								FOURCC	fccType;
-								FOURCC	fccHandler;
-								DWORD	dwFlags;
-								WORD	wPriority;
-								WORD	wLanguage;
-								DWORD	dwInitialFrames;
-								DWORD	dwScale;
-								DWORD	dwRate;
-								DWORD	dwStart;
-								DWORD	dwLength;
-								DWORD	dwSuggestedBufferSize;
-								DWORD	dwQuality;
-								DWORD	dwSampleSize;
-								short int left;
-								short int top;
-								short int right;
-								short int bottom;
-							 */
-							await chunk.Source.EnsureAvailableAsync (56, cancellationToken).ConfigureAwait (false); // "Insuficient size of RIFF-chunk 'strh'. Expected minimum 56 bytes.");
-							type = AsciiCharSet.GetString (chunk.Source.BufferMemory.Span.Slice (chunk.Source.Offset, 4));
-
-							var sourceBuf = chunk.Source.BufferMemory;
-							var handlerNumber = BinaryPrimitives.ReadUInt32LittleEndian (sourceBuf.Span[(chunk.Source.Offset + 4)..]);
-							handler = (handlerNumber == 0) ? null : (handlerNumber >= 0x20202020) ?
-									AsciiCharSet.GetString (sourceBuf.Span.Slice (chunk.Source.Offset + 4, 4)) :
-									handlerNumber.ToString (CultureInfo.InvariantCulture);
-							options = BinaryPrimitives.ReadUInt32LittleEndian (sourceBuf.Span[(chunk.Source.Offset + 8)..]);
-							priority = BinaryPrimitives.ReadUInt16LittleEndian (sourceBuf.Span[(chunk.Source.Offset + 12)..]);
-							language = BinaryPrimitives.ReadUInt16LittleEndian (sourceBuf.Span[(chunk.Source.Offset + 14)..]);
-							scale = BinaryPrimitives.ReadUInt32LittleEndian (sourceBuf.Span[(chunk.Source.Offset + 20)..]);
-							rate = BinaryPrimitives.ReadUInt32LittleEndian (sourceBuf.Span[(chunk.Source.Offset + 24)..]);
-							start = BinaryPrimitives.ReadUInt32LittleEndian (sourceBuf.Span[(chunk.Source.Offset + 28)..]);
-							length = BinaryPrimitives.ReadUInt32LittleEndian (sourceBuf.Span[(chunk.Source.Offset + 32)..]);
-							sampleSize = BinaryPrimitives.ReadUInt32LittleEndian (sourceBuf.Span[(chunk.Source.Offset + 44)..]);
-							left = BinaryPrimitives.ReadUInt16LittleEndian (sourceBuf.Span[(chunk.Source.Offset + 48)..]);
-							top = BinaryPrimitives.ReadUInt16LittleEndian (sourceBuf.Span[(chunk.Source.Offset + 50)..]);
-							right = BinaryPrimitives.ReadUInt16LittleEndian (sourceBuf.Span[(chunk.Source.Offset + 52)..]);
-							bottom = BinaryPrimitives.ReadUInt16LittleEndian (sourceBuf.Span[(chunk.Source.Offset + 54)..]);
+							audioInfo = await AviStreamInfoAudioFormat.ParseAsync (chunk.Source, cancellationToken).ConfigureAwait (false);
 						}
 					}
 				}
+				else
+				{
+					if (chunk.Id == "strh")
+					{
+						/*
+							FOURCC	fccType;
+							FOURCC	fccHandler;
+							DWORD	dwFlags;
+							WORD	wPriority;
+							WORD	wLanguage;
+							DWORD	dwInitialFrames;
+							DWORD	dwScale;
+							DWORD	dwRate;
+							DWORD	dwStart;
+							DWORD	dwLength;
+							DWORD	dwSuggestedBufferSize;
+							DWORD	dwQuality;
+							DWORD	dwSampleSize;
+							short int left;
+							short int top;
+							short int right;
+							short int bottom;
+						 */
+						await chunk.Source.EnsureAvailableAsync (56, cancellationToken).ConfigureAwait (false); // "Insuficient size of RIFF-chunk 'strh'. Expected minimum 56 bytes.");
+						type = AsciiCharSet.GetString (chunk.Source.BufferMemory.Span.Slice (chunk.Source.Offset, 4));
 
-				return new AviStreamInfo (
-					type,
-					handler,
-					options,
-					priority,
-					language,
-					scale,
-					rate,
-					start,
-					length,
-					sampleSize,
-					left,
-					top,
-					right,
-					bottom,
-					videoInfo,
-					audioInfo);
+						var sourceBuf = chunk.Source.BufferMemory;
+						var handlerNumber = BinaryPrimitives.ReadUInt32LittleEndian (sourceBuf.Span[(chunk.Source.Offset + 4)..]);
+						handler = (handlerNumber == 0) ? null : (handlerNumber >= 0x20202020) ?
+								AsciiCharSet.GetString (sourceBuf.Span.Slice (chunk.Source.Offset + 4, 4)) :
+								handlerNumber.ToString (CultureInfo.InvariantCulture);
+						options = BinaryPrimitives.ReadUInt32LittleEndian (sourceBuf.Span[(chunk.Source.Offset + 8)..]);
+						priority = BinaryPrimitives.ReadUInt16LittleEndian (sourceBuf.Span[(chunk.Source.Offset + 12)..]);
+						language = BinaryPrimitives.ReadUInt16LittleEndian (sourceBuf.Span[(chunk.Source.Offset + 14)..]);
+						scale = BinaryPrimitives.ReadUInt32LittleEndian (sourceBuf.Span[(chunk.Source.Offset + 20)..]);
+						rate = BinaryPrimitives.ReadUInt32LittleEndian (sourceBuf.Span[(chunk.Source.Offset + 24)..]);
+						start = BinaryPrimitives.ReadUInt32LittleEndian (sourceBuf.Span[(chunk.Source.Offset + 28)..]);
+						length = BinaryPrimitives.ReadUInt32LittleEndian (sourceBuf.Span[(chunk.Source.Offset + 32)..]);
+						sampleSize = BinaryPrimitives.ReadUInt32LittleEndian (sourceBuf.Span[(chunk.Source.Offset + 44)..]);
+						left = BinaryPrimitives.ReadUInt16LittleEndian (sourceBuf.Span[(chunk.Source.Offset + 48)..]);
+						top = BinaryPrimitives.ReadUInt16LittleEndian (sourceBuf.Span[(chunk.Source.Offset + 50)..]);
+						right = BinaryPrimitives.ReadUInt16LittleEndian (sourceBuf.Span[(chunk.Source.Offset + 52)..]);
+						bottom = BinaryPrimitives.ReadUInt16LittleEndian (sourceBuf.Span[(chunk.Source.Offset + 54)..]);
+					}
+				}
 			}
+
+			return new AviStreamInfo (
+				type,
+				handler,
+				options,
+				priority,
+				language,
+				scale,
+				rate,
+				start,
+				length,
+				sampleSize,
+				left,
+				top,
+				right,
+				bottom,
+				videoInfo,
+				audioInfo);
 		}
 	}
 }

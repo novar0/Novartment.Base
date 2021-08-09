@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
 using System.IO;
 using Novartment.Base.Collections;
 
@@ -38,20 +37,13 @@ namespace Novartment.Base.IO
 		/// </param>
 		public FolderIterator (string baseFolder, string fileNameFilter)
 		{
-			if (baseFolder == null)
-			{
-				throw new ArgumentNullException (nameof (baseFolder));
-			}
-
 			var idx = fileNameFilter?.IndexOfAny (Path.GetInvalidFileNameChars ()) ?? -1;
 			if (idx >= 0)
 			{
 				throw new ArgumentOutOfRangeException (nameof (fileNameFilter));
 			}
 
-			Contract.EndContractBlock ();
-
-			_baseFolder = baseFolder;
+			_baseFolder = baseFolder ?? throw new ArgumentNullException (nameof (baseFolder));
 			_fileNameFilter = !string.IsNullOrWhiteSpace (_fileNameFilter) ? fileNameFilter : null;
 		}
 

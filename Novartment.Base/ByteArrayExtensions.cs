@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
 
 namespace Novartment.Base
 {
@@ -34,9 +33,9 @@ namespace Novartment.Base
 				throw new ArgumentOutOfRangeException (nameof (pattern));
 			}
 
-			Contract.EndContractBlock ();
-
-			return source.Length < pattern.Length ? -1 : IndexOf (source, pattern, 0, source.Length);
+			return (source.Length < pattern.Length) ?
+				-1 :
+				IndexOf (source, pattern, 0, source.Length);
 		}
 
 		/// <summary>
@@ -75,8 +74,6 @@ namespace Novartment.Base
 			{
 				throw new ArgumentOutOfRangeException (nameof (count));
 			}
-
-			Contract.EndContractBlock ();
 
 			var data = KmpBuildTable (pattern);
 

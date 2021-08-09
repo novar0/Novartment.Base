@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.Contracts;
 
 namespace Novartment.Base.Text
 {
@@ -52,8 +51,6 @@ namespace Novartment.Base.Text
 			{
 				throw new ArgumentOutOfRangeException (nameof (maxOutCount));
 			}
-
-			Contract.EndContractBlock ();
 
 			int srcPos = 0;
 			int dstPos = 1; // начальная кавычка

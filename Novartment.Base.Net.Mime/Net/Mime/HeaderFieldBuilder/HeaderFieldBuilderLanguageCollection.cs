@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
 using Novartment.Base.Text;
 
 namespace Novartment.Base.Net.Mime
@@ -21,14 +20,7 @@ namespace Novartment.Base.Net.Mime
 		public HeaderFieldBuilderLanguageCollection (HeaderFieldName name, IReadOnlyList<string> languages)
 			: base (name)
 		{
-			if (languages == null)
-			{
-				throw new ArgumentNullException (nameof (languages));
-			}
-
-			Contract.EndContractBlock ();
-
-			_languages = languages;
+			_languages = languages ?? throw new ArgumentNullException (nameof (languages));
 		}
 
 		/// <summary>

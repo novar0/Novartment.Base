@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.Contracts;
 using System.Threading;
 using System.Threading.Tasks;
 using Novartment.Base.BinaryStreaming;
@@ -108,8 +107,6 @@ namespace Novartment.Base.Net.Mime
 				throw new ArgumentNullException (nameof (subBodyFactory));
 			}
 
-			Contract.EndContractBlock ();
-
 			this.Parts.Clear ();
 
 			return LoadAsyncStateMachine ();
@@ -142,31 +139,24 @@ namespace Novartment.Base.Net.Mime
 		/// <param name="destination">The binary data destination, in which this entity will be saved.</param>
 		/// <param name="cancellationToken">The token to monitor for cancellation requests. The default value is System.Threading.CancellationToken.None.</param>
 		/// <returns>A task that represents the operation.</returns>
-		public Task SaveAsync (IBinaryDestination destination, CancellationToken cancellationToken = default)
+		public async Task SaveAsync (IBinaryDestination destination, CancellationToken cancellationToken = default)
 		{
 			if (destination == null)
 			{
 				throw new ArgumentNullException (nameof (destination));
 			}
 
-			Contract.EndContractBlock ();
+			var nextBoundary = GetNextBoundary ();
+			var endBoundary = GetEndBoundary (nextBoundary);
 
-			return SaveAsyncStateMachine ();
-
-			async Task SaveAsyncStateMachine ()
+			foreach (var entity in this.Parts)
 			{
-				var nextBoundary = GetNextBoundary ();
-				var endBoundary = GetEndBoundary (nextBoundary);
-
-				foreach (var entity in this.Parts)
-				{
-					cancellationToken.ThrowIfCancellationRequested ();
-					await destination.WriteAsync (nextBoundary, cancellationToken).ConfigureAwait (false);
-					await entity.SaveAsync (destination, cancellationToken).ConfigureAwait (false);
-				}
-
-				await destination.WriteAsync (endBoundary, cancellationToken).ConfigureAwait (false);
+				cancellationToken.ThrowIfCancellationRequested ();
+				await destination.WriteAsync (nextBoundary, cancellationToken).ConfigureAwait (false);
+				await entity.SaveAsync (destination, cancellationToken).ConfigureAwait (false);
 			}
+
+			await destination.WriteAsync (endBoundary, cancellationToken).ConfigureAwait (false);
 		}
 
 		// Получает разграничитель частей в виде массива байтов.

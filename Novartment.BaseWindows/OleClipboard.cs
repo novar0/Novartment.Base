@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.Contracts;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
 using System.Security;
@@ -39,20 +38,8 @@ namespace Novartment.Base
 			Func<IDataContainer, IDataObject> toComDataObjectConverter,
 			Func<IDataObject, IDataContainer> fromComDataObjectConverter)
 		{
-			if (toComDataObjectConverter == null)
-			{
-				throw new ArgumentNullException (nameof (toComDataObjectConverter));
-			}
-
-			if (fromComDataObjectConverter == null)
-			{
-				throw new ArgumentNullException (nameof (fromComDataObjectConverter));
-			}
-
-			Contract.EndContractBlock ();
-
-			_toComDataObjectConverter = toComDataObjectConverter;
-			_fromComDataObjectConverter = fromComDataObjectConverter;
+			_toComDataObjectConverter = toComDataObjectConverter ?? throw new ArgumentNullException (nameof (toComDataObjectConverter));
+			_fromComDataObjectConverter = fromComDataObjectConverter ?? throw new ArgumentNullException (nameof (fromComDataObjectConverter));
 		}
 
 		/// <summary>
@@ -97,8 +84,6 @@ namespace Novartment.Base
 			{
 				throw new ArgumentNullException (nameof (data));
 			}
-
-			Contract.EndContractBlock ();
 
 			var currentThreadApartmentState = Thread.CurrentThread.GetApartmentState ();
 			if (currentThreadApartmentState != ApartmentState.STA)
@@ -173,8 +158,6 @@ namespace Novartment.Base
 			{
 				throw new ArgumentNullException (nameof (dataObject));
 			}
-
-			Contract.EndContractBlock ();
 
 			var currentThreadApartmentState = Thread.CurrentThread.GetApartmentState ();
 			if (currentThreadApartmentState != ApartmentState.STA)

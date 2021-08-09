@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.Contracts;
 
 namespace Novartment.Base
 {
@@ -21,14 +20,7 @@ namespace Novartment.Base
 		/// <param name="state">The state object, that will be passed to callback when the timer is triggered.</param>
 		protected BaseTimer (Action<TState> callback, TState state)
 		{
-			if (callback == null)
-			{
-				throw new ArgumentNullException (nameof (callback));
-			}
-
-			Contract.EndContractBlock ();
-
-			_callback = callback;
+			_callback = callback ?? throw new ArgumentNullException (nameof (callback));
 			_state = state;
 		}
 

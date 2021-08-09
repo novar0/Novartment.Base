@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.Contracts;
 using System.Globalization;
 
 namespace Novartment.Base.Text
@@ -38,8 +37,6 @@ namespace Novartment.Base.Text
 			{
 				throw new ArgumentNullException (nameof (value));
 			}
-
-			Contract.EndContractBlock ();
 
 			return Parse (value.AsSpan ());
 		}
@@ -209,8 +206,6 @@ namespace Novartment.Base.Text
 				throw new ArgumentOutOfRangeException (nameof (dateTime));
 			}
 
-			Contract.EndContractBlock ();
-
 			var buf = new char[26];
 			ToInternetString (dateTime, buf.AsSpan ());
 			return new string (buf);
@@ -228,8 +223,6 @@ namespace Novartment.Base.Text
 			{
 				throw new ArgumentOutOfRangeException (nameof (dateTime));
 			}
-
-			Contract.EndContractBlock ();
 
 			var value = dateTime.DateTime;
 			var offset = dateTime.Offset;

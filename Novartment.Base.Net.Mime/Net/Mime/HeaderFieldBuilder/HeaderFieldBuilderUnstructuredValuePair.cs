@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.Contracts;
 using System.Text;
 
 namespace Novartment.Base.Net.Mime
@@ -28,14 +27,7 @@ namespace Novartment.Base.Net.Mime
 		public HeaderFieldBuilderUnstructuredValuePair (HeaderFieldName name, string value1, string value2)
 			: base (name)
 		{
-			if (value1 == null)
-			{
-				throw new ArgumentNullException (nameof (value1));
-			}
-
-			Contract.EndContractBlock ();
-
-			_value1 = value1;
+			_value1 = value1 ?? throw new ArgumentNullException (nameof (value1));
 			_value2 = value2;
 		}
 

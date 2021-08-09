@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.Contracts;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
@@ -25,14 +24,7 @@ namespace Novartment.Base.Net
 		/// <param name="localEP">Конечная точка, на которой будет осуществляться прослушивание.</param>
 		public SocketTcpListener (IPEndPoint localEP)
 		{
-			if (localEP == null)
-			{
-				throw new ArgumentNullException (nameof (localEP));
-			}
-
-			Contract.EndContractBlock ();
-
-			_localEP = localEP;
+			_localEP = localEP ?? throw new ArgumentNullException (nameof (localEP));
 			_socket = new Socket (_localEP.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
 		}
 

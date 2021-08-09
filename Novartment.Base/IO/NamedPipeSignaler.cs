@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.Contracts;
 using System.IO.Pipes;
 using System.Threading;
 using System.Threading.Tasks;
@@ -26,8 +25,6 @@ namespace Novartment.Base.IO
 			{
 				throw new ArgumentNullException (nameof (pipeName));
 			}
-
-			Contract.EndContractBlock ();
 
 			_pipeName = pipeName;
 		}

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
 using System.Windows;
 
 namespace Novartment.Base.UI.Wpf
@@ -43,8 +42,6 @@ namespace Novartment.Base.UI.Wpf
 				throw new ArgumentNullException (nameof (format));
 			}
 
-			Contract.EndContractBlock ();
-
 			_dataObject = new DataObject (format, data, true);
 		}
 
@@ -60,8 +57,6 @@ namespace Novartment.Base.UI.Wpf
 			{
 				throw new ArgumentNullException (nameof (format));
 			}
-
-			Contract.EndContractBlock ();
 
 			_dataObject = new DataObject (format, data);
 		}
@@ -82,8 +77,6 @@ namespace Novartment.Base.UI.Wpf
 				throw new ArgumentNullException (nameof (format));
 			}
 
-			Contract.EndContractBlock ();
-
 			_dataObject = new DataObject (format, data, autoConvert);
 		}
 
@@ -97,8 +90,6 @@ namespace Novartment.Base.UI.Wpf
 			{
 				throw new ArgumentNullException (nameof (dataObject));
 			}
-
-			Contract.EndContractBlock ();
 
 			_dataObject = dataObject;
 		}
@@ -162,8 +153,6 @@ namespace Novartment.Base.UI.Wpf
 				throw new ArgumentNullException (nameof (format));
 			}
 
-			Contract.EndContractBlock ();
-
 			return _dataObject.GetData (format, autoConvert);
 		}
 
@@ -181,8 +170,6 @@ namespace Novartment.Base.UI.Wpf
 			{
 				throw new ArgumentNullException (nameof (format));
 			}
-
-			Contract.EndContractBlock ();
 
 			_dataObject.SetData (format, value, autoConvert);
 		}

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.Contracts;
 
 namespace Novartment.Base.Net.Mime
 {
@@ -37,8 +36,6 @@ namespace Novartment.Base.Net.Mime
 			{
 				throw new ArgumentNullException (nameof (source));
 			}
-
-			Contract.EndContractBlock ();
 
 			var isText = MediaTypeNames.Text.AsSpan ().SequenceEqual (source);
 			if (isText)

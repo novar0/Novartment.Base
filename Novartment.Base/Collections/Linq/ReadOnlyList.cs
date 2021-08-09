@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
 using System.Linq;
 
 namespace Novartment.Base.Collections.Linq
@@ -34,10 +33,8 @@ namespace Novartment.Base.Collections.Linq
 				throw new ArgumentOutOfRangeException (nameof (count));
 			}
 
-			Contract.EndContractBlock ();
-
 			return (count == 0) ?
-				(IReadOnlyList<int>)EmptyReadOnlyList<int>.GetInstance () :
+				EmptyReadOnlyList<int>.GetInstance () :
 				new RangeReadOnlyList (start, count);
 		}
 
@@ -55,10 +52,8 @@ namespace Novartment.Base.Collections.Linq
 				throw new ArgumentOutOfRangeException (nameof (count));
 			}
 
-			Contract.EndContractBlock ();
-
 			return (count == 0) ?
-				(IReadOnlyList<TResult>)EmptyReadOnlyList<TResult>.GetInstance () :
+				EmptyReadOnlyList<TResult>.GetInstance () :
 				new RepeatReadOnlyList<TResult> (element, count);
 		}
 
@@ -74,8 +69,6 @@ namespace Novartment.Base.Collections.Linq
 			{
 				throw new ArgumentNullException (nameof (source));
 			}
-
-			Contract.EndContractBlock ();
 
 			if (source.Count < 1)
 			{
@@ -98,8 +91,6 @@ namespace Novartment.Base.Collections.Linq
 				throw new ArgumentNullException (nameof (source));
 			}
 
-			Contract.EndContractBlock ();
-
 			return (source.Count > 0) ? source[0] : default;
 		}
 
@@ -115,8 +106,6 @@ namespace Novartment.Base.Collections.Linq
 			{
 				throw new ArgumentNullException (nameof (source));
 			}
-
-			Contract.EndContractBlock ();
 
 			if (source.Count < 1)
 			{
@@ -140,8 +129,6 @@ namespace Novartment.Base.Collections.Linq
 				throw new ArgumentNullException (nameof (source));
 			}
 
-			Contract.EndContractBlock ();
-
 			return (source.Count > 0) ? source[source.Count - 1] : default;
 		}
 
@@ -164,8 +151,6 @@ namespace Novartment.Base.Collections.Linq
 				throw new ArgumentOutOfRangeException (nameof (index));
 			}
 
-			Contract.EndContractBlock ();
-
 			return source[index];
 		}
 
@@ -183,8 +168,6 @@ namespace Novartment.Base.Collections.Linq
 			{
 				throw new ArgumentNullException (nameof (source));
 			}
-
-			Contract.EndContractBlock ();
 
 			if ((index < 0) || (index >= source.Count))
 			{
@@ -208,9 +191,7 @@ namespace Novartment.Base.Collections.Linq
 				throw new ArgumentNullException (nameof (source));
 			}
 
-			Contract.EndContractBlock ();
-
-			return (source.Count > 0) ? source : ReadOnlyList.Repeat (defaultValue, 1);
+			return (source.Count > 0) ? source : Repeat (defaultValue, 1);
 		}
 
 		/// <summary>
@@ -231,8 +212,6 @@ namespace Novartment.Base.Collections.Linq
 			{
 				throw new ArgumentOutOfRangeException (nameof (count));
 			}
-
-			Contract.EndContractBlock ();
 
 			if (source.Count < 1)
 			{
@@ -265,8 +244,6 @@ namespace Novartment.Base.Collections.Linq
 			{
 				throw new ArgumentOutOfRangeException (nameof (count));
 			}
-
-			Contract.EndContractBlock ();
 
 			if (source.Count < 1)
 			{
@@ -301,10 +278,8 @@ namespace Novartment.Base.Collections.Linq
 				throw new ArgumentNullException (nameof (selector));
 			}
 
-			Contract.EndContractBlock ();
-
 			return (source.Count < 1) ?
-				(IReadOnlyList<TResult>)EmptyReadOnlyList<TResult>.GetInstance () :
+				EmptyReadOnlyList<TResult>.GetInstance () :
 				new SelectReadOnlyList<TSource, TResult> (source, selector);
 		}
 
@@ -329,10 +304,8 @@ namespace Novartment.Base.Collections.Linq
 				throw new ArgumentNullException (nameof (selector));
 			}
 
-			Contract.EndContractBlock ();
-
 			return (source.Count < 1) ?
-				(IReadOnlyList<TResult>)EmptyReadOnlyList<TResult>.GetInstance () :
+				EmptyReadOnlyList<TResult>.GetInstance () :
 				new SelectIndexReadOnlyList<TSource, TResult> (source, selector);
 		}
 
@@ -348,8 +321,6 @@ namespace Novartment.Base.Collections.Linq
 			{
 				throw new ArgumentNullException (nameof (source));
 			}
-
-			Contract.EndContractBlock ();
 
 			if (source.Count < 2)
 			{
@@ -383,8 +354,6 @@ namespace Novartment.Base.Collections.Linq
 				throw new ArgumentNullException (nameof (keySelector));
 			}
 
-			Contract.EndContractBlock ();
-
 			return new OrderedReadOnlyList<TSource, TKey> (source, keySelector, comparer, false, null);
 		}
 
@@ -412,8 +381,6 @@ namespace Novartment.Base.Collections.Linq
 				throw new ArgumentNullException (nameof (keySelector));
 			}
 
-			Contract.EndContractBlock ();
-
 			return new OrderedReadOnlyList<TSource, TKey> (source, keySelector, comparer, true, null);
 		}
 
@@ -435,8 +402,6 @@ namespace Novartment.Base.Collections.Linq
 			{
 				throw new ArgumentNullException (nameof (source));
 			}
-
-			Contract.EndContractBlock ();
 
 			if (source.Count < 2)
 			{
@@ -465,8 +430,6 @@ namespace Novartment.Base.Collections.Linq
 				throw new ArgumentNullException (nameof (source));
 			}
 
-			Contract.EndContractBlock ();
-
 			if (source.Count < 2)
 			{
 				return source;
@@ -493,8 +456,6 @@ namespace Novartment.Base.Collections.Linq
 			{
 				throw new ArgumentNullException (nameof (second));
 			}
-
-			Contract.EndContractBlock ();
 
 			if (first.Count < 1)
 			{
@@ -536,10 +497,8 @@ namespace Novartment.Base.Collections.Linq
 				throw new ArgumentNullException (nameof (selector));
 			}
 
-			Contract.EndContractBlock ();
-
 			return ((first.Count < 1) || (second.Count < 1)) ?
-				(IReadOnlyList<TResult>)EmptyReadOnlyList<TResult>.GetInstance () :
+				EmptyReadOnlyList<TResult>.GetInstance () :
 				new ZipReadOnlyList<TFirst, TSecond, TResult> (first, second, selector);
 		}
 

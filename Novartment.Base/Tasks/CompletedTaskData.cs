@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.Contracts;
 using System.Threading.Tasks;
 
 namespace Novartment.Base.Tasks
@@ -18,14 +17,13 @@ namespace Novartment.Base.Tasks
 		/// <param name="state">The state object of the task.</param>
 		public CompletedTaskData (TaskStatus status, AggregateException exception, object state)
 		{
+			// check if task finished
 			if ((status != TaskStatus.RanToCompletion) &&
 				(status != TaskStatus.Canceled) &&
 				(status != TaskStatus.Faulted))
 			{
 				throw new ArgumentOutOfRangeException(nameof(status));
 			}
-
-			Contract.EndContractBlock();
 
 			this.Status = status;
 			this.Exception = exception;
@@ -48,8 +46,6 @@ namespace Novartment.Base.Tasks
 			{
 				throw new ArgumentOutOfRangeException(nameof(task));
 			}
-
-			Contract.EndContractBlock();
 
 			this.Status = task.Status;
 			this.Exception = task.Exception;

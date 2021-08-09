@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Diagnostics.Contracts;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -27,14 +26,7 @@ namespace Novartment.Base.BinaryStreaming
 		/// <param name="onCompleted">An action that will be called after the data source is exhausted. Specify null-reference if it is not needed.</param>
 		public ObservableBufferedSource (IBufferedSource source, IProgress<long> progress = null, Action onCompleted = null)
 		{
-			if (source == null)
-			{
-				throw new ArgumentNullException (nameof (source));
-			}
-
-			Contract.EndContractBlock ();
-
-			_source = source;
+			_source = source ?? throw new ArgumentNullException (nameof (source));
 			_progress = progress;
 			if ((onCompleted != null) && source.IsExhausted && (source.Count < 1))
 			{
@@ -87,8 +79,6 @@ namespace Novartment.Base.BinaryStreaming
 				throw new ArgumentOutOfRangeException (nameof (size));
 			}
 
-			Contract.EndContractBlock ();
-
 			if (size > 0)
 			{
 				_source.Skip (size);
@@ -131,9 +121,9 @@ namespace Novartment.Base.BinaryStreaming
 				throw new ArgumentOutOfRangeException (nameof (size));
 			}
 
-			Contract.EndContractBlock ();
-
-			return size == 0 ? default : _source.EnsureAvailableAsync (size, cancellationToken);
+			return (size == 0) ?
+				default :
+				_source.EnsureAvailableAsync (size, cancellationToken);
 		}
 
 		/// <summary>
@@ -154,8 +144,6 @@ namespace Novartment.Base.BinaryStreaming
 			{
 				throw new ArgumentOutOfRangeException (nameof (size));
 			}
-
-			Contract.EndContractBlock ();
 
 			if (size < 1L)
 			{

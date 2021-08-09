@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.Contracts;
 using System.Threading;
 using System.Threading.Tasks;
 using Novartment.Base.BinaryStreaming;
@@ -38,8 +37,6 @@ namespace Novartment.Base.Net.Mime
 					throw new ArgumentNullException (nameof (value));
 				}
 
-				Contract.EndContractBlock ();
-
 				_nestedMessage = value;
 			}
 		}
@@ -74,8 +71,6 @@ namespace Novartment.Base.Net.Mime
 				throw new ArgumentNullException (nameof (subBodyFactory));
 			}
 
-			Contract.EndContractBlock ();
-
 			if (cancellationToken.IsCancellationRequested)
 			{
 				return Task.FromCanceled (cancellationToken);
@@ -97,8 +92,6 @@ namespace Novartment.Base.Net.Mime
 			{
 				throw new ArgumentNullException (nameof (destination));
 			}
-
-			Contract.EndContractBlock ();
 
 			if (this.Message == null)
 			{

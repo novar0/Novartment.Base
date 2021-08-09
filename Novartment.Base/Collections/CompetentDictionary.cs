@@ -2,7 +2,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.Diagnostics.Contracts;
 using System.Runtime.InteropServices;
 using System.Threading;
 
@@ -64,17 +63,10 @@ namespace Novartment.Base.Collections
 		/// </param>
 		public CompetentDictionary (Func<TKey, TValue> valueFactory, IEqualityComparer<TKey> comparer = null)
 		{
-			if (valueFactory == null)
-			{
-				throw new ArgumentNullException (nameof (valueFactory));
-			}
-
-			Contract.EndContractBlock ();
-
+			_valueFactory = valueFactory ?? throw new ArgumentNullException (nameof (valueFactory)); ;
 			_keyEnumerationProvider = new KeyEnumerationProvider (this);
 			_valueEnumerationProvider = new ValueEnumerationProvider (this);
 			_comparer = comparer ?? EqualityComparer<TKey>.Default;
-			_valueFactory = valueFactory;
 		}
 
 		/// <summary>Occurs when an entry is added to the dictionary.</summary>
@@ -107,8 +99,6 @@ namespace Novartment.Base.Collections
 					throw new ArgumentNullException (nameof (key));
 				}
 
-				Contract.EndContractBlock ();
-
 				return FindOrCreateValue (key);
 			}
 		}
@@ -122,8 +112,6 @@ namespace Novartment.Base.Collections
 			{
 				throw new ArgumentOutOfRangeException (nameof (keyValuePair));
 			}
-
-			Contract.EndContractBlock ();
 
 			var value = FindOrCreateValue (keyValuePair.Key);
 			return EqualityComparer<TValue>.Default.Equals (value, keyValuePair.Value);
@@ -141,8 +129,6 @@ namespace Novartment.Base.Collections
 			{
 				throw new ArgumentNullException (nameof (key));
 			}
-
-			Contract.EndContractBlock ();
 
 			var isLockEntered = _bucketsLock.TryEnterReadLock (_lockTimeoutMilliseconds);
 			if (!isLockEntered)
@@ -171,7 +157,6 @@ namespace Novartment.Base.Collections
 				throw new ArgumentNullException (nameof (key));
 			}
 
-			Contract.EndContractBlock ();
 			value = FindOrCreateValue (key);
 			return true;
 		}

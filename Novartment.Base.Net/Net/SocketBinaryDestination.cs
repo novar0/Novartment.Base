@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.Contracts;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
@@ -22,13 +21,7 @@ namespace Novartment.Base.Net
 		/// <param name="socket">Сокет, в который будет производиться запись.</param>
 		public SocketBinaryDestination (Socket socket)
 		{
-			if (socket == null)
-			{
-				throw new ArgumentNullException (nameof (socket));
-			}
-			Contract.EndContractBlock ();
-
-			_socket = socket;
+			_socket = socket ?? throw new ArgumentNullException (nameof (socket));
 		}
 
 		/// <summary>

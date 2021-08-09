@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.Contracts;
 using System.Text;
 
 namespace Novartment.Base.Text
@@ -20,14 +19,7 @@ namespace Novartment.Base.Text
 		/// <param name="enabledClasses">Комбинация классов символов, разрешённых для прямого представления (без кодирования).</param>
 		public EncodedWordQEstimatingEncoder (Encoding encoding, AsciiCharClasses enabledClasses)
 		{
-			if (encoding == null)
-			{
-				throw new ArgumentNullException (nameof (encoding));
-			}
-
-			Contract.EndContractBlock ();
-
-			_encoding = encoding;
+			_encoding = encoding ?? throw new ArgumentNullException (nameof (encoding));
 			_enabledClasses = enabledClasses;
 		}
 
@@ -55,8 +47,6 @@ namespace Novartment.Base.Text
 			{
 				throw new ArgumentOutOfRangeException (nameof (maxOutCount));
 			}
-
-			Contract.EndContractBlock ();
 
 			int srcPos = 0;
 			var dstPos = this.PrologSize;

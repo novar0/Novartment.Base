@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
 using System.Threading;
 using Novartment.Base.Collections.Immutable;
 
@@ -72,8 +71,6 @@ namespace Novartment.Base
 			{
 				throw new ArgumentOutOfRangeException (nameof (minimumInterval));
 			}
-
-			Contract.EndContractBlock ();
 
 			_progress = progress;
 			_intervalToSendProgressUpdates = new TimeSpan (0, 0, 0, 0, minimumInterval);

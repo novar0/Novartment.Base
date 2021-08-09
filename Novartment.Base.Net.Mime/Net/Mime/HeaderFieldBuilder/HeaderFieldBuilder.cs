@@ -2,7 +2,6 @@
 using System.Globalization;
 using System.Buffers;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -52,8 +51,6 @@ namespace Novartment.Base.Net.Mime
 			{
 				throw new ArgumentOutOfRangeException (nameof (name));
 			}
-
-			Contract.EndContractBlock ();
 
 			_name = name;
 		}
@@ -153,7 +150,7 @@ namespace Novartment.Base.Net.Mime
 		/// <param name="destination">Получатель двоичных данных, в который будет записана указанная коллекция полей.</param>
 		/// <param name="cancellationToken">Токен для отслеживания запросов отмены.</param>
 		/// <returns>Суммарное количество байтов, записанных в получатель двоичных данных.</returns>
-		internal static Task<int> SaveHeaderAsync (IReadOnlyCollection<HeaderFieldBuilder> fields, IBinaryDestination destination, CancellationToken cancellationToken = default)
+		internal static async Task<int> SaveHeaderAsync (IReadOnlyCollection<HeaderFieldBuilder> fields, IBinaryDestination destination, CancellationToken cancellationToken = default)
 		{
 			if (fields == null)
 			{
@@ -165,34 +162,27 @@ namespace Novartment.Base.Net.Mime
 				throw new ArgumentNullException (nameof (destination));
 			}
 
-			Contract.EndContractBlock ();
-
-			return SaveHeaderAsyncStateMachine ();
-
 			// TODO: сделать сохранение оптом, а не по одному полю
-			async Task<int> SaveHeaderAsyncStateMachine ()
+			int totalSize = 0;
+			var fieldBuffer = ArrayPool<byte>.Shared.Rent (HeaderDecoder.MaximumHeaderFieldBodySize);
+			var oneLineBuffer = ArrayPool<byte>.Shared.Rent (MaxLineLengthRequired);
+			try
 			{
-				int totalSize = 0;
-				var fieldBuffer = ArrayPool<byte>.Shared.Rent (HeaderDecoder.MaximumHeaderFieldBodySize);
-				var oneLineBuffer = ArrayPool<byte>.Shared.Rent (MaxLineLengthRequired);
-				try
+				foreach (var fieldBuilder in fields)
 				{
-					foreach (var fieldBuilder in fields)
-					{
-						cancellationToken.ThrowIfCancellationRequested ();
-						var size = fieldBuilder.EncodeToBinaryTransportRepresentation (fieldBuffer, oneLineBuffer);
-						await destination.WriteAsync (fieldBuffer.AsMemory (0, size), cancellationToken).ConfigureAwait (false);
-						totalSize += size;
-					}
+					cancellationToken.ThrowIfCancellationRequested ();
+					var size = fieldBuilder.EncodeToBinaryTransportRepresentation (fieldBuffer, oneLineBuffer);
+					await destination.WriteAsync (fieldBuffer.AsMemory (0, size), cancellationToken).ConfigureAwait (false);
+					totalSize += size;
 				}
-				finally
-				{
-					ArrayPool<byte>.Shared.Return (oneLineBuffer);
-					ArrayPool<byte>.Shared.Return (fieldBuffer);
-				}
-
-				return totalSize;
 			}
+			finally
+			{
+				ArrayPool<byte>.Shared.Return (oneLineBuffer);
+				ArrayPool<byte>.Shared.Return (fieldBuffer);
+			}
+
+			return totalSize;
 		}
 
 		/// <summary>

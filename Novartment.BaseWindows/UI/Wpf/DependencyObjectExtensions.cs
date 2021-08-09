@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.Contracts;
 using System.Windows;
 using System.Windows.Media;
 
@@ -23,8 +22,6 @@ namespace Novartment.Base.UI.Wpf
 			{
 				throw new ArgumentNullException (nameof (child));
 			}
-
-			Contract.EndContractBlock ();
 
 			if (child is TItem candidate)
 			{
@@ -55,8 +52,6 @@ namespace Novartment.Base.UI.Wpf
 			{
 				throw new ArgumentNullException (nameof (predicate));
 			}
-
-			Contract.EndContractBlock ();
 
 			var candidate = parent as TItem;
 			var isPredicatePassed = (candidate != null) && predicate.Invoke (candidate);

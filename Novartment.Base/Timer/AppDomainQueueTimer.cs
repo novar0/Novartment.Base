@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.Contracts;
 using System.Threading;
 
 namespace Novartment.Base
@@ -34,8 +33,6 @@ namespace Novartment.Base
 			{
 				throw new ArgumentNullException (nameof (callback));
 			}
-
-			Contract.EndContractBlock ();
 
 			_enabled = false;
 			_interval = TimeSpan.FromMilliseconds (0.0);

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
 using System.Text;
 using Novartment.Base.Text;
 
@@ -27,14 +26,7 @@ namespace Novartment.Base.Net.Mime
 		public HeaderFieldBuilderMailboxCollection (HeaderFieldName name, IReadOnlyList<Mailbox> mailboxes)
 			: base (name)
 		{
-			if (mailboxes == null)
-			{
-				throw new ArgumentNullException (nameof (mailboxes));
-			}
-
-			Contract.EndContractBlock ();
-
-			_mailboxes = mailboxes;
+			_mailboxes = mailboxes ?? throw new ArgumentNullException (nameof (mailboxes));
 		}
 
 		/// <summary>

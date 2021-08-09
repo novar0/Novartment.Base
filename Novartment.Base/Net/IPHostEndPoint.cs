@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.Contracts;
 using System.Net;
 
 namespace Novartment.Base.Net
@@ -41,8 +40,6 @@ namespace Novartment.Base.Net
 				throw new ArgumentNullException (nameof (endPoint));
 			}
 
-			Contract.EndContractBlock ();
-
 			return endPoint.Address;
 		}
 
@@ -52,8 +49,6 @@ namespace Novartment.Base.Net
 			{
 				throw new ArgumentNullException (nameof (endPoint));
 			}
-
-			Contract.EndContractBlock ();
 
 			return endPoint.Port;
 		}
